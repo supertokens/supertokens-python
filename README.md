@@ -1,2 +1,2 @@
 # supertokens-python
-Python SDK for SuperTokens
+Work in progress..
