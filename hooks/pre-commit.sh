@@ -88,7 +88,7 @@ if [[ ${version} != ${codeversion} ]]
 then
     RED='\033[0;31m'
     NC='\033[0m' # No Color
-    printf "${RED}Version codes in ./supertokens_fastapi/constants.py and setup.py are not the same${NC}\n"
+    printf "${RED}Version codes in ./supertokens_python/constants.py and setup.py are not the same${NC}\n"
     exit 1
 fi
 
