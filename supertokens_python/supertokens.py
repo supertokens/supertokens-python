@@ -238,14 +238,14 @@ class Supertokens:
 
         return response
 
-    async def handle_supertokens_error(self, request: BaseRequest, err: SuperTokensError):
+    async def handle_supertokens_error(self, request: BaseRequest, err: SuperTokensError, response : BaseResponse):
         if isinstance(err, GeneralError):
-            raise Exception(err)
+            return send_non_200_response(err.recipe, str(err), 400, response)
 
         if isinstance(err, BadInputError):
-            return send_non_200_response(err.recipe, str(err), 400)
+            return send_non_200_response(err.recipe, str(err), 400, response)
 
         for recipe in self.recipe_modules:
             if recipe.is_error_from_this_or_child_recipe_based_on_instance(err):
-                return await recipe.handle_error(request, err)
+                return await recipe.handle_error(request, err, response)
         raise err

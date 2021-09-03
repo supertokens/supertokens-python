@@ -16,6 +16,7 @@ under the License.
 
 from __future__ import annotations
 
+from .framework.response import BaseResponse
 from .querier import Querier
 import abc
 from typing import Union, Literal, List, TYPE_CHECKING
@@ -65,7 +66,7 @@ class RecipeModule(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def handle_error(self, request: BaseRequest, err: SuperTokensError):
+    async def handle_error(self, request: BaseRequest, err: SuperTokensError, response : BaseResponse):
         pass
 
     @abc.abstractmethod

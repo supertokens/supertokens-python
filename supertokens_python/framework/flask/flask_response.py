@@ -52,10 +52,14 @@ class FlaskResponse(BaseResponse):
             return None
 
     def set_status_code(self, status_code):
-        self.response.status = status_code
+        self.response.status_code = status_code
 
     def get_headers(self):
         if self.response is None:
             return self.headers
         else:
             return self.response.headers
+
+    def set_content(self, content):
+        self.response.content = content
+

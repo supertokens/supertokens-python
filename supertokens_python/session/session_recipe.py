@@ -37,6 +37,7 @@ from os import environ
 from typing import List, Union, TYPE_CHECKING
 from . import session_functions
 from .session_class import Session
+from ..framework.response import BaseResponse
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -107,13 +108,13 @@ class SessionRecipe(RecipeModule):
         else:
             return await handle_signout_api(self, request)
 
-    async def handle_error(self, request: BaseRequest, error: SuperTokensError):
+    async def handle_error(self, request: BaseRequest, error: SuperTokensError, response : BaseResponse):
         if isinstance(error, UnauthorisedError):
-            return await self.config.error_handlers.on_unauthorised(request, str(error))
+            return await self.config.error_handlers.on_unauthorised(request, str(error), response)
         elif isinstance(error, TokenTheftError):
-            return await self.config.error_handlers.on_token_theft_detected(request, error.session_handle, error.user_id)
+            return await self.config.error_handlers.on_token_theft_detected(request, error.session_handle, error.user_id, response)
         else:
-            return await self.config.error_handlers.on_try_refresh_token(request, str(error))
+            return await self.config.error_handlers.on_try_refresh_token(request, str(error), response)
 
     def get_all_cors_headers(self) -> List[str]:
         return get_cors_allowed_headers()

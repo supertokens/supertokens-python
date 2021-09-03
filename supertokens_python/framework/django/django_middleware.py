@@ -1,6 +1,7 @@
 import asyncio
 
 from asgiref.sync import async_to_sync
+from werkzeug import Response
 
 from supertokens_python.framework.django.django_request import DjangoRequest
 from supertokens_python.framework.django.django_response import DjangoResponse
@@ -21,14 +22,14 @@ def middleware(get_response):
 
                 if result is None:
                     result = await get_response(request)
-                    result = DjangoResponse(result)
-
                 if hasattr(request, "state") and isinstance(request.state, Session):
                     manage_cookies_post_response(request.state, result)
 
                 return result.response
             except SuperTokensError as e:
-                await st.handle_supertokens_error(DjangoRequest(request), e)
+                response = DjangoResponse(Response())
+                result = await st.handle_supertokens_error(DjangoRequest(request), e, response)
+                return result.response
 
     else:
         def __middleware(request):

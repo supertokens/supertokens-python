@@ -275,7 +275,7 @@ async def driver_config_client():
 
     @app.post('/logout')
     async def custom_logout(request : Request):
-        session = await verify_session()(request)
+        session = await get_session(request, True)
         await session.revoke_session()
         return {}
 
@@ -326,7 +326,7 @@ def test_cookie_and_header_values_with_driver_config_and_csrf_enabled(driver_con
     assert cookies_1['sRefreshToken']['secure'] is None
     assert cookies_1['sIdRefreshToken']['secure'] is None
 
-    response_3 = driver_config_client.get(
+    response_2 = driver_config_client.get(
         url='/info',
         headers={
             'anti-csrf': response_1.headers.get('anti-csrf')
@@ -337,11 +337,11 @@ def test_cookie_and_header_values_with_driver_config_and_csrf_enabled(driver_con
         }
     )
 
-    print(response_3)
-    cookies_3 = extract_all_cookies(response_3)
-    assert cookies_3 == {}
+    print(response_2)
+    cookies_2 = extract_all_cookies(response_2)
+    assert cookies_2 == {}
 
-    response_4 = driver_config_client.post(
+    response_3 = driver_config_client.post(
         url='/refresh',
         headers={
             'anti-csrf': response_1.headers.get('anti-csrf')
@@ -351,150 +351,57 @@ def test_cookie_and_header_values_with_driver_config_and_csrf_enabled(driver_con
             'sIdRefreshToken': cookies_1['sIdRefreshToken']['value'],
         }
     )
-    print(response_4)
+    print(response_3)
+    cookies_3 = extract_all_cookies(response_3)
+
+    assert cookies_3['sAccessToken']['value'] != cookies_1['sAccessToken']['value']
+    assert cookies_3['sRefreshToken']['value'] != cookies_1['sRefreshToken']['value']
+    assert cookies_3['sIdRefreshToken']['value'] != cookies_1['sIdRefreshToken']['value']
+    assert response_3.headers.get('anti-csrf') is not None
+    assert cookies_3['sAccessToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
+    assert cookies_3['sRefreshToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
+    assert cookies_3['sIdRefreshToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
+    assert cookies_3['sRefreshToken']['path'] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
+    assert cookies_3['sIdRefreshToken']['path'] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
+    assert cookies_3['sAccessToken']['httponly']
+    assert cookies_3['sRefreshToken']['httponly']
+    assert cookies_3['sIdRefreshToken']['httponly']
+    assert cookies_3['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_3['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_3['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_3['sAccessToken']['secure'] is None
+    assert cookies_3['sRefreshToken']['secure'] is None
+    assert cookies_3['sIdRefreshToken']['secure'] is None
 
 
-    # TODO:???
-    # assert verify_within_5_second_diff(
-    #     get_unix_timestamp(cookies_1['sAccessToken']['expires']) - int(time()),
-    #     TEST_ACCESS_TOKEN_MAX_AGE_VALUE
-    # )
-    # assert verify_within_5_second_diff(
-    #     get_unix_timestamp(cookies_1['sRefreshToken']['expires']) - int(time()),
-    #     TEST_REFRESH_TOKEN_MAX_AGE_VALUE * 60
-    # )
-    #
-    # assert cookies_1['sIdRefreshToken']['value'] + \
-    #        ';' == response_1.headers['Id-Refresh-Token'][:-13]
-    # assert verify_within_5_second_diff(
-    #     int(response_1.headers['Id-Refresh-Token'][-13:-3]),
-    #     get_unix_timestamp(cookies_1['sIdRefreshToken']['expires'])
-    # )
-    # assert response_1.headers[ACCESS_CONTROL_EXPOSE_HEADER] == ACCESS_CONTROL_EXPOSE_HEADER_ANTI_CSRF_ENABLE
-    #
-    # response_2 = driver_config_client.post(
-    #     url='/logout',
-    #     headers={
-    #         'anti-csrf': response_1.headers.get('anti-csrf')
-    #     },
-    #     cookies={
-    #         'sRefreshToken': cookies_1['sRefreshToken']['value'],
-    #         'sIdRefreshToken': cookies_1['sIdRefreshToken']['value'],
-    #         'sAccessToken': cookies_1['sAccessToken']['value'],
-    #     }
-    # )
-    # cookies_2 = extract_all_cookies(response_2)
-    # #all are empty, everything is good
-    #TODO: finish the test. need help.
-    # assert cookies_1['sAccessToken']['value'] != cookies_2['sAccessToken']['value']
-    # assert cookies_1['sRefreshToken']['value'] != cookies_2['sRefreshToken']['value']
-    # assert cookies_1['sIdRefreshToken']['value'] != cookies_2['sIdRefreshToken']['value']
-    # assert response_2.headers.get('anti-csrf') is None
-    # assert cookies_2['sAccessToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    # assert cookies_2['sRefreshToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    # assert cookies_2['sIdRefreshToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    # assert cookies_2['sAccessToken']['path'] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
-    # assert cookies_2['sRefreshToken']['path'] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
-    # assert cookies_2['sIdRefreshToken']['path'] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
-    # assert cookies_2['sAccessToken']['httponly']
-    # assert cookies_2['sRefreshToken']['httponly']
-    # assert cookies_2['sIdRefreshToken']['httponly']
-    # assert cookies_2['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    # assert cookies_2['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    # assert cookies_2['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    # assert cookies_2['sAccessToken']['secure'] is None
-    # assert cookies_2['sRefreshToken']['secure'] is None
-    # assert cookies_2['sIdRefreshToken']['secure'] is None
-    # assert verify_within_5_second_diff(
-    #     get_unix_timestamp(cookies_2['sAccessToken']['expires']) - int(time()),
-    #     TEST_ACCESS_TOKEN_MAX_AGE_VALUE
-    # )
-    # assert verify_within_5_second_diff(
-    #     get_unix_timestamp(cookies_2['sRefreshToken']['expires']) - int(time()),
-    #     TEST_REFRESH_TOKEN_MAX_AGE_VALUE * 60
-    # )
-    # assert cookies_2['sIdRefreshToken']['value'] + \
-    #     ';' == response_2.headers['Id-Refresh-Token'][:-13]
-    # assert verify_within_5_second_diff(
-    #     int(response_2.headers['Id-Refresh-Token'][-13:-3]),
-    #     get_unix_timestamp(cookies_2['sIdRefreshToken']['expires'])
-    # )
-    # assert response_2.headers[ACCESS_CONTROL_EXPOSE_HEADER] == ACCESS_CONTROL_EXPOSE_HEADER_ANTI_CSRF_ENABLE
-    #
-    # response_3 = driver_config_client.post(
-    #     url='/info',
-    #     headers={
-    #         'anti-csrf': response_1.headers.get('anti-csrf')
-    #     },
-    #     cookies={
-    #         'sRefreshToken': cookies_1['sRefreshToken']['value'],
-    #         'sIdRefreshToken': cookies_1['sIdRefreshToken']['value'],
-    #         'sAccessToken': cookies_1['sAccessToken']['value'],
-    #     }
-    # )
-    #
-    # response_4 = driver_config_client.post(
-    #     url='/logout',
-    #     headers={
-    #         'anti-csrf': response_1.headers.get('anti-csrf')
-    #     },
-    #     cookies={
-    #         'sAccessToken': cookies_1['sAccessToken']['value'],
-    #         'sIdRefreshToken': cookies_1['sIdRefreshToken']['value']
-    #     }
-    # )
-    # cookies_4 = extract_all_cookies(response_4)
-    # assert response_4.headers.get('anti-csrf') is None
-    # assert cookies_4['sAccessToken']['value'] == ''
-    # assert cookies_4['sRefreshToken']['value'] == ''
-    # assert cookies_4['sIdRefreshToken']['value'] == ''
-    # assert cookies_4['sAccessToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    # assert cookies_4['sRefreshToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    # assert cookies_4['sIdRefreshToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    # assert cookies_4['sAccessToken']['path'] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
-    # assert cookies_4['sRefreshToken']['path'] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
-    # assert cookies_4['sIdRefreshToken']['path'] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
-    # assert cookies_4['sAccessToken']['httponly']
-    # assert cookies_4['sRefreshToken']['httponly']
-    # assert cookies_4['sIdRefreshToken']['httponly']
-    # assert cookies_4['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    # assert cookies_4['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    # assert cookies_4['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    # assert cookies_4['sAccessToken']['secure'] is None
-    # assert cookies_4['sRefreshToken']['secure'] is None
-    # assert cookies_4['sIdRefreshToken']['secure'] is None
-    # assert verify_within_5_second_diff(
-    #     get_unix_timestamp(cookies_4['sAccessToken']['expires']), 0
-    # )
-    # assert verify_within_5_second_diff(
-    #     get_unix_timestamp(cookies_4['sRefreshToken']['expires']), 0
-    # )
-    # assert verify_within_5_second_diff(
-    #     get_unix_timestamp(cookies_4['sIdRefreshToken']['expires']), 0
-    # )
-    # assert response_4.headers['Id-Refresh-Token'] == 'remove'
-    #
-    # response_3 = driver_config_client.get(
-    #     url='/custom/info',
-    #     headers={
-    #         'anti-csrf': response_2.headers.get('anti-csrf')
-    #     },
-    #     cookies={
-    #         'sAccessToken': cookies_2['sAccessToken']['value'],
-    #         'sIdRefreshToken': cookies_2['sIdRefreshToken']['value']
-    #     }
-    # )
-    # assert response_3.status_code == 200
-    # cookies_3 = extract_all_cookies(response_3)
-    # assert cookies_3['sAccessToken']['value'] != cookies_2['sAccessToken']['value']
-    # assert response_3.headers.get('anti-csrf') is None
-    # assert cookies_3.get('sRefreshToken') is None
-    # assert cookies_3.get('sIdRefreshToken') is None
-    # assert cookies_3['sAccessToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    # assert cookies_3['sAccessToken']['path'] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
-    # assert cookies_3['sAccessToken']['httponly']
-    # assert cookies_3['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    # assert cookies_3['sAccessToken']['secure'] is None
+    response_4 = driver_config_client.post(
+        url='/logout',
+        headers={
+            'anti-csrf': response_1.headers.get('anti-csrf')
+        },
+        cookies={
+            'sAccessToken': cookies_1['sAccessToken']['value'],
+            'sIdRefreshToken': cookies_1['sIdRefreshToken']['value']
+        }
+    )
+    cookies_4 = extract_all_cookies(response_4)
+    assert response_4.headers.get('anti-csrf') is None
+    assert cookies_4['sAccessToken']['value'] == ''
+    assert cookies_4['sRefreshToken']['value'] == ''
+    assert cookies_4['sIdRefreshToken']['value'] == ''
+    assert cookies_4['sAccessToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
+    assert cookies_4['sRefreshToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
+    assert cookies_4['sIdRefreshToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
+    assert cookies_4['sAccessToken']['path'] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
+    assert cookies_4['sAccessToken']['httponly']
+    assert cookies_4['sRefreshToken']['httponly']
+    assert cookies_4['sIdRefreshToken']['httponly']
+    assert cookies_4['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_4['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_4['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_4['sAccessToken']['secure'] is None
+    assert cookies_4['sRefreshToken']['secure'] is None
+    assert cookies_4['sIdRefreshToken']['secure'] is None
 
 
 def test_cookie_and_header_values_with_driver_config_and_csrf_disabled(driver_config_client: TestClient):
@@ -558,9 +465,10 @@ def test_cookie_and_header_values_with_driver_config_and_csrf_disabled(driver_co
     #assert response_1.headers[ACCESS_CONTROL_EXPOSE_HEADER] == ACCESS_CONTROL_EXPOSE_HEADER_ANTI_CSRF_DISABLE
 
     response_2 = driver_config_client.post(
-        url='/custom/refresh',
+        url='/refresh',
         cookies={
-            'sRefreshToken': cookies_1['sRefreshToken']['value']
+            'sRefreshToken': cookies_1['sRefreshToken']['value'],
+            'sIdRefreshToken': cookies_1['sIdRefreshToken']['value'],
         }
     )
     cookies_2 = extract_all_cookies(response_2)

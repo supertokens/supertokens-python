@@ -6,7 +6,7 @@ from supertokens_python import Supertokens
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.session import Session
 from supertokens_python.supertokens import manage_cookies_post_response
-
+from starlette.responses import JSONResponse
 
 class Middleware(BaseHTTPMiddleware):
     def __init__(self, app):
@@ -27,7 +27,9 @@ class Middleware(BaseHTTPMiddleware):
             print(request.state)
             return result.response
         except SuperTokensError as e:
-            await st.handle_supertokens_error(FastApiRequest(request), e)
+            response = FastApiResponse(JSONResponse())
+            result = await st.handle_supertokens_error(FastApiRequest(request), e, response)
+            return result.response
 
 
 

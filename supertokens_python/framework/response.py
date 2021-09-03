@@ -34,3 +34,7 @@ class BaseResponse(ABC):
     @abstractmethod
     def set_status_code(self, status_code):
         pass
+
+    @abstractmethod
+    def set_content(self, content):
+        pass

@@ -20,4 +20,8 @@ class FastApiResponse(BaseResponse):
         return self.response.headers.get(key, None)
 
     def set_status_code(self, status_code):
-        pass
+        self.response.status_code = status_code
+
+    def set_content(self, content):
+        self.response.content = content
+

@@ -21,3 +21,9 @@ class DjangoResponse(BaseResponse):
 
     def get_header(self, key):
         return self.response.headers.get(key, None)
+
+    def set_content(self, content):
+        self.response.content = content
+
+
+

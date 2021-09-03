@@ -21,10 +21,10 @@ from re import fullmatch
 from typing import Union, List, Callable, TYPE_CHECKING
 
 from supertokens_python.framework.index import FRAMEWORKS
+from supertokens_python.framework.request import BaseRequest
+from supertokens_python.framework.response import BaseResponse
 
 if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-    from supertokens_python.framework.response import BaseResponse
     from .recipe_module import RecipeModule
 from .constants import RID_KEY_HEADER
 from .exceptions import raise_general_exception, raise_bad_input_exception
@@ -114,16 +114,15 @@ def is_5xx_error(status_code: int) -> bool:
     return status_code // 100 == 5
 
 
-def send_non_200_response(recipe: Union[RecipeModule, None], message: str, status_code: int) -> Union[
+def send_non_200_response(recipe: Union[RecipeModule, None], message: str, status_code: int, response : BaseResponse) -> Union[
     BaseResponse, None]:
     if status_code < 300:
         raise_general_exception(recipe, 'Calling sendNon200Response with status code < 300')
-    return BaseResponse(
-        status_code=status_code,
-        content={
+    response.set_status_code(status_code)
+    response.set_content(content={
             ERROR_MESSAGE_KEY: message
-        }
-    )
+        })
+    return response
 
 
 def get_timestamp_ms() -> int:
