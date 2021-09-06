@@ -16,36 +16,32 @@ def middleware(get_response):
 
     if asyncio.iscoroutinefunction(get_response):
         async def __middleware(request):
-            try:
-                custom_request = DjangoRequest(request)
-                result = await st.middleware(custom_request)
+            custom_request = DjangoRequest(request)
+            result = await st.middleware(custom_request)
 
-                if result is None:
-                    result = await get_response(request)
-                if hasattr(request, "state") and isinstance(request.state, Session):
-                    manage_cookies_post_response(request.state, result)
+            if result is None:
+                result = await get_response(request)
+            if hasattr(request, "state") and isinstance(request.state, Session):
+                manage_cookies_post_response(request.state, result)
 
-                return result.response
-            except SuperTokensError as e:
-                response = DjangoResponse(Response())
-                result = await st.handle_supertokens_error(DjangoRequest(request), e, response)
-                return result.response
+            return result.response
+
 
     else:
         def __middleware(request):
-            try:
-                custom_request = DjangoRequest(request)
-                result = async_to_sync(st.middleware)(custom_request)
 
-                if result is None:
-                    result = get_response(request)
-                    result = DjangoResponse(result)
+            custom_request = DjangoRequest(request)
+            result = async_to_sync(st.middleware)(custom_request)
 
-                if hasattr(request.state, "supertokens") and isinstance(request.state.supertokens, Session):
-                    manage_cookies_post_response(request.state.supertokens, result)
+            if result is None:
+                result = get_response(request)
+                result = DjangoResponse(result)
 
-                return result.response
-            except SuperTokensError as e:
-                async_to_sync(st.handle_supertokens_error(DjangoRequest(request), e))
+            if hasattr(request.state, "supertokens") and isinstance(request.state.supertokens, Session):
+                manage_cookies_post_response(request.state.supertokens, result)
+
+            return result.response
+
+
 
     return __middleware
