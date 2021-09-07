@@ -111,11 +111,11 @@ class ErrorHandlers:
         clear_cookies(self.__recipe, response)
         return response
 
-    async def on_try_refresh_token(self, request: BaseRequest, message: str):
+    async def on_try_refresh_token(self, request: BaseRequest, message: str, response : BaseResponse):
         try:
-            response = await self.__on_try_refresh_token(request, message)
+            response = await self.__on_try_refresh_token(request, message, response)
         except TypeError:
-            response = self.__on_try_refresh_token(request, message)
+            response = self.__on_try_refresh_token(request, message, response)
         return response
 
     async def on_unauthorised(self, request: BaseRequest, message: str, response : BaseResponse):

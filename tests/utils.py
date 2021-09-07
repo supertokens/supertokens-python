@@ -164,11 +164,8 @@ def __get_list_of_process_ids():
 
 def reset():
     __stop_st()
-    # HandshakeInfo.reset()
-    # DeviceInfo.reset()
-    # Querier.reset()
-    # ProcessState.get_instance().reset()
-    # CookieConfig.reset()
+    Querier.reset()
+    ProcessState.get_instance().reset()
 
 
 def get_cookie_from_response(response, cookie_name):
