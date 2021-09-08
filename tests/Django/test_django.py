@@ -8,6 +8,7 @@ from tests.utils import start_st, reset, clean_st, setup_st, TEST_DRIVER_CONFIG_
     TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH, TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH, TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 import json
 
+
 def get_cookies(response) -> dict:
     cookies = dict()
     for key, morsel in response.cookies.items():
