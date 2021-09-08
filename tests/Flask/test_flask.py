@@ -21,70 +21,6 @@ def teardown_function(f):
     clean_st()
 
 
-# @fixture(scope='function')
-# def app():
-#     app = Flask(__name__)
-#     supertokens = Supertokens(app)
-#     init({
-#         'supertokens': {
-#             'connection_uri': "http://localhost:3567",
-#         },
-#         'framework' : 'Flask',
-#         'app_info': {
-#             'app_name': "SuperTokens Demo",
-#             'api_domain': "api.supertokens.io",
-#             'website_domain': "supertokens.io",
-#             'api_base_path': "/auth"
-#         },
-#         'recipe_list': [session.init(
-#             {
-#                 'anti_csrf': 'VIA_TOKEN',
-#                 'cookie_domain': 'supertokens.io'
-#             }
-#         )],
-#     })
-#
-#     def ff(e):
-#         return jsonify({'error_msg': 'try refresh token'}), 401
-#
-#     supertokens.set_try_refresh_token_error_handler(ff)
-#
-#     @app.route('/login')
-#     def login():
-#         user_id = 'userId'
-#         response = make_response(jsonify({'userId': user_id}), 200)
-#         create_new_session(response, user_id, {}, {})
-#         return response
-#
-#     @app.route('/refresh', methods=['POST'])
-#     def refresh():
-#         response = make_response(jsonify({}))
-#         refresh_session(response)
-#         return response
-#
-#     @app.route('/info', methods=['GET', 'OPTIONS'])
-#     def info():
-#         if request.method == 'OPTIONS':
-#             return jsonify({'method': 'option'})
-#         response = make_response(jsonify({}))
-#         get_session(response, True)
-#         return response
-#
-#     @app.route('/handle', methods=['GET', 'OPTIONS'])
-#     def handle_api():
-#         if request.method == 'OPTIONS':
-#             return jsonify({'method': 'option'})
-#         session = get_session(None, False)
-#         return jsonify({'s': session.get_handle()})
-#
-#     @app.route('/logout', methods=['POST'])
-#     def logout():
-#         response = make_response(jsonify({}))
-#         supertokens_session = get_session(response, True)
-#         supertokens_session.revoke_session()
-#         return response
-#
-#     return app
 from tests.utils import set_key_value_in_config, TEST_COOKIE_SAME_SITE_CONFIG_KEY, TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, \
     TEST_ACCESS_TOKEN_MAX_AGE_VALUE, TEST_ACCESS_TOKEN_PATH_CONFIG_KEY, TEST_ACCESS_TOKEN_PATH_VALUE, \
     TEST_COOKIE_DOMAIN_CONFIG_KEY, TEST_COOKIE_DOMAIN_VALUE, TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY, \
@@ -143,20 +79,20 @@ def driver_config_app():
         refresh_session(request)
         return response
 
-    @app.route('/custom/info', methods=['GET', 'OPTIONS'])
+    @app.route('/info', methods=['GET', 'OPTIONS'])
     def custom_info():
         if request.method == 'OPTIONS':
             return jsonify({'method': 'option'})
         response = make_response(jsonify({}))
-        get_session(response, True)
+        get_session(request, True)
         return response
 
-    @app.route('/custom/handle', methods=['GET', 'OPTIONS'])
+    @app.route('/handle', methods=['GET', 'OPTIONS'])
     def custom_handle_api():
         if request.method == 'OPTIONS':
             return jsonify({'method': 'option'})
-        session = get_session(None, False)
-        return jsonify({'s': session.get_handle()})
+        session = get_session(request, True)
+        return jsonify({'s': session['user_id']})
 
     @app.route('/logout', methods=['POST'])
     def custom_logout():
@@ -355,3 +291,44 @@ def test_login_logout(driver_config_app):
 
     assert response_3.status_code == 200
 
+
+
+def test_login_handle(driver_config_app):
+    start_st()
+
+    set_key_value_in_config(
+        TEST_COOKIE_SAME_SITE_CONFIG_KEY,
+        'None')
+    set_key_value_in_config(
+        TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
+        TEST_ACCESS_TOKEN_MAX_AGE_VALUE)
+    set_key_value_in_config(
+        TEST_ACCESS_TOKEN_PATH_CONFIG_KEY,
+        TEST_ACCESS_TOKEN_PATH_VALUE)
+    set_key_value_in_config(
+        TEST_COOKIE_DOMAIN_CONFIG_KEY,
+        TEST_COOKIE_DOMAIN_VALUE)
+    set_key_value_in_config(
+        TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY,
+        TEST_REFRESH_TOKEN_MAX_AGE_VALUE)
+    set_key_value_in_config(
+        TEST_REFRESH_TOKEN_PATH_CONFIG_KEY,
+        TEST_REFRESH_TOKEN_PATH_KEY_VALUE)
+    set_key_value_in_config(
+        TEST_COOKIE_SECURE_CONFIG_KEY,
+        False)
+
+    response_1 = driver_config_app.test_client().get('/login')
+    cookies_1 = extract_all_cookies(response_1)
+    test_client = driver_config_app.test_client()
+    test_client.set_cookie('localhost', 'sAccessToken', cookies_1['sAccessToken']['value'])
+    test_client.set_cookie('localhost', 'sIdRefreshToken', cookies_1['sIdRefreshToken']['value'])
+
+    response_2 = test_client.get('/handle',
+                                  headers={
+                                      'anti-csrf': response_1.headers.get('anti-csrf')
+                                  }
+                                  )
+
+    response_dict = json.loads(response_2.data)
+    assert "s" in response_dict

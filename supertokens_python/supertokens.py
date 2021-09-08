@@ -142,8 +142,6 @@ class Supertokens:
             if len(stringified_apis_handled) != len(set(stringified_apis_handled)):
                 raise_general_exception(recipe, 'Duplicate APIs exposed from recipe. Please combine them into one API')
 
-        # self.__set_error_handler(app)
-        # app.add_middleware(Supertokens.__Middleware)
         telemetry = ('SUPERTOKENS_ENV' not in environ) or (environ['SUPERTOKENS_ENV'] != 'testing')
         if 'telemetry' in config:
             telemetry = config['telemetry']

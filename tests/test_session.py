@@ -16,29 +16,17 @@ under the License.
 
 import respx
 from fastapi import FastAPI
+from pytest import mark
 
-
-from supertokens_python import init, thirdpartyemailpassword, session, Supertokens
+from supertokens_python import init, session
 from supertokens_python.process_state import ProcessState, AllowedProcessStates
 from supertokens_python.session import SessionRecipe, revoke_session, get_all_session_handles_for_user, \
     revoke_all_sessions_for_user
 from supertokens_python.session.session_functions import create_new_session, refresh_session, get_session, \
     update_session_data, get_session_data, update_jwt_payload, get_jwt_payload
 from .utils import (
-    reset, setup_st, clean_st, start_st, set_key_value_in_config,
-    TEST_ENABLE_ANTI_CSRF_CONFIG_KEY, drop_key
+    reset, setup_st, clean_st, start_st
 )
-from supertokens_python.utils import find_max_version
-
-from jsonschema import validate
-from .schema import (
-    session_with_anti_csrf,
-    session_verify_with_access_token,
-    session_verify_without_access_token
-)
-from pytest import mark
-from supertokens_python.querier import Querier
-from os import environ
 
 
 def request_mock():

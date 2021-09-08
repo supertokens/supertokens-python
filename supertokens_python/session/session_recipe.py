@@ -85,11 +85,9 @@ class SessionRecipe(RecipeModule):
             except Exception:
                 pass
 
-        if app_info.framework == 'Flask':
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(call_get_handshake_info())
-        else:
-            asyncio.create_task(call_get_handshake_info())
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(call_get_handshake_info())
+
 
     def is_error_from_this_or_child_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and err.recipe == self
