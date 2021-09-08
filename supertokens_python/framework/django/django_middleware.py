@@ -21,6 +21,7 @@ def middleware(get_response):
 
             if result is None:
                 result = await get_response(request)
+                result = DjangoResponse(result)
             if hasattr(request, "state") and isinstance(request.state, Session):
                 manage_cookies_post_response(request.state, result)
 

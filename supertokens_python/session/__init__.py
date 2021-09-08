@@ -27,15 +27,6 @@ def init(config=None):
     return SessionRecipe.init(config)
 
 
-def sync_create_new_session(request, user_id: str, jwt_payload: Union[dict, None] = None,
-                            session_data: Union[dict, None] = None):
-
-    loop = asyncio.get_event_loop()
-    asyncio.set_event_loop(loop)
-    result = loop.run_until_complete(create_new_session(request, user_id, jwt_payload, session_data))
-    return result
-
-
 async def create_new_session(request, user_id: str, jwt_payload: Union[dict, None] = None,
                              session_data: Union[dict, None] = None) -> Session:
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:

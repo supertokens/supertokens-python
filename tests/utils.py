@@ -164,7 +164,6 @@ def __get_list_of_process_ids():
 
 def reset():
     __stop_st()
-    Querier.reset()
     ProcessState.get_instance().reset()
 
 
