@@ -6,7 +6,7 @@ from supertokens_python import session, init
 from supertokens_python.session import create_new_session, refresh_session, get_session
 from tests.utils import start_st, reset, clean_st, setup_st, TEST_DRIVER_CONFIG_COOKIE_DOMAIN, \
     TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH, TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH, TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-
+import json
 
 def get_cookies(response) -> dict:
     cookies = dict()
@@ -153,7 +153,10 @@ class SupertokensTest(TestCase):
         request.META['HTTP_ANTI_CSRF'] = response.headers['anti-csrf']
         response = await my_middleware(request)
         logout_cookies = get_cookies(response)
-        assert logout_cookies == {}
+        assert response.headers.get('anti-csrf') is None
+        assert logout_cookies['sAccessToken']['value'] == ''
+        assert logout_cookies['sRefreshToken']['value'] == ''
+        assert logout_cookies['sIdRefreshToken']['value'] == ''
 
     async def test_login_handle(self):
         init({
@@ -193,7 +196,9 @@ class SupertokensTest(TestCase):
         request.COOKIES["sIdRefreshToken"] = cookies['sIdRefreshToken']['value']
         request.META['HTTP_ANTI_CSRF'] = response.headers['anti-csrf']
         response = await my_middleware(request)
+        assert "s" in json.loads(response.content)
         handle_cookies = get_cookies(response)
+
         assert handle_cookies == {}
 
 
