@@ -23,7 +23,9 @@ class DjangoRequest(BaseRequest):
         return self.request.COOKIES.get(key)
 
     def get_header(self, key: str) -> Any:
-        return self.request.headers.get(key)
+        key = key.replace('-', '_')
+        key = 'HTTP_' + key
+        return self.request.META.get(key.upper())
 
     def url(self):
         return self.request.get_full_path()

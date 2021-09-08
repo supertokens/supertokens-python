@@ -76,6 +76,7 @@ def get_header(request: BaseRequest, key: str) -> Union[str, None]:
     return request.get_header(key)
 
 
+
 def find_max_version(versions_1: List[str], versions_2: List[str]) -> Union[str, None]:
     versions = list(set(versions_1) & set(versions_2))
     if len(versions) == 0:
