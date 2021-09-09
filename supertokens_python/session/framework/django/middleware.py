@@ -13,20 +13,15 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-from __future__ import annotations
-from typing import Union, TYPE_CHECKING
+from ctypes import Union
 
-from supertokens_python.utils import normalise_http_method, FRAMEWORKS
-
-if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-    from .session_class import Session
-    from .session_recipe import SessionRecipe
+from supertokens_python.framework.request import BaseRequest
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.session import SessionRecipe, Session
+from supertokens_python.utils import FRAMEWORKS, normalise_http_method
 
 
 def verify_session(recipe: SessionRecipe, anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
-
     async def func(request: BaseRequest) -> Union[Session, None]:
         if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
             request = FRAMEWORKS[recipe.app_info.framework].wrap_request(request)

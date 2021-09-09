@@ -19,7 +19,7 @@ extras_require = {
         'respx==0.16.3',
         'nest-asyncio==1.5.1',
         'Fastapi>=0.60',
-        'Django',
+        'django',
         'Flask==1.1.4'
     ])
 }

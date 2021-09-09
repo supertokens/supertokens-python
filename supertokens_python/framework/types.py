@@ -21,7 +21,7 @@ from typing import Union
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 
-frameworks = ["Fastapi", "Flask", "Django"]
+frameworks = ["Fastapi", "Flask", "django"]
 
 
 class FrameworkEnum(Enum):

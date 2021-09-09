@@ -17,10 +17,7 @@ under the License.
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 
-
-
 class Middleware(BaseHTTPMiddleware):
-
 
     def __init__(self, app):
         super().__init__(app)

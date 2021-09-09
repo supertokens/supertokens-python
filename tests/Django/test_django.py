@@ -84,7 +84,7 @@ class SupertokensTest(TestCase):
             'supertokens': {
                 'connection_uri': "http://localhost:3567",
             },
-            'framework': 'Django',
+            'framework': 'django',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "api.supertokens.io",
@@ -137,7 +137,7 @@ class SupertokensTest(TestCase):
             'supertokens': {
                 'connection_uri': "http://localhost:3567",
             },
-            'framework': 'Django',
+            'framework': 'django',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "api.supertokens.io",
@@ -181,7 +181,7 @@ class SupertokensTest(TestCase):
             'supertokens': {
                 'connection_uri': "http://localhost:3567",
             },
-            'framework': 'Django',
+            'framework': 'django',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "api.supertokens.io",
@@ -224,7 +224,7 @@ class SupertokensTest(TestCase):
             'supertokens': {
                 'connection_uri': "http://localhost:3567",
             },
-            'framework': 'Django',
+            'framework': 'django',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "api.supertokens.io",

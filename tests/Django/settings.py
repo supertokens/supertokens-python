@@ -33,6 +33,6 @@ DATABASES = {
 }
 
 MIDDLEWARE = [
-    'supertokens-Fastapi.core.framework.Django.django_middleware.middleware',
+    'supertokens-Fastapi.core.framework.django.django_middleware.middleware',
 ]
 
