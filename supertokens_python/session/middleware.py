@@ -16,8 +16,8 @@ under the License.
 from __future__ import annotations
 from typing import Union, TYPE_CHECKING
 
-from supertokens_python.framework.index import FRAMEWORKS
 from supertokens_python.utils import normalise_http_method
+from ..framework import FRAMEWORKS
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest

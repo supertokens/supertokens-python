@@ -53,9 +53,9 @@ setup(
         "pycryptodome==3.10.*",
         'jsonschema==3.2.0',
         "tldextract==3.1.0",
-        "starlette==0.13.*",
-        "asgiref==3.4.1"
+        "asgiref==3.4.1",
+        "werkzeug==2.0.1"
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     extras_require=extras_require
 )

@@ -20,9 +20,9 @@ from jsonschema import validate
 from re import fullmatch
 from typing import Union, List, Callable, TYPE_CHECKING
 
-from supertokens_python.framework.index import FRAMEWORKS
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
+from .framework import FRAMEWORKS
 
 if TYPE_CHECKING:
     from .recipe_module import RecipeModule
