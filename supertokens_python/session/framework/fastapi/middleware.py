@@ -13,7 +13,7 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-from ctypes import Union
+from typing import Union
 
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -34,6 +34,7 @@ def verify_session(recipe: SessionRecipe, anti_csrf_check: Union[bool, None] = N
             session = await recipe.refresh_session(request)
         else:
             session = await recipe.get_session(request, anti_csrf_check, session_required)
+
         request.set_session(session)
 
         return request.get_session()

@@ -21,6 +21,7 @@ from flask import Flask, jsonify, make_response, request
 
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python import init, session
+from supertokens_python.session.framework.flask import verify_session
 from supertokens_python.session.sync import create_new_session, refresh_session, get_session, revoke_session
 from supertokens_python.framework.flask import Middleware, error_handler
 
@@ -91,6 +92,7 @@ def driver_config_app():
         return response
 
     @app.route('/refresh', methods=['POST'])
+    @verify_session
     def custom_refresh():
         response = make_response(jsonify({}))
         refresh_session(request)

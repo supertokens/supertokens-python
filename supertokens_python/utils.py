@@ -38,7 +38,7 @@ from supertokens_python.framework.flask.framework import FlaskFramework
 FRAMEWORKS={
     'Fastapi' : FastapiFramework(),
     'Flask' : FlaskFramework(),
-    'django' : DjangoFramework(),
+    'Django' : DjangoFramework(),
 }
 
 def validate_framework(config):

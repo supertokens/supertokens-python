@@ -18,18 +18,18 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
+from supertokens_python.session.middleware import verify_session
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.emailverification.recipe import EmailVerificationRecipe
 from supertokens_python.exceptions import raise_general_exception
-from supertokens_python.session import verify_session
 from supertokens_python.emailverification.types import User
 
 
 async def handle_generate_email_verify_token_api(recipe: EmailVerificationRecipe, request: BaseRequest, response: BaseResponse):
-    session = await verify_session()(request)
+    session = await verify_session(request)
     if session is None:
         raise_general_exception(recipe, 'Session is undefined. Should not come here.')
 

@@ -31,7 +31,7 @@ class Middleware:
         from supertokens_python import Supertokens
         from supertokens_python.supertokens import manage_cookies_post_response
         from flask import Response
-
+        from flask import g
 
         st = Supertokens.get_instance()
         request = FlaskRequest(environ)
@@ -43,8 +43,8 @@ class Middleware:
 
         response = FlaskResponse()
 
-        if 'additional_storage' in environ:
-            manage_cookies_post_response(environ['additional_storage'], response)
+        if hasattr(g, "session"):
+            manage_cookies_post_response(g.session, response)
 
         def injecting_start_response(status, headers, exc_info=None):
             headers = response.get_headers()

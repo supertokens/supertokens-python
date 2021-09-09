@@ -17,7 +17,6 @@ from typing import Union, List
 
 from .session_class import Session
 from .session_recipe import SessionRecipe
-from .middleware import verify_session as original_verify_session
 from . import exceptions
 from ..utils import FRAMEWORKS
 
@@ -77,6 +76,3 @@ async def get_jwt_payload(session_handle: str) -> dict:
 async def update_jwt_payload(session_handle: str, new_jwt_payload: dict) -> None:
     return await SessionRecipe.get_instance().update_jwt_payload(session_handle, new_jwt_payload)
 
-
-def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
-    return original_verify_session(SessionRecipe.get_instance(), anti_csrf_check, session_required)

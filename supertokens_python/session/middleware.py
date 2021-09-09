@@ -13,34 +13,22 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-from __future__ import annotations
-from typing import Union, TYPE_CHECKING
+from typing import Union
 
-from supertokens_python.utils import normalise_http_method, FRAMEWORKS
-
-if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-    from .session_class import Session
-    from .session_recipe import SessionRecipe
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.session import SessionRecipe
+from supertokens_python.utils import FRAMEWORKS, normalise_http_method
 
 
-def verify_session(recipe: SessionRecipe, anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
-
-    async def func(request: BaseRequest) -> Union[Session, None]:
-        if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
-            request = FRAMEWORKS[recipe.app_info.framework].wrap_request(request)
-        method = normalise_http_method(request.method)
-        if method == 'options' or method == 'trace':
-            return None
-        incoming_path = NormalisedURLPath(recipe, request.url.path)
-        refresh_token_path = recipe.config.refresh_token_path
-        if incoming_path.equals(refresh_token_path) and method == 'post':
-            session = await recipe.refresh_session(request)
-        else:
-            session = await recipe.get_session(request, anti_csrf_check, session_required)
-        request.set_session(session)
-
-        return request.get_session()
-
-    return func
+async def verify_session(request , anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
+    method = normalise_http_method(request.method)
+    if method == 'options' or method == 'trace':
+        return None
+    incoming_path = NormalisedURLPath(SessionRecipe.get_instance(), request.url.path)
+    refresh_token_path = SessionRecipe.get_instance().config.refresh_token_path
+    if incoming_path.equals(refresh_token_path) and method == 'post':
+        session = await SessionRecipe.get_instance().refresh_session(request)
+    else:
+        session = await SessionRecipe.get_instance().get_session(request, anti_csrf_check, session_required)
+    request.set_session(session)
+    return request.get_session()
