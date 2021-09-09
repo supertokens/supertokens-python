@@ -13,20 +13,18 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-import asyncio
 import json
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.requests import Request
-from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 from pytest import fixture
 from pytest import mark
 
 from supertokens_python import init, session
-from supertokens_python.framework.fastapi.fastapi_middleware import Middleware
-from supertokens_python.session import create_new_session, refresh_session, get_session, revoke_session, Session, \
-    verify_session
+from supertokens_python.framework.fastapi import Middleware
+
+from supertokens_python.session import create_new_session, refresh_session, get_session
 from tests.utils import (
     reset, setup_st, clean_st, start_st, extract_all_cookies,
     TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH,
@@ -34,7 +32,6 @@ from tests.utils import (
     TEST_DRIVER_CONFIG_COOKIE_SAME_SITE,
     TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
 )
-
 
 
 def setup_function(f):

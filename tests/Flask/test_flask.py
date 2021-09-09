@@ -20,9 +20,10 @@ from _pytest.fixtures import fixture
 from flask import Flask, jsonify, make_response, request
 
 from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.flask.flask_middleware import Middleware, error_handler
 from supertokens_python import init, session
 from supertokens_python.session.sync import create_new_session, refresh_session, get_session, revoke_session
+from supertokens_python.framework.flask import Middleware, error_handler
+
 from tests.Flask.utils import extract_all_cookies
 
 

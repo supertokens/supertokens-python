@@ -20,9 +20,9 @@ from django.http import JsonResponse
 from django.test import TestCase, RequestFactory
 
 from supertokens_python import session, init
-from supertokens_python.framework.django.django_middleware import middleware
 from supertokens_python.session import create_new_session, refresh_session, get_session
 from tests.utils import start_st, reset, clean_st, setup_st
+from supertokens_python.framework.django import middleware
 
 
 def get_cookies(response) -> dict:
