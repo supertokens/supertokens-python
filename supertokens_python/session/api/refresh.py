@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from supertokens_python.session.session_recipe import SessionRecipe
 
 
-async def handle_refresh_api(recipe: SessionRecipe, request: BaseRequest):
+async def handle_refresh_api(recipe: SessionRecipe, request: BaseRequest, response: BaseResponse):
     await recipe.refresh_session(request)
-    return BaseResponse(content={})
+    response.set_content({})
+    return response

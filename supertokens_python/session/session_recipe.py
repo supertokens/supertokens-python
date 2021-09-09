@@ -102,11 +102,11 @@ class SessionRecipe(RecipeModule):
                        self.config.sign_out_feature.disable_default_implementation)
         ]
 
-    async def handle_api_request(self, request_id: str, request: BaseRequest, _: NormalisedURLPath, __: str):
+    async def handle_api_request(self, request_id: str, request: BaseRequest, _: NormalisedURLPath, __: str, response: BaseResponse):
         if request_id == SESSION_REFRESH:
-            return await handle_refresh_api(self, request)
+            return await handle_refresh_api(self, request, response)
         else:
-            return await handle_signout_api(self, request)
+            return await handle_signout_api(self, request, response)
 
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response : BaseResponse):
         if isinstance(error, UnauthorisedError):

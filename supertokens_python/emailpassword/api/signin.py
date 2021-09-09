@@ -28,7 +28,7 @@ from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.session import create_new_session
 
 
-async def handle_sign_in_api(recipe: EmailPasswordRecipe, request: BaseRequest):
+async def handle_sign_in_api(recipe: EmailPasswordRecipe, request: BaseRequest, response: BaseResponse):
     body = await request.json()
     form_fields_raw = body['formFields'] if 'formFields' in body else []
     form_fields = await validate_form_fields_or_throw_error(recipe,
@@ -56,7 +56,7 @@ async def handle_sign_in_api(recipe: EmailPasswordRecipe, request: BaseRequest):
 
     await create_new_session(request, user.user_id, jwt_payload, session_data)
 
-    return BaseResponse(content={
+    response.set_content({
         'status': 'OK',
         'user': {
             'id': user.user_id,
@@ -64,3 +64,5 @@ async def handle_sign_in_api(recipe: EmailPasswordRecipe, request: BaseRequest):
             'timeJoined': user.time_joined
         }
     })
+
+    return response

@@ -204,7 +204,7 @@ class Supertokens:
 
         return list(headers_set)
 
-    async def middleware(self, request: BaseRequest) -> Union[BaseResponse, None]:
+    async def middleware(self, request: BaseRequest, response: BaseResponse) -> Union[BaseResponse, None]:
         path = Supertokens.get_instance().app_info.api_gateway_path.append(None,
                                                                            NormalisedURLPath(None,
                                                                                              request.get_path()))
@@ -230,7 +230,7 @@ class Supertokens:
                         matched_recipe = recipe
                         break
             if request_id is not None and matched_recipe is not None:
-                response = await matched_recipe.handle_api_request(request_id, request, path, method)
+                response = await matched_recipe.handle_api_request(request_id, request, path, method, response)
             else:
                 return None
 

@@ -28,7 +28,7 @@ from supertokens_python.session import verify_session
 from supertokens_python.emailverification.types import User
 
 
-async def handle_generate_email_verify_token_api(recipe: EmailVerificationRecipe, request: BaseRequest):
+async def handle_generate_email_verify_token_api(recipe: EmailVerificationRecipe, request: BaseRequest, response: BaseResponse):
     session = await verify_session()(request)
     if session is None:
         raise_general_exception(recipe, 'Session is undefined. Should not come here.')
@@ -48,7 +48,7 @@ async def handle_generate_email_verify_token_api(recipe: EmailVerificationRecipe
             pass
 
     asyncio.create_task(send_email())
-
-    return BaseResponse(content={
+    response.set_content({
         'status': 'OK'
     })
+    return response

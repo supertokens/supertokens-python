@@ -26,7 +26,7 @@ from supertokens_python.exceptions import raise_bad_input_exception
 from urllib.parse import urlencode
 
 
-async def handle_authorisation_url_api(recipe: ThirdPartyRecipe, request: BaseRequest):
+async def handle_authorisation_url_api(recipe: ThirdPartyRecipe, request: BaseRequest, response: BaseResponse):
     third_party_id = request.get_query_param('thirdPartyId')
 
     if third_party_id is None:
@@ -48,7 +48,9 @@ async def handle_authorisation_url_api(recipe: ThirdPartyRecipe, request: BaseRe
 
     url = authorisation_url_info.url + '?' + query_string
 
-    return BaseResponse(content={
+    response.set_content({
         'status': 'OK',
         'url': url
     })
+
+    return response

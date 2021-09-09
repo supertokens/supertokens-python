@@ -82,23 +82,26 @@ class ThirdPartyRecipe(RecipeModule):
                        self.config.sign_in_and_up_feature.disable_default_implementation)
         ] + self.email_verification_recipe.get_apis_handled()
 
-    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str):
+    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse):
         if request_id == SIGNINUP:
-            return await handle_sign_in_up_api(self, request)
+            return await handle_sign_in_up_api(self, request, response)
         elif request_id == SIGNOUT:
-            return await handle_sign_out_api(self, request)
+            return await handle_sign_out_api(self, request, response)
         elif request_id == AUTHORISATIONURL:
-            return await handle_authorisation_url_api(self, request)
+            return await handle_authorisation_url_api(self, request, response)
         else:
-            return await self.email_verification_recipe.handle_api_request(request_id, request, path, method)
+            return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
-    async def handle_error(self, request: BaseRequest, error: SuperTokensError):
+    async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
         if isinstance(error, NoEmailGivenByProviderError):
-            return BaseResponse({
+            response.set_content({
                 'status': 'NO_EMAIL_GIVEN_BY_PROVIDER'
             })
+
+            return response
+
         else:
-            return self.email_verification_recipe.handle_error(request, error)
+            return self.email_verification_recipe.handle_error(request, error, response)
 
     def get_all_cors_headers(self) -> List[str]:
         return [] + self.email_verification_recipe.get_all_cors_headers()

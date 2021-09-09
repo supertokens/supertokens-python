@@ -62,7 +62,7 @@ class RecipeModule(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str):
+    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse):
         pass
 
     @abc.abstractmethod

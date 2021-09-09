@@ -96,8 +96,8 @@ class SupertokensTest(TestCase):
         assert len(cookies['sIdRefreshToken']['value']) > 0
         assert len(cookies['sRefreshToken']['value']) > 0
 
-        request.COOKIES["sRefreshToken"] = cookies['sRefreshToken']['value']
-        request.COOKIES["sIdRefreshToken"] = cookies['sIdRefreshToken']['value']
+        #request.COOKIES["sRefreshToken"] = cookies['sRefreshToken']['value']
+       # request.COOKIES["sIdRefreshToken"] = cookies['sIdRefreshToken']['value']
         request.META['HTTP_ANTI_CSRF'] = response.headers['anti-csrf']
         response = await my_middleware(request)
         print(response)

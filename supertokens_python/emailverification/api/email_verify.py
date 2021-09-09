@@ -28,7 +28,7 @@ from supertokens_python.session import verify_session
 from supertokens_python.utils import normalise_http_method
 
 
-async def handle_email_verify_api(recipe: EmailVerificationRecipe, request: BaseRequest):
+async def handle_email_verify_api(recipe: EmailVerificationRecipe, request: BaseRequest, response: BaseResponse):
     if normalise_http_method(request.method) == 'post':
         body = await request.json()
         if 'token' not in body:
@@ -46,10 +46,11 @@ async def handle_email_verify_api(recipe: EmailVerificationRecipe, request: Base
                 pass
 
         asyncio.create_task(send_email())
-
-        return BaseResponse(content={
+        response.set_content({
             'status': 'OK'
         })
+
+        return response
     else:
         session = await verify_session()(request)
         if session is None:
@@ -59,7 +60,10 @@ async def handle_email_verify_api(recipe: EmailVerificationRecipe, request: Base
         email = await recipe.config.get_email_for_user_id(user_id)
 
         is_verified = await recipe.is_email_verified(user_id, email)
-        return BaseResponse(content={
-                'status': 'OK',
-                'isVerified': is_verified
-            })
+        response.set_content({
+            'status': 'OK',
+            'isVerified': is_verified
+
+        })
+
+        return response

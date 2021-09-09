@@ -1,10 +1,7 @@
 import json
 
 from asgiref.sync import async_to_sync
-from werkzeug import Response
 
-from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework import request
 from supertokens_python.framework.flask.flask_request import FlaskRequest
 from supertokens_python.framework.flask.flask_response import FlaskResponse
 from supertokens_python import Supertokens
@@ -37,6 +34,8 @@ class Middleware:
 
 
 def error_handler(error):
+    from werkzeug import Response
+
     st = Supertokens.get_instance()
     response = Response(json.dumps({}),
                         mimetype='application/json',

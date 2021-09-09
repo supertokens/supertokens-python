@@ -65,17 +65,19 @@ class EmailVerificationRecipe(RecipeModule):
                        self.config.disable_default_implementation)
         ]
 
-    async def handle_api_request(self, request_id: str, request: BaseRequest, _: NormalisedURLPath, __: str):
+    async def handle_api_request(self, request_id: str, request: BaseRequest, _: NormalisedURLPath, __: str, response: BaseResponse):
         if request_id == USER_EMAIL_VERIFY_TOKEN:
-            return await handle_generate_email_verify_token_api(self, request)
+            return await handle_generate_email_verify_token_api(self, request, response)
         else:
-            return await handle_email_verify_api(self, request)
+            return await handle_email_verify_api(self, request, response)
 
-    async def handle_error(self, request: BaseRequest, error: SuperTokensError):
+    async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
         if isinstance(error, EmailVerificationInvalidTokenError):
-            return BaseResponse(content={'status': 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'})
+            response.set_content({'status': 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'})
+            return response
         else:
-            return BaseResponse(content={'status': 'EMAIL_ALREADY_VERIFIED_ERROR'})
+            response.set_content(content={'status': 'EMAIL_ALREADY_VERIFIED_ERROR'})
+            return response
 
     def get_all_cors_headers(self) -> List[str]:
         return []

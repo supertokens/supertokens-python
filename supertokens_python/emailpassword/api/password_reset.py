@@ -28,7 +28,7 @@ from supertokens_python.utils import find_first_occurrence_in_list
 from supertokens_python.exceptions import raise_bad_input_exception
 
 
-async def handle_password_reset_api(recipe: EmailPasswordRecipe, request: BaseRequest):
+async def handle_password_reset_api(recipe: EmailPasswordRecipe, request: BaseRequest, response: BaseResponse):
     body = await request.json()
     form_fields_raw = body['formFields'] if 'formFields' in body else []
     form_fields = await validate_form_fields_or_throw_error(recipe,
@@ -43,6 +43,8 @@ async def handle_password_reset_api(recipe: EmailPasswordRecipe, request: BaseRe
     token = body['token']
     await recipe.reset_password_using_token(token, new_password)
 
-    return BaseResponse(content={
+    response.set_content({
         'status': 'OK'
     })
+
+    return response

@@ -25,14 +25,16 @@ if TYPE_CHECKING:
 from supertokens_python.exceptions import raise_bad_input_exception
 
 
-async def handle_email_exists_api(recipe: EmailPasswordRecipe, request: BaseRequest):
+async def handle_email_exists_api(recipe: EmailPasswordRecipe, request: BaseRequest, response: BaseResponse):
     email = request.get_query_param('email')
     if email is None:
         raise_bad_input_exception(recipe, 'Please provide the email as a GET param')
 
     user = await recipe.get_user_by_email(email)
-
-    return BaseResponse(content={
+    response.set_content({
         'status': 'OK',
         'exists': user is not None
     })
+
+    return response
+

@@ -29,7 +29,7 @@ from supertokens_python.session import create_new_session
 from httpx import AsyncClient
 
 
-async def handle_sign_in_up_api(recipe: ThirdPartyRecipe, request: BaseRequest):
+async def handle_sign_in_up_api(recipe: ThirdPartyRecipe, request: BaseRequest, response: BaseResponse):
     body = await request.json()
 
     if 'thirdPartyId' not in body or not isinstance(body['thirdPartyId'], str):
@@ -83,8 +83,7 @@ async def handle_sign_in_up_api(recipe: ThirdPartyRecipe, request: BaseRequest):
         raise_general_exception(recipe, e)
 
     await create_new_session(request, user.user_id, jwt_payload, session_data)
-
-    return BaseResponse(content={
+    response.set_content({
         'status': 'OK',
         'user': {
             'id': user.user_id,
@@ -97,3 +96,5 @@ async def handle_sign_in_up_api(recipe: ThirdPartyRecipe, request: BaseRequest):
         },
         'createdNewUser': signinup_response.is_new_user
     })
+
+    return response

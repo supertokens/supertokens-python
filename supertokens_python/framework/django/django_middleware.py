@@ -3,10 +3,10 @@ import asyncio
 from asgiref.sync import async_to_sync
 from werkzeug import Response
 
-from supertokens_python.framework.django.django_request import DjangoRequest
-from supertokens_python.framework.django.django_response import DjangoResponse
 from supertokens_python import Supertokens
 from supertokens_python.exceptions import SuperTokensError
+from supertokens_python.framework.django.django_request import DjangoRequest
+from supertokens_python.framework.django.django_response import DjangoResponse
 from supertokens_python.session import Session
 from supertokens_python.supertokens import manage_cookies_post_response
 
@@ -17,17 +17,23 @@ def middleware(get_response):
     if asyncio.iscoroutinefunction(get_response):
         async def __middleware(request):
             custom_request = DjangoRequest(request)
-            result = await st.middleware(custom_request)
+            from django.http import HttpResponse
+            response = DjangoResponse(HttpResponse())
+            try:
+                result = await st.middleware(custom_request, response)
+                if result is None:
+                    result = await get_response(request)
+                    result = DjangoResponse(result)
+                if hasattr(request, "state") and isinstance(request.state, Session):
+                    manage_cookies_post_response(request.state, result)
 
-            if result is None:
-                result = await get_response(request)
-                result = DjangoResponse(result)
-            if hasattr(request, "state") and isinstance(request.state, Session):
-                manage_cookies_post_response(request.state, result)
+                return result.response
 
-            return result.response
+            except SuperTokensError as e:
+                response = DjangoResponse(HttpResponse())
+                result = await st.handle_supertokens_error(DjangoRequest(request), e, response)
 
-
+                return result.response
     else:
         def __middleware(request):
 
@@ -43,6 +49,5 @@ def middleware(get_response):
 
             return result.response
 
-
-
     return __middleware
+

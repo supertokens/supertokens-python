@@ -24,17 +24,19 @@ from supertokens_python.session.exceptions import UnauthorisedError
 from supertokens_python.exceptions import raise_general_exception
 
 
-async def handle_signout_api(recipe: SessionRecipe, request: BaseRequest):
+async def handle_signout_api(recipe: SessionRecipe, request: BaseRequest, response: BaseResponse):
     try:
         session = await recipe.get_session(request)
     except UnauthorisedError:
-        return BaseResponse(content={})
+        response.set_content({})
+        return response
 
     if session is None:
         raise_general_exception(recipe, 'Session is undefined. Should not come here.')
 
     await session.revoke_session()
-
-    return BaseResponse(content={
+    response.set_content({{
         'status': 'OK'
-    })
+    }})
+
+    return response
