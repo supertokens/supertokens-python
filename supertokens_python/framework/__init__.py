@@ -13,13 +13,4 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-
-from supertokens_python.framework.django.framework import DjangoFramework
-from supertokens_python.framework.fastapi.framework import FastapiFramework
-from supertokens_python.framework.flask.framework import FlaskFramework
-
-FRAMEWORKS={
-    'Fastapi' : FastapiFramework(),
-    'Flask' : FlaskFramework(),
-    'Django' : DjangoFramework(),
-}
+from .django import django_middleware

@@ -20,9 +20,10 @@ from django.http import JsonResponse
 from django.test import TestCase, RequestFactory
 
 from supertokens_python import session, init
+from supertokens_python.framework.django import middleware
+
 from supertokens_python.session import create_new_session, refresh_session, get_session
 from tests.utils import start_st, reset, clean_st, setup_st
-from supertokens_python.framework.django import middleware
 
 
 def get_cookies(response) -> dict:
@@ -112,8 +113,8 @@ class SupertokensTest(TestCase):
         assert len(cookies['sIdRefreshToken']['value']) > 0
         assert len(cookies['sRefreshToken']['value']) > 0
 
-        #request.COOKIES["sRefreshToken"] = cookies['sRefreshToken']['value']
-       # request.COOKIES["sIdRefreshToken"] = cookies['sIdRefreshToken']['value']
+        request.COOKIES["sRefreshToken"] = cookies['sRefreshToken']['value']
+        request.COOKIES["sIdRefreshToken"] = cookies['sIdRefreshToken']['value']
         request.META['HTTP_ANTI_CSRF'] = response.headers['anti-csrf']
         response = await my_middleware(request)
         print(response)
@@ -217,6 +218,44 @@ class SupertokensTest(TestCase):
         handle_cookies = get_cookies(response)
 
         assert handle_cookies == {}
+
+    async def test_login_refresh_error_handler(self):
+        init({
+            'supertokens': {
+                'connection_uri': "http://localhost:3567",
+            },
+            'framework': 'Django',
+            'app_info': {
+                'app_name': "SuperTokens Demo",
+                'api_domain': "api.supertokens.io",
+                'website_domain': "supertokens.io",
+                'api_base_path': "/auth"
+            },
+            'recipe_list': [session.init(
+                {
+                    'anti_csrf': 'VIA_TOKEN',
+                    'cookie_domain': 'supertokens.io'
+                }
+            )],
+        })
+
+        start_st()
+
+        my_middleware = middleware(create_new_session_view)
+        request = self.factory.get('/login', {'user_id': 'user_id'})
+        response = await my_middleware(request)
+
+        my_middleware = middleware(refresh_view)
+        request = self.factory.get('/refresh', {'user_id': 'user_id'})
+        cookies = get_cookies(response)
+
+        assert len(cookies['sAccessToken']['value']) > 0
+        assert len(cookies['sIdRefreshToken']['value']) > 0
+        assert len(cookies['sRefreshToken']['value']) > 0
+
+        response = await my_middleware(request)
+        print(response)
+        assert response.status_code == 401 # not authorized because no access refresh token
 
 
 

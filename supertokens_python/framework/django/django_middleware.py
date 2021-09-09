@@ -13,20 +13,20 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
+from __future__ import annotations
 
 import asyncio
-
 from asgiref.sync import async_to_sync
-
-from supertokens_python import Supertokens
-from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.django.django_request import DjangoRequest
-from supertokens_python.framework.django.django_response import DjangoResponse
-from supertokens_python.session import Session
-from supertokens_python.supertokens import manage_cookies_post_response
 
 
 def middleware(get_response):
+    from supertokens_python import Supertokens
+    from supertokens_python.exceptions import SuperTokensError
+    from supertokens_python.framework.django.django_request import DjangoRequest
+    from supertokens_python.framework.django.django_response import DjangoResponse
+    from supertokens_python.session import Session
+    from supertokens_python.supertokens import manage_cookies_post_response
+
     st = Supertokens.get_instance()
 
     if asyncio.iscoroutinefunction(get_response):
@@ -65,4 +65,3 @@ def middleware(get_response):
             return result.response
 
     return __middleware
-

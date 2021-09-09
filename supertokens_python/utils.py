@@ -22,7 +22,6 @@ from typing import Union, List, Callable, TYPE_CHECKING
 
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
-from .framework import FRAMEWORKS
 
 if TYPE_CHECKING:
     from .recipe_module import RecipeModule
@@ -32,6 +31,15 @@ from .constants import ERROR_MESSAGE_KEY
 from time import time
 from base64 import b64encode, b64decode
 
+from supertokens_python.framework.django.framework import DjangoFramework
+from supertokens_python.framework.fastapi.framework import FastapiFramework
+from supertokens_python.framework.flask.framework import FlaskFramework
+
+FRAMEWORKS={
+    'Fastapi' : FastapiFramework(),
+    'Flask' : FlaskFramework(),
+    'Django' : DjangoFramework(),
+}
 
 def validate_framework(config):
     if config['framework'] not in FRAMEWORKS.keys():

@@ -13,14 +13,13 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-import asyncio
 from typing import Union, List
 
-from supertokens_python.framework.index import FRAMEWORKS
 from .session_class import Session
 from .session_recipe import SessionRecipe
 from .middleware import verify_session as original_verify_session
 from . import exceptions
+from ..utils import FRAMEWORKS
 
 
 def init(config=None):

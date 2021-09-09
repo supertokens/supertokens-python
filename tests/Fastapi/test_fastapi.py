@@ -338,3 +338,57 @@ def test_login_handle(driver_config_client: TestClient):
     )
     result_dict = json.loads(response_2.content)
     assert "s" in result_dict
+
+
+@mark.asyncio
+async def test_login_refresh_error_handler(driver_config_client: TestClient):
+    init({
+        'supertokens': {
+            'connection_uri': "http://localhost:3567",
+        },
+        'framework': 'Fastapi',
+        'app_info': {
+            'app_name': "SuperTokens Demo",
+            'api_domain': "api.supertokens.io",
+            'website_domain': "supertokens.io",
+            'api_base_path': "/auth"
+        },
+        'recipe_list': [session.init(
+            {
+                'anti_csrf': 'VIA_TOKEN',
+                'cookie_domain': 'supertokens.io'
+            }
+        )],
+    })
+    start_st()
+
+    response_1 = driver_config_client.get('/login')
+    cookies_1 = extract_all_cookies(response_1)
+
+    assert response_1.headers.get('anti-csrf') is not None
+    assert cookies_1['sAccessToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
+    assert cookies_1['sRefreshToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
+    assert cookies_1['sIdRefreshToken']['domain'] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
+    assert cookies_1['sAccessToken']['path'] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
+    assert cookies_1['sRefreshToken']['path'] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
+    assert cookies_1['sIdRefreshToken']['path'] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
+    assert cookies_1['sAccessToken']['httponly']
+    assert cookies_1['sRefreshToken']['httponly']
+    assert cookies_1['sIdRefreshToken']['httponly']
+    assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['secure'] is None
+    assert cookies_1['sRefreshToken']['secure'] is None
+    assert cookies_1['sIdRefreshToken']['secure'] is None
+
+    response_3 = driver_config_client.post(
+        url='/refresh',
+        headers={
+            'anti-csrf': response_1.headers.get('anti-csrf')
+        },
+        cookies={
+            #no cookies
+        }
+    )
+    assert response_3.status_code == 401 #not authorized because no refresh tokens

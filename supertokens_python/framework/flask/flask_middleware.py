@@ -19,21 +19,24 @@ import json
 
 from asgiref.sync import async_to_sync
 
-from supertokens_python.framework.flask.flask_request import FlaskRequest
-from supertokens_python.framework.flask.flask_response import FlaskResponse
-from supertokens_python import Supertokens
-from supertokens_python.supertokens import manage_cookies_post_response
-
 
 class Middleware:
     def __init__(self, app):
         self.app = app
 
     def __call__(self, environ, start_response):
+
+        from supertokens_python.framework.flask.flask_request import FlaskRequest
+        from supertokens_python.framework.flask.flask_response import FlaskResponse
+        from supertokens_python import Supertokens
+        from supertokens_python.supertokens import manage_cookies_post_response
+        from flask import Response
+
+
         st = Supertokens.get_instance()
         request = FlaskRequest(environ)
-
-        result = async_to_sync(st.middleware)(request)
+        response = FlaskResponse(Response())
+        result = async_to_sync(st.middleware)(request, response)
 
         if result is None:
             self.app(environ, start_response)
@@ -52,6 +55,8 @@ class Middleware:
 
 def error_handler(error):
     from werkzeug import Response
+    from supertokens_python import Supertokens
+    from supertokens_python.framework.flask.flask_response import FlaskResponse
 
     st = Supertokens.get_instance()
     response = Response(json.dumps({}),
