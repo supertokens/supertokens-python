@@ -186,7 +186,7 @@ class SessionRecipe(RecipeModule):
             raise_try_refresh_token_exception(self, 'Access token has expired. Please call the refresh API')
         anti_csrf_token = get_anti_csrf_header(request)
         if anti_csrf_check is None:
-            anti_csrf_check = request.method.lower() != 'get'
+            anti_csrf_check = request.method().lower() != 'get'
         new_session = await session_functions.get_session(self, access_token, anti_csrf_token, anti_csrf_check,
                                                           get_rid_header(request) is not None)
         if 'accessToken' in new_session:

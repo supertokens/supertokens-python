@@ -92,7 +92,6 @@ def driver_config_app():
         return response
 
     @app.route('/refresh', methods=['POST'])
-    @verify_session
     def custom_refresh():
         response = make_response(jsonify({}))
         refresh_session(request)
@@ -114,6 +113,7 @@ def driver_config_app():
         return jsonify({'s': session['user_id']})
 
     @app.route('/logout', methods=['POST'])
+    @verify_session(session_required=False)
     def custom_logout():
         response = make_response(jsonify({}))
         supertokens_session = get_session(request, True)

@@ -18,7 +18,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
-from supertokens_python.session.middleware import verify_session
+from supertokens_python.session import get_session
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -53,7 +53,7 @@ async def handle_email_verify_api(recipe: EmailVerificationRecipe, request: Base
 
         return response
     else:
-        session = await verify_session(request)
+        session = await get_session(request)
         if session is None:
             raise_general_exception(recipe, 'Session is undefined. Should not come here.')
 

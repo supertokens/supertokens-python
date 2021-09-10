@@ -16,6 +16,7 @@ under the License.
 from functools import wraps
 from typing import Union
 
+
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.session import SessionRecipe
@@ -26,20 +27,22 @@ def verify_session(recipe: SessionRecipe, anti_csrf_check: Union[bool, None] = N
     def session_verify(f):
         @wraps(f)
         def wrapped_function(*args, **kwargs):
-            from flask import request
+            from flask import request, make_response
+
             if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
                 request = FRAMEWORKS[recipe.app_info.framework].wrap_request(request)
-            method = normalise_http_method(request.method)
+            method = normalise_http_method(request.method())
             if method == 'options' or method == 'trace':
                 return None
-            incoming_path = NormalisedURLPath(recipe, request.url.path)
+            incoming_path = NormalisedURLPath(recipe, request.url())
             refresh_token_path = recipe.config.refresh_token_path
             if incoming_path.equals(refresh_token_path) and method == 'post':
                 session = sync(recipe.refresh_session)(request)
             else:
                 session = sync(recipe.get_session)(request, anti_csrf_check, session_required)
             request.set_session(session)
-
+            response = make_response(f(*args, **kwargs))
+            return response
         return wrapped_function
 
     return session_verify
