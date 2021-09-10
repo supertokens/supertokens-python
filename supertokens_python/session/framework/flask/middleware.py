@@ -34,7 +34,7 @@ def verify_session(recipe: SessionRecipe, anti_csrf_check: Union[bool, None] = N
             method = normalise_http_method(request.method())
             if method == 'options' or method == 'trace':
                 return None
-            incoming_path = NormalisedURLPath(recipe, request.url())
+            incoming_path = NormalisedURLPath(recipe, request.get_path())
             refresh_token_path = recipe.config.refresh_token_path
             if incoming_path.equals(refresh_token_path) and method == 'post':
                 session = sync(recipe.refresh_session)(request)
