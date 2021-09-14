@@ -48,8 +48,8 @@ INPUT_SCHEMA = {
             'required': ['app_name', 'website_domain', 'api_domain'],
             'additionalProperties': False
         },
-        'framework':{
-                'type': 'string'
+        'framework': {
+            'type': 'string'
         },
         'recipe_list': {
             'type': 'array'

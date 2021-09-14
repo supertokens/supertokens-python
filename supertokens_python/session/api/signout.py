@@ -17,26 +17,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-    from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.session.session_recipe import SessionRecipe
-from supertokens_python.session.exceptions import UnauthorisedError
-from supertokens_python.exceptions import raise_general_exception
+    from supertokens_python.session.interfaces import APIInterface, APIOptions
 
 
-async def handle_signout_api(recipe: SessionRecipe, request: BaseRequest, response: BaseResponse):
-    try:
-        session = await recipe.get_session(request)
-    except UnauthorisedError:
-        response.set_content({})
-        return response
-
-    if session is None:
-        raise_general_exception(recipe, 'Session is undefined. Should not come here.')
-
-    await session.revoke_session()
-    response.set_content({{
-        'status': 'OK'
-    }})
-
-    return response
+async def handle_signout_api(api_implementation: APIInterface, api_options: APIOptions):
+    if api_implementation.disable_signout_post:
+        return None
+    response = await api_implementation.signout_post(api_options)
+    api_options.response.set_content(response.to_json())
+    return api_options.response

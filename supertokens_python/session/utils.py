@@ -23,13 +23,14 @@ from supertokens_python.exceptions import raise_general_exception
 from tldextract import extract
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from .constants import SESSION_REFRESH
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, Union
 
-from ..framework.response import BaseResponse
+from supertokens_python.framework import BaseResponse
 
 if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-    from .session_recipe import SessionRecipe
+    from .interfaces import RecipeInterface, APIInterface
+    from supertokens_python.framework import BaseRequest
+    from .recipe import SessionRecipe
     from supertokens_python.supertokens import AppInfo
 
 
@@ -86,16 +87,6 @@ def get_top_level_domain_for_same_site_resolution(url: str, recipe: SessionRecip
     return parsed_url.domain + '.' + parsed_url.suffix
 
 
-class SessionRefreshFeature:
-    def __init__(self, disable_default_implementation: bool):
-        self.disable_default_implementation = disable_default_implementation
-
-
-class SignOutFeature:
-    def __init__(self, disable_default_implementation: bool):
-        self.disable_default_implementation = disable_default_implementation
-
-
 class ErrorHandlers:
     def __init__(self, recipe: SessionRecipe, on_token_theft_detected, on_try_refresh_token, on_unauthorised):
         self.__recipe = recipe
@@ -128,19 +119,25 @@ class ErrorHandlers:
 
 
 async def default_unauthorised_callback(_: BaseRequest, __: str, response : BaseResponse):
-    from .session_recipe import SessionRecipe
+    from .recipe import SessionRecipe
     return send_non_200_response(SessionRecipe.get_instance(), 'unauthorised', SessionRecipe.get_instance().config.session_expired_status_code, response)
 
 
 async def default_try_refresh_token_callback(_: BaseRequest, __: str, response : BaseResponse):
-    from .session_recipe import SessionRecipe
+    from .recipe import SessionRecipe
     return send_non_200_response(SessionRecipe.get_instance(), 'try refresh token', SessionRecipe.get_instance().config.session_expired_status_code, response)
 
 
 async def default_token_theft_detected_callback(_: BaseRequest, session_handle: str, __: str, response : BaseResponse):
-    from .session_recipe import SessionRecipe
+    from .recipe import SessionRecipe
     await SessionRecipe.get_instance().revoke_session(session_handle)
     return send_non_200_response(SessionRecipe.get_instance(), 'token theft detected', SessionRecipe.get_instance().config.session_expired_status_code, response)
+
+
+class OverrideConfig:
+    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None], apis: Union[Callable[[APIInterface], APIInterface], None]):
+        self.functions = functions
+        self.apis = apis
 
 
 class SessionConfig:
@@ -150,20 +147,18 @@ class SessionConfig:
                  cookie_same_site: str,
                  cookie_secure: str,
                  session_expired_status_code: int,
-                 session_refresh_feature: SessionRefreshFeature,
                  error_handlers: ErrorHandlers,
                  anti_csrf: str,
-                 sign_out_feature: SignOutFeature
+                 override: OverrideConfig
                  ):
         self.refresh_token_path = refresh_token_path
         self.cookie_domain = cookie_domain
         self.cookie_same_site = cookie_same_site
         self.cookie_secure = cookie_secure
         self.session_expired_status_code = session_expired_status_code
-        self.session_refresh_feature = session_refresh_feature
         self.error_handlers = error_handlers
         self.anti_csrf = anti_csrf
-        self.sign_out_feature = sign_out_feature
+        self.override = override
 
 
 def validate_and_normalise_user_input(recipe: SessionRecipe, app_info: AppInfo, config=None):
@@ -185,16 +180,6 @@ def validate_and_normalise_user_input(recipe: SessionRecipe, app_info: AppInfo, 
         'https')
     session_expired_status_code = config[
         'session_expired_status_code'] if 'session_expired_status_code' in config else 401
-    session_refresh_feature_disable_default_implementation = False
-    if 'session_refresh_feature' in config and 'disable_default_implementation' in config['session_refresh_feature']:
-        session_refresh_feature_disable_default_implementation = config['session_refresh_feature'][
-            'disable_default_implementation']
-    session_refresh_feature = SessionRefreshFeature(session_refresh_feature_disable_default_implementation)
-    sign_out_feature_disable_default_implementation = False
-    if 'sign_out_feature' in config and 'disable_default_implementation' in config['sign_out_feature']:
-        sign_out_feature_disable_default_implementation = config['sign_out_feature'][
-            'disable_default_implementation']
-    sign_out_feature = SignOutFeature(sign_out_feature_disable_default_implementation)
     anti_csrf = 'VIA_CUSTOM_HEADER' if cookie_same_site == 'none' else 'NONE'
     if 'anti_csrf' in config:
         anti_csrf = config['anti_csrf']
@@ -220,14 +205,19 @@ def validate_and_normalise_user_input(recipe: SessionRecipe, app_info: AppInfo, 
         raise_general_exception('Since your API and website domain are different, for sessions to work, please use '
                                 'https on your apiDomain and don\'t set cookieSecure to false.')
 
+    override_functions = config['override']['functions'] if 'override' in config and 'functions' in config[
+        'override'] else None
+    override_apis = config['override']['apis'] if 'override' in config and 'apis' in config[
+        'override'] else None
+    override = OverrideConfig(override_functions, override_apis)
+
     return SessionConfig(
-        app_info.api_base_path.append(recipe, NormalisedURLPath(recipe, SESSION_REFRESH)),
+        app_info.api_base_path.append(NormalisedURLPath(SESSION_REFRESH)),
         cookie_domain,
         cookie_same_site,
         cookie_secure,
         session_expired_status_code,
-        session_refresh_feature,
         error_handlers,
         anti_csrf,
-        sign_out_feature
+        override
     )

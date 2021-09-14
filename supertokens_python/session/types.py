@@ -35,20 +35,6 @@ INPUT_SCHEMA = {
         'cookie_same_site': type_string,
         'session_expired_status_code': type_number,
         'cookie_domain': type_string,
-        'session_refresh_feature': {
-            'type': 'object',
-            'properties': {
-                'disable_default_implementation': type_boolean,
-            },
-            'additionalProperties': False,
-        },
-        'sign_out_feature': {
-            'type': 'object',
-            'properties': {
-                'disable_default_implementation': type_boolean,
-            },
-            'additionalProperties': False,
-        },
         'error_handlers': {
             'type': 'object',
             'properties': {
@@ -60,6 +46,14 @@ INPUT_SCHEMA = {
         'anti_csrf': {
             'type': 'string',
             'enum': ['VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE']
+        },
+        'override': {
+            'type': 'object',
+            'properties': {
+                'functions': type_any,
+                'apis': type_any
+            },
+            'additionalProperties': False
         }
     },
     'required': [],

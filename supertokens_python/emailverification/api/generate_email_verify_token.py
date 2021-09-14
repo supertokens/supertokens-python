@@ -14,41 +14,12 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 from __future__ import annotations
-
-import asyncio
-from typing import TYPE_CHECKING
-
-from supertokens_python.session.middleware import verify_session
-
-if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-    from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.emailverification.recipe import EmailVerificationRecipe
-from supertokens_python.exceptions import raise_general_exception
-from supertokens_python.emailverification.types import User
+from supertokens_python.emailverification.interfaces import APIOptions, APIInterface
 
 
-async def handle_generate_email_verify_token_api(recipe: EmailVerificationRecipe, request: BaseRequest, response: BaseResponse):
-    session = await verify_session(request)
-    if session is None:
-        raise_general_exception(recipe, 'Session is undefined. Should not come here.')
-
-    user_id = session.get_user_id()
-    email = await recipe.config.get_email_for_user_id(user_id)
-
-    token = await recipe.create_email_verification_token(user_id, email)
-    user = User(user_id, email)
-
-    email_verify_link = (await recipe.config.get_email_verification_url(user)) + '?token=' + token + '&rid' + recipe.get_recipe_id()
-
-    async def send_email():
-        try:
-            await recipe.config.create_and_send_custom_email(user, email_verify_link)
-        except Exception:
-            pass
-
-    asyncio.create_task(send_email())
-    response.set_content({
-        'status': 'OK'
-    })
-    return response
+async def handle_generate_email_verify_token_api(api_implementation: APIInterface, api_options: APIOptions):
+    if api_implementation.disable_generate_email_verify_token_post:
+        return None
+    result = await api_implementation.generate_email_verify_token_post(api_options)
+    api_options.response.set_content(result.to_json())
+    return api_options.response

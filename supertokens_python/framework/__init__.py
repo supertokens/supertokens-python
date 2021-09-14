@@ -14,3 +14,5 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 from .django import django_middleware
+from .request import BaseRequest
+from .response import BaseResponse

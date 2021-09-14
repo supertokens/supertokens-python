@@ -17,7 +17,6 @@ under the License.
 from __future__ import annotations
 
 from .framework.response import BaseResponse
-from .querier import Querier
 import abc
 from typing import Union, Literal, List, TYPE_CHECKING
 if TYPE_CHECKING:
@@ -33,18 +32,12 @@ class RecipeModule(abc.ABC):
         self.recipe_id = recipe_id
         self.app_info = app_info
         self.rid_to_core = rid_to_core
-        self.querier = None
 
     def get_recipe_id(self):
         return self.recipe_id
 
     def get_app_info(self):
         return self.app_info
-
-    def get_querier(self):
-        if self.querier is None:
-            self.querier = Querier.get_instance(self, self.rid_to_core)
-        return self.querier
 
     def return_api_id_if_can_handle_request(self, path: NormalisedURLPath, method: str) -> Union[str, None]:
         apis_handled = self.get_apis_handled()

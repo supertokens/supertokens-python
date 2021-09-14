@@ -17,51 +17,54 @@ from __future__ import annotations
 from supertokens_python.exceptions import SuperTokensError
 from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
-    from supertokens_python.recipe_module import RecipeModule
     from .types import ErrorFormField
 
 
-def raise_form_field_exception(recipe, msg, form_fields):
-    raise FieldError(recipe, msg, form_fields)
+def raise_form_field_exception(msg, form_fields):
+    raise FieldError(msg, form_fields)
 
 
-def raise_email_already_exists_exception(recipe, msg):
+def raise_email_already_exists_exception(msg):
     if isinstance(msg, SuperTokensError):
         raise msg
-    raise EmailAlreadyExistsError(recipe, msg) from None
+    raise EmailAlreadyExistsError(msg) from None
 
 
-def raise_wrong_credentials_exception(recipe, msg):
+def raise_wrong_credentials_exception(msg):
     if isinstance(msg, SuperTokensError):
         raise msg
-    raise WrongCredentialsError(recipe, msg) from None
+    raise WrongCredentialsError(msg) from None
 
 
-def raise_unknown_user_id_exception(recipe, msg):
+def raise_unknown_user_id_exception(msg):
     if isinstance(msg, SuperTokensError):
         raise msg
-    raise UnknownUserIdError(recipe, msg) from None
+    raise UnknownUserIdError(msg) from None
 
 
-def raise_unknown_email_exception(recipe, msg):
+def raise_unknown_email_exception(msg):
     if isinstance(msg, SuperTokensError):
         raise msg
-    raise UnknownEmailError(recipe, msg) from None
+    raise UnknownEmailError(msg) from None
 
 
-def raise_reset_password_invalid_token_exception(recipe, msg):
+def raise_reset_password_invalid_token_exception(msg):
     if isinstance(msg, SuperTokensError):
         raise msg
-    raise ResetPasswordInvalidTokenError(recipe, msg) from None
+    raise ResetPasswordInvalidTokenError(msg) from None
 
 
-class EmailAlreadyExistsError(SuperTokensError):
+class SuperTokensEmailPasswordError(SuperTokensError):
     pass
 
 
-class FieldError(SuperTokensError):
-    def __init__(self, recipe: RecipeModule, msg: str, form_fields: List[ErrorFormField]):
-        super().__init__(recipe, msg)
+class EmailAlreadyExistsError(SuperTokensEmailPasswordError):
+    pass
+
+
+class FieldError(SuperTokensEmailPasswordError):
+    def __init__(self, msg: str, form_fields: List[ErrorFormField]):
+        super().__init__(msg)
         self.form_fields = form_fields
 
     def get_json_form_fields(self):
@@ -73,17 +76,17 @@ class FieldError(SuperTokensError):
             })
 
 
-class WrongCredentialsError(SuperTokensError):
+class WrongCredentialsError(SuperTokensEmailPasswordError):
     pass
 
 
-class UnknownUserIdError(SuperTokensError):
+class UnknownUserIdError(SuperTokensEmailPasswordError):
     pass
 
 
-class UnknownEmailError(SuperTokensError):
+class UnknownEmailError(SuperTokensEmailPasswordError):
     pass
 
 
-class ResetPasswordInvalidTokenError(SuperTokensError):
+class ResetPasswordInvalidTokenError(SuperTokensEmailPasswordError):
     pass

@@ -17,21 +17,25 @@ from __future__ import annotations
 from supertokens_python.exceptions import SuperTokensError
 
 
-def raise_email_already_verified_exception(recipe, msg):
+def raise_email_already_verified_exception(msg):
     if isinstance(msg, SuperTokensError):
         raise msg
-    raise EmailAlreadyVerifiedError(recipe, msg) from None
+    raise EmailAlreadyVerifiedError(msg) from None
 
 
-def raise_email_verification_invalid_token_exception(recipe, msg):
+def raise_email_verification_invalid_token_exception(msg):
     if isinstance(msg, SuperTokensError):
         raise msg
-    raise EmailVerificationInvalidTokenError(recipe, msg) from None
+    raise EmailVerificationInvalidTokenError(msg) from None
 
 
-class EmailAlreadyVerifiedError(SuperTokensError):
+class SuperTokensEmailVerificationError(SuperTokensError):
     pass
 
 
-class EmailVerificationInvalidTokenError(SuperTokensError):
+class EmailAlreadyVerifiedError(SuperTokensEmailVerificationError):
+    pass
+
+
+class EmailVerificationInvalidTokenError(SuperTokensEmailVerificationError):
     pass

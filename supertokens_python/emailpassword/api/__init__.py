@@ -18,4 +18,3 @@ from .password_reset import handle_password_reset_api
 from .email_exists import handle_email_exists_api
 from .signin import handle_sign_in_api
 from .signup import handle_sign_up_api
-from .signout import handle_sign_out_api

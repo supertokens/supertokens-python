@@ -26,8 +26,8 @@ def create_new_session(request, user_id: str, jwt_payload: Union[dict, None] = N
     return sync(create_new_session(request, user_id, jwt_payload, session_data))
 
 
-def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -> Union[
-    Session, None]:
+def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -> Union[Session,
+                                                                                                            None]:
     from supertokens_python.session import get_session
     return sync(get_session(request, anti_csrf_check, session_required))
 

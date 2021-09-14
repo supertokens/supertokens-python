@@ -18,12 +18,12 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-    from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.session.session_recipe import SessionRecipe
+    from supertokens_python.session.interfaces import APIInterface, APIOptions
 
 
-async def handle_refresh_api(recipe: SessionRecipe, request: BaseRequest, response: BaseResponse):
-    await recipe.refresh_session(request)
-    response.set_content({})
-    return response
+async def handle_refresh_api(api_implementation: APIInterface, api_options: APIOptions):
+    if api_implementation.disable_refresh_post:
+        return None
+    await api_implementation.refresh_post(api_options)
+    api_options.response.set_content({})
+    return api_options.response

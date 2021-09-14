@@ -13,7 +13,7 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-from supertokens_python.session.session_recipe import HandshakeInfo
+from supertokens_python.session.recipe import HandshakeInfo
 from .utils import (
     reset, setup_st, clean_st, start_st, set_key_value_in_config, TEST_ENABLE_ANTI_CSRF_CONFIG_KEY
 )

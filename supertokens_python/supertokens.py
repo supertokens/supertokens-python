@@ -52,7 +52,7 @@ from .exceptions import (
     GeneralError,
     BadInputError
 )
-from .session.session_recipe import SessionRecipe
+from .session.recipe import SessionRecipe
 import asyncio
 
 
@@ -120,7 +120,7 @@ class Supertokens:
         validate_framework(config)
         self.app_info: AppInfo = AppInfo(None, config['app_info'])
 
-        self.app_info.framework = config['framework']
+        self.framework = config['framework']
         hosts = list(map(lambda h: NormalisedURLDomain(None, h.strip()),
                          filter(lambda x: x != '', config['supertokens']['connection_uri'].split(';'))))
         api_key = None
@@ -190,7 +190,6 @@ class Supertokens:
         if Supertokens.__instance is not None:
             return Supertokens.__instance
         raise_general_exception(None, 'Initialisation not done. Did you forget to call the SuperTokens.init function?')
-
 
 
     def get_all_cors_headers(self) -> List[str]:

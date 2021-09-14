@@ -35,11 +35,12 @@ from supertokens_python.framework.django.framework import DjangoFramework
 from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
 
-FRAMEWORKS={
-    'Fastapi' : FastapiFramework(),
-    'Flask' : FlaskFramework(),
-    'Django' : DjangoFramework(),
+FRAMEWORKS = {
+    'Fastapi': FastapiFramework(),
+    'Flask': FlaskFramework(),
+    'Django': DjangoFramework(),
 }
+
 
 def validate_framework(config):
     if config['framework'] not in FRAMEWORKS.keys():
@@ -84,7 +85,6 @@ def get_header(request: BaseRequest, key: str) -> Union[str, None]:
     return request.get_header(key)
 
 
-
 def find_max_version(versions_1: List[str], versions_2: List[str]) -> Union[str, None]:
     versions = list(set(versions_1) & set(versions_2))
     if len(versions) == 0:
@@ -123,14 +123,15 @@ def is_5xx_error(status_code: int) -> bool:
     return status_code // 100 == 5
 
 
-def send_non_200_response(recipe: Union[RecipeModule, None], message: str, status_code: int, response : BaseResponse) -> Union[
-    BaseResponse, None]:
+def send_non_200_response(recipe: Union[RecipeModule, None], message: str, status_code: int, response: BaseResponse) -> \
+        Union[
+            BaseResponse, None]:
     if status_code < 300:
         raise_general_exception(recipe, 'Calling sendNon200Response with status code < 300')
     response.set_status_code(status_code)
     response.set_content(content={
-            ERROR_MESSAGE_KEY: message
-        })
+        ERROR_MESSAGE_KEY: message
+    })
     return response
 
 

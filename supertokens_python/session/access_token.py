@@ -17,9 +17,7 @@ from __future__ import annotations
 from .jwt import get_payload
 from supertokens_python.utils import get_timestamp_ms
 from .exceptions import raise_try_refresh_token_exception
-from typing import Union, TYPE_CHECKING
-if TYPE_CHECKING:
-    from .session_recipe import SessionRecipe
+from typing import Union
 
 
 def sanitize_string(s: any) -> Union[str, None]:
@@ -40,7 +38,7 @@ def sanitize_number(n: any) -> Union[Union[int, float], None]:
     return None
 
 
-def get_info_from_access_token(recipe: SessionRecipe, token: str, jwt_signing_public_key: str, do_anti_csrf_check: bool):
+def get_info_from_access_token(token: str, jwt_signing_public_key: str, do_anti_csrf_check: bool):
     try:
         payload = get_payload(token, jwt_signing_public_key)
         session_handle = sanitize_string(payload.get('sessionHandle'))
@@ -78,4 +76,4 @@ def get_info_from_access_token(recipe: SessionRecipe, token: str, jwt_signing_pu
             'timeCreated': time_created
         }
     except Exception as e:
-        raise_try_refresh_token_exception(recipe, e)
+        raise_try_refresh_token_exception(e)

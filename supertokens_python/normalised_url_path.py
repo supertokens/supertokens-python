@@ -23,14 +23,14 @@ from .exceptions import raise_general_exception
 
 
 class NormalisedURLPath:
-    def __init__(self, recipe: Union[RecipeModule, None], url: str):
-        self.__value = normalise_url_path_or_throw_error(recipe, url)
+    def __init__(self, url: str):
+        self.__value = normalise_url_path_or_throw_error(url)
 
     def startswith(self, other: NormalisedURLPath) -> bool:
         return self.__value.startswith(other.__value)
 
-    def append(self, recipe: Union[RecipeModule, None], other: NormalisedURLPath) -> NormalisedURLPath:
-        return NormalisedURLPath(recipe, self.__value + other.__value)
+    def append(self, other: NormalisedURLPath) -> NormalisedURLPath:
+        return NormalisedURLPath(self.__value + other.__value)
 
     def get_as_string_dangerous(self) -> str:
         return self.__value
@@ -42,7 +42,7 @@ class NormalisedURLPath:
         return self.__value == '/recipe' or self.__value.startswith('/recipe/')
 
 
-def normalise_url_path_or_throw_error(recipe: Union[RecipeModule, None], input_str: str) -> str:
+def normalise_url_path_or_throw_error(input_str: str) -> str:
     input_str = input_str.strip().lower()
 
     try:
@@ -70,16 +70,16 @@ def normalise_url_path_or_throw_error(recipe: Union[RecipeModule, None], input_s
             (not input_str.startswith('https://'))
     ):
         input_str = 'http://' + input_str
-        return normalise_url_path_or_throw_error(recipe, input_str)
+        return normalise_url_path_or_throw_error(input_str)
 
     if not input_str.startswith('/'):
         input_str = '/' + input_str
 
     try:
         urlparse('http://example.com' + input_str)
-        return normalise_url_path_or_throw_error(recipe, 'http://example.com' + input_str)
+        return normalise_url_path_or_throw_error('http://example.com' + input_str)
     except Exception:
-        raise_general_exception(recipe, 'Please provide a valid URL path')
+        raise_general_exception(None, 'Please provide a valid URL path')
 
 
 def domain_given(input_str: str) -> bool:

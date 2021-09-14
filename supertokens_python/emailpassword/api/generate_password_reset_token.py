@@ -14,58 +14,21 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 from __future__ import annotations
-
-import asyncio
 from typing import TYPE_CHECKING
-
-
-
 if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-    from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.emailpassword.recipe import EmailPasswordRecipe
-
-from supertokens_python.emailpassword.exceptions import UnknownUserIdError
+    from supertokens_python.emailpassword.interfaces import APIOptions, APIInterface
 from .utils import validate_form_fields_or_throw_error
-from supertokens_python.emailpassword.constants import FORM_FIELD_EMAIL_ID
-from supertokens_python.utils import find_first_occurrence_in_list
 
 
-async def handle_generate_password_reset_token_api(recipe: EmailPasswordRecipe, request: BaseRequest, response: BaseResponse):
-    body = await request.json()
+async def handle_generate_password_reset_token_api(api_implementation: APIInterface, api_options: APIOptions):
+    if api_implementation.disable_generate_password_reset_token_post:
+        return None
+    body = await api_options.request.json()
     form_fields_raw = body['formFields'] if 'formFields' in body else []
-    form_fields = await validate_form_fields_or_throw_error(recipe,
-                                                            recipe.config.reset_token_using_password_feature.form_fields_for_generate_token_form,
+    form_fields = await validate_form_fields_or_throw_error(api_options.config.reset_token_using_password_feature.form_fields_for_generate_token_form,
                                                             form_fields_raw)
-    email = find_first_occurrence_in_list(lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
+    response = await api_implementation.generate_password_reset_token_post(form_fields, api_options)
 
-    user = await recipe.get_user_by_email(email)
+    api_options.response.set_content(response.to_json())
 
-    if user is None:
-        response.set_content({
-            'status': 'OK'
-        })
-        return response
-
-    try:
-        token = await recipe.create_reset_password_token(user.user_id)
-    except UnknownUserIdError:
-        response.set_content({
-            'status': 'OK'
-        })
-        return response
-
-    password_reset_link = await recipe.config.reset_token_using_password_feature.get_reset_password_url(user) + '?token=' + token + '&rid=' + recipe.get_recipe_id()
-
-    async def send_email():
-        try:
-            await recipe.config.reset_token_using_password_feature.create_and_send_custom_email(user, password_reset_link)
-        except Exception:
-            pass
-
-    asyncio.create_task(send_email())
-
-    response.set_content({
-        'status': 'OK'
-    })
-    return response
+    return api_options.response

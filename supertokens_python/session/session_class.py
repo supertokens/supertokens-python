@@ -17,15 +17,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from supertokens_python.normalised_url_path import NormalisedURLPath
-    from .session_recipe import SessionRecipe
+    from .recipe import SessionRecipe
+    from .receipe_implementation import RecipeImplementation
 from . import session_functions
 from .exceptions import raise_unauthorised_exception
 
 
 class Session:
-    def __init__(self, recipe: SessionRecipe, access_token, session_handle,
+    def __init__(self, recipe_implementation: RecipeImplementation, access_token, session_handle,
                  user_id, jwt_payload):
-        self.__recipe = recipe
+        self.__recipe_implementation = recipe_implementation
         self.__access_token = access_token
         self.__session_handle = session_handle
         self.jwt_payload = jwt_payload
@@ -37,22 +38,23 @@ class Session:
         self.remove_cookies = False
 
     async def revoke_session(self) -> None:
-        if await session_functions.revoke_session(self.__recipe, self.__session_handle):
+        if await session_functions.revoke_session(self.__recipe_implementation, self.__session_handle):
             self.remove_cookies = True
 
     async def get_session_data(self) -> dict:
-        return await session_functions.get_session_data(self.__recipe, self.__session_handle)
+        return await session_functions.get_session_data(self.__recipe_implementation, self.__session_handle)
 
     async def update_session_data(self, new_session_data) -> None:
-        return await session_functions.update_session_data(self.__recipe, self.__session_handle, new_session_data)
+        return await session_functions.update_session_data(self.__recipe_implementation, self.__session_handle, new_session_data)
 
     async def update_jwt_payload(self, new_jwt_payload) -> None:
-        result = await self.__recipe.get_querier().send_post_request(NormalisedURLPath(self.__recipe, '/recipe/session/regenerate'), {
+        result = await self.__recipe_implementation.querier.send_post_request(NormalisedURLPath('/recipe/session'
+                                                                                                '/regenerate'), {
             'accessToken': self.__access_token,
             'userDataInJWT': new_jwt_payload
         })
         if result['status'] == 'UNAUTHORISED':
-            raise_unauthorised_exception(self.__recipe, result['message'])
+            raise_unauthorised_exception(self.__recipe_implementation, result['message'])
         self.__jwt_payload = result['session']['userDataInJWT']
         if 'accessToken' in result and result['accessToken'] is not None:
             self.__access_token = result['accessToken']['token']

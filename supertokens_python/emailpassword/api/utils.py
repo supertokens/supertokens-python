@@ -17,7 +17,6 @@ from __future__ import annotations
 from __future__ import annotations
 from typing import TYPE_CHECKING, List
 if TYPE_CHECKING:
-    from supertokens_python.emailpassword.recipe import EmailPasswordRecipe
     from supertokens_python.emailpassword.types import NormalisedFormField
 from supertokens_python.emailpassword.types import FormField, ErrorFormField
 from supertokens_python.emailpassword.constants import FORM_FIELD_EMAIL_ID
@@ -26,10 +25,10 @@ from supertokens_python.utils import find_first_occurrence_in_list
 from supertokens_python.emailpassword.exceptions import raise_form_field_exception
 
 
-async def validate_form_or_throw_error(recipe: EmailPasswordRecipe, inputs: List[FormField], config_form_fields: List[NormalisedFormField]):
+async def validate_form_or_throw_error(inputs: List[FormField], config_form_fields: List[NormalisedFormField]):
     validation_errors: List[ErrorFormField] = []
     if len(config_form_fields) != len(inputs):
-        raise_bad_input_exception(recipe, 'Are you sending too many / too few formFields?')
+        raise_bad_input_exception('Are you sending too many / too few formFields?')
 
     for field in config_form_fields:
         input_field: FormField = find_first_occurrence_in_list(lambda x: x.id == field.id, inputs)
@@ -41,27 +40,27 @@ async def validate_form_or_throw_error(recipe: EmailPasswordRecipe, inputs: List
                 validation_errors.append(ErrorFormField(field.id, error))
 
     if len(validation_errors) != 0:
-        raise_form_field_exception(recipe, 'Error in input formFields', validation_errors)
+        raise_form_field_exception('Error in input formFields', validation_errors)
 
 
-async def validate_form_fields_or_throw_error(recipe: EmailPasswordRecipe, config_form_fields: List[NormalisedFormField], form_fields_raw: any) -> List[FormField]:
+async def validate_form_fields_or_throw_error(config_form_fields: List[NormalisedFormField], form_fields_raw: any) -> List[FormField]:
     if form_fields_raw is None:
-        raise_bad_input_exception(recipe, 'Missing input param: formFields')
+        raise_bad_input_exception('Missing input param: formFields')
 
     if not isinstance(form_fields_raw, list):
-        raise_bad_input_exception(recipe, 'formFields must be an array')
+        raise_bad_input_exception('formFields must be an array')
 
     form_fields: List[FormField] = []
 
     for current_form_field in form_fields_raw:
         if 'id' not in current_form_field or not isinstance(current_form_field['id'],
                                                             str) or 'value' not in current_form_field:
-            raise_bad_input_exception(recipe, 'All elements of formFields must contain an \'id\' and \'value\' field')
+            raise_bad_input_exception('All elements of formFields must contain an \'id\' and \'value\' field')
         value = current_form_field['value']
         id = current_form_field['id']
         if id == FORM_FIELD_EMAIL_ID:
             value = value.strip()
         form_fields.append(FormField(id, value))
 
-    await validate_form_or_throw_error(recipe, form_fields, config_form_fields)
+    await validate_form_or_throw_error(form_fields, config_form_fields)
     return form_fields

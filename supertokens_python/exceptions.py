@@ -15,29 +15,23 @@ under the License.
 """
 from __future__ import annotations
 from typing import Union, TYPE_CHECKING
-if TYPE_CHECKING:
-    from .recipe_module import RecipeModule
 
 
-def raise_general_exception(recipe: Union[RecipeModule, None], msg, previous=None):
+def raise_general_exception(msg, previous=None):
     if isinstance(msg, SuperTokensError):
         raise msg
     elif isinstance(msg, Exception):
-        raise GeneralError(recipe, msg) from None
-    raise GeneralError(recipe, msg) from previous
+        raise GeneralError(msg) from None
+    raise GeneralError(msg) from previous
 
 
-def raise_bad_input_exception(recipe: Union[RecipeModule, None], msg):
-    raise BadInputError(recipe, msg)
+def raise_bad_input_exception(msg):
+    raise BadInputError(msg)
 
 
 class SuperTokensError(Exception):
-    def __init__(self, recipe: Union[RecipeModule, None], msg: Union[str, Exception]):
+    def __init__(self, msg: Union[str, Exception]):
         super().__init__(msg)
-        self.recipe = recipe
-
-    def get_recipe_id(self) -> Union[str, None]:
-        return self.recipe.get_recipe_id() if self.recipe is not None else None
 
 
 class GeneralError(SuperTokensError):
