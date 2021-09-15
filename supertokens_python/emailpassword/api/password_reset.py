@@ -25,7 +25,7 @@ from supertokens_python.exceptions import raise_bad_input_exception
 async def handle_password_reset_api(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_generate_password_reset_token_post:
         return None
-    body = await api_options.request.json()
+    body = api_options.request.json()
     form_fields_raw = body['formFields'] if 'formFields' in body else []
     form_fields = await validate_form_fields_or_throw_error(api_options.config.reset_token_using_password_feature.form_fields_for_password_reset_form,
                                                             form_fields_raw)

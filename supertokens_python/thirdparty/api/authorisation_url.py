@@ -16,41 +16,30 @@ under the License.
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-    from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.thirdparty.recipe import ThirdPartyRecipe
-    from supertokens_python.thirdparty.provider import Provider
 from supertokens_python.utils import find_first_occurrence_in_list
+
+if TYPE_CHECKING:
+    from supertokens_python.thirdparty.interfaces import APIOptions, APIInterface
+    from supertokens_python.thirdparty.provider import Provider
 from supertokens_python.exceptions import raise_bad_input_exception
-from urllib.parse import urlencode
 
 
-async def handle_authorisation_url_api(recipe: ThirdPartyRecipe, request: BaseRequest, response: BaseResponse):
-    third_party_id = request.get_query_param('thirdPartyId')
+async def handle_authorisation_url_api(api_implementation: APIInterface, api_options: APIOptions):
+    if api_implementation.disable_authorisation_url_get:
+        return None
+    third_party_id = api_options.request.get_query_param('thirdPartyId')
 
     if third_party_id is None:
-        raise_bad_input_exception(recipe, 'Please provide the thirdPartyId as a GET param')
+        raise_bad_input_exception('Please provide the thirdPartyId as a GET param')
 
-    provider: Provider = find_first_occurrence_in_list(lambda x: x.id == third_party_id, recipe.providers)
+    provider: Provider = find_first_occurrence_in_list(lambda x: x.id == third_party_id, api_options.providers)
     if provider is None:
-        raise_bad_input_exception(recipe, 'The third party provider ' + third_party_id + 'seems to not be configured '
-                                                                                         'on the backend. Please '
-                                                                                         'check your frontend and '
-                                                                                         'backend configs.')
+        raise_bad_input_exception('The third party provider ' + third_party_id + 'seems to not be configured '
+                                                                                 'on the backend. Please '
+                                                                                 'check your frontend and '
+                                                                                 'backend configs.')
 
-    authorisation_url_info = provider.get_authorisation_redirect_api_info()
+    result = await api_implementation.authorisation_url_get(provider, api_options)
+    api_options.response.set_content(result.to_json())
 
-    params = {}
-    for key, value in authorisation_url_info.params.items():
-        params[key] = value if not callable(value) else value(request)
-    query_string = urlencode(params)
-
-    url = authorisation_url_info.url + '?' + query_string
-
-    response.set_content({
-        'status': 'OK',
-        'url': url
-    })
-
-    return response
+    return api_options.response

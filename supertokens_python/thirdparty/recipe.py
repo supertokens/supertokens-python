@@ -14,12 +14,16 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 from __future__ import annotations
-from os import environ
 
+from os import environ
+from typing import List, TYPE_CHECKING
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import RecipeModule, APIHandled
-from typing import List, TYPE_CHECKING, Union
+from .api.implementation import APIImplementation
+from .interfaces import APIOptions
+from .recipe_implementation import RecipeImplementation
+from ..querier import Querier
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -30,25 +34,15 @@ from supertokens_python.emailverification import EmailVerificationRecipe
 from .utils import validate_and_normalise_user_input
 from .api import (
     handle_sign_in_up_api,
-    handle_authorisation_url_api,
-    handle_sign_out_api
+    handle_authorisation_url_api
 )
 from .constants import (
-    SIGNOUT,
     SIGNINUP,
     AUTHORISATIONURL
 )
 from .exceptions import (
     NoEmailGivenByProviderError,
-    raise_unknown_user_id_exception
-)
-from .types import SignInUpResponse, User, UsersResponse
-from .core_api_calls import (
-    sign_in_up as core_sign_in_up,
-    get_user_by_id as core_get_user_by_id,
-    get_users as core_get_users,
-    get_users_count as core_get_users_count,
-    get_user_by_third_party_info as core_get_user_by_third_party_info
+    raise_unknown_user_id_exception, SuperTokensThirdPartyError
 )
 
 
@@ -64,31 +58,38 @@ class ThirdPartyRecipe(RecipeModule):
         self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                  self.config.email_verification_feature)
         self.providers = self.config.sign_in_and_up_feature.providers
+        recipe_implementation = RecipeImplementation(Querier.get_instance(self), self.config)
+        self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
+            self.config.override.functions(recipe_implementation)
+        api_implementation = APIImplementation()
+        self.api_implementation = api_implementation if self.config.override.apis is None else \
+            self.config.override.apis(api_implementation)
 
     def is_error_from_this_or_child_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and (
-            err.recipe == self
-            or
-            self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
+                isinstance(err, SuperTokensThirdPartyError)
+                or
+                self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [
-            APIHandled(NormalisedURLPath(self, SIGNINUP), 'post', SIGNINUP,
-                       self.config.sign_in_and_up_feature.disable_default_implementation),
-            APIHandled(NormalisedURLPath(self, SIGNOUT), 'post', SIGNOUT,
-                       self.config.sign_out_feature.disable_default_implementation),
-            APIHandled(NormalisedURLPath(self, AUTHORISATIONURL), 'get', AUTHORISATIONURL,
-                       self.config.sign_in_and_up_feature.disable_default_implementation)
-        ] + self.email_verification_recipe.get_apis_handled()
+                   APIHandled(NormalisedURLPath(SIGNINUP), 'post', SIGNINUP,
+                              self.api_implementation.disable_sign_in_up_post),
+                   APIHandled(NormalisedURLPath(AUTHORISATIONURL), 'get', AUTHORISATIONURL,
+                              self.api_implementation.disable_authorisation_url_get)
+               ] + self.email_verification_recipe.get_apis_handled()
 
-    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse):
+    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
+                                 response: BaseResponse):
         if request_id == SIGNINUP:
-            return await handle_sign_in_up_api(self, request, response)
-        elif request_id == SIGNOUT:
-            return await handle_sign_out_api(self, request, response)
+            return await handle_sign_in_up_api(self.api_implementation,
+                                               APIOptions(request, None, self.recipe_id, self.config,
+                                                          self.recipe_implementation, self.providers))
         elif request_id == AUTHORISATIONURL:
-            return await handle_authorisation_url_api(self, request, response)
+            return await handle_authorisation_url_api(self.api_implementation,
+                                                      APIOptions(request, None, self.recipe_id, self.config,
+                                                                 self.recipe_implementation, self.providers))
         else:
             return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
@@ -134,37 +135,7 @@ class ThirdPartyRecipe(RecipeModule):
     # instance functions below...............
 
     async def get_email_for_user_id(self, user_id: str) -> str:
-        user_info = await self.get_user_by_id(user_id)
+        user_info = await self.recipe_implementation.get_user_by_id(user_id)
         if user_info is None:
-            raise_unknown_user_id_exception(self, 'Unknown User ID provided')
+            raise_unknown_user_id_exception('Unknown User ID provided')
         return user_info.email
-
-    async def get_user_by_id(self, user_id: str) -> Union[User, None]:
-        return await core_get_user_by_id(self, user_id)
-
-    async def get_user_by_third_party_info(self, third_party_id: str, third_party_user_id: str) -> Union[User, None]:
-        return await core_get_user_by_third_party_info(self, third_party_id, third_party_user_id)
-
-    async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool) -> SignInUpResponse:
-        return await core_sign_in_up(self, third_party_id, third_party_user_id, email, email_verified)
-
-    async def create_email_verification_token(self, user_id: str) -> str:
-        return await self.email_verification_recipe.create_email_verification_token(user_id,
-                                                                                    await self.get_email_for_user_id(
-                                                                                        user_id))
-
-    async def verify_email_using_token(self, token: str) -> User:
-        return await self.email_verification_recipe.verify_email_using_token(token)
-
-    async def is_email_verified(self, user_id: str) -> bool:
-        return await self.email_verification_recipe.is_email_verified(user_id,
-                                                                      await self.get_email_for_user_id(user_id))
-
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        return await core_get_users(self, 'ASC', limit, next_pagination)
-
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        return await core_get_users(self, 'DESC', limit, next_pagination)
-
-    async def get_user_count(self) -> int:
-        return await core_get_users_count(self)

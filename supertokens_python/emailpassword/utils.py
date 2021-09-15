@@ -195,9 +195,9 @@ def validate_and_normalise_reset_password_using_token_config(app_info: AppInfo, 
 
 def email_verification_create_and_send_custom_email(recipe: EmailPasswordRecipe, create_and_send_custom_email):
     async def func(user, link):
-        user_info = await recipe.get_user_by_id(user.id)
+        user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
         if user_info is None:
-            raise_unknown_user_id_exception(recipe, 'User ID unknown')
+            raise_unknown_user_id_exception('User ID unknown')
         return await create_and_send_custom_email(user_info, link)
 
     return func
@@ -205,9 +205,9 @@ def email_verification_create_and_send_custom_email(recipe: EmailPasswordRecipe,
 
 def email_verification_get_email_verification_url(recipe: EmailPasswordRecipe, get_email_verification_url):
     async def func(user):
-        user_info = await recipe.get_user_by_id(user.id)
+        user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
         if user_info is None:
-            raise_unknown_user_id_exception(recipe, 'User ID unknown')
+            raise_unknown_user_id_exception('User ID unknown')
         return await get_email_verification_url(user_info)
 
     return func
