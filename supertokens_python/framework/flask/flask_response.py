@@ -13,6 +13,7 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
+import json
 from time import time
 
 from werkzeug.http import dump_cookie
@@ -78,5 +79,11 @@ class FlaskResponse(BaseResponse):
             return self.response.headers
 
     def set_content(self, content):
-        self.response.content = content
+        self.response.data = json.dumps(
+            content,
+            ensure_ascii=False,
+            allow_nan=False,
+            indent=None,
+            separators=(",", ":"),
+        ).encode("utf-8")
 
