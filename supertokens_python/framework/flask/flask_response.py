@@ -13,6 +13,7 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
+from time import time
 
 from werkzeug.http import dump_cookie
 
@@ -34,7 +35,7 @@ class FlaskResponse(BaseResponse):
                                      key,
                                      value=value,
                                      max_age=max_age,
-                                     expires=expires,
+                                     expires=expires / 1000,
                                      path=path,
                                      domain=domain,
                                      secure=secure,

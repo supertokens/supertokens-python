@@ -13,9 +13,10 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
+from time import time
 
 from supertokens_python.framework.response import BaseResponse
-
+import json
 
 class FastApiResponse(BaseResponse):
 
@@ -27,7 +28,7 @@ class FastApiResponse(BaseResponse):
 
     def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
                    domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "Lax"):
-        self.response.set_cookie(key, value, max_age, expires, path, domain, secure, httponly, samesite)
+        self.response.set_cookie(key, value, max_age, int(time() * 1000), path, domain, secure, httponly, samesite)
 
     def set_header(self, key, value):
         self.response.headers[key] = value
@@ -39,5 +40,11 @@ class FastApiResponse(BaseResponse):
         self.response.status_code = status_code
 
     def set_content(self, content):
-        self.response.content = content
+        self.response.body = json.dumps(
+            content,
+            ensure_ascii=False,
+            allow_nan=False,
+            indent=None,
+            separators=(",", ":"),
+        ).encode("utf-8")
 

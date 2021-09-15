@@ -16,7 +16,12 @@ under the License.
 from functools import wraps
 from typing import Union
 
+
+from supertokens_python import Supertokens
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.exceptions import SuperTokensError
+from supertokens_python.framework.django.django_request import DjangoRequest
+from supertokens_python.framework.django.django_response import DjangoResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.session import SessionRecipe
 from supertokens_python.utils import FRAMEWORKS, normalise_http_method
@@ -26,18 +31,27 @@ def verify_session(recipe: SessionRecipe, anti_csrf_check: Union[bool, None] = N
     def session_verify(f):
         @wraps(f)
         def wrapped_function(request, *args, **kwargs):
-            if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
-                request = FRAMEWORKS[recipe.app_info.framework].wrap_request(request)
-            method = normalise_http_method(request.method)
-            if method == 'options' or method == 'trace':
-                return None
-            incoming_path = NormalisedURLPath(recipe, request.url.path)
-            refresh_token_path = recipe.config.refresh_token_path
-            if incoming_path.equals(refresh_token_path) and method == 'post':
-                session = sync(recipe.refresh_session)(request)
-            else:
-                session = sync(recipe.get_session)(request, anti_csrf_check, session_required)
-            request.set_session(session)
+            from django.http import HttpResponse
+            try:
+                if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
+                    request = FRAMEWORKS[recipe.app_info.framework].wrap_request(request)
+                method = normalise_http_method(request.method())
+                if method == 'options' or method == 'trace':
+                    return None
+                incoming_path = NormalisedURLPath(recipe, request.get_path())
+                refresh_token_path = recipe.config.refresh_token_path
+                if incoming_path.equals(refresh_token_path) and method == 'post':
+                    session = sync(recipe.refresh_session(request))
+                else:
+                    session = sync(recipe.get_session(request, anti_csrf_check, session_required))
+                request.set_session(session)
+
+                return f(request.request, *args, **kwargs)
+
+            except SuperTokensError as e:
+                response = DjangoResponse(HttpResponse())
+                result = sync(Supertokens.get_instance().handle_supertokens_error(DjangoRequest(request), e, response))
+                return result.response
 
         return wrapped_function
 

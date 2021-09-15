@@ -147,7 +147,11 @@ class Supertokens:
             telemetry = config['telemetry']
 
         if telemetry:
-            asyncio.create_task(self.send_telemetry())
+            if self.app_info.framework.lower() == 'flask' or self.app_info.framework.lower() == 'django2':
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(self.send_telemetry())
+            else:
+                asyncio.create_task(self.send_telemetry())
 
     async def send_telemetry(self):
         try:

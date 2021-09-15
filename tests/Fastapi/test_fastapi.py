@@ -93,7 +93,7 @@ async def test_login_refresh(driver_config_client: TestClient):
         'supertokens': {
             'connection_uri': "http://localhost:3567",
         },
-        'framework': 'Fastapi',
+        'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
             'api_domain': "api.supertokens.io",
@@ -165,7 +165,7 @@ def test_login_logout(driver_config_client: TestClient):
         'supertokens': {
             'connection_uri': "http://localhost:3567",
         },
-        'framework': 'Fastapi',
+        'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
             'api_domain': "api.supertokens.io",
@@ -236,7 +236,7 @@ def test_login_info(driver_config_client: TestClient):
         'supertokens': {
             'connection_uri': "http://localhost:3567",
         },
-        'framework': 'Fastapi',
+        'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
             'api_domain': "api.supertokens.io",
@@ -290,7 +290,7 @@ def test_login_handle(driver_config_client: TestClient):
         'supertokens': {
             'connection_uri': "http://localhost:3567",
         },
-        'framework': 'Fastapi',
+        'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
             'api_domain': "api.supertokens.io",
@@ -346,7 +346,7 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
         'supertokens': {
             'connection_uri': "http://localhost:3567",
         },
-        'framework': 'Fastapi',
+        'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
             'api_domain': "api.supertokens.io",

@@ -29,10 +29,10 @@ def middleware(get_response):
     from supertokens_python.session import Session
     from supertokens_python.supertokens import manage_cookies_post_response
 
-    st = Supertokens.get_instance()
 
     if asyncio.iscoroutinefunction(get_response):
         async def __middleware(request):
+            st = Supertokens.get_instance()
             custom_request = DjangoRequest(request)
             from django.http import HttpResponse
             response = DjangoResponse(HttpResponse())
@@ -53,18 +53,20 @@ def middleware(get_response):
                 return result.response
     else:
         def __middleware(request):
+            st = Supertokens.get_instance()
             custom_request = DjangoRequest(request)
             from django.http import HttpResponse
-
+            from django.http import HttpResponse
+            response = DjangoResponse(HttpResponse())
             try:
-                result = async_to_sync(st.middleware)(custom_request)
+                result = async_to_sync(st.middleware)(custom_request, response)
 
                 if result is None:
                     result = get_response(request)
                     result = DjangoResponse(result)
 
-                if hasattr(request.state, "supertokens") and isinstance(request.state.supertokens, Session):
-                    manage_cookies_post_response(request.state.supertokens, result)
+                if hasattr(request, "state") and isinstance(request.state, Session):
+                    manage_cookies_post_response(request.state, result)
 
                 return result.response
 

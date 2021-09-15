@@ -46,7 +46,11 @@ async def handle_email_verify_api(recipe: EmailVerificationRecipe, request: Base
             except Exception:
                 pass
 
-        asyncio.create_task(send_email())
+        if recipe.app_info.framework.lower() == 'flask' or recipe.app_info.framework.lower() == 'django2':
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(send_email())
+        else:
+            asyncio.create_task(send_email())
         response.set_content({
             'status': 'OK'
         })

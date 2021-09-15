@@ -66,7 +66,6 @@ async def handle_view(request):
     return JsonResponse({'s': session.get_handle()})
 
 
-
 class SupertokensTest(TestCase):
 
     def setUp(self):
@@ -84,7 +83,7 @@ class SupertokensTest(TestCase):
             'supertokens': {
                 'connection_uri': "http://localhost:3567",
             },
-            'framework': 'django',
+            'framework': 'django3',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "api.supertokens.io",
@@ -131,13 +130,12 @@ class SupertokensTest(TestCase):
         assert refreshed_cookies['sIdRefreshToken']['secure'] == cookies['sIdRefreshToken']['secure']
         assert refreshed_cookies['sRefreshToken']['secure'] == cookies['sRefreshToken']['secure']
 
-
     async def test_login_logout(self):
         init({
             'supertokens': {
                 'connection_uri': "http://localhost:3567",
             },
-            'framework': 'django',
+            'framework': 'django3',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "api.supertokens.io",
@@ -181,7 +179,7 @@ class SupertokensTest(TestCase):
             'supertokens': {
                 'connection_uri': "http://localhost:3567",
             },
-            'framework': 'django',
+            'framework': 'django3',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "api.supertokens.io",
@@ -224,7 +222,7 @@ class SupertokensTest(TestCase):
             'supertokens': {
                 'connection_uri': "http://localhost:3567",
             },
-            'framework': 'django',
+            'framework': 'django3',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "api.supertokens.io",
@@ -255,7 +253,4 @@ class SupertokensTest(TestCase):
 
         response = await my_middleware(request)
         print(response)
-        assert response.status_code == 401 # not authorized because no access refresh token
-
-
-
+        assert response.status_code == 401  # not authorized because no access refresh token

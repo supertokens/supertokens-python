@@ -85,7 +85,7 @@ class SessionRecipe(RecipeModule):
             except Exception:
                 pass
 
-        if app_info.framework == 'Flask':
+        if app_info.framework.lower() == 'flask' or app_info.framework.lower() == 'django2':
             loop = asyncio.get_event_loop()
             loop.run_until_complete(call_get_handshake_info())
         else:

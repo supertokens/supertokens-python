@@ -15,6 +15,7 @@ under the License.
 """
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.responses import Response
 
 
 class Middleware(BaseHTTPMiddleware):
@@ -45,6 +46,6 @@ class Middleware(BaseHTTPMiddleware):
             print(request.state)
             return result.response
         except SuperTokensError as e:
-            response = FastApiResponse(JSONResponse())
+            response = FastApiResponse(Response())
             result = await st.handle_supertokens_error(FastApiRequest(request), e, response)
             return result.response

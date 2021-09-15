@@ -31,7 +31,6 @@ class Middleware:
         from supertokens_python import Supertokens
         from supertokens_python.supertokens import manage_cookies_post_response
         from flask import Response
-        from flask import g
 
         st = Supertokens.get_instance()
         request = FlaskRequest(environ)
@@ -39,15 +38,18 @@ class Middleware:
         result = async_to_sync(st.middleware)(request, response)
 
         if result is None:
-            self.app(environ, start_response)
+            def injecting_start_response(status, headers, exc_info=None):
+                headers = None
+                return start_response(status, headers, exc_info)
+            self.app(environ, injecting_start_response)
 
         response = FlaskResponse()
 
-        if hasattr(g, "session"):
-            manage_cookies_post_response(g.session, response)
+        if 'additional_storage' in environ:
+            manage_cookies_post_response(environ['additional_storage'], response)
 
         def injecting_start_response(status, headers, exc_info=None):
-            headers = response.get_headers()
+            headers.extend(response.get_headers())
             return start_response(status, headers, exc_info)
 
         return self.app(environ, injecting_start_response)

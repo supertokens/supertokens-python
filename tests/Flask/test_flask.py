@@ -61,7 +61,7 @@ def driver_config_app():
         'supertokens': {
             'connection_uri': "http://localhost:3567",
         },
-        'framework': 'Flask',
+        'framework': 'flask',
         'app_info': {
             'app_name': "SuperTokens Demo",
             'api_domain': "api.supertokens.io",
@@ -87,9 +87,8 @@ def driver_config_app():
         print(request)
 
         session = create_new_session(request, user_id, {}, {})
-        response = make_response(jsonify({'userId': user_id, 'session': 'ssss'}), 200)
 
-        return response
+        return jsonify({'userId': user_id, 'session': 'ssss'})
 
     @app.route('/refresh', methods=['POST'])
     def custom_refresh():
@@ -116,7 +115,7 @@ def driver_config_app():
     @verify_session(session_required=False)
     def custom_logout():
         response = make_response(jsonify({}))
-        supertokens_session = get_session(request, True)
+        supertokens_session = get_session(request, False)
         revoke_session(supertokens_session['user_id'])
         return response
 

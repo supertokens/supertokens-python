@@ -14,6 +14,8 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 from __future__ import annotations
+
+from time import time
 from typing import Literal, TYPE_CHECKING
 
 from .constants import (
@@ -90,7 +92,7 @@ def set_cookie(recipe: SessionRecipe, response: BaseResponse, key, value, expire
     elif path_type == 'access_token_path':
         path = '/'
     http_only = True
-    response.set_cookie(key=key, value=quote(value, encoding='utf-8'), expires=((expires - get_timestamp_ms()) // 1000),
+    response.set_cookie(key=key, value=quote(value, encoding='utf-8'), expires=expires,
                         path=path, domain=domain, secure=secure, httponly=http_only, samesite=same_site)
 
 

@@ -36,9 +36,10 @@ from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
 
 FRAMEWORKS={
-    'Fastapi' : FastapiFramework(),
-    'Flask' : FlaskFramework(),
-    'Django' : DjangoFramework(),
+    'fastapi' : FastapiFramework(),
+    'flask' : FlaskFramework(),
+    'django3' : DjangoFramework(),
+    'django2' : DjangoFramework(),
 }
 
 def validate_framework(config):
