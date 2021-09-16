@@ -16,35 +16,27 @@ under the License.
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-
 if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-    from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.emailpassword.recipe import EmailPasswordRecipe
-
+    from supertokens_python.emailpassword.interfaces import APIOptions, APIInterface
 from .utils import validate_form_fields_or_throw_error
-from supertokens_python.emailpassword.constants import FORM_FIELD_PASSWORD_ID
-from supertokens_python.utils import find_first_occurrence_in_list
 from supertokens_python.exceptions import raise_bad_input_exception
 
 
-async def handle_password_reset_api(recipe: EmailPasswordRecipe, request: BaseRequest, response: BaseResponse):
-    body = await request.json()
+async def handle_password_reset_api(api_implementation: APIInterface, api_options: APIOptions):
+    if api_implementation.disable_generate_password_reset_token_post:
+        return None
+    body = api_options.request.json()
     form_fields_raw = body['formFields'] if 'formFields' in body else []
-    form_fields = await validate_form_fields_or_throw_error(recipe,
-                                                            recipe.config.reset_token_using_password_feature.form_fields_for_password_reset_form,
+    form_fields = await validate_form_fields_or_throw_error(api_options.config.reset_token_using_password_feature.form_fields_for_password_reset_form,
                                                             form_fields_raw)
-    new_password = find_first_occurrence_in_list(lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
+
     if 'token' not in body:
-        raise_bad_input_exception(recipe, 'Please provide the password reset token')
+        raise_bad_input_exception('Please provide the password reset token')
     if not isinstance(body['token'], str):
-        raise_bad_input_exception(recipe, 'The password reset token must be a string')
+        raise_bad_input_exception('The password reset token must be a string')
 
     token = body['token']
-    await recipe.reset_password_using_token(token, new_password)
+    response = await api_implementation.password_reset_post(token, form_fields, api_options)
+    api_options.response.set_content(response.to_json())
 
-    response.set_content({
-        'status': 'OK'
-    })
-
-    return response
+    return api_options.response

@@ -16,25 +16,20 @@ under the License.
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-
-
 if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-    from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.emailpassword.recipe import EmailPasswordRecipe
+    from supertokens_python.emailpassword.interfaces import APIOptions, APIInterface
 from supertokens_python.exceptions import raise_bad_input_exception
 
 
-async def handle_email_exists_api(recipe: EmailPasswordRecipe, request: BaseRequest, response: BaseResponse):
-    email = request.get_query_param('email')
+async def handle_email_exists_api(api_implementation: APIInterface, api_options: APIOptions):
+    if api_implementation.disable_email_exists_get:
+        return None
+    email = api_options.request.get_query_param('email')
     if email is None:
-        raise_bad_input_exception(recipe, 'Please provide the email as a GET param')
+        raise_bad_input_exception('Please provide the email as a GET param')
 
-    user = await recipe.get_user_by_email(email)
-    response.set_content({
-        'status': 'OK',
-        'exists': user is not None
-    })
+    response = await api_implementation.email_exists_get(email, api_options)
+    api_options.response.set_content(response.to_json())
 
-    return response
+    return api_options.response
 

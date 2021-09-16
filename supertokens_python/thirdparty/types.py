@@ -31,20 +31,9 @@ type_number = {
 
 type_any = {}
 
-SESSION_FEATURE_INPUT_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'set_jwt_payload': type_any,
-        'set_session_data': type_any
-    },
-    'additionalProperties': False
-}
-
 SIGN_IN_AND_UP_FEATURE_INPUT_SCHEMA = {
     'type': 'object',
     'properties': {
-        'disable_default_implementation': type_boolean,
-        'handle_post_sign_up_in': type_any,
         'providers': {
             'type': 'array'
         }
@@ -53,21 +42,28 @@ SIGN_IN_AND_UP_FEATURE_INPUT_SCHEMA = {
     'additionalProperties': False
 }
 
-SIGN_OUT_FEATURE_INPUT_SCHEMA = {
+EMAIL_VERIFICATION_FEATURE_INPUT_SCHEMA = {
     'type': 'object',
     'properties': {
-        'disable_default_implementation': type_boolean
+        'get_email_verification_url': type_any,
+        'create_and_send_custom_email': type_any
     },
     'additionalProperties': False
 }
 
-EMAIL_VERIFICATION_FEATURE_INPUT_SCHEMA = {
+OVERRIDE_INPUT_SCHEMA = {
     'type': 'object',
     'properties': {
-        'disable_default_implementation': type_boolean,
-        'get_email_verification_url': type_any,
-        'create_and_send_custom_email': type_any,
-        'handle_post_email_verification': type_any
+        'functions': type_any,
+        'apis': type_any,
+        'email_verification_feature': {
+            'type': 'object',
+            'properties': {
+                'functions': type_any,
+                'apis': type_any
+            },
+            'additionalProperties': False
+        }
     },
     'additionalProperties': False
 }
@@ -75,10 +71,9 @@ EMAIL_VERIFICATION_FEATURE_INPUT_SCHEMA = {
 INPUT_SCHEMA = {
     'type': 'object',
     'properties': {
-        'session_feature': SESSION_FEATURE_INPUT_SCHEMA,
         'sign_in_and_up_feature': SIGN_IN_AND_UP_FEATURE_INPUT_SCHEMA,
-        'sign_out_feature': SIGN_OUT_FEATURE_INPUT_SCHEMA,
-        'email_verification_feature': EMAIL_VERIFICATION_FEATURE_INPUT_SCHEMA
+        'email_verification_feature': EMAIL_VERIFICATION_FEATURE_INPUT_SCHEMA,
+        'override': OVERRIDE_INPUT_SCHEMA
     },
     'additionalProperties': False
 }

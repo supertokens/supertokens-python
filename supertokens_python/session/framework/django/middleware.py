@@ -31,19 +31,9 @@ def verify_session(recipe: SessionRecipe, anti_csrf_check: Union[bool, None] = N
         async def wrapped_function(request, *args, **kwargs):
             from django.http import HttpResponse
             try:
-                if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
-                    request = FRAMEWORKS[recipe.app_info.framework].wrap_request(request)
-                method = normalise_http_method(request.method())
-                if method == 'options' or method == 'trace':
-                    return None
-                incoming_path = NormalisedURLPath(recipe, request.get_path())
-                refresh_token_path = recipe.config.refresh_token_path
-                if incoming_path.equals(refresh_token_path) and method == 'post':
-                    session = await recipe.refresh_session(request)
-                else:
-                    session = await recipe.get_session(request, anti_csrf_check, session_required)
+                request = DjangoRequest(request)
+                session = await recipe.verify_session(request, anti_csrf_check, session_required)
                 request.set_session(session)
-
                 return f(request.request, *args, **kwargs)
             except SuperTokensError as e:
                 response = DjangoResponse(HttpResponse())

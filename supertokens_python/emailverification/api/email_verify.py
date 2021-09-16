@@ -15,60 +15,29 @@ under the License.
 """
 from __future__ import annotations
 
-import asyncio
-from typing import TYPE_CHECKING
+from supertokens_python.emailverification.interfaces import APIOptions, APIInterface
 
-from supertokens_python.session import get_session
-
-if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-    from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.emailverification.recipe import EmailVerificationRecipe
-
-from supertokens_python.exceptions import raise_general_exception, raise_bad_input_exception
+from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.utils import normalise_http_method
 
 
-async def handle_email_verify_api(recipe: EmailVerificationRecipe, request: BaseRequest, response: BaseResponse):
-    if normalise_http_method(request.method) == 'post':
-        body = await request.json()
+async def handle_email_verify_api(api_implementation: APIInterface, api_options: APIOptions):
+    if normalise_http_method(api_options.request.method()) == 'post':
+        if api_implementation.disable_email_verify_post:
+            return None
+        body = api_options.request.json()
         if 'token' not in body:
-            raise_bad_input_exception(recipe, 'Please provide the email verification token')
+            raise_bad_input_exception('Please provide the email verification token')
         if not isinstance(body['token'], str):
-            raise_bad_input_exception(recipe, 'The email verification token must be a string')
+            raise_bad_input_exception('The email verification token must be a string')
 
         token = body['token']
-        user = await recipe.verify_email_using_token(token)
-
-        async def send_email():
-            try:
-                recipe.config.handle_post_email_verification(user)
-            except Exception:
-                pass
-
-        if recipe.app_info.framework.lower() == 'flask' or recipe.app_info.framework.lower() == 'django2':
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(send_email())
-        else:
-            asyncio.create_task(send_email())
-        response.set_content({
-            'status': 'OK'
-        })
-
-        return response
+        result = await api_implementation.email_verify_post(token, api_options)
     else:
-        session = await get_session(request)
-        if session is None:
-            raise_general_exception(recipe, 'Session is undefined. Should not come here.')
+        if api_implementation.disable_is_email_verified_get:
+            return None
 
-        user_id = session.get_user_id()
-        email = await recipe.config.get_email_for_user_id(user_id)
+        result = await api_implementation.is_email_verified_get(api_options)
 
-        is_verified = await recipe.is_email_verified(user_id, email)
-        response.set_content({
-            'status': 'OK',
-            'isVerified': is_verified
-
-        })
-
-        return response
+    api_options.response.set_content(result.to_json())
+    return api_options.response

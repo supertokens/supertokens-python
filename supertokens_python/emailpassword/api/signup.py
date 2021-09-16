@@ -17,51 +17,20 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
-    from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.emailpassword.recipe import EmailPasswordRecipe
+    from supertokens_python.emailpassword.interfaces import APIOptions, APIInterface
 from .utils import validate_form_fields_or_throw_error
-from supertokens_python.emailpassword.constants import FORM_FIELD_PASSWORD_ID, FORM_FIELD_EMAIL_ID
-from supertokens_python.utils import find_first_occurrence_in_list, get_filtered_list
-from supertokens_python.exceptions import raise_general_exception
-from supertokens_python.session import create_new_session
 
 
-async def handle_sign_up_api(recipe: EmailPasswordRecipe, request: BaseRequest, response: BaseResponse):
-    body = await request.json()
+async def handle_sign_up_api(api_implementation: APIInterface, api_options: APIOptions):
+    if api_implementation.disable_sign_up_post:
+        return None
+    body = api_options.request.json()
     form_fields_raw = body['formFields'] if 'formFields' in body else []
-    form_fields = await validate_form_fields_or_throw_error(recipe,
-                                                            recipe.config.sign_in_feature.form_fields,
+    form_fields = await validate_form_fields_or_throw_error(api_options.config.sign_in_feature.form_fields,
                                                             form_fields_raw)
-    password = find_first_occurrence_in_list(lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
-    email = find_first_occurrence_in_list(lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
+    response = await api_implementation.sign_up_post(form_fields, api_options)
 
-    user = await recipe.sign_up(email, password)
+    api_options.response.set_content(response.to_json())
 
-    await recipe.config.sign_in_feature.handle_post_sign_up(user, get_filtered_list(
-        lambda x: x.id != FORM_FIELD_EMAIL_ID and x.id != FORM_FIELD_PASSWORD_ID, form_fields))
+    return api_options.response
 
-    jwt_payload_promise = recipe.config.session_feature.set_jwt_payload(user, get_filtered_list(
-        lambda x: x.id != FORM_FIELD_EMAIL_ID and x.id != FORM_FIELD_PASSWORD_ID, form_fields), 'signup')
-    session_data_promise = recipe.config.session_feature.set_session_data(user, get_filtered_list(
-        lambda x: x.id != FORM_FIELD_EMAIL_ID and x.id != FORM_FIELD_PASSWORD_ID, form_fields), 'signup')
-
-    jwt_payload = {}
-    session_data = {}
-    try:
-        jwt_payload = await jwt_payload_promise
-        session_data = await session_data_promise
-    except Exception as e:
-        raise_general_exception(recipe, e)
-
-    await create_new_session(request, user.id, jwt_payload, session_data)
-    response.set_content({
-        'status': 'OK',
-        'user': {
-            'id': user.user_id,
-            'email': user.email,
-            'timeJoined': user.time_joined
-        }
-    })
-
-    return response

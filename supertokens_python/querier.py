@@ -85,7 +85,7 @@ class Querier:
                 return await client.get(url, headers=headers)
 
         response = await self.__send_request_helper(
-            NormalisedURLPath(self.__recipe, API_VERSION), 'GET', f, len(self.__hosts))
+            NormalisedURLPath(API_VERSION), 'GET', f, len(self.__hosts))
         cdi_supported_by_server = response['versions']
         api_version = find_max_version(
             cdi_supported_by_server,

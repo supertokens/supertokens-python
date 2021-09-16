@@ -32,7 +32,7 @@ from urllib.parse import quote, unquote
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
-    from .session_recipe import SessionRecipe
+    from .recipe import SessionRecipe
 from supertokens_python.utils import get_timestamp_ms
 from supertokens_python.utils import get_header
 from supertokens_python.exceptions import raise_general_exception

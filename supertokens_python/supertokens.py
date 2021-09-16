@@ -52,23 +52,20 @@ from .exceptions import (
     GeneralError,
     BadInputError
 )
-from .session.session_recipe import SessionRecipe
+from .session.recipe import SessionRecipe
 import asyncio
 
 
 class AppInfo:
     def __init__(self, recipe: Union[RecipeModule, None], app_info):
         self.app_name: str = app_info['app_name']
-        self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(None, app_info[
-            'api_gateway_path']) if 'api_gateway_path' in app_info else NormalisedURLPath(None, '')
+        self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(app_info[
+            'api_gateway_path']) if 'api_gateway_path' in app_info else NormalisedURLPath('')
         self.api_domain: NormalisedURLDomain = NormalisedURLDomain(recipe, app_info['api_domain'])
         self.website_domain: NormalisedURLDomain = NormalisedURLDomain(recipe, app_info['website_domain'])
-        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(recipe, NormalisedURLPath(recipe,
-                                                                                                       '/auth') if 'api_base_path' not in app_info else NormalisedURLPath(
-            recipe, app_info['api_base_path']))
-        self.website_base_path: NormalisedURLPath = NormalisedURLPath(recipe,
-                                                                      '/auth') if 'website_base_path' not in app_info else NormalisedURLPath(
-            recipe, app_info['website_base_path'])
+        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(NormalisedURLPath( '/auth') if 'api_base_path' not in app_info else NormalisedURLPath(app_info['api_base_path']))
+        self.website_base_path: NormalisedURLPath = NormalisedURLPath(
+                                                                      '/auth') if 'website_base_path' not in app_info else NormalisedURLPath(app_info['website_base_path'])
 
 
 def manage_cookies_post_response(session: Session, response: BaseResponse):
@@ -119,7 +116,6 @@ class Supertokens:
         validate_the_structure_of_user_input(config, INPUT_SCHEMA, 'init_function', None)
         validate_framework(config)
         self.app_info: AppInfo = AppInfo(None, config['app_info'])
-
         self.app_info.framework = config['framework']
         hosts = list(map(lambda h: NormalisedURLDomain(None, h.strip()),
                          filter(lambda x: x != '', config['supertokens']['connection_uri'].split(';'))))
@@ -196,7 +192,6 @@ class Supertokens:
         raise_general_exception(None, 'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
 
-
     def get_all_cors_headers(self) -> List[str]:
         headers_set = set()
         headers_set.add(RID_KEY_HEADER)
@@ -209,8 +204,8 @@ class Supertokens:
         return list(headers_set)
 
     async def middleware(self, request: BaseRequest, response: BaseResponse) -> Union[BaseResponse, None]:
-        path = Supertokens.get_instance().app_info.api_gateway_path.append(None,
-                                                                           NormalisedURLPath(None,
+        path = Supertokens.get_instance().app_info.api_gateway_path.append(
+                                                                           NormalisedURLPath(
                                                                                              request.get_path()))
         method = normalise_http_method(request.method())
 

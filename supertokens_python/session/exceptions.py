@@ -15,37 +15,38 @@ under the License.
 """
 from __future__ import annotations
 from supertokens_python.exceptions import SuperTokensError
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from supertokens_python.recipe_module import RecipeModule
 
 
-def raise_token_theft_exception(recipe, user_id, session_handle):
-    raise TokenTheftError(recipe, user_id, session_handle)
+def raise_token_theft_exception(user_id, session_handle):
+    raise TokenTheftError(user_id, session_handle)
 
 
-def raise_try_refresh_token_exception(recipe, msg):
+def raise_try_refresh_token_exception(msg):
     if isinstance(msg, SuperTokensError):
         raise msg
-    raise TryRefreshTokenError(recipe, msg) from None
+    raise TryRefreshTokenError(msg) from None
 
 
-def raise_unauthorised_exception(recipe, msg):
+def raise_unauthorised_exception(msg):
     if isinstance(msg, SuperTokensError):
         raise msg
-    raise UnauthorisedError(recipe, msg) from None
+    raise UnauthorisedError(msg) from None
 
 
-class TokenTheftError(SuperTokensError):
-    def __init__(self, recipe: RecipeModule, user_id, session_handle):
-        super().__init__(recipe, 'token theft detected')
+class SuperTokensSessionError(SuperTokensError):
+    pass
+
+
+class TokenTheftError(SuperTokensSessionError):
+    def __init__(self, user_id, session_handle):
+        super().__init__('token theft detected')
         self.user_id = user_id
         self.session_handle = session_handle
 
 
-class UnauthorisedError(SuperTokensError):
+class UnauthorisedError(SuperTokensSessionError):
     pass
 
 
-class TryRefreshTokenError(SuperTokensError):
+class TryRefreshTokenError(SuperTokensSessionError):
     pass

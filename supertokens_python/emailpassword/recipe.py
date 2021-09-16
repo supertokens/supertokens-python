@@ -14,11 +14,16 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 from __future__ import annotations
+
 from os import environ
+from typing import List, TYPE_CHECKING
+from .api.implementation import APIImplementation
+from .interfaces import APIOptions
+from .recipe_implementation import RecipeImplementation
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import RecipeModule, APIHandled
-from typing import List, TYPE_CHECKING
+
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
@@ -31,11 +36,9 @@ from .api import (
     handle_sign_in_api,
     handle_email_exists_api,
     handle_password_reset_api,
-    handle_generate_password_reset_token_api,
-    handle_sign_out_api
+    handle_generate_password_reset_token_api
 )
 from .constants import (
-    SIGNOUT,
     SIGNIN,
     SIGNUP,
     USER_PASSWORD_RESET_TOKEN,
@@ -47,20 +50,11 @@ from .exceptions import (
     FieldError,
     WrongCredentialsError,
     ResetPasswordInvalidTokenError,
-    raise_unknown_user_id_exception
+    raise_unknown_user_id_exception,
+    SuperTokensEmailPasswordError
 )
-from .types import ErrorFormField, User, UsersResponse
-
-from .core_api_calls import (
-    sign_in as core_sign_in,
-    sign_up as core_sign_up,
-    get_user_by_email as core_get_user_by_email,
-    get_user_by_id as core_get_user_by_id,
-    get_users as core_get_users,
-    get_users_count as core_get_users_count,
-    create_reset_password_token as core_create_reset_password_token,
-    reset_password_using_token as core_reset_password_using_token
-)
+from .types import ErrorFormField
+from supertokens_python.querier import Querier
 
 
 class EmailPasswordRecipe(RecipeModule):
@@ -72,59 +66,73 @@ class EmailPasswordRecipe(RecipeModule):
         if config is None:
             config = {}
         self.config = validate_and_normalise_user_input(self, app_info, config)
-        self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info, self.config.email_verification_feature)
+        self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
+                                                                 self.config.email_verification_feature)
+        recipe_implementation = RecipeImplementation(Querier.get_instance(self), self.config)
+        self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
+            self.config.override.functions(recipe_implementation)
+        api_implementation = APIImplementation()
+        self.api_implementation = api_implementation if self.config.override.apis is None else \
+            self.config.override.apis(api_implementation)
 
     def is_error_from_this_or_child_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and (
-            err.recipe == self
-            or
-            self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
+                isinstance(err, SuperTokensEmailPasswordError)
+                or
+                self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [
-            APIHandled(NormalisedURLPath(self, SIGNUP), 'post', SIGNUP,
-                       self.config.sign_up_feature.disable_default_implementation),
-            APIHandled(NormalisedURLPath(self, SIGNIN), 'post', SIGNIN,
-                       self.config.sign_in_feature.disable_default_implementation),
-            APIHandled(NormalisedURLPath(self, SIGNOUT), 'post', SIGNOUT,
-                       self.config.sign_out_feature.disable_default_implementation),
-            APIHandled(NormalisedURLPath(self, USER_PASSWORD_RESET_TOKEN), 'post', USER_PASSWORD_RESET_TOKEN,
-                       self.config.reset_token_using_password_feature.disable_default_implementation),
-            APIHandled(NormalisedURLPath(self, USER_PASSWORD_RESET), 'post', USER_PASSWORD_RESET,
-                       self.config.reset_token_using_password_feature.disable_default_implementation),
-            APIHandled(NormalisedURLPath(self, SIGNUP_EMAIL_EXISTS), 'post', SIGNUP_EMAIL_EXISTS,
-                       self.config.sign_up_feature.disable_default_implementation)
+                   APIHandled(NormalisedURLPath(SIGNUP), 'post', SIGNUP,
+                              self.api_implementation.disable_sign_up_post),
+                   APIHandled(NormalisedURLPath(SIGNIN), 'post', SIGNIN,
+                              self.api_implementation.disable_sign_in_post),
+                   APIHandled(NormalisedURLPath(USER_PASSWORD_RESET_TOKEN), 'post', USER_PASSWORD_RESET_TOKEN,
+                              self.api_implementation.disable_generate_password_reset_token_post),
+                   APIHandled(NormalisedURLPath(USER_PASSWORD_RESET), 'post', USER_PASSWORD_RESET,
+                              self.api_implementation.disable_password_reset_post),
+                   APIHandled(NormalisedURLPath(SIGNUP_EMAIL_EXISTS), 'post', SIGNUP_EMAIL_EXISTS,
+                              self.api_implementation.disable_email_exists_get)
 
-        ] + self.email_verification_recipe.get_apis_handled()
+               ] + self.email_verification_recipe.get_apis_handled()
 
-    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse):
+    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
+                                 response: BaseResponse):
         if request_id == SIGNUP:
-            return await handle_sign_up_api(self, request, response)
+            return await handle_sign_up_api(self.api_implementation,
+                                            APIOptions(request, None, self.recipe_id, self.config,
+                                                       self.recipe_implementation))
         elif request_id == SIGNIN:
-            return await handle_sign_in_api(self, request, response)
-        elif request_id == SIGNOUT:
-            return await handle_sign_out_api(self, request, response)
+            return await handle_sign_in_api(self.api_implementation,
+                                            APIOptions(request, None, self.recipe_id, self.config,
+                                                       self.recipe_implementation))
         elif request_id == SIGNUP_EMAIL_EXISTS:
-            return await handle_email_exists_api(self, request, response)
+            return await handle_email_exists_api(self.api_implementation,
+                                                 APIOptions(request, None, self.recipe_id, self.config,
+                                                            self.recipe_implementation))
         elif request_id == USER_PASSWORD_RESET_TOKEN:
-            return await handle_generate_password_reset_token_api(self, request, response)
+            return await handle_generate_password_reset_token_api(self.api_implementation,
+                                                                  APIOptions(request, None, self.recipe_id, self.config,
+                                                                             self.recipe_implementation))
         elif request_id == USER_PASSWORD_RESET:
-            return await handle_password_reset_api(self, request, response)
+            return await handle_password_reset_api(self.api_implementation,
+                                                   APIOptions(request, None, self.recipe_id, self.config,
+                                                              self.recipe_implementation))
         else:
             return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
         if isinstance(error, EmailAlreadyExistsError):
             return self.handle_error(request,
-                                     FieldError(self, 'Error in input formFields', [ErrorFormField('email', 'This '
-                                                                                                            'email '
-                                                                                                            'already '
-                                                                                                            'exists. '
-                                                                                                            'Please '
-                                                                                                            'sign in '
-                                                                                                            'instead.')
-                                                                                    ]
+                                     FieldError('Error in input formFields', [ErrorFormField('email', 'This '
+                                                                                                      'email '
+                                                                                                      'already '
+                                                                                                      'exists. '
+                                                                                                      'Please '
+                                                                                                      'sign in '
+                                                                                                      'instead.')
+                                                                              ]
                                                 ),
                                      response
                                      )
@@ -182,46 +190,7 @@ class EmailPasswordRecipe(RecipeModule):
     # instance functions below...............
 
     async def get_email_for_user_id(self, user_id: str) -> str:
-        user_info = await self.get_user_by_id(user_id)
+        user_info = await self.recipe_implementation.get_user_by_id(user_id)
         if user_info is None:
-            raise_unknown_user_id_exception(self, 'Unknown User ID provided')
+            raise_unknown_user_id_exception('Unknown User ID provided')
         return user_info.email
-
-    async def get_user_by_id(self, user_id: str) -> User:
-        return await core_get_user_by_id(self, user_id)
-
-    async def get_user_by_email(self, email: str) -> User:
-        return await core_get_user_by_email(self, email)
-
-    async def create_reset_password_token(self, user_id: str) -> str:
-        return await core_create_reset_password_token(self, user_id)
-
-    async def reset_password_using_token(self, token: str, new_password: str):
-        return await core_reset_password_using_token(self, token, new_password)
-
-    async def sign_in(self, email: str, password: str) -> User:
-        return await core_sign_in(self, email, password)
-
-    async def sign_up(self, email: str, password: str) -> User:
-        return await core_sign_up(self, email, password)
-
-    async def create_email_verification_token(self, user_id: str) -> str:
-        return await self.email_verification_recipe.create_email_verification_token(user_id,
-                                                                                    await self.get_email_for_user_id(
-                                                                                        user_id))
-
-    async def verify_email_using_token(self, token: str) -> User:
-        return await self.email_verification_recipe.verify_email_using_token(token)
-
-    async def is_email_verified(self, user_id: str) -> bool:
-        return await self.email_verification_recipe.is_email_verified(user_id,
-                                                                      await self.get_email_for_user_id(user_id))
-
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        return await core_get_users(self, 'ASC', limit, next_pagination)
-
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        return await core_get_users(self, 'DESC', limit, next_pagination)
-
-    async def get_user_count(self) -> int:
-        return await core_get_users_count(self)

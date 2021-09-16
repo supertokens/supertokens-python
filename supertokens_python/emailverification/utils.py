@@ -19,6 +19,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
     from .types import User
+    from .interfaces import RecipeInterface, APIInterface
+    from typing import Callable, Union
 from os import environ
 
 
@@ -40,29 +42,26 @@ def default_create_and_send_custom_email(app_info: AppInfo):
     return func
 
 
-async def default_handle_post_email_verification(_):
-    return {}
+class OverrideConfig:
+    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None], apis: Union[Callable[[APIInterface], APIInterface], None]):
+        self.functions = functions
+        self.apis = apis
 
 
 class EmailVerificationConfig:
     def __init__(self,
                  get_email_for_user_id,
-                 disable_default_implementation: bool,
                  get_email_verification_url,
                  create_and_send_custom_email,
-                 handle_post_email_verification
+                 override: OverrideConfig
                  ):
         self.get_email_for_user_id = get_email_for_user_id
-        self.disable_default_implementation = disable_default_implementation
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
-        self.handle_post_email_verification = handle_post_email_verification
+        self.override = override
 
 
 def validate_and_normalise_user_input(app_info: AppInfo, config):
-    disable_default_implementation = config[
-        'disable_default_implementation'] if 'disable_default_implementation' in config and config[
-        'disable_default_implementation'] is not None else False
     get_email_verification_url = config[
         'get_email_verification_url'] if 'get_email_verification_url' in config else default_get_email_verification_url(
         app_info)
@@ -70,14 +69,16 @@ def validate_and_normalise_user_input(app_info: AppInfo, config):
         'create_and_send_custom_email'] if 'create_and_send_custom_email' in config and config[
         'create_and_send_custom_email'] is not None else default_create_and_send_custom_email(
         app_info)
-    handle_post_email_verification = config[
-        'handle_post_email_verification'] if 'handle_post_email_verification' in config else default_handle_post_email_verification
     get_email_for_user_id = config['get_email_for_user_id']
+    override_functions = config['override']['functions'] if 'override' in config and 'functions' in config[
+        'override'] else None
+    override_apis = config['override']['apis'] if 'override' in config and 'apis' in config[
+        'override'] else None
+    override = OverrideConfig(override_functions, override_apis)
 
     return EmailVerificationConfig(
         get_email_for_user_id,
-        disable_default_implementation,
         get_email_verification_url,
         create_and_send_custom_email,
-        handle_post_email_verification
+        override
     )

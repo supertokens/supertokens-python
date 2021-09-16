@@ -16,7 +16,7 @@ under the License.
 from typing import Union, List
 
 from .session_class import Session
-from .session_recipe import SessionRecipe
+from .recipe import SessionRecipe
 from . import exceptions
 from ..utils import FRAMEWORKS
 
@@ -29,50 +29,50 @@ async def create_new_session(request, user_id: str, jwt_payload: Union[dict, Non
                              session_data: Union[dict, None] = None) -> Session:
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance().app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().create_new_session(request, user_id, jwt_payload, session_data)
+    return await SessionRecipe.get_instance().recipe_implementation.create_new_session(request, user_id, jwt_payload, session_data)
 
 
 async def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -> Union[
     Session, None]:
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance().app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().get_session(request, anti_csrf_check, session_required)
+    return await SessionRecipe.get_instance().recipe_implementation.get_session(request, anti_csrf_check, session_required)
 
 
 async def refresh_session(request) -> Session:
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance().app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().refresh_session(request)
+    return await SessionRecipe.get_instance().recipe_implementation.refresh_session(request)
 
 
 async def revoke_session(session_handle: str) -> bool:
-    return await SessionRecipe.get_instance().revoke_session(session_handle)
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle)
 
 
 async def revoke_all_sessions_for_user(user_id: str) -> List[str]:
-    return await SessionRecipe.get_instance().revoke_all_sessions_for_user(user_id)
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(user_id)
 
 
 async def get_all_session_handles_for_user(user_id: str) -> List[str]:
-    return await SessionRecipe.get_instance().get_all_session_handles_for_user(user_id)
+    return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(user_id)
 
 
 async def revoke_multiple_sessions(session_handles: List[str]) -> List[str]:
-    return await SessionRecipe.get_instance().revoke_multiple_sessions(session_handles)
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_multiple_sessions(session_handles)
 
 
 async def get_session_data(session_handle: str) -> dict:
-    return await SessionRecipe.get_instance().get_session_data(session_handle)
+    return await SessionRecipe.get_instance().recipe_implementation.get_session_data(session_handle)
 
 
 async def update_session_data(session_handle: str, new_session_data: dict) -> None:
-    return await SessionRecipe.get_instance().update_session_data(session_handle, new_session_data)
+    return await SessionRecipe.get_instance().recipe_implementation.update_session_data(session_handle, new_session_data)
 
 
 async def get_jwt_payload(session_handle: str) -> dict:
-    return await SessionRecipe.get_instance().get_jwt_payload(session_handle)
+    return await SessionRecipe.get_instance().recipe_implementation.get_jwt_payload(session_handle)
 
 
 async def update_jwt_payload(session_handle: str, new_jwt_payload: dict) -> None:
-    return await SessionRecipe.get_instance().update_jwt_payload(session_handle, new_jwt_payload)
+    return await SessionRecipe.get_instance().recipe_implementation.update_jwt_payload(session_handle, new_jwt_payload)
 
