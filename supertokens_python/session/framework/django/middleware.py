@@ -50,7 +50,6 @@ def verify_session(recipe: SessionRecipe, anti_csrf_check: Union[bool, None] = N
                 result = await Supertokens.get_instance().handle_supertokens_error(DjangoRequest(request), e, response)
                 return result.response
 
-
         return wrapped_function
 
     return session_verify

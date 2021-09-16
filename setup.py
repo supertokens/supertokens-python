@@ -20,7 +20,7 @@ extras_require = {
         'nest-asyncio==1.5.1',
         'Fastapi>=0.60',
         'django',
-        'Flask==1.1.4'
+        'Flask==2.0.1'
     ])
 }
 

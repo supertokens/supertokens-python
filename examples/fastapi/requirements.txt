@@ -1,0 +1,6 @@
+fastapi
+fastapi
+fastapi
+fastapi
+fastapi==0.68.1
+fastapi==0.68.1
