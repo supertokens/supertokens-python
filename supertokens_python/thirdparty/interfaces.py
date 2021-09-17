@@ -111,6 +111,34 @@ class SignInUpPostResponse(ABC):
         pass
 
 
+class GeneratePasswordResetTokenResponse(ABC):
+    def __init__(self, status: Literal['OK']):
+        self.status = status
+
+    @abstractmethod
+    def to_json(self):
+        pass
+
+
+class EmailExistsResponse(ABC):
+    def __init__(self, status: Literal['OK'], exists: bool):
+        self.status = status
+        self.exists = exists
+
+    @abstractmethod
+    def to_json(self):
+        pass
+
+
+class PasswordResetResponse(ABC):
+    def __init__(self, status: Literal['OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR']):
+        self.status = status
+
+    @abstractmethod
+    def to_json(self):
+        pass
+
+
 class SignInUpPostOkResponse(SignInUpPostResponse):
     def __init__(self, user: Union, created_new_user: bool, auth_code_response: any):
         super().__init__('OK', user, created_new_user, auth_code_response)
@@ -159,6 +187,8 @@ class AuthorisationUrlGetOkResponse(AuthorisationUrlGetResponse):
     def __init__(self, url: str):
         super().__init__('OK', url)
 
+from supertokens_python.thirdparty.interfaces import APIOptions as ThirdPartyAPIOptions
+from supertokens_python.emailpassword.interfaces import APIOptions as EmailPasswordAPIOptions
 
 class APIInterface(ABC):
     def __init__(self):
@@ -170,6 +200,19 @@ class APIInterface(ABC):
         pass
 
     @abstractmethod
-    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                              api_options: APIOptions) -> SignInUpPostResponse:
+    async def email_exists_get(self, email: str, options: EmailPasswordAPIOptions) -> EmailExistsResponse:
         pass
+
+    @abstractmethod
+    async def generate_password_reset_token_post(self, id: str, value: str,  options: EmailPasswordAPIOptions) -> GeneratePasswordResetTokenResponse:
+        pass
+
+    @abstractmethod
+    async def password_reset_post(self, id: str, value: str, token,  options: EmailPasswordAPIOptions) -> PasswordResetResponse:
+        pass
+
+    @abstractmethod
+    async def sign_in_up_post(self, signInUpAPIInput):
+        pass
+
+

@@ -13,7 +13,7 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-from typing import Union, List
+from typing import Union, List, Literal
 from supertokens_python.emailpassword.types import FormField
 
 type_string = {
@@ -125,7 +125,8 @@ class ThirdPartyInfo:
 
 
 class User:
-    def __init__(self, user_id: str, email: str, time_joined: int, third_party_info: Union[ThirdPartyInfo, None] = None):
+    def __init__(self, user_id: str, email: str, time_joined: int,
+                 third_party_info: Union[ThirdPartyInfo, None] = None):
         self.user_id = user_id
         self.email = email
         self.time_joined = time_joined
@@ -136,6 +137,16 @@ class SignInUpResponse:
     def __init__(self, user: User, is_new_user: bool):
         self.user = user
         self.is_new_user = is_new_user
+
+class SignInResponse:
+    def __init__(self, user: User, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR']):
+        self.user = user
+        self.status = status
+
+class SignUpResponse:
+    def __init__(self, user: User, status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR']):
+        self.user = user
+        self.status = status
 
 
 class UsersResponse:
@@ -165,6 +176,24 @@ class ThirdPartyContext:
 
 
 class NextPaginationToken:
-    def __init__(self, third_party_pagination_token: Union[str, None], email_password_pagination_token: Union[str, None]):
+    def __init__(self, third_party_pagination_token: Union[str, None],
+                 email_password_pagination_token: Union[str, None]):
         self.third_party_pagination_token = third_party_pagination_token
         self.email_password_pagination_token = email_password_pagination_token
+
+
+class CreatePasswordToken:
+    def __init__(self, token: str):
+        self.token = token
+
+
+class ResetPasswordToken:
+    def __init__(self, token: str, new_password: str):
+        self.token = token
+        self.new_password = new_password
+
+class UpdateEmailOrPassword:
+    def __init__(self, user_id: str, email: str = None, password: str = None):
+        self.user_id = user_id
+        self.email = email
+        self.password = password

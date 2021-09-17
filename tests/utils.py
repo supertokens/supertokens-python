@@ -175,7 +175,7 @@ def get_cookie_from_response(response, cookie_name):
 
 
 def extract_all_cookies(response: Response):
-    cookie_headers = SimpleCookie(response.headers.get('set-cookie'))
+    cookie_headers = SimpleCookie(response.headers.get('set-cookie').replace(" ", ""))
     cookies = dict()
     for key, morsel in cookie_headers.items():
         cookies[key] = {

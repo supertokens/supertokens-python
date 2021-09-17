@@ -15,7 +15,6 @@ under the License.
 """
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
-from starlette.responses import Response
 
 
 class Middleware(BaseHTTPMiddleware):
@@ -31,11 +30,11 @@ class Middleware(BaseHTTPMiddleware):
         from supertokens_python.session import Session
         from supertokens_python.supertokens import manage_cookies_post_response
         st = Supertokens.get_instance()
-        from starlette.responses import JSONResponse
+        from starlette.responses import Response
 
         try:
             custom_request = FastApiRequest(request)
-            response = FastApiResponse(JSONResponse())
+            response = FastApiResponse(Response())
             result = await st.middleware(custom_request, response)
             if result is None:
                 response = await call_next(request)
