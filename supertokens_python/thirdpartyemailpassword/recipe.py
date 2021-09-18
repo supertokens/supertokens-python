@@ -127,6 +127,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                  self.config.email_verification_feature)
 
+
     def is_error_from_this_or_child_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and (
             err.recipe == self
@@ -182,6 +183,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
 
         return func
 
+
     @staticmethod
     def get_instance() -> ThirdPartyEmailPasswordRecipe:
         if ThirdPartyEmailPasswordRecipe.__instance is not None:
@@ -195,84 +197,8 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             raise_general_exception(None, 'calling testing function in non testing env')
         ThirdPartyRecipe.__instance = None
 
-    # instance functions below...............
 
-    async def get_email_for_user_id(self, user_id: str) -> str:
-        user_info = await self.get_user_by_id(user_id)
-        if user_info is None:
-            raise_unknown_user_id_exception(self, 'Unknown User ID provided')
-        return user_info.email
 
-    async def get_user_by_id(self, user_id: str) -> Union[User, None]:
-        user = await self.email_password_recipe.get_user_by_id(user_id)
-        if user is not None:
-            return user
-        if self.third_party_recipe is None:
-            return None
-        return await self.third_party_recipe.get_user_by_id(user_id)
 
-    async def get_user_by_email(self, email: str) -> Union[User, None]:
-        return await self.email_password_recipe.get_user_by_email(email)
 
-    async def get_user_by_third_party_info(self, third_party_id: str, third_party_user_id: str) -> Union[User, None]:
-        if self.third_party_recipe is None:
-            return None
-        return await self.third_party_recipe.get_user_by_third_party_info(third_party_id, third_party_user_id)
 
-    async def sign_in(self, email: str, password: str) -> User:
-        return await self.email_password_recipe.sign_in(email, password)
-
-    async def sign_up(self, email: str, password: str) -> User:
-        return await self.email_password_recipe.sign_up(email, password)
-
-    async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool) -> SignInUpResponse:
-        if self.third_party_recipe is None:
-            raise_general_exception(self, 'No thirdparty provider configured')
-        return await self.third_party_recipe.sign_in_up(third_party_id, third_party_user_id, email, email_verified)
-
-    async def create_email_verification_token(self, user_id: str) -> str:
-        return await self.email_verification_recipe.create_email_verification_token(user_id,
-                                                                                    await self.get_email_for_user_id(
-                                                                                        user_id))
-
-    async def verify_email_using_token(self, token: str) -> User:
-        return await self.email_verification_recipe.verify_email_using_token(token)
-
-    async def is_email_verified(self, user_id: str) -> bool:
-        return await self.email_verification_recipe.is_email_verified(user_id,
-                                                                      await self.get_email_for_user_id(user_id))
-
-    async def create_reset_password_token(self, user_id: str) -> str:
-        return await self.email_password_recipe.create_reset_password_token(user_id)
-
-    async def reset_password_using_token(self, token: str, new_password: str):
-        return await self.email_password_recipe.reset_password_using_token(token, new_password)
-
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        if limit is None:
-            limit = 100
-        next_pagination_tokens = NextPaginationToken('null', 'null')
-        if next_pagination is not None:
-            next_pagination_tokens = extract_pagination_token(self, next_pagination)
-        email_password_result_promise = self.email_password_recipe.get_users_oldest_first(limit, next_pagination_tokens.email_password_pagination_token)
-        third_party_result = UsersResponse([], None) if self.third_party_recipe is None else await self.third_party_recipe.get_users_oldest_first(limit, next_pagination_tokens.third_party_pagination_token)
-        email_password_result = await email_password_result_promise
-        return combine_pagination_results(third_party_result, email_password_result, limit, True)
-
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        if limit is None:
-            limit = 100
-        next_pagination_tokens = NextPaginationToken('null', 'null')
-        if next_pagination is not None:
-            next_pagination_tokens = extract_pagination_token(self, next_pagination)
-        email_password_result_promise = self.email_password_recipe.get_users_newest_first(limit, next_pagination_tokens.email_password_pagination_token)
-        third_party_result = UsersResponse([], None) if self.third_party_recipe is None else await self.third_party_recipe.get_users_newest_first(
-            limit, next_pagination_tokens.third_party_pagination_token)
-        email_password_result = await email_password_result_promise
-        return combine_pagination_results(third_party_result, email_password_result, limit, False)
-
-    async def get_user_count(self) -> int:
-        promise1 = self.email_password_recipe.get_user_count()
-        count2 = await self.third_party_recipe.get_user_count() if self.third_party_recipe is not None else 0
-        return await promise1 + count2
