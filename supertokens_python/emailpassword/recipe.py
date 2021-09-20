@@ -16,13 +16,13 @@ under the License.
 from __future__ import annotations
 
 from os import environ
-from typing import List, TYPE_CHECKING
-from .api.implementation import APIImplementation
-from .interfaces import APIOptions
-from .recipe_implementation import RecipeImplementation
+from typing import List, TYPE_CHECKING, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import RecipeModule, APIHandled
+from .api.implementation import APIImplementation
+from .interfaces import APIOptions
+from .recipe_implementation import RecipeImplementation
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -50,7 +50,6 @@ from .exceptions import (
     FieldError,
     WrongCredentialsError,
     ResetPasswordInvalidTokenError,
-    raise_unknown_user_id_exception,
     SuperTokensEmailPasswordError
 )
 from .types import ErrorFormField
@@ -61,14 +60,18 @@ class EmailPasswordRecipe(RecipeModule):
     recipe_id = 'emailpassword'
     __instance = None
 
-    def __init__(self, recipe_id: str, app_info: AppInfo, config=None, rid_to_core=None):
-        super().__init__(recipe_id, app_info, rid_to_core)
+    def __init__(self, recipe_id: str, app_info: AppInfo, config=None,
+                 email_verification_recipe: Union[EmailVerificationRecipe, None] = None):
+        super().__init__(recipe_id, app_info)
         if config is None:
             config = {}
         self.config = validate_and_normalise_user_input(self, app_info, config)
-        self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
-                                                                 self.config.email_verification_feature)
-        recipe_implementation = RecipeImplementation(Querier.get_instance(self), self.config)
+        if email_verification_recipe is not None:
+            self.email_verification_recipe = email_verification_recipe
+        else:
+            self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
+                                                                     self.config.email_verification_feature)
+        recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
         api_implementation = APIImplementation()
@@ -169,8 +172,8 @@ class EmailPasswordRecipe(RecipeModule):
                                                                      config)
                 return EmailPasswordRecipe.__instance
             else:
-                raise_general_exception(None, 'Emailpassword recipe has already been initialised. Please check your '
-                                              'code for bugs.')
+                raise Exception(None, 'Emailpassword recipe has already been initialised. Please check your '
+                                      'code for bugs.')
 
         return func
 
@@ -192,5 +195,5 @@ class EmailPasswordRecipe(RecipeModule):
     async def get_email_for_user_id(self, user_id: str) -> str:
         user_info = await self.recipe_implementation.get_user_by_id(user_id)
         if user_info is None:
-            raise_unknown_user_id_exception('Unknown User ID provided')
+            raise Exception('Unknown User ID provided')
         return user_info.email

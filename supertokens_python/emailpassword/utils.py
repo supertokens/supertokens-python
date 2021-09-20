@@ -32,10 +32,6 @@ from .constants import (
 )
 from supertokens_python.utils import get_filtered_list, validate_the_structure_of_user_input
 from httpx import AsyncClient
-from .exceptions import (
-    raise_unknown_user_id_exception
-)
-
 
 async def default_validator(_):
     return None
@@ -197,7 +193,7 @@ def email_verification_create_and_send_custom_email(recipe: EmailPasswordRecipe,
     async def func(user, link):
         user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
         if user_info is None:
-            raise_unknown_user_id_exception('User ID unknown')
+            raise Exception('Unknown User ID provided')
         return await create_and_send_custom_email(user_info, link)
 
     return func
@@ -207,7 +203,7 @@ def email_verification_get_email_verification_url(recipe: EmailPasswordRecipe, g
     async def func(user):
         user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
         if user_info is None:
-            raise_unknown_user_id_exception('User ID unknown')
+            raise Exception('Unknown User ID provided')
         return await get_email_verification_url(user_info)
 
     return func

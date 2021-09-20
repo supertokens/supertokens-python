@@ -95,12 +95,12 @@ class APIOptions:
 
 
 class SignInUpPostResponse(ABC):
-    def __init__(self, status: Literal['OK', 'FIELD_ERROR'], user: Union[User, None] = None,
+    def __init__(self, status: Literal['OK', 'NO_EMAIL_GIVEN_BY_PROVIDER'], user: Union[User, None] = None,
                  created_new_user: Union[bool, None] = None, auth_code_response: any = None,
                  error: Union[str, None] = None):
         self.status = status
         self.is_ok = False
-        self.is_field_error = False
+        self.is_no_email_given_by_provider = False
         self.user = user
         self.created_new_user = created_new_user
         self.error = error
@@ -140,7 +140,7 @@ class PasswordResetResponse(ABC):
 
 
 class SignInUpPostOkResponse(SignInUpPostResponse):
-    def __init__(self, user: Union, created_new_user: bool, auth_code_response: any):
+    def __init__(self, user: User, created_new_user: bool, auth_code_response: any):
         super().__init__('OK', user, created_new_user, auth_code_response)
         self.is_ok = True
 
@@ -155,19 +155,19 @@ class SignInUpPostOkResponse(SignInUpPostResponse):
                     'id': self.user.third_party_info.id,
                     'userId': self.user.third_party_info.user_id
                 }
-            }
+            },
+            'createdNewUser': self.created_new_user
         }
 
 
-class SignInUpPostFieldErrorResponse(SignInUpPostResponse):
-    def __init__(self, error: str):
-        super().__init__('FIELD_ERROR', error=error)
-        self.is_field_error = True
+class SignInUpPostNoEmailGivenByProviderResponse(SignInUpPostResponse):
+    def __init__(self):
+        super().__init__('NO_EMAIL_GIVEN_BY_PROVIDER')
+        self.is_no_email_given_by_provider = True
 
     def to_json(self):
         return {
-            'status': self.status,
-            'error': self.error
+            'status': self.status
         }
 
 
@@ -187,8 +187,6 @@ class AuthorisationUrlGetOkResponse(AuthorisationUrlGetResponse):
     def __init__(self, url: str):
         super().__init__('OK', url)
 
-from supertokens_python.thirdparty.interfaces import APIOptions as ThirdPartyAPIOptions
-from supertokens_python.emailpassword.interfaces import APIOptions as EmailPasswordAPIOptions
 
 class APIInterface(ABC):
     def __init__(self):
@@ -200,19 +198,8 @@ class APIInterface(ABC):
         pass
 
     @abstractmethod
-    async def email_exists_get(self, email: str, options: EmailPasswordAPIOptions) -> EmailExistsResponse:
-        pass
-
-    @abstractmethod
-    async def generate_password_reset_token_post(self, id: str, value: str,  options: EmailPasswordAPIOptions) -> GeneratePasswordResetTokenResponse:
-        pass
-
-    @abstractmethod
-    async def password_reset_post(self, id: str, value: str, token,  options: EmailPasswordAPIOptions) -> PasswordResetResponse:
-        pass
-
-    @abstractmethod
-    async def sign_in_up_post(self, signInUpAPIInput):
+    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+                              api_options: APIOptions):
         pass
 
 

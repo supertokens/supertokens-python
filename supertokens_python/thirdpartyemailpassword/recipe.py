@@ -14,36 +14,33 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 from __future__ import annotations
+
 from os import environ
+from typing import List, TYPE_CHECKING, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import RecipeModule, APIHandled
-from typing import List, TYPE_CHECKING, Union
-
+from .api.email_password_api_impementation import get_interface_impl as get_email_password_interface_impl
+from .api.implementation import APIImplementation
+from .api.third_party_api_implementation import get_interface_impl as get_third_party_interface_impl
+from .recipeimplementation.email_password_recipe_implementation import \
+    RecipeImplementation as EmailPasswordRecipeImplementation
+from .recipeimplementation.implementation import RecipeImplementation
+from .recipeimplementation.third_party_recipe_implementation import \
+    RecipeImplementation as ThirdPartyRecipeImplementation
 from ..framework.response import BaseResponse
+from ..querier import Querier
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.supertokens import AppInfo
-from supertokens_python.exceptions import raise_general_exception, SuperTokensError
+from supertokens_python.exceptions import SuperTokensError
+from .exceptions import SupertokensThirdPartyEmailPasswordError
 from supertokens_python.emailverification import EmailVerificationRecipe
 from supertokens_python.emailpassword import EmailPasswordRecipe
 from supertokens_python.thirdparty import ThirdPartyRecipe
 from .utils import (
-    validate_and_normalise_user_input,
-    extract_pagination_token,
-    combine_pagination_results
-)
-from .exceptions import (
-    raise_unknown_user_id_exception
-)
-from .types import (
-    SignInUpResponse, User, UsersResponse,
-    EmailPasswordSessionDataAndJWTContext,
-    EmailPasswordSignInContext,
-    EmailPasswordSignUpContext,
-    ThirdPartyContext,
-    NextPaginationToken
+    validate_and_normalise_user_input
 )
 
 
@@ -51,96 +48,86 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
     recipe_id = 'thirdpartyemailpassword'
     __instance = None
 
-    def __init__(self, recipe_id: str, app_info: AppInfo, config=None):
+    def __init__(self, recipe_id: str, app_info: AppInfo, config=None,
+                 email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
+                 email_password_recipe: Union[EmailPasswordRecipe, None] = None,
+                 third_party_recipe: Union[ThirdPartyRecipe, None] = None):
         super().__init__(recipe_id, app_info)
         if config is None:
             config = {}
         self.config = validate_and_normalise_user_input(self, config)
 
-        async def email_password_recipe_session_feature_set_jwt_payload(user, form_fields, action):
-            return await self.config.session_feature.set_jwt_payload(user, EmailPasswordSessionDataAndJWTContext(form_fields), action)
+        recipe_implementation = RecipeImplementation(Querier.get_instance(EmailPasswordRecipe.recipe_id),
+                                                     Querier.get_instance(ThirdPartyRecipe.recipe_id))
+        self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
+            self.config.override.functions(recipe_implementation)
+        api_implementation = APIImplementation()
+        self.api_implementation = api_implementation if self.config.override.apis is None else \
+            self.config.override.apis(api_implementation)
 
-        async def email_password_recipe_session_feature_set_session_data(user, form_fields, action):
-            return await self.config.session_feature.set_session_data(user, EmailPasswordSessionDataAndJWTContext(form_fields), action)
+        if email_verification_recipe is not None:
+            self.email_verification_recipe = email_verification_recipe
+        else:
+            self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
+                                                                     self.config.email_verification_feature)
 
-        async def email_password_recipe_sign_up_feature_handle_post_sign_up(user, form_fields):
-            return await self.config.sign_up_feature.handle_post_sign_up(user, EmailPasswordSignUpContext(form_fields))
+        def func_override_email_password(_):
+            return EmailPasswordRecipeImplementation(self.recipe_implementation)
 
-        async def email_password_recipe_sign_in_feature_handle_post_sign_in(user):
-            return await self.config.sign_in_feature.handle_post_sign_in(user, EmailPasswordSignInContext())
+        def apis_override_email_password(_):
+            return get_email_password_interface_impl(self.api_implementation)
 
-        async def third_party_recipe_session_feature_set_jwt_payload(user, form_fields, action):
-            return await self.config.session_feature.set_jwt_payload(user, ThirdPartyContext(form_fields), action)
-
-        async def third_party_recipe_session_feature_set_session_data(user, form_fields, action):
-            return await self.config.session_feature.set_session_data(user, ThirdPartyContext(form_fields), action)
-
-        async def third_party_recipe_sign_in_feature_handle_post_sign_up_in(user, third_party_auth_code_response, is_new_user):
-            if is_new_user:
-                return await self.config.sign_up_feature.handle_post_sign_up(user, ThirdPartyContext(
-                    third_party_auth_code_response))
-            else:
-                return await self.config.sign_in_feature.handle_post_sign_in(user, ThirdPartyContext(
-                    third_party_auth_code_response))
-
-        self.email_password_recipe = EmailPasswordRecipe(recipe_id, app_info, {
-            'session_feature': {
-                'set_jwt_payload': email_password_recipe_session_feature_set_jwt_payload,
-                'set_session_data': email_password_recipe_session_feature_set_session_data
-            },
-            'sign_up_feature': {
-                'disable_default_implementation': self.config.sign_up_feature.disable_default_implementation,
-                'form_fields': self.config.sign_up_feature.form_fields,
-                'handle_post_sign_up': email_password_recipe_sign_up_feature_handle_post_sign_up
-            },
-            'sign_in_feature': {
-                'disable_default_implementation': self.config.sign_in_feature.disable_default_implementation,
-                'handle_post_sign_in': email_password_recipe_sign_in_feature_handle_post_sign_in
-            },
-            'sign_out_feature': {
-                'disable_default_implementation': self.config.sign_out_feature.disable_default_implementation,
-            },
-            'reset_password_using_token_feature': self.config.reset_password_using_token_feature,
-            'email_verification_feature': {
-                'disable_default_implementation': True
-            }
-        }, EmailPasswordRecipe.recipe_id)
-        self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
-        if len(self.config.providers) != 0:
-            self.third_party_recipe = ThirdPartyRecipe(recipe_id, app_info, {
-                'session_feature': {
-                    'set_jwt_payload': third_party_recipe_session_feature_set_jwt_payload,
-                    'set_session_data': third_party_recipe_session_feature_set_session_data
+        if email_password_recipe is not None:
+            self.email_password_recipe = email_password_recipe
+        else:
+            self.email_password_recipe = EmailPasswordRecipe(recipe_id, app_info, {
+                'sign_up_feature': {
+                    'form_fields': self.config.sign_up_feature.form_fields,
                 },
-                'sign_in_and_up_feature': {
-                    'disable_default_implementation': self.config.sign_in_feature.disable_default_implementation or self.config.sign_up_feature.disable_default_implementation,
-                    'handle_post_sign_up_in': third_party_recipe_sign_in_feature_handle_post_sign_up_in,
-                    'providers': self.config.providers
-                },
-                'sign_out_feature': {
-                    'disable_default_implementation': True
-                },
+                'reset_password_using_token_feature': self.config.reset_password_using_token_feature,
                 'email_verification_feature': {
                     'disable_default_implementation': True
+                },
+                'override': {
+                    'functions': func_override_email_password,
+                    'apis': apis_override_email_password
                 }
-            }, ThirdPartyRecipe.recipe_id)
-        self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
-                                                                 self.config.email_verification_feature)
+            }, self.email_verification_recipe)
 
+        def func_override_third_party(_):
+            return ThirdPartyRecipeImplementation(self.recipe_implementation)
+
+        def apis_override_third_party(_):
+            return get_third_party_interface_impl(self.api_implementation)
+
+        if third_party_recipe is not None:
+            self.third_party_recipe = third_party_recipe
+        else:
+            self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
+            if len(self.config.providers) != 0:
+                self.third_party_recipe = ThirdPartyRecipe(recipe_id, app_info, {
+                    'sign_in_and_up_feature': {
+                        'providers': self.config.providers
+                    },
+                    'override': {
+                        'functions': func_override_third_party,
+                        'apis': apis_override_third_party
+                    }
+                }, self.email_verification_recipe)
 
     def is_error_from_this_or_child_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and (
-            err.recipe == self
-            or
-            self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
-            or
-            self.email_password_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
-            or
-            (
-                self.third_party_recipe is not None
-                and
-                self.third_party_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
-            )
+                isinstance(err, SupertokensThirdPartyEmailPasswordError)
+                or
+                self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
+                or
+                self.email_password_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
+                or
+                (
+                        self.third_party_recipe is not None
+                        and
+                        self.third_party_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
+                )
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
@@ -149,10 +136,12 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             apis_handled = apis_handled + self.third_party_recipe.get_apis_handled()
         return apis_handled
 
-    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse):
+    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
+                                 response: BaseResponse):
         if self.email_password_recipe.return_api_id_if_can_handle_request(path, method) is not None:
             return await self.email_password_recipe.handle_api_request(request_id, request, path, method, response)
-        elif self.third_party_recipe is not None and self.third_party_recipe.return_api_id_if_can_handle_request(path, method) is not None:
+        elif self.third_party_recipe is not None and self.third_party_recipe.return_api_id_if_can_handle_request(path,
+                                                                                                                 method) is not None:
             return await self.third_party_recipe.handle_api_request(request_id, request, path, method, response)
         else:
             return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
@@ -160,7 +149,8 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
         if self.email_password_recipe.is_error_from_this_or_child_recipe_based_on_instance(error):
             return self.email_password_recipe.handle_error(request, error, response)
-        if self.third_party_recipe is not None and self.third_party_recipe.is_error_from_this_or_child_recipe_based_on_instance(error):
+        if self.third_party_recipe is not None and self.third_party_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+                error):
             return self.third_party_recipe.handle_error(request, error, response)
         else:
             return self.email_verification_recipe.handle_error(request, error, response)
@@ -175,30 +165,30 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
     def init(config=None):
         def func(app_info: AppInfo):
             if ThirdPartyEmailPasswordRecipe.__instance is None:
-                ThirdPartyEmailPasswordRecipe.__instance = ThirdPartyEmailPasswordRecipe(ThirdPartyEmailPasswordRecipe.recipe_id, app_info, config)
+                ThirdPartyEmailPasswordRecipe.__instance = ThirdPartyEmailPasswordRecipe(
+                    ThirdPartyEmailPasswordRecipe.recipe_id, app_info, config)
                 return ThirdPartyEmailPasswordRecipe.__instance
             else:
-                raise_general_exception(None, 'ThirdPartyEmailPassword recipe has already been initialised. Please '
+                raise Exception(None, 'ThirdPartyEmailPassword recipe has already been initialised. Please '
                                               'check your code for bugs.')
 
         return func
-
 
     @staticmethod
     def get_instance() -> ThirdPartyEmailPasswordRecipe:
         if ThirdPartyEmailPasswordRecipe.__instance is not None:
             return ThirdPartyEmailPasswordRecipe.__instance
-        raise_general_exception(None, 'Initialisation not done. Did you forget to call the SuperTokens.init function?')
+        raise Exception(None, 'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
     @staticmethod
     def reset():
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
-            raise_general_exception(None, 'calling testing function in non testing env')
+            raise Exception(None, 'calling testing function in non testing env')
         ThirdPartyRecipe.__instance = None
 
-
-
-
-
-
+    async def get_email_for_user_id(self, user_id: str) -> str:
+        user_info = await self.recipe_implementation.get_user_by_id(user_id)
+        if user_info is None:
+            raise Exception('Unknown User ID provided')
+        return user_info.email

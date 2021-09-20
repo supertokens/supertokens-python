@@ -24,41 +24,15 @@ def raise_form_field_exception(msg, form_fields):
     raise FieldError(msg, form_fields)
 
 
-def raise_email_already_exists_exception(msg):
-    if isinstance(msg, SuperTokensError):
-        raise msg
-    raise EmailAlreadyExistsError(msg) from None
-
-
-def raise_wrong_credentials_exception(msg):
-    if isinstance(msg, SuperTokensError):
-        raise msg
-    raise WrongCredentialsError(msg) from None
-
-
-def raise_unknown_user_id_exception(msg):
-    if isinstance(msg, SuperTokensError):
-        raise msg
-    raise UnknownUserIdError(msg) from None
-
-
-def raise_unknown_email_exception(msg):
-    if isinstance(msg, SuperTokensError):
-        raise msg
-    raise UnknownEmailError(msg) from None
-
-
-def raise_reset_password_invalid_token_exception(msg):
-    if isinstance(msg, SuperTokensError):
-        raise msg
-    raise ResetPasswordInvalidTokenError(msg) from None
+def raise_bad_input_exception(msg):
+    raise BadInputError(msg)
 
 
 class SuperTokensEmailPasswordError(SuperTokensError):
     pass
 
 
-class EmailAlreadyExistsError(SuperTokensEmailPasswordError):
+class BadInputError(SuperTokensEmailPasswordError):
     pass
 
 
@@ -74,19 +48,3 @@ class FieldError(SuperTokensEmailPasswordError):
                 'id': form_field.id,
                 'error': form_field.error
             })
-
-
-class WrongCredentialsError(SuperTokensEmailPasswordError):
-    pass
-
-
-class UnknownUserIdError(SuperTokensEmailPasswordError):
-    pass
-
-
-class UnknownEmailError(SuperTokensEmailPasswordError):
-    pass
-
-
-class ResetPasswordInvalidTokenError(SuperTokensEmailPasswordError):
-    pass

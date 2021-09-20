@@ -24,9 +24,6 @@ if TYPE_CHECKING:
     from .recipe import ThirdPartyRecipe
     from .provider import Provider
 from supertokens_python.utils import validate_the_structure_of_user_input
-from .exceptions import (
-    raise_unknown_user_id_exception
-)
 
 
 class SignInAndUpFeature:
@@ -45,7 +42,7 @@ def email_verification_create_and_send_custom_email(recipe: ThirdPartyRecipe, cr
     async def func(user, link):
         user_info = await recipe.get_user_by_id(user.id)
         if user_info is None:
-            raise_unknown_user_id_exception(recipe, 'User ID unknown')
+            raise Exception('Unknown User ID provided')
         return await create_and_send_custom_email(user_info, link)
 
     return func
@@ -55,7 +52,7 @@ def email_verification_get_email_verification_url(recipe: ThirdPartyRecipe, get_
     async def func(user):
         user_info = await recipe.get_user_by_id(user.id)
         if user_info is None:
-            raise_unknown_user_id_exception(recipe, 'User ID unknown')
+            raise Exception(recipe, 'Unknown User ID provided')
         return await get_email_verification_url(user_info)
 
     return func

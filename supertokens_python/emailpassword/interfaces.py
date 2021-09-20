@@ -361,7 +361,7 @@ class SignInPostResponse(ABC):
 
 
 class SignInPostOkResponse(SignInPostResponse):
-    def __init__(self, user: Union):
+    def __init__(self, user: User):
         super().__init__('OK', user)
         self.is_ok = True
 
@@ -396,7 +396,7 @@ class SignUpPostResponse(ABC):
 
 
 class SignUpPostOkResponse(SignUpPostResponse):
-    def __init__(self, user: Union):
+    def __init__(self, user: User):
         super().__init__('OK', user)
         self.is_ok = True
 
@@ -425,7 +425,7 @@ class APIInterface(ABC):
         pass
 
     @abstractmethod
-    async def password_reset_post(self, token: str, form_fields: List[FormField],
+    async def password_reset_post(self, form_fields: List[FormField], token: str,
                                   api_options: APIOptions) -> PasswordResetPostResponse:
         pass
 

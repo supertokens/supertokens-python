@@ -22,8 +22,8 @@ from httpx import AsyncClient
 
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.session import create_new_session
-from supertokens_python.thirdparty.exceptions import raise_no_email_given_by_provider_exception
-from supertokens_python.thirdparty.interfaces import APIInterface, SignInUpPostOkResponse, AuthorisationUrlGetOkResponse
+from supertokens_python.thirdparty.interfaces import APIInterface, SignInUpPostOkResponse, \
+    AuthorisationUrlGetOkResponse, SignInUpPostNoEmailGivenByProviderResponse
 
 if TYPE_CHECKING:
     from supertokens_python.thirdparty.interfaces import APIInterface, APIOptions, SignInUpPostResponse, \
@@ -65,8 +65,7 @@ class APIImplementation(APIInterface):
         email = user_info.email.id if user_info.email is not None else None
         email_verified = user_info.email.is_verified if user_info.email is not None else None
         if email is None or email_verified is None:
-            raise_no_email_given_by_provider_exception(
-                'Provider ' + provider.id + 'returned no email info for the user.')
+            return SignInUpPostNoEmailGivenByProviderResponse()
 
         signinup_response = await api_options.recipe_implementation.sign_in_up(provider.id, user_info.user_id, email,
                                                                                email_verified)

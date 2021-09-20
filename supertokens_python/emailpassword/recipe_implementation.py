@@ -37,10 +37,9 @@ if TYPE_CHECKING:
 
 
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, querier: Querier, config: EmailPasswordConfig):
+    def __init__(self, querier: Querier):
         super().__init__()
         self.querier = querier
-        self.config = config
 
     async def get_user_by_id(self, user_id: str) -> Union[User, None]:
         params = {

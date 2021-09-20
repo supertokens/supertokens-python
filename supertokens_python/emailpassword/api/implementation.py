@@ -72,7 +72,7 @@ class APIImplementation(APIInterface):
         asyncio.create_task(send_email())
         return GeneratePasswordResetTokenPostOkResponse()
 
-    async def password_reset_post(self, token: str, form_fields: List[FormField],
+    async def password_reset_post(self, form_fields: List[FormField], token: str,
                                   api_options: APIOptions) -> PasswordResetPostResponse:
         new_password = find_first_occurrence_in_list(lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
         result = await api_options.recipe_implementation.reset_password_using_token(token, new_password)

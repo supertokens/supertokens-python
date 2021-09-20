@@ -17,25 +17,13 @@ from __future__ import annotations
 from supertokens_python.exceptions import SuperTokensError
 
 
-def raise_no_email_given_by_provider_exception(msg):
-    if isinstance(msg, SuperTokensError):
-        raise msg
-    raise NoEmailGivenByProviderError(msg) from None
-
-
-def raise_unknown_user_id_exception(msg):
-    if isinstance(msg, SuperTokensError):
-        raise msg
-    raise UnknownUserIdError(msg) from None
+def raise_bad_input_exception(msg):
+    raise BadInputError(msg)
 
 
 class SuperTokensThirdPartyError(SuperTokensError):
     pass
 
 
-class UnknownUserIdError(SuperTokensThirdPartyError):
-    pass
-
-
-class NoEmailGivenByProviderError(SuperTokensThirdPartyError):
+class BadInputError(SuperTokensThirdPartyError):
     pass

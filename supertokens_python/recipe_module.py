@@ -16,9 +16,11 @@ under the License.
 
 from __future__ import annotations
 
-from .framework.response import BaseResponse
 import abc
 from typing import Union, Literal, List, TYPE_CHECKING
+
+from .framework.response import BaseResponse
+
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from .supertokens import AppInfo
@@ -27,11 +29,9 @@ from .exceptions import SuperTokensError
 
 
 class RecipeModule(abc.ABC):
-    def __init__(self, recipe_id: str, app_info: AppInfo,
-                 rid_to_core: Union[str, None] = None):
+    def __init__(self, recipe_id: str, app_info: AppInfo):
         self.recipe_id = recipe_id
         self.app_info = app_info
-        self.rid_to_core = rid_to_core
 
     def get_recipe_id(self):
         return self.recipe_id
@@ -42,7 +42,8 @@ class RecipeModule(abc.ABC):
     def return_api_id_if_can_handle_request(self, path: NormalisedURLPath, method: str) -> Union[str, None]:
         apis_handled = self.get_apis_handled()
         for current_api in apis_handled:
-            if not current_api.disabled and current_api.method == method and self.app_info.api_base_path.append(self, current_api.path_without_api_base_path).equals(path):
+            if not current_api.disabled and current_api.method == method and self.app_info.api_base_path.append(
+                    current_api.path_without_api_base_path).equals(path):
                 return current_api.request_id
         return None
 
@@ -55,11 +56,12 @@ class RecipeModule(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse):
+    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
+                                 response: BaseResponse):
         pass
 
     @abc.abstractmethod
-    async def handle_error(self, request: BaseRequest, err: SuperTokensError, response : BaseResponse):
+    async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse):
         pass
 
     @abc.abstractmethod
@@ -68,7 +70,8 @@ class RecipeModule(abc.ABC):
 
 
 class APIHandled:
-    def __init__(self, path_without_api_base_path: NormalisedURLPath, method: Literal['post', 'get', 'delete', 'put', 'options', 'trace'], request_id: str, disabled: bool):
+    def __init__(self, path_without_api_base_path: NormalisedURLPath,
+                 method: Literal['post', 'get', 'delete', 'put', 'options', 'trace'], request_id: str, disabled: bool):
         self.path_without_api_base_path = path_without_api_base_path
         self.method = method
         self.request_id = request_id

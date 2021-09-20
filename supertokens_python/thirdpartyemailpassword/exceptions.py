@@ -17,21 +17,5 @@ from __future__ import annotations
 from supertokens_python.exceptions import SuperTokensError
 
 
-def raise_invalid_pagination_token_exception(recipe, msg):
-    if isinstance(msg, SuperTokensError):
-        raise msg
-    raise InvalidPaginationTokenError(recipe, msg) from None
-
-
-def raise_unknown_user_id_exception(recipe, msg):
-    if isinstance(msg, SuperTokensError):
-        raise msg
-    raise UnknownUserIdError(recipe, msg) from None
-
-
-class UnknownUserIdError(SuperTokensError):
-    pass
-
-
-class InvalidPaginationTokenError(SuperTokensError):
+class SupertokensThirdPartyEmailPasswordError(SuperTokensError):
     pass

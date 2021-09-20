@@ -16,6 +16,7 @@ under the License.
 
 from __future__ import annotations
 
+from typing import Union, List, TYPE_CHECKING
 
 from .constants import (
     TELEMETRY,
@@ -24,20 +25,19 @@ from .constants import (
     TELEMETRY_SUPERTOKENS_API_URL,
     TELEMETRY_SUPERTOKENS_API_VERSION
 )
+from .normalised_url_domain import NormalisedURLDomain
+from .normalised_url_path import NormalisedURLPath
+from .querier import Querier
 from .session.cookie_and_header import clear_cookies, attach_access_token_to_cookie, \
     attach_refresh_token_to_cookie, attach_id_refresh_token_to_cookie_and_header, attach_anti_csrf_header, \
     set_front_token_in_headers
+from .types import INPUT_SCHEMA
 from .utils import (
     validate_the_structure_of_user_input,
     normalise_http_method,
     get_rid_from_request,
     send_non_200_response, validate_framework
 )
-from .types import INPUT_SCHEMA
-from .normalised_url_domain import NormalisedURLDomain
-from .normalised_url_path import NormalisedURLPath
-from .querier import Querier
-from typing import Union, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .recipe_module import RecipeModule
@@ -57,15 +57,19 @@ import asyncio
 
 
 class AppInfo:
-    def __init__(self, recipe: Union[RecipeModule, None], app_info):
+    def __init__(self, recipe: Union[RecipeModule, None], app_info, framework: str):
         self.app_name: str = app_info['app_name']
         self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(app_info[
-            'api_gateway_path']) if 'api_gateway_path' in app_info else NormalisedURLPath('')
+                                                                         'api_gateway_path']) if 'api_gateway_path' in app_info else NormalisedURLPath(
+            '')
         self.api_domain: NormalisedURLDomain = NormalisedURLDomain(recipe, app_info['api_domain'])
         self.website_domain: NormalisedURLDomain = NormalisedURLDomain(recipe, app_info['website_domain'])
-        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(NormalisedURLPath( '/auth') if 'api_base_path' not in app_info else NormalisedURLPath(app_info['api_base_path']))
+        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(
+            NormalisedURLPath('/auth') if 'api_base_path' not in app_info else NormalisedURLPath(
+                app_info['api_base_path']))
         self.website_base_path: NormalisedURLPath = NormalisedURLPath(
-                                                                      '/auth') if 'website_base_path' not in app_info else NormalisedURLPath(app_info['website_base_path'])
+            '/auth') if 'website_base_path' not in app_info else NormalisedURLPath(app_info['website_base_path'])
+        self.framework = framework
 
 
 def manage_cookies_post_response(session: Session, response: BaseResponse):
@@ -115,8 +119,7 @@ class Supertokens:
     def __init__(self, config):
         validate_the_structure_of_user_input(config, INPUT_SCHEMA, 'init_function', None)
         validate_framework(config)
-        self.app_info: AppInfo = AppInfo(None, config['app_info'])
-        self.app_info.framework = config['framework']
+        self.app_info: AppInfo = AppInfo(None, config['app_info'], config['framework'])
         hosts = list(map(lambda h: NormalisedURLDomain(None, h.strip()),
                          filter(lambda x: x != '', config['supertokens']['connection_uri'].split(';'))))
         api_key = None
@@ -191,7 +194,6 @@ class Supertokens:
             return Supertokens.__instance
         raise_general_exception(None, 'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
-
     def get_all_cors_headers(self) -> List[str]:
         headers_set = set()
         headers_set.add(RID_KEY_HEADER)
@@ -205,8 +207,8 @@ class Supertokens:
 
     async def middleware(self, request: BaseRequest, response: BaseResponse) -> Union[BaseResponse, None]:
         path = Supertokens.get_instance().app_info.api_gateway_path.append(
-                                                                           NormalisedURLPath(
-                                                                                             request.get_path()))
+            NormalisedURLPath(
+                request.get_path()))
         method = normalise_http_method(request.method())
 
         if not path.startswith(Supertokens.get_instance().app_info.api_base_path):
@@ -235,7 +237,7 @@ class Supertokens:
 
         return response
 
-    async def handle_supertokens_error(self, request: BaseRequest, err: SuperTokensError, response : BaseResponse):
+    async def handle_supertokens_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse):
         if isinstance(err, GeneralError):
             return send_non_200_response(err.recipe, str(err), 400, response)
 

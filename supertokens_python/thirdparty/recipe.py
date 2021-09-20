@@ -16,7 +16,7 @@ under the License.
 from __future__ import annotations
 
 from os import environ
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import RecipeModule, APIHandled
@@ -41,8 +41,7 @@ from .constants import (
     AUTHORISATIONURL
 )
 from .exceptions import (
-    NoEmailGivenByProviderError,
-    raise_unknown_user_id_exception, SuperTokensThirdPartyError
+    SuperTokensThirdPartyError
 )
 
 
@@ -50,15 +49,19 @@ class ThirdPartyRecipe(RecipeModule):
     recipe_id = 'thirdparty'
     __instance = None
 
-    def __init__(self, recipe_id: str, app_info: AppInfo, config=None, rid_to_core=None):
-        super().__init__(recipe_id, app_info, rid_to_core)
+    def __init__(self, recipe_id: str, app_info: AppInfo, config=None,
+                 email_verification_recipe: Union[EmailVerificationRecipe, None] = None):
+        super().__init__(recipe_id, app_info)
         if config is None:
             config = {}
         self.config = validate_and_normalise_user_input(self, config)
-        self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
-                                                                 self.config.email_verification_feature)
+        if email_verification_recipe is not None:
+            self.email_verification_recipe = email_verification_recipe
+        else:
+            self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
+                                                                     self.config.email_verification_feature)
         self.providers = self.config.sign_in_and_up_feature.providers
-        recipe_implementation = RecipeImplementation(Querier.get_instance(self), self.config)
+        recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
         api_implementation = APIImplementation()
@@ -94,13 +97,8 @@ class ThirdPartyRecipe(RecipeModule):
             return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
-        if isinstance(error, NoEmailGivenByProviderError):
-            response.set_content({
-                'status': 'NO_EMAIL_GIVEN_BY_PROVIDER'
-            })
-
-            return response
-
+        if isinstance(error, SuperTokensThirdPartyError):
+            raise error
         else:
             return self.email_verification_recipe.handle_error(request, error, response)
 
@@ -137,5 +135,5 @@ class ThirdPartyRecipe(RecipeModule):
     async def get_email_for_user_id(self, user_id: str) -> str:
         user_info = await self.recipe_implementation.get_user_by_id(user_id)
         if user_info is None:
-            raise_unknown_user_id_exception('Unknown User ID provided')
+            raise Exception('Unknown User ID provided')
         return user_info.email

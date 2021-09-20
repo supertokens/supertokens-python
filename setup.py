@@ -26,7 +26,7 @@ extras_require = {
 
 setup(
     name="supertokens_python",
-    version="2.0.0",
+    version="0.0.1",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.io",

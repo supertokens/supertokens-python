@@ -65,16 +65,16 @@ def normalise_session_scope(recipe: SessionRecipe, session_scope: str) -> str:
     return no_dot_normalised
 
 
-def normalise_same_site(recipe: SessionRecipe, same_site: str) -> str:
+def normalise_same_site(same_site: str) -> str:
     same_site = same_site.strip()
     same_site = same_site.lower()
     allowed_values = {'Strict', 'Lax', 'None'}
     if same_site not in allowed_values:
-        raise_general_exception(recipe, 'cookie same site must be one of "Strict", "Lax", or "None"')
+        raise Exception('cookie same site must be one of "Strict", "Lax", or "None"')
     return same_site
 
 
-def get_top_level_domain_for_same_site_resolution(url: str, recipe: SessionRecipe) -> str:
+def get_top_level_domain_for_same_site_resolution(url: str) -> str:
     url_obj = urlparse(url)
     hostname = url_obj.hostname
 
@@ -82,7 +82,7 @@ def get_top_level_domain_for_same_site_resolution(url: str, recipe: SessionRecip
         return 'localhost'
     parsed_url = extract(hostname)
     if parsed_url == '':
-        raise_general_exception(recipe, 'Please make sure that the apiDomain and websiteDomain have correct values')
+        raise Exception('Please make sure that the apiDomain and websiteDomain have correct values')
 
     return parsed_url.domain + '.' + parsed_url.suffix
 
@@ -130,7 +130,7 @@ async def default_try_refresh_token_callback(_: BaseRequest, __: str, response :
 
 async def default_token_theft_detected_callback(_: BaseRequest, session_handle: str, __: str, response : BaseResponse):
     from .recipe import SessionRecipe
-    await SessionRecipe.get_instance().revoke_session(session_handle)
+    await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle)
     return send_non_200_response(SessionRecipe.get_instance(), 'token theft detected', SessionRecipe.get_instance().config.session_expired_status_code, response)
 
 
@@ -169,13 +169,12 @@ def validate_and_normalise_user_input(recipe: SessionRecipe, app_info: AppInfo, 
 
     validate_the_structure_of_user_input(config, INPUT_SCHEMA, 'session recipe', recipe)
     cookie_domain = normalise_session_scope(recipe, config['cookie_domain']) if 'cookie_domain' in config else None
-    top_level_api_domain = get_top_level_domain_for_same_site_resolution(app_info.api_domain.get_as_string_dangerous(),
-                                                                         recipe)
+    top_level_api_domain = get_top_level_domain_for_same_site_resolution(app_info.api_domain.get_as_string_dangerous())
     top_level_website_domain = get_top_level_domain_for_same_site_resolution(
-        app_info.website_domain.get_as_string_dangerous(), recipe)
+        app_info.website_domain.get_as_string_dangerous())
     cookie_same_site = 'None' if top_level_api_domain != top_level_website_domain else 'Lax'
     if 'cookie_same_site' in config:
-        cookie_same_site = normalise_same_site(recipe, config['cookie_same_site'])
+        cookie_same_site = normalise_same_site(config['cookie_same_site'])
 
     cookie_secure = config[
         'cookie_secure'] if 'cookie_secure' in config else app_info.api_domain.get_as_string_dangerous().startswith(

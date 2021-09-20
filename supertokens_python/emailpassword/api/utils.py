@@ -20,9 +20,8 @@ if TYPE_CHECKING:
     from supertokens_python.emailpassword.types import NormalisedFormField
 from supertokens_python.emailpassword.types import FormField, ErrorFormField
 from supertokens_python.emailpassword.constants import FORM_FIELD_EMAIL_ID
-from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.utils import find_first_occurrence_in_list
-from supertokens_python.emailpassword.exceptions import raise_form_field_exception
+from supertokens_python.emailpassword.exceptions import raise_form_field_exception, raise_bad_input_exception
 
 
 async def validate_form_or_throw_error(inputs: List[FormField], config_form_fields: List[NormalisedFormField]):

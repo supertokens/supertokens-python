@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from supertokens_python.emailpassword.interfaces import APIOptions, APIInterface
 from .utils import validate_form_fields_or_throw_error
-from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.emailpassword.exceptions import raise_bad_input_exception
 
 
 async def handle_password_reset_api(api_implementation: APIInterface, api_options: APIOptions):
@@ -36,7 +36,7 @@ async def handle_password_reset_api(api_implementation: APIInterface, api_option
         raise_bad_input_exception('The password reset token must be a string')
 
     token = body['token']
-    response = await api_implementation.password_reset_post(token, form_fields, api_options)
+    response = await api_implementation.password_reset_post(form_fields, token, api_options)
     api_options.response.set_content(response.to_json())
 
     return api_options.response

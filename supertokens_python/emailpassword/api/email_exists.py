@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from supertokens_python.emailpassword.interfaces import APIOptions, APIInterface
-from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.emailpassword.exceptions import raise_bad_input_exception
 
 
 async def handle_email_exists_api(api_implementation: APIInterface, api_options: APIOptions):

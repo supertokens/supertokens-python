@@ -49,11 +49,11 @@ class EmailVerificationRecipe(RecipeModule):
     recipe_id = 'emailverification'
     __instance = None
 
-    def __init__(self, recipe_id: str, app_info: AppInfo, config, rid_to_core=None):
-        super().__init__(recipe_id, app_info, rid_to_core)
+    def __init__(self, recipe_id: str, app_info: AppInfo, config):
+        super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, config)
-        self.config = validate_and_normalise_user_input(self, app_info, config)
-        recipe_implementation = RecipeImplementation(Querier.get_instance(self), self.config, self.app_info.framework)
+        self.config = validate_and_normalise_user_input(app_info, config)
+        recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id), self.config)
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
         api_implementation = APIImplementation()

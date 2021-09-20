@@ -42,6 +42,7 @@ FRAMEWORKS={
     'django2' : DjangoFramework(),
 }
 
+
 def validate_framework(config):
     if config['framework'] not in FRAMEWORKS.keys():
         raise_bad_input_exception(recipe=None, msg=config['framework'] + ' framework is not supported.')

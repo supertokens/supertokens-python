@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from supertokens_python.emailverification.interfaces import APIOptions, APIInterface
 
-from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.emailverification.exceptions import raise_bad_input_exception
 from supertokens_python.utils import normalise_http_method
 
 

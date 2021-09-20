@@ -45,14 +45,11 @@ class Querier:
     __last_tried_index: int = 0
     __hosts_alive_for_testing = set()
 
-    def __init__(self, hosts: list, recipe: Union[RecipeModule, None], rid_to_core=None):
+    def __init__(self, hosts: list, rid_to_core=None):
         self.__hosts = hosts
-        self.__recipe = recipe
         self.__rid_to_core = None
         if rid_to_core is not None:
             self.__rid_to_core = rid_to_core
-        elif self.__recipe is not None:
-            self.__rid_to_core = self.__recipe.get_recipe_id()
 
     @staticmethod
     def reset():
@@ -101,11 +98,11 @@ class Querier:
         return Querier.__api_version
 
     @staticmethod
-    def get_instance(recipe, rid_to_core=None):
+    def get_instance(rid_to_core=None):
         if (not Querier.__init_called) or (Querier.__hosts is None):
             # TODO
             raise Exception("Please call the supertokens.init function before using SuperTokens")
-        return Querier(Querier.__hosts, recipe, rid_to_core)
+        return Querier(Querier.__hosts, rid_to_core)
 
     @staticmethod
     def init(hosts, api_key=None):

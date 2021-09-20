@@ -30,19 +30,9 @@ type_number = {
 
 type_any = {}
 
-SESSION_FEATURE_INPUT_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'set_jwt_payload': type_any,
-        'set_session_data': type_any
-    },
-    'additionalProperties': False
-}
-
 SIGN_UP_FEATURE_INPUT_SCHEMA = {
     'type': 'object',
     'properties': {
-        'disable_default_implementation': type_boolean,
         'form_fields': {
             'type': 'array',
             'items': {
@@ -55,25 +45,7 @@ SIGN_UP_FEATURE_INPUT_SCHEMA = {
                 'required': ['id'],
                 'additionalProperties': False
             }
-        },
-        'handle_post_sign_up': type_any
-    },
-    'additionalProperties': False
-}
-
-SIGN_IN_FEATURE_INPUT_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'disable_default_implementation': type_boolean,
-        'handle_post_sign_in': type_any
-    },
-    'additionalProperties': False
-}
-
-SIGN_OUT_FEATURE_INPUT_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'disable_default_implementation': type_boolean
+        }
     },
     'additionalProperties': False
 }
@@ -81,7 +53,6 @@ SIGN_OUT_FEATURE_INPUT_SCHEMA = {
 RESET_PASSWORD_USING_TOKEN_FEATURE_INPUT_SCHEMA = {
     'type': 'object',
     'properties': {
-        'disable_default_implementation': type_boolean,
         'get_reset_password_url': type_any,
         'create_and_send_custom_email': type_any
     },
@@ -91,10 +62,8 @@ RESET_PASSWORD_USING_TOKEN_FEATURE_INPUT_SCHEMA = {
 EMAIL_VERIFICATION_FEATURE_INPUT_SCHEMA = {
     'type': 'object',
     'properties': {
-        'disable_default_implementation': type_boolean,
         'get_email_verification_url': type_any,
-        'create_and_send_custom_email': type_any,
-        'handle_post_email_verification': type_any
+        'create_and_send_custom_email': type_any
     },
     'additionalProperties': False
 }
@@ -103,16 +72,31 @@ PROVIDERS_INPUT_SCHEMA = {
     'type': 'array'
 }
 
+OVERRIDE_INPUT_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'functions': type_any,
+        'apis': type_any,
+        'email_verification_feature': {
+            'type': 'object',
+            'properties': {
+                'functions': type_any,
+                'apis': type_any
+            },
+            'additionalProperties': False
+        }
+    },
+    'additionalProperties': False
+}
+
 INPUT_SCHEMA = {
     'type': 'object',
     'properties': {
-        'session_feature': SESSION_FEATURE_INPUT_SCHEMA,
         'sign_up_feature': SIGN_UP_FEATURE_INPUT_SCHEMA,
-        'sign_in_feature': SIGN_IN_FEATURE_INPUT_SCHEMA,
-        'sign_out_feature': SIGN_OUT_FEATURE_INPUT_SCHEMA,
         'reset_password_using_token_feature': RESET_PASSWORD_USING_TOKEN_FEATURE_INPUT_SCHEMA,
         'email_verification_feature': EMAIL_VERIFICATION_FEATURE_INPUT_SCHEMA,
-        'providers': PROVIDERS_INPUT_SCHEMA
+        'providers': PROVIDERS_INPUT_SCHEMA,
+        'override': OVERRIDE_INPUT_SCHEMA
     },
     'additionalProperties': False
 }
@@ -138,10 +122,12 @@ class SignInUpResponse:
         self.user = user
         self.is_new_user = is_new_user
 
+
 class SignInResponse:
     def __init__(self, user: User, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR']):
         self.user = user
         self.status = status
+
 
 class SignUpResponse:
     def __init__(self, user: User, status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR']):
@@ -191,6 +177,7 @@ class ResetPasswordToken:
     def __init__(self, token: str, new_password: str):
         self.token = token
         self.new_password = new_password
+
 
 class UpdateEmailOrPassword:
     def __init__(self, user_id: str, email: str = None, password: str = None):
