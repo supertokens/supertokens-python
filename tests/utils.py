@@ -13,19 +13,26 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-
-from os import environ, scandir, kill, remove
-from signal import SIGTERM
-from time import sleep
-from yaml import dump, load, FullLoader
-from shutil import copy, rmtree
+import json
 from datetime import datetime, timezone
-from subprocess import run, DEVNULL
-from requests.models import Response
 from http.cookies import SimpleCookie
+from os import environ, scandir, kill, remove
+from shutil import rmtree
+from signal import SIGTERM
+from subprocess import run, DEVNULL
+from time import sleep
 
+from requests.models import Response
+
+from supertokens_python.emailpassword import EmailPasswordRecipe
+from supertokens_python.emailverification import EmailVerificationRecipe
+from supertokens_python.session import SessionRecipe
+from yaml import dump, load, FullLoader
+
+from supertokens_python import Supertokens
 from supertokens_python.process_state import ProcessState
-from supertokens_python.querier import Querier
+from supertokens_python.thirdparty import ThirdPartyRecipe
+from supertokens_python.thirdpartyemailpassword import ThirdPartyEmailPasswordRecipe
 
 INSTALLATION_PATH = environ['SUPERTOKENS_PATH']
 SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + '/.started'
@@ -165,6 +172,12 @@ def __get_list_of_process_ids():
 def reset():
     __stop_st()
     ProcessState.get_instance().reset()
+    Supertokens.reset()
+    SessionRecipe.reset()
+    ThirdPartyEmailPasswordRecipe.reset()
+    EmailPasswordRecipe.reset()
+    EmailVerificationRecipe.reset()
+    ThirdPartyRecipe.reset()
 
 
 def get_cookie_from_response(response, cookie_name):
@@ -175,7 +188,7 @@ def get_cookie_from_response(response, cookie_name):
 
 
 def extract_all_cookies(response: Response):
-    cookie_headers = SimpleCookie(response.headers.get('set-cookie').replace(" ", ""))
+    cookie_headers = SimpleCookie(response.headers.get('set-cookie'))
     cookies = dict()
     for key, morsel in cookie_headers.items():
         cookies[key] = {
@@ -201,3 +214,22 @@ def get_unix_timestamp(expiry):
 
 def verify_within_5_second_diff(n1, n2):
     return -5 <= (n1 - n2) <= 5
+
+
+def signUpRequest(app, email, password):
+    return app.post(
+        url="/auth/signup",
+        headers={
+            "Content-Type": "multipart/form-data"
+        },
+        json=json.dumps({
+            'formFields':
+                [{
+                    "id": "password",
+                    "value": password
+                },
+                {
+                    "id": "email",
+                    "value": email
+                }]
+        }))

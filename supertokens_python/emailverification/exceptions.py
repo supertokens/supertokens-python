@@ -27,3 +27,7 @@ class SuperTokensEmailVerificationError(SuperTokensError):
 
 class BadInputError(SuperTokensEmailVerificationError):
     pass
+
+
+class EmailVerificationInvalidTokenError(SuperTokensEmailVerificationError):
+    pass

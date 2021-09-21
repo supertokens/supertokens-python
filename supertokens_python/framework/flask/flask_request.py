@@ -28,7 +28,7 @@ class FlaskRequest(BaseRequest):
         self.req.args.get(key)
 
     def json(self):
-        return self.req.json
+        return self.req.get_json()
 
     def method(self) -> str:
         if isinstance(self.req, dict):

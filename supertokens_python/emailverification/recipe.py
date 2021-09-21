@@ -18,6 +18,8 @@ from __future__ import annotations
 from os import environ
 from typing import List, TYPE_CHECKING
 
+from supertokens_python.emailverification.exceptions import EmailVerificationInvalidTokenError
+
 from supertokens_python.exceptions import raise_general_exception, SuperTokensError
 from supertokens_python.recipe_module import RecipeModule, APIHandled
 from .api.implementation import APIImplementation
@@ -39,7 +41,6 @@ from .constants import (
     USER_EMAIL_VERIFY_TOKEN
 )
 from .exceptions import (
-    EmailVerificationInvalidTokenError,
     SuperTokensEmailVerificationError
 )
 from supertokens_python.querier import Querier

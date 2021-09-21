@@ -21,6 +21,7 @@ from typing import List, TYPE_CHECKING, Union
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import RecipeModule, APIHandled
 from .api.implementation import APIImplementation
+from .exceptions import SuperTokensEmailPasswordError
 from .interfaces import APIOptions
 from .recipe_implementation import RecipeImplementation
 
@@ -45,13 +46,7 @@ from .constants import (
     USER_PASSWORD_RESET,
     SIGNUP_EMAIL_EXISTS
 )
-from .exceptions import (
-    EmailAlreadyExistsError,
-    FieldError,
-    WrongCredentialsError,
-    ResetPasswordInvalidTokenError,
-    SuperTokensEmailPasswordError
-)
+
 from .types import ErrorFormField
 from supertokens_python.querier import Querier
 
@@ -95,7 +90,7 @@ class EmailPasswordRecipe(RecipeModule):
                               self.api_implementation.disable_generate_password_reset_token_post),
                    APIHandled(NormalisedURLPath(USER_PASSWORD_RESET), 'post', USER_PASSWORD_RESET,
                               self.api_implementation.disable_password_reset_post),
-                   APIHandled(NormalisedURLPath(SIGNUP_EMAIL_EXISTS), 'post', SIGNUP_EMAIL_EXISTS,
+                   APIHandled(NormalisedURLPath(SIGNUP_EMAIL_EXISTS), 'get', SIGNUP_EMAIL_EXISTS,
                               self.api_implementation.disable_email_exists_get)
 
                ] + self.email_verification_recipe.get_apis_handled()
@@ -104,62 +99,29 @@ class EmailPasswordRecipe(RecipeModule):
                                  response: BaseResponse):
         if request_id == SIGNUP:
             return await handle_sign_up_api(self.api_implementation,
-                                            APIOptions(request, None, self.recipe_id, self.config,
+                                            APIOptions(request, response, self.recipe_id, self.config,
                                                        self.recipe_implementation))
         elif request_id == SIGNIN:
             return await handle_sign_in_api(self.api_implementation,
-                                            APIOptions(request, None, self.recipe_id, self.config,
+                                            APIOptions(request, response, self.recipe_id, self.config,
                                                        self.recipe_implementation))
         elif request_id == SIGNUP_EMAIL_EXISTS:
             return await handle_email_exists_api(self.api_implementation,
-                                                 APIOptions(request, None, self.recipe_id, self.config,
+                                                 APIOptions(request, response, self.recipe_id, self.config,
                                                             self.recipe_implementation))
         elif request_id == USER_PASSWORD_RESET_TOKEN:
             return await handle_generate_password_reset_token_api(self.api_implementation,
-                                                                  APIOptions(request, None, self.recipe_id, self.config,
+                                                                  APIOptions(request, response, self.recipe_id, self.config,
                                                                              self.recipe_implementation))
         elif request_id == USER_PASSWORD_RESET:
             return await handle_password_reset_api(self.api_implementation,
-                                                   APIOptions(request, None, self.recipe_id, self.config,
+                                                   APIOptions(request, response, self.recipe_id, self.config,
                                                               self.recipe_implementation))
         else:
             return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
-        if isinstance(error, EmailAlreadyExistsError):
-            return self.handle_error(request,
-                                     FieldError('Error in input formFields', [ErrorFormField('email', 'This '
-                                                                                                      'email '
-                                                                                                      'already '
-                                                                                                      'exists. '
-                                                                                                      'Please '
-                                                                                                      'sign in '
-                                                                                                      'instead.')
-                                                                              ]
-                                                ),
-                                     response
-                                     )
-        elif isinstance(error, WrongCredentialsError):
-            response.set_content({
-                'status': 'WRONG_CREDENTIALS_ERROR'
-            })
-
-            return response
-
-        elif isinstance(error, FieldError):
-            response.set_content({
-                'status': 'FIELD_ERROR',
-                'formFields': error.get_json_form_fields()
-            })
-
-            return response
-        elif isinstance(error, ResetPasswordInvalidTokenError):
-            response.set_content({
-                'status': 'RESET_PASSWORD_INVALID_TOKEN_ERROR'
-            })
-            return response
-        else:
-            return self.email_verification_recipe.handle_error(request, error, response)
+        return await self.email_verification_recipe.handle_error(request, error, response)
 
     def get_all_cors_headers(self) -> List[str]:
         return [] + self.email_verification_recipe.get_all_cors_headers()

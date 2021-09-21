@@ -24,12 +24,11 @@ from .interfaces import (
     ResetPasswordUsingTokenWrongUserIdErrorResult, UpdateEmailOrPasswordOkResult,
     UpdateEmailOrPasswordUnknownUserIdErrorResult, CreateResetPasswordOkResult
 )
+from .types import User, UsersResponse
 from ..normalised_url_path import NormalisedURLPath
 
 if TYPE_CHECKING:
-    from .utils import EmailPasswordConfig
     from supertokens_python.querier import Querier
-    from .types import User, UsersResponse
     from .interfaces import (
         UpdateEmailOrPasswordResult, SignUpResult, SignInResult, ResetPasswordUsingTokenResult,
         CreateResetPasswordResult

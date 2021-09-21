@@ -8,7 +8,7 @@ from supertokens_python.emailpassword.types import FormField
 from supertokens_python.thirdparty.interfaces import SignInUpResult, APIOptions as ThirdPartyApiOptions, \
     AuthorisationUrlGetResponse
 from supertokens_python.thirdparty.provider import Provider
-from supertokens_python.thirdpartyemailpassword.types import User
+from supertokens_python.thirdpartyemailpassword.types import User, UsersResponse
 
 
 class RecipeInterface(ABC):

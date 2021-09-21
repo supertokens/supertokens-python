@@ -28,7 +28,7 @@ class FastApiResponse(BaseResponse):
 
     def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
                    domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "Lax"):
-        self.response.set_cookie(key, value, max_age, int(time() * 1000), path, domain, secure, httponly, samesite)
+        self.response.set_cookie(key, value, max_age, expires / 1000, path, domain, secure, httponly, samesite)
 
     def set_header(self, key, value):
         self.response.headers[key] = value
