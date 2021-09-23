@@ -63,7 +63,7 @@ class EmailVerificationConfig:
 
 def validate_and_normalise_user_input(app_info: AppInfo, config):
     get_email_verification_url = config[
-        'get_email_verification_url'] if 'get_email_verification_url' in config else default_get_email_verification_url(
+        'get_email_verification_url'] if 'get_email_verification_url' in config and config['get_email_verification_url'] is not None else default_get_email_verification_url(
         app_info)
     create_and_send_custom_email = config[
         'create_and_send_custom_email'] if 'create_and_send_custom_email' in config and config[

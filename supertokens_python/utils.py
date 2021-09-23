@@ -125,10 +125,10 @@ def is_5xx_error(status_code: int) -> bool:
     return status_code // 100 == 5
 
 
-def send_non_200_response(recipe: Union[RecipeModule, None], message: str, status_code: int, response : BaseResponse) -> Union[
+def send_non_200_response(message: str, status_code: int, response : BaseResponse) -> Union[
     BaseResponse, None]:
     if status_code < 300:
-        raise_general_exception(recipe, 'Calling sendNon200Response with status code < 300')
+        raise_general_exception('Calling sendNon200Response with status code < 300')
     response.set_status_code(status_code)
     response.set_content(content={
             ERROR_MESSAGE_KEY: message

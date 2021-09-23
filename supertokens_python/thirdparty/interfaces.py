@@ -86,7 +86,7 @@ class RecipeInterface(ABC):
 class APIOptions:
     def __init__(self, request: BaseRequest, response: Union[BaseResponse, None], recipe_id: str,
                  config: ThirdPartyConfig, recipe_implementation: RecipeInterface, providers: List[Provider]):
-        self.request = request,
+        self.request = request
         self.response = response
         self.recipe_id = recipe_id
         self.config = config

@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from supertokens_python.emailverification.interfaces import APIOptions, APIInterface
 
-from supertokens_python.emailverification.exceptions import raise_bad_input_exception
+from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.utils import normalise_http_method
 
 
@@ -25,7 +25,7 @@ async def handle_email_verify_api(api_implementation: APIInterface, api_options:
     if normalise_http_method(api_options.request.method()) == 'post':
         if api_implementation.disable_email_verify_post:
             return None
-        body = api_options.request.json()
+        body = await api_options.request.json()
         if 'token' not in body:
             raise_bad_input_exception('Please provide the email verification token')
         if not isinstance(body['token'], str):

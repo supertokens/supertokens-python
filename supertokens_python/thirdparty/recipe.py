@@ -87,11 +87,11 @@ class ThirdPartyRecipe(RecipeModule):
                                  response: BaseResponse):
         if request_id == SIGNINUP:
             return await handle_sign_in_up_api(self.api_implementation,
-                                               APIOptions(request, None, self.recipe_id, self.config,
+                                               APIOptions(request, response, self.recipe_id, self.config,
                                                           self.recipe_implementation, self.providers))
         elif request_id == AUTHORISATIONURL:
             return await handle_authorisation_url_api(self.api_implementation,
-                                                      APIOptions(request, None, self.recipe_id, self.config,
+                                                      APIOptions(request, response, self.recipe_id, self.config,
                                                                  self.recipe_implementation, self.providers))
         else:
             return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)

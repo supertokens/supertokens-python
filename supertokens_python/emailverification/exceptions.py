@@ -17,15 +17,7 @@ from __future__ import annotations
 from supertokens_python.exceptions import SuperTokensError
 
 
-def raise_bad_input_exception(msg):
-    raise BadInputError(msg)
-
-
 class SuperTokensEmailVerificationError(SuperTokensError):
-    pass
-
-
-class BadInputError(SuperTokensEmailVerificationError):
     pass
 
 

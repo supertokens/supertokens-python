@@ -62,8 +62,8 @@ class AppInfo:
         self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(app_info[
                                                                          'api_gateway_path']) if 'api_gateway_path' in app_info else NormalisedURLPath(
             '')
-        self.api_domain: NormalisedURLDomain = NormalisedURLDomain(recipe, app_info['api_domain'])
-        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(recipe, app_info['website_domain'])
+        self.api_domain: NormalisedURLDomain = NormalisedURLDomain(app_info['api_domain'])
+        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(app_info['website_domain'])
         self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(
             NormalisedURLPath('/auth') if 'api_base_path' not in app_info else NormalisedURLPath(
                 app_info['api_base_path']))
@@ -120,7 +120,7 @@ class Supertokens:
         validate_the_structure_of_user_input(config, INPUT_SCHEMA, 'init_function', None)
         validate_framework(config)
         self.app_info: AppInfo = AppInfo(None, config['app_info'], config['framework'])
-        hosts = list(map(lambda h: NormalisedURLDomain(None, h.strip()),
+        hosts = list(map(lambda h: NormalisedURLDomain(h.strip()),
                          filter(lambda x: x != '', config['supertokens']['connection_uri'].split(';'))))
         api_key = None
         if 'api_key' in config['supertokens']:
@@ -239,10 +239,10 @@ class Supertokens:
 
     async def handle_supertokens_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse):
         if isinstance(err, GeneralError):
-            return send_non_200_response(err.recipe, str(err), 400, response)
+            return send_non_200_response(str(err), 400, response)
 
         if isinstance(err, BadInputError):
-            return send_non_200_response(err.recipe, str(err), 400, response)
+            return send_non_200_response(str(err), 400, response)
 
         for recipe in self.recipe_modules:
             if recipe.is_error_from_this_or_child_recipe_based_on_instance(err):

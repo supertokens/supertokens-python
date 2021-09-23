@@ -191,7 +191,7 @@ def validate_and_normalise_reset_password_using_token_config(app_info: AppInfo, 
 
 def email_verification_create_and_send_custom_email(recipe: EmailPasswordRecipe, create_and_send_custom_email):
     async def func(user, link):
-        user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
+        user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id)
         if user_info is None:
             raise Exception('Unknown User ID provided')
         return await create_and_send_custom_email(user_info, link)

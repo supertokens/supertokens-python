@@ -24,7 +24,7 @@ from .utils import validate_form_fields_or_throw_error
 async def handle_sign_in_api(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_sign_in_post:
         return None
-    body = api_options.request.json()
+    body = await api_options.request.json()
     form_fields_raw = body['formFields'] if 'formFields' in body else []
     form_fields = await validate_form_fields_or_throw_error(api_options.config.sign_in_feature.form_fields,
                                                             form_fields_raw)

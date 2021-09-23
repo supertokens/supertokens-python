@@ -23,7 +23,7 @@ from .utils import validate_form_fields_or_throw_error
 async def handle_generate_password_reset_token_api(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_generate_password_reset_token_post:
         return None
-    body = api_options.request.json()
+    body = await api_options.request.json()
     form_fields_raw = body['formFields'] if 'formFields' in body else []
     form_fields = await validate_form_fields_or_throw_error(api_options.config.reset_token_using_password_feature.form_fields_for_generate_token_form,
                                                             form_fields_raw)

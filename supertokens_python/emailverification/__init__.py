@@ -22,12 +22,12 @@ def init(config):
 
 
 async def create_email_verification_token(user_id: str, email: str):
-    return await EmailVerificationRecipe.get_instance().create_email_verification_token(user_id, email)
+    return await EmailVerificationRecipe.get_instance().recipe_implementation.create_email_verification_token(user_id, email)
 
 
 async def verify_email_using_token(token: str):
-    return await EmailVerificationRecipe.get_instance().verify_email_using_token(token)
+    return await EmailVerificationRecipe.get_instance().recipe_implementation.verify_email_using_token(token)
 
 
 async def is_email_verified(user_id: str, email: str):
-    return await EmailVerificationRecipe.get_instance().is_email_verified(user_id, email)
+    return await EmailVerificationRecipe.get_instance().recipe_implementation.is_email_verified(user_id, email)

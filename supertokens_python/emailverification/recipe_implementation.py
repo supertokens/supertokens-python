@@ -23,12 +23,12 @@ from .interfaces import (
 )
 from typing import TYPE_CHECKING
 
+from .types import User
 from ..normalised_url_path import NormalisedURLPath
 
 if TYPE_CHECKING:
     from .utils import EmailVerificationConfig
     from supertokens_python.querier import Querier
-    from .types import User
 
 
 class RecipeImplementation(RecipeInterface):

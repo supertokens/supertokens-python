@@ -53,7 +53,6 @@ class EmailVerificationRecipe(RecipeModule):
     def __init__(self, recipe_id: str, app_info: AppInfo, config):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, config)
-        self.config = validate_and_normalise_user_input(app_info, config)
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id), self.config)
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
@@ -78,11 +77,11 @@ class EmailVerificationRecipe(RecipeModule):
                                  response: BaseResponse):
         if request_id == USER_EMAIL_VERIFY_TOKEN:
             return await handle_generate_email_verify_token_api(self.api_implementation,
-                                                                APIOptions(request, None, self.recipe_id, self.config,
+                                                                APIOptions(request, response, self.recipe_id, self.config,
                                                                            self.recipe_implementation))
         else:
             return await handle_email_verify_api(self.api_implementation,
-                                                 APIOptions(request, None, self.recipe_id, self.config,
+                                                 APIOptions(request, response, self.recipe_id, self.config,
                                                             self.recipe_implementation))
 
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):

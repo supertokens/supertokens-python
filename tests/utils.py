@@ -188,7 +188,7 @@ def get_cookie_from_response(response, cookie_name):
 
 
 def extract_all_cookies(response: Response):
-    cookie_headers = SimpleCookie(response.headers.get('set-cookie'))
+    cookie_headers = SimpleCookie(response.headers.get('set-cookie').replace(",", ";"))
     cookies = dict()
     for key, morsel in cookie_headers.items():
         cookies[key] = {
@@ -216,11 +216,11 @@ def verify_within_5_second_diff(n1, n2):
     return -5 <= (n1 - n2) <= 5
 
 
-def signUpRequest(app, email, password):
+def sign_up_request(app, email, password):
     return app.post(
         url="/auth/signup",
         headers={
-            "Content-Type": "multipart/form-data"
+            "Content-Type": "application/json"
         },
         json=json.dumps({
             'formFields':
@@ -228,8 +228,22 @@ def signUpRequest(app, email, password):
                     "id": "password",
                     "value": password
                 },
-                {
-                    "id": "email",
-                    "value": email
-                }]
+                    {
+                        "id": "email",
+                        "value": email
+                    }]
         }))
+
+
+def email_verify_token_request(app, accessToken, idRefreshTokenFromCookie, antiCsrf, userId):
+    return app.post(
+        url="/auth/user/email/verify/token",
+        headers={
+            "Content-Type": "application/json",
+            'anti-csrf': antiCsrf
+        },
+        cookies={
+            'sAccessToken': accessToken,
+            'sIdRefreshToken': idRefreshTokenFromCookie,
+        },
+        data=str.encode(userId))

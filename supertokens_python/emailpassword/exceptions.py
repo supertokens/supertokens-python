@@ -24,15 +24,7 @@ def raise_form_field_exception(msg, form_fields):
     raise FieldError(msg, form_fields)
 
 
-def raise_bad_input_exception(msg):
-    raise BadInputError(msg)
-
-
 class SuperTokensEmailPasswordError(SuperTokensError):
-    pass
-
-
-class BadInputError(SuperTokensEmailPasswordError):
     pass
 
 

@@ -106,10 +106,10 @@ class ErrorHandlers:
         try:
             response = await self.__on_try_refresh_token(request, message, response)
         except TypeError:
-            response = self.__on_try_refresh_token(request, message, response)
+            response = await self.__on_try_refresh_token(request, message, response)
         return response
 
-    async def on_unauthorised(self, request: BaseRequest, message: str, response : BaseResponse):
+    async def on_unauthorised(self, request: BaseRequest, message: str, response: BaseResponse):
         try:
             response = await self.__on_unauthorised(request, message, response)
         except TypeError:
@@ -118,20 +118,20 @@ class ErrorHandlers:
         return response
 
 
-async def default_unauthorised_callback(_: BaseRequest, __: str, response : BaseResponse):
+async def default_unauthorised_callback(_: BaseRequest, __: str, response: BaseResponse):
     from .recipe import SessionRecipe
-    return send_non_200_response(SessionRecipe.get_instance(), 'unauthorised', SessionRecipe.get_instance().config.session_expired_status_code, response)
+    return send_non_200_response('unauthorised', SessionRecipe.get_instance().config.session_expired_status_code, response)
 
 
 async def default_try_refresh_token_callback(_: BaseRequest, __: str, response : BaseResponse):
     from .recipe import SessionRecipe
-    return send_non_200_response(SessionRecipe.get_instance(), 'try refresh token', SessionRecipe.get_instance().config.session_expired_status_code, response)
+    return send_non_200_response('try refresh token', SessionRecipe.get_instance().config.session_expired_status_code, response)
 
 
 async def default_token_theft_detected_callback(_: BaseRequest, session_handle: str, __: str, response : BaseResponse):
     from .recipe import SessionRecipe
     await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle)
-    return send_non_200_response(SessionRecipe.get_instance(), 'token theft detected', SessionRecipe.get_instance().config.session_expired_status_code, response)
+    return send_non_200_response('token theft detected', SessionRecipe.get_instance().config.session_expired_status_code, response)
 
 
 class OverrideConfig:

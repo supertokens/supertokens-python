@@ -59,7 +59,7 @@ class APIImplementation(APIInterface):
             return GeneratePasswordResetTokenPostOkResponse()
 
         token = token_result.token
-        password_reset_link = await api_options.config.email_verification_feature.reset_token_using_password_feature.get_reset_password_url(
+        password_reset_link = await api_options.config.reset_token_using_password_feature.get_reset_password_url(
             user) + '?token=' + token + '&rid=' + api_options.recipe_id
 
         async def send_email():

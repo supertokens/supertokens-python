@@ -72,9 +72,8 @@ class APIImplementation(APIInterface):
         async def send_email():
             try:
                 await api_options.config.create_and_send_custom_email(user, email_verify_link)
-            except Exception:
+            except Exception as e:
                 pass
-
-        asyncio.create_task(send_email())
+        task = asyncio.create_task(send_email())
 
         return GenerateEmailVerifyTokenPostOkResponse()

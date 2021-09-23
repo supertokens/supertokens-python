@@ -26,7 +26,7 @@ from supertokens_python.emailpassword.interfaces import APIInterface
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.session import create_new_session, refresh_session, get_session
 from tests.utils import (
-    reset, setup_st, clean_st, start_st, signUpRequest
+    reset, setup_st, clean_st, start_st, sign_up_request
 )
 
 
@@ -114,7 +114,7 @@ async def test_good_input_email_exists(driver_config_client: TestClient):
     })
     start_st()
 
-    response_1 = signUpRequest(driver_config_client, "random@gmail.com", "validPass123")
+    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validPass123")
 
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -214,7 +214,7 @@ async def test_email_exists_a_syntactically_invalid_email(driver_config_client: 
     })
     start_st()
 
-    response_1 = signUpRequest(driver_config_client, "random@gmail.com", "validPass123")
+    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validPass123")
 
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -252,7 +252,7 @@ async def test_sending_an_unnormalised_email_and_you_get_exists_is_true(driver_c
     })
     start_st()
 
-    response_1 = signUpRequest(driver_config_client, "random@gmail.com", "validPass123")
+    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validPass123")
 
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -290,7 +290,7 @@ async def test_bad_input_do_not_pass_email(driver_config_client: TestClient):
     })
     start_st()
 
-    response_1 = signUpRequest(driver_config_client, "random@gmail.com", "validPass123")
+    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validPass123")
 
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -298,6 +298,7 @@ async def test_bad_input_do_not_pass_email(driver_config_client: TestClient):
 
     response_2 = driver_config_client.get(url='/auth/signup/email/exists', params={})
     assert response_2.status_code == 400
+    assert "Please provide the email as a GET param" in response_2.text
 
 
 @mark.asyncio
@@ -325,11 +326,13 @@ async def test_passing_an_array_instead_of_a_string_in_the_email(driver_config_c
     })
     start_st()
 
-    response_1 = signUpRequest(driver_config_client, "random@gmail.com", "validPass123")
+    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validPass123")
 
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
 
-    response_2 = driver_config_client.get(url='/auth/signup/email/exists', params={})
-    assert response_2.status_code == 400
+    response_2 = driver_config_client.get(url='/auth/signup/email/exists',  params={'email': ['rAndOM@gmAiL.COm', 'x@g.com']})
+    assert response_2.status_code == 200
+    #assert "Please provide the email as a GET param" in response_2.text
+

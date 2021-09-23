@@ -174,7 +174,7 @@ class Querier:
 
     async def __send_request_helper(self, path: NormalisedURLPath, method, http_function, no_of_tries):
         if no_of_tries == 0:
-            raise_general_exception(self.__recipe, 'No SuperTokens core available to query')
+            raise_general_exception('No SuperTokens core available to query')
 
         try:
             current_host = self.__hosts[Querier.__last_tried_index].get_as_string_dangerous()
@@ -189,7 +189,7 @@ class Querier:
                 Querier.__hosts_alive_for_testing.add(current_host)
 
             if is_4xx_error(response.status_code) or is_5xx_error(response.status_code):
-                raise_general_exception(None, 'SuperTokens core threw an error for a ' + method + ' request to path: ' +
+                raise_general_exception('SuperTokens core threw an error for a ' + method + ' request to path: ' +
                                         path.get_as_string_dangerous() + ' with status code: ' + str(response.status_code) + ' and message: ' +
                                         response.text)
 
@@ -202,4 +202,5 @@ class Querier:
             return await self.__send_request_helper(
                 path, method, http_function, no_of_tries - 1)
         except Exception as e:
+            print(e)
             raise_general_exception(None, e)

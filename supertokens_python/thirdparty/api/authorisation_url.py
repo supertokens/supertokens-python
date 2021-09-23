@@ -21,7 +21,7 @@ from supertokens_python.utils import find_first_occurrence_in_list
 if TYPE_CHECKING:
     from supertokens_python.thirdparty.interfaces import APIOptions, APIInterface
     from supertokens_python.thirdparty.provider import Provider
-from supertokens_python.thirdparty.exceptions import raise_bad_input_exception
+from supertokens_python.exceptions import raise_bad_input_exception
 
 
 async def handle_authorisation_url_api(api_implementation: APIInterface, api_options: APIOptions):

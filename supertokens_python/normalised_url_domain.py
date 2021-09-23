@@ -23,14 +23,14 @@ from .exceptions import raise_general_exception
 
 
 class NormalisedURLDomain:
-    def __init__(self, recipe: Union[RecipeModule, None], url: str):
-        self.__value = normalise_domain_path_or_throw_error(recipe, url)
+    def __init__(self, url: str):
+        self.__value = normalise_domain_path_or_throw_error(url)
 
     def get_as_string_dangerous(self):
         return self.__value
 
 
-def normalise_domain_path_or_throw_error(recipe: Union[RecipeModule, None], input_str: str, ignore_protocol=False) -> str:
+def normalise_domain_path_or_throw_error(input_str: str, ignore_protocol=False) -> str:
     input_str = input_str.strip().lower()
 
     try:
@@ -52,7 +52,7 @@ def normalise_domain_path_or_throw_error(recipe: Union[RecipeModule, None], inpu
         pass
 
     if input_str.startswith('/'):
-        raise_general_exception(recipe, 'Please provide a valid domain name')
+        raise_general_exception('Please provide a valid domain name')
 
     if input_str.startswith('.'):
         input_str = input_str[1:]
@@ -71,7 +71,7 @@ def normalise_domain_path_or_throw_error(recipe: Union[RecipeModule, None], inpu
         input_str = 'https://' + input_str
         try:
             urlparse(input_str)
-            return normalise_domain_path_or_throw_error(recipe, 'http://example.com' + input_str)
+            return normalise_domain_path_or_throw_error(input_str, True)
         except Exception:
             pass
-    raise_general_exception(recipe, 'Please provide a valid domain name')
+    raise_general_exception('Please provide a valid domain name')
