@@ -16,13 +16,15 @@ under the License.
 from __future__ import annotations
 from __future__ import annotations
 from typing import TYPE_CHECKING, List
+
+from supertokens_python.emailpassword.exceptions import raise_form_field_exception
+
 if TYPE_CHECKING:
     from supertokens_python.emailpassword.types import NormalisedFormField
 from supertokens_python.emailpassword.types import FormField, ErrorFormField
 from supertokens_python.emailpassword.constants import FORM_FIELD_EMAIL_ID
 from supertokens_python.utils import find_first_occurrence_in_list
-from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.emailpassword.exceptions import raise_form_field_exception
+from supertokens_python.exceptions import raise_bad_input_exception, SuperTokensError, BadInputError
 
 
 async def validate_form_or_throw_error(inputs: List[FormField], config_form_fields: List[NormalisedFormField]):
@@ -40,6 +42,7 @@ async def validate_form_or_throw_error(inputs: List[FormField], config_form_fiel
                 validation_errors.append(ErrorFormField(field.id, error))
 
     if len(validation_errors) != 0:
+        #raise BadInputError(msg="Error in input formFields")
         raise_form_field_exception('Error in input formFields', validation_errors)
 
 

@@ -26,7 +26,7 @@ async def handle_sign_up_api(api_implementation: APIInterface, api_options: APIO
         return None
     body = await api_options.request.json()
     form_fields_raw = body['formFields'] if 'formFields' in body else []
-    form_fields = await validate_form_fields_or_throw_error(api_options.config.sign_in_feature.form_fields,
+    form_fields = await validate_form_fields_or_throw_error(api_options.config.sign_up_feature.form_fields,
                                                             form_fields_raw)
     response = await api_implementation.sign_up_post(form_fields, api_options)
 

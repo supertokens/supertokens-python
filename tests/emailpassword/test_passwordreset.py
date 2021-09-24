@@ -23,14 +23,10 @@ from pytest import fixture
 from pytest import mark
 
 from supertokens_python import init, session, emailpassword
-from supertokens_python.emailverification.interfaces import APIInterface, APIOptions
-from supertokens_python.exceptions import GeneralError
 from supertokens_python.framework.fastapi import Middleware
-from supertokens_python.querier import Querier
 from supertokens_python.session import create_new_session, refresh_session, get_session
 from tests.utils import (
-    reset, setup_st, clean_st, start_st, sign_up_request, extract_all_cookies, email_verify_token_request,
-    set_key_value_in_config, TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY
+    reset, setup_st, clean_st, start_st, sign_up_request
 )
 
 
@@ -88,146 +84,147 @@ async def driver_config_client():
     return TestClient(app)
 
 
-# @mark.asyncio
-# async def test_email_validation_checks_in_generate_token_API(driver_config_client: TestClient):
-#     init({
-#         'supertokens': {
-#             'connection_uri': "http://localhost:3567",
-#         },
-#         'framework': 'fastapi',
-#         'app_info': {
-#             'app_name': "SuperTokens Demo",
-#             'api_domain': "api.supertokens.io",
-#             'website_domain': "supertokens.io",
-#             'api_base_path': "/auth"
-#         },
-#         'recipe_list': [
-#             emailpassword.init({})
-#         ],
-#     })
-#     start_st()
-#
-#
-#     response_1 = driver_config_client.post(
-#         url="/auth/user/password/reset/token",
-#         json=json.dumps({
-#             'formFields':
-#                 [{
-#                     "id": "email",
-#                     "value": "random"
-#                 }]
-#         }))
-#
-#     assert response_1.status_code == 200
-#     dict_response = json.loads(response_1.text)
-#     assert dict_response["status"] == "FIELD_ERROR"
+@mark.asyncio
+async def test_email_validation_checks_in_generate_token_API(driver_config_client: TestClient):
+    init({
+        'supertokens': {
+            'connection_uri': "http://localhost:3567",
+        },
+        'framework': 'fastapi',
+        'app_info': {
+            'app_name': "SuperTokens Demo",
+            'api_domain': "api.supertokens.io",
+            'website_domain': "supertokens.io",
+            'api_base_path': "/auth"
+        },
+        'recipe_list': [
+            emailpassword.init({})
+        ],
+    })
+    start_st()
 
-# @mark.asyncio
-# async def test_that_generated_password_link_is_correct(driver_config_client: TestClient):
-#     reset_url = None
-#     token_info = None
-#     rid_info = None
-#
-#     async def custom_f(user, password_reset_url_with_token):
-#         nonlocal reset_url, token_info, rid_info
-#         reset_url = password_reset_url_with_token.split("?")[0]
-#         token_info = password_reset_url_with_token.split("?")[1].split("&")[0]
-#         rid_info = password_reset_url_with_token.split("?")[1].split("&")[1]
-#
-#     init({
-#         'supertokens': {
-#             'connection_uri': "http://localhost:3567",
-#         },
-#         'framework': 'fastapi',
-#         'app_info': {
-#             'app_name': "SuperTokens Demo",
-#             'api_domain': "api.supertokens.io",
-#             'website_domain': "supertokens.io",
-#             'api_base_path': "/auth"
-#         },
-#         'recipe_list': [
-#             emailpassword.init({
-#                 'reset_password_using_token_feature': {
-#                     'create_and_send_custom_email': custom_f
-#                 }
-#             }),
-#             session.init()
-#         ],
-#     })
-#     start_st()
-#
-#     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
-#     assert response_1.status_code == 200
-#     dict_response = json.loads(response_1.text)
-#     assert dict_response["status"] == "OK"
-#     await asyncio.sleep(1)
-#     response_1 = driver_config_client.post(
-#         url="/auth/user/password/reset/token",
-#         json=json.dumps({
-#             'formFields':
-#                 [{
-#                     "id": "email",
-#                     "value": "test@gmail.com"
-#                 }]
-#         }))
-#     await asyncio.sleep(1)
-#
-#     assert response_1.status_code == 200
-#     assert reset_url == "https://supertokens.io/auth/reset-password"
-#     assert "token=" in token_info
-#     assert "rid=emailpassword" in rid_info
-#
-# @mark.asyncio
-# async def test_password_validation(driver_config_client: TestClient):
-#     init({
-#         'supertokens': {
-#             'connection_uri': "http://localhost:3567",
-#         },
-#         'framework': 'fastapi',
-#         'app_info': {
-#             'app_name': "SuperTokens Demo",
-#             'api_domain': "api.supertokens.io",
-#             'website_domain': "supertokens.io",
-#             'api_base_path': "/auth"
-#         },
-#         'recipe_list': [
-#             emailpassword.init({})
-#         ],
-#     })
-#     start_st()
-#
-#
-#     response_1 = driver_config_client.post(
-#         url="/auth/user/password/reset",
-#         json=json.dumps({
-#             'formFields':
-#                 [{
-#                     "id": "password",
-#                     "value": "invalid"
-#                 }],
-#                 "token": "random"
-#         }))
-#
-#     assert response_1.status_code == 200
-#     # dict_response = json.loads(response_1.text)
-#     # assert dict_response["status"] == "FIELD_ERROR"
-#
-#     response_2 = driver_config_client.post(
-#         url="/auth/user/password/reset",
-#         json=json.dumps({
-#             'formFields':
-#                 [{
-#                     "id": "password",
-#                     "value": "validpass123"
-#                 }],
-#                     "token" : "randomToken"
-#
-#         }))
-#
-#     assert response_2.status_code == 200
-#     dict_response = json.loads(response_2.text)
-#     assert dict_response["status"] != "FIELD_ERROR"
-#
+
+    response_1 = driver_config_client.post(
+        url="/auth/user/password/reset/token",
+        json=json.dumps({
+            'formFields':
+                [{
+                    "id": "email",
+                    "value": "random"
+                }]
+        }))
+
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    assert dict_response["status"] == "FIELD_ERROR"
+
+@mark.asyncio
+async def test_that_generated_password_link_is_correct(driver_config_client: TestClient):
+    reset_url = None
+    token_info = None
+    rid_info = None
+
+    async def custom_f(user, password_reset_url_with_token):
+        nonlocal reset_url, token_info, rid_info
+        reset_url = password_reset_url_with_token.split("?")[0]
+        token_info = password_reset_url_with_token.split("?")[1].split("&")[0]
+        rid_info = password_reset_url_with_token.split("?")[1].split("&")[1]
+
+    init({
+        'supertokens': {
+            'connection_uri': "http://localhost:3567",
+        },
+        'framework': 'fastapi',
+        'app_info': {
+            'app_name': "SuperTokens Demo",
+            'api_domain': "api.supertokens.io",
+            'website_domain': "supertokens.io",
+            'api_base_path': "/auth"
+        },
+        'recipe_list': [
+            emailpassword.init({
+                'reset_password_using_token_feature': {
+                    'create_and_send_custom_email': custom_f
+                }
+            }),
+            session.init()
+        ],
+    })
+    start_st()
+
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    assert dict_response["status"] == "OK"
+    await asyncio.sleep(1)
+    response_1 = driver_config_client.post(
+        url="/auth/user/password/reset/token",
+        json=json.dumps({
+            'formFields':
+                [{
+                    "id": "email",
+                    "value": "test@gmail.com"
+                }]
+        }))
+    await asyncio.sleep(1)
+
+    assert response_1.status_code == 200
+    assert reset_url == "https://supertokens.io/auth/reset-password"
+    assert "token=" in token_info
+    assert "rid=emailpassword" in rid_info
+
+
+@mark.asyncio
+async def test_password_validation(driver_config_client: TestClient):
+    init({
+        'supertokens': {
+            'connection_uri': "http://localhost:3567",
+        },
+        'framework': 'fastapi',
+        'app_info': {
+            'app_name': "SuperTokens Demo",
+            'api_domain': "api.supertokens.io",
+            'website_domain': "supertokens.io",
+            'api_base_path': "/auth"
+        },
+        'recipe_list': [
+            emailpassword.init({})
+        ],
+    })
+    start_st()
+
+
+    response_1 = driver_config_client.post(
+        url="/auth/user/password/reset",
+        json=json.dumps({
+            'formFields':
+                [{
+                    "id": "password",
+                    "value": "invalid"
+                }],
+                "token": "random"
+        }))
+
+    assert response_1.status_code == 200
+    # dict_response = json.loads(response_1.text)
+    # assert dict_response["status"] == "FIELD_ERROR"
+
+    response_2 = driver_config_client.post(
+        url="/auth/user/password/reset",
+        json=json.dumps({
+            'formFields':
+                [{
+                    "id": "password",
+                    "value": "validpass123"
+                }],
+                    "token" : "randomToken"
+
+        }))
+
+    assert response_2.status_code == 200
+    dict_response = json.loads(response_2.text)
+    assert dict_response["status"] != "FIELD_ERROR"
+
 
 @mark.asyncio
 async def test_token_missing_from_input(driver_config_client: TestClient):
@@ -253,10 +250,115 @@ async def test_token_missing_from_input(driver_config_client: TestClient):
             'formFields':
                 [{
                     "id": "password",
-                    "value": "invalid"
+                    "value": "validpass123"
                 }]
         }))
 
     assert response_1.status_code == 400
     dict_response = json.loads(response_1.text)
     assert dict_response["message"] == "Please provide the password reset token"
+
+
+@mark.asyncio
+async def test_valid_token_input_and_passoword_has_changed(driver_config_client: TestClient):
+    token_info = None
+
+    async def custom_f(user, password_reset_url_with_token):
+        nonlocal token_info
+        token_info = password_reset_url_with_token.split("?")[1].split("&")[0].split("=")[1]
+
+    init({
+        'supertokens': {
+            'connection_uri': "http://localhost:3567",
+        },
+        'framework': 'fastapi',
+        'app_info': {
+            'app_name': "SuperTokens Demo",
+            'api_domain': "api.supertokens.io",
+            'website_domain': "supertokens.io",
+            'api_base_path': "/auth"
+        },
+        'recipe_list': [
+            emailpassword.init({
+                'reset_password_using_token_feature': {
+                    'create_and_send_custom_email': custom_f
+                }
+            }),
+            session.init()
+        ],
+    })
+    start_st()
+
+    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validpass123")
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    user_info = dict_response['user']
+    assert dict_response["status"] == "OK"
+    response_1 = driver_config_client.post(
+        url="/auth/user/password/reset/token",
+        json=json.dumps({
+            'formFields':
+                [{
+                    "id": "email",
+                    "value": "random@gmail.com"
+                }]
+        }))
+    await asyncio.sleep(1)
+
+    assert response_1.status_code == 200
+
+    response_2 = driver_config_client.post(
+        url="/auth/user/password/reset",
+        json=json.dumps({
+            'formFields':
+                [{
+                    "id": "password",
+                    "value": "validpass12345"
+                }],
+            "token": token_info
+        }))
+    await asyncio.sleep(1)
+    assert response_2.status_code == 200
+
+    response_3 = driver_config_client.post(
+        url="/auth/signin",
+        json=json.dumps({
+            'formFields':
+                [{
+                    "id": "password",
+                    "value": "validpass123"
+                },
+                    {
+                        "id": "email",
+                        "value": "random@gmail.com"
+                    }
+                ]
+        }))
+
+    assert response_3.status_code == 200
+
+    dict_response = json.loads(response_3.text)
+    assert dict_response['status'] == 'WRONG_CREDENTIALS_ERROR'
+
+    response_4 = driver_config_client.post(
+        url="/auth/signin",
+        json=json.dumps({
+            'formFields':
+                [
+                    {
+                        "id": "password",
+                        "value": "validpass12345",
+                    },
+                    {
+                        "id": "email",
+                        "value": "random@gmail.com",
+                    },
+                ]
+        }))
+
+    assert response_4.status_code == 200
+
+    dict_response = json.loads(response_4.text)
+    assert dict_response['status'] == 'OK'
+    assert dict_response['user']['id'] == user_info['id']
+    assert dict_response['user']['email'] == user_info['email']

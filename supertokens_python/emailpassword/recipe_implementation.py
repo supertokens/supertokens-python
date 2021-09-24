@@ -116,7 +116,7 @@ class RecipeImplementation(RecipeInterface):
         if 'status' in response and response['status'] == 'OK':
             return SignInOkResult(
                 User(response['user']['id'], response['user']['email'], response['user']['timeJoined']))
-        SignInWrongCredentialsErrorResult()
+        return SignInWrongCredentialsErrorResult()
 
     async def sign_up(self, email: str, password: str) -> SignUpResult:
         data = {

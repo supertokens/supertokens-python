@@ -76,7 +76,7 @@ async def default_email_validator(value) -> Union[str, None]:
 
     if fullmatch(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,'
                  r'3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', value) is None:
-        return 'Password must contain at least one number'
+        return 'Email is not valid'
 
     return None
 

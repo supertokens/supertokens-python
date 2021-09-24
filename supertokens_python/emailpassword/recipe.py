@@ -21,7 +21,7 @@ from typing import List, TYPE_CHECKING, Union
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import RecipeModule, APIHandled
 from .api.implementation import APIImplementation
-from .exceptions import SuperTokensEmailPasswordError
+from .exceptions import SuperTokensEmailPasswordError, FieldError
 from .interfaces import APIOptions
 from .recipe_implementation import RecipeImplementation
 
@@ -121,6 +121,10 @@ class EmailPasswordRecipe(RecipeModule):
             return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
+        if isinstance(error, SuperTokensEmailPasswordError):
+            if isinstance(error, FieldError):
+                response.set_content({'status': 'FIELD_ERROR', 'formFields' : error.get_json_form_fields()})
+                return response
         return await self.email_verification_recipe.handle_error(request, error, response)
 
     def get_all_cors_headers(self) -> List[str]:

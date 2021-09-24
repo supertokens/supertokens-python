@@ -5,4 +5,4 @@ class PollsConfig(AppConfig):
     name = 'polls'
 
     def ready(self):
-        print(1)
+        pass

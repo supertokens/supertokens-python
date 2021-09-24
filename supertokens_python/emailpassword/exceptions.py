@@ -40,3 +40,4 @@ class FieldError(SuperTokensEmailPasswordError):
                 'id': form_field.id,
                 'error': form_field.error
             })
+        return form_fields
