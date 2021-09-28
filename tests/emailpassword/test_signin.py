@@ -85,10 +85,8 @@ async def driver_config_client():
     return TestClient(app)
 
 
-
 @mark.asyncio
 async def test_that_disabling_api_the_default_signin_API_does_not_work(driver_config_client: TestClient):
-
     def apis_override_email_password(param: APIInterface):
         param.disable_sign_in_post = True
         return param
@@ -177,7 +175,6 @@ async def test_singinAPI_works_when_input_is_fine(driver_config_client: TestClie
     dict_response = json.loads(response_2.text)
     assert dict_response['user']['id'] == user_info['id']
     assert dict_response['user']['email'] == user_info['email']
-
 
 
 @mark.asyncio
@@ -355,7 +352,6 @@ async def test_bad_input_not_a_JSON_to_signin_API(driver_config_client: TestClie
     assert dict_response['message'] == 'Are you sending too many / too few formFields?'
 
 
-
 @mark.asyncio
 async def test_bad_input_not_a_JSON_to_signin_API(driver_config_client: TestClient):
     init({
@@ -445,10 +441,10 @@ async def test_that_a_successfull_signin_yields_a_session(driver_config_client: 
     assert response_2.headers.get('anti-csrf') is not None
     assert (cookies["sIdRefreshToken"] is not None)
 
+
 @mark.asyncio
 async def test_email_field_validation_error(
         driver_config_client: TestClient):
-
     init({
         'supertokens': {
             'connection_uri': "http://localhost:3567",
@@ -471,7 +467,6 @@ async def test_email_field_validation_error(
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
-
 
     response_2 = driver_config_client.post(
         url="/auth/signin",
@@ -481,10 +476,10 @@ async def test_email_field_validation_error(
                     "id": "password",
                     "value": "validpassword123"
                 },
-                {
-                    "id": "email",
-                    "value": "randomgmail.com"
-                }
+                    {
+                        "id": "email",
+                        "value": "randomgmail.com"
+                    }
                 ]
         }))
 
@@ -492,10 +487,10 @@ async def test_email_field_validation_error(
     dict_response = json.loads(response_2.text)
     assert dict_response['status'] == 'FIELD_ERROR'
 
+
 @mark.asyncio
 async def test_formFields_has_no_email_field(
         driver_config_client: TestClient):
-
     init({
         'supertokens': {
             'connection_uri': "http://localhost:3567",
@@ -518,7 +513,6 @@ async def test_formFields_has_no_email_field(
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
-
 
     response_2 = driver_config_client.post(
         url="/auth/signin",
@@ -537,7 +531,6 @@ async def test_formFields_has_no_email_field(
 @mark.asyncio
 async def test_formFields_has_no_password_field(
         driver_config_client: TestClient):
-
     init({
         'supertokens': {
             'connection_uri': "http://localhost:3567",
@@ -561,15 +554,14 @@ async def test_formFields_has_no_password_field(
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
 
-
     response_2 = driver_config_client.post(
         url="/auth/signin",
         json=json.dumps({
             'formFields':
-                [ {
-                     "id": "email",
-                     "value": "randomgmail.com"
-                  }
+                [{
+                    "id": "email",
+                    "value": "randomgmail.com"
+                }
                 ]
         }))
 

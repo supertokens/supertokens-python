@@ -18,7 +18,7 @@ from typing import Union, TYPE_CHECKING, List
 from .access_token import get_info_from_access_token
 
 if TYPE_CHECKING:
-    from .receipe_implementation import RecipeImplementation
+    from . import RecipeImplementation
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.utils import get_timestamp_ms
 from .exceptions import (

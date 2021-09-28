@@ -15,10 +15,12 @@ under the License.
 """
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
+
 if TYPE_CHECKING:
     from supertokens_python.normalised_url_path import NormalisedURLPath
-    from .recipe import SessionRecipe
-    from .receipe_implementation import RecipeImplementation
+    from .recipe_implementation import RecipeImplementation
+
 from . import session_functions
 from .exceptions import raise_unauthorised_exception
 
@@ -54,7 +56,7 @@ class Session:
             'userDataInJWT': new_jwt_payload
         })
         if result['status'] == 'UNAUTHORISED':
-            raise_unauthorised_exception(self.__recipe_implementation, result['message'])
+            raise_unauthorised_exception(result['message'])
         self.__jwt_payload = result['session']['userDataInJWT']
         if 'accessToken' in result and result['accessToken'] is not None:
             self.__access_token = result['accessToken']['token']

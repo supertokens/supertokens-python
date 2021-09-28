@@ -87,6 +87,12 @@ async def driver_config_client():
 
     return TestClient(app)
 
+
+def apis_override_email_password(param):
+    param.refresh_post = None
+    return param
+
+
 @mark.asyncio
 async def test_login_refresh(driver_config_client: TestClient):
     init({
@@ -103,7 +109,10 @@ async def test_login_refresh(driver_config_client: TestClient):
         'recipe_list': [session.init(
             {
                 'anti_csrf': 'VIA_TOKEN',
-                'cookie_domain': 'supertokens.io'
+                'cookie_domain': 'supertokens.io',
+                "override": {
+                    'apis': apis_override_email_password
+                }
             }
         )],
     })
@@ -125,9 +134,7 @@ async def test_login_refresh(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sAccessToken']['secure'] is None
-    assert cookies_1['sRefreshToken']['secure'] is None
-    assert cookies_1['sIdRefreshToken']['secure'] is None
+
 
     response_3 = driver_config_client.post(
         url='/refresh',

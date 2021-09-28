@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 
 async def handle_refresh_api(api_implementation: APIInterface, api_options: APIOptions):
-    if api_implementation.disable_refresh_post:
+    if api_implementation.disable_refresh_post or api_implementation.refresh_post is None:
         return None
     await api_implementation.refresh_post(api_options)
     api_options.response.set_content({})

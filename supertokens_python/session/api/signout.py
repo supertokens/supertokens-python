@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 
 async def handle_signout_api(api_implementation: APIInterface, api_options: APIOptions):
-    if api_implementation.disable_signout_post:
+    if api_implementation.disable_signout_post or api_implementation.signout_post is None:
         return None
     response = await api_implementation.signout_post(api_options)
     api_options.response.set_content(response.to_json())

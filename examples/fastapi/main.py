@@ -31,7 +31,7 @@ app.add_middleware(Middleware)
 
 @app.get("/create")
 async def create(request: Request):
-    user_id = 'userId'
+    user_id ='user_id'
     session = await create_new_session(request, user_id, {}, {})
     return {"message": session.get_access_token()}
 
@@ -43,5 +43,4 @@ async def user(session: Session = Depends(verify_session())):
 @app.post("/refresh")
 async def refresh(request: Request):
     await refresh_session(request)
-
 

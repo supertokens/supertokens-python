@@ -42,6 +42,7 @@ class Middleware(BaseHTTPMiddleware):
 
             if hasattr(request.state, "supertokens") and isinstance(request.state.supertokens, Session):
                 manage_cookies_post_response(request.state.supertokens, result)
+            print(result.response)
             return result.response
         except SuperTokensError as e:
             response = FastApiResponse(Response())

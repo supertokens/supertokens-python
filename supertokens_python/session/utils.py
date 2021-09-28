@@ -111,9 +111,9 @@ class ErrorHandlers:
 
     async def on_unauthorised(self, request: BaseRequest, message: str, response: BaseResponse):
         try:
-            response = await self.__on_unauthorised(request, message, response)
-        except TypeError:
-            response = await self.__on_unauthorised(request, message, response)
+            await self.__on_unauthorised(request, message, response)
+        except TypeError as e:
+            await self.__on_unauthorised(request, message, response)
         clear_cookies(self.__recipe, response)
         return response
 
@@ -210,6 +210,7 @@ def validate_and_normalise_user_input(recipe: SessionRecipe, app_info: AppInfo, 
         'override'] else None
     override_apis = config['override']['apis'] if 'override' in config and 'apis' in config[
         'override'] else None
+    print(override_apis)
     override = OverrideConfig(override_functions, override_apis)
 
     return SessionConfig(

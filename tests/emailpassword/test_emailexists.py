@@ -178,7 +178,8 @@ async def test_that_if_disableing_api_the_default_email_exists_API_does_not_work
             emailpassword.init({
                 'override': {
                     'apis': apis_override_email_password
-                }
+                },
+
             })
         ],
     })
