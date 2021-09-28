@@ -23,6 +23,7 @@ from supertokens_python.utils import FRAMEWORKS, normalise_http_method
 
 def verify_session(recipe: SessionRecipe, anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
     from fastapi.requests import Request
+
     async def func(request: Request) -> Union[Session, None]:
         request = FastApiRequest(request)
         session = await recipe.verify_session(request, anti_csrf_check, session_required)

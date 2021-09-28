@@ -89,8 +89,8 @@ async def unauthorised_f(error, req, res):
     res.set_content({})
 
 
-def apis_override_email_password(param):
-    param.refresh_post = None
+def apis_override_session(param):
+    param.disable_refresh_post = True
     return param
 
 
@@ -122,7 +122,7 @@ def config(enable_anti_csrf: bool):
                     },
                 "anti_csrf": "VIA_TOKEN" if enable_anti_csrf else "NONE",
                 "override": {
-                    'apis': apis_override_email_password
+                    'apis': apis_override_session
                 }
             })],
         'telemetry': False
@@ -283,27 +283,30 @@ async def revoke_all(session: Session = Depends(verify_session())):
 def refresh_options():
     return send_options_api_response()
 
-@app.get("/refreshCalledTime")
-def refresh_called_time():
-    return PlainTextResponse(content=str(Test.get_refresh_called_count()), status_code=200)
+
+@app.options("/refreshAttemptedTime")
+def refresh_attempted_time():
+    return send_options_api_response()
+
 
 @app.get("/refreshAttemptedTime")
 def refresh_attempted_time():
     return PlainTextResponse(content=str(Test.get_refresh_attempted_count()), status_code=200)
 
-@app.get("/getSessionCalledTime")
-def get_session_called_time():
-    return PlainTextResponse(content=str(Test.get_session_called_count()), status_code=200)
-
 
 @app.post('/auth/session/refresh')
-def refresh(_: Session = Depends(verify_session())):
-    async def verify_custom( api_options: APIOptions, anti_csrf_check: Union[bool, None] = None,
-                             session_required: bool = True):
-        if api_options.request.get_header('rid') is not None:
-            Test.increment_refresh()
-    SessionRecipe.verify_session=verify_custom
+async def refresh(request: Request):
+    Test.increment_attempted_refresh()
+    try:
+        await verify_session()(request)
+    except Exception as e:
+        raise e
+
+    if request.headers.get("rid") is None:
+        return PlainTextResponse(content='refresh failed')
+    Test.increment_refresh()
     return PlainTextResponse(content='refresh success')
+
 
 @app.post('/setAntiCsrf')
 async def set_anti_csrf(request: Request):
@@ -324,19 +327,19 @@ def refresh_called_time_options():
     return send_options_api_response()
 
 
-@app.get('/refreshCalledTime')
-def get_refresh_called_info():
-    return PlainTextResponse(content=json.dumps(Test.get_refresh_called_count()))
+@app.get("/refreshCalledTime")
+def refresh_called_time():
+    return PlainTextResponse(content=str(Test.get_refresh_called_count()), status_code=200)
 
 
-@app.get("/getSessionCalledTime")
+@app.options("/getSessionCalledTime")
 def get_session_called_time_options():
     return send_options_api_response()
 
 
-@app.get('/getSessionCalledTime')
-def get_session_called_info():
-    return PlainTextResponse(content=json.dumps(Test.get_session_called_count()))
+@app.get("/getSessionCalledTime")
+def get_session_called_time():
+    return PlainTextResponse(content=str(Test.get_session_called_count()), status_code=200)
 
 
 @app.options("/ping")

@@ -37,7 +37,6 @@ async def create(request: Request):
 
 @app.get("/user")
 async def user(session: Session = Depends(verify_session())):
-    print(session)
     return {'user_id' : session.get_user_id()}
 
 @app.post("/refresh")
