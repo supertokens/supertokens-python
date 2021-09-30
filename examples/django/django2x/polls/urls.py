@@ -1,6 +1,6 @@
 from django.urls import path
 
-from polls import views
+from tests.frontendIntegration.django2x.polls import views
 
 urlpatterns = [
     path('create', views.create, name='create'),

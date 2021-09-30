@@ -28,7 +28,7 @@ from supertokens_python.framework.flask import error_handler, Middleware
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user, create_new_session, revoke_session, \
-    get_session
+    get_session, update_jwt_payload
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
@@ -180,7 +180,7 @@ def multiple_interceptors_options():
 
 
 @app.route('/multipleInterceptors', methods=['POST'])
-def multiple_interceptors(request: Request):
+def multiple_interceptors(request):
     result_bool = 'success' if 'interceptorheader2' in request.headers \
                                and 'interceptorheader1' in request.headers else 'failure'
     return result_bool
@@ -217,11 +217,11 @@ def update_jwt():
     return resp
 
 
-@app.route('/update-jwt', methods=['GET'])
+@app.route('/update-jwt', methods=['POST'])
 @verify_session()
-async def update_jwt_post():
+def update_jwt_post():
     session = get_session(request)
-    await session.update_jwt_payload(request.json())
+    update_jwt_payload(session.get_handle(), request.json())
     Test.increment_get_session()
     resp = make_response(session.get_jwt_payload())
     resp.headers['Cache-Control'] = 'no-cache, private'

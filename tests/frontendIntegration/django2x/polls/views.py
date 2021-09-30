@@ -1,0 +1,335 @@
+"""
+Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
+
+This software is licensed under the Apache License, Version 2.0 (the
+"License") as published by the Apache Software Foundation.
+
+You may not use this file except in compliance with the License. You may
+obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations
+under the License.
+"""
+import json
+import os
+import sys
+
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+
+from supertokens_python import init, Supertokens
+from supertokens_python.recipe import session
+
+from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session.framework.django.sync import verify_session
+from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user, create_new_session, revoke_session, \
+    get_session, update_jwt_payload
+import os
+module_dir = os.path.dirname(__file__)  # get current directory
+file_path = os.path.join(module_dir, 'templates/index.html')
+print(file_path)
+index_file = open(file_path, "r")
+file_contents = index_file.read()
+index_file.close()
+
+os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
+
+
+def try_refresh_token(_):
+    return HttpResponse(json.dumps({'error': 'try refresh token'}), content_type="application/json", status=401)
+
+
+def unauthorised(_):
+    return HttpResponse(json.dumps({'error': 'unauthorised'}), content_type="application/json", status=401)
+
+
+class Test:
+    no_of_times_refresh_called_during_test = 0
+    no_of_times_get_session_called_during_test = 0
+    no_of_times_refresh_attempted_during_test = 0
+
+    @staticmethod
+    def reset():
+        Test.no_of_times_refresh_called_during_test = 0
+        Test.no_of_times_get_session_called_during_test = 0
+        Test.no_of_times_refresh_attempted_during_test = 0
+
+    @staticmethod
+    def increment_refresh():
+        Test.no_of_times_refresh_called_during_test = Test.no_of_times_refresh_called_during_test + 1
+
+    @staticmethod
+    def increment_attempted_refresh():
+        Test.no_of_times_refresh_attempted_during_test = Test.no_of_times_refresh_attempted_during_test + 1
+
+    @staticmethod
+    def increment_get_session():
+        Test.no_of_times_get_session_called_during_test = Test.no_of_times_get_session_called_during_test + 1
+
+    @staticmethod
+    def get_session_called_count():
+        return Test.no_of_times_get_session_called_during_test
+
+    @staticmethod
+    def get_refresh_called_count():
+        return Test.no_of_times_refresh_called_during_test
+
+    @staticmethod
+    def get_refresh_attempted_count():
+        return Test.no_of_times_refresh_attempted_during_test
+
+
+async def unauthorised_f(error, req, res):
+    res.set_status_code(401)
+    res.set_content({})
+
+
+def apis_override_session(param):
+    param.disable_refresh_post = True
+    return param
+
+
+def get_app_port():
+    argvv = sys.argv
+    for i in range(0, len(argvv)):
+        if argvv[i] == '--port':
+            return argvv[i + 1]
+
+    return '8080'
+
+
+def config(enable_anti_csrf: bool):
+    return {
+        'supertokens': {
+            'connection_uri': "http://localhost:9000",
+        },
+        'framework': 'django2',
+        'app_info': {
+            'app_name': "SuperTokens",
+            'api_domain': "0.0.0.0:" + get_app_port(),
+            'website_domain': "http://localhost.org:8080",
+        },
+        'recipe_list': [
+            session.init({
+                "error_handlers":
+                    {
+                        "on_unauthorised": unauthorised_f
+                    },
+                "anti_csrf": "VIA_TOKEN" if enable_anti_csrf else "NONE",
+                "override": {
+                    'apis': apis_override_session
+                }
+            })],
+        'telemetry': False
+    }
+
+
+init(config(True))
+
+
+def send_file(request):
+    return file_contents
+
+
+def send_options_api_response():
+    return HttpResponse('')
+
+
+def login(request):
+    if request.method == 'POST':
+        user_id = request.get_json()['userId']
+        create_new_session(request, user_id)
+        return HttpResponse(user_id)
+    else:
+        return send_options_api_response()
+
+@csrf_exempt
+def before_each(request):
+    if request.method == 'POST':
+        Test.reset()
+        return HttpResponse('')
+    else:
+        return send_options_api_response()
+
+
+def test_config(request):
+    if request.method == 'POST':
+        return HttpResponse('')
+    else:
+        return send_options_api_response()
+
+
+def multiple_interceptors(request):
+    if request.method == 'POST':
+        result_bool = 'success' if 'interceptorheader2' in request.headers \
+                                   and 'interceptorheader1' in request.headers else 'failure'
+        return HttpResponse(result_bool)
+    else:
+        return send_options_api_response()
+
+
+@verify_session()
+def get_info(request):
+    if request.method == 'GET':
+        Test.increment_get_session()
+        session = get_session(request)
+        resp = HttpResponse(session.get_user_id())
+        resp['Cache-Control'] = 'no-cache, private'
+        return resp
+    else:
+        return send_options_api_response()
+
+@verify_session()
+def update_jwt(request):
+    if request.method == 'GET':
+        Test.increment_get_session()
+        session = get_session(request)
+
+        resp = HttpResponse(session.get_user_id())
+        resp['Cache-Control'] = 'no-cache, private'
+        return resp
+    else:
+        if request.method == 'POST':
+            session = get_session(request)
+            update_jwt_payload(session.get_handle(), request.json())
+            Test.increment_get_session()
+            resp = HttpResponse(session.get_jwt_payload())
+            resp['Cache-Control'] = 'no-cache, private'
+            return resp
+
+    # options request
+    return send_options_api_response()
+
+
+def testing(request):
+    if request.method in ['GET', 'PUT', 'POST', 'DELETE']:
+        if 'testing' in request.headers:
+
+            resp = HttpResponse('success')
+            resp['testing'] = request.headers['testing']
+            return resp
+        return "success"
+
+    # options
+    return send_options_api_response()
+
+
+def logout(request):
+    if request.method == 'POST':
+        session = get_session(request)
+        # session.revoke_session()
+        revoke_session(session.get_handle())
+        return HttpResponse('success')
+    return send_options_api_response()
+
+
+@verify_session()
+async def revoke_all(request):
+    if request.method:
+        session = get_session(request)
+        revoke_all_sessions_for_user(session.get_user_id())
+        return HttpResponse('success')
+    else:
+        return send_options_api_response()
+
+
+def refresh_options(request):
+    return send_options_api_response()
+
+
+def refresh_attempted_time(request):
+    return Test.get_refresh_attempted_count()
+
+@verify_session()
+def refresh(request):
+    Test.increment_attempted_refresh()
+    # try:
+    #     verify_session()(request)
+    # except Exception as e:
+    #     raise e
+    if request.headers.get("rid") is None:
+        'refresh failed'
+    Test.increment_refresh()
+    return HttpResponse('refresh success')
+
+
+def set_anti_csrf(request):
+    data = json.loads(request.body)
+    if "enableAntiCsrf" not in data:
+        enable_csrf = True
+    else:
+        enable_csrf = data["enableAntiCsrf"]
+    if enable_csrf is not None:
+        Supertokens.reset()
+        SessionRecipe.reset()
+        init(config(enable_csrf))
+    return HttpResponse('success')
+
+
+def refresh_called_time_options(request):
+    return send_options_api_response()
+
+
+def refresh_called_time(request):
+    return str(Test.get_refresh_called_count())
+
+
+def get_session_called_time_options(request):
+    return send_options_api_response()
+
+
+def get_session_called_time(request):
+    return str(Test.get_session_called_count())
+
+
+def ping_options(request):
+    return send_options_api_response()
+
+
+def ping(request):
+    return HttpResponse('success')
+
+
+def test_header(request):
+    if request.method == 'GET':
+        success_info = request.headers.get('st-custom-header')
+        return JsonResponse({'success': success_info})
+    else:
+        return send_options_api_response()
+
+def check_device_info(request):
+    if request.method == 'GET':
+        sdk_name = request.headers.get('supertokens-sdk-name')
+        sdk_version = request.headers.get('supertokens-sdk-version')
+        return HttpResponse('true' if sdk_name == 'website' and isinstance(sdk_version, str) else 'false')
+    else:
+        return send_options_api_response()
+
+
+def check_rid(request):
+    rid = request.headers.get('rid')
+    return HttpResponse('fail' if rid is None else 'success')
+
+def check_allow_credentials(request):
+    if request.method == 'GET':
+        return JsonResponse(json.dumps('allow-credentials' in request.headers))
+    else:
+        return send_options_api_response()
+
+
+def test_error(request):
+    if request.method == 'OPTIONS' or request.method == 'GET':
+        return send_options_api_response()
+    return HttpResponse('test error message', status=500)
+
+
+# @app.exception_handler(405)
+# def f_405(_, e):
+#     return PlainTextResponse('', status_code=404)
+
+
+# cors middleware added like this due to issue with add_middleware
+# ref: https://github.com/tiangolo/fastapi/issues/1663
