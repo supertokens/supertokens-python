@@ -16,22 +16,20 @@ under the License.
 import json
 import os
 import sys
-from typing import Union
 
 import uvicorn
 from starlette.requests import Request
 
 from supertokens_python.framework.fastapi import Middleware
-from supertokens_python.session.framework.fastapi import verify_session
+from supertokens_python.recipe.session.framework.fastapi import verify_session
 
-from supertokens_python import init, get_all_cors_headers, session, Supertokens
-from supertokens_python.session import Session, revoke_all_sessions_for_user, create_new_session, SessionRecipe
+from supertokens_python import init, get_all_cors_headers, Supertokens
+from supertokens_python.recipe import session
+from supertokens_python.recipe.session import Session, revoke_all_sessions_for_user, create_new_session, SessionRecipe
 from fastapi import FastAPI, Depends
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
 from starlette.exceptions import ExceptionMiddleware
-
-from supertokens_python.session.interfaces import APIOptions
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()

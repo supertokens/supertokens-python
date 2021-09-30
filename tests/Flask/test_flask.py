@@ -20,9 +20,10 @@ from _pytest.fixtures import fixture
 from flask import Flask, jsonify, make_response, request
 
 from supertokens_python.exceptions import SuperTokensError
-from supertokens_python import init, session
-from supertokens_python.session.framework.flask import verify_session
-from supertokens_python.session.sync import create_new_session, refresh_session, get_session, revoke_session
+from supertokens_python import init
+from supertokens_python.recipe import session
+from supertokens_python.recipe.session.framework.flask import verify_session
+from supertokens_python.recipe.session.sync import create_new_session, refresh_session, get_session, revoke_session
 from supertokens_python.framework.flask import Middleware, error_handler
 
 from tests.Flask.utils import extract_all_cookies
@@ -84,14 +85,17 @@ def driver_config_app():
     @app.route('/login')
     def login():
         user_id = 'userId'
-        print(request)
-
+        # print(request)
+        # print(request.get_json())
         session = create_new_session(request, user_id, {}, {})
 
         return jsonify({'userId': user_id, 'session': 'ssss'})
 
     @app.route('/refresh', methods=['POST'])
     def custom_refresh():
+        print(request.is_json)
+        print(request.json)
+        print('eroare')
         response = make_response(jsonify({}))
         refresh_session(request)
         return response
@@ -238,7 +242,8 @@ def test_login_refresh_no_csrf(driver_config_app):
 
     # post with csrf token -> no error
     result = test_client.post('/refresh', headers={
-        'anti-csrf': response_1.headers.get('anti-csrf')})
+        'anti-csrf': response_1.headers.get('anti-csrf')},
+        json = {'lala': 'lala'})
     assert result.status_code == 200
 
     # post with csrf token -> should be error with status code 401

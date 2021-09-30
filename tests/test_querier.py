@@ -18,27 +18,12 @@ from fastapi import FastAPI
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import ProcessState, AllowedProcessStates
 from supertokens_python.querier import Querier
-from supertokens_python.session import SessionRecipe, Session
-from supertokens_python.utils import find_max_version
-from supertokens_python.exceptions import GeneralError
-from supertokens_python import init, thirdpartyemailpassword, session
+from supertokens_python import init
+from supertokens_python.recipe import session, thirdpartyemailpassword
 
 from .utils import (
     reset, setup_st, clean_st, start_st,
-    API_VERSION_TEST_BASIC_RESULT,
-    API_VERSION_TEST_NON_SUPPORTED_SV,
-    API_VERSION_TEST_NON_SUPPORTED_CV,
-    API_VERSION_TEST_SINGLE_SUPPORTED_SV,
-    API_VERSION_TEST_SINGLE_SUPPORTED_CV,
-    API_VERSION_TEST_MULTIPLE_SUPPORTED_SV,
-    API_VERSION_TEST_MULTIPLE_SUPPORTED_CV,
-    API_VERSION_TEST_SINGLE_SUPPORTED_RESULT,
-    API_VERSION_TEST_MULTIPLE_SUPPORTED_RESULT,
-    SUPPORTED_CORE_DRIVER_INTERFACE_FILE
-)
-from json import load
-from supertokens_python.constants import (
-    SUPPORTED_CDI_VERSIONS
+    API_VERSION_TEST_BASIC_RESULT
 )
 from pytest import mark
 

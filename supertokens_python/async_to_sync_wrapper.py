@@ -21,7 +21,6 @@ import inspect
 import types
 from typing import Any, Callable, Generator
 
-
 PY35 = sys.version_info >= (3, 5)
 
 
@@ -31,6 +30,15 @@ def _is_awaitable(co: Generator[Any, None, Any]) -> bool:
     else:
         return (isinstance(co, types.GeneratorType) or
                 isinstance(co, asyncio.Future))
+
+
+def check_event_loop():
+    try:
+        asyncio.get_event_loop()
+    except RuntimeError as ex:
+        if "There is no current event loop in thread" in str(ex):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
 
 
 @singledispatch
@@ -43,12 +51,7 @@ def sync(co: Any):
 def sync_co(co: Generator[Any, None, Any]) -> Any:
     if not _is_awaitable(co):
         raise TypeError('Called with unsupported argument: {}'.format(co))
-    try:
-        asyncio.get_event_loop()
-    except RuntimeError as ex:
-        if "There is no current event loop in thread" in str(ex):
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
+    check_event_loop()
     return asyncio.get_event_loop().run_until_complete(co)
 
 
@@ -61,6 +64,7 @@ def sync_fu(f: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(f)
     def run(*args, **kwargs):
         return asyncio.get_event_loop().run_until_complete(f(*args, **kwargs))
+
     return run
 
 

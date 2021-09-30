@@ -40,7 +40,7 @@ class FlaskRequest(BaseRequest):
 
     def get_header(self, key: str) -> Any:
         if isinstance(self.req, dict):
-            return self.req[key]
+            return self.req.get(key, None)
         return self.req.headers.get(key)
 
     def url(self):

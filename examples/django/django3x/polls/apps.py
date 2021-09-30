@@ -1,5 +1,6 @@
 from django.apps import AppConfig
-from supertokens_python import session, init
+from supertokens_python import init
+from supertokens_python.recipe import session
 
 
 class PollsConfig(AppConfig):

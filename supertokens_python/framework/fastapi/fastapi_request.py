@@ -39,7 +39,7 @@ class FastApiRequest(BaseRequest):
         return self.request.cookies.get(key)
 
     def get_header(self, key: str) -> Union[str, None]:
-        return self.request.headers.get(key)
+        return self.request.headers.get(key, None)
 
     @property
     def url(self):

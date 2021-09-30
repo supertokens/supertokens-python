@@ -27,7 +27,7 @@ class Middleware(BaseHTTPMiddleware):
         from supertokens_python.framework.fastapi.fastapi_response import FastApiResponse
         from supertokens_python import Supertokens
         from supertokens_python.exceptions import SuperTokensError
-        from supertokens_python.session import Session
+        from supertokens_python.recipe.session import Session
         from supertokens_python.supertokens import manage_cookies_post_response
         st = Supertokens.get_instance()
         from starlette.responses import Response

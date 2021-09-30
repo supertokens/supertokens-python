@@ -1,16 +1,16 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from supertokens_python import init, session
+from supertokens_python import init
+from supertokens_python.recipe import session
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.framework.flask import error_handler, Middleware
-from supertokens_python.session.framework.flask import verify_session
-from supertokens_python.session.sync import create_new_session, refresh_session
+from supertokens_python.recipe.session.framework.flask import verify_session
+from supertokens_python.recipe.session.sync import create_new_session
 
 app = Flask(__name__)
 app.register_error_handler(SuperTokensError, error_handler)
 app.wsgi_app = Middleware(app.wsgi_app)
-app.app_context().push()
-CORS(app, supports_credentials=True)
+# CORS(app, supports_credentials=True)
 
 init({
     'supertokens': {
@@ -41,8 +41,20 @@ def hello_world():
 @app.route('/user')
 @verify_session(session_required=True)
 def user():
+    json = request.get_json()
+    print(json)
     return jsonify({})
+
+@app.route('/test_post', methods=['POST'])
+def test_post():
+    print(request)
+    try:
+        json = request.json
+    except Exception as e:
+        print(e)
+    print(json)
+    return jsonify({}), 200
 
 
 if __name__ == '__main__':
-    app.run(host="127.0.0.1", port=5020)
+    app.run(host="127.0.0.1", port=5020, debug=True, threaded=True)

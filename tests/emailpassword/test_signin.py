@@ -13,7 +13,6 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-import asyncio
 import json
 
 from fastapi import FastAPI
@@ -22,10 +21,11 @@ from fastapi.testclient import TestClient
 from pytest import fixture
 from pytest import mark
 
-from supertokens_python import init, session, emailpassword
-from supertokens_python.emailpassword.interfaces import APIInterface
+from supertokens_python import init
+from supertokens_python.recipe import session, emailpassword
+from supertokens_python.recipe.emailpassword import APIInterface
 from supertokens_python.framework.fastapi import Middleware
-from supertokens_python.session import create_new_session, refresh_session, get_session
+from supertokens_python.recipe.session import create_new_session, refresh_session, get_session
 from tests.utils import (
     reset, setup_st, clean_st, start_st, sign_up_request, extract_all_cookies
 )

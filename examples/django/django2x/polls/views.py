@@ -1,7 +1,7 @@
-from django.http import HttpResponse, JsonResponse
-from supertokens_python.session.framework.django.sync import verify_session
+from django.http import HttpResponse
+from supertokens_python.recipe.session.framework.django.sync import verify_session
 
-from supertokens_python.session.sync import create_new_session, refresh_session
+from supertokens_python.recipe.session.sync import create_new_session
 
 
 def create(request):

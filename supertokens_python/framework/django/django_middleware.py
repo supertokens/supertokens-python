@@ -26,7 +26,7 @@ def middleware(get_response):
     from supertokens_python.exceptions import SuperTokensError
     from supertokens_python.framework.django.django_request import DjangoRequest
     from supertokens_python.framework.django.django_response import DjangoResponse
-    from supertokens_python.session import Session
+    from supertokens_python.recipe.session import Session
     from supertokens_python.supertokens import manage_cookies_post_response
 
 

@@ -18,11 +18,12 @@ import respx
 from fastapi import FastAPI
 from pytest import mark
 
-from supertokens_python import init, session
+from supertokens_python import init
+from supertokens_python.recipe import session
 from supertokens_python.process_state import ProcessState, AllowedProcessStates
-from supertokens_python.session import SessionRecipe, revoke_session, get_all_session_handles_for_user, \
+from supertokens_python.recipe.session import SessionRecipe, revoke_session, get_all_session_handles_for_user, \
     revoke_all_sessions_for_user
-from supertokens_python.session.session_functions import create_new_session, refresh_session, get_session, \
+from supertokens_python.recipe.session.session_functions import create_new_session, refresh_session, get_session, \
     update_session_data, get_session_data, update_jwt_payload, get_jwt_payload
 from .utils import (
     reset, setup_st, clean_st, start_st

@@ -18,6 +18,7 @@ import json
 
 
 from asgiref.sync import async_to_sync
+from flask import Request
 
 
 class Middleware:
@@ -33,8 +34,7 @@ class Middleware:
         from flask import Response
 
         st = Supertokens.get_instance()
-        request = FlaskRequest(environ)
-        response = FlaskResponse(Response())
+        request = FlaskRequest(Request(environ))
         result = async_to_sync(st.middleware)(request, response)
 
         if result is None:

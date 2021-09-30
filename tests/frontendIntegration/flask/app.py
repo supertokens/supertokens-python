@@ -17,19 +17,18 @@ import json
 import os
 import sys
 
-from fastapi import Depends
-from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
-from flask import Flask, request, make_response, Response
+from flask import Flask, request, make_response, Response, jsonify
 from flask_cors import CORS
 from starlette.requests import Request
 
-from supertokens_python import init, session, Supertokens
+from supertokens_python import init, Supertokens
+from supertokens_python.recipe import session
 from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.fastapi import Middleware
-from supertokens_python.framework.flask import error_handler
-from supertokens_python.session import SessionRecipe
-from supertokens_python.session.framework.fastapi import verify_session
-from supertokens_python.session.sync import Session, revoke_all_sessions_for_user, create_new_session, revoke_session
+from supertokens_python.framework.flask import error_handler, Middleware
+from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session.framework.flask import verify_session
+from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user, create_new_session, revoke_session, \
+    get_session
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
@@ -37,17 +36,16 @@ index_file.close()
 app = Flask(__name__)
 app.register_error_handler(SuperTokensError, error_handler)
 app.wsgi_app = Middleware(app.wsgi_app)
-app.app_context().push()
 CORS(app, supports_credentials=True)
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 
 def try_refresh_token(_):
-    return JSONResponse(content={'error': 'try refresh token'}, status_code=401)
+    return jsonify({'error': 'try refresh token'}), 401
 
 
 def unauthorised(_):
-    return JSONResponse(content={'error': 'unauthorised'}, status_code=401)
+    return jsonify({'error': 'unauthorised'}), 401
 
 
 class Test:
@@ -194,8 +192,10 @@ def options():
 
 
 @app.route('/', methods=['GET'])
-def get_info(session: Session = Depends(verify_session())):
+@verify_session()
+def get_info():
     Test.increment_get_session()
+    session = get_session(request)
     resp = make_response(session.get_user_id())
     resp.headers['Cache-Control'] = 'no-cache, private'
     return resp
@@ -207,16 +207,21 @@ def update_options():
 
 
 @app.route('/update-jwt', methods=['GET'])
-def update_jwt(sess: Session = Depends(verify_session())):
+@verify_session()
+def update_jwt():
     Test.increment_get_session()
-    resp = make_response(sess.get_user_id())
+    session = get_session(request)
+
+    resp = make_response(session.get_user_id())
     resp.headers['Cache-Control'] = 'no-cache, private'
     return resp
 
 
 @app.route('/update-jwt', methods=['GET'])
-async def update_jwt_post(request: Request, session: Session = Depends(verify_session())):
-    await session.update_jwt_payload(await request.json())
+@verify_session()
+async def update_jwt_post():
+    session = get_session(request)
+    await session.update_jwt_payload(request.json())
     Test.increment_get_session()
     resp = make_response(session.get_jwt_payload())
     resp.headers['Cache-Control'] = 'no-cache, private'
@@ -270,7 +275,9 @@ def logout_options():
 
 
 @app.route('/logout', methods=['POST'])
-def logout(session: Session = Depends(verify_session())):
+@verify_session()
+def logout():
+    session = get_session(request)
     # session.revoke_session()
     revoke_session(session.get_handle())
     return 'success'
@@ -282,7 +289,9 @@ def revoke_all_options():
 
 
 @app.route('/revokeAll', methods=['POST'])
-async def revoke_all(session: Session = Depends(verify_session())):
+@verify_session()
+async def revoke_all():
+    session = get_session(request)
     revoke_all_sessions_for_user(session.get_user_id())
     return 'sucess'
 
@@ -298,13 +307,9 @@ def refresh_attempted_time():
 
 
 @app.route('/auth/session/refresh', methods=['POST'])
-async def refresh():
+@verify_session()
+def refresh():
     Test.increment_attempted_refresh()
-    try:
-        await verify_session()(request)
-    except Exception as e:
-        raise e
-
     if request.headers.get("rid") is None:
         'refresh failed'
     Test.increment_refresh()
@@ -312,8 +317,8 @@ async def refresh():
 
 
 @app.route('/setAntiCsrf', methods=['POST'])
-async def set_anti_csrf():
-    json = await request.json()
+def set_anti_csrf():
+    json = request.get_json()
     if "enableAntiCsrf" not in json:
         enable_csrf = True
     else:
@@ -322,7 +327,7 @@ async def set_anti_csrf():
         Supertokens.reset()
         SessionRecipe.reset()
         init(config(enable_csrf))
-    return 'success'
+    return 'success', 200
 
 
 @app.route("/refreshCalledTime", methods=['OPTIONS'])
@@ -412,4 +417,4 @@ def test_error():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=int(get_app_port()))
+    app.run(host="0.0.0.0", port=int(get_app_port()), threaded=True)

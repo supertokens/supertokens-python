@@ -28,9 +28,10 @@ from .constants import (
 from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
 from .querier import Querier
-from .session.cookie_and_header import clear_cookies, attach_access_token_to_cookie, \
+from .recipe.session.cookie_and_header import attach_access_token_to_cookie, clear_cookies, \
     attach_refresh_token_to_cookie, attach_id_refresh_token_to_cookie_and_header, attach_anti_csrf_header, \
     set_front_token_in_headers
+
 from .types import INPUT_SCHEMA
 from .utils import (
     validate_the_structure_of_user_input,
@@ -46,13 +47,13 @@ if TYPE_CHECKING:
 from os import environ
 from httpx import AsyncClient
 from .exceptions import raise_general_exception
-from .session.session_class import Session
+from supertokens_python.recipe.session import Session
 from .exceptions import (
     SuperTokensError,
     GeneralError,
     BadInputError
 )
-from .session.recipe import SessionRecipe
+from supertokens_python.recipe.session import SessionRecipe
 import asyncio
 
 

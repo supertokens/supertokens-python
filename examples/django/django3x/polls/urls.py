@@ -2,7 +2,8 @@ import asyncio
 
 from django.urls import path
 
-from supertokens_python import init, session
+from supertokens_python import init
+from supertokens_python.recipe import session
 from . import views
 
 #just for testing

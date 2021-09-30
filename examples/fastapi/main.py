@@ -1,9 +1,10 @@
 from fastapi import FastAPI, Depends
 from starlette.requests import Request
-from supertokens_python import session, init
+from supertokens_python import init
+from supertokens_python.recipe import session
 from supertokens_python.framework.fastapi import Middleware
-from supertokens_python.session import create_new_session, refresh_session, Session
-from supertokens_python.session.framework.fastapi import verify_session
+from supertokens_python.recipe.session import create_new_session, refresh_session, Session
+from supertokens_python.recipe.session.framework.fastapi import verify_session
 
 app = FastAPI()
 

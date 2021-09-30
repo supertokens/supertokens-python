@@ -16,10 +16,7 @@ under the License.
 
 from . import exceptions
 from .supertokens import Supertokens
-from . import session
-from . import emailpassword
-from . import thirdparty
-from . import thirdpartyemailpassword
+from .recipe import session
 
 
 def init(config):

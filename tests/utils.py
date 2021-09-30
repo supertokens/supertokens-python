@@ -24,15 +24,15 @@ from time import sleep
 
 from requests.models import Response
 
-from supertokens_python.emailpassword import EmailPasswordRecipe
-from supertokens_python.emailverification import EmailVerificationRecipe
-from supertokens_python.session import SessionRecipe
+from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
+from supertokens_python.recipe.emailverification import EmailVerificationRecipe
+from supertokens_python.recipe.session import SessionRecipe
 from yaml import dump, load, FullLoader
 
 from supertokens_python import Supertokens
 from supertokens_python.process_state import ProcessState
-from supertokens_python.thirdparty import ThirdPartyRecipe
-from supertokens_python.thirdpartyemailpassword import ThirdPartyEmailPasswordRecipe
+from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
+from supertokens_python.recipe.thirdpartyemailpassword import ThirdPartyEmailPasswordRecipe
 
 INSTALLATION_PATH = environ['SUPERTOKENS_PATH']
 SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + '/.started'
