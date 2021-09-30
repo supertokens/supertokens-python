@@ -35,6 +35,7 @@ class Middleware:
 
         st = Supertokens.get_instance()
         request = FlaskRequest(Request(environ))
+        response = FlaskResponse(Response())
         result = async_to_sync(st.middleware)(request, response)
 
         if result is None:
