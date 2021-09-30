@@ -16,9 +16,9 @@ under the License.
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+from ..normalised_url_path import NormalisedURLPath
 
 if TYPE_CHECKING:
-    from supertokens_python.normalised_url_path import NormalisedURLPath
     from .recipe_implementation import RecipeImplementation
 
 from . import session_functions
@@ -57,7 +57,7 @@ class Session:
         })
         if result['status'] == 'UNAUTHORISED':
             raise_unauthorised_exception(result['message'])
-        self.__jwt_payload = result['session']['userDataInJWT']
+        self.jwt_payload = result['session']['userDataInJWT']
         if 'accessToken' in result and result['accessToken'] is not None:
             self.__access_token = result['accessToken']['token']
             self.new_access_token_info = result['accessToken']

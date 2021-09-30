@@ -16,28 +16,29 @@ under the License.
 import json
 import os
 import sys
-from typing import Union
 
-import uvicorn
+from fastapi import Depends
+from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
+from flask import Flask, request, make_response, Response
+from flask_cors import CORS
 from starlette.requests import Request
 
+from supertokens_python import init, session, Supertokens
+from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.framework.flask import error_handler
+from supertokens_python.session import SessionRecipe
 from supertokens_python.session.framework.fastapi import verify_session
-
-from supertokens_python import init, get_all_cors_headers, session, Supertokens
-from supertokens_python.session import Session, revoke_all_sessions_for_user, create_new_session, SessionRecipe
-from fastapi import FastAPI, Depends
-from starlette.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
-from starlette.exceptions import ExceptionMiddleware
-
-from supertokens_python.session.interfaces import APIOptions
+from supertokens_python.session.sync import Session, revoke_all_sessions_for_user, create_new_session, revoke_session
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
 index_file.close()
-app = FastAPI(debug=True)
-app.add_middleware(Middleware)
+app = Flask(__name__)
+app.register_error_handler(SuperTokensError, error_handler)
+app.wsgi_app = Middleware(app.wsgi_app)
+app.app_context().push()
+CORS(app, supports_credentials=True)
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 
@@ -109,7 +110,7 @@ def config(enable_anti_csrf: bool):
         'supertokens': {
             'connection_uri': "http://localhost:9000",
         },
-        'framework': 'fastapi',
+        'framework': 'flask',
         'app_info': {
             'app_name': "SuperTokens",
             'api_domain': "0.0.0.0:" + get_app_port(),
@@ -132,166 +133,172 @@ def config(enable_anti_csrf: bool):
 
 init(config(True))
 
-app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
 
-
-@app.get('/index.html')
+@app.route('/index.html', methods=['OPTIONS'])
 def send_file():
-    return HTMLResponse(content=file_contents)
+    return file_contents
 
 
 def send_options_api_response():
-    response = PlainTextResponse(content='', status_code=200)
-    return response
+    return ''
 
 
-@app.options("/login")
+@app.route("/login", methods=['OPTIONS'])
 def login_options():
     return send_options_api_response()
 
 
-@app.post('/login')
-async def login(request: Request):
-    user_id = (await request.json())['userId']
-    await create_new_session(request, user_id)
-    return PlainTextResponse(content=user_id)
+@app.route('/login', methods=['POST'])
+def login():
+    user_id = request.get_json()['userId']
+    create_new_session(request, user_id)
+    return user_id
 
 
-@app.options("/beforeeach")
+@app.route("/beforeeach", methods=['OPTIONS'])
 def before_each_options():
     return send_options_api_response()
 
 
-@app.post('/beforeeach')
+@app.route('/beforeeach', methods=['POST'])
 def before_each():
     Test.reset()
-    return PlainTextResponse('')
+    return ''
 
 
-@app.options("/testUserConfig")
+@app.route("/testUserConfig", methods=['OPTIONS'])
 def test_user_config_options():
     return send_options_api_response()
 
 
-@app.post('/testUserConfig')
+@app.route('/testUserConfig', methods=['POST'])
 def test_config():
-    return PlainTextResponse('')
+    return ''
 
 
-@app.options("/multipleInterceptors")
+@app.route("/multipleInterceptors", methods=['OPTIONS'])
 def multiple_interceptors_options():
     return send_options_api_response()
 
 
-@app.post('/multipleInterceptors')
+@app.route('/multipleInterceptors', methods=['POST'])
 def multiple_interceptors(request: Request):
     result_bool = 'success' if 'interceptorheader2' in request.headers \
                                and 'interceptorheader1' in request.headers else 'failure'
-    return PlainTextResponse(result_bool)
+    return result_bool
 
 
-@app.options("/")
+@app.route("/", methods=['OPTIONS'])
 def options():
     return send_options_api_response()
 
 
-@app.get('/')
+@app.route('/', methods=['GET'])
 def get_info(session: Session = Depends(verify_session())):
     Test.increment_get_session()
-    return PlainTextResponse(content=session.get_user_id(), headers={
-        'Cache-Control': 'no-cache, private'
-    })
+    resp = make_response(session.get_user_id())
+    resp.headers['Cache-Control'] = 'no-cache, private'
+    return resp
 
 
-@app.options("/update-jwt")
+@app.route("/update-jwt", methods=['OPTIONS'])
 def update_options():
     return send_options_api_response()
 
 
-@app.get('/update-jwt')
+@app.route('/update-jwt', methods=['GET'])
 def update_jwt(sess: Session = Depends(verify_session())):
     Test.increment_get_session()
-    return JSONResponse(content=sess.get_jwt_payload(), headers={
-        'Cache-Control': 'no-cache, private'
-    })
+    resp = make_response(sess.get_user_id())
+    resp.headers['Cache-Control'] = 'no-cache, private'
+    return resp
 
 
-@app.post('/update-jwt')
+@app.route('/update-jwt', methods=['GET'])
 async def update_jwt_post(request: Request, session: Session = Depends(verify_session())):
     await session.update_jwt_payload(await request.json())
     Test.increment_get_session()
-    return JSONResponse(content=session.get_jwt_payload(), headers={
-        'Cache-Control': 'no-cache, private'
-    })
+    resp = make_response(session.get_jwt_payload())
+    resp.headers['Cache-Control'] = 'no-cache, private'
+    return resp
 
 
-@app.options("/testing")
+@app.route("/testing", methods=['OPTIONS'])
 def testing_options():
     return send_options_api_response()
 
 
-@app.get('/testing')
-def testing(request: Request):
+@app.route('/testing', methods=['GET'])
+def testing():
     if 'testing' in request.headers:
-        return PlainTextResponse(content='success', headers={'testing': request.headers['testing']})
-    return PlainTextResponse(content='success')
+        resp = make_response('success')
+        resp.headers['testing'] = request.headers['testing']
+        return resp
+    return "success"
 
 
-@app.put('/testing')
-def testing_put(request: Request):
+@app.route('/testing', methods=['PUT'])
+def testing_put():
     if 'testing' in request.headers:
-        return PlainTextResponse(content='success', headers={'testing': request.headers['testing']})
-    return PlainTextResponse(content='success')
+        resp = make_response('success')
+        resp.headers['testing'] = request.headers['testing']
+        return resp
+    return "success"
 
 
-@app.post('/testing')
-def testing_post(request: Request):
+@app.route('/testing', methods=['POST'])
+def testing_post():
     if 'testing' in request.headers:
-        return PlainTextResponse(content='success', headers={'testing': request.headers['testing']})
-    return PlainTextResponse(content='success')
+        resp = make_response('success')
+        resp.headers['testing'] = request.headers['testing']
+        return resp
+    return "success"
 
 
-@app.delete('/testing')
-def testing_delete(request: Request):
+@app.route('/testing', methods=['DELETE'])
+def testing_delete():
     if 'testing' in request.headers:
-        return PlainTextResponse(content='success', headers={'testing': request.headers['testing']})
-    return PlainTextResponse(content='success')
+        resp = make_response('success')
+        resp.headers['testing'] = request.headers['testing']
+        return resp
+    return 'success'
 
 
-@app.options("/logout")
+@app.route("/logout", methods=['OPTIONS'])
 def logout_options():
     return send_options_api_response()
 
 
-@app.post('/logout')
-async def logout(session: Session = Depends(verify_session())):
-    await session.revoke_session()
-    return PlainTextResponse(content='success')
+@app.route('/logout', methods=['POST'])
+def logout(session: Session = Depends(verify_session())):
+    # session.revoke_session()
+    revoke_session(session.get_handle())
+    return 'success'
 
 
-@app.options("/revokeAll")
+@app.route("/revokeAll", methods=['OPTIONS'])
 def revoke_all_options():
     return send_options_api_response()
 
 
-@app.post('/revokeAll')
+@app.route('/revokeAll', methods=['POST'])
 async def revoke_all(session: Session = Depends(verify_session())):
-    await revoke_all_sessions_for_user(session.get_user_id())
-    return PlainTextResponse(content='success')
+    revoke_all_sessions_for_user(session.get_user_id())
+    return 'sucess'
 
 
-@app.options("/refresh")
+@app.route("/refresh", methods=['OPTIONS'])
 def refresh_options():
     return send_options_api_response()
 
 
-@app.get("/refreshAttemptedTime")
+@app.route("/refreshAttemptedTime", methods=['GET'])
 def refresh_attempted_time():
-    return PlainTextResponse(content=str(Test.get_refresh_attempted_count()), status_code=200)
+    return Test.get_refresh_attempted_count()
 
 
-@app.post('/auth/session/refresh')
-async def refresh(request: Request):
+@app.route('/auth/session/refresh', methods=['POST'])
+async def refresh():
     Test.increment_attempted_refresh()
     try:
         await verify_session()(request)
@@ -299,13 +306,13 @@ async def refresh(request: Request):
         raise e
 
     if request.headers.get("rid") is None:
-        return PlainTextResponse(content='refresh failed')
+        'refresh failed'
     Test.increment_refresh()
-    return PlainTextResponse(content='refresh success')
+    return 'refresh success'
 
 
-@app.post('/setAntiCsrf')
-async def set_anti_csrf(request: Request):
+@app.route('/setAntiCsrf', methods=['POST'])
+async def set_anti_csrf():
     json = await request.json()
     if "enableAntiCsrf" not in json:
         enable_csrf = True
@@ -315,104 +322,94 @@ async def set_anti_csrf(request: Request):
         Supertokens.reset()
         SessionRecipe.reset()
         init(config(enable_csrf))
-    return PlainTextResponse(content='success')
+    return 'success'
 
 
-@app.options("/refreshCalledTime")
+@app.route("/refreshCalledTime", methods=['OPTIONS'])
 def refresh_called_time_options():
     return send_options_api_response()
 
 
-@app.get("/refreshCalledTime")
+@app.route("/refreshCalledTime", methods=['GET'])
 def refresh_called_time():
-    return PlainTextResponse(content=str(Test.get_refresh_called_count()), status_code=200)
+    return str(Test.get_refresh_called_count())
 
 
-@app.options("/getSessionCalledTime")
+@app.route("/getSessionCalledTime", methods=['OPTIONS'])
 def get_session_called_time_options():
     return send_options_api_response()
 
 
-@app.get("/getSessionCalledTime")
+@app.route("/getSessionCalledTime", methods=['GET'])
 def get_session_called_time():
-    return PlainTextResponse(content=str(Test.get_session_called_count()), status_code=200)
+    return str(Test.get_session_called_count())
 
 
-@app.options("/ping")
+@app.route("/ping", methods=['OPTIONS'])
 def ping_options():
     return send_options_api_response()
 
 
-@app.get('/ping')
+@app.route('/ping', methods=['GET'])
 def ping():
-    return PlainTextResponse(content='success')
+    return 'success'
 
 
-@app.options("/testHeader")
+@app.route("/testHeader", methods=['OPTIONS'])
 def test_header_options():
     return send_options_api_response()
 
 
-@app.get('/testHeader')
-def test_header(request: Request):
+@app.route('/testHeader', methods=['GET'])
+def test_header():
     success_info = request.headers.get('st-custom-header')
-    return JSONResponse({'success': success_info})
+    return {'success': success_info}
 
 
-@app.options("/checkDeviceInfo")
+@app.route("/checkDeviceInfo", methods=['OPTIONS'])
 def check_device_info_options():
     return send_options_api_response()
 
 
-@app.get('/checkDeviceInfo')
-def check_device_info(request: Request):
+@app.route('/checkDeviceInfo', methods=['GET'])
+def check_device_info():
     sdk_name = request.headers.get('supertokens-sdk-name')
     sdk_version = request.headers.get('supertokens-sdk-version')
-    return PlainTextResponse('true' if sdk_name == 'website' and isinstance(sdk_version, str) else 'false')
+    return 'true' if sdk_name == 'website' and isinstance(sdk_version, str) else 'false'
 
 
-@app.get('/check-rid')
-def check_rid(request: Request):
+@app.route('/check-rid', methods=['GET'])
+def check_rid():
     rid = request.headers.get('rid')
 
-    return PlainTextResponse('fail' if rid is None else 'success')
+    return 'fail' if rid is None else 'success'
 
 
-@app.options("/checkAllowCredentials")
+@app.route("/checkAllowCredentials", methods=['OPTIONS'])
 def check_allow_credentials_options():
     return send_options_api_response()
 
 
-@app.get('/checkAllowCredentials')
-def check_allow_credentials(request: Request):
-    return PlainTextResponse(json.dumps('allow-credentials' in request.headers), 200)
+@app.route('/checkAllowCredentials', methods=['GET'])
+def check_allow_credentials():
+    return json.dumps('allow-credentials' in request.headers)
 
 
 @app.route('/testError', methods=['GET', 'OPTIONS'])
-def test_error(request: Request):
+def test_error():
     if request.method == 'OPTIONS':
         return send_options_api_response()
-    return PlainTextResponse('test error message', 500)
+    return Response('test error message', status=500)
 
 
-@app.exception_handler(405)
-def f_405(_, e):
-    return PlainTextResponse('', status_code=404)
+# @app.exception_handler(405)
+# def f_405(_, e):
+#     return PlainTextResponse('', status_code=404)
 
 
 # cors middleware added like this due to issue with add_middleware
 # ref: https://github.com/tiangolo/fastapi/issues/1663
 
 
-app = CORSMiddleware(
-    app=app,
-    allow_origins=[
-        "http://localhost.org:8080"
-    ],
-    allow_credentials=True,
-    allow_methods=["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["Content-Type"] + get_all_cors_headers(),
-)
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=int(get_app_port()))
