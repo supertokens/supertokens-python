@@ -117,7 +117,6 @@ class SupertokensTest(TestCase):
         request.COOKIES["sIdRefreshToken"] = cookies['sIdRefreshToken']['value']
         request.META['HTTP_ANTI_CSRF'] = response.headers['anti-csrf']
         response = await my_middleware(request)
-        print(response)
         refreshed_cookies = get_cookies(response)
 
         assert refreshed_cookies['sAccessToken']['value'] != cookies['sAccessToken']['value']
@@ -253,5 +252,4 @@ class SupertokensTest(TestCase):
         assert len(cookies['sRefreshToken']['value']) > 0
 
         response = await my_middleware(request)
-        print(response)
         assert response.status_code == 401  # not authorized because no access refresh token

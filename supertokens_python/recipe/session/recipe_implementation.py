@@ -36,7 +36,6 @@ from .session_class import Session
 
 
 class HandshakeInfo:
-    __instance = None
 
     def __init__(self, info):
         self.access_token_blacklisting_enabled = info['accessTokenBlacklistingEnabled']

@@ -79,14 +79,11 @@ def driver_config_app():
 
     @app.route('/test')
     def t():
-        print(request)
         return jsonify({})
 
     @app.route('/login')
     def login():
         user_id = 'userId'
-        # print(request)
-        # print(request.get_json())
         session = create_new_session(request, user_id, {}, {})
 
         return jsonify({'userId': user_id, 'session': 'ssss'})

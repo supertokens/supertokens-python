@@ -14,11 +14,4 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 
-from typing import Union
-
-from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.session.framework.fastapi.middleware import verify_session as original_verify_session
-
-
-def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
-    return original_verify_session(SessionRecipe.get_instance(), anti_csrf_check, session_required)
+from .middleware import verify_session

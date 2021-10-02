@@ -43,8 +43,6 @@ class NormalisedURLPath:
 
 
 def normalise_url_path_or_throw_error(input_str: str) -> str:
-    if not isinstance(input_str, str):
-        print('herere')
     input_str = input_str.strip().lower()
 
     try:

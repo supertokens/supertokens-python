@@ -202,5 +202,4 @@ class Querier:
             return await self.__send_request_helper(
                 path, method, http_function, no_of_tries - 1)
         except Exception as e:
-            print(e)
             raise_general_exception(None, e)

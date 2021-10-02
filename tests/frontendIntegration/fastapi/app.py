@@ -75,9 +75,10 @@ class Test:
         return Test.no_of_times_refresh_attempted_during_test
 
 
-async def unauthorised_f(error, req, res):
+async def unauthorised_f(_, __, res):
     res.set_status_code(401)
     res.set_content({})
+    return res
 
 
 def apis_override_session(param):
@@ -186,9 +187,9 @@ def options():
 
 
 @app.get('/')
-def get_info(session: Session = Depends(verify_session())):
+async def get_info(r_session: Session = Depends(verify_session())):
     Test.increment_get_session()
-    return PlainTextResponse(content=session.get_user_id(), headers={
+    return PlainTextResponse(content=r_session.get_user_id(), headers={
         'Cache-Control': 'no-cache, private'
     })
 
@@ -199,7 +200,7 @@ def update_options():
 
 
 @app.get('/update-jwt')
-def update_jwt(sess: Session = Depends(verify_session())):
+async def update_jwt(sess: Session = Depends(verify_session())):
     Test.increment_get_session()
     return JSONResponse(content=sess.get_jwt_payload(), headers={
         'Cache-Control': 'no-cache, private'
@@ -284,7 +285,7 @@ def refresh_attempted_time():
 async def refresh(request: Request):
     Test.increment_attempted_refresh()
     try:
-        await verify_session()(request)
+        await (verify_session()(request))
     except Exception as e:
         raise e
 

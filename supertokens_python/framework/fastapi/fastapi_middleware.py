@@ -30,7 +30,7 @@ class Middleware(BaseHTTPMiddleware):
         from supertokens_python.recipe.session import Session
         from supertokens_python.supertokens import manage_cookies_post_response
         st = Supertokens.get_instance()
-        from starlette.responses import Response
+        from fastapi.responses import Response
 
         try:
             custom_request = FastApiRequest(request)

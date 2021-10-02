@@ -122,7 +122,7 @@ class EmailPasswordRecipe(RecipeModule):
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
         if isinstance(error, SuperTokensEmailPasswordError):
             if isinstance(error, FieldError):
-                response.set_content({'status': 'FIELD_ERROR', 'formFields' : error.get_json_form_fields()})
+                response.set_content({'status': 'FIELD_ERROR', 'formFields': error.get_json_form_fields()})
                 return response
         return await self.email_verification_recipe.handle_error(request, error, response)
 

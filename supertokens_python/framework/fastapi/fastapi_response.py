@@ -18,6 +18,7 @@ from time import time
 from supertokens_python.framework.response import BaseResponse
 import json
 
+
 class FastApiResponse(BaseResponse):
 
     def __init__(self, response):
@@ -28,7 +29,8 @@ class FastApiResponse(BaseResponse):
 
     def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
                    domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "Lax"):
-        self.response.set_cookie(key, value, max_age, (expires-int(time() * 1000))//1000, path, domain, secure, httponly, samesite)
+        self.response.set_cookie(key, value, max_age, (expires-int(time() * 1000))//1000, path, domain, secure,
+                                 httponly, samesite)
 
     def set_header(self, key, value):
         self.response.headers[key] = value
@@ -47,4 +49,3 @@ class FastApiResponse(BaseResponse):
             indent=None,
             separators=(",", ":"),
         ).encode("utf-8")
-
