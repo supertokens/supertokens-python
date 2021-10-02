@@ -39,14 +39,6 @@ app.add_middleware(Middleware)
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 
-def try_refresh_token(_):
-    return JSONResponse(content={'error': 'try refresh token'}, status_code=401)
-
-
-def unauthorised(_):
-    return JSONResponse(content={'error': 'unauthorised'}, status_code=401)
-
-
 class Test:
     no_of_times_refresh_called_during_test = 0
     no_of_times_get_session_called_during_test = 0

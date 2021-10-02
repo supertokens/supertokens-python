@@ -77,7 +77,7 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
             elif handshake_info.anti_csrf == 'VIA_CUSTOM_HEADER' and do_anti_csrf_check:
                 if not contains_custom_header:
                     fallback_to_core = False
-                    raise_try_refresh_token_exception('anti-csrf check failed. Please pass \'rid: "session"\' '
+                    raise_unauthorised_exception('anti-csrf check failed. Please pass \'rid: "session"\' '
                                                       'header in the request, or set doAntiCsrfCheck to false '
                                                       'for this API')
             if not handshake_info.access_token_blacklisting_enabled and \

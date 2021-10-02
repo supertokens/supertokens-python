@@ -29,7 +29,7 @@ from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user,
     get_session, update_jwt_payload
 import os
 module_dir = os.path.dirname(__file__)  # get current directory
-file_path = os.path.join(module_dir, 'templates/index.html')
+file_path = os.path.join(module_dir, '../templates/index.html')
 print(file_path)
 index_file = open(file_path, "r")
 file_contents = index_file.read()
@@ -140,7 +140,8 @@ def send_options_api_response():
 
 def login(request):
     if request.method == 'POST':
-        user_id = request.get_json()['userId']
+        user_id = json.loads(request.body)['userId']
+
         create_new_session(request, user_id)
         return HttpResponse(user_id)
     else:
@@ -235,13 +236,12 @@ async def revoke_all(request):
     else:
         return send_options_api_response()
 
-
-def refresh_options(request):
-    return send_options_api_response()
-
-
 def refresh_attempted_time(request):
-    return Test.get_refresh_attempted_count()
+    if request.method == 'GET':
+        return Test.get_refresh_attempted_count()
+    else:
+        return send_options_api_response()
+
 
 @verify_session()
 def refresh(request):
@@ -269,28 +269,25 @@ def set_anti_csrf(request):
     return HttpResponse('success')
 
 
-def refresh_called_time_options(request):
-    return send_options_api_response()
-
-
 def refresh_called_time(request):
-    return str(Test.get_refresh_called_count())
-
-
-def get_session_called_time_options(request):
-    return send_options_api_response()
+    if request.method == 'GET':
+        return str(Test.get_refresh_called_count())
+    else:
+        return send_options_api_response()
 
 
 def get_session_called_time(request):
-    return str(Test.get_session_called_count())
-
-
-def ping_options(request):
-    return send_options_api_response()
+    if request.method == 'GET':
+        return str(Test.get_session_called_count())
+    else:
+        return send_options_api_response()
 
 
 def ping(request):
-    return HttpResponse('success')
+    if request.method == 'GET':
+        return HttpResponse('success')
+    else:
+        return send_options_api_response()
 
 
 def test_header(request):
