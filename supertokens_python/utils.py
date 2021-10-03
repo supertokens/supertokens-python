@@ -38,8 +38,7 @@ from supertokens_python.framework.flask.framework import FlaskFramework
 FRAMEWORKS={
     'fastapi': FastapiFramework(),
     'flask': FlaskFramework(),
-    'django3': DjangoFramework(),
-    'django2': DjangoFramework(),
+    'django': DjangoFramework(),
 }
 
 

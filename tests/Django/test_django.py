@@ -27,6 +27,7 @@ from supertokens_python.recipe.session import create_new_session, refresh_sessio
 from tests.utils import start_st, reset, clean_st, setup_st
 
 
+
 def get_cookies(response) -> dict:
     cookies = dict()
     for key, morsel in response.cookies.items():
@@ -84,7 +85,7 @@ class SupertokensTest(TestCase):
             'supertokens': {
                 'connection_uri': "http://localhost:3567",
             },
-            'framework': 'django3',
+            'framework': 'django',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "api.supertokens.io",
@@ -135,7 +136,7 @@ class SupertokensTest(TestCase):
             'supertokens': {
                 'connection_uri': "http://localhost:3567",
             },
-            'framework': 'django3',
+            'framework': 'django',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "api.supertokens.io",
@@ -179,7 +180,7 @@ class SupertokensTest(TestCase):
             'supertokens': {
                 'connection_uri': "http://localhost:3567",
             },
-            'framework': 'django3',
+            'framework': 'django',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "api.supertokens.io",
@@ -222,7 +223,7 @@ class SupertokensTest(TestCase):
             'supertokens': {
                 'connection_uri': "http://localhost:3567",
             },
-            'framework': 'django3',
+            'framework': 'django',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "api.supertokens.io",
