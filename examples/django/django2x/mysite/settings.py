@@ -126,7 +126,7 @@ init({
     'supertokens': {
         'connection_uri': "http://localhost:3567",
     },
-    'framework': 'django2',
+    'framework': 'django',
     'app_info': {
         'app_name': "SuperTokens Demo",
         'api_domain': "127.0.0.1:8000",

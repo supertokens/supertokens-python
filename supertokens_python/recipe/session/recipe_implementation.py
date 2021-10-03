@@ -63,7 +63,7 @@ class RecipeImplementation(RecipeInterface):
             except Exception:
                 pass
 
-        if config.framework.lower() == 'flask' or config.framework.lower() == 'django2':
+        if config.framework.lower() == 'flask' or config.framework.lower() == 'django':
             check_event_loop()
             loop = asyncio.get_event_loop()
             loop.run_until_complete(call_get_handshake_info())

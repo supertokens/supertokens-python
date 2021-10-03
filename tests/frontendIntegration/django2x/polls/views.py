@@ -106,7 +106,7 @@ def config(enable_anti_csrf: bool):
         'supertokens': {
             'connection_uri': "http://localhost:9000",
         },
-        'framework': 'django2',
+        'framework': 'django',
         'app_info': {
             'app_name': "SuperTokens",
             'api_domain': "0.0.0.0:" + get_app_port(),
