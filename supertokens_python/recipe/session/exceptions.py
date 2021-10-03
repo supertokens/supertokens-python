@@ -27,10 +27,10 @@ def raise_try_refresh_token_exception(msg):
     raise TryRefreshTokenError(msg) from None
 
 
-def raise_unauthorised_exception(msg):
+def raise_unauthorised_exception(msg, clear_cookies=True):
     if isinstance(msg, SuperTokensError):
         raise msg
-    raise UnauthorisedError(msg) from None
+    raise UnauthorisedError(msg, clear_cookies) from None
 
 
 class SuperTokensSessionError(SuperTokensError):
@@ -45,7 +45,9 @@ class TokenTheftError(SuperTokensSessionError):
 
 
 class UnauthorisedError(SuperTokensSessionError):
-    pass
+    def __init__(self, msg, clear_cookies=True):
+        super().__init__(msg)
+        self.clear_cookies = clear_cookies
 
 
 class TryRefreshTokenError(SuperTokensSessionError):

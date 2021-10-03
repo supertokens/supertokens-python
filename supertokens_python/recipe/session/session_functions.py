@@ -78,8 +78,8 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
                 if not contains_custom_header:
                     fallback_to_core = False
                     raise_unauthorised_exception('anti-csrf check failed. Please pass \'rid: "session"\' '
-                                                      'header in the request, or set doAntiCsrfCheck to false '
-                                                      'for this API')
+                                                 'header in the request, or set doAntiCsrfCheck to false '
+                                                 'for this API')
             if not handshake_info.access_token_blacklisting_enabled and \
                     access_token_info['parentRefreshTokenHash1'] is None:
                 return {
@@ -130,8 +130,8 @@ async def refresh_session(recipe_implementation: RecipeImplementation, refresh_t
 
     if handshake_info.anti_csrf == 'VIA_CUSTOM_HEADER':
         if not contains_custom_header:
-            raise_try_refresh_token_exception('anti-csrf check failed. Please pass \'rid: "session"\' header '
-                                              'in the request.')
+            raise_unauthorised_exception('anti-csrf check failed. Please pass \'rid: "session"\' header '
+                                         'in the request.', False)
     response = await recipe_implementation.querier.send_post_request(NormalisedURLPath('/recipe/session/refresh'), data)
     if response['status'] == 'OK':
         response.pop('status', None)
@@ -166,7 +166,8 @@ async def revoke_session(recipe_implementation: RecipeImplementation, session_ha
     return len(response['sessionHandlesRevoked']) == 1
 
 
-async def revoke_multiple_sessions(recipe_implementation: RecipeImplementation, session_handles: List[str]) -> List[str]:
+async def revoke_multiple_sessions(recipe_implementation: RecipeImplementation, session_handles: List[str]) -> List[
+    str]:
     response = await recipe_implementation.querier.send_post_request(NormalisedURLPath('/recipe/session/remove'), {
         'sessionHandles': session_handles
     })

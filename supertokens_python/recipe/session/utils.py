@@ -109,12 +109,13 @@ class ErrorHandlers:
             response = await self.__on_try_refresh_token(request, message, response)
         return response
 
-    async def on_unauthorised(self, request: BaseRequest, message: str, response: BaseResponse):
+    async def on_unauthorised(self, do_clear_cookies: bool, request: BaseRequest, message: str, response: BaseResponse):
         try:
             await self.__on_unauthorised(request, message, response)
         except TypeError as e:
             await self.__on_unauthorised(request, message, response)
-        clear_cookies(self.__recipe, response)
+        if do_clear_cookies:
+            clear_cookies(self.__recipe, response)
         return response
 
 

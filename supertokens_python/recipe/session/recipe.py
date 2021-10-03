@@ -80,7 +80,7 @@ class SessionRecipe(RecipeModule):
 
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
         if isinstance(error, UnauthorisedError):
-            return await self.config.error_handlers.on_unauthorised(request, str(error), response)
+            return await self.config.error_handlers.on_unauthorised(error.clear_cookies, request, str(error), response)
         elif isinstance(error, TokenTheftError):
             return await self.config.error_handlers.on_token_theft_detected(request, error.session_handle,
                                                                             error.user_id, response)

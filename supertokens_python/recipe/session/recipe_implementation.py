@@ -107,7 +107,7 @@ class RecipeImplementation(RecipeInterface):
             if not session_required:
                 return None
             raise_unauthorised_exception('Session does not exist. Are you sending the session tokens in the '
-                                         'request as cookies?')
+                                         'request as cookies?', False)
         access_token = get_access_token_from_cookie(request)
         if access_token is None:
             raise_try_refresh_token_exception('Access token has expired. Please call the refresh API')
@@ -128,6 +128,10 @@ class RecipeImplementation(RecipeInterface):
         return request.get_session()
 
     async def refresh_session(self, request: any) -> Session:
+        id_refresh_token = get_id_refresh_token_from_cookie(request)
+        if id_refresh_token is None:
+            raise_unauthorised_exception('Session does not exist. Are you sending the session tokens in the request '
+                                         'as cookies?', False)
         refresh_token = get_refresh_token_from_cookie(request)
         if refresh_token is None:
             raise_unauthorised_exception('Refresh token not found. Are you sending the refresh token in the '
