@@ -37,6 +37,7 @@ def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: 
                 request.set_session(session)
                 return f(request.request, *args, **kwargs)
             except SuperTokensError as e:
+                print(request.request.path+' '+str(e))
                 response = DjangoResponse(HttpResponse())
                 result = sync(Supertokens.get_instance().handle_supertokens_error(DjangoRequest(request), e, response))
                 return result.response

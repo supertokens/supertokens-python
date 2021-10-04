@@ -44,6 +44,7 @@ class Middleware(BaseHTTPMiddleware):
                 manage_cookies_post_response(request.state.supertokens, result)
             return result.response
         except SuperTokensError as e:
+            print(str(request.url.path)+' '+str(e))
             response = FastApiResponse(Response())
             result = await st.handle_supertokens_error(FastApiRequest(request), e, response)
             return result.response

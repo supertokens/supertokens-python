@@ -18,16 +18,14 @@ import os
 import sys
 from functools import wraps
 
-from asgiref.sync import async_to_sync
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 
 from supertokens_python import init, Supertokens
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.session.framework.django.sync import verify_session
-from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user, create_new_session, get_session
+from supertokens_python.recipe.session.framework.django import verify_session
+from supertokens_python.recipe.session import revoke_all_sessions_for_user, create_new_session, get_session
 
 module_dir = os.path.dirname(__file__)  # get current directory
 file_path = os.path.join(module_dir, '../templates/index.html')
@@ -42,7 +40,7 @@ os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 def custom_decorator_for_test():
     def session_verify_custom_test(f):
         @wraps(f)
-        def wrapped_function(request, *args, **kwargs):
+        async def wrapped_function(request, *args, **kwargs):
             Test.increment_attempted_refresh()
             try:
                 value = f(request, *args, **kwargs)
@@ -152,26 +150,25 @@ def config(enable_anti_csrf: bool):
 init(config(True))
 
 
-def send_file(request):
+async def send_file(request):
     return render(request, file_path)
 
 
-def send_options_api_response():
+async def send_options_api_response():
     return HttpResponse('')
 
 
-def login(request):
+async def login(request):
     if request.method == 'POST':
         user_id = json.loads(request.body)['userId']
 
-        create_new_session(request, user_id)
+        await create_new_session(request, user_id)
         return HttpResponse(user_id)
     else:
         return send_options_api_response()
 
 
-@csrf_exempt
-def before_each(request):
+async def before_each(request):
     if request.method == 'POST':
         Test.reset()
         return HttpResponse('')
@@ -179,14 +176,14 @@ def before_each(request):
         return send_options_api_response()
 
 
-def test_config(request):
+async def test_config(request):
     if request.method == 'POST':
         return HttpResponse('')
     else:
         return send_options_api_response()
 
 
-def multiple_interceptors(request):
+async def multiple_interceptors(request):
     if request.method == 'POST':
         result_bool = 'success' if 'interceptorheader2' in request.headers \
                                    and 'interceptorheader1' in request.headers else 'failure'
@@ -196,7 +193,7 @@ def multiple_interceptors(request):
 
 
 @verify_session()
-def get_info(request):
+async def get_info(request):
     if request.method == 'GET':
         Test.increment_get_session()
         session = verify_session()(request).state
@@ -208,7 +205,7 @@ def get_info(request):
 
 
 @verify_session()
-def update_jwt(request):
+async def update_jwt(request):
     if request.method == 'GET':
         Test.increment_get_session()
         session = verify_session()(request).state
@@ -217,8 +214,8 @@ def update_jwt(request):
         return resp
     else:
         if request.method == 'POST':
-            session = verify_session()(request).state
-            async_to_sync(session.update_jwt_payload)(json.loads(request.body))
+            session = await verify_session()(request).state
+            await session.update_jwt_payload(json.loads(request.body))
             Test.increment_get_session()
             resp = JsonResponse(session.get_jwt_payload())
             resp['Cache-Control'] = 'no-cache, private'
@@ -228,7 +225,7 @@ def update_jwt(request):
     return send_options_api_response()
 
 
-def testing(request):
+async def testing(request):
     if request.method in ['GET', 'PUT', 'POST', 'DELETE']:
         if 'testing' in request.headers:
             resp = HttpResponse('success')
@@ -241,27 +238,27 @@ def testing(request):
 
 
 @verify_session()
-def logout(request):
+async def logout(request):
     if request.method == 'POST':
-        session = verify_session()(request).state
+        session = await verify_session()(request).state
         # session.revoke_session()
-        async_to_sync(session.revoke_session)()
+        await session.revoke_session()
         # revoke_session(session.get_handle())
         return HttpResponse('success')
     return send_options_api_response()
 
 
 @verify_session()
-def revoke_all(request):
+async def revoke_all(request):
     if request.method:
-        session = get_session(request)
-        revoke_all_sessions_for_user(session.get_user_id())
+        session = await get_session(request)
+        await revoke_all_sessions_for_user(session.get_user_id())
         return HttpResponse('success')
     else:
         return send_options_api_response()
 
 
-def refresh_attempted_time(request):
+async def refresh_attempted_time(request):
     if request.method == 'GET':
         return HttpResponse(Test.get_refresh_attempted_count())
     else:
@@ -274,7 +271,7 @@ def refresh(request):
     return
 
 
-def set_anti_csrf(request):
+async def set_anti_csrf(request):
     data = json.loads(request.body)
     if "enableAntiCsrf" not in data:
         enable_csrf = True
@@ -287,28 +284,28 @@ def set_anti_csrf(request):
     return HttpResponse('success')
 
 
-def refresh_called_time(request):
+async def refresh_called_time(request):
     if request.method == 'GET':
         return HttpResponse(Test.get_refresh_called_count())
     else:
         return send_options_api_response()
 
 
-def get_session_called_time(request):
+async def get_session_called_time(request):
     if request.method == 'GET':
         return HttpResponse(str(Test.get_session_called_count()))
     else:
         return send_options_api_response()
 
 
-def ping(request):
+async def ping(request):
     if request.method == 'GET':
         return HttpResponse('success')
     else:
         return send_options_api_response()
 
 
-def test_header(request):
+async def test_header(request):
     if request.method == 'GET':
         success_info = request.headers.get('st-custom-header')
         return JsonResponse({'success': success_info})
@@ -316,7 +313,7 @@ def test_header(request):
         return send_options_api_response()
 
 
-def check_device_info(request):
+async def check_device_info(request):
     if request.method == 'GET':
         sdk_name = request.headers.get('supertokens-sdk-name')
         sdk_version = request.headers.get('supertokens-sdk-version')
@@ -325,19 +322,19 @@ def check_device_info(request):
         return send_options_api_response()
 
 
-def check_rid(request):
+async def check_rid(request):
     rid = request.headers.get('rid')
     return HttpResponse('fail' if rid is None else 'success')
 
 
-def check_allow_credentials(request):
+async def check_allow_credentials(request):
     if request.method == 'GET':
         return JsonResponse(json.dumps('allow-credentials' in request.headers))
     else:
         return send_options_api_response()
 
 
-def test_error(request):
+async def test_error(request):
     if request.method == 'OPTIONS':
         return send_options_api_response()
     return HttpResponse('test error message', status=500)
