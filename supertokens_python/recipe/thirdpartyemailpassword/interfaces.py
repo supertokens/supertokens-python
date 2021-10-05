@@ -165,7 +165,7 @@ class SignInUpAPIInput:
                  options: Union[EmailPasswordApiOptions, ThirdPartyApiOptions], provider: Union[Provider, None] = None,
                  code: Union[str, None] = None, redirect_uri: Union[str, None] = None, is_sign_in: bool = False,
                  form_fields: Union[List[FormField], None] = None):
-        self.type = recipe_type,
+        self.type = recipe_type
         self.options = options
         self.provider = provider
         self.code = code

@@ -20,10 +20,9 @@ from typing import TYPE_CHECKING, Union, Literal, List
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
 if TYPE_CHECKING:
-    from .utils import ThirdPartyConfig
     from supertokens_python.querier import Querier
-    from .types import User, UsersResponse, ThirdPartyInfo
     from .interfaces import SignInUpResult
+from .types import User, UsersResponse, ThirdPartyInfo
 from .interfaces import (
     RecipeInterface, SignInUpOkResult
 )
@@ -53,7 +52,7 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def get_users_by_email(self, email: str) -> List[User]:
-        response = await self.querier.send_get_request(NormalisedURLPath('/recipe/user'))
+        response = await self.querier.send_get_request(NormalisedURLPath('/recipe/users/by-email'), {'email': email})
         users = []
         users_list = response['users'] if 'users' in response else []
         for user in users_list:

@@ -55,9 +55,10 @@ class APIImplementation(APIInterface):
                 return await self.email_password_implementation.sign_up_post(sign_in_up_input.form_fields,
                                                                              sign_in_up_input.options)
         else:
-            return self.third_party_implementation.sign_in_up_post(sign_in_up_input.provider, sign_in_up_input.code,
-                                                                   sign_in_up_input.redirect_uri,
-                                                                   sign_in_up_input.options)
+            return await self.third_party_implementation.sign_in_up_post(sign_in_up_input.provider,
+                                                                         sign_in_up_input.code,
+                                                                         sign_in_up_input.redirect_uri,
+                                                                         sign_in_up_input.options)
 
     async def authorisation_url_get(self, provider: Provider, api_options: APIOptions) -> AuthorisationUrlGetResponse:
         return await self.third_party_implementation.authorisation_url_get(provider, api_options)

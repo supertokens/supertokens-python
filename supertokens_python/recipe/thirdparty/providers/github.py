@@ -63,7 +63,8 @@ class Github(Provider):
             if len(email_info) == 0:
                 return UserInfo(user_id)
             is_email_verified = email_info[0]['verified'] if 'verified' in email_info[0] else False
-            return UserInfo(user_id, UserInfoEmail(user_info['email'], is_email_verified))
+            email = email_info[0]['email'] if 'email' in email_info[0] else user_info['email']
+            return UserInfo(user_id, UserInfoEmail(email, is_email_verified))
 
     def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
         params = {

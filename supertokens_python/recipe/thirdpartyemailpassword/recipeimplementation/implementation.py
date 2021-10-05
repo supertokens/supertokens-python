@@ -41,17 +41,34 @@ class RecipeImplementation(RecipeInterface):
             self.thirdparty_implementation = ThirdPartyImplementation(thirdparty_querier)
 
     async def get_user_by_id(self, user_id: str) -> Union[User, None]:
-        pass
+        user = await self.emailpassword_implementation.get_user_by_id(user_id)
+
+        if user is not None:
+            return user
+        if self.thirdparty_implementation is None:
+            return None
+
+        return await self.thirdparty_implementation.get_user_by_id(user_id)
 
     async def get_users_by_email(self, email: str) -> List[User]:
-        pass
+        user = await self.emailpassword_implementation.get_user_by_email(email)
+
+        if self.thirdparty_implementation is None:
+            return [user] if user is not None else []
+
+        users = await self.thirdparty_implementation.get_users_by_email(email)
+
+        if user is not None:
+            users.append(user)
+
+        return users
 
     async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str) -> Union[User, None]:
-        pass
+        return await self.thirdparty_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id)
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
                          email_verified: bool) -> SignInUpResult:
-        pass
+        return await self.thirdparty_implementation.sign_in_up(third_party_id, third_party_user_id, email, email_verified)
 
     async def sign_in(self, email: str, password: str) -> SignInResult:
         return await self.emailpassword_implementation.sign_in(email, password)

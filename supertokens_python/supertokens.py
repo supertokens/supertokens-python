@@ -134,14 +134,6 @@ class Supertokens:
 
         self.recipe_modules: List[RecipeModule] = list(map(lambda func: func(self.app_info), config['recipe_list']))
 
-        for recipe in self.recipe_modules:
-            apis_handled = recipe.get_apis_handled()
-            stringified_apis_handled: List[str] = list(filter(lambda x: x != "", map(lambda
-                                                                                         api: '' if api.disabled else api.method + ';' + api.path_without_api_base_path.get_as_string_dangerous(),
-                                                                                     apis_handled)))
-            if len(stringified_apis_handled) != len(set(stringified_apis_handled)):
-                raise_general_exception(recipe, 'Duplicate APIs exposed from recipe. Please combine them into one API')
-
         telemetry = ('SUPERTOKENS_ENV' not in environ) or (environ['SUPERTOKENS_ENV'] != 'testing')
         if 'telemetry' in config:
             telemetry = config['telemetry']
@@ -240,7 +232,7 @@ class Supertokens:
 
     async def handle_supertokens_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse):
         if isinstance(err, GeneralError):
-            return send_non_200_response(str(err), 400, response)
+            return send_non_200_response(str(err), 500, response)
 
         if isinstance(err, BadInputError):
             return send_non_200_response(str(err), 400, response)

@@ -24,7 +24,7 @@ from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInte
     SignInUpPostEmailPasswordWrongCredentialsErrorResponse
 
 
-async def get_interface_impl(api_implementation: ThirdPartyEmailPasswordAPIInterface) -> APIInterface:
+def get_interface_impl(api_implementation: ThirdPartyEmailPasswordAPIInterface) -> APIInterface:
     implementation = APIInterface()
 
     if api_implementation.disable_email_exists_get:
@@ -49,7 +49,7 @@ async def get_interface_impl(api_implementation: ThirdPartyEmailPasswordAPIInter
                                  options=api_options))
 
             if result.is_ok:
-                return SignInUpPostEmailPasswordOkResponse(result.user, result.created_new_user)
+                return SignInUpPostEmailPasswordOkResponse(result.user, True)
 
             elif result.status == 'EMAIL_ALREADY_EXISTS_ERROR':
                 return SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse()
@@ -63,7 +63,7 @@ async def get_interface_impl(api_implementation: ThirdPartyEmailPasswordAPIInter
                                  options=api_options))
 
             if result.is_ok:
-                return SignInUpPostEmailPasswordOkResponse(result.user, result.created_new_user)
+                return SignInUpPostEmailPasswordOkResponse(result.user, False)
 
             elif result.status == 'WRONG_CREDENTIALS_ERROR':
                 return SignInUpPostEmailPasswordWrongCredentialsErrorResponse()

@@ -21,7 +21,7 @@ from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInte
     SignInUpAPIInput, SignInUpPostThirdPartyOkResponse, SignInUpPostThirdPartyNoEmailGivenByProviderResponse
 
 
-async def get_interface_impl(api_implementation: ThirdPartyEmailPasswordAPIInterface) -> APIInterface:
+def get_interface_impl(api_implementation: ThirdPartyEmailPasswordAPIInterface) -> APIInterface:
     implementation = APIInterface()
 
     if api_implementation.disable_authorisation_url_get:

@@ -98,6 +98,7 @@ class SignInUpPostResponse(ABC):
     def __init__(self, status: Literal['OK', 'NO_EMAIL_GIVEN_BY_PROVIDER'], user: Union[User, None] = None,
                  created_new_user: Union[bool, None] = None, auth_code_response: any = None,
                  error: Union[str, None] = None):
+        self.type = 'thirdparty'
         self.status = status
         self.is_ok = False
         self.is_no_email_given_by_provider = False
@@ -188,16 +189,14 @@ class AuthorisationUrlGetOkResponse(AuthorisationUrlGetResponse):
         super().__init__('OK', url)
 
 
-class APIInterface(ABC):
+class APIInterface:
     def __init__(self):
         self.disable_sign_in_up_post = False
         self.disable_authorisation_url_get = False
 
-    @abstractmethod
     async def authorisation_url_get(self, provider: Provider, api_options: APIOptions) -> AuthorisationUrlGetResponse:
         pass
 
-    @abstractmethod
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
                               api_options: APIOptions):
         pass

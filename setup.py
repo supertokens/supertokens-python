@@ -20,7 +20,8 @@ extras_require = {
         'nest-asyncio==1.5.1',
         'Fastapi>=0.60',
         'django',
-        'Flask==2.0.1'
+        'Flask==2.0.1',
+        'python-dotenv'
     ])
 }
 

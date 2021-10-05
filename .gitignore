@@ -8,3 +8,4 @@ releasePassword
 apiPassword
 venv/
 env/
+.env

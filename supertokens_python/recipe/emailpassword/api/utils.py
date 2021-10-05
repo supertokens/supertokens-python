@@ -42,11 +42,12 @@ async def validate_form_or_throw_error(inputs: List[FormField], config_form_fiel
                 validation_errors.append(ErrorFormField(field.id, error))
 
     if len(validation_errors) != 0:
-        #raise BadInputError(msg="Error in input formFields")
+        # raise BadInputError(msg="Error in input formFields")
         raise_form_field_exception('Error in input formFields', validation_errors)
 
 
-async def validate_form_fields_or_throw_error(config_form_fields: List[NormalisedFormField], form_fields_raw: any) -> List[FormField]:
+async def validate_form_fields_or_throw_error(config_form_fields: List[NormalisedFormField], form_fields_raw: any) -> \
+List[FormField]:
     if form_fields_raw is None:
         raise_bad_input_exception('Missing input param: formFields')
 

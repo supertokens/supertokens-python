@@ -339,6 +339,7 @@ class PasswordResetPostInvalidTokenResponse(PasswordResetPostResponse):
 
 class SignInPostResponse(ABC):
     def __init__(self, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'], user: Union[User, None]):
+        self.type = 'emailpassword'
         self.is_ok = False
         self.is_wrong_credentials_error = False
         self.status = status
@@ -374,6 +375,7 @@ class SignInPostWrongCredentialsErrorResponse(SignInPostResponse):
 
 class SignUpPostResponse(ABC):
     def __init__(self, status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR'], user: Union[User, None]):
+        self.type = 'emailpassword'
         self.is_ok = False
         self.is_email_already_exists_error = False
         self.status = status
@@ -407,7 +409,7 @@ class SignUpPostEmailAlreadyExistsErrorResponse(SignUpPostResponse):
         self.is_email_already_exists_error = True
 
 
-class APIInterface(ABC):
+class APIInterface:
     def __init__(self):
         self.disable_email_exists_get = False
         self.disable_generate_password_reset_token_post = False
@@ -415,24 +417,19 @@ class APIInterface(ABC):
         self.disable_sign_in_post = False
         self.disable_sign_up_post = False
 
-    @abstractmethod
     async def email_exists_get(self, email: str, api_options: APIOptions) -> EmailExistsGetResponse:
         pass
 
-    @abstractmethod
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
                                                  api_options: APIOptions) -> GeneratePasswordResetTokenPostResponse:
         pass
 
-    @abstractmethod
     async def password_reset_post(self, form_fields: List[FormField], token: str,
                                   api_options: APIOptions) -> PasswordResetPostResponse:
         pass
 
-    @abstractmethod
     async def sign_in_post(self, form_fields: List[FormField], api_options: APIOptions) -> SignInPostResponse:
         pass
 
-    @abstractmethod
     async def sign_up_post(self, form_fields: List[FormField], api_options: APIOptions) -> SignUpPostResponse:
         pass

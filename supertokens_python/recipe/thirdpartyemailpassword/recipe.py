@@ -85,9 +85,6 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                     'form_fields': self.config.sign_up_feature.form_fields,
                 },
                 'reset_password_using_token_feature': self.config.reset_password_using_token_feature,
-                'email_verification_feature': {
-                    'disable_default_implementation': True
-                },
                 'override': {
                     'functions': func_override_email_password,
                     'apis': apis_override_email_password

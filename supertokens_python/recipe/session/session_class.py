@@ -44,7 +44,8 @@ class Session:
             self.remove_cookies = True
 
     async def get_session_data(self) -> dict:
-        return await session_functions.get_session_data(self.__recipe_implementation, self.__session_handle)
+        session_info = await session_functions.get_session_information(self.__recipe_implementation, self.__session_handle)
+        return session_info['sessionData']
 
     async def update_session_data(self, new_session_data) -> None:
         return await session_functions.update_session_data(self.__recipe_implementation, self.__session_handle, new_session_data)
