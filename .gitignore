@@ -1,0 +1,10 @@
+.idea
+.pytest_cache
+build
+dist
+supertokens_python.egg-info
+__pycache__
+releasePassword
+apiPassword
+venv/
+env/
