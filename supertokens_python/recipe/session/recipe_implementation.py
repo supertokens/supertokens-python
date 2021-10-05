@@ -16,7 +16,8 @@ under the License.
 from __future__ import annotations
 
 import asyncio
-
+import nest_asyncio
+nest_asyncio.apply()
 from . import session_functions
 from .cookie_and_header import get_id_refresh_token_from_cookie, get_access_token_from_cookie, get_anti_csrf_header, \
     get_rid_header, get_refresh_token_from_cookie

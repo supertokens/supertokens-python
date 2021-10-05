@@ -43,7 +43,7 @@ def custom_decorator_for_test():
         async def wrapped_function(request, *args, **kwargs):
             Test.increment_attempted_refresh()
             try:
-                value = f(request, *args, **kwargs)
+                value = await f(request, *args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
                 if request.headers.get("rid") is None:
@@ -193,7 +193,7 @@ async def multiple_interceptors(request):
 
 
 @verify_session()
-async def get_info(request):
+def get_info(request):
     if request.method == 'GET':
         Test.increment_get_session()
         session = verify_session()(request).state
@@ -205,7 +205,7 @@ async def get_info(request):
 
 
 @verify_session()
-async def update_jwt(request):
+def update_jwt(request):
     if request.method == 'GET':
         Test.increment_get_session()
         session = verify_session()(request).state
@@ -214,8 +214,8 @@ async def update_jwt(request):
         return resp
     else:
         if request.method == 'POST':
-            session = await verify_session()(request).state
-            await session.update_jwt_payload(json.loads(request.body))
+            session = (verify_session()(request)).state
+            session.update_jwt_payload(json.loads(request.body))
             Test.increment_get_session()
             resp = JsonResponse(session.get_jwt_payload())
             resp['Cache-Control'] = 'no-cache, private'
@@ -238,11 +238,11 @@ async def testing(request):
 
 
 @verify_session()
-async def logout(request):
+def logout(request):
     if request.method == 'POST':
-        session = await verify_session()(request).state
+        session = verify_session()(request).state
         # session.revoke_session()
-        await session.revoke_session()
+        session.revoke_session()
         # revoke_session(session.get_handle())
         return HttpResponse('success')
     return send_options_api_response()
@@ -268,7 +268,7 @@ async def refresh_attempted_time(request):
 @custom_decorator_for_test()
 @verify_session()
 def refresh(request):
-    return
+    return HttpResponse(content='refresh success')
 
 
 async def set_anti_csrf(request):

@@ -17,10 +17,11 @@ from __future__ import annotations
 
 import asyncio
 from asgiref.sync import async_to_sync
+from django.utils.decorators import sync_and_async_middleware
 
 from supertokens_python.async_to_sync_wrapper import sync
 
-
+@sync_and_async_middleware
 def middleware(get_response):
     from supertokens_python import Supertokens
     from supertokens_python.exceptions import SuperTokensError
@@ -28,7 +29,6 @@ def middleware(get_response):
     from supertokens_python.framework.django.django_response import DjangoResponse
     from supertokens_python.recipe.session import Session
     from supertokens_python.supertokens import manage_cookies_post_response
-
 
     if asyncio.iscoroutinefunction(get_response):
         async def __middleware(request):
