@@ -16,9 +16,6 @@ jobs:
     docker:
       - image: rishabhpoddar/supertokens_python_driver_testing
     steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "dc:54:2e:ac:40:7e:03:19:8f:2a:20:7b:33:86:25:17"
       - checkout
       - run: add-apt-repository ppa:deadsnakes/ppa -y
       - run: apt-get update
