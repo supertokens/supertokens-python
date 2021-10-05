@@ -29,7 +29,7 @@ class DjangoResponse(BaseResponse):
 
     def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
                    domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "Lax"):
-        self.response.set_cookie(key, value, max_age, ((expires - int(time() * 1000)) // 1000), path, domain, secure, httponly, samesite)
+        self.response.set_cookie(key, value, max_age, expires, path, domain, secure, httponly, samesite)
 
     def set_status_code(self, status_code):
         self.response.status_code = status_code

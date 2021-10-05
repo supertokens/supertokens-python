@@ -1,6 +1,6 @@
 from django.urls import path
 
-from tests.frontendIntegration.django2x.polls import views
+from tests.frontendIntegration.django3x.polls import views
 
 urlpatterns = [
     path('index.html', views.send_file, name='index.html'),
@@ -9,7 +9,7 @@ urlpatterns = [
     path('testUserConfig', views.test_config, name='testUserConfig'),
     path('multipleInterceptors', views.multiple_interceptors, name='multipleInterceptors'),
     path('', views.get_info, name='/'),
-    path('update-jwt', views.update_jwt, name='update-jwt'),
+    path('update-jwt', views.update_jwt, name='update_jwt'),
     path('testing', views.testing, name='testing'),
     path('logout', views.logout, name='logout'),
     path('revokeAll', views.revoke_all, name='revokeAll'),

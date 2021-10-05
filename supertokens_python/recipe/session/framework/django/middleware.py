@@ -24,7 +24,7 @@ from supertokens_python.recipe.session import SessionRecipe
 
 
 def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
-    async def session_verify(f):
+    def session_verify(f):
         @wraps(f)
         async def wrapped_function(request, *args, **kwargs):
             from django.http import HttpResponse
@@ -33,7 +33,7 @@ def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: 
                 recipe = SessionRecipe.get_instance()
                 session = await recipe.verify_session(request, anti_csrf_check, session_required)
                 request.set_session(session)
-                return f(request.request, *args, **kwargs)
+                return  f(request.request, *args, **kwargs)
             except SuperTokensError as e:
                 response = DjangoResponse(HttpResponse())
                 result = await Supertokens.get_instance().handle_supertokens_error(DjangoRequest(request), e, response)
