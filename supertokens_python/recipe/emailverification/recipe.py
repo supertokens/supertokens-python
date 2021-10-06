@@ -53,7 +53,8 @@ class EmailVerificationRecipe(RecipeModule):
     def __init__(self, recipe_id: str, app_info: AppInfo, config):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, config)
-        recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id), self.config)
+        recipe_implementation = RecipeImplementation(
+            Querier.get_instance(recipe_id), self.config)
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
         api_implementation = APIImplementation()
@@ -61,7 +62,8 @@ class EmailVerificationRecipe(RecipeModule):
             self.config.override.apis(api_implementation)
 
     def is_error_from_this_or_child_recipe_based_on_instance(self, err):
-        return isinstance(err, SuperTokensError) and isinstance(err, SuperTokensEmailVerificationError)
+        return isinstance(err, SuperTokensError) and isinstance(
+            err, SuperTokensEmailVerificationError)
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [
@@ -86,7 +88,8 @@ class EmailVerificationRecipe(RecipeModule):
 
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
         if isinstance(error, EmailVerificationInvalidTokenError):
-            response.set_content({'status': 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'})
+            response.set_content(
+                {'status': 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'})
             return response
         else:
             response.set_content({'status': 'EMAIL_ALREADY_VERIFIED_ERROR'})
@@ -112,11 +115,13 @@ class EmailVerificationRecipe(RecipeModule):
     def get_instance() -> EmailVerificationRecipe:
         if EmailVerificationRecipe.__instance is not None:
             return EmailVerificationRecipe.__instance
-        raise_general_exception('Initialisation not done. Did you forget to call the SuperTokens.init function?')
+        raise_general_exception(
+            'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
     @staticmethod
     def reset():
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
-            raise_general_exception('calling testing function in non testing env')
+            raise_general_exception(
+                'calling testing function in non testing env')
         EmailVerificationRecipe.__instance = None

@@ -31,14 +31,16 @@ class SignInAndUpFeature:
         self.providers = providers
 
 
-def validate_and_normalise_sign_in_and_up_config(config=None) -> SignInAndUpFeature:
+def validate_and_normalise_sign_in_and_up_config(
+        config=None) -> SignInAndUpFeature:
     if config is None:
         config = {}
     providers = config['providers']
     return SignInAndUpFeature(providers)
 
 
-def email_verification_create_and_send_custom_email(recipe: ThirdPartyRecipe, create_and_send_custom_email):
+def email_verification_create_and_send_custom_email(
+        recipe: ThirdPartyRecipe, create_and_send_custom_email):
     async def func(user, link):
         user_info = await recipe.get_user_by_id(user.id)
         if user_info is None:
@@ -48,7 +50,8 @@ def email_verification_create_and_send_custom_email(recipe: ThirdPartyRecipe, cr
     return func
 
 
-def email_verification_get_email_verification_url(recipe: ThirdPartyRecipe, get_email_verification_url):
+def email_verification_get_email_verification_url(
+        recipe: ThirdPartyRecipe, get_email_verification_url):
     async def func(user):
         user_info = await recipe.get_user_by_id(user.id)
         if user_info is None:
@@ -58,7 +61,8 @@ def email_verification_get_email_verification_url(recipe: ThirdPartyRecipe, get_
     return func
 
 
-def validate_and_normalise_email_verification_config(recipe: ThirdPartyRecipe, config=None, override=None):
+def validate_and_normalise_email_verification_config(
+        recipe: ThirdPartyRecipe, config=None, override=None):
     create_and_send_custom_email = None
     get_email_verification_url = None
     if config is None:
@@ -96,8 +100,10 @@ class ThirdPartyConfig:
         self.override = override
 
 
-def validate_and_normalise_user_input(recipe: ThirdPartyRecipe, config) -> ThirdPartyConfig:
-    validate_the_structure_of_user_input(config, INPUT_SCHEMA, 'thirdparty recipe', recipe)
+def validate_and_normalise_user_input(
+        recipe: ThirdPartyRecipe, config) -> ThirdPartyConfig:
+    validate_the_structure_of_user_input(
+        config, INPUT_SCHEMA, 'thirdparty recipe', recipe)
     sign_in_and_up_feature = validate_and_normalise_sign_in_and_up_config(
         config['sign_in_and_up_feature'] if 'sign_in_and_up_feature' in config else None)
     email_verification_feature = validate_and_normalise_email_verification_config(
@@ -110,4 +116,5 @@ def validate_and_normalise_user_input(recipe: ThirdPartyRecipe, config) -> Third
     override_apis = config['override']['apis'] if 'override' in config and 'apis' in config[
         'override'] else None
     override = OverrideConfig(override_functions, override_apis)
-    return ThirdPartyConfig(sign_in_and_up_feature, email_verification_feature, override)
+    return ThirdPartyConfig(sign_in_and_up_feature,
+                            email_verification_feature, override)

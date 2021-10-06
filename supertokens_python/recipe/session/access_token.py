@@ -38,7 +38,8 @@ def sanitize_number(n: any) -> Union[Union[int, float], None]:
     return None
 
 
-def get_info_from_access_token(token: str, jwt_signing_public_key: str, do_anti_csrf_check: bool):
+def get_info_from_access_token(
+        token: str, jwt_signing_public_key: str, do_anti_csrf_check: bool):
     try:
         payload = get_payload(token, jwt_signing_public_key)
         session_handle = sanitize_string(payload.get('sessionHandle'))

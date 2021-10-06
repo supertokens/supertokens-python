@@ -33,4 +33,3 @@ async def handle_sign_up_api(api_implementation: APIInterface, api_options: APIO
     api_options.response.set_content(response.to_json())
 
     return api_options.response
-

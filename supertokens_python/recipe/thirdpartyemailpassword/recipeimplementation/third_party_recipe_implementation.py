@@ -24,7 +24,8 @@ from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
 
 class RecipeImplementation(RecipeInterface):
 
-    def __init__(self, recipe_implementation: ThirdPartyEmailPasswordRecipeInterface):
+    def __init__(
+            self, recipe_implementation: ThirdPartyEmailPasswordRecipeInterface):
         super().__init__()
         self.recipe_implementation = recipe_implementation
 
@@ -59,7 +60,8 @@ class RecipeImplementation(RecipeInterface):
         if result.user.third_party_info is None:
             raise Exception("Should never come here")
 
-        return SignInUpOkResult(created_new_user=result.created_new_user, user=result.user)
+        return SignInUpOkResult(
+            created_new_user=result.created_new_user, user=result.user)
 
     async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
         raise Exception("Should never come here")

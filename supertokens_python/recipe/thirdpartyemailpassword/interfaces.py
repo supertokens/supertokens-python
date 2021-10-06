@@ -90,7 +90,8 @@ class SignInUpPostResponse(ABC):
 
 
 class SignInUpPostThirdPartyOkResponse(SignInUpPostResponse):
-    def __init__(self, user: User, created_new_user: bool, auth_code_response: any):
+    def __init__(self, user: User, created_new_user: bool,
+                 auth_code_response: any):
         super().__init__('thirdparty', 'OK', user, created_new_user, auth_code_response)
         self.is_ok = True
 
@@ -110,7 +111,8 @@ class SignInUpPostThirdPartyOkResponse(SignInUpPostResponse):
         }
 
 
-class SignInUpPostThirdPartyNoEmailGivenByProviderResponse(SignInUpPostResponse):
+class SignInUpPostThirdPartyNoEmailGivenByProviderResponse(
+        SignInUpPostResponse):
     def __init__(self):
         super().__init__('thirdparty', 'NO_EMAIL_GIVEN_BY_PROVIDER')
         self.is_no_email_given_by_provider = True
@@ -138,7 +140,8 @@ class SignInUpPostEmailPasswordOkResponse(SignInUpPostResponse):
         }
 
 
-class SignInUpPostEmailPasswordWrongCredentialsErrorResponse(SignInUpPostResponse):
+class SignInUpPostEmailPasswordWrongCredentialsErrorResponse(
+        SignInUpPostResponse):
     def __init__(self):
         super().__init__('emailpassword', 'WRONG_CREDENTIALS_ERROR')
         self.is_wrong_credentials_error = True
@@ -149,7 +152,8 @@ class SignInUpPostEmailPasswordWrongCredentialsErrorResponse(SignInUpPostRespons
         }
 
 
-class SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse(SignInUpPostResponse):
+class SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse(
+        SignInUpPostResponse):
     def __init__(self):
         super().__init__('emailpassword', 'EMAIL_ALREADY_EXISTS_ERROR')
         self.is_email_already_exists_error = True

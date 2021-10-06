@@ -50,7 +50,8 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
 
     def __init__(self, recipe_id: str, app_info: AppInfo, config=None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
-                 email_password_recipe: Union[EmailPasswordRecipe, None] = None,
+                 email_password_recipe: Union[EmailPasswordRecipe,
+                                              None] = None,
                  third_party_recipe: Union[ThirdPartyRecipe, None] = None):
         super().__init__(recipe_id, app_info)
         if config is None:
@@ -72,7 +73,8 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                                                                      self.config.email_verification_feature)
 
         def func_override_email_password(_):
-            return EmailPasswordRecipeImplementation(self.recipe_implementation)
+            return EmailPasswordRecipeImplementation(
+                self.recipe_implementation)
 
         def apis_override_email_password(_):
             return get_email_password_interface_impl(self.api_implementation)
@@ -114,28 +116,33 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
 
     def is_error_from_this_or_child_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and (
-                isinstance(err, SupertokensThirdPartyEmailPasswordError)
-                or
-                self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
-                or
-                self.email_password_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
-                or
-                (
-                        self.third_party_recipe is not None
-                        and
-                        self.third_party_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
-                )
+            isinstance(err, SupertokensThirdPartyEmailPasswordError)
+            or
+            self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+                err)
+            or
+            self.email_password_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+                err)
+            or
+            (
+                self.third_party_recipe is not None
+                and
+                self.third_party_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+                    err)
+            )
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
-        apis_handled = self.email_password_recipe.get_apis_handled() + self.email_verification_recipe.get_apis_handled()
+        apis_handled = self.email_password_recipe.get_apis_handled(
+        ) + self.email_verification_recipe.get_apis_handled()
         if self.third_party_recipe is not None:
             apis_handled = apis_handled + self.third_party_recipe.get_apis_handled()
         return apis_handled
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
-        if self.email_password_recipe.return_api_id_if_can_handle_request(path, method) is not None:
+        if self.email_password_recipe.return_api_id_if_can_handle_request(
+                path, method) is not None:
             return await self.email_password_recipe.handle_api_request(request_id, request, path, method, response)
         elif self.third_party_recipe is not None and self.third_party_recipe.return_api_id_if_can_handle_request(path,
                                                                                                                  method) is not None:
@@ -144,16 +151,21 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
-        if self.email_password_recipe.is_error_from_this_or_child_recipe_based_on_instance(error):
-            return self.email_password_recipe.handle_error(request, error, response)
+        if self.email_password_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+                error):
+            return self.email_password_recipe.handle_error(
+                request, error, response)
         if self.third_party_recipe is not None and self.third_party_recipe.is_error_from_this_or_child_recipe_based_on_instance(
                 error):
-            return self.third_party_recipe.handle_error(request, error, response)
+            return self.third_party_recipe.handle_error(
+                request, error, response)
         else:
-            return self.email_verification_recipe.handle_error(request, error, response)
+            return self.email_verification_recipe.handle_error(
+                request, error, response)
 
     def get_all_cors_headers(self) -> List[str]:
-        cors_headers = self.email_password_recipe.get_all_cors_headers() + self.email_verification_recipe.get_all_cors_headers()
+        cors_headers = self.email_password_recipe.get_all_cors_headers(
+        ) + self.email_verification_recipe.get_all_cors_headers()
         if self.third_party_recipe is not None:
             cors_headers = cors_headers + self.third_party_recipe.get_all_cors_headers()
         return cors_headers
@@ -167,7 +179,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                 return ThirdPartyEmailPasswordRecipe.__instance
             else:
                 raise Exception(None, 'ThirdPartyEmailPassword recipe has already been initialised. Please '
-                                              'check your code for bugs.')
+                                'check your code for bugs.')
 
         return func
 
@@ -175,13 +187,16 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
     def get_instance() -> ThirdPartyEmailPasswordRecipe:
         if ThirdPartyEmailPasswordRecipe.__instance is not None:
             return ThirdPartyEmailPasswordRecipe.__instance
-        raise Exception(None, 'Initialisation not done. Did you forget to call the SuperTokens.init function?')
+        raise Exception(
+            None,
+            'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
     @staticmethod
     def reset():
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
-            raise Exception(None, 'calling testing function in non testing env')
+            raise Exception(
+                None, 'calling testing function in non testing env')
         ThirdPartyRecipe.__instance = None
 
     async def get_email_for_user_id(self, user_id: str) -> str:

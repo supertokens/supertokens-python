@@ -39,7 +39,8 @@ class RecipeModule(abc.ABC):
     def get_app_info(self):
         return self.app_info
 
-    def return_api_id_if_can_handle_request(self, path: NormalisedURLPath, method: str) -> Union[str, None]:
+    def return_api_id_if_can_handle_request(
+            self, path: NormalisedURLPath, method: str) -> Union[str, None]:
         apis_handled = self.get_apis_handled()
         for current_api in apis_handled:
             if not current_api.disabled and current_api.method == method and self.app_info.api_base_path.append(

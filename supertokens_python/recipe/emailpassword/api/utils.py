@@ -30,12 +30,18 @@ from supertokens_python.exceptions import raise_bad_input_exception
 async def validate_form_or_throw_error(inputs: List[FormField], config_form_fields: List[NormalisedFormField]):
     validation_errors: List[ErrorFormField] = []
     if len(config_form_fields) != len(inputs):
-        raise_bad_input_exception('Are you sending too many / too few formFields?')
+        raise_bad_input_exception(
+            'Are you sending too many / too few formFields?')
 
     for field in config_form_fields:
-        input_field: FormField = find_first_occurrence_in_list(lambda x: x.id == field.id, inputs)
-        if input_field is None or (input_field.value == '' and not field.optional):
-            validation_errors.append(ErrorFormField(field.id, 'Field is not optional'))
+        input_field: FormField = find_first_occurrence_in_list(
+            lambda x: x.id == field.id, inputs)
+        if input_field is None or (
+                input_field.value == '' and not field.optional):
+            validation_errors.append(
+                ErrorFormField(
+                    field.id,
+                    'Field is not optional'))
         else:
             error = await field.validate(input_field.value)
             if error is not None:
@@ -43,11 +49,13 @@ async def validate_form_or_throw_error(inputs: List[FormField], config_form_fiel
 
     if len(validation_errors) != 0:
         # raise BadInputError(msg="Error in input formFields")
-        raise_form_field_exception('Error in input formFields', validation_errors)
+        raise_form_field_exception(
+            'Error in input formFields',
+            validation_errors)
 
 
 async def validate_form_fields_or_throw_error(config_form_fields: List[NormalisedFormField], form_fields_raw: any) -> \
-List[FormField]:
+        List[FormField]:
     if form_fields_raw is None:
         raise_bad_input_exception('Missing input param: formFields')
 
@@ -59,7 +67,8 @@ List[FormField]:
     for current_form_field in form_fields_raw:
         if 'id' not in current_form_field or not isinstance(current_form_field['id'],
                                                             str) or 'value' not in current_form_field:
-            raise_bad_input_exception('All elements of formFields must contain an \'id\' and \'value\' field')
+            raise_bad_input_exception(
+                'All elements of formFields must contain an \'id\' and \'value\' field')
         value = current_form_field['value']
         id = current_form_field['id']
         if id == FORM_FIELD_EMAIL_ID:

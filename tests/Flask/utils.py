@@ -14,6 +14,7 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 
+
 def extract_all_cookies(response):
     cookie_headers = response.headers.getlist('Set-Cookie')
     cookies = dict()

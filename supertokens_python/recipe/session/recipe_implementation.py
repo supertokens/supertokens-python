@@ -14,26 +14,26 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 from __future__ import annotations
+from .session_class import Session
+from supertokens_python.process_state import ProcessState, AllowedProcessStates
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.async_to_sync_wrapper import check_event_loop
+from typing import TYPE_CHECKING
+from .interfaces import RecipeInterface
+from .exceptions import raise_unauthorised_exception, raise_try_refresh_token_exception
+from .cookie_and_header import get_id_refresh_token_from_cookie, get_access_token_from_cookie, get_anti_csrf_header, \
+    get_rid_header, get_refresh_token_from_cookie
+from . import session_functions
 
 import asyncio
 import nest_asyncio
 nest_asyncio.apply()
-from . import session_functions
-from .cookie_and_header import get_id_refresh_token_from_cookie, get_access_token_from_cookie, get_anti_csrf_header, \
-    get_rid_header, get_refresh_token_from_cookie
-from .exceptions import raise_unauthorised_exception, raise_try_refresh_token_exception
-from .interfaces import RecipeInterface
-from typing import TYPE_CHECKING
 
-from supertokens_python.async_to_sync_wrapper import check_event_loop
-from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.process_state import ProcessState, AllowedProcessStates
 
 if TYPE_CHECKING:
     from typing import Union, List
     from .utils import SessionConfig
     from supertokens_python.querier import Querier
-from .session_class import Session
 
 
 class HandshakeInfo:
@@ -73,7 +73,8 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_handshake_info(self) -> HandshakeInfo:
         if self.handshake_info is None:
-            ProcessState.get_instance().add_state(AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO)
+            ProcessState.get_instance().add_state(
+                AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO)
             response = await self.querier.send_post_request(NormalisedURLPath('/recipe/handshake'), {})
             self.handshake_info = HandshakeInfo({
                 **response,
@@ -83,7 +84,8 @@ class RecipeImplementation(RecipeInterface):
 
     def update_jwt_signing_public_key_info(self, new_key, new_expiry):
         if self.handshake_info is not None:
-            self.handshake_info.update_jwt_signing_public_key_info(new_key, new_expiry)
+            self.handshake_info.update_jwt_signing_public_key_info(
+                new_key, new_expiry)
 
     async def create_new_session(self, request: any, user_id: str, jwt_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -> Session:
@@ -111,7 +113,8 @@ class RecipeImplementation(RecipeInterface):
                                          'request as cookies?', False)
         access_token = get_access_token_from_cookie(request)
         if access_token is None:
-            raise_try_refresh_token_exception('Access token has expired. Please call the refresh API')
+            raise_try_refresh_token_exception(
+                'Access token has expired. Please call the refresh API')
         anti_csrf_token = get_anti_csrf_header(request)
         if anti_csrf_check is None:
             anti_csrf_check = request.method().lower() != 'get'

@@ -14,7 +14,8 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 from __future__ import annotations
-from typing import Union, TYPE_CHECKING
+
+from typing import Union
 
 
 def raise_general_exception(msg, previous=None):

@@ -34,5 +34,6 @@ class Provider(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_access_token_api_info(self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
+    def get_access_token_api_info(
+            self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
         pass

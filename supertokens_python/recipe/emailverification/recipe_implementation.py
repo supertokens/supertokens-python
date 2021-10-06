@@ -54,7 +54,8 @@ class RecipeImplementation(RecipeInterface):
         }
         response = await self.querier.send_post_request(NormalisedURLPath('/recipe/user/email/verify'), data)
         if 'status' in response and response['status'] == 'OK':
-            return VerifyEmailUsingTokenOkResult(User(response['userId'], response['email']))
+            return VerifyEmailUsingTokenOkResult(
+                User(response['userId'], response['email']))
         return VerifyEmailUsingTokenInvalidTokenErrorResult()
 
     async def is_email_verified(self, user_id: str, email: str) -> bool:

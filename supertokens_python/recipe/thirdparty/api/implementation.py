@@ -26,7 +26,7 @@ from supertokens_python.recipe.thirdparty.interfaces import APIInterface, SignIn
     AuthorisationUrlGetOkResponse, SignInUpPostNoEmailGivenByProviderResponse
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.thirdparty.interfaces import APIInterface, APIOptions, SignInUpPostResponse, \
+    from supertokens_python.recipe.thirdparty.interfaces import APIOptions, SignInUpPostResponse, \
         AuthorisationUrlGetResponse
     from supertokens_python.recipe.thirdparty.provider import Provider
 
@@ -40,7 +40,8 @@ class APIImplementation(APIInterface):
 
         params = {}
         for key, value in authorisation_url_info.params.items():
-            params[key] = value if not callable(value) else value(api_options.request)
+            params[key] = value if not callable(
+                value) else value(api_options.request)
         query_string = urlencode(params)
 
         url = authorisation_url_info.url + '?' + query_string
@@ -49,7 +50,8 @@ class APIImplementation(APIInterface):
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
                               api_options: APIOptions) -> SignInUpPostResponse:
         try:
-            access_token_api_info = provider.get_access_token_api_info(redirect_uri, code)
+            access_token_api_info = provider.get_access_token_api_info(
+                redirect_uri, code)
             headers = {
                 'Accept': 'application/json',
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -72,4 +74,5 @@ class APIImplementation(APIInterface):
         user = signinup_response.user
         await create_new_session(api_options.request, user.user_id)
 
-        return SignInUpPostOkResponse(user, signinup_response.created_new_user, access_token_response)
+        return SignInUpPostOkResponse(
+            user, signinup_response.created_new_user, access_token_response)

@@ -23,6 +23,7 @@ from supertokens_python.recipe.emailverification.interfaces import (
     EmailVerifyPostOkResponse, GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse,
     GenerateEmailVerifyTokenPostOkResponse, IsEmailVerifiedGetOkResponse
 )
+
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailverification.interfaces import (
         APIOptions, GenerateEmailVerifyTokenPostResponse, IsEmailVerifiedGetResponse, EmailVerifyPostResponse
@@ -72,8 +73,9 @@ class APIImplementation(APIInterface):
         async def send_email():
             try:
                 await api_options.config.create_and_send_custom_email(user, email_verify_link)
-            except Exception as e:
+            except Exception:
                 pass
-        task = asyncio.create_task(send_email())
+
+        asyncio.create_task(send_email())
 
         return GenerateEmailVerifyTokenPostOkResponse()

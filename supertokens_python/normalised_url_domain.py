@@ -14,11 +14,14 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 from __future__ import annotations
-from typing import Union, TYPE_CHECKING
+
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
+
 from .utils import is_an_ip_address
+
 if TYPE_CHECKING:
-    from .recipe_module import RecipeModule
+    pass
 from .exceptions import raise_general_exception
 
 
@@ -30,7 +33,8 @@ class NormalisedURLDomain:
         return self.__value
 
 
-def normalise_domain_path_or_throw_error(input_str: str, ignore_protocol=False) -> str:
+def normalise_domain_path_or_throw_error(
+        input_str: str, ignore_protocol=False) -> str:
     input_str = input_str.strip().lower()
 
     try:
@@ -58,15 +62,15 @@ def normalise_domain_path_or_throw_error(input_str: str, ignore_protocol=False) 
         input_str = input_str[1:]
 
     if (
-            (
-                '.' in input_str
-                or
-                input_str.startswith('localhost')
-            )
-            and
-            (not input_str.startswith('http://'))
-            and
-            (not input_str.startswith('https://'))
+        (
+            '.' in input_str
+            or
+            input_str.startswith('localhost')
+        )
+        and
+        (not input_str.startswith('http://'))
+        and
+        (not input_str.startswith('https://'))
     ):
         input_str = 'https://' + input_str
         try:

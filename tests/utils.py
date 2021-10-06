@@ -134,7 +134,8 @@ def setup_st():
     try:
         run("cd " + INSTALLATION_PATH + " && cp temp/licenseKey ./licenseKey")
     except BaseException:
-        run("cd " + INSTALLATION_PATH + " && cp temp/config.yaml ./config.yaml", shell=True)
+        run("cd " + INSTALLATION_PATH +
+            " && cp temp/config.yaml ./config.yaml", shell=True)
 
 
 def clean_st():
@@ -188,7 +189,8 @@ def get_cookie_from_response(response, cookie_name):
 
 
 def extract_all_cookies(response: Response):
-    cookie_headers = SimpleCookie(response.headers.get('set-cookie').replace(",", ";"))
+    cookie_headers = SimpleCookie(
+        response.headers.get('set-cookie').replace(",", ";"))
     cookies = dict()
     for key, morsel in cookie_headers.items():
         cookies[key] = {
@@ -231,11 +233,12 @@ def sign_up_request(app, email, password):
                     {
                         "id": "email",
                         "value": email
-                    }]
+                }]
         }))
 
 
-def email_verify_token_request(app, accessToken, idRefreshTokenFromCookie, antiCsrf, userId):
+def email_verify_token_request(
+        app, accessToken, idRefreshTokenFromCookie, antiCsrf, userId):
     return app.post(
         url="/auth/user/email/verify/token",
         headers={

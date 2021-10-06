@@ -55,13 +55,17 @@ class SessionRecipe(RecipeModule):
         if config is None:
             config = {}
         self.config = validate_and_normalise_user_input(self, app_info, config)
-        recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id), self.config)
-        self.recipe_implementation = recipe_implementation if self.config.override.functions is None else self.config.override.functions(recipe_implementation)
+        recipe_implementation = RecipeImplementation(
+            Querier.get_instance(recipe_id), self.config)
+        self.recipe_implementation = recipe_implementation if self.config.override.functions is None else self.config.override.functions(
+            recipe_implementation)
         api_implementation = APIImplementation()
-        self.api_implementation = api_implementation if self.config.override.apis is None else self.config.override.apis(api_implementation)
+        self.api_implementation = api_implementation if self.config.override.apis is None else self.config.override.apis(
+            api_implementation)
 
     def is_error_from_this_or_child_recipe_based_on_instance(self, err):
-        return isinstance(err, SuperTokensError) and isinstance(err, SuperTokensSessionError)
+        return isinstance(err, SuperTokensError) and isinstance(
+            err, SuperTokensSessionError)
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [
@@ -94,7 +98,8 @@ class SessionRecipe(RecipeModule):
     def init(config=None):
         def func(app_info: AppInfo):
             if SessionRecipe.__instance is None:
-                SessionRecipe.__instance = SessionRecipe(SessionRecipe.recipe_id, app_info, config)
+                SessionRecipe.__instance = SessionRecipe(
+                    SessionRecipe.recipe_id, app_info, config)
                 return SessionRecipe.__instance
             else:
                 raise_general_exception(None,
@@ -106,13 +111,16 @@ class SessionRecipe(RecipeModule):
     def get_instance() -> SessionRecipe:
         if SessionRecipe.__instance is not None:
             return SessionRecipe.__instance
-        raise_general_exception(None, 'Initialisation not done. Did you forget to call the SuperTokens.init function?')
+        raise_general_exception(
+            None,
+            'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
     @staticmethod
     def reset():
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
-            raise_general_exception(None, 'calling testing function in non testing env')
+            raise_general_exception(
+                None, 'calling testing function in non testing env')
         SessionRecipe.__instance = None
 
     async def verify_session(self, request: BaseRequest, anti_csrf_check: Union[bool, None] = None, session_required: bool = True):

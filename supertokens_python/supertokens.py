@@ -58,13 +58,16 @@ import asyncio
 
 
 class AppInfo:
-    def __init__(self, recipe: Union[RecipeModule, None], app_info, framework: str):
+    def __init__(self, recipe: Union[RecipeModule,
+                 None], app_info, framework: str):
         self.app_name: str = app_info['app_name']
         self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(app_info[
-                                                                         'api_gateway_path']) if 'api_gateway_path' in app_info else NormalisedURLPath(
+            'api_gateway_path']) if 'api_gateway_path' in app_info else NormalisedURLPath(
             '')
-        self.api_domain: NormalisedURLDomain = NormalisedURLDomain(app_info['api_domain'])
-        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(app_info['website_domain'])
+        self.api_domain: NormalisedURLDomain = NormalisedURLDomain(
+            app_info['api_domain'])
+        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(
+            app_info['website_domain'])
         self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(
             NormalisedURLPath('/auth') if 'api_base_path' not in app_info else NormalisedURLPath(
                 app_info['api_base_path']))
@@ -118,9 +121,11 @@ class Supertokens:
     __instance = None
 
     def __init__(self, config):
-        validate_the_structure_of_user_input(config, INPUT_SCHEMA, 'init_function', None)
+        validate_the_structure_of_user_input(
+            config, INPUT_SCHEMA, 'init_function', None)
         validate_framework(config)
-        self.app_info: AppInfo = AppInfo(None, config['app_info'], config['framework'])
+        self.app_info: AppInfo = AppInfo(
+            None, config['app_info'], config['framework'])
         hosts = list(map(lambda h: NormalisedURLDomain(h.strip()),
                          filter(lambda x: x != '', config['supertokens']['connection_uri'].split(';'))))
         api_key = None
@@ -130,16 +135,21 @@ class Supertokens:
 
         if 'recipe_list' not in config or not isinstance(config['recipe_list'], list) or len(
                 config['recipe_list']) == 0:
-            raise_general_exception(None, 'Please provide at least one recipe to the supertokens.init function call')
+            raise_general_exception(
+                None, 'Please provide at least one recipe to the supertokens.init function call')
 
-        self.recipe_modules: List[RecipeModule] = list(map(lambda func: func(self.app_info), config['recipe_list']))
+        self.recipe_modules: List[RecipeModule] = list(
+            map(lambda func: func(self.app_info), config['recipe_list']))
 
-        telemetry = ('SUPERTOKENS_ENV' not in environ) or (environ['SUPERTOKENS_ENV'] != 'testing')
+        telemetry = (
+            'SUPERTOKENS_ENV' not in environ) or (
+            environ['SUPERTOKENS_ENV'] != 'testing')
         if 'telemetry' in config:
             telemetry = config['telemetry']
 
         if telemetry:
-            if self.app_info.framework.lower() == 'flask' or self.app_info.framework.lower() == 'django':
+            if self.app_info.framework.lower(
+            ) == 'flask' or self.app_info.framework.lower() == 'django':
                 loop = asyncio.get_event_loop()
                 loop.run_until_complete(self.send_telemetry())
             else:
@@ -177,7 +187,8 @@ class Supertokens:
     def reset():
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
-            raise_general_exception(None, 'calling testing function in non testing env')
+            raise_general_exception(
+                None, 'calling testing function in non testing env')
         Querier.reset()
         Supertokens.__instance = None
 
@@ -185,7 +196,9 @@ class Supertokens:
     def get_instance() -> Supertokens:
         if Supertokens.__instance is not None:
             return Supertokens.__instance
-        raise_general_exception(None, 'Initialisation not done. Did you forget to call the SuperTokens.init function?')
+        raise_general_exception(
+            None,
+            'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
     def get_all_cors_headers(self) -> List[str]:
         headers_set = set()
@@ -204,7 +217,8 @@ class Supertokens:
                 request.get_path()))
         method = normalise_http_method(request.method())
 
-        if not path.startswith(Supertokens.get_instance().app_info.api_base_path):
+        if not path.startswith(
+                Supertokens.get_instance().app_info.api_base_path):
             return None
         else:
             request_rid = get_rid_from_request(request)
@@ -216,10 +230,12 @@ class Supertokens:
                         matched_recipe = recipe
                         break
                 if matched_recipe is not None:
-                    request_id = matched_recipe.return_api_id_if_can_handle_request(path, method)
+                    request_id = matched_recipe.return_api_id_if_can_handle_request(
+                        path, method)
             else:
                 for recipe in Supertokens.get_instance().recipe_modules:
-                    request_id = recipe.return_api_id_if_can_handle_request(path, method)
+                    request_id = recipe.return_api_id_if_can_handle_request(
+                        path, method)
                     if request_id is not None:
                         matched_recipe = recipe
                         break
@@ -238,6 +254,7 @@ class Supertokens:
             return send_non_200_response(str(err), 400, response)
 
         for recipe in self.recipe_modules:
-            if recipe.is_error_from_this_or_child_recipe_based_on_instance(err):
+            if recipe.is_error_from_this_or_child_recipe_based_on_instance(
+                    err):
                 return await recipe.handle_error(request, err, response)
         raise err

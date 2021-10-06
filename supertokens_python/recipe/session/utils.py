@@ -15,17 +15,18 @@ under the License.
 """
 from __future__ import annotations
 
-from .cookie_and_header import clear_cookies
-from supertokens_python.utils import validate_the_structure_of_user_input, is_an_ip_address, send_non_200_response
-from .types import INPUT_SCHEMA
-from urllib.parse import urlparse
-from supertokens_python.exceptions import raise_general_exception
-from tldextract import extract
-from supertokens_python.normalised_url_path import NormalisedURLPath
-from .constants import SESSION_REFRESH
 from typing import TYPE_CHECKING, Callable, Union
+from urllib.parse import urlparse
 
+from tldextract import extract
+
+from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.framework import BaseResponse
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.utils import validate_the_structure_of_user_input, is_an_ip_address, send_non_200_response
+from .constants import SESSION_REFRESH
+from .cookie_and_header import clear_cookies
+from .types import INPUT_SCHEMA
 
 if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface
@@ -53,7 +54,8 @@ def normalise_session_scope(recipe: SessionRecipe, session_scope: str) -> str:
 
             return scope
         except Exception:
-            raise_general_exception(recipe, 'Please provide a valid sessionScope')
+            raise_general_exception(
+                recipe, 'Please provide a valid sessionScope')
 
     no_dot_normalised = helper(session_scope)
     if no_dot_normalised == 'localhost' or is_an_ip_address(no_dot_normalised):
@@ -70,7 +72,8 @@ def normalise_same_site(same_site: str) -> str:
     same_site = same_site.lower()
     allowed_values = {'Strict', 'Lax', 'None'}
     if same_site not in allowed_values:
-        raise Exception('cookie same site must be one of "Strict", "Lax", or "None"')
+        raise Exception(
+            'cookie same site must be one of "Strict", "Lax", or "None"')
     return same_site
 
 
@@ -82,13 +85,15 @@ def get_top_level_domain_for_same_site_resolution(url: str) -> str:
         return 'localhost'
     parsed_url = extract(hostname)
     if parsed_url == '':
-        raise Exception('Please make sure that the apiDomain and websiteDomain have correct values')
+        raise Exception(
+            'Please make sure that the apiDomain and websiteDomain have correct values')
 
     return parsed_url.domain + '.' + parsed_url.suffix
 
 
 class ErrorHandlers:
-    def __init__(self, recipe: SessionRecipe, on_token_theft_detected, on_try_refresh_token, on_unauthorised):
+    def __init__(self, recipe: SessionRecipe, on_token_theft_detected,
+                 on_try_refresh_token, on_unauthorised):
         self.__recipe = recipe
         self.__on_token_theft_detected = on_token_theft_detected
         self.__on_try_refresh_token = on_try_refresh_token
@@ -98,7 +103,8 @@ class ErrorHandlers:
         try:
             response = await self.__on_token_theft_detected(request, session_handle, user_id)
         except TypeError:
-            response = self.__on_token_theft_detected(request, session_handle, user_id)
+            response = self.__on_token_theft_detected(
+                request, session_handle, user_id)
         clear_cookies(self.__recipe, response)
         return response
 
@@ -112,7 +118,7 @@ class ErrorHandlers:
     async def on_unauthorised(self, do_clear_cookies: bool, request: BaseRequest, message: str, response: BaseResponse):
         try:
             await self.__on_unauthorised(request, message, response)
-        except TypeError as e:
+        except TypeError:
             await self.__on_unauthorised(request, message, response)
         if do_clear_cookies:
             clear_cookies(self.__recipe, response)
@@ -121,22 +127,26 @@ class ErrorHandlers:
 
 async def default_unauthorised_callback(_: BaseRequest, __: str, response: BaseResponse):
     from .recipe import SessionRecipe
-    return send_non_200_response('unauthorised', SessionRecipe.get_instance().config.session_expired_status_code, response)
+    return send_non_200_response('unauthorised', SessionRecipe.get_instance(
+    ).config.session_expired_status_code, response)
 
 
-async def default_try_refresh_token_callback(_: BaseRequest, __: str, response : BaseResponse):
+async def default_try_refresh_token_callback(_: BaseRequest, __: str, response: BaseResponse):
     from .recipe import SessionRecipe
-    return send_non_200_response('try refresh token', SessionRecipe.get_instance().config.session_expired_status_code, response)
+    return send_non_200_response('try refresh token', SessionRecipe.get_instance(
+    ).config.session_expired_status_code, response)
 
 
-async def default_token_theft_detected_callback(_: BaseRequest, session_handle: str, __: str, response : BaseResponse):
+async def default_token_theft_detected_callback(_: BaseRequest, session_handle: str, __: str, response: BaseResponse):
     from .recipe import SessionRecipe
     await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle)
-    return send_non_200_response('token theft detected', SessionRecipe.get_instance().config.session_expired_status_code, response)
+    return send_non_200_response('token theft detected', SessionRecipe.get_instance(
+    ).config.session_expired_status_code, response)
 
 
 class OverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None], apis: Union[Callable[[APIInterface], APIInterface], None]):
+    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
+                                        None], apis: Union[Callable[[APIInterface], APIInterface], None]):
         self.functions = functions
         self.apis = apis
 
@@ -164,13 +174,17 @@ class SessionConfig:
         self.framework = framework
 
 
-def validate_and_normalise_user_input(recipe: SessionRecipe, app_info: AppInfo, config=None):
+def validate_and_normalise_user_input(
+        recipe: SessionRecipe, app_info: AppInfo, config=None):
     if config is None:
         config = {}
 
-    validate_the_structure_of_user_input(config, INPUT_SCHEMA, 'session recipe', recipe)
-    cookie_domain = normalise_session_scope(recipe, config['cookie_domain']) if 'cookie_domain' in config else None
-    top_level_api_domain = get_top_level_domain_for_same_site_resolution(app_info.api_domain.get_as_string_dangerous())
+    validate_the_structure_of_user_input(
+        config, INPUT_SCHEMA, 'session recipe', recipe)
+    cookie_domain = normalise_session_scope(
+        recipe, config['cookie_domain']) if 'cookie_domain' in config else None
+    top_level_api_domain = get_top_level_domain_for_same_site_resolution(
+        app_info.api_domain.get_as_string_dangerous())
     top_level_website_domain = get_top_level_domain_for_same_site_resolution(
         app_info.website_domain.get_as_string_dangerous())
     cookie_same_site = 'None' if top_level_api_domain != top_level_website_domain else 'Lax'

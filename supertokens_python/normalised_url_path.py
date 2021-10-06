@@ -15,10 +15,12 @@ under the License.
 """
 
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
-from typing import Union, TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from .recipe_module import RecipeModule
+    pass
 from .exceptions import raise_general_exception
 
 
@@ -77,7 +79,8 @@ def normalise_url_path_or_throw_error(input_str: str) -> str:
 
     try:
         urlparse('http://example.com' + input_str)
-        return normalise_url_path_or_throw_error('http://example.com' + input_str)
+        return normalise_url_path_or_throw_error(
+            'http://example.com' + input_str)
     except Exception:
         raise_general_exception(None, 'Please provide a valid URL path')
 

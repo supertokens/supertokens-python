@@ -14,8 +14,10 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Union, List, TYPE_CHECKING, Literal
+from typing import Union, TYPE_CHECKING, Literal
+
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from .utils import EmailVerificationConfig
@@ -23,7 +25,8 @@ if TYPE_CHECKING:
 
 
 class CreateEmailVerificationTokenResult(ABC):
-    def __init__(self, status: Literal['OK', 'EMAIL_ALREADY_VERIFIED_ERROR'], token: Union[str, None]):
+    def __init__(
+            self, status: Literal['OK', 'EMAIL_ALREADY_VERIFIED_ERROR'], token: Union[str, None]):
         self.status = status
         self.is_ok = False
         self.is_email_already_verified = False
@@ -45,7 +48,8 @@ class CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult(CreateEmailVer
 
 
 class VerifyEmailUsingTokenResult(ABC):
-    def __init__(self, status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'], token: Union[User, None]):
+    def __init__(
+            self, status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'], token: Union[User, None]):
         self.status = status
         self.is_ok = False
         self.is_email_verification_invalid_token_error = False
@@ -116,7 +120,8 @@ class RecipeInterface(ABC):
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: Union[BaseResponse, None], recipe_id: str, config: EmailVerificationConfig, recipe_implementation: RecipeInterface):
+    def __init__(self, request: BaseRequest, response: Union[BaseResponse, None], recipe_id: str,
+                 config: EmailVerificationConfig, recipe_implementation: RecipeInterface):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -125,7 +130,8 @@ class APIOptions:
 
 
 class EmailVerifyPostResponse(ABC):
-    def __init__(self, status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'], user: Union[User, None]):
+    def __init__(
+            self, status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'], user: Union[User, None]):
         self.status = status
         self.is_ok = False
         self.is_email_verification_invalid_token_error = False
@@ -227,4 +233,3 @@ class APIInterface(ABC):
     @abstractmethod
     async def generate_email_verify_token_post(self, api_options: APIOptions) -> GenerateEmailVerifyTokenPostResponse:
         pass
-

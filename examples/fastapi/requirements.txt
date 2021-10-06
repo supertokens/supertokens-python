@@ -1,6 +1,2 @@
-fastapi
-fastapi
-fastapi
-fastapi
 fastapi==0.68.1
-fastapi==0.68.1
+supertokens-python==0.0.1

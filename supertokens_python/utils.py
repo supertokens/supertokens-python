@@ -15,16 +15,18 @@ under the License.
 """
 
 from __future__ import annotations
-from jsonschema.exceptions import ValidationError
-from jsonschema import validate
+
 from re import fullmatch
 from typing import Union, List, Callable, TYPE_CHECKING
+
+from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 
 if TYPE_CHECKING:
-    from .recipe_module import RecipeModule
+    pass
 from .constants import RID_KEY_HEADER
 from .exceptions import raise_general_exception, raise_bad_input_exception
 from .constants import ERROR_MESSAGE_KEY
@@ -35,7 +37,7 @@ from supertokens_python.framework.django.framework import DjangoFramework
 from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
 
-FRAMEWORKS={
+FRAMEWORKS = {
     'fastapi': FastapiFramework(),
     'flask': FlaskFramework(),
     'django': DjangoFramework(),
@@ -44,10 +46,13 @@ FRAMEWORKS={
 
 def validate_framework(config):
     if config['framework'] not in FRAMEWORKS.keys():
-        raise_bad_input_exception(recipe=None, msg=config['framework'] + ' framework is not supported.')
+        raise_bad_input_exception(
+            recipe=None,
+            msg=config['framework'] + ' framework is not supported.')
 
 
-def validate_the_structure_of_user_input(config, input_schema, config_root, recipe):
+def validate_the_structure_of_user_input(
+        config, input_schema, config_root, recipe):
     try:
         validate(config, input_schema)
     except ValidationError as e:
@@ -85,8 +90,8 @@ def get_header(request: BaseRequest, key: str) -> Union[str, None]:
     return request.get_header(key)
 
 
-
-def find_max_version(versions_1: List[str], versions_2: List[str]) -> Union[str, None]:
+def find_max_version(
+        versions_1: List[str], versions_2: List[str]) -> Union[str, None]:
     versions = list(set(versions_1) & set(versions_2))
     if len(versions) == 0:
         return None
@@ -124,14 +129,14 @@ def is_5xx_error(status_code: int) -> bool:
     return status_code // 100 == 5
 
 
-def send_non_200_response(message: str, status_code: int, response : BaseResponse) -> Union[
-    BaseResponse, None]:
+def send_non_200_response(message: str, status_code: int, response: BaseResponse) -> Union[BaseResponse, None]:
     if status_code < 300:
-        raise_general_exception('Calling sendNon200Response with status code < 300')
+        raise_general_exception(
+            'Calling sendNon200Response with status code < 300')
     response.set_status_code(status_code)
     response.set_content(content={
-            ERROR_MESSAGE_KEY: message
-        })
+        ERROR_MESSAGE_KEY: message
+    })
     return response
 
 
@@ -151,7 +156,8 @@ def get_filtered_list(func: Callable, given_list: List) -> List:
     return list(filter(func, given_list))
 
 
-def find_first_occurrence_in_list(condition: Callable, given_list: List) -> Union[any, None]:
+def find_first_occurrence_in_list(
+        condition: Callable, given_list: List) -> Union[any, None]:
     for item in given_list:
         if condition(item):
             return item

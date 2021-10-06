@@ -14,7 +14,6 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 import json
-from time import time
 
 from supertokens_python.framework.response import BaseResponse
 
@@ -29,13 +28,22 @@ class DjangoResponse(BaseResponse):
 
     def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
                    domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "Lax"):
-        self.response.set_cookie(key, value, max_age, expires, path, domain, secure, httponly, samesite)
+        self.response.set_cookie(
+            key,
+            value,
+            max_age,
+            expires,
+            path,
+            domain,
+            secure,
+            httponly,
+            samesite)
 
     def set_status_code(self, status_code):
         self.response.status_code = status_code
 
     def set_header(self, key, value):
-        #check if it is working with httpresponse
+        # check if it is working with httpresponse
         self.response[key] = value
 
     def get_header(self, key):
@@ -52,6 +60,3 @@ class DjangoResponse(BaseResponse):
             indent=None,
             separators=(",", ":"),
         ).encode("utf-8")
-
-
-

@@ -14,7 +14,6 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 import json
-from time import time
 
 from werkzeug.http import dump_cookie
 
@@ -86,4 +85,3 @@ class FlaskResponse(BaseResponse):
             indent=None,
             separators=(",", ":"),
         ).encode("utf-8")
-

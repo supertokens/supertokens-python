@@ -33,6 +33,7 @@ from .constants import (
 from supertokens_python.utils import get_filtered_list, validate_the_structure_of_user_input
 from httpx import AsyncClient
 
+
 async def default_validator(_):
     return None
 
@@ -48,7 +49,8 @@ async def default_handle_post_sign_in(_: User):
 async def default_password_validator(value) -> Union[str, None]:
     # length >= 8 && < 100
     # must have a number and a character
-    # as per https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
+    # as per
+    # https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
     if not isinstance(value, str):
         return 'Development bug: Please make sure the password field yields a string'
 
@@ -81,14 +83,17 @@ async def default_email_validator(value) -> Union[str, None]:
     return None
 
 
-def default_get_reset_password_url(app_info: AppInfo) -> Callable[[User], Awaitable[str]]:
+def default_get_reset_password_url(
+        app_info: AppInfo) -> Callable[[User], Awaitable[str]]:
     async def func(_: User):
-        return app_info.website_domain.get_as_string_dangerous() + app_info.website_base_path.get_as_string_dangerous() + RESET_PASSWORD
+        return app_info.website_domain.get_as_string_dangerous(
+        ) + app_info.website_base_path.get_as_string_dangerous() + RESET_PASSWORD
 
     return func
 
 
-def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[User, str], Awaitable]:
+def default_create_and_send_custom_email(
+        app_info: AppInfo) -> Callable[[User, str], Awaitable]:
     async def func(user: User, password_reset_url_with_token: str):
         if ('SUPERTOKENS_ENV' in environ) and (
                 environ['SUPERTOKENS_ENV'] == 'testing'):
@@ -119,25 +124,42 @@ def normalise_sign_up_form_fields(form_fields) -> List[NormalisedFormField]:
         for field in form_fields:
             if 'id' in field and field['id'] == FORM_FIELD_PASSWORD_ID:
                 validator = field['validate'] if 'validate' in field else default_password_validator
-                normalised_form_fields.append(NormalisedFormField(field['id'], validator, False))
+                normalised_form_fields.append(
+                    NormalisedFormField(
+                        field['id'], validator, False))
             elif 'id' in field and field['id'] == FORM_FIELD_EMAIL_ID:
                 validator = field['validate'] if 'validate' in field else default_email_validator
-                normalised_form_fields.append(NormalisedFormField(field['id'], validator, False))
+                normalised_form_fields.append(
+                    NormalisedFormField(
+                        field['id'], validator, False))
             else:
                 validator = field['validate'] if 'validate' in field else default_validator
                 optional = field['optional'] if 'optional' in field else False
-                normalised_form_fields.append(NormalisedFormField(field['id'], validator, optional))
-    if len(get_filtered_list(lambda x: x.id == FORM_FIELD_PASSWORD_ID, normalised_form_fields)) == 0:
-        normalised_form_fields.append(NormalisedFormField(FORM_FIELD_PASSWORD_ID, default_password_validator, False))
-    if len(get_filtered_list(lambda x: x.id == FORM_FIELD_EMAIL_ID, normalised_form_fields)) == 0:
-        normalised_form_fields.append(NormalisedFormField(FORM_FIELD_EMAIL_ID, default_email_validator, False))
+                normalised_form_fields.append(
+                    NormalisedFormField(
+                        field['id'], validator, optional))
+    if len(get_filtered_list(lambda x: x.id ==
+           FORM_FIELD_PASSWORD_ID, normalised_form_fields)) == 0:
+        normalised_form_fields.append(
+            NormalisedFormField(
+                FORM_FIELD_PASSWORD_ID,
+                default_password_validator,
+                False))
+    if len(get_filtered_list(lambda x: x.id ==
+           FORM_FIELD_EMAIL_ID, normalised_form_fields)) == 0:
+        normalised_form_fields.append(
+            NormalisedFormField(
+                FORM_FIELD_EMAIL_ID,
+                default_email_validator,
+                False))
     return normalised_form_fields
 
 
 def validate_and_normalise_sign_up_config(config=None) -> SignUpFeature:
     if config is None:
         config = {}
-    form_fields = normalise_sign_up_form_fields(config['form_fields'] if 'form_fields' in config else None)
+    form_fields = normalise_sign_up_form_fields(
+        config['form_fields'] if 'form_fields' in config else None)
     return SignUpFeature(form_fields)
 
 
@@ -146,13 +168,16 @@ class SignInFeature:
         self.form_fields = form_fields
 
 
-def normalise_sign_in_form_fields(form_fields: List[NormalisedFormField]) -> List[NormalisedFormField]:
+def normalise_sign_in_form_fields(
+        form_fields: List[NormalisedFormField]) -> List[NormalisedFormField]:
     return list(map(
-        lambda y: NormalisedFormField(y.id, y.validate if y.id == FORM_FIELD_EMAIL_ID else default_validator, False),
+        lambda y: NormalisedFormField(
+            y.id, y.validate if y.id == FORM_FIELD_EMAIL_ID else default_validator, False),
         get_filtered_list(lambda x: x.id == FORM_FIELD_PASSWORD_ID or x.id == FORM_FIELD_EMAIL_ID, form_fields)))
 
 
-def validate_and_normalise_sign_in_config(sign_up_config: SignUpFeature) -> SignInFeature:
+def validate_and_normalise_sign_in_config(
+        sign_up_config: SignUpFeature) -> SignInFeature:
     form_fields = normalise_sign_in_form_fields(sign_up_config.form_fields)
     return SignInFeature(form_fields)
 
@@ -189,7 +214,8 @@ def validate_and_normalise_reset_password_using_token_config(app_info: AppInfo, 
                                           create_and_send_custom_email)
 
 
-def email_verification_create_and_send_custom_email(recipe: EmailPasswordRecipe, create_and_send_custom_email):
+def email_verification_create_and_send_custom_email(
+        recipe: EmailPasswordRecipe, create_and_send_custom_email):
     async def func(user, link):
         user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id)
         if user_info is None:
@@ -199,7 +225,8 @@ def email_verification_create_and_send_custom_email(recipe: EmailPasswordRecipe,
     return func
 
 
-def email_verification_get_email_verification_url(recipe: EmailPasswordRecipe, get_email_verification_url):
+def email_verification_get_email_verification_url(
+        recipe: EmailPasswordRecipe, get_email_verification_url):
     async def func(user):
         user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
         if user_info is None:
@@ -209,7 +236,8 @@ def email_verification_get_email_verification_url(recipe: EmailPasswordRecipe, g
     return func
 
 
-def validate_and_normalise_email_verification_config(recipe: EmailPasswordRecipe, config=None, override=None):
+def validate_and_normalise_email_verification_config(
+        recipe: EmailPasswordRecipe, config=None, override=None):
     create_and_send_custom_email = None
     get_email_verification_url = None
     if config is None:
@@ -253,7 +281,8 @@ class EmailPasswordConfig:
 
 def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: AppInfo,
                                       config) -> EmailPasswordConfig:
-    validate_the_structure_of_user_input(config, INPUT_SCHEMA, 'emailpassword recipe', recipe)
+    validate_the_structure_of_user_input(
+        config, INPUT_SCHEMA, 'emailpassword recipe', recipe)
     sign_up_feature = validate_and_normalise_sign_up_config(
         config['sign_up_feature'] if 'sign_up_feature' in config else None)
     sign_in_feature = validate_and_normalise_sign_in_config(sign_up_feature)

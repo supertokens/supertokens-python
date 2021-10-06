@@ -19,7 +19,8 @@ from supertokens_python.framework.fastapi.fastapi_request import FastApiRequest
 from supertokens_python.recipe.session import SessionRecipe, Session
 
 
-def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
+def verify_session(
+        anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
     from fastapi.requests import Request
 
     async def func(request: Request) -> Union[Session, None]:
@@ -27,7 +28,7 @@ def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: 
         recipe = SessionRecipe.get_instance()
         session = await recipe.verify_session(request, anti_csrf_check, session_required)
 
-        print(request.request.url.path+' all good')
+        print(request.request.url.path + ' all good')
         request.set_session(session)
         return request.get_session()
 

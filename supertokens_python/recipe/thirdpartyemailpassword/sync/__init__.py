@@ -52,14 +52,18 @@ def get_user_by_id(user_id: str):
     return sync(get_user_by_id(user_id))
 
 
-def get_user_by_third_party_info(third_party_id: str, third_party_user_id: str):
+def get_user_by_third_party_info(
+        third_party_id: str, third_party_user_id: str):
     from supertokens_python.recipe.thirdpartyemailpassword import get_user_by_third_party_info
-    return sync(get_user_by_third_party_info(third_party_id, third_party_user_id))
+    return sync(get_user_by_third_party_info(
+        third_party_id, third_party_user_id))
 
 
-def sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool):
+def sign_in_up(third_party_id: str, third_party_user_id: str,
+               email: str, email_verified: bool):
     from supertokens_python.recipe.thirdpartyemailpassword import sign_in_up
-    return sync(sign_in_up(third_party_id, third_party_user_id, email, email_verified))
+    return sync(sign_in_up(third_party_id,
+                third_party_user_id, email, email_verified))
 
 
 def create_reset_password_token(user_id: str):
