@@ -25,7 +25,7 @@ from pytest import mark
 from supertokens_python import init
 from supertokens_python.recipe import session, emailpassword
 from supertokens_python.recipe.emailverification.interfaces import APIInterface, APIOptions
-from supertokens_python.exceptions import GeneralError
+from supertokens_python.exceptions import GeneralError, BadInputError
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.session import create_new_session, refresh_session, get_session
@@ -916,7 +916,7 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis_throws_erro
             if response.status == "OK":
                 user_info_from_callback = response.user
 
-            raise GeneralError("verify exception")
+            raise BadInputError("verify exception")
 
         param.email_verify_post = email_verify_post
         return param
