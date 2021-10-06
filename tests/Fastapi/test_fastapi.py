@@ -103,7 +103,7 @@ async def test_login_refresh(driver_config_client: TestClient):
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -174,7 +174,7 @@ async def test_login_logout(driver_config_client: TestClient):
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -203,9 +203,9 @@ async def test_login_logout(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    # assert cookies_1['sAccessToken']['secure'] is None
-    # assert cookies_1['sRefreshToken']['secure'] is None
-    # assert cookies_1['sIdRefreshToken']['secure'] is None
+    assert cookies_1['sAccessToken']['secure'] is None
+    assert cookies_1['sRefreshToken']['secure'] is None
+    assert cookies_1['sIdRefreshToken']['secure'] is None
 
     response_2 = driver_config_client.post(
         url='/logout',
@@ -232,9 +232,9 @@ async def test_login_logout(driver_config_client: TestClient):
     assert cookies_2['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_2['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_2['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    # assert cookies_2['sAccessToken']['secure'] is None
-    # assert cookies_2['sRefreshToken']['secure'] is None
-    # assert cookies_2['sIdRefreshToken']['secure'] is None
+    assert cookies_2['sAccessToken']['secure'] is None
+    assert cookies_2['sRefreshToken']['secure'] is None
+    assert cookies_2['sIdRefreshToken']['secure'] is None
 
 
 @mark.asyncio
@@ -246,7 +246,7 @@ async def test_login_info(driver_config_client: TestClient):
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -275,9 +275,9 @@ async def test_login_info(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    # assert cookies_1['sAccessToken']['secure'] is None
-    # assert cookies_1['sRefreshToken']['secure'] is None
-    # assert cookies_1['sIdRefreshToken']['secure'] is None
+    assert cookies_1['sAccessToken']['secure'] is None
+    assert cookies_1['sRefreshToken']['secure'] is None
+    assert cookies_1['sIdRefreshToken']['secure'] is None
 
     response_2 = driver_config_client.get(
         url='/info',
@@ -302,7 +302,7 @@ async def test_login_handle(driver_config_client: TestClient):
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -331,9 +331,9 @@ async def test_login_handle(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    # assert cookies_1['sAccessToken']['secure'] is None
-    # assert cookies_1['sRefreshToken']['secure'] is None
-    # assert cookies_1['sIdRefreshToken']['secure'] is None
+    assert cookies_1['sAccessToken']['secure'] is None
+    assert cookies_1['sRefreshToken']['secure'] is None
+    assert cookies_1['sIdRefreshToken']['secure'] is None
 
     response_2 = driver_config_client.get(
         url='/handle',
@@ -358,7 +358,7 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -387,9 +387,9 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    # assert cookies_1['sAccessToken']['secure'] is None
-    # assert cookies_1['sRefreshToken']['secure'] is None
-    # assert cookies_1['sIdRefreshToken']['secure'] is None
+    assert cookies_1['sAccessToken']['secure'] is None
+    assert cookies_1['sRefreshToken']['secure'] is None
+    assert cookies_1['sIdRefreshToken']['secure'] is None
 
     response_3 = driver_config_client.post(
         url='/refresh',

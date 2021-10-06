@@ -114,7 +114,7 @@ async def test_that_disabling_api_the_default_signin_API_does_not_work(driver_co
 
     response_1 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
@@ -125,7 +125,7 @@ async def test_that_disabling_api_the_default_signin_API_does_not_work(driver_co
                         "value": "random@gmail.com"
                 }
                 ]
-        }))
+        })
 
     assert response_1.status_code == 404
 
@@ -161,7 +161,7 @@ async def test_singinAPI_works_when_input_is_fine(driver_config_client: TestClie
 
     response_2 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
@@ -172,7 +172,7 @@ async def test_singinAPI_works_when_input_is_fine(driver_config_client: TestClie
                         "value": "random@gmail.com"
                 }
                 ]
-        }))
+        })
 
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
@@ -210,7 +210,7 @@ async def test_singinAPI_throws_an_error_when_email_does_not_match(driver_config
 
     response_2 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
@@ -221,7 +221,7 @@ async def test_singinAPI_throws_an_error_when_email_does_not_match(driver_config
                         "value": "ra@gmail.com"
                 }
                 ]
-        }))
+        })
 
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
@@ -258,7 +258,7 @@ async def test_singin_api_throws_an_error_when_email_does_not_match(driver_confi
 
     response_2 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
@@ -269,7 +269,7 @@ async def test_singin_api_throws_an_error_when_email_does_not_match(driver_confi
                         "value": "ra@gmail.com"
                 }
                 ]
-        }))
+        })
 
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
@@ -306,7 +306,7 @@ async def test_singinAPI_throws_an_error_if_password_is_incorrect(driver_config_
 
     response_2 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
@@ -317,7 +317,7 @@ async def test_singinAPI_throws_an_error_if_password_is_incorrect(driver_config_
                         "value": "random@gmail.com"
                 }
                 ]
-        }))
+        })
 
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
@@ -354,9 +354,9 @@ async def test_bad_input_not_a_JSON_to_signin_api(driver_config_client: TestClie
 
     response_2 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'x': 'y'
-        }))
+        })
 
     assert response_2.status_code == 400
     dict_response = json.loads(response_2.text)
@@ -393,9 +393,9 @@ async def test_bad_input_not_a_JSON_to_signin_API(driver_config_client: TestClie
 
     response_2 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'x': 'y'
-        }))
+        })
 
     assert response_2.status_code == 400
     dict_response = json.loads(response_2.text)
@@ -434,7 +434,7 @@ async def test_that_a_successful_signin_yields_a_session(driver_config_client: T
 
     response_2 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
@@ -445,7 +445,7 @@ async def test_that_a_successful_signin_yields_a_session(driver_config_client: T
                         "value": "random@gmail.com"
                 }
                 ]
-        }))
+        })
 
     assert response_2.status_code == 200
 
@@ -488,7 +488,7 @@ async def test_email_field_validation_error(
 
     response_2 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
@@ -499,7 +499,7 @@ async def test_email_field_validation_error(
                         "value": "randomgmail.com"
                 }
                 ]
-        }))
+        })
 
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
@@ -537,14 +537,14 @@ async def test_formFields_has_no_email_field(
 
     response_2 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
                     "value": "validpassword123"
                 }
                 ]
-        }))
+        })
 
     assert response_2.status_code == 400
 
@@ -580,14 +580,14 @@ async def test_formFields_has_no_password_field(
 
     response_2 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "email",
                     "value": "randomgmail.com"
                 }
                 ]
-        }))
+        })
 
     assert response_2.status_code == 400
 

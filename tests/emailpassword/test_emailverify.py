@@ -410,10 +410,10 @@ async def test_the_email_verify_API_with_valid_input(driver_config_client: TestC
             'sRefreshToken': cookies['sRefreshToken']['value'],
             'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
         },
-        json=json.dumps({
+        json={
             "method": "token",
             "token": token
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)
@@ -487,10 +487,10 @@ async def test_the_email_verify_API_with_invalid_token_and_check_error(driver_co
             'sRefreshToken': cookies['sRefreshToken']['value'],
             'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
         },
-        json=json.dumps({
+        json={
             "method": "token",
             "token": "bad token"
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)
@@ -564,10 +564,10 @@ async def test_the_email_verify_API_with_token_of_not_type_string(driver_config_
             'sRefreshToken': cookies['sRefreshToken']['value'],
             'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
         },
-        json=json.dumps({
+        json={
             "method": "token",
             "token": 200
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)
@@ -666,10 +666,10 @@ async def test_that_the_handlePostEmailVerification_callback_is_called_on_succes
             'sRefreshToken': cookies['sRefreshToken']['value'],
             'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
         },
-        json=json.dumps({
+        json={
             "method": "token",
             "token": token
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)
@@ -741,10 +741,10 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(driver_con
 
     response_3 = driver_config_client.post(
         url="/auth/user/email/verify",
-        json=json.dumps({
+        json={
             "method": "token",
             "token": token
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)
@@ -879,10 +879,10 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis(driver_conf
 
     response_3 = driver_config_client.post(
         url="/auth/user/email/verify",
-        json=json.dumps({
+        json={
             "method": "token",
             "token": token
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)
@@ -977,10 +977,10 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis_throws_erro
 
     response_3 = driver_config_client.post(
         url="/auth/user/email/verify",
-        json=json.dumps({
+        json={
             "method": "token",
             "token": token
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)

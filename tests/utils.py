@@ -188,7 +188,7 @@ def extract_all_cookies(response: Response):
     if response.headers.get('set-cookie') is None:
         return {}
     cookie_headers = SimpleCookie(
-        response.headers.get('set-cookie').replace("Secure", "Secure;").replace(",", "").replace(" ", ""))
+        response.headers.get('set-cookie'))
     cookies = dict()
     for key, morsel in cookie_headers.items():
         cookies[key] = {
