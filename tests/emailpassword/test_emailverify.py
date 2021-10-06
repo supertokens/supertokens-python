@@ -24,7 +24,7 @@ from pytest import mark
 
 from supertokens_python import init
 from supertokens_python.recipe import session, emailpassword
-from supertokens_python.recipe.emailverification import APIInterface, APIOptions
+from supertokens_python.recipe.emailverification.interfaces import APIInterface, APIOptions
 from supertokens_python.exceptions import GeneralError
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.querier import Querier
@@ -1017,7 +1017,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version == "2.7"
+    assert version == "2.9"
 
     response_1 = sign_up_request(
         driver_config_client,
@@ -1059,7 +1059,7 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version == "2.7"
+    assert version == "2.9"
 
     response_1 = sign_up_request(
         driver_config_client,

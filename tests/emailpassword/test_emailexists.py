@@ -23,7 +23,7 @@ from pytest import mark
 
 from supertokens_python import init
 from supertokens_python.recipe import session, emailpassword
-from supertokens_python.recipe.emailpassword import APIInterface
+from supertokens_python.recipe.emailpassword.interfaces import APIInterface
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.recipe.session import create_new_session, refresh_session, get_session
 from tests.utils import (
