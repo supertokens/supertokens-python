@@ -18,10 +18,14 @@ RUN add-apt-repository ppa:deadsnakes/ppa -y
 
 RUN apt-get update
 
-RUN apt-get install python3.7 -y
+RUN apt-get install python3.8 -y
 
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
 
-RUN echo 'alias pip=pip3' >> ~/.bashrc
+RUN echo 'alias pip=pip3\nalias python=python3.8' >> ~/.bashrc
 
-RUN pip3 install --upgrade pip
+RUN wget https://bootstrap.pypa.io/get-pip.py
+
+RUN apt install python3.8-distutils -y
+
+RUN python3.8 get-pip.py
