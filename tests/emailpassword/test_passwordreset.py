@@ -349,7 +349,7 @@ async def test_valid_token_input_and_passoword_has_changed(driver_config_client:
 
     response_4 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'formFields':
                 [
                     {
@@ -361,7 +361,7 @@ async def test_valid_token_input_and_passoword_has_changed(driver_config_client:
                         "value": "random@gmail.com",
                     },
                 ]
-        }))
+        })
 
     assert response_4.status_code == 200
 
