@@ -13,7 +13,6 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-import json
 from datetime import datetime, timezone
 from http.cookies import SimpleCookie
 from os import environ, scandir, kill, remove
@@ -186,8 +185,10 @@ def get_cookie_from_response(response, cookie_name):
 
 
 def extract_all_cookies(response: Response):
+    if response.headers.get('set-cookie') is None:
+        return {}
     cookie_headers = SimpleCookie(
-        response.headers.get('set-cookie').replace(",", ";"))
+        response.headers.get('set-cookie'))
     cookies = dict()
     for key, morsel in cookie_headers.items():
         cookies[key] = {
@@ -221,7 +222,7 @@ def sign_up_request(app, email, password):
         headers={
             "Content-Type": "application/json"
         },
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
@@ -231,7 +232,7 @@ def sign_up_request(app, email, password):
                         "id": "email",
                         "value": email
                 }]
-        }))
+        })
 
 
 def email_verify_token_request(

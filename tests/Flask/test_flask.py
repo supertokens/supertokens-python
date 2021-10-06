@@ -63,7 +63,7 @@ def driver_config_app():
         'framework': 'flask',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -88,9 +88,6 @@ def driver_config_app():
 
     @app.route('/refresh', methods=['POST'])
     def custom_refresh():
-        print(request.is_json)
-        print(request.json)
-        print('eroare')
         response = make_response(jsonify({}))
         refresh_session(request)
         return response
@@ -163,12 +160,16 @@ def test_cookie_login_and_refresh(driver_config_app):
     assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
-    request_2 = driver_config_app.test_client()
-    request_2.set_cookie(
+    test_client = driver_config_app.test_client()
+    test_client.set_cookie(
         'localhost',
         'sRefreshToken',
         cookies_1['sRefreshToken']['value'])
-    response_2 = request_2.post('/refresh', headers={
+    test_client.set_cookie(
+        'localhost',
+        'sIdRefreshToken',
+        cookies_1['sIdRefreshToken']['value'])
+    response_2 = test_client.post('/refresh', headers={
         'anti-csrf': response_1.headers.get('anti-csrf')})
     cookies_2 = extract_all_cookies(response_2)
     assert cookies_1['sAccessToken']['value'] != cookies_2['sAccessToken']['value']
@@ -243,8 +244,7 @@ def test_login_refresh_no_csrf(driver_config_app):
 
     # post with csrf token -> no error
     result = test_client.post('/refresh', headers={
-        'anti-csrf': response_1.headers.get('anti-csrf')},
-        json={'lala': 'lala'})
+        'anti-csrf': response_1.headers.get('anti-csrf')})
     assert result.status_code == 200
 
     # post with csrf token -> should be error with status code 401
