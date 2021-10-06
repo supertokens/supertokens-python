@@ -94,7 +94,7 @@ async def test_email_validation_checks_in_generate_token_API(driver_config_clien
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -138,7 +138,7 @@ async def test_that_generated_password_link_is_correct(driver_config_client: Tes
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -187,7 +187,7 @@ async def test_password_validation(driver_config_client: TestClient):
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -238,7 +238,7 @@ async def test_token_missing_from_input(driver_config_client: TestClient):
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
         },
         'recipe_list': [
@@ -278,7 +278,7 @@ async def test_valid_token_input_and_passoword_has_changed(driver_config_client:
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
