@@ -24,7 +24,7 @@ from pytest import mark
 
 from supertokens_python import init
 from supertokens_python.recipe import session, emailpassword
-from supertokens_python.recipe.emailverification import APIInterface, APIOptions
+from supertokens_python.recipe.emailverification.interfaces import APIInterface, APIOptions
 from supertokens_python.exceptions import GeneralError
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.querier import Querier
@@ -112,7 +112,10 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(driver
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
 
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -122,7 +125,8 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(driver
     cookies = extract_all_cookies(response_1)
 
     response = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                          cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),
+                                          cookies['sIdRefreshToken']['value'], response_1.headers.get(
+                                              'anti-csrf'),
                                           user_id)
     dict_response = json.loads(response.text)
     assert dict_response["status"] == "OK"
@@ -151,7 +155,10 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
 
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -164,7 +171,8 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
     await emailpassword.verify_email_using_token(verify_token.token)
 
     response = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                          cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),
+                                          cookies['sIdRefreshToken']['value'], response_1.headers.get(
+                                              'anti-csrf'),
                                           user_id)
     dict_response = json.loads(response.text)
     assert dict_response["status"] == "EMAIL_ALREADY_VERIFIED_ERROR"
@@ -227,7 +235,10 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
@@ -238,7 +249,8 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
     await asyncio.sleep(5)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
+                                                'anti-csrf'),
                                             user_id)
     dict_response = json.loads(response_2.text)
 
@@ -260,7 +272,8 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
 
     cookies1 = extract_all_cookies(response_3)
     response_4 = email_verify_token_request(driver_config_client, cookies1['sAccessToken']['value'],
-                                            cookies1['sIdRefreshToken']['value'], response_3.headers.get('anti-csrf'),
+                                            cookies1['sIdRefreshToken']['value'], response_3.headers.get(
+                                                'anti-csrf'),
                                             user_id)
 
     dict_response = json.loads(response_4.text)
@@ -304,7 +317,10 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -314,7 +330,8 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
+                                                'anti-csrf'),
                                             user_id)
     await asyncio.sleep(2)
 
@@ -332,7 +349,8 @@ async def test_the_email_verify_API_with_valid_input(driver_config_client: TestC
 
     async def custom_f(user, email_verification_url_token):
         nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split(
+            "?token=")[1].split("&ride")[0]
 
     init({
         'supertokens': {
@@ -359,7 +377,10 @@ async def test_the_email_verify_API_with_valid_input(driver_config_client: TestC
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -369,7 +390,8 @@ async def test_the_email_verify_API_with_valid_input(driver_config_client: TestC
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
+                                                'anti-csrf'),
                                             user_id)
     await asyncio.sleep(2)
 
@@ -404,7 +426,8 @@ async def test_the_email_verify_API_with_invalid_token_and_check_error(driver_co
 
     async def custom_f(user, email_verification_url_token):
         nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split(
+            "?token=")[1].split("&ride")[0]
 
     init({
         'supertokens': {
@@ -431,7 +454,10 @@ async def test_the_email_verify_API_with_invalid_token_and_check_error(driver_co
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -441,7 +467,8 @@ async def test_the_email_verify_API_with_invalid_token_and_check_error(driver_co
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
+                                                'anti-csrf'),
                                             user_id)
     await asyncio.sleep(2)
 
@@ -476,7 +503,8 @@ async def test_the_email_verify_API_with_token_of_not_type_string(driver_config_
 
     async def custom_f(user, email_verification_url_token):
         nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split(
+            "?token=")[1].split("&ride")[0]
 
     init({
         'supertokens': {
@@ -503,7 +531,10 @@ async def test_the_email_verify_API_with_token_of_not_type_string(driver_config_
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -513,7 +544,8 @@ async def test_the_email_verify_API_with_token_of_not_type_string(driver_config_
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
+                                                'anti-csrf'),
                                             user_id)
     await asyncio.sleep(2)
 
@@ -551,7 +583,8 @@ async def test_that_the_handlePostEmailVerification_callback_is_called_on_succes
 
     async def custom_f(user, email_verification_url_token):
         nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split(
+            "?token=")[1].split("&ride")[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
@@ -600,7 +633,10 @@ async def test_that_the_handlePostEmailVerification_callback_is_called_on_succes
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -610,7 +646,8 @@ async def test_that_the_handlePostEmailVerification_callback_is_called_on_succes
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
+                                                'anti-csrf'),
                                             user_id)
     await asyncio.sleep(2)
 
@@ -651,7 +688,8 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(driver_con
 
     async def custom_f(user, email_verification_url_token):
         nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split(
+            "?token=")[1].split("&ride")[0]
 
     init({
         'supertokens': {
@@ -678,7 +716,10 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(driver_con
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -688,7 +729,8 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(driver_con
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
+                                                'anti-csrf'),
                                             user_id)
     await asyncio.sleep(2)
 
@@ -762,7 +804,8 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis(driver_conf
 
     async def custom_f(user, email_verification_url_token):
         nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split(
+            "?token=")[1].split("&ride")[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
@@ -811,7 +854,10 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis(driver_conf
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -821,7 +867,8 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis(driver_conf
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
+                                                'anti-csrf'),
                                             user_id)
     await asyncio.sleep(2)
 
@@ -855,7 +902,8 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis_throws_erro
 
     async def custom_f(user, email_verification_url_token):
         nonlocal token
-        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split(
+            "?token=")[1].split("&ride")[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
@@ -904,7 +952,10 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis_throws_erro
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -914,7 +965,8 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis_throws_erro
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
+                                                'anti-csrf'),
                                             user_id)
     await asyncio.sleep(2)
 
@@ -965,9 +1017,12 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version == "2.7"
+    assert version == "2.9"
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
@@ -1004,9 +1059,12 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version == "2.7"
+    assert version == "2.9"
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
@@ -1020,4 +1078,4 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     await emailpassword.unverify_email(user_id)
 
     is_verified = await emailpassword.is_email_verified(user_id)
-    assert is_verified == False
+    assert is_verified is False

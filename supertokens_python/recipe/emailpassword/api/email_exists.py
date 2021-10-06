@@ -32,4 +32,3 @@ async def handle_email_exists_api(api_implementation: APIInterface, api_options:
     api_options.response.set_content(response.to_json())
 
     return api_options.response
-

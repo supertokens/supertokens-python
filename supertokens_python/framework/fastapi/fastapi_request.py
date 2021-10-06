@@ -13,8 +13,8 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-import json
 from typing import Union
+
 from supertokens_python.framework.request import BaseRequest
 
 
@@ -25,7 +25,7 @@ class FastApiRequest(BaseRequest):
         self.request = request
         self.original = request
 
-    def get_query_param(self, key, default = None):
+    def get_query_param(self, key, default=None):
         return self.request.query_params.get(key, default)
 
     async def json(self):

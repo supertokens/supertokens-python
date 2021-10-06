@@ -6,5 +6,3 @@ urlpatterns = [
     path('create', views.create, name='create'),
     path('user', views.user, name='user')
 ]
-
-

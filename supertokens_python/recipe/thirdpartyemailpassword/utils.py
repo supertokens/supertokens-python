@@ -54,7 +54,8 @@ def email_verification_create_and_send_custom_email(recipe: ThirdPartyEmailPassw
     return func
 
 
-def email_verification_get_email_verification_url(recipe: ThirdPartyEmailPasswordRecipe, get_email_verification_url):
+def email_verification_get_email_verification_url(
+        recipe: ThirdPartyEmailPasswordRecipe, get_email_verification_url):
     async def func(user):
         user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
         if user_info is None:
@@ -64,7 +65,8 @@ def email_verification_get_email_verification_url(recipe: ThirdPartyEmailPasswor
     return func
 
 
-def validate_and_normalise_email_verification_config(recipe: ThirdPartyEmailPasswordRecipe, config=None, override=None):
+def validate_and_normalise_email_verification_config(
+        recipe: ThirdPartyEmailPasswordRecipe, config=None, override=None):
     create_and_send_custom_email = None
     get_email_verification_url = None
     if config is None:
@@ -107,8 +109,10 @@ class ThirdPartyEmailPasswordConfig:
         self.override = override
 
 
-def validate_and_normalise_user_input(recipe: ThirdPartyEmailPasswordRecipe, config) -> ThirdPartyEmailPasswordConfig:
-    validate_the_structure_of_user_input(config, INPUT_SCHEMA, 'thirdpartyemailpassword recipe', recipe)
+def validate_and_normalise_user_input(
+        recipe: ThirdPartyEmailPasswordRecipe, config) -> ThirdPartyEmailPasswordConfig:
+    validate_the_structure_of_user_input(
+        config, INPUT_SCHEMA, 'thirdpartyemailpassword recipe', recipe)
     sign_up_feature = validate_and_normalise_sign_up_config(
         config['sign_up_feature'] if 'sign_up_feature' in config else None)
     email_verification_feature = validate_and_normalise_email_verification_config(
@@ -136,10 +140,12 @@ def combine_pagination_tokens(third_party_pagination_token: Union[str, None],
         third_party_pagination_token = 'null'
     if email_password_pagination_token is None:
         email_password_pagination_token = 'null'
-    return b64encode(third_party_pagination_token + ';' + email_password_pagination_token)
+    return b64encode(third_party_pagination_token + ';' +
+                     email_password_pagination_token)
 
 
-def extract_pagination_token(next_pagination_token: str) -> NextPaginationToken:
+def extract_pagination_token(
+        next_pagination_token: str) -> NextPaginationToken:
     extracted_tokens = b64decode(next_pagination_token).split(';')
     if len(extracted_tokens) != 2:
         raise Exception('Pagination token is invalid')
@@ -149,7 +155,10 @@ def extract_pagination_token(next_pagination_token: str) -> NextPaginationToken:
 
 def combine_pagination_results(third_party_result: UsersResponse, email_password_result: UsersResponse, limit: int,
                                oldest_first: bool) -> UsersResponse:
-    max_loop = min(limit, len(third_party_result.users), len(email_password_result.users))
+    max_loop = min(
+        limit, len(
+            third_party_result.users), len(
+            email_password_result.users))
     third_party_result_loop_index = 0
     email_password_result_loop_index = 0
     users = []
@@ -158,24 +167,27 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
                 third_party_result_loop_index != len(third_party_result.users)
                 and
                 (
-                        email_password_result_loop_index == len(email_password_result.users)
-                        or
-                        (
-                                oldest_first and third_party_result.users[third_party_result_loop_index].time_joined <
-                                email_password_result.users[email_password_result_loop_index].time_joined
-                        )
-                        or
-                        (
-                                not oldest_first and third_party_result.users[
+                    email_password_result_loop_index == len(
+                        email_password_result.users)
+                    or
+                    (
+                        oldest_first and third_party_result.users[third_party_result_loop_index].time_joined <
+                        email_password_result.users[email_password_result_loop_index].time_joined
+                    )
+                    or
+                    (
+                        not oldest_first and third_party_result.users[
                             third_party_result_loop_index].time_joined >
-                                email_password_result.users[email_password_result_loop_index].time_joined
-                        )
+                        email_password_result.users[email_password_result_loop_index].time_joined
+                    )
                 )
         ):
-            users.append(third_party_result.users[third_party_result_loop_index])
+            users.append(
+                third_party_result.users[third_party_result_loop_index])
             third_party_result_loop_index += 1
         else:
-            users.append(email_password_result.users[third_party_result_loop_index])
+            users.append(
+                email_password_result.users[third_party_result_loop_index])
             email_password_result_loop_index += 1
 
     if third_party_result_loop_index == len(third_party_result.users):
@@ -192,5 +204,6 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
             email_password_result.users[email_password_result_loop_index].user_id,
             email_password_result.users[email_password_result_loop_index].time_joined
         )
-    next_pagination_token = combine_pagination_tokens(third_party_pagination_token, email_password_pagination_token)
+    next_pagination_token = combine_pagination_tokens(
+        third_party_pagination_token, email_password_pagination_token)
     return UsersResponse(users, next_pagination_token)

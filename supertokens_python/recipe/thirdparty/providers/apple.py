@@ -57,14 +57,19 @@ class Apple(Provider):
         headers = {
             'kid': self.client_key_id
         }
-        return encode(payload, sub(r'\\n', '\n', self.client_private_key), algorithm='ES256', headers=headers)
+        return encode(payload, sub(
+            r'\\n', '\n', self.client_private_key), algorithm='ES256', headers=headers)
 
     async def get_profile_info(self, auth_code_response: any) -> UserInfo:
-        payload = decode(jwt=auth_code_response['id_token'], options={'verify_signature': False})
+        payload = decode(
+            jwt=auth_code_response['id_token'], options={
+                'verify_signature': False})
         if payload is None:
-            raise Exception('no user info found from user\'s id token received from apple')
+            raise Exception(
+                'no user info found from user\'s id token received from apple')
         if 'email' not in payload or payload['email'] is None:
-            raise Exception('no user info found from user\'s id token received from apple')
+            raise Exception(
+                'no user info found from user\'s id token received from apple')
 
         user_id = payload['email']
         is_email_verified = payload['email_verified'] if 'email_verified' in payload else False
@@ -78,9 +83,11 @@ class Apple(Provider):
             'client_id': self.client_id,
             **self.authorisation_redirect_params
         }
-        return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
+        return AuthorisationRedirectAPI(
+            self.authorisation_redirect_url, params)
 
-    def get_access_token_api_info(self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
+    def get_access_token_api_info(
+            self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
         params = {
             'client_id': self.client_id,
             'client_secret': self.__get_client_secret(),

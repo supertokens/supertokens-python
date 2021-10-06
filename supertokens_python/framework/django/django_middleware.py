@@ -21,6 +21,7 @@ from django.utils.decorators import sync_and_async_middleware
 
 from supertokens_python.async_to_sync_wrapper import sync
 
+
 @sync_and_async_middleware
 def middleware(get_response):
     from supertokens_python import Supertokens
@@ -41,7 +42,8 @@ def middleware(get_response):
                 if result is None:
                     result = await get_response(request)
                     result = DjangoResponse(result)
-                if hasattr(request, "state") and isinstance(request.state, Session):
+                if hasattr(request, "state") and isinstance(
+                        request.state, Session):
                     manage_cookies_post_response(request.state, result)
 
                 return result.response
@@ -56,7 +58,6 @@ def middleware(get_response):
             st = Supertokens.get_instance()
             custom_request = DjangoRequest(request)
             from django.http import HttpResponse
-            from django.http import HttpResponse
             response = DjangoResponse(HttpResponse())
             try:
                 result = async_to_sync(st.middleware)(custom_request, response)
@@ -65,14 +66,17 @@ def middleware(get_response):
                     result = get_response(request)
                     result = DjangoResponse(result)
 
-                if hasattr(request, "state") and isinstance(request.state, Session):
+                if hasattr(request, "state") and isinstance(
+                        request.state, Session):
                     manage_cookies_post_response(request.state, result)
 
                 return result.response
 
             except SuperTokensError as e:
                 response = DjangoResponse(HttpResponse())
-                result = sync(st.handle_supertokens_error)(DjangoRequest(request), e, response)
+                result = sync(
+                    st.handle_supertokens_error)(
+                    DjangoRequest(request), e, response)
 
             return result.response
 

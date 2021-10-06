@@ -27,9 +27,11 @@ async def handle_email_verify_api(api_implementation: APIInterface, api_options:
             return None
         body = await api_options.request.json()
         if 'token' not in body:
-            raise_bad_input_exception('Please provide the email verification token')
+            raise_bad_input_exception(
+                'Please provide the email verification token')
         if not isinstance(body['token'], str):
-            raise_bad_input_exception('The email verification token must be a string')
+            raise_bad_input_exception(
+                'The email verification token must be a string')
 
         token = body['token']
         result = await api_implementation.email_verify_post(token, api_options)

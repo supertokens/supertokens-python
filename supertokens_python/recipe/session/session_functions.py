@@ -67,13 +67,15 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
                                                            and do_anti_csrf_check)
 
             if handshake_info.anti_csrf == 'VIA_TOKEN' and do_anti_csrf_check:
-                if anti_csrf_token is None or anti_csrf_token != access_token_info['antiCsrfToken']:
+                if anti_csrf_token is None or anti_csrf_token != access_token_info[
+                        'antiCsrfToken']:
                     if anti_csrf_token is None:
                         raise_try_refresh_token_exception('Provided antiCsrfToken is undefined. If you do not '
                                                           'want anti-csrf check for this API, please set '
                                                           'doAntiCsrfCheck to false for this API')
                     else:
-                        raise_try_refresh_token_exception('anti-csrf check failed')
+                        raise_try_refresh_token_exception(
+                            'anti-csrf check failed')
             elif handshake_info.anti_csrf == 'VIA_CUSTOM_HEADER' and do_anti_csrf_check:
                 if not contains_custom_header:
                     fallback_to_core = False
@@ -93,7 +95,8 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
         if not fallback_to_core:
             raise e
 
-    ProcessState.get_instance().add_state(AllowedProcessStates.CALLING_SERVICE_IN_VERIFY)
+    ProcessState.get_instance().add_state(
+        AllowedProcessStates.CALLING_SERVICE_IN_VERIFY)
     data = {
         'accessToken': access_token,
         'doAntiCsrfCheck': do_anti_csrf_check,
@@ -167,7 +170,7 @@ async def revoke_session(recipe_implementation: RecipeImplementation, session_ha
 
 
 async def revoke_multiple_sessions(recipe_implementation: RecipeImplementation, session_handles: List[str]) -> List[
-    str]:
+        str]:
     response = await recipe_implementation.querier.send_post_request(NormalisedURLPath('/recipe/session/remove'), {
         'sessionHandles': session_handles
     })

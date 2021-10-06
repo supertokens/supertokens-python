@@ -14,4 +14,3 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 from supertokens_python.framework.fastapi.fastapi_middleware import Middleware
-

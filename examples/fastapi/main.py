@@ -32,15 +32,16 @@ app.add_middleware(Middleware)
 
 @app.get("/create")
 async def create(request: Request):
-    user_id ='user_id'
+    user_id = 'user_id'
     session = await create_new_session(request, user_id, {}, {})
     return {"message": session.get_access_token()}
 
+
 @app.get("/user")
 async def user(session: Session = Depends(verify_session())):
-    return {'user_id' : session.get_user_id()}
+    return {'user_id': session.get_user_id()}
+
 
 @app.post("/refresh")
 async def refresh(request: Request):
     await refresh_session(request)
-

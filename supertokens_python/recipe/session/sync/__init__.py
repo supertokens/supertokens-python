@@ -23,7 +23,8 @@ from supertokens_python.recipe.session import Session
 def create_new_session(request, user_id: str, jwt_payload: Union[dict, None] = None,
                        session_data: Union[dict, None] = None):
     from supertokens_python.recipe.session import create_new_session
-    return sync(create_new_session(request, user_id, jwt_payload, session_data))
+    return sync(create_new_session(
+        request, user_id, jwt_payload, session_data))
 
 
 def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -> Union[Session,

@@ -99,7 +99,8 @@ class SignOutOkayResponse(SignOutResponse):
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: Union[BaseResponse, None], recipe_id: str, config: SessionConfig, recipe_implementation: RecipeInterface):
+    def __init__(self, request: BaseRequest, response: Union[BaseResponse, None],
+                 recipe_id: str, config: SessionConfig, recipe_implementation: RecipeInterface):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id

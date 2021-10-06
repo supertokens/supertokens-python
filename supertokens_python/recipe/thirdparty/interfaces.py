@@ -132,7 +132,8 @@ class EmailExistsResponse(ABC):
 
 
 class PasswordResetResponse(ABC):
-    def __init__(self, status: Literal['OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR']):
+    def __init__(self, status: Literal['OK',
+                 'RESET_PASSWORD_INVALID_TOKEN_ERROR']):
         self.status = status
 
     @abstractmethod
@@ -141,7 +142,8 @@ class PasswordResetResponse(ABC):
 
 
 class SignInUpPostOkResponse(SignInUpPostResponse):
-    def __init__(self, user: User, created_new_user: bool, auth_code_response: any):
+    def __init__(self, user: User, created_new_user: bool,
+                 auth_code_response: any):
         super().__init__('OK', user, created_new_user, auth_code_response)
         self.is_ok = True
 
@@ -200,5 +202,3 @@ class APIInterface:
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
                               api_options: APIOptions):
         pass
-
-

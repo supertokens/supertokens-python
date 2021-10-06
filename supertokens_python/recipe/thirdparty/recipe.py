@@ -61,7 +61,8 @@ class ThirdPartyRecipe(RecipeModule):
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                      self.config.email_verification_feature)
         self.providers = self.config.sign_in_and_up_feature.providers
-        recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
+        recipe_implementation = RecipeImplementation(
+            Querier.get_instance(recipe_id))
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
         api_implementation = APIImplementation()
@@ -70,18 +71,19 @@ class ThirdPartyRecipe(RecipeModule):
 
     def is_error_from_this_or_child_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and (
-                isinstance(err, SuperTokensThirdPartyError)
-                or
-                self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
+            isinstance(err, SuperTokensThirdPartyError)
+            or
+            self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+                err)
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [
-                   APIHandled(NormalisedURLPath(SIGNINUP), 'post', SIGNINUP,
-                              self.api_implementation.disable_sign_in_up_post),
-                   APIHandled(NormalisedURLPath(AUTHORISATIONURL), 'get', AUTHORISATIONURL,
-                              self.api_implementation.disable_authorisation_url_get)
-               ] + self.email_verification_recipe.get_apis_handled()
+            APIHandled(NormalisedURLPath(SIGNINUP), 'post', SIGNINUP,
+                       self.api_implementation.disable_sign_in_up_post),
+            APIHandled(NormalisedURLPath(AUTHORISATIONURL), 'get', AUTHORISATIONURL,
+                       self.api_implementation.disable_authorisation_url_get)
+        ] + self.email_verification_recipe.get_apis_handled()
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
@@ -100,7 +102,8 @@ class ThirdPartyRecipe(RecipeModule):
         if isinstance(error, SuperTokensThirdPartyError):
             raise error
         else:
-            return self.email_verification_recipe.handle_error(request, error, response)
+            return self.email_verification_recipe.handle_error(
+                request, error, response)
 
     def get_all_cors_headers(self) -> List[str]:
         return [] + self.email_verification_recipe.get_all_cors_headers()
@@ -109,7 +112,8 @@ class ThirdPartyRecipe(RecipeModule):
     def init(config=None):
         def func(app_info: AppInfo):
             if ThirdPartyRecipe.__instance is None:
-                ThirdPartyRecipe.__instance = ThirdPartyRecipe(ThirdPartyRecipe.recipe_id, app_info, config)
+                ThirdPartyRecipe.__instance = ThirdPartyRecipe(
+                    ThirdPartyRecipe.recipe_id, app_info, config)
                 return ThirdPartyRecipe.__instance
             else:
                 raise_general_exception(None, 'ThirdParty recipe has already been initialised. Please check your '
@@ -121,13 +125,16 @@ class ThirdPartyRecipe(RecipeModule):
     def get_instance() -> ThirdPartyRecipe:
         if ThirdPartyRecipe.__instance is not None:
             return ThirdPartyRecipe.__instance
-        raise_general_exception(None, 'Initialisation not done. Did you forget to call the SuperTokens.init function?')
+        raise_general_exception(
+            None,
+            'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
     @staticmethod
     def reset():
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
-            raise_general_exception(None, 'calling testing function in non testing env')
+            raise_general_exception(
+                None, 'calling testing function in non testing env')
         ThirdPartyRecipe.__instance = None
 
     # instance functions below...............

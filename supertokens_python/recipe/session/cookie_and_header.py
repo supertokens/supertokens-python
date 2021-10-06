@@ -15,8 +15,8 @@ under the License.
 """
 from __future__ import annotations
 
-from time import time
 from typing import Literal, TYPE_CHECKING
+from urllib.parse import quote, unquote
 
 from .constants import (
     RID_HEADER_KEY,
@@ -28,12 +28,11 @@ from .constants import (
     ACCESS_CONTROL_EXPOSE_HEADERS,
     ID_REFRESH_TOKEN_HEADER_SET_KEY
 )
-from urllib.parse import quote, unquote
+
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from .recipe import SessionRecipe
-from supertokens_python.utils import get_timestamp_ms
 from supertokens_python.utils import get_header
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.utils import (
@@ -53,26 +52,48 @@ def set_front_token_in_headers(recipe: SessionRecipe, response: BaseResponse, us
         'ate': expires_at,
         'up': jwt_payload
     }
-    set_header(recipe, response, FRONT_TOKEN_HEADER_SET_KEY, utf_base64encode(dumps(token_info, separators=(',', ':'), sort_keys=True)), False)
-    set_header(recipe, response, ACCESS_CONTROL_EXPOSE_HEADERS, FRONT_TOKEN_HEADER_SET_KEY, True)
+    set_header(
+        recipe,
+        response,
+        FRONT_TOKEN_HEADER_SET_KEY,
+        utf_base64encode(
+            dumps(
+                token_info,
+                separators=(
+                    ',',
+                    ':'),
+                sort_keys=True)),
+        False)
+    set_header(
+        recipe,
+        response,
+        ACCESS_CONTROL_EXPOSE_HEADERS,
+        FRONT_TOKEN_HEADER_SET_KEY,
+        True)
 
 
 def get_cors_allowed_headers():
     return [ANTI_CSRF_HEADER_KEY, RID_HEADER_KEY]
 
 
-def set_header(recipe: SessionRecipe, response: BaseResponse, key, value, allow_duplicate: bool):
+def set_header(recipe: SessionRecipe, response: BaseResponse,
+               key, value, allow_duplicate: bool):
     try:
         if allow_duplicate:
             old_value = response.get_header(key)
             if old_value is None:
                 response.set_header(key, value)
             else:
-                response.set_header(key, old_value+','+value)
+                response.set_header(key, old_value + ',' + value)
         else:
             response.set_header(key, value)
     except Exception:
-        raise_general_exception(recipe, 'Error while setting header with key: ' + key + ' and value: ' + value)
+        raise_general_exception(
+            recipe,
+            'Error while setting header with key: ' +
+            key +
+            ' and value: ' +
+            value)
 
 
 def get_cookie(request: BaseRequest, key: str):
@@ -82,7 +103,8 @@ def get_cookie(request: BaseRequest, key: str):
     return unquote(cookie_val)
 
 
-def set_cookie(recipe: SessionRecipe, response: BaseResponse, key, value, expires, path_type: Literal['refresh_token_path', 'access_token_path']):
+def set_cookie(recipe: SessionRecipe, response: BaseResponse, key, value,
+               expires, path_type: Literal['refresh_token_path', 'access_token_path']):
     domain = recipe.config.cookie_domain
     secure = recipe.config.cookie_secure
     same_site = recipe.config.cookie_same_site
@@ -96,7 +118,8 @@ def set_cookie(recipe: SessionRecipe, response: BaseResponse, key, value, expire
                         path=path, domain=domain, secure=secure, httponly=http_only, samesite=same_site)
 
 
-def attach_anti_csrf_header(recipe: SessionRecipe, response: BaseResponse, value):
+def attach_anti_csrf_header(recipe: SessionRecipe,
+                            response: BaseResponse, value):
     set_header(recipe, response, ANTI_CSRF_HEADER_KEY, value, False)
     set_header(
         recipe,
@@ -115,12 +138,24 @@ def get_rid_header(request: BaseRequest):
 
 def attach_access_token_to_cookie(
         recipe: SessionRecipe, response: BaseResponse, token, expires_at):
-    set_cookie(recipe, response, ACCESS_TOKEN_COOKIE_KEY, token, expires_at, 'access_token_path')
+    set_cookie(
+        recipe,
+        response,
+        ACCESS_TOKEN_COOKIE_KEY,
+        token,
+        expires_at,
+        'access_token_path')
 
 
 def attach_refresh_token_to_cookie(
         recipe: SessionRecipe, response: BaseResponse, token, expires_at):
-    set_cookie(recipe, response, REFRESH_TOKEN_COOKIE_KEY, token, expires_at, 'refresh_token_path')
+    set_cookie(
+        recipe,
+        response,
+        REFRESH_TOKEN_COOKIE_KEY,
+        token,
+        expires_at,
+        'refresh_token_path')
 
 
 def attach_id_refresh_token_to_cookie_and_header(
@@ -141,7 +176,13 @@ def attach_id_refresh_token_to_cookie_and_header(
         ID_REFRESH_TOKEN_HEADER_SET_KEY,
         True
     )
-    set_cookie(recipe, response, ID_REFRESH_TOKEN_COOKIE_KEY, token, expires_at, 'access_token_path')
+    set_cookie(
+        recipe,
+        response,
+        ID_REFRESH_TOKEN_COOKIE_KEY,
+        token,
+        expires_at,
+        'access_token_path')
 
 
 def get_access_token_from_cookie(request: BaseRequest):
@@ -158,8 +199,36 @@ def get_id_refresh_token_from_cookie(request: BaseRequest):
 
 def clear_cookies(recipe: SessionRecipe, response: BaseResponse):
     if response is not None:
-        set_cookie(recipe, response, ACCESS_TOKEN_COOKIE_KEY, '', 0, 'access_token_path')
-        set_cookie(recipe, response, ID_REFRESH_TOKEN_COOKIE_KEY, '', 0, 'access_token_path')
-        set_cookie(recipe, response, REFRESH_TOKEN_COOKIE_KEY, '', 0, 'refresh_token_path')
-        set_header(recipe, response, ID_REFRESH_TOKEN_HEADER_SET_KEY, "remove", False)
-        set_header(recipe, response, ACCESS_CONTROL_EXPOSE_HEADERS, ID_REFRESH_TOKEN_HEADER_SET_KEY, True)
+        set_cookie(
+            recipe,
+            response,
+            ACCESS_TOKEN_COOKIE_KEY,
+            '',
+            0,
+            'access_token_path')
+        set_cookie(
+            recipe,
+            response,
+            ID_REFRESH_TOKEN_COOKIE_KEY,
+            '',
+            0,
+            'access_token_path')
+        set_cookie(
+            recipe,
+            response,
+            REFRESH_TOKEN_COOKIE_KEY,
+            '',
+            0,
+            'refresh_token_path')
+        set_header(
+            recipe,
+            response,
+            ID_REFRESH_TOKEN_HEADER_SET_KEY,
+            "remove",
+            False)
+        set_header(
+            recipe,
+            response,
+            ACCESS_CONTROL_EXPOSE_HEADERS,
+            ID_REFRESH_TOKEN_HEADER_SET_KEY,
+            True)

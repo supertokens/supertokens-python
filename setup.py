@@ -21,9 +21,24 @@ extras_require = {
         'Fastapi>=0.60',
         'django',
         'Flask==2.0.1',
-        'python-dotenv'
+        'python-dotenv',
+        'flask_cors'
     ])
 }
+
+exclude_list = [
+    "tests",
+    "examples",
+    "hooks",
+    ".gitignore",
+    ".git",
+    "addDevTag",
+    "addReleaseTag",
+    "frontendDriverInterfaceSupported.json",
+    "coreDriverInterfaceSupported.json",
+    ".github",
+    ".circleci"
+]
 
 setup(
     name="supertokens_python",
@@ -35,7 +50,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/supertokens/supertokens-fastapi",
-    packages=find_packages(exclude=["tests", ]),
+    packages=find_packages(exclude=exclude_list),
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",

@@ -21,7 +21,8 @@ from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInte
     SignInUpAPIInput, SignInUpPostThirdPartyOkResponse, SignInUpPostThirdPartyNoEmailGivenByProviderResponse
 
 
-def get_interface_impl(api_implementation: ThirdPartyEmailPasswordAPIInterface) -> APIInterface:
+def get_interface_impl(
+        api_implementation: ThirdPartyEmailPasswordAPIInterface) -> APIInterface:
     implementation = APIInterface()
 
     if api_implementation.disable_authorisation_url_get:
@@ -39,7 +40,8 @@ def get_interface_impl(api_implementation: ThirdPartyEmailPasswordAPIInterface) 
             if result.is_ok:
                 if result.user.third_party_info is None or result.type == 'emailpassword':
                     raise Exception('Should never come here')
-                return SignInUpPostThirdPartyOkResponse(result.user, result.created_new_user, result.auth_code_response)
+                return SignInUpPostThirdPartyOkResponse(
+                    result.user, result.created_new_user, result.auth_code_response)
 
             elif result.status == 'NO_EMAIL_GIVEN_BY_PROVIDER':
                 return SignInUpPostThirdPartyNoEmailGivenByProviderResponse()

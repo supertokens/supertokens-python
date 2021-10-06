@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
+# from flask_cors import CORS
 from supertokens_python import init
 from supertokens_python.recipe import session
 from supertokens_python.exceptions import SuperTokensError
@@ -44,6 +44,7 @@ def user():
     json = request.get_json()
     print(json)
     return jsonify({})
+
 
 @app.route('/test_post', methods=['POST'])
 def test_post():

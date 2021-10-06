@@ -31,9 +31,11 @@ async def verify_email_using_token(token: str):
     return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
         token)
 
+
 async def unverify_email(user_id: str):
     email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id)
     return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.unverify_email(user_id, email)
+
 
 async def is_email_verified(user_id: str):
     email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id)

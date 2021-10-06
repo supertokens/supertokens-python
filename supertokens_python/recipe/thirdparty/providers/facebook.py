@@ -21,7 +21,8 @@ from httpx import AsyncClient
 
 
 class Facebook(Provider):
-    def __init__(self, client_id: str, client_secret: str, scope: List[str] = None):
+    def __init__(self, client_id: str, client_secret: str,
+                 scope: List[str] = None):
         super().__init__('facebook')
         default_scopes = ['email']
 
@@ -55,9 +56,11 @@ class Facebook(Provider):
             'response_type': 'code',
             'client_id': self.client_id
         }
-        return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
+        return AuthorisationRedirectAPI(
+            self.authorisation_redirect_url, params)
 
-    def get_access_token_api_info(self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
+    def get_access_token_api_info(
+            self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
         params = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,

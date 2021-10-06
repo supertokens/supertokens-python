@@ -104,7 +104,8 @@ class User:
 
 
 class UsersResponse:
-    def __init__(self, users: List[User], next_pagination_token: Union[str, None]):
+    def __init__(self, users: List[User],
+                 next_pagination_token: Union[str, None]):
         self.users = users
         self.next_pagination_token = next_pagination_token
 
@@ -122,7 +123,8 @@ class FormField:
 
 
 class NormalisedFormField:
-    def __init__(self, id: str, validate: Callable[[str], Awaitable[Union[str, None]]], optional: bool):
+    def __init__(self, id: str, validate: Callable[[
+                 str], Awaitable[Union[str, None]]], optional: bool):
         self.id = id
         self.validate = validate
         self.optional = optional

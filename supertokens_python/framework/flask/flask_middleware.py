@@ -47,7 +47,8 @@ class Middleware:
         response = FlaskResponse()
 
         if 'additional_storage' in environ:
-            manage_cookies_post_response(environ['additional_storage'], response)
+            manage_cookies_post_response(
+                environ['additional_storage'], response)
 
         def injecting_start_response(status, headers, exc_info=None):
             headers.extend(response.get_headers())
@@ -65,5 +66,7 @@ def error_handler(error):
     response = Response(json.dumps({}),
                         mimetype='application/json',
                         status=200)
-    result = async_to_sync(st.handle_supertokens_error)(None, error, FlaskResponse(response))
+    result = async_to_sync(
+        st.handle_supertokens_error)(
+        None, error, FlaskResponse(response))
     return result.response

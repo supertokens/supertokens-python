@@ -19,12 +19,11 @@ import sys
 
 from flask import Flask, request, make_response, Response, jsonify
 from flask_cors import CORS
-from starlette.requests import Request
 
 from supertokens_python import init, Supertokens
-from supertokens_python.recipe import session
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.framework.flask import error_handler, Middleware
+from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user, create_new_session, revoke_session, \
@@ -116,15 +115,15 @@ def config(enable_anti_csrf: bool):
         },
         'recipe_list': [
             session.init({
-                "error_handlers":
-                    {
-                        "on_unauthorised": unauthorised_f
-                    },
+                "error_handlers": {
+                    "on_unauthorised": unauthorised_f
+                },
                 "anti_csrf": "VIA_TOKEN" if enable_anti_csrf else "NONE",
                 "override": {
                     'apis': apis_override_session
                 }
-            })],
+            })
+        ],
         'telemetry': False
     }
 
@@ -380,7 +379,8 @@ def check_device_info_options():
 def check_device_info():
     sdk_name = request.headers.get('supertokens-sdk-name')
     sdk_version = request.headers.get('supertokens-sdk-version')
-    return 'true' if sdk_name == 'website' and isinstance(sdk_version, str) else 'false'
+    return 'true' if sdk_name == 'website' and isinstance(
+        sdk_version, str) else 'false'
 
 
 @app.route('/check-rid', methods=['GET'])

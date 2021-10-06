@@ -108,10 +108,9 @@ def config(enable_anti_csrf: bool):
         },
         'recipe_list': [
             session.init({
-                "error_handlers":
-                    {
-                        "on_unauthorised": unauthorised_f
-                    },
+                "error_handlers": {
+                    "on_unauthorised": unauthorised_f
+                },
                 "anti_csrf": "VIA_TOKEN" if enable_anti_csrf else "NONE",
                 "override": {
                     'apis': apis_override_session
@@ -224,28 +223,32 @@ def testing_options():
 @app.get('/testing')
 def testing(request: Request):
     if 'testing' in request.headers:
-        return PlainTextResponse(content='success', headers={'testing': request.headers['testing']})
+        return PlainTextResponse(content='success', headers={
+                                 'testing': request.headers['testing']})
     return PlainTextResponse(content='success')
 
 
 @app.put('/testing')
 def testing_put(request: Request):
     if 'testing' in request.headers:
-        return PlainTextResponse(content='success', headers={'testing': request.headers['testing']})
+        return PlainTextResponse(content='success', headers={
+                                 'testing': request.headers['testing']})
     return PlainTextResponse(content='success')
 
 
 @app.post('/testing')
 def testing_post(request: Request):
     if 'testing' in request.headers:
-        return PlainTextResponse(content='success', headers={'testing': request.headers['testing']})
+        return PlainTextResponse(content='success', headers={
+                                 'testing': request.headers['testing']})
     return PlainTextResponse(content='success')
 
 
 @app.delete('/testing')
 def testing_delete(request: Request):
     if 'testing' in request.headers:
-        return PlainTextResponse(content='success', headers={'testing': request.headers['testing']})
+        return PlainTextResponse(content='success', headers={
+                                 'testing': request.headers['testing']})
     return PlainTextResponse(content='success')
 
 
@@ -278,7 +281,8 @@ def refresh_options():
 
 @app.get("/refreshAttemptedTime")
 def refresh_attempted_time():
-    return PlainTextResponse(content=str(Test.get_refresh_attempted_count()), status_code=200)
+    return PlainTextResponse(content=str(
+        Test.get_refresh_attempted_count()), status_code=200)
 
 
 @app.post('/auth/session/refresh')
@@ -316,7 +320,8 @@ def refresh_called_time_options():
 
 @app.get("/refreshCalledTime")
 def refresh_called_time():
-    return PlainTextResponse(content=str(Test.get_refresh_called_count()), status_code=200)
+    return PlainTextResponse(content=str(
+        Test.get_refresh_called_count()), status_code=200)
 
 
 @app.options("/getSessionCalledTime")
@@ -326,7 +331,8 @@ def get_session_called_time_options():
 
 @app.get("/getSessionCalledTime")
 def get_session_called_time():
-    return PlainTextResponse(content=str(Test.get_session_called_count()), status_code=200)
+    return PlainTextResponse(content=str(
+        Test.get_session_called_count()), status_code=200)
 
 
 @app.options("/ping")
@@ -359,7 +365,8 @@ def check_device_info_options():
 def check_device_info(request: Request):
     sdk_name = request.headers.get('supertokens-sdk-name')
     sdk_version = request.headers.get('supertokens-sdk-version')
-    return PlainTextResponse('true' if sdk_name == 'website' and isinstance(sdk_version, str) else 'false')
+    return PlainTextResponse(
+        'true' if sdk_name == 'website' and isinstance(sdk_version, str) else 'false')
 
 
 @app.get('/check-rid')
@@ -376,7 +383,8 @@ def check_allow_credentials_options():
 
 @app.get('/checkAllowCredentials')
 def check_allow_credentials(request: Request):
-    return PlainTextResponse(json.dumps('allow-credentials' in request.headers), 200)
+    return PlainTextResponse(json.dumps(
+        'allow-credentials' in request.headers), 200)
 
 
 @app.route('/testError', methods=['GET', 'OPTIONS'])
