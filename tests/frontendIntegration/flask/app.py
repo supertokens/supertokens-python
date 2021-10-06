@@ -22,9 +22,10 @@ from flask_cors import CORS
 from starlette.requests import Request
 
 from supertokens_python import init, Supertokens
+from supertokens_python.framework.flask.flask_middleware1 import supertokens_middleware
 from supertokens_python.recipe import session
 from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.flask import error_handler, Middleware
+from supertokens_python.framework.flask import error_handler
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user, create_new_session, revoke_session, \
@@ -34,8 +35,7 @@ index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
 index_file.close()
 app = Flask(__name__)
-app.register_error_handler(SuperTokensError, error_handler)
-app.wsgi_app = Middleware(app.wsgi_app)
+#app.wsgi_app = Middleware(app.wsgi_app)
 CORS(app, supports_credentials=True)
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
@@ -147,6 +147,7 @@ def login_options():
 
 
 @app.route('/login', methods=['POST'])
+@supertokens_middleware()
 def login():
     user_id = request.get_json()['userId']
     create_new_session(request, user_id)
@@ -208,6 +209,7 @@ def update_options():
 
 @app.route('/update-jwt', methods=['GET'])
 @verify_session()
+@supertokens_middleware(True)
 def update_jwt():
     Test.increment_get_session()
     session = get_session(request)
@@ -318,7 +320,7 @@ def refresh():
 
 @app.route('/setAntiCsrf', methods=['POST'])
 def set_anti_csrf():
-    json = request.get_json()
+    json = request.get_json(silent=True)
     if "enableAntiCsrf" not in json:
         enable_csrf = True
     else:
@@ -416,5 +418,5 @@ def test_error():
 # ref: https://github.com/tiangolo/fastapi/issues/1663
 
 
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=int(get_app_port()), threaded=True)
+# if __name__ == '__main__':
+#     app.run(host="0.0.0.0", port=int(get_app_port()), threaded=True)

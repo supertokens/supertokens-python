@@ -39,10 +39,10 @@ class Middleware:
         result = async_to_sync(st.middleware)(request, response)
 
         if result is None:
-            def injecting_start_response(status, headers, exc_info=None):
-                headers = None
-                return start_response(status, headers, exc_info)
-            self.app(environ, injecting_start_response)
+            # def injecting_start_response(status, headers, exc_info=None):
+            #     headers = [('content-type', 'text/html')]
+            #     return start_response(status, headers, exc_info)
+            self.app(environ, start_response)
 
         response = FlaskResponse()
 
