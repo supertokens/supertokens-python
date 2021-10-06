@@ -25,7 +25,7 @@ from pytest import mark
 from supertokens_python import init
 from supertokens_python.recipe import session, emailpassword
 from supertokens_python.recipe.emailverification.interfaces import APIInterface, APIOptions
-from supertokens_python.exceptions import GeneralError, BadInputError
+from supertokens_python.exceptions import BadInputError
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.session import create_new_session, refresh_session, get_session

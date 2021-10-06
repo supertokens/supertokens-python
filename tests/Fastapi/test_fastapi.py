@@ -292,6 +292,7 @@ async def test_login_info(driver_config_client: TestClient):
     cookies_2 = extract_all_cookies(response_2)
     assert cookies_2 == {}
 
+
 @mark.asyncio
 async def test_login_handle(driver_config_client: TestClient):
     init({
