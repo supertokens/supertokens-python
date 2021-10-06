@@ -21,6 +21,7 @@ jobs:
       - run: apt-get update
       - run: apt-get install python3.7 -y
       - run: update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
+      - run: apt-get install python3-pip
       - run: python -m pip install --upgrade pip
       - run: make dev-install
       - run: (cd .circleci/ && ./doTests.sh)
