@@ -28,7 +28,6 @@ def verify_session(
         recipe = SessionRecipe.get_instance()
         session = await recipe.verify_session(request, anti_csrf_check, session_required)
 
-        print(request.request.url.path + ' all good')
         request.set_session(session)
         return request.get_session()
 

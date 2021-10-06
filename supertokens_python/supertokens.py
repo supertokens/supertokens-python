@@ -58,8 +58,7 @@ import asyncio
 
 
 class AppInfo:
-    def __init__(self, recipe: Union[RecipeModule,
-                 None], app_info, framework: str):
+    def __init__(self, app_info, framework: str):
         self.app_name: str = app_info['app_name']
         self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(app_info[
             'api_gateway_path']) if 'api_gateway_path' in app_info else NormalisedURLPath(
@@ -124,8 +123,7 @@ class Supertokens:
         validate_the_structure_of_user_input(
             config, INPUT_SCHEMA, 'init_function', None)
         validate_framework(config)
-        self.app_info: AppInfo = AppInfo(
-            None, config['app_info'], config['framework'])
+        self.app_info: AppInfo = AppInfo(config['app_info'], config['framework'])
         hosts = list(map(lambda h: NormalisedURLDomain(h.strip()),
                          filter(lambda x: x != '', config['supertokens']['connection_uri'].split(';'))))
         api_key = None
@@ -158,14 +156,14 @@ class Supertokens:
     async def send_telemetry(self):
         try:
             querier = Querier.get_instance(None)
-            response = await querier.send_get_request(NormalisedURLPath(None, TELEMETRY), {})
+            response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
             telemetry_id = None
             if 'exists' in response and response['exists'] and 'telemetry_id' in response:
                 telemetry_id = response['telemetry_id']
             data = {
                 'appName': self.app_info.app_name,
                 'websiteDomain': self.app_info.website_domain.get_as_string_dangerous(),
-                'sdk': 'Fastapi'
+                'sdk': 'Python'
             }
             if telemetry_id is not None:
                 data = {

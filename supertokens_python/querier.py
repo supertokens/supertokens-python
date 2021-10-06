@@ -155,9 +155,12 @@ class Querier:
                 environ['SUPERTOKENS_ENV'] == 'testing') and test:
             return data
 
+        headers = await self.__get_headers_with_api_version(path)
+        headers['content-type'] = 'application/json; charset=utf-8'
+
         async def f(url):
             async with AsyncClient() as client:
-                return await client.post(url, json=data, headers=await self.__get_headers_with_api_version(path))
+                return await client.post(url, json=data, headers=headers)
 
         return await self.__send_request_helper(path, 'POST', f, len(self.__hosts))
 
@@ -173,9 +176,12 @@ class Querier:
         if data is None:
             data = {}
 
+        headers = await self.__get_headers_with_api_version(path)
+        headers['content-type'] = 'application/json; charset=utf-8'
+
         async def f(url):
             async with AsyncClient() as client:
-                return await client.put(url, json=data, headers=await self.__get_headers_with_api_version(path))
+                return await client.put(url, json=data, headers=headers)
 
         return await self.__send_request_helper(path, 'PUT', f, len(self.__hosts))
 

@@ -102,7 +102,7 @@ def config(enable_anti_csrf: bool):
         },
         'framework': 'fastapi',
         'app_info': {
-            'app_name': "SuperTokens",
+            'app_name': "SuperTokens Python SDK",
             'api_domain': "0.0.0.0:" + get_app_port(),
             'website_domain': "http://localhost.org:8080",
         },
