@@ -19,7 +19,6 @@ You will need to setup the `supertokens-core` in order to to run the `supertoken
 
 ### Prerequisites
 
--   OS: Linux or macOS
 -   Python (version 3.7 or above)
 -   IDE: [PyCharm](https://www.jetbrains.com/pycharm/download)(recommended) or equivalent IDE
 
