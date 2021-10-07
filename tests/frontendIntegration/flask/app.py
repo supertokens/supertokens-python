@@ -16,21 +16,23 @@ under the License.
 import json
 import os
 import sys
+from functools import wraps
 
 from asgiref.sync import async_to_sync
 from flask import Flask, request, make_response, Response, jsonify, render_template, g
 from flask_cors import CORS
 
 from supertokens_python import init, Supertokens
+from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.framework.flask import error_handler
-from supertokens_python.framework.flask.flask_middleware1 import supertokens_middleware
+from supertokens_python.framework.flask.flask_request import FlaskRequest
+from supertokens_python.framework.flask.flask_response import FlaskResponse
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
-from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user, create_new_session, revoke_session, \
-    get_session, update_jwt_payload
+from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user, create_new_session
+from supertokens_python.supertokens import manage_cookies_post_response
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
@@ -38,9 +40,54 @@ index_file.close()
 
 app = Flask(__name__, template_folder='templates')
 app.register_error_handler(SuperTokensError, error_handler)
-app.wsgi_app = Middleware(app.wsgi_app)
+#app.wsgi_app = Middleware(app.wsgi_app)
 CORS(app, supports_credentials=True)
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
+
+def custom_decorator_for_test():
+    def session_verify_custom_test(f):
+        @wraps(f)
+        def wrapped_function(*args, **kwargs):
+            Test.increment_attempted_refresh()
+            try:
+                value = f(*args, **kwargs)
+                if value is not None and value.status_code != 200:
+                    return value
+                if request.headers.get("rid") is None:
+                    return 'refresh failed'
+                Test.increment_refresh()
+                return 'refresh success'
+            except Exception as e:
+                raise e
+
+        return wrapped_function
+
+    return session_verify_custom_test
+
+
+@app.before_request
+def before_request():
+    from flask import request
+    from supertokens_python import Supertokens
+
+    st = Supertokens.get_instance()
+
+    request = FlaskRequest(request)
+    response = FlaskResponse(Response())
+    result = async_to_sync(st.middleware)(request, response)
+
+    if result is not None:
+        return result.response
+
+
+@app.after_request
+def after_request(response):
+    response = FlaskResponse(response)
+    if hasattr(g, 'supertokens'):
+        manage_cookies_post_response(g.supertokens, response)
+
+    return response.response
+
 
 
 def try_refresh_token(_):
@@ -90,6 +137,7 @@ class Test:
 async def unauthorised_f(error, req, res):
     res.set_status_code(401)
     res.set_content({})
+    return res
 
 
 def apis_override_session(param):
@@ -185,10 +233,10 @@ def multiple_interceptors_options():
 
 
 @app.route('/multipleInterceptors', methods=['POST'])
-def multiple_interceptors(request):
+def multiple_interceptors():
     result_bool = 'success' if 'interceptorheader2' in request.headers \
                                and 'interceptorheader1' in request.headers else 'failure'
-    return result_bool
+    return str(result_bool)
 
 
 @app.route("/", methods=['OPTIONS'])
@@ -197,11 +245,10 @@ def options():
 
 
 @app.route('/', methods=['GET'])
-#@supertokens_middleware()
 @verify_session()
 def get_info():
     Test.increment_get_session()
-    session = get_session(request)
+    session = g.supertokens
     resp = make_response(session.get_user_id())
     resp.headers['Cache-Control'] = 'no-cache, private'
     return resp
@@ -217,9 +264,9 @@ def update_options():
 #@supertokens_middleware(True)
 def update_jwt():
     Test.increment_get_session()
-    session = verify_session()(request)
+    session = g.supertokens
 
-    resp = make_response(session.get_user_id())
+    resp = make_response(session.get_jwt_payload())
     resp.headers['Cache-Control'] = 'no-cache, private'
     return resp
 
@@ -229,7 +276,7 @@ def update_jwt():
 #@supertokens_middleware()
 def update_jwt_post():
     session = g.supertokens
-    update_jwt_payload(session.get_handle(), request.json())
+    sync(session.update_jwt_payload(request.get_json()))
     Test.increment_get_session()
     resp = make_response(session.get_jwt_payload())
     resp.headers['Cache-Control'] = 'no-cache, private'
@@ -286,10 +333,10 @@ def logout_options():
 @verify_session()
 #@supertokens_middleware()
 def logout():
-    session = get_session(request)
+    session = g.supertokens
 
     #TODO do not do this. update the api
-    async_to_sync(session.revoke_session())
+    sync(session.revoke_session())
     #revoke_session(session.get_handle())
     return 'success'
 
@@ -303,7 +350,7 @@ def revoke_all_options():
 @verify_session()
 #@supertokens_middleware()
 async def revoke_all():
-    session = get_session(request)
+    session = g.supertokens
     revoke_all_sessions_for_user(session.get_user_id())
     return 'sucess'
 
@@ -315,18 +362,14 @@ def refresh_options():
 
 @app.route("/refreshAttemptedTime", methods=['GET'])
 def refresh_attempted_time():
-    return Test.get_refresh_attempted_count()
+    return str(Test.get_refresh_attempted_count())
 
 
 @app.route('/auth/session/refresh', methods=['POST'])
+@custom_decorator_for_test()
 @verify_session()
-#@supertokens_middleware()
 def refresh():
-    Test.increment_attempted_refresh()
-    if request.headers.get("rid") is None:
-        'refresh failed'
-    Test.increment_refresh()
-    return 'refresh success'
+    return ''
 
 
 @app.route('/setAntiCsrf', methods=['POST'])
@@ -410,7 +453,7 @@ def check_allow_credentials_options():
 
 @app.route('/checkAllowCredentials', methods=['GET'])
 def check_allow_credentials():
-    return json.dumps('allow-credentials' in request.headers)
+    return jsonify(json.dumps('allow-credentials' in request.headers))
 
 
 @app.route('/testError', methods=['GET', 'OPTIONS'])

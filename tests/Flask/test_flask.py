@@ -17,14 +17,18 @@ under the License.
 import json
 
 from _pytest.fixtures import fixture
-from flask import Flask, jsonify, make_response, request
+from asgiref.sync import async_to_sync
+from flask import Flask, jsonify, make_response, request, Response, g
 
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python import init
+from supertokens_python.framework.flask.flask_request import FlaskRequest
+from supertokens_python.framework.flask.flask_response import FlaskResponse
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.sync import create_new_session, refresh_session, get_session, revoke_session
 from supertokens_python.framework.flask import Middleware, error_handler
+from supertokens_python.supertokens import manage_cookies_post_response
 
 from tests.Flask.utils import extract_all_cookies
 
@@ -53,8 +57,29 @@ from tests.utils import set_key_value_in_config, TEST_COOKIE_SAME_SITE_CONFIG_KE
 def driver_config_app():
     app = Flask(__name__)
     app.app_context().push()
-    app.wsgi_app = Middleware(app.wsgi_app)
+    #app.wsgi_app = Middleware(app.wsgi_app)
 
+    @app.before_request
+    def before_request():
+        from flask import request
+        from supertokens_python import Supertokens
+
+        st = Supertokens.get_instance()
+
+        request = FlaskRequest(request)
+        response = FlaskResponse(Response())
+        result = async_to_sync(st.middleware)(request, response)
+
+        if result is not None:
+            return result.response
+
+    @app.after_request
+    def after_request(response):
+        response = FlaskResponse(response)
+        if hasattr(g, 'supertokens'):
+            manage_cookies_post_response(g.supertokens, response)
+
+        return response.response
     app.register_error_handler(SuperTokensError, error_handler)
 
     app.testing = True

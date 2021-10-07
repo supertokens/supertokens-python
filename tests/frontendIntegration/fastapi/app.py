@@ -336,7 +336,7 @@ def ping_options():
 
 @app.get('/ping')
 def ping():
-    return PlainTextResponse(content='success')
+    return 'success'
 
 
 @app.options("/testHeader")
@@ -347,7 +347,7 @@ def test_header_options():
 @app.get('/testHeader')
 def test_header(request: Request):
     success_info = request.headers.get('st-custom-header')
-    return JSONResponse({'success': success_info})
+    return {'success': success_info}
 
 
 @app.options("/checkDeviceInfo")
@@ -359,14 +359,14 @@ def check_device_info_options():
 def check_device_info(request: Request):
     sdk_name = request.headers.get('supertokens-sdk-name')
     sdk_version = request.headers.get('supertokens-sdk-version')
-    return PlainTextResponse('true' if sdk_name == 'website' and isinstance(sdk_version, str) else 'false')
+    return 'true' if sdk_name == 'website' and isinstance(sdk_version, str) else 'false'
 
 
 @app.get('/check-rid')
 def check_rid(request: Request):
     rid = request.headers.get('rid')
 
-    return PlainTextResponse('fail' if rid is None else 'success')
+    return 'fail' if rid is None else 'success'
 
 
 @app.options("/checkAllowCredentials")
