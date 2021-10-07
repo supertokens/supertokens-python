@@ -119,7 +119,8 @@ async def test_three_cores_one_dead_and_round_robin():
     assert "http://localhost:8081" not in hostAlive
     assert "http://localhost:8082" in hostAlive
 
-# TODO: in the node sdk connection_uri is not set and the exception is set accordingly. In the fast api sdk
+# TODO: in the node sdk connection_uri is not set and the exception is set
+# accordingly. In the fast api sdk
 
 
 @mark.asyncio

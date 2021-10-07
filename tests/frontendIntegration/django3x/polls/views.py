@@ -59,11 +59,13 @@ def custom_decorator_for_test():
 
 
 def try_refresh_token(_):
-    return HttpResponse(json.dumps({'error': 'try refresh token'}), content_type="application/json", status=401)
+    return HttpResponse(json.dumps(
+        {'error': 'try refresh token'}), content_type="application/json", status=401)
 
 
 def unauthorised(_):
-    return HttpResponse(json.dumps({'error': 'unauthorised'}), content_type="application/json", status=401)
+    return HttpResponse(json.dumps(
+        {'error': 'unauthorised'}), content_type="application/json", status=401)
 
 
 class Test:
@@ -141,7 +143,7 @@ def config(enable_anti_csrf: bool):
                 "anti_csrf": "VIA_TOKEN" if enable_anti_csrf else "NONE",
                 "override": {
                     'apis': apis_override_session
-                }
+                        }
             })],
         'telemetry': False
     }
@@ -317,7 +319,8 @@ async def check_device_info(request):
     if request.method == 'GET':
         sdk_name = request.headers.get('supertokens-sdk-name')
         sdk_version = request.headers.get('supertokens-sdk-version')
-        return HttpResponse('true' if sdk_name == 'website' and isinstance(sdk_version, str) else 'false')
+        return HttpResponse('true' if sdk_name == 'website' and isinstance(
+            sdk_version, str) else 'false')
     else:
         return send_options_api_response()
 

@@ -13,13 +13,12 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
+import django
 import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", __file__)
-import django
 SECRET_KEY = 'this_is_a_random_string'
 
 django.setup()
-
 
 
 REST_FRAMEWORK = {
@@ -29,16 +28,20 @@ REST_FRAMEWORK = {
 }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'sqlite.db',                      # Or path to database file if using sqlite3.
+        # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or
+        # 'oracle'.
+        'ENGINE': 'django.db.backends.sqlite3',
+        # Or path to database file if using sqlite3.
+        'NAME': 'sqlite.db',
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        # Set to empty string for localhost. Not used with sqlite3.
+        'HOST': '',
+        # Set to empty string for default. Not used with sqlite3.
+        'PORT': '',
     }
 }
 
 MIDDLEWARE = [
     'supertokens-Fastapi.core.framework.django.django_middleware.middleware',
 ]
-

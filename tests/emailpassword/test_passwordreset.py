@@ -104,7 +104,6 @@ async def test_email_validation_checks_in_generate_token_API(driver_config_clien
     })
     start_st()
 
-
     response_1 = driver_config_client.post(
         url="/auth/user/password/reset/token",
         json=json.dumps({
@@ -118,6 +117,7 @@ async def test_email_validation_checks_in_generate_token_API(driver_config_clien
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "FIELD_ERROR"
+
 
 @mark.asyncio
 async def test_that_generated_password_link_is_correct(driver_config_client: TestClient):
@@ -153,7 +153,10 @@ async def test_that_generated_password_link_is_correct(driver_config_client: Tes
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "test@gmail.com",
+        "testPass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
@@ -194,7 +197,6 @@ async def test_password_validation(driver_config_client: TestClient):
     })
     start_st()
 
-
     response_1 = driver_config_client.post(
         url="/auth/user/password/reset",
         json=json.dumps({
@@ -218,7 +220,7 @@ async def test_password_validation(driver_config_client: TestClient):
                     "id": "password",
                     "value": "validpass123"
                 }],
-                    "token" : "randomToken"
+            "token": "randomToken"
 
         }))
 
@@ -266,7 +268,8 @@ async def test_valid_token_input_and_passoword_has_changed(driver_config_client:
 
     async def custom_f(user, password_reset_url_with_token):
         nonlocal token_info
-        token_info = password_reset_url_with_token.split("?")[1].split("&")[0].split("=")[1]
+        token_info = password_reset_url_with_token.split("?")[1].split("&")[
+            0].split("=")[1]
 
     init({
         'supertokens': {
@@ -290,7 +293,10 @@ async def test_valid_token_input_and_passoword_has_changed(driver_config_client:
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validpass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     user_info = dict_response['user']
@@ -332,7 +338,7 @@ async def test_valid_token_input_and_passoword_has_changed(driver_config_client:
                     {
                         "id": "email",
                         "value": "random@gmail.com"
-                    }
+                }
                 ]
         }))
 

@@ -44,6 +44,7 @@ app.register_error_handler(SuperTokensError, error_handler)
 CORS(app, supports_credentials=True)
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
+
 def custom_decorator_for_test():
     def session_verify_custom_test(f):
         @wraps(f)
@@ -87,7 +88,6 @@ def after_request(response):
         manage_cookies_post_response(g.supertokens, response)
 
     return response.response
-
 
 
 def try_refresh_token(_):
@@ -174,7 +174,7 @@ def config(enable_anti_csrf: bool):
                 "anti_csrf": "VIA_TOKEN" if enable_anti_csrf else "NONE",
                 "override": {
                     'apis': apis_override_session
-                }
+                        }
             })],
         'telemetry': False
     }
@@ -198,7 +198,7 @@ def login_options():
 
 
 @app.route('/login', methods=['POST'])
-#@supertokens_middleware()
+# @supertokens_middleware()
 def login():
     print(request.get_json())
     user_id = request.get_json()['userId']
@@ -261,7 +261,7 @@ def update_options():
 
 @app.route('/update-jwt', methods=['GET'])
 @verify_session()
-#@supertokens_middleware(True)
+# @supertokens_middleware(True)
 def update_jwt():
     Test.increment_get_session()
     session = g.supertokens
@@ -273,7 +273,7 @@ def update_jwt():
 
 @app.route('/update-jwt', methods=['POST'])
 @verify_session()
-#@supertokens_middleware()
+# @supertokens_middleware()
 def update_jwt_post():
     session = g.supertokens
     sync(session.update_jwt_payload(request.get_json()))
@@ -331,13 +331,13 @@ def logout_options():
 
 @app.route('/logout', methods=['POST'])
 @verify_session()
-#@supertokens_middleware()
+# @supertokens_middleware()
 def logout():
     session = g.supertokens
 
-    #TODO do not do this. update the api
+    # TODO do not do this. update the api
     sync(session.revoke_session())
-    #revoke_session(session.get_handle())
+    # revoke_session(session.get_handle())
     return 'success'
 
 
@@ -348,7 +348,7 @@ def revoke_all_options():
 
 @app.route('/revokeAll', methods=['POST'])
 @verify_session()
-#@supertokens_middleware()
+# @supertokens_middleware()
 async def revoke_all():
     session = g.supertokens
     revoke_all_sessions_for_user(session.get_user_id())
@@ -436,7 +436,8 @@ def check_device_info_options():
 def check_device_info():
     sdk_name = request.headers.get('supertokens-sdk-name')
     sdk_version = request.headers.get('supertokens-sdk-version')
-    return 'true' if sdk_name == 'website' and isinstance(sdk_version, str) else 'false'
+    return 'true' if sdk_name == 'website' and isinstance(
+        sdk_version, str) else 'false'
 
 
 @app.route('/check-rid', methods=['GET'])
@@ -461,7 +462,6 @@ def test_error():
     if request.method == 'OPTIONS':
         return send_options_api_response()
     return Response('test error message', status=500)
-
 
 
 if __name__ == '__main__':

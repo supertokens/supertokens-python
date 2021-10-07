@@ -222,6 +222,7 @@ async def test_basic_usage_of_sessions():
     response5 = await revoke_session(response4['session']['handle'])
     assert response5 == True
 
+
 @mark.asyncio
 async def test_session_verify_with_anti_csrf_present():
     start_st()
@@ -258,7 +259,6 @@ async def test_session_verify_with_anti_csrf_present():
                                   contains_custom_header=False)
     assert response3['session'] is not None
     assert len(response3['session']) == 3
-
 
 
 @mark.asyncio
@@ -301,7 +301,6 @@ async def test_session_verify_with_anti_csrf_present():
         assert e.__class__.__name__ == 'TryRefreshTokenError'
 
 
-
 @mark.asyncio
 async def test_revoking_of_sessions():
     start_st()
@@ -334,9 +333,10 @@ async def test_revoking_of_sessions():
     response3 = await get_all_session_handles_for_user(user_id='someUniqueUserId')
     assert len(response3) == 0
 
-    # create multiple sessions with the same userID and use revokeAllSessionsForUser to revoke sessions
+    # create multiple sessions with the same userID and use
+    # revokeAllSessionsForUser to revoke sessions
     await create_new_session(recipe=session_recipe, user_id="someUniqueUserId", jwt_payload={},
-                                            session_data={})
+                             session_data={})
     await create_new_session(recipe=session_recipe, user_id="someUniqueUserId", jwt_payload={},
                              session_data={})
     session_id_response = await get_all_session_handles_for_user(user_id='someUniqueUserId')
@@ -348,14 +348,16 @@ async def test_revoking_of_sessions():
     response = await get_all_session_handles_for_user(user_id='someUniqueUserId')
     assert len(response) == 0
 
-    #revoke a session with a user id which does not exist.
+    # revoke a session with a user id which does not exist.
     response2 = await revoke_session(session_handle='x')
     assert response2 is False
 
-    #revoke a session with a user id which does not exist.
-    #TODO: in node sdk  this method returns true/false, this method returns a list.
+    # revoke a session with a user id which does not exist.
+    # TODO: in node sdk  this method returns true/false, this method returns a
+    # list.
     response2 = await revoke_all_sessions_for_user(user_id='x')
     assert len(response2) == 0
+
 
 @mark.asyncio
 async def test_manipulating_session_data():
@@ -397,6 +399,7 @@ async def test_manipulating_session_data():
         assert False
     except Exception as e:
         assert e.__class__.__name__ == 'UnauthorisedError'
+
 
 @mark.asyncio
 async def test_null_and_undefined_values_passed_for_session_data():
@@ -470,21 +473,20 @@ async def test_manipulating_jwt_payload():
     # create a simple session and revoke it with the session handle
     response = await create_new_session(recipe=session_recipe, user_id="", jwt_payload={},
                                         session_data=None)
-    response2 = await update_jwt_payload(recipe=session_recipe, session_handle=response['session']['handle'], new_jwt_payload={'key' : 'value'})
+    response2 = await update_jwt_payload(recipe=session_recipe, session_handle=response['session']['handle'], new_jwt_payload={'key': 'value'})
     response2 = await get_jwt_payload(recipe=session_recipe, session_handle=response['session']['handle'])
-    assert response2 == {'key' : 'value'}
+    assert response2 == {'key': 'value'}
 
-    response3 = await update_jwt_payload(recipe=session_recipe, session_handle=response['session']['handle'], new_jwt_payload={'key' : 'value2'})
+    response3 = await update_jwt_payload(recipe=session_recipe, session_handle=response['session']['handle'], new_jwt_payload={'key': 'value2'})
     response3 = await get_jwt_payload(recipe=session_recipe, session_handle=response['session']['handle'])
-    assert response3 == {'key' : 'value2'}
+    assert response3 == {'key': 'value2'}
 
     try:
-         await update_jwt_payload(recipe=session_recipe, session_handle='x',
-                                             new_jwt_payload={'key': 'value2'})
-         raise Exception("should not come here")
+        await update_jwt_payload(recipe=session_recipe, session_handle='x',
+                                 new_jwt_payload={'key': 'value2'})
+        raise Exception("should not come here")
     except Exception as e:
         assert e.__class__.__name__ == 'UnauthorisedError'
-
 
 
 @mark.asyncio
@@ -513,18 +515,18 @@ async def test_null_and_undefined_values_passed_for_jwt_payload():
     # create a simple session and revoke it with the session handle
     response = await create_new_session(recipe=session_recipe, user_id="", jwt_payload={},
                                         session_data=None)
-    response2 = await update_jwt_payload(recipe=session_recipe, session_handle=response['session']['handle'], new_jwt_payload={'key' : 'value'})
+    response2 = await update_jwt_payload(recipe=session_recipe, session_handle=response['session']['handle'], new_jwt_payload={'key': 'value'})
     response2 = await get_jwt_payload(recipe=session_recipe, session_handle=response['session']['handle'])
-    assert response2 == {'key' : 'value'}
+    assert response2 == {'key': 'value'}
 
-    response3 = await update_jwt_payload(recipe=session_recipe, session_handle=response['session']['handle'], new_jwt_payload={'key' : 'value2'})
+    response3 = await update_jwt_payload(recipe=session_recipe, session_handle=response['session']['handle'], new_jwt_payload={'key': 'value2'})
     response3 = await get_jwt_payload(recipe=session_recipe, session_handle=response['session']['handle'])
-    assert response3 == {'key' : 'value2'}
+    assert response3 == {'key': 'value2'}
 
     try:
-         await update_jwt_payload(recipe=session_recipe, session_handle='x',
-                                             new_jwt_payload={'key': 'value2'})
-         raise Exception("should not come here")
+        await update_jwt_payload(recipe=session_recipe, session_handle='x',
+                                 new_jwt_payload={'key': 'value2'})
+        raise Exception("should not come here")
     except Exception as e:
         assert e.__class__.__name__ == 'UnauthorisedError'
 

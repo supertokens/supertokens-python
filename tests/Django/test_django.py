@@ -27,7 +27,6 @@ from supertokens_python.recipe.session import create_new_session, refresh_sessio
 from tests.utils import start_st, reset, clean_st, setup_st
 
 
-
 def get_cookies(response) -> dict:
     cookies = dict()
     for key, morsel in response.cookies.items():
@@ -253,4 +252,5 @@ class SupertokensTest(TestCase):
         assert len(cookies['sRefreshToken']['value']) > 0
 
         response = await my_middleware(request)
-        assert response.status_code == 401  # not authorized because no access refresh token
+        # not authorized because no access refresh token
+        assert response.status_code == 401

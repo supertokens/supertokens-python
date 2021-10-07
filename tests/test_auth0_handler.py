@@ -88,7 +88,9 @@ def client():
     async def login_with_error_callback(request: Request):
         async def callback(_: str, __: str, access_token: str, ___: str):
             if access_token == 'test-access-token':
-                raise HTTPException(status_code=500, detail='access token not matching')
+                raise HTTPException(
+                    status_code=500,
+                    detail='access token not matching')
 
         return await auth0_handler(request, AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, callback)
 

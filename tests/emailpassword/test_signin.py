@@ -123,7 +123,7 @@ async def test_that_disabling_api_the_default_signin_API_does_not_work(driver_co
                     {
                         "id": "email",
                         "value": "random@gmail.com"
-                    }
+                }
                 ]
         }))
 
@@ -150,7 +150,10 @@ async def test_singinAPI_works_when_input_is_fine(driver_config_client: TestClie
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validpass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     user_info = dict_response['user']
@@ -167,7 +170,7 @@ async def test_singinAPI_works_when_input_is_fine(driver_config_client: TestClie
                     {
                         "id": "email",
                         "value": "random@gmail.com"
-                    }
+                }
                 ]
         }))
 
@@ -197,7 +200,10 @@ async def test_singinAPI_throws_an_error_when_email_does_not_match(driver_config
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validpass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     user_info = dict_response['user']
@@ -214,7 +220,7 @@ async def test_singinAPI_throws_an_error_when_email_does_not_match(driver_config
                     {
                         "id": "email",
                         "value": "ra@gmail.com"
-                    }
+                }
                 ]
         }))
 
@@ -243,7 +249,10 @@ async def test_singinAPI_throws_an_error_when_email_does_not_match(driver_config
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validpass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     user_info = dict_response['user']
@@ -260,7 +269,7 @@ async def test_singinAPI_throws_an_error_when_email_does_not_match(driver_config
                     {
                         "id": "email",
                         "value": "ra@gmail.com"
-                    }
+                }
                 ]
         }))
 
@@ -289,7 +298,10 @@ async def test_singinAPI_throws_an_error_if_password_is_incorrect(driver_config_
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validpass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     user_info = dict_response['user']
@@ -306,7 +318,7 @@ async def test_singinAPI_throws_an_error_if_password_is_incorrect(driver_config_
                     {
                         "id": "email",
                         "value": "random@gmail.com"
-                    }
+                }
                 ]
         }))
 
@@ -335,7 +347,10 @@ async def test_bad_input_not_a_JSON_to_signin_API(driver_config_client: TestClie
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validpass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     user_info = dict_response['user']
@@ -372,7 +387,10 @@ async def test_bad_input_not_a_JSON_to_signin_API(driver_config_client: TestClie
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validpass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     user_info = dict_response['user']
@@ -411,7 +429,10 @@ async def test_that_a_successfull_signin_yields_a_session(driver_config_client: 
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validpass123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     user_info = dict_response['user']
@@ -428,7 +449,7 @@ async def test_that_a_successfull_signin_yields_a_session(driver_config_client: 
                     {
                         "id": "email",
                         "value": "random@gmail.com"
-                    }
+                }
                 ]
         }))
 
@@ -463,7 +484,10 @@ async def test_email_field_validation_error(
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validpassword123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpassword123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
@@ -479,7 +503,7 @@ async def test_email_field_validation_error(
                     {
                         "id": "email",
                         "value": "randomgmail.com"
-                    }
+                }
                 ]
         }))
 
@@ -509,7 +533,10 @@ async def test_formFields_has_no_email_field(
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validpassword123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpassword123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
@@ -549,7 +576,10 @@ async def test_formFields_has_no_password_field(
     })
     start_st()
 
-    response_1 = sign_up_request(driver_config_client, "random@gmail.com", "validpassword123")
+    response_1 = sign_up_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpassword123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
@@ -567,4 +597,4 @@ async def test_formFields_has_no_password_field(
 
     assert response_2.status_code == 400
 
-##TODO add few more tests
+# TODO add few more tests

@@ -136,7 +136,6 @@ async def test_login_refresh(driver_config_client: TestClient):
     assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
-
     response_3 = driver_config_client.post(
         url='/refresh',
         headers={
@@ -167,6 +166,7 @@ async def test_login_refresh(driver_config_client: TestClient):
     assert cookies_3['sAccessToken']['secure'] is None
     assert cookies_3['sRefreshToken']['secure'] is None
     assert cookies_3['sIdRefreshToken']['secure'] is None
+
 
 def test_login_logout(driver_config_client: TestClient):
     init({
@@ -293,6 +293,7 @@ def test_login_info(driver_config_client: TestClient):
     cookies_2 = extract_all_cookies(response_2)
     assert cookies_2 == {}
 
+
 def test_login_handle(driver_config_client: TestClient):
     init({
         'supertokens': {
@@ -396,7 +397,7 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
             'anti-csrf': response_1.headers.get('anti-csrf')
         },
         cookies={
-            #no cookies
+            # no cookies
         }
     )
-    assert response_3.status_code == 401 #not authorized because no refresh tokens
+    assert response_3.status_code == 401  # not authorized because no refresh tokens
