@@ -19,14 +19,14 @@ def supertokens_middleware(anti_csrf_check=None):
             flask_request = FlaskRequest(request)
             response = FlaskResponse(Response())
             result = async_to_sync(st.middleware)(flask_request, response)
-
+            print(request.path)
             if result is None:
                 response = make_response(f(*args, **kwargs))
-
+            response = FlaskResponse(response)
             if hasattr(g, 'supertokens'):
                 manage_cookies_post_response(g.supertokens, response)
 
-            return response
+            return response.response
 
         return wrapped_function
 

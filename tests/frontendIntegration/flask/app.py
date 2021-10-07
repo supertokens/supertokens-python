@@ -17,15 +17,16 @@ import json
 import os
 import sys
 
-from flask import Flask, request, make_response, Response, jsonify
+from asgiref.sync import async_to_sync
+from flask import Flask, request, make_response, Response, jsonify, render_template, g
 from flask_cors import CORS
-from starlette.requests import Request
 
 from supertokens_python import init, Supertokens
+from supertokens_python.exceptions import SuperTokensError
+from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.framework.flask import error_handler
 from supertokens_python.framework.flask.flask_middleware1 import supertokens_middleware
 from supertokens_python.recipe import session
-from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.flask import error_handler
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user, create_new_session, revoke_session, \
@@ -34,8 +35,10 @@ from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user,
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
 index_file.close()
-app = Flask(__name__)
-#app.wsgi_app = Middleware(app.wsgi_app)
+
+app = Flask(__name__, template_folder='templates')
+app.register_error_handler(SuperTokensError, error_handler)
+app.wsgi_app = Middleware(app.wsgi_app)
 CORS(app, supports_credentials=True)
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
@@ -132,9 +135,9 @@ def config(enable_anti_csrf: bool):
 init(config(True))
 
 
-@app.route('/index.html', methods=['OPTIONS'])
+@app.route('/index.html', methods=['GET'])
 def send_file():
-    return file_contents
+    return render_template('index.html')
 
 
 def send_options_api_response():
@@ -147,8 +150,9 @@ def login_options():
 
 
 @app.route('/login', methods=['POST'])
-@supertokens_middleware()
+#@supertokens_middleware()
 def login():
+    print(request.get_json())
     user_id = request.get_json()['userId']
     create_new_session(request, user_id)
     return user_id
@@ -193,6 +197,7 @@ def options():
 
 
 @app.route('/', methods=['GET'])
+#@supertokens_middleware()
 @verify_session()
 def get_info():
     Test.increment_get_session()
@@ -209,10 +214,10 @@ def update_options():
 
 @app.route('/update-jwt', methods=['GET'])
 @verify_session()
-@supertokens_middleware(True)
+#@supertokens_middleware(True)
 def update_jwt():
     Test.increment_get_session()
-    session = get_session(request)
+    session = verify_session()(request)
 
     resp = make_response(session.get_user_id())
     resp.headers['Cache-Control'] = 'no-cache, private'
@@ -221,8 +226,9 @@ def update_jwt():
 
 @app.route('/update-jwt', methods=['POST'])
 @verify_session()
+#@supertokens_middleware()
 def update_jwt_post():
-    session = get_session(request)
+    session = g.supertokens
     update_jwt_payload(session.get_handle(), request.json())
     Test.increment_get_session()
     resp = make_response(session.get_jwt_payload())
@@ -278,10 +284,13 @@ def logout_options():
 
 @app.route('/logout', methods=['POST'])
 @verify_session()
+#@supertokens_middleware()
 def logout():
     session = get_session(request)
-    # session.revoke_session()
-    revoke_session(session.get_handle())
+
+    #TODO do not do this. update the api
+    async_to_sync(session.revoke_session())
+    #revoke_session(session.get_handle())
     return 'success'
 
 
@@ -292,6 +301,7 @@ def revoke_all_options():
 
 @app.route('/revokeAll', methods=['POST'])
 @verify_session()
+#@supertokens_middleware()
 async def revoke_all():
     session = get_session(request)
     revoke_all_sessions_for_user(session.get_user_id())
@@ -310,6 +320,7 @@ def refresh_attempted_time():
 
 @app.route('/auth/session/refresh', methods=['POST'])
 @verify_session()
+#@supertokens_middleware()
 def refresh():
     Test.increment_attempted_refresh()
     if request.headers.get("rid") is None:
@@ -409,14 +420,6 @@ def test_error():
     return Response('test error message', status=500)
 
 
-# @app.exception_handler(405)
-# def f_405(_, e):
-#     return PlainTextResponse('', status_code=404)
 
-
-# cors middleware added like this due to issue with add_middleware
-# ref: https://github.com/tiangolo/fastapi/issues/1663
-
-
-# if __name__ == '__main__':
-#     app.run(host="0.0.0.0", port=int(get_app_port()), threaded=True)
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=int(get_app_port()), threaded=True)

@@ -47,21 +47,27 @@ class FlaskRequest(BaseRequest):
         return self.req.url
 
     def get_session(self):
-        return self.req.environ['additional_storage']
+        from flask import g
+        if hasattr(g, 'supertokens'):
+            return g.supertokens
+        return None
 
     def set_session(self, session):
-        if session is None:
-            self.req.environ['additional_storage'] = None
-        else:
-            self.req.environ['additional_storage'] = {
-                'new_access_token_info' : session['new_access_token_info'],
-                'new_anti_csrf_token' : session['new_anti_csrf_token'],
-                'new_id_refresh_token_info' : session['new_id_refresh_token_info'],
-                'new_refresh_token_info' : session['new_refresh_token_info'],
-                'remove_cookies' : session['remove_cookies'],
-                'user_id' : session['user_id'],
-                'jwt_payload' : session['jwt_payload'],
-            }
+        from flask import g
+        g.supertokens = session
+
+        # if session is None:
+        #     self.req.environ['additional_storage'] = None
+        # else:
+        #     self.req.environ['additional_storage'] = {
+        #         'new_access_token_info' : session['new_access_token_info'],
+        #         'new_anti_csrf_token' : session['new_anti_csrf_token'],
+        #         'new_id_refresh_token_info' : session['new_id_refresh_token_info'],
+        #         'new_refresh_token_info' : session['new_refresh_token_info'],
+        #         'remove_cookies' : session['remove_cookies'],
+        #         'user_id' : session['user_id'],
+        #         'jwt_payload' : session['jwt_payload'],
+        #     }
 
     def get_path(self) -> str:
         if isinstance(self.req, dict):

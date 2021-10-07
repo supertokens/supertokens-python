@@ -44,7 +44,7 @@ class FlaskResponse(BaseResponse):
                                      samesite=samesite
                                  )))
         else:
-            self.response.set_cookie(key, value)
+            self.response.set_cookie(key, value=value, max_age=max_age, expires=expires / 1000, path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
 
     def set_header(self, key, value):
         if self.response is None:

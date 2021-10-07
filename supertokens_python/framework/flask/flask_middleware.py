@@ -26,7 +26,6 @@ class Middleware:
         self.app = app
 
     def __call__(self, environ, start_response):
-
         from supertokens_python.framework.flask.flask_request import FlaskRequest
         from supertokens_python.framework.flask.flask_response import FlaskResponse
         from supertokens_python import Supertokens
@@ -39,9 +38,9 @@ class Middleware:
         result = async_to_sync(st.middleware)(request, response)
 
         if result is None:
-            # def injecting_start_response(status, headers, exc_info=None):
-            #     headers = [('content-type', 'text/html')]
-            #     return start_response(status, headers, exc_info)
+            def injecting_start_response(status, headers, exc_info=None):
+                headers = None
+                return start_response(status, headers, exc_info)
             self.app(environ, start_response)
 
         response = FlaskResponse()
