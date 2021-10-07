@@ -65,7 +65,8 @@ class EmailPasswordRecipe(RecipeModule):
         else:
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                      self.config.email_verification_feature)
-        recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
+        recipe_implementation = RecipeImplementation(
+            Querier.get_instance(recipe_id))
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
         api_implementation = APIImplementation()
@@ -74,25 +75,26 @@ class EmailPasswordRecipe(RecipeModule):
 
     def is_error_from_this_or_child_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and (
-                isinstance(err, SuperTokensEmailPasswordError)
-                or
-                self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(err)
+            isinstance(err, SuperTokensEmailPasswordError)
+            or
+            self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+                err)
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [
-                   APIHandled(NormalisedURLPath(SIGNUP), 'post', SIGNUP,
-                              self.api_implementation.disable_sign_up_post),
-                   APIHandled(NormalisedURLPath(SIGNIN), 'post', SIGNIN,
-                              self.api_implementation.disable_sign_in_post),
-                   APIHandled(NormalisedURLPath(USER_PASSWORD_RESET_TOKEN), 'post', USER_PASSWORD_RESET_TOKEN,
-                              self.api_implementation.disable_generate_password_reset_token_post),
-                   APIHandled(NormalisedURLPath(USER_PASSWORD_RESET), 'post', USER_PASSWORD_RESET,
-                              self.api_implementation.disable_password_reset_post),
-                   APIHandled(NormalisedURLPath(SIGNUP_EMAIL_EXISTS), 'get', SIGNUP_EMAIL_EXISTS,
-                              self.api_implementation.disable_email_exists_get)
+            APIHandled(NormalisedURLPath(SIGNUP), 'post', SIGNUP,
+                       self.api_implementation.disable_sign_up_post),
+            APIHandled(NormalisedURLPath(SIGNIN), 'post', SIGNIN,
+                       self.api_implementation.disable_sign_in_post),
+            APIHandled(NormalisedURLPath(USER_PASSWORD_RESET_TOKEN), 'post', USER_PASSWORD_RESET_TOKEN,
+                       self.api_implementation.disable_generate_password_reset_token_post),
+            APIHandled(NormalisedURLPath(USER_PASSWORD_RESET), 'post', USER_PASSWORD_RESET,
+                       self.api_implementation.disable_password_reset_post),
+            APIHandled(NormalisedURLPath(SIGNUP_EMAIL_EXISTS), 'get', SIGNUP_EMAIL_EXISTS,
+                       self.api_implementation.disable_email_exists_get)
 
-               ] + self.email_verification_recipe.get_apis_handled()
+        ] + self.email_verification_recipe.get_apis_handled()
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
@@ -122,7 +124,8 @@ class EmailPasswordRecipe(RecipeModule):
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
         if isinstance(error, SuperTokensEmailPasswordError):
             if isinstance(error, FieldError):
-                response.set_content({'status': 'FIELD_ERROR', 'formFields': error.get_json_form_fields()})
+                response.set_content(
+                    {'status': 'FIELD_ERROR', 'formFields': error.get_json_form_fields()})
                 return response
         return await self.email_verification_recipe.handle_error(request, error, response)
 
@@ -146,13 +149,16 @@ class EmailPasswordRecipe(RecipeModule):
     def get_instance() -> EmailPasswordRecipe:
         if EmailPasswordRecipe.__instance is not None:
             return EmailPasswordRecipe.__instance
-        raise_general_exception(None, 'Initialisation not done. Did you forget to call the SuperTokens.init function?')
+        raise_general_exception(
+            None,
+            'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
     @staticmethod
     def reset():
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
-            raise_general_exception(None, 'calling testing function in non testing env')
+            raise_general_exception(
+                None, 'calling testing function in non testing env')
         EmailPasswordRecipe.__instance = None
 
     # instance functions below...............

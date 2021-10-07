@@ -56,7 +56,8 @@ class Google(Provider):
             if 'email' not in user_info or user_info['email'] is None:
                 return UserInfo(user_id)
             is_email_verified = user_info['verified_email'] if 'verified_email' in user_info else False
-            return UserInfo(user_id, UserInfoEmail(user_info['email'], is_email_verified))
+            return UserInfo(user_id, UserInfoEmail(
+                user_info['email'], is_email_verified))
 
     def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
         params = {
@@ -67,9 +68,11 @@ class Google(Provider):
             'include_granted_scopes': 'true',
             **self.authorisation_redirect_params
         }
-        return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
+        return AuthorisationRedirectAPI(
+            self.authorisation_redirect_url, params)
 
-    def get_access_token_api_info(self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
+    def get_access_token_api_info(
+            self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
         params = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,

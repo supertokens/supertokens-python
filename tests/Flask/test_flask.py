@@ -14,6 +14,17 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 
+import json
+
+from _pytest.fixtures import fixture
+from flask import Flask, jsonify, make_response, request
+
+from supertokens_python import init
+from supertokens_python.framework.flask import Middleware
+from supertokens_python.recipe import session
+from supertokens_python.recipe.session.framework.flask import verify_session
+from supertokens_python.recipe.session.sync import create_new_session, refresh_session, get_session, revoke_session
+from tests.Flask.utils import extract_all_cookies
 from tests.utils import set_key_value_in_config, TEST_COOKIE_SAME_SITE_CONFIG_KEY, TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, \
     TEST_ACCESS_TOKEN_MAX_AGE_VALUE, TEST_ACCESS_TOKEN_PATH_CONFIG_KEY, TEST_ACCESS_TOKEN_PATH_VALUE, \
     TEST_COOKIE_DOMAIN_CONFIG_KEY, TEST_COOKIE_DOMAIN_VALUE, TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY, \
@@ -21,23 +32,6 @@ from tests.utils import set_key_value_in_config, TEST_COOKIE_SAME_SITE_CONFIG_KE
     TEST_COOKIE_SECURE_CONFIG_KEY, TEST_DRIVER_CONFIG_COOKIE_DOMAIN, \
     TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH, TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH, TEST_DRIVER_CONFIG_COOKIE_SAME_SITE, \
     start_st, reset, clean_st, setup_st
-import json
-
-from _pytest.fixtures import fixture
-from asgiref.sync import async_to_sync
-from flask import Flask, jsonify, make_response, request, Response, g
-
-from supertokens_python.exceptions import SuperTokensError
-from supertokens_python import init
-from supertokens_python.framework.flask.flask_request import FlaskRequest
-from supertokens_python.framework.flask.flask_response import FlaskResponse
-from supertokens_python.recipe import session
-from supertokens_python.recipe.session.framework.flask import verify_session
-from supertokens_python.recipe.session.sync import create_new_session, refresh_session, get_session, revoke_session
-from supertokens_python.framework.flask import Middleware, error_handler
-from supertokens_python.supertokens import manage_cookies_post_response
-
-from tests.Flask.utils import extract_all_cookies
 
 
 def setup_function(f):
@@ -55,30 +49,7 @@ def teardown_function(f):
 def driver_config_app():
     app = Flask(__name__)
     app.app_context().push()
-    #app.wsgi_app = Middleware(app.wsgi_app)
-
-    @app.before_request
-    def before_request():
-        from flask import request
-        from supertokens_python import Supertokens
-
-        st = Supertokens.get_instance()
-
-        request = FlaskRequest(request)
-        response = FlaskResponse(Response())
-        result = async_to_sync(st.middleware)(request, response)
-
-        if result is not None:
-            return result.response
-
-    @app.after_request
-    def after_request(response):
-        response = FlaskResponse(response)
-        if hasattr(g, 'supertokens'):
-            manage_cookies_post_response(g.supertokens, response)
-
-        return response.response
-    app.register_error_handler(SuperTokensError, error_handler)
+    Middleware(app)
 
     app.testing = True
     init({
@@ -88,7 +59,7 @@ def driver_config_app():
         'framework': 'flask',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -107,15 +78,12 @@ def driver_config_app():
     @app.route('/login')
     def login():
         user_id = 'userId'
-        session = create_new_session(request, user_id, {}, {})
+        create_new_session(request, user_id, {}, {})
 
         return jsonify({'userId': user_id, 'session': 'ssss'})
 
     @app.route('/refresh', methods=['POST'])
     def custom_refresh():
-        print(request.is_json)
-        print(request.json)
-        print('eroare')
         response = make_response(jsonify({}))
         refresh_session(request)
         return response
@@ -188,12 +156,16 @@ def test_cookie_login_and_refresh(driver_config_app):
     assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
-    request_2 = driver_config_app.test_client()
-    request_2.set_cookie(
+    test_client = driver_config_app.test_client()
+    test_client.set_cookie(
         'localhost',
         'sRefreshToken',
         cookies_1['sRefreshToken']['value'])
-    response_2 = request_2.post('/refresh', headers={
+    test_client.set_cookie(
+        'localhost',
+        'sIdRefreshToken',
+        cookies_1['sIdRefreshToken']['value'])
+    response_2 = test_client.post('/refresh', headers={
         'anti-csrf': response_1.headers.get('anti-csrf')})
     cookies_2 = extract_all_cookies(response_2)
     assert cookies_1['sAccessToken']['value'] != cookies_2['sAccessToken']['value']
@@ -268,8 +240,7 @@ def test_login_refresh_no_csrf(driver_config_app):
 
     # post with csrf token -> no error
     result = test_client.post('/refresh', headers={
-        'anti-csrf': response_1.headers.get('anti-csrf')},
-        json={'lala': 'lala'})
+        'anti-csrf': response_1.headers.get('anti-csrf')})
     assert result.status_code == 200
 
     # post with csrf token -> should be error with status code 401

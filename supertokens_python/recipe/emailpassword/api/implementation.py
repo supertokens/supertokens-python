@@ -46,7 +46,8 @@ class APIImplementation(APIInterface):
 
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
                                                  api_options: APIOptions) -> GeneratePasswordResetTokenPostResponse:
-        email = find_first_occurrence_in_list(lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
+        email = find_first_occurrence_in_list(
+            lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
 
         user = await api_options.recipe_implementation.get_user_by_email(email)
 
@@ -65,7 +66,7 @@ class APIImplementation(APIInterface):
         async def send_email():
             try:
                 await api_options.config.reset_token_using_password_feature.create_and_send_custom_email(
-                                                                                    user, password_reset_link)
+                    user, password_reset_link)
             except Exception:
                 pass
 
@@ -74,15 +75,18 @@ class APIImplementation(APIInterface):
 
     async def password_reset_post(self, form_fields: List[FormField], token: str,
                                   api_options: APIOptions) -> PasswordResetPostResponse:
-        new_password = find_first_occurrence_in_list(lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
+        new_password = find_first_occurrence_in_list(
+            lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
         result = await api_options.recipe_implementation.reset_password_using_token(token, new_password)
         if result.is_ok:
             return PasswordResetPostOkResponse()
         return PasswordResetPostInvalidTokenResponse()
 
     async def sign_in_post(self, form_fields: List[FormField], api_options: APIOptions) -> SignInPostResponse:
-        password = find_first_occurrence_in_list(lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
-        email = find_first_occurrence_in_list(lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
+        password = find_first_occurrence_in_list(
+            lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
+        email = find_first_occurrence_in_list(
+            lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
 
         result = await api_options.recipe_implementation.sign_in(email, password)
 
@@ -94,8 +98,10 @@ class APIImplementation(APIInterface):
         return SignInPostOkResponse(user)
 
     async def sign_up_post(self, form_fields: List[FormField], api_options: APIOptions) -> SignUpPostResponse:
-        password = find_first_occurrence_in_list(lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
-        email = find_first_occurrence_in_list(lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
+        password = find_first_occurrence_in_list(
+            lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
+        email = find_first_occurrence_in_list(
+            lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
 
         result = await api_options.recipe_implementation.sign_up(email, password)
 

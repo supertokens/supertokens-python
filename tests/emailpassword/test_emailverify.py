@@ -24,8 +24,8 @@ from pytest import mark
 
 from supertokens_python import init
 from supertokens_python.recipe import session, emailpassword
-from supertokens_python.recipe.emailverification import APIInterface, APIOptions
-from supertokens_python.exceptions import GeneralError
+from supertokens_python.recipe.emailverification.interfaces import APIInterface, APIOptions
+from supertokens_python.exceptions import BadInputError
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.session import create_new_session, refresh_session, get_session
@@ -98,7 +98,7 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(driver
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -141,7 +141,7 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -187,7 +187,7 @@ async def test_the_generate_token_api_with_valid_input_no_session_and_check_outp
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -221,7 +221,7 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -299,7 +299,7 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -359,7 +359,7 @@ async def test_the_email_verify_API_with_valid_input(driver_config_client: TestC
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -410,10 +410,10 @@ async def test_the_email_verify_API_with_valid_input(driver_config_client: TestC
             'sRefreshToken': cookies['sRefreshToken']['value'],
             'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
         },
-        json=json.dumps({
+        json={
             "method": "token",
             "token": token
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)
@@ -436,7 +436,7 @@ async def test_the_email_verify_API_with_invalid_token_and_check_error(driver_co
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -487,10 +487,10 @@ async def test_the_email_verify_API_with_invalid_token_and_check_error(driver_co
             'sRefreshToken': cookies['sRefreshToken']['value'],
             'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
         },
-        json=json.dumps({
+        json={
             "method": "token",
             "token": "bad token"
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)
@@ -513,7 +513,7 @@ async def test_the_email_verify_API_with_token_of_not_type_string(driver_config_
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -564,10 +564,10 @@ async def test_the_email_verify_API_with_token_of_not_type_string(driver_config_
             'sRefreshToken': cookies['sRefreshToken']['value'],
             'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
         },
-        json=json.dumps({
+        json={
             "method": "token",
             "token": 200
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)
@@ -609,7 +609,7 @@ async def test_that_the_handlePostEmailVerification_callback_is_called_on_succes
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -666,10 +666,10 @@ async def test_that_the_handlePostEmailVerification_callback_is_called_on_succes
             'sRefreshToken': cookies['sRefreshToken']['value'],
             'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
         },
-        json=json.dumps({
+        json={
             "method": "token",
             "token": token
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)
@@ -698,7 +698,7 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(driver_con
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -741,10 +741,10 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(driver_con
 
     response_3 = driver_config_client.post(
         url="/auth/user/email/verify",
-        json=json.dumps({
+        json={
             "method": "token",
             "token": token
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)
@@ -776,7 +776,7 @@ async def test_the_email_verify_with_no_session_using_the_get_method(driver_conf
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -830,7 +830,7 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis(driver_conf
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -879,10 +879,10 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis(driver_conf
 
     response_3 = driver_config_client.post(
         url="/auth/user/email/verify",
-        json=json.dumps({
+        json={
             "method": "token",
             "token": token
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)
@@ -916,7 +916,7 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis_throws_erro
             if response.status == "OK":
                 user_info_from_callback = response.user
 
-            raise GeneralError("verify exception")
+            raise BadInputError("verify exception")
 
         param.email_verify_post = email_verify_post
         return param
@@ -928,7 +928,7 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis_throws_erro
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -977,10 +977,10 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis_throws_erro
 
     response_3 = driver_config_client.post(
         url="/auth/user/email/verify",
-        json=json.dumps({
+        json={
             "method": "token",
             "token": token
-        })
+        }
     )
 
     dict_response = json.loads(response_3.text)
@@ -1002,7 +1002,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -1017,7 +1017,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version == "2.7"
+    assert version == "2.9"
 
     response_1 = sign_up_request(
         driver_config_client,
@@ -1044,7 +1044,7 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -1059,7 +1059,7 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version == "2.7"
+    assert version == "2.9"
 
     response_1 = sign_up_request(
         driver_config_client,
@@ -1078,4 +1078,4 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     await emailpassword.unverify_email(user_id)
 
     is_verified = await emailpassword.is_email_verified(user_id)
-    assert is_verified == False
+    assert is_verified is False

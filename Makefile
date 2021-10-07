@@ -7,10 +7,10 @@ help:
 	@echo "        \x1b[33;1mhelp: \x1b[0mprints this"
 
 lint:
-	autopep8 -r -i -a supertokens_fastapi tests
+	autopep8 -r -i -a supertokens_python tests examples
 
 check-lint:
-	flake8 supertokens_fastapi tests
+	flake8 supertokens_python tests examples
 
 set-up-hooks:
 	cp hooks/pre-commit.sh .git/hooks/pre-commit

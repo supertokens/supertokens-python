@@ -52,6 +52,7 @@ npm run init
 (cd ./examples/for-tests && npm run link) # this is there because in linux machine, postinstall in npm doesn't work..
 cd ../project/tests/auth-react/fastapi
 uvicorn app:app --host 0.0.0.0 --port 8083 --reload --debug &
+pid=$!
 cd ../../../../supertokens-auth-react/
 SKIP_OAUTH=true npm run test-with-non-node
 if [[ $? -ne 0 ]]
@@ -59,6 +60,6 @@ then
     echo "test failed... exiting!"
     exit 1
 fi
-pkill -KILL go && pkill -KILL main # TODO need to kill the test server
+kill -15 $pid
 rm -rf ./test/server/node_modules/supertokens-node
 git checkout HEAD -- ./test/server/package.json

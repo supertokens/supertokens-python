@@ -25,7 +25,8 @@ if TYPE_CHECKING:
 
 
 class SignUpResult(ABC):
-    def __init__(self, status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR'], user: Union[User, None]):
+    def __init__(
+            self, status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR'], user: Union[User, None]):
         self.status = status
         self.is_ok = False
         self.is_email_already_exists_error = False
@@ -47,7 +48,8 @@ class SignUpEmailAlreadyExistsErrorResult(SignUpResult):
 
 
 class SignInResult(ABC):
-    def __init__(self, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'], user: Union[User, None]):
+    def __init__(
+            self, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'], user: Union[User, None]):
         self.status = status
         self.is_ok = False
         self.is_wrong_credentials_error = False
@@ -69,7 +71,8 @@ class SignInWrongCredentialsErrorResult(SignInResult):
 
 
 class CreateResetPasswordResult(ABC):
-    def __init__(self, status: Literal['OK', 'UNKNOWN_USER_ID_ERROR'], token: Union[str, None]):
+    def __init__(
+            self, status: Literal['OK', 'UNKNOWN_USER_ID_ERROR'], token: Union[str, None]):
         self.status = status
         self.is_ok = False
         self.is_unknown_user_id_error = False
@@ -91,7 +94,8 @@ class CreateResetPasswordWrongUserIdErrorResult(CreateResetPasswordResult):
 
 
 class ResetPasswordUsingTokenResult(ABC):
-    def __init__(self, status: Literal['OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR']):
+    def __init__(self, status: Literal['OK',
+                 'RESET_PASSWORD_INVALID_TOKEN_ERROR']):
         self.status = status
         self.is_ok = False
         self.is_reset_password_invalid_token_error = False
@@ -104,7 +108,8 @@ class ResetPasswordUsingTokenOkResult(ResetPasswordUsingTokenResult):
         self.is_reset_password_invalid_token_error = False
 
 
-class ResetPasswordUsingTokenWrongUserIdErrorResult(ResetPasswordUsingTokenResult):
+class ResetPasswordUsingTokenWrongUserIdErrorResult(
+        ResetPasswordUsingTokenResult):
     def __init__(self):
         super().__init__('RESET_PASSWORD_INVALID_TOKEN_ERROR')
         self.is_ok = False
@@ -112,7 +117,8 @@ class ResetPasswordUsingTokenWrongUserIdErrorResult(ResetPasswordUsingTokenResul
 
 
 class UpdateEmailOrPasswordResult(ABC):
-    def __init__(self, status: Literal['OK', 'UNKNOWN_USER_ID_ERROR', 'EMAIL_ALREADY_EXISTS_ERROR']):
+    def __init__(
+            self, status: Literal['OK', 'UNKNOWN_USER_ID_ERROR', 'EMAIL_ALREADY_EXISTS_ERROR']):
         self.status = status
         self.is_ok = False
         self.is_email_already_exists_error = False
@@ -127,7 +133,8 @@ class UpdateEmailOrPasswordOkResult(UpdateEmailOrPasswordResult):
         self.is_unknown_user_id_error = False
 
 
-class UpdateEmailOrPasswordEmailAlreadyExistsErrorResult(UpdateEmailOrPasswordResult):
+class UpdateEmailOrPasswordEmailAlreadyExistsErrorResult(
+        UpdateEmailOrPasswordResult):
     def __init__(self):
         super().__init__('EMAIL_ALREADY_EXISTS_ERROR')
         self.is_ok = False
@@ -135,7 +142,8 @@ class UpdateEmailOrPasswordEmailAlreadyExistsErrorResult(UpdateEmailOrPasswordRe
         self.is_unknown_user_id_error = False
 
 
-class UpdateEmailOrPasswordUnknownUserIdErrorResult(UpdateEmailOrPasswordResult):
+class UpdateEmailOrPasswordUnknownUserIdErrorResult(
+        UpdateEmailOrPasswordResult):
     def __init__(self):
         super().__init__('UNKNOWN_USER_ID_ERROR')
         self.is_ok = False
@@ -200,7 +208,8 @@ class APIOptions:
 
 
 class EmailVerifyPostResponse(ABC):
-    def __init__(self, status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'], user: Union[User, None]):
+    def __init__(
+            self, status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'], user: Union[User, None]):
         self.status = status
         self.is_ok = False
         self.is_email_verification_invalid_token_error = False
@@ -271,14 +280,16 @@ class GenerateEmailVerifyTokenPostResponse(ABC):
         }
 
 
-class GenerateEmailVerifyTokenPostOkResponse(GenerateEmailVerifyTokenPostResponse):
+class GenerateEmailVerifyTokenPostOkResponse(
+        GenerateEmailVerifyTokenPostResponse):
     def __init__(self):
         super().__init__('OK')
         self.is_ok = True
         self.is_email_already_verified_error = False
 
 
-class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse(GenerateEmailVerifyTokenPostResponse):
+class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse(
+        GenerateEmailVerifyTokenPostResponse):
     def __init__(self):
         super().__init__('EMAIL_ALREADY_VERIFIED_ERROR')
         self.is_ok = False
@@ -312,13 +323,15 @@ class GeneratePasswordResetTokenPostResponse(ABC):
         }
 
 
-class GeneratePasswordResetTokenPostOkResponse(GeneratePasswordResetTokenPostResponse):
+class GeneratePasswordResetTokenPostOkResponse(
+        GeneratePasswordResetTokenPostResponse):
     def __init__(self):
         super().__init__('OK')
 
 
 class PasswordResetPostResponse(ABC):
-    def __init__(self, status: Literal['OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR']):
+    def __init__(self, status: Literal['OK',
+                 'RESET_PASSWORD_INVALID_TOKEN_ERROR']):
         self.status = status
 
     def to_json(self):
@@ -338,7 +351,8 @@ class PasswordResetPostInvalidTokenResponse(PasswordResetPostResponse):
 
 
 class SignInPostResponse(ABC):
-    def __init__(self, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'], user: Union[User, None]):
+    def __init__(
+            self, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'], user: Union[User, None]):
         self.type = 'emailpassword'
         self.is_ok = False
         self.is_wrong_credentials_error = False
@@ -374,7 +388,8 @@ class SignInPostWrongCredentialsErrorResponse(SignInPostResponse):
 
 
 class SignUpPostResponse(ABC):
-    def __init__(self, status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR'], user: Union[User, None]):
+    def __init__(
+            self, status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR'], user: Union[User, None]):
         self.type = 'emailpassword'
         self.is_ok = False
         self.is_email_already_exists_error = False

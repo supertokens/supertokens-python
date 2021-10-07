@@ -94,7 +94,7 @@ async def test_email_validation_checks_in_generate_token_API(driver_config_clien
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -106,13 +106,13 @@ async def test_email_validation_checks_in_generate_token_API(driver_config_clien
 
     response_1 = driver_config_client.post(
         url="/auth/user/password/reset/token",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "email",
                     "value": "random"
                 }]
-        }))
+        })
 
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -138,7 +138,7 @@ async def test_that_generated_password_link_is_correct(driver_config_client: Tes
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -163,13 +163,13 @@ async def test_that_generated_password_link_is_correct(driver_config_client: Tes
     await asyncio.sleep(1)
     response_1 = driver_config_client.post(
         url="/auth/user/password/reset/token",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "email",
                     "value": "test@gmail.com"
                 }]
-        }))
+        })
     await asyncio.sleep(1)
 
     assert response_1.status_code == 200
@@ -187,7 +187,7 @@ async def test_password_validation(driver_config_client: TestClient):
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -199,14 +199,14 @@ async def test_password_validation(driver_config_client: TestClient):
 
     response_1 = driver_config_client.post(
         url="/auth/user/password/reset",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
                     "value": "invalid"
                 }],
                 "token": "random"
-        }))
+        })
 
     assert response_1.status_code == 200
     # dict_response = json.loads(response_1.text)
@@ -214,7 +214,7 @@ async def test_password_validation(driver_config_client: TestClient):
 
     response_2 = driver_config_client.post(
         url="/auth/user/password/reset",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
@@ -222,7 +222,7 @@ async def test_password_validation(driver_config_client: TestClient):
                 }],
             "token": "randomToken"
 
-        }))
+        })
 
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
@@ -238,7 +238,7 @@ async def test_token_missing_from_input(driver_config_client: TestClient):
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
         },
         'recipe_list': [
@@ -249,13 +249,13 @@ async def test_token_missing_from_input(driver_config_client: TestClient):
 
     response_1 = driver_config_client.post(
         url="/auth/user/password/reset",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
                     "value": "validpass123"
                 }]
-        }))
+        })
 
     assert response_1.status_code == 400
     dict_response = json.loads(response_1.text)
@@ -278,7 +278,7 @@ async def test_valid_token_input_and_passoword_has_changed(driver_config_client:
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -303,33 +303,33 @@ async def test_valid_token_input_and_passoword_has_changed(driver_config_client:
     assert dict_response["status"] == "OK"
     response_1 = driver_config_client.post(
         url="/auth/user/password/reset/token",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "email",
                     "value": "random@gmail.com"
                 }]
-        }))
+        })
     await asyncio.sleep(1)
 
     assert response_1.status_code == 200
 
     response_2 = driver_config_client.post(
         url="/auth/user/password/reset",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
                     "value": "validpass12345"
                 }],
             "token": token_info
-        }))
+        })
     await asyncio.sleep(1)
     assert response_2.status_code == 200
 
     response_3 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
@@ -340,7 +340,7 @@ async def test_valid_token_input_and_passoword_has_changed(driver_config_client:
                         "value": "random@gmail.com"
                 }
                 ]
-        }))
+        })
 
     assert response_3.status_code == 200
 
@@ -349,7 +349,7 @@ async def test_valid_token_input_and_passoword_has_changed(driver_config_client:
 
     response_4 = driver_config_client.post(
         url="/auth/signin",
-        json=json.dumps({
+        json={
             'formFields':
                 [
                     {
@@ -361,7 +361,7 @@ async def test_valid_token_input_and_passoword_has_changed(driver_config_client:
                         "value": "random@gmail.com",
                     },
                 ]
-        }))
+        })
 
     assert response_4.status_code == 200
 

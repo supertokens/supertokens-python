@@ -23,7 +23,7 @@ from pytest import mark
 
 from supertokens_python import init
 from supertokens_python.recipe import session, emailpassword
-from supertokens_python.recipe.emailpassword import APIInterface
+from supertokens_python.recipe.emailpassword.interfaces import APIInterface
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.recipe.session import create_new_session, refresh_session, get_session
 from tests.utils import (
@@ -99,7 +99,7 @@ async def test_good_input_email_exists(driver_config_client: TestClient):
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -140,7 +140,7 @@ async def test_good_input_email_does_not_exists(driver_config_client: TestClient
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -163,11 +163,11 @@ async def test_good_input_email_does_not_exists(driver_config_client: TestClient
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
-    assert dict_response["exists"] == False
+    assert dict_response["exists"] is False
 
 
 @mark.asyncio
-async def test_that_if_disableing_api_the_default_email_exists_API_does_not_work(driver_config_client: TestClient):
+async def test_that_if_disabling_api_the_default_email_exists_api_does_not_work(driver_config_client: TestClient):
     init({
         'supertokens': {
             'connection_uri': "http://localhost:3567",
@@ -175,7 +175,7 @@ async def test_that_if_disableing_api_the_default_email_exists_API_does_not_work
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -212,7 +212,7 @@ async def test_email_exists_a_syntactically_invalid_email(driver_config_client: 
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -244,7 +244,7 @@ async def test_email_exists_a_syntactically_invalid_email(driver_config_client: 
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
     assert dict_response["status"] == "OK"
-    assert dict_response["exists"] == False
+    assert dict_response["exists"] is False
 
 
 @mark.asyncio
@@ -256,7 +256,7 @@ async def test_sending_an_unnormalised_email_and_you_get_exists_is_true(driver_c
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -288,7 +288,7 @@ async def test_sending_an_unnormalised_email_and_you_get_exists_is_true(driver_c
     assert response_2.status_code == 200
     dict_response = json.loads(response_2.text)
     assert dict_response["status"] == "OK"
-    assert dict_response["exists"] == True
+    assert dict_response["exists"] is True
 
 
 @mark.asyncio
@@ -300,7 +300,7 @@ async def test_bad_input_do_not_pass_email(driver_config_client: TestClient):
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -340,7 +340,7 @@ async def test_passing_an_array_instead_of_a_string_in_the_email(driver_config_c
         'framework': 'fastapi',
         'app_info': {
             'app_name': "SuperTokens Demo",
-            'api_domain': "api.supertokens.io",
+            'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
@@ -372,4 +372,3 @@ async def test_passing_an_array_instead_of_a_string_in_the_email(driver_config_c
                 'rAndOM@gmAiL.COm',
                 'x@g.com']})
     assert response_2.status_code == 200
-    #assert "Please provide the email as a GET param" in response_2.text

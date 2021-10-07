@@ -1,24 +1,14 @@
-from asgiref.sync import async_to_sync
-from flask import Flask, request, jsonify, Response, g
-from flask_cors import CORS
+from flask import Flask, request, jsonify
+
 from supertokens_python import init
-from supertokens_python.framework.flask.flask_request import FlaskRequest
-from supertokens_python.framework.flask.flask_response import FlaskResponse
+from supertokens_python.framework.flask import Middleware
 from supertokens_python.recipe import session
-from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.flask import error_handler, Middleware
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.sync import create_new_session
-from supertokens_python.supertokens import manage_cookies_post_response
 
 app = Flask(__name__)
-app.register_error_handler(SuperTokensError, error_handler)
-app.wsgi_app = Middleware(app.wsgi_app)
+Middleware(app)
 
-
-
-
-# CORS(app, supports_credentials=True)
 
 init({
     'supertokens': {
@@ -52,6 +42,7 @@ def user():
     json = request.get_json()
     print(json)
     return jsonify({})
+
 
 @app.route('/test_post', methods=['POST'])
 def test_post():

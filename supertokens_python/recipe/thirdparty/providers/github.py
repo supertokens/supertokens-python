@@ -58,7 +58,8 @@ class Github(Provider):
             user_info = response_user.json()
             emails_info = response_email.json()
             user_id = str(user_info['id'])
-            email_info = get_filtered_list(lambda x: 'primary' in x and x['primary'], emails_info)
+            email_info = get_filtered_list(
+                lambda x: 'primary' in x and x['primary'], emails_info)
 
             if len(email_info) == 0:
                 return UserInfo(user_id)
@@ -72,9 +73,11 @@ class Github(Provider):
             'client_id': self.client_id,
             **self.authorisation_redirect_params
         }
-        return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
+        return AuthorisationRedirectAPI(
+            self.authorisation_redirect_url, params)
 
-    def get_access_token_api_info(self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
+    def get_access_token_api_info(
+            self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
         params = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,

@@ -86,7 +86,8 @@ class ThirdPartyInfo:
 
 
 class User:
-    def __init__(self, user_id: str, email: str, time_joined: int, third_party_info: ThirdPartyInfo):
+    def __init__(self, user_id: str, email: str, time_joined: int,
+                 third_party_info: ThirdPartyInfo):
         self.user_id = user_id
         self.email = email
         self.time_joined = time_joined
@@ -112,7 +113,8 @@ class AccessTokenAPI:
 
 
 class AuthorisationRedirectAPI:
-    def __init__(self, url: str, params: Dict[str, Union[str, Callable[[BaseRequest], str]]]):
+    def __init__(self, url: str,
+                 params: Dict[str, Union[str, Callable[[BaseRequest], str]]]):
         self.url = url
         self.params = params
 
@@ -124,6 +126,7 @@ class SignInUpResponse:
 
 
 class UsersResponse:
-    def __init__(self, users: List[User], next_pagination_token: Union[str, None]):
+    def __init__(self, users: List[User],
+                 next_pagination_token: Union[str, None]):
         self.users = users
         self.next_pagination_token = next_pagination_token

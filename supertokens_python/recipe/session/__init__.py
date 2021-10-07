@@ -28,7 +28,8 @@ def init(config=None):
 async def create_new_session(request, user_id: str, jwt_payload: Union[dict, None] = None,
                              session_data: Union[dict, None] = None) -> Session:
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
-        request = FRAMEWORKS[SessionRecipe.get_instance().app_info.framework].wrap_request(request)
+        request = FRAMEWORKS[SessionRecipe.get_instance(
+        ).app_info.framework].wrap_request(request)
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(request, user_id, jwt_payload,
                                                                                        session_data)
 
@@ -36,14 +37,16 @@ async def create_new_session(request, user_id: str, jwt_payload: Union[dict, Non
 async def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -> Union[
         Session, None]:
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
-        request = FRAMEWORKS[SessionRecipe.get_instance().app_info.framework].wrap_request(request)
+        request = FRAMEWORKS[SessionRecipe.get_instance(
+        ).app_info.framework].wrap_request(request)
     return await SessionRecipe.get_instance().recipe_implementation.get_session(request, anti_csrf_check,
                                                                                 session_required)
 
 
 async def refresh_session(request) -> Session:
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
-        request = FRAMEWORKS[SessionRecipe.get_instance().app_info.framework].wrap_request(request)
+        request = FRAMEWORKS[SessionRecipe.get_instance(
+        ).app_info.framework].wrap_request(request)
     return await SessionRecipe.get_instance().recipe_implementation.refresh_session(request)
 
 

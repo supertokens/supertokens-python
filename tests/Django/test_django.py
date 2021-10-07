@@ -87,7 +87,7 @@ class SupertokensTest(TestCase):
             'framework': 'django',
             'app_info': {
                 'app_name': "SuperTokens Demo",
-                'api_domain': "api.supertokens.io",
+                'api_domain': "http://api.supertokens.io",
                 'website_domain': "supertokens.io",
                 'api_base_path': "/auth"
             },
@@ -138,7 +138,7 @@ class SupertokensTest(TestCase):
             'framework': 'django',
             'app_info': {
                 'app_name': "SuperTokens Demo",
-                'api_domain': "api.supertokens.io",
+                'api_domain': "http://api.supertokens.io",
                 'website_domain': "supertokens.io",
                 'api_base_path': "/auth"
             },
@@ -182,7 +182,7 @@ class SupertokensTest(TestCase):
             'framework': 'django',
             'app_info': {
                 'app_name': "SuperTokens Demo",
-                'api_domain': "api.supertokens.io",
+                'api_domain': "http://api.supertokens.io",
                 'website_domain': "supertokens.io",
                 'api_base_path': "/auth"
             },
@@ -225,7 +225,7 @@ class SupertokensTest(TestCase):
             'framework': 'django',
             'app_info': {
                 'app_name': "SuperTokens Demo",
-                'api_domain': "api.supertokens.io",
+                'api_domain': "http://api.supertokens.io",
                 'website_domain': "supertokens.io",
                 'api_base_path': "/auth"
             },

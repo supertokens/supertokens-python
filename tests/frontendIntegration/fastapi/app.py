@@ -102,20 +102,19 @@ def config(enable_anti_csrf: bool):
         },
         'framework': 'fastapi',
         'app_info': {
-            'app_name': "SuperTokens",
+            'app_name': "SuperTokens Python SDK",
             'api_domain': "0.0.0.0:" + get_app_port(),
             'website_domain': "http://localhost.org:8080",
         },
         'recipe_list': [
             session.init({
-                "error_handlers":
-                    {
-                        "on_unauthorised": unauthorised_f
-                    },
+                "error_handlers": {
+                    "on_unauthorised": unauthorised_f
+                },
                 "anti_csrf": "VIA_TOKEN" if enable_anti_csrf else "NONE",
                 "override": {
                     'apis': apis_override_session
-                        }
+                }
             })],
         'telemetry': False
     }
@@ -343,7 +342,7 @@ def ping_options():
 
 @app.get('/ping')
 def ping():
-    return 'success'
+    return PlainTextResponse(content='success')
 
 
 @app.options("/testHeader")
@@ -354,7 +353,7 @@ def test_header_options():
 @app.get('/testHeader')
 def test_header(request: Request):
     success_info = request.headers.get('st-custom-header')
-    return {'success': success_info}
+    return JSONResponse({'success': success_info})
 
 
 @app.options("/checkDeviceInfo")
@@ -366,15 +365,15 @@ def check_device_info_options():
 def check_device_info(request: Request):
     sdk_name = request.headers.get('supertokens-sdk-name')
     sdk_version = request.headers.get('supertokens-sdk-version')
-    return 'true' if sdk_name == 'website' and isinstance(
-        sdk_version, str) else 'false'
+    return PlainTextResponse(
+        'true' if sdk_name == 'website' and isinstance(sdk_version, str) else 'false')
 
 
 @app.get('/check-rid')
 def check_rid(request: Request):
     rid = request.headers.get('rid')
 
-    return 'fail' if rid is None else 'success'
+    return PlainTextResponse('fail' if rid is None else 'success')
 
 
 @app.options("/checkAllowCredentials")

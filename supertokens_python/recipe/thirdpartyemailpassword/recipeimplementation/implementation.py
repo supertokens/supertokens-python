@@ -33,12 +33,15 @@ from supertokens_python.recipe.thirdparty.recipe_implementation import RecipeImp
 
 
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, emailpassword_querier: Querier, thirdparty_querier: Union[Querier, None]):
+    def __init__(self, emailpassword_querier: Querier,
+                 thirdparty_querier: Union[Querier, None]):
         super().__init__()
-        self.emailpassword_implementation = EmailPasswordImplementation(emailpassword_querier)
+        self.emailpassword_implementation = EmailPasswordImplementation(
+            emailpassword_querier)
         self.thirdparty_implementation = None
         if thirdparty_querier is not None:
-            self.thirdparty_implementation = ThirdPartyImplementation(thirdparty_querier)
+            self.thirdparty_implementation = ThirdPartyImplementation(
+                thirdparty_querier)
 
     async def get_user_by_id(self, user_id: str) -> Union[User, None]:
         user = await self.emailpassword_implementation.get_user_by_id(user_id)
@@ -98,7 +101,8 @@ class RecipeImplementation(RecipeInterface):
                                            None) if self.thirdparty_implementation is None else await self.thirdparty_implementation.get_users_oldest_first(
             limit, next_pagination_tokens.third_party_pagination_token)
         email_password_result = await email_password_result_promise
-        return combine_pagination_results(third_party_result, email_password_result, limit, True)
+        return combine_pagination_results(
+            third_party_result, email_password_result, limit, True)
 
     async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
         if limit is None:
@@ -112,7 +116,8 @@ class RecipeImplementation(RecipeInterface):
                                            None) if self.thirdparty_implementation is None else await self.thirdparty_implementation.get_users_newest_first(
             limit, next_pagination_tokens.third_party_pagination_token)
         email_password_result = await email_password_result_promise
-        return combine_pagination_results(third_party_result, email_password_result, limit, True)
+        return combine_pagination_results(
+            third_party_result, email_password_result, limit, True)
 
     async def get_user_count(self) -> int:
         emailpassword_count = await self.emailpassword_implementation.get_user_count()

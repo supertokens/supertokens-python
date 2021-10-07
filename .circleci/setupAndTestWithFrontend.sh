@@ -48,12 +48,14 @@ cd ../
 git clone git@github.com:supertokens/supertokens-website.git
 cd supertokens-website
 git checkout $2
-cd ../project/test/frontendIntegration/fastapi
+cd ../project/tests/frontendIntegration/fastapi
 uvicorn app:app --host 0.0.0.0 --port 8080 --reload --debug &
+pid=$!
 uvicorn app:app --host 0.0.0.0 --port 8082 --reload --debug &
+pid2=$!
 cd ../../../../supertokens-website/test/server
-npm i -d
-npm i git+https://github.com:supertokens/supertokens-node.git#$3
+npm i -d > /dev/null
+npm i git+https://github.com:supertokens/supertokens-node.git#$3 > /dev/null
 cd ../../
 npm i -d
 SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
@@ -62,6 +64,7 @@ then
     echo "test failed... exiting!"
     exit 1
 fi
-pkill -KILL go && pkill -KILL main # TODO need to kill the test servers
+kill -15 $pid
+kill -15 $pid2
 rm -rf ./test/server/node_modules/supertokens-node
 git checkout HEAD -- ./test/server/package.json

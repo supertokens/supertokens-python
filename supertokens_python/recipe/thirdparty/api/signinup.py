@@ -30,16 +30,19 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
     body = await api_options.request.json()
 
     if 'thirdPartyId' not in body or not isinstance(body['thirdPartyId'], str):
-        raise_bad_input_exception('Please provide the thirdPartyId in request body')
+        raise_bad_input_exception(
+            'Please provide the thirdPartyId in request body')
 
     if 'code' not in body or not isinstance(body['code'], str):
         raise_bad_input_exception('Please provide the code in request body')
 
     if 'redirectURI' not in body or not isinstance(body['redirectURI'], str):
-        raise_bad_input_exception('Please provide the redirectURI in request body')
+        raise_bad_input_exception(
+            'Please provide the redirectURI in request body')
 
     third_party_id = body['thirdPartyId']
-    provider: Provider = find_first_occurrence_in_list(lambda x: x.id == third_party_id, api_options.providers)
+    provider: Provider = find_first_occurrence_in_list(
+        lambda x: x.id == third_party_id, api_options.providers)
     if provider is None:
         raise_bad_input_exception('The third party provider ' + third_party_id + ' seems to not be configured '
                                                                                  'on the backend. Please '

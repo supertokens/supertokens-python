@@ -25,7 +25,8 @@ from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
 
 class RecipeImplementation(RecipeInterface):
 
-    def __init__(self, recipe_implementation: ThirdPartyEmailPasswordRecipeInterface):
+    def __init__(
+            self, recipe_implementation: ThirdPartyEmailPasswordRecipeInterface):
         super().__init__()
         self.recipe_implementation = recipe_implementation
 

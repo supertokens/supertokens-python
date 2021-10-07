@@ -26,7 +26,8 @@ from os import environ
 
 def default_get_email_verification_url(app_info: AppInfo):
     async def func(_: User):
-        return app_info.website_domain.get_as_string_dangerous() + app_info.website_base_path.get_as_string_dangerous() + '/verify-email'
+        return app_info.website_domain.get_as_string_dangerous(
+        ) + app_info.website_base_path.get_as_string_dangerous() + '/verify-email'
     return func
 
 
@@ -43,7 +44,8 @@ def default_create_and_send_custom_email(app_info: AppInfo):
 
 
 class OverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None], apis: Union[Callable[[APIInterface], APIInterface], None]):
+    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
+                 None], apis: Union[Callable[[APIInterface], APIInterface], None]):
         self.functions = functions
         self.apis = apis
 

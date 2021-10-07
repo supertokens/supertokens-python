@@ -136,14 +136,13 @@ def config(enable_anti_csrf: bool):
         },
         'recipe_list': [
             session.init({
-                "error_handlers":
-                    {
-                        "on_unauthorised": unauthorised_f
-                    },
+                "error_handlers": {
+                    "on_unauthorised": unauthorised_f
+                },
                 "anti_csrf": "VIA_TOKEN" if enable_anti_csrf else "NONE",
                 "override": {
                     'apis': apis_override_session
-                        }
+                }
             })],
         'telemetry': False
     }

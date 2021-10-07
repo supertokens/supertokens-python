@@ -14,6 +14,13 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 from __future__ import annotations
+
+from json import JSONDecodeError
+from os import environ
+from typing import TYPE_CHECKING
+
+from httpx import AsyncClient, NetworkError, ConnectTimeout
+
 from .constants import (
     API_VERSION,
     API_KEY_HEADER,
@@ -21,13 +28,10 @@ from .constants import (
     SUPPORTED_CDI_VERSIONS,
     API_VERSION_HEADER
 )
-from json import JSONDecodeError
-from os import environ
-from httpx import AsyncClient, NetworkError, ConnectTimeout
 from .normalised_url_path import NormalisedURLPath
-from typing import Union, TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from .recipe_module import RecipeModule
+    pass
 from .exceptions import raise_general_exception
 from .utils import (
     is_4xx_error,
@@ -55,22 +59,24 @@ class Querier:
     def reset():
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
-            raise_general_exception(None, 'calling testing function in non testing env')
+            raise_general_exception(
+                None, 'calling testing function in non testing env')
         Querier.__init_called = False
 
     @staticmethod
     def get_hosts_alive_for_testing():
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
-            raise_general_exception(None, 'calling testing function in non testing env')
+            raise_general_exception(
+                None, 'calling testing function in non testing env')
         return Querier.__hosts_alive_for_testing
 
     async def get_api_version(self):
         if Querier.__api_version is not None:
             return Querier.__api_version
 
-        # TODO: server-less
-        ProcessState.get_instance().add_state(AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION)
+        ProcessState.get_instance().add_state(
+            AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION)
 
         async def f(url):
             headers = {}
@@ -101,7 +107,8 @@ class Querier:
     def get_instance(rid_to_core=None):
         if (not Querier.__init_called) or (Querier.__hosts is None):
             # TODO
-            raise Exception("Please call the supertokens.init function before using SuperTokens")
+            raise Exception(
+                "Please call the supertokens.init function before using SuperTokens")
         return Querier(Querier.__hosts, rid_to_core)
 
     @staticmethod
@@ -148,9 +155,12 @@ class Querier:
                 environ['SUPERTOKENS_ENV'] == 'testing') and test:
             return data
 
+        headers = await self.__get_headers_with_api_version(path)
+        headers['content-type'] = 'application/json; charset=utf-8'
+
         async def f(url):
             async with AsyncClient() as client:
-                return await client.post(url, json=data, headers=await self.__get_headers_with_api_version(path))
+                return await client.post(url, json=data, headers=headers)
 
         return await self.__send_request_helper(path, 'POST', f, len(self.__hosts))
 
@@ -166,9 +176,12 @@ class Querier:
         if data is None:
             data = {}
 
+        headers = await self.__get_headers_with_api_version(path)
+        headers['content-type'] = 'application/json; charset=utf-8'
+
         async def f(url):
             async with AsyncClient() as client:
-                return await client.put(url, json=data, headers=await self.__get_headers_with_api_version(path))
+                return await client.put(url, json=data, headers=headers)
 
         return await self.__send_request_helper(path, 'PUT', f, len(self.__hosts))
 
@@ -177,20 +190,24 @@ class Querier:
             raise_general_exception('No SuperTokens core available to query')
 
         try:
-            current_host = self.__hosts[Querier.__last_tried_index].get_as_string_dangerous()
+            current_host = self.__hosts[Querier.__last_tried_index].get_as_string_dangerous(
+            )
             Querier.__last_tried_index += 1
             Querier.__last_tried_index %= len(self.__hosts)
             url = current_host + path.get_as_string_dangerous()
 
-            ProcessState.get_instance().add_state(AllowedProcessStates.CALLING_SERVICE_IN_REQUEST_HELPER)
+            ProcessState.get_instance().add_state(
+                AllowedProcessStates.CALLING_SERVICE_IN_REQUEST_HELPER)
             response = await http_function(url)
             if ('SUPERTOKENS_ENV' in environ) and (
                     environ['SUPERTOKENS_ENV'] == 'testing'):
                 Querier.__hosts_alive_for_testing.add(current_host)
 
-            if is_4xx_error(response.status_code) or is_5xx_error(response.status_code):
+            if is_4xx_error(response.status_code) or is_5xx_error(
+                    response.status_code):
                 raise_general_exception('SuperTokens core threw an error for a ' + method + ' request to path: ' +
-                                        path.get_as_string_dangerous() + ' with status code: ' + str(response.status_code) + ' and message: ' +
+                                        path.get_as_string_dangerous() + ' with status code: ' + str(
+                                            response.status_code) + ' and message: ' +
                                         response.text)
 
             try:

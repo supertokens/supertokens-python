@@ -46,7 +46,8 @@ class RecipeImplementation(RecipeInterface):
         }
         response = await self.querier.send_get_request(NormalisedURLPath('/recipe/user'), params)
         if 'status' in response and response['status'] == 'OK':
-            return User(response['user']['id'], response['user']['email'], response['user']['timeJoined'])
+            return User(response['user']['id'], response['user']
+                        ['email'], response['user']['timeJoined'])
         return None
 
     async def get_user_by_email(self, email: str) -> Union[User, None]:
@@ -55,7 +56,8 @@ class RecipeImplementation(RecipeInterface):
         }
         response = await self.querier.send_get_request(NormalisedURLPath('/recipe/user'), params)
         if 'status' in response and response['status'] == 'OK':
-            return User(response['user']['id'], response['user']['email'], response['user']['timeJoined'])
+            return User(response['user']['id'], response['user']
+                        ['email'], response['user']['timeJoined'])
         return None
 
     async def create_reset_password_token(self, user_id: str) -> CreateResetPasswordResult:

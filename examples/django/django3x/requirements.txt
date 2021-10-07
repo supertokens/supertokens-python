@@ -1,1 +1,2 @@
-Django
+django==3
+supertokens-python==0.0.1

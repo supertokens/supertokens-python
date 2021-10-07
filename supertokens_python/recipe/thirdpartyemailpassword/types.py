@@ -124,19 +124,22 @@ class SignInUpResponse:
 
 
 class SignInResponse:
-    def __init__(self, user: User, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR']):
+    def __init__(self, user: User,
+                 status: Literal['OK', 'WRONG_CREDENTIALS_ERROR']):
         self.user = user
         self.status = status
 
 
 class SignUpResponse:
-    def __init__(self, user: User, status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR']):
+    def __init__(self, user: User,
+                 status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR']):
         self.user = user
         self.status = status
 
 
 class UsersResponse:
-    def __init__(self, users: List[User], next_pagination_token: Union[str, None]):
+    def __init__(self, users: List[User],
+                 next_pagination_token: Union[str, None]):
         self.users = users
         self.next_pagination_token = next_pagination_token
 

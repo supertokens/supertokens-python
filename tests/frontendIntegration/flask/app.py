@@ -18,29 +18,23 @@ import os
 import sys
 from functools import wraps
 
-from asgiref.sync import async_to_sync
 from flask import Flask, request, make_response, Response, jsonify, render_template, g
 from flask_cors import CORS
 
 from supertokens_python import init, Supertokens
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.flask import error_handler
-from supertokens_python.framework.flask.flask_request import FlaskRequest
-from supertokens_python.framework.flask.flask_response import FlaskResponse
+from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user, create_new_session
-from supertokens_python.supertokens import manage_cookies_post_response
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
 index_file.close()
 
 app = Flask(__name__, template_folder='templates')
-app.register_error_handler(SuperTokensError, error_handler)
-#app.wsgi_app = Middleware(app.wsgi_app)
+Middleware(app)
 CORS(app, supports_credentials=True)
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
@@ -64,30 +58,6 @@ def custom_decorator_for_test():
         return wrapped_function
 
     return session_verify_custom_test
-
-
-@app.before_request
-def before_request():
-    from flask import request
-    from supertokens_python import Supertokens
-
-    st = Supertokens.get_instance()
-
-    request = FlaskRequest(request)
-    response = FlaskResponse(Response())
-    result = async_to_sync(st.middleware)(request, response)
-
-    if result is not None:
-        return result.response
-
-
-@app.after_request
-def after_request(response):
-    response = FlaskResponse(response)
-    if hasattr(g, 'supertokens'):
-        manage_cookies_post_response(g.supertokens, response)
-
-    return response.response
 
 
 def try_refresh_token(_):
@@ -172,9 +142,10 @@ def config(enable_anti_csrf: bool):
                         "on_unauthorised": unauthorised_f
                     },
                 "anti_csrf": "VIA_TOKEN" if enable_anti_csrf else "NONE",
-                "override": {
-                    'apis': apis_override_session
-                        }
+                "override":
+                    {
+                        'apis': apis_override_session
+                    }
             })],
         'telemetry': False
     }

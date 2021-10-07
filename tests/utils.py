@@ -13,7 +13,6 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-import json
 from datetime import datetime, timezone
 from http.cookies import SimpleCookie
 from os import environ, scandir, kill, remove
@@ -49,7 +48,7 @@ API_VERSION_TEST_MULTIPLE_SUPPORTED_RESULT = '2.1'
 API_VERSION_TEST_SINGLE_SUPPORTED_SV = ['0.0', '1.0', '1.1', '2.0']
 API_VERSION_TEST_SINGLE_SUPPORTED_CV = ['0.1', '0.2', '1.1', '2.1', '3.0']
 API_VERSION_TEST_SINGLE_SUPPORTED_RESULT = '1.1'
-API_VERSION_TEST_BASIC_RESULT = ['2.0', '2.1', '2.2', '2.3', '2.7']
+API_VERSION_TEST_BASIC_RESULT = ['2.0', '2.1', '2.2', '2.3', '2.9']
 SUPPORTED_CORE_DRIVER_INTERFACE_FILE = './coreDriverInterfaceSupported.json'
 TEST_ENABLE_ANTI_CSRF_CONFIG_KEY = 'enable_anti_csrf'
 TEST_ACCESS_TOKEN_PATH_VALUE = '/test'
@@ -77,9 +76,6 @@ TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH = '/auth/session/refresh'
 ACCESS_CONTROL_EXPOSE_HEADER = 'Access-Control-Expose-Headers'
 ACCESS_CONTROL_EXPOSE_HEADER_ANTI_CSRF_ENABLE = 'front-token, id-refresh-token, anti-csrf'
 ACCESS_CONTROL_EXPOSE_HEADER_ANTI_CSRF_DISABLE = 'id-refresh-token'
-AUTH0_DOMAIN = "dev-3myi6b3e.us.auth0.com"
-AUTH0_CLIENT_ID = "wQwadNYL58PoXDTIEiLeBmCe89BnMfiv"
-AUTH0_CLIENT_SECRET = "46n7WEAScmrHXukA_w6v1C8uYlVXPvAqEwu5eAyJRD5Wu951BHhiuE_0cQpW5GiV"
 TEST_ID_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
 
@@ -189,8 +185,10 @@ def get_cookie_from_response(response, cookie_name):
 
 
 def extract_all_cookies(response: Response):
+    if response.headers.get('set-cookie') is None:
+        return {}
     cookie_headers = SimpleCookie(
-        response.headers.get('set-cookie').replace(",", ";"))
+        response.headers.get('set-cookie'))
     cookies = dict()
     for key, morsel in cookie_headers.items():
         cookies[key] = {
@@ -224,7 +222,7 @@ def sign_up_request(app, email, password):
         headers={
             "Content-Type": "application/json"
         },
-        json=json.dumps({
+        json={
             'formFields':
                 [{
                     "id": "password",
@@ -234,7 +232,7 @@ def sign_up_request(app, email, password):
                         "id": "email",
                         "value": email
                 }]
-        }))
+        })
 
 
 def email_verify_token_request(
