@@ -56,7 +56,7 @@ while [ $i -lt $coreDriverLength ]; do
     coreFree=$(echo $coreFree | jq .core | tr -d '"')
 
     someTestsRan=true
-    ./setupAndTestWithFreeCore.sh $coreFree $coreDriverVersion
+#    ./setupAndTestWithFreeCore.sh $coreFree $coreDriverVersion
     if [[ $? -ne 0 ]]
     then
         echo "test failed... exiting!"
