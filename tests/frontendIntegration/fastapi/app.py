@@ -259,10 +259,8 @@ def logout_options():
 
 
 @app.post('/logout')
-async def logout(request: Request):
-    print('logout api called at: ' + str(time()))
-    session_ = await (verify_session()(request))
-    await session_.revoke_session()
+async def logout(session: Session = Depends(verify_session())):
+    await session.revoke_session()
     return PlainTextResponse(content='success')
 
 
@@ -291,6 +289,9 @@ def refresh_attempted_time():
 @app.post('/auth/session/refresh')
 async def refresh(request: Request):
     print('refresh api called at: ' + str(time()))
+    print('sAccessToken: ', request.cookies.get('sAccessToken'))
+    print('sRefreshToken: ', request.cookies.get('sRefreshToken'))
+    print('sIdRefreshToken: ', request.cookies.get('sIdRefreshToken'))
     Test.increment_attempted_refresh()
     try:
         await (verify_session()(request))
