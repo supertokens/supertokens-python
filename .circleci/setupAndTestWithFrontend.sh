@@ -49,9 +49,9 @@ git clone git@github.com:supertokens/supertokens-website.git
 cd supertokens-website
 git checkout $2
 cd ../project/tests/frontendIntegration/fastapi
-uvicorn app:app --host 0.0.0.0 --port 8080 --reload --debug &
+uvicorn app:app --host 0.0.0.0 --port 8080 &
 pid=$!
-uvicorn app:app --host 0.0.0.0 --port 8082 --reload --debug &
+uvicorn app:app --host 0.0.0.0 --port 8082 &
 pid2=$!
 cd ../../../../supertokens-website/test/server
 npm i -d --quiet --no-progress
@@ -61,13 +61,14 @@ npm i -d --quiet --no-progress
 SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
 if [[ $? -ne 0 ]]
 then
-    echo "test failed... exiting!"
+    echo "test failed... killing $pid, $pid2 and exiting!"
     kill -9 $pid
     kill -9 $pid2
     rm -rf ./test/server/node_modules/supertokens-node
     git checkout HEAD -- ./test/server/package.json
     exit 1
 fi
+echo "all tests passed, killing processes: $pid and $pid2"
 kill -9 $pid
 kill -9 $pid2
 rm -rf ./test/server/node_modules/supertokens-node
