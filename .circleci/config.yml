@@ -15,6 +15,7 @@ jobs:
   test:
     docker:
       - image: rishabhpoddar/supertokens_python_driver_testing
+    resource_class: large
     steps:
       - checkout
       - run: make dev-install
