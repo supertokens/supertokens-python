@@ -13,18 +13,28 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-from supertokens_python.recipe.jwt.types import OverrideConfig, JWTConfig
+from abc import ABC, abstractmethod
+
+from supertokens_python.recipe.jwt.types import CreateJwtResult, GetJWKSResult, APIOptions
 
 
-def validate_and_normalise_user_input(_, config):
-    override_functions = config['override']['functions'] if 'override' in config and 'functions' in config[
-        'override'] else None
-    override_apis = config['override']['apis'] if 'override' in config and 'apis' in config[
-        'override'] else None
+class RecipeInterface(ABC):
+    def __init__(self):
+        pass
 
-    override_config = OverrideConfig(override_functions, override_apis)
+    @abstractmethod
+    async def create_jwt(self, payload=None, validity_seconds: int = None) -> [CreateJwtResult, None]:
+        pass
 
-    if "jwtValiditySeconds" not in config:
-        return JWTConfig(override_config)
-    else:
-        return JWTConfig(override_config, config.get("jwtValiditySeconds"))
+    @abstractmethod
+    async def get_JWKS(self) -> [GetJWKSResult, None]:
+        pass
+
+
+class APIInterface:
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    async def get_JWKS_GET(self, api_options: APIOptions) -> [GetJWKSResult, None]:
+        pass

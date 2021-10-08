@@ -13,18 +13,5 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-from supertokens_python.recipe.jwt.types import OverrideConfig, JWTConfig
 
-
-def validate_and_normalise_user_input(_, config):
-    override_functions = config['override']['functions'] if 'override' in config and 'functions' in config[
-        'override'] else None
-    override_apis = config['override']['apis'] if 'override' in config and 'apis' in config[
-        'override'] else None
-
-    override_config = OverrideConfig(override_functions, override_apis)
-
-    if "jwtValiditySeconds" not in config:
-        return JWTConfig(override_config)
-    else:
-        return JWTConfig(override_config, config.get("jwtValiditySeconds"))
+GET_JWKS_API = "/jwt/jwks.json"
