@@ -25,6 +25,7 @@ from requests.models import Response
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
+from supertokens_python.recipe.jwt import JWTRecipe
 from supertokens_python.recipe.session import SessionRecipe
 from yaml import dump, load, FullLoader
 
@@ -175,6 +176,7 @@ def reset():
     EmailPasswordRecipe.reset()
     EmailVerificationRecipe.reset()
     ThirdPartyRecipe.reset()
+    JWTRecipe.reset()
 
 
 def get_cookie_from_response(response, cookie_name):

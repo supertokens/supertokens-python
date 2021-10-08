@@ -13,3 +13,17 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
+from supertokens_python.recipe.jwt.recipe import JWTRecipe
+from supertokens_python.recipe.jwt.types import CreateJwtResult, GetJWKSResult
+
+
+def init(config):
+    return JWTRecipe.init(config)
+
+
+async def create_jwt(payload: dict, validity_seconds: int = None) -> [CreateJwtResult, None]:
+    return await JWTRecipe.get_instance().recipe_implementation.create_jwt(payload, validity_seconds)
+
+
+async def get_JWKS() -> [GetJWKSResult, None]:
+    return await JWTRecipe.get_instance().recipe_implementation.get_JWKS()

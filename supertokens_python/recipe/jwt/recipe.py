@@ -13,6 +13,8 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
+from __future__ import annotations
+
 from os import environ
 from typing import List, TYPE_CHECKING
 
@@ -20,8 +22,8 @@ from supertokens_python.querier import Querier
 from supertokens_python.recipe.jwt.api.getJWKS import get_JWKS
 from supertokens_python.recipe.jwt.api.implementation import APIImplementation
 from supertokens_python.recipe.jwt.constants import GET_JWKS_API
+from supertokens_python.recipe.jwt.interfaces import TypeNormalisedInput, APIOptions
 from supertokens_python.recipe.jwt.recipe_implementation import RecipeImplementation
-from supertokens_python.recipe.jwt.types import TypeNormalisedInput, APIOptions
 from supertokens_python.recipe.jwt.utils import validate_and_normalise_user_input
 
 if TYPE_CHECKING:
@@ -40,10 +42,10 @@ class JWTRecipe(RecipeModule):
 
     def __init__(self, recipe_id: str, app_info: AppInfo, config: TypeNormalisedInput):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(self, app_info)
+        self.config = validate_and_normalise_user_input(app_info, config)
 
         recipe_implementation = RecipeImplementation(
-            Querier.get_instance(recipe_id), config, app_info)
+            Querier.get_instance(recipe_id), self.config, app_info)
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
         api_implementation = APIImplementation()
@@ -85,7 +87,7 @@ class JWTRecipe(RecipeModule):
         return func
 
     @staticmethod
-    def get_instance():
+    def get_instance() -> JWTRecipe:
         if JWTRecipe.__instance is not None:
             return JWTRecipe.__instance
         raise_general_exception(

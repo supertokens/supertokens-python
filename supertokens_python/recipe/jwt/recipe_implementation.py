@@ -13,22 +13,24 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
+from __future__ import annotations
+
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.jwt.interfaces import RecipeInterface
-from supertokens_python.recipe.jwt.types import TypeNormalisedInput, GetJWKSResult, CreateJwtResult
+from supertokens_python.recipe.jwt.interfaces import RecipeInterface, JWTConfig
+from supertokens_python.recipe.jwt.types import GetJWKSResult, CreateJwtResult
 from supertokens_python.supertokens import AppInfo
 
 
 class RecipeImplementation(RecipeInterface):
 
-    def __init__(self, querier: Querier, config: TypeNormalisedInput, app_info: AppInfo):
+    def __init__(self, querier: Querier, config: JWTConfig, app_info: AppInfo):
         super().__init__()
         self.querier = querier
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload=None, validity_seconds: int = None) -> [CreateJwtResult, None]:
+    async def create_jwt(self, payload, validity_seconds) -> [CreateJwtResult, None]:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
@@ -44,9 +46,9 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_post_request(NormalisedURLPath("/recipe/jwt"), data)
 
         if response['status'] == 'OK':
-            CreateJwtResult(status='OK', jwt=response['jwt'])
+            return CreateJwtResult(status='OK', jwt=response['jwt'])
         else:
-            CreateJwtResult(status='UNSUPPORTED_ALGORITHM_ERROR')
+            return CreateJwtResult(status='UNSUPPORTED_ALGORITHM_ERROR')
 
     async def get_JWKS(self) -> [GetJWKSResult, None]:
         response = await self.querier.send_get_request(NormalisedURLPath("/recipe/jwt/jwks"), {})

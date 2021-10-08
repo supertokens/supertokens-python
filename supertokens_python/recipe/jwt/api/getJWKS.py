@@ -13,16 +13,15 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
-from supertokens_python.recipe.jwt.interfaces import APIInterface
-from supertokens_python.recipe.jwt.types import APIOptions
+from supertokens_python.recipe.jwt.interfaces import APIInterface, APIOptions
 from supertokens_python.utils import send_200_response
 
 
 async def get_JWKS(api_implementation: APIInterface, options: APIOptions):
     if api_implementation.get_JWKS_GET is None:
-        return False
+        return None
 
     result = await api_implementation.get_JWKS_GET(options)
-    send_200_response({'keys': result.keys}, result.options.response)
+    send_200_response({'keys': result.keys}, options.response)
 
-    return True
+    return options.response
