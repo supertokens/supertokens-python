@@ -290,8 +290,6 @@ def refresh_attempted_time():
 async def refresh(request: Request):
     print('refresh api called at: ' + str(time()) + 's')
     print('sAccessToken: ' + str(request.cookies.get('sAccessToken')))
-    print('sRefreshToken: ' + str(request.cookies.get('sRefreshToken')))
-    print('sIdRefreshToken: ' + str(request.cookies.get('sIdRefreshToken')))
     Test.increment_attempted_refresh()
     try:
         await (verify_session()(request))
