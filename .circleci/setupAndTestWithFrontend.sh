@@ -54,10 +54,10 @@ pid=$!
 uvicorn app:app --host 0.0.0.0 --port 8082 --reload --debug &
 pid2=$!
 cd ../../../../supertokens-website/test/server
-npm i -d > /dev/null
-npm i git+https://github.com:supertokens/supertokens-node.git#$3 > /dev/null
+npm i -d --quiet --no-progress
+npm i git+https://github.com:supertokens/supertokens-node.git#$3 --quiet --no-progress
 cd ../../
-npm i -d
+npm i -d --quiet --no-progress
 SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
 if [[ $? -ne 0 ]]
 then

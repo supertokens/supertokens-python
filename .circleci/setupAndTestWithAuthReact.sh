@@ -48,11 +48,11 @@ cd ../
 git clone git@github.com:supertokens/supertokens-auth-react.git
 cd supertokens-auth-react
 git checkout $2
-npm run init
+npm run init > /dev/null
 (cd ./examples/for-tests && npm run link) # this is there because in linux machine, postinstall in npm doesn't work..
 cd ./test/server/
-npm i -d
-npm i git+https://github.com:supertokens/supertokens-node.git#$3
+npm i -d --quiet --no-progress
+npm i git+https://github.com:supertokens/supertokens-node.git#$3 --quiet --no-progress
 cd ../../../project/tests/auth-react/fastapi
 uvicorn app:app --host 0.0.0.0 --port 8083 --reload --debug &
 pid=$!
