@@ -288,7 +288,7 @@ def refresh_attempted_time():
 
 @app.post('/auth/session/refresh')
 async def refresh(request: Request):
-    print('refresh api called at: ' + str(time()))
+    print('refresh api called at: ' + str(time()) + 's')
     print('sAccessToken: ' + str(request.cookies.get('sAccessToken')))
     print('sRefreshToken: ' + str(request.cookies.get('sRefreshToken')))
     print('sIdRefreshToken: ' + str(request.cookies.get('sIdRefreshToken')))
