@@ -30,6 +30,7 @@ from fastapi import FastAPI, Depends
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
 from starlette.exceptions import ExceptionMiddleware
+from time import time
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
@@ -258,8 +259,10 @@ def logout_options():
 
 
 @app.post('/logout')
-async def logout(session: Session = Depends(verify_session())):
-    await session.revoke_session()
+async def logout(request: Request):
+    print('logout api called at: ' + str(time()))
+    session_ = await (verify_session()(request))
+    await session_.revoke_session()
     return PlainTextResponse(content='success')
 
 
@@ -287,6 +290,7 @@ def refresh_attempted_time():
 
 @app.post('/auth/session/refresh')
 async def refresh(request: Request):
+    print('refresh api called at: ' + str(time()))
     Test.increment_attempted_refresh()
     try:
         await (verify_session()(request))
