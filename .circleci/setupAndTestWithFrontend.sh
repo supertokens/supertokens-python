@@ -62,6 +62,10 @@ SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root np
 if [[ $? -ne 0 ]]
 then
     echo "test failed... exiting!"
+    kill -15 $pid
+    kill -15 $pid2
+    rm -rf ./test/server/node_modules/supertokens-node
+    git checkout HEAD -- ./test/server/package.json
     exit 1
 fi
 kill -15 $pid

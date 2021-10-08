@@ -58,6 +58,9 @@ SKIP_OAUTH=true npm run test-with-non-node
 if [[ $? -ne 0 ]]
 then
     echo "test failed... exiting!"
+    kill -15 $pid
+    rm -rf ./test/server/node_modules/supertokens-node
+    git checkout HEAD -- ./test/server/package.json
     exit 1
 fi
 kill -15 $pid
