@@ -30,7 +30,6 @@ from fastapi import FastAPI, Depends
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
 from starlette.exceptions import ExceptionMiddleware
-from time import time
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
@@ -288,7 +287,6 @@ def refresh_attempted_time():
 
 @app.post('/auth/session/refresh')
 async def refresh(request: Request):
-    print('refresh api called at: ' + str(time()) + 's')
     Test.increment_attempted_refresh()
     try:
         await (verify_session()(request))
