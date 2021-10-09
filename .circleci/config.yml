@@ -8,7 +8,7 @@ jobs:
     steps:
       - checkout
       - run: make dev-install
-      - run: pip install setuptools wheel twine
+      - run: pip install twine
       - run: python setup.py sdist bdist_wheel
       - run: twine upload -u $USERNAME -p $PASSWORD dist/*
       - slack/status
