@@ -25,7 +25,7 @@ from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt import create_jwt
-from supertokens_python.recipe.jwt.interfaces import RecipeInterface
+from supertokens_python.recipe.jwt.interfaces import RecipeInterface, APIInterface
 from tests.utils import (
     reset, setup_st, clean_st, start_st
 )
@@ -73,12 +73,10 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
 
             return response
 
-        param.create_jwt = get_jwks
-
         temp1 = param.create_jwt
 
-        async def create_jwt(input):
-            response = await temp1(input)
+        async def create_jwt(input, input1=None):
+            response = await temp1(input, input1)
 
             if response.status == "OK":
                 nonlocal created_jwt
@@ -120,12 +118,58 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
         }
     )
 
-    assert response is None
+    assert response is not None
     assert response.json()['jwt'] == created_jwt
 
     response = driver_config_client.get(
         url="/auth/jwt/jwks.json"
     )
 
-    assert response is None
-    assert response.json()['jwt'] == created_jwt
+    assert response is not None
+    assert response.json()['keys'] == jwt_keys
+
+
+@mark.asyncio
+async def test_overriding_APIs(driver_config_client: TestClient):
+    jwt_keys = None
+
+    def custom_api(param: APIInterface):
+        temp = param.get_JWKS_GET
+
+        async def get_jwks_get(input):
+            response = await temp(input)
+            nonlocal jwt_keys
+            jwt_keys = response.keys
+            return response
+
+        param.get_JWKS_GET = get_jwks_get
+
+        return param
+
+    init({
+        'supertokens': {
+            'connection_uri': "http://localhost:3567",
+        },
+        'framework': 'fastapi',
+        'app_info': {
+            'app_name': "SuperTokens Demo",
+            'api_domain': "http://api.supertokens.io",
+            'website_domain': "supertokens.io",
+        },
+        'recipe_list': [jwt.init({'override': {
+            'apis': custom_api
+        }, })]
+    })
+    start_st()
+
+    querier = Querier.get_instance()
+    api_version = await querier.get_api_version()
+    if api_version == "2.8":
+        return
+
+    response = driver_config_client.get(
+        url="/auth/jwt/jwks.json"
+    )
+
+    assert response is not None
+    assert response.json()['keys'] == jwt_keys

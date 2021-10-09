@@ -30,7 +30,7 @@ class RecipeImplementation(RecipeInterface):
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload, validity_seconds) -> [CreateJwtResult, None]:
+    async def create_jwt(self, payload, validity_seconds=None) -> [CreateJwtResult, None]:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
