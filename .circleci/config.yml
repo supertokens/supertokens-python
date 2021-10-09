@@ -4,11 +4,11 @@ orbs:
 jobs:
   publish:
     docker:
-      - image: rishabhpoddar/supertokens_python_driver_testing
+      - image: circleci/python:3.8
     steps:
       - checkout
       - run: make dev-install
-      - run: pip install twine
+      - run: pip install setuptools wheel twine
       - run: python setup.py sdist bdist_wheel
       - run: twine upload -u $USERNAME -p $PASSWORD dist/*
       - slack/status
