@@ -17,67 +17,70 @@ from __future__ import annotations
 
 import asyncio
 from asgiref.sync import async_to_sync
-from django.utils.decorators import sync_and_async_middleware
-
 from supertokens_python.async_to_sync_wrapper import sync
 
 
-@sync_and_async_middleware
-def middleware(get_response):
-    from supertokens_python import Supertokens
-    from supertokens_python.exceptions import SuperTokensError
-    from supertokens_python.framework.django.django_request import DjangoRequest
-    from supertokens_python.framework.django.django_response import DjangoResponse
-    from supertokens_python.recipe.session import Session
-    from supertokens_python.supertokens import manage_cookies_post_response
+def middleware():
+    from django.utils.decorators import sync_and_async_middleware
 
-    if asyncio.iscoroutinefunction(get_response):
-        async def __middleware(request):
-            st = Supertokens.get_instance()
-            custom_request = DjangoRequest(request)
-            from django.http import HttpResponse
-            response = DjangoResponse(HttpResponse())
-            try:
-                result = await st.middleware(custom_request, response)
-                if result is None:
-                    result = await get_response(request)
-                    result = DjangoResponse(result)
-                if hasattr(request, "state") and isinstance(
-                        request.state, Session):
-                    manage_cookies_post_response(request.state, result)
+    @sync_and_async_middleware
+    def _middleware(get_response):
+        from supertokens_python import Supertokens
+        from supertokens_python.exceptions import SuperTokensError
+        from supertokens_python.framework.django.django_request import DjangoRequest
+        from supertokens_python.framework.django.django_response import DjangoResponse
+        from supertokens_python.recipe.session import Session
+        from supertokens_python.supertokens import manage_cookies_post_response
 
-                return result.response
-
-            except SuperTokensError as e:
+        if asyncio.iscoroutinefunction(get_response):
+            async def __middleware(request):
+                st = Supertokens.get_instance()
+                custom_request = DjangoRequest(request)
+                from django.http import HttpResponse
                 response = DjangoResponse(HttpResponse())
-                result = await st.handle_supertokens_error(DjangoRequest(request), e, response)
+                try:
+                    result = await st.middleware(custom_request, response)
+                    if result is None:
+                        result = await get_response(request)
+                        result = DjangoResponse(result)
+                    if hasattr(request, "state") and isinstance(
+                            request.state, Session):
+                        manage_cookies_post_response(request.state, result)
 
-                return result.response
-    else:
-        def __middleware(request):
-            st = Supertokens.get_instance()
-            custom_request = DjangoRequest(request)
-            from django.http import HttpResponse
-            response = DjangoResponse(HttpResponse())
-            try:
-                result = async_to_sync(st.middleware)(custom_request, response)
+                    return result.response
 
-                if result is None:
-                    result = get_response(request)
-                    result = DjangoResponse(result)
+                except SuperTokensError as e:
+                    response = DjangoResponse(HttpResponse())
+                    result = await st.handle_supertokens_error(DjangoRequest(request), e, response)
 
-                if hasattr(request, "state") and isinstance(
-                        request.state, Session):
-                    manage_cookies_post_response(request.state, result)
-
-                return result.response
-
-            except SuperTokensError as e:
+                    return result.response
+        else:
+            def __middleware(request):
+                st = Supertokens.get_instance()
+                custom_request = DjangoRequest(request)
+                from django.http import HttpResponse
                 response = DjangoResponse(HttpResponse())
-                result = sync(
-                    st.handle_supertokens_error)(
-                    DjangoRequest(request), e, response)
+                try:
+                    result = async_to_sync(st.middleware)(custom_request, response)
 
-            return result.response
+                    if result is None:
+                        result = get_response(request)
+                        result = DjangoResponse(result)
 
-    return __middleware
+                    if hasattr(request, "state") and isinstance(
+                            request.state, Session):
+                        manage_cookies_post_response(request.state, result)
+
+                    return result.response
+
+                except SuperTokensError as e:
+                    response = DjangoResponse(HttpResponse())
+                    result = sync(
+                        st.handle_supertokens_error)(
+                        DjangoRequest(request), e, response)
+
+                return result.response
+
+        return __middleware
+
+    return _middleware

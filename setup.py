@@ -42,7 +42,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.0.1",
+    version="0.0.2",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.io",
@@ -71,7 +71,7 @@ setup(
         "tldextract==3.1.0",
         "asgiref==3.4.1",
         "werkzeug==2.0.1",
-        'starlette==0.14.2'
+        'starlette~=0.14.2'
     ],
     python_requires='>=3.6',
     extras_require=extras_require
