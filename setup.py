@@ -71,7 +71,8 @@ setup(
         "tldextract==3.1.0",
         "asgiref==3.4.1",
         "werkzeug==2.0.1",
-        'starlette~=0.14.2'
+        'starlette~=0.14.2',
+        'nest_asyncio==1.5.1'
     ],
     python_requires='>=3.6',
     extras_require=extras_require
