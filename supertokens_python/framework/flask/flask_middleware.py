@@ -18,7 +18,6 @@ import json
 
 
 from asgiref.sync import async_to_sync
-from flask import Request
 
 
 class Middleware:
@@ -31,7 +30,7 @@ class Middleware:
         from supertokens_python.framework.flask.flask_response import FlaskResponse
         from supertokens_python import Supertokens
         from supertokens_python.supertokens import manage_cookies_post_response
-        from flask import Response
+        from flask import Response, Request
 
         st = Supertokens.get_instance()
         request = FlaskRequest(Request(environ))

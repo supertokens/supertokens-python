@@ -163,7 +163,7 @@ class Supertokens:
             data = {
                 'appName': self.app_info.app_name,
                 'websiteDomain': self.app_info.website_domain.get_as_string_dangerous(),
-                'sdk': 'Python'
+                'sdk': 'python'
             }
             if telemetry_id is not None:
                 data = {

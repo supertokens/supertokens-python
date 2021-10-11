@@ -26,8 +26,6 @@ from .cookie_and_header import get_id_refresh_token_from_cookie, get_access_toke
 from . import session_functions
 
 import asyncio
-import nest_asyncio
-nest_asyncio.apply()
 
 
 if TYPE_CHECKING:

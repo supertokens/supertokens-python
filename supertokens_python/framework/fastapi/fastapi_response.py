@@ -17,6 +17,7 @@ from time import time
 
 from supertokens_python.framework.response import BaseResponse
 import json
+from math import ceil
 
 
 class FastApiResponse(BaseResponse):
@@ -29,7 +30,8 @@ class FastApiResponse(BaseResponse):
 
     def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
                    domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "Lax"):
-        self.response.set_cookie(key, value, max_age, (expires - int(time() * 1000)) // 1000, path, domain, secure,
+        # we do ceil because if we do floor, we tests may fail where the access token lifetime is set to 1 second
+        self.response.set_cookie(key, value, max_age, ceil((expires - int(time() * 1000)) / 1000), path, domain, secure,
                                  httponly, samesite)
 
     def set_header(self, key, value):
