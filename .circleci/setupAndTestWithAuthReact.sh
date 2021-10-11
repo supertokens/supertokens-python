@@ -30,7 +30,7 @@ fi
 pluginInterfaceTag=$(echo $pluginInterfaceInfo | jq .tag | tr -d '"')
 pluginInterfaceVersion=$(echo $pluginInterfaceInfo | jq .version | tr -d '"')
 
-echo "Testing with frontend auth-react: $2, python tag: $3, FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion"
+echo "Testing with frontend auth-react: $2, node tag: $3, FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion"
 
 cd ../../
 git clone git@github.com:supertokens/supertokens-root.git
@@ -48,18 +48,25 @@ cd ../
 git clone git@github.com:supertokens/supertokens-auth-react.git
 cd supertokens-auth-react
 git checkout $2
-npm run init
+npm run init > /dev/null
 (cd ./examples/for-tests && npm run link) # this is there because in linux machine, postinstall in npm doesn't work..
-cd ../project/tests/auth-react/fastapi
-uvicorn app:app --host 0.0.0.0 --port 8083 --reload --debug &
+cd ./test/server/
+npm i -d --quiet --no-progress
+npm i git+https://github.com:supertokens/supertokens-node.git#$3 --quiet --no-progress
+cd ../../../project/tests/auth-react/fastapi
+uvicorn app:app --host 0.0.0.0 --port 8083 &
 pid=$!
 cd ../../../../supertokens-auth-react/
 SKIP_OAUTH=true npm run test-with-non-node
 if [[ $? -ne 0 ]]
 then
-    echo "test failed... exiting!"
+    echo "test failed... killing $pid and exiting!"
+    kill -9 $pid
+    rm -rf ./test/server/node_modules/supertokens-node
+    git checkout HEAD -- ./test/server/package.json
     exit 1
 fi
-kill -15 $pid
+echo "all tests passed, killing processes: $pid"
+kill -9 $pid
 rm -rf ./test/server/node_modules/supertokens-node
 git checkout HEAD -- ./test/server/package.json

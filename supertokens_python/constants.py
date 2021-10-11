@@ -14,7 +14,7 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 SUPPORTED_CDI_VERSIONS = ['2.9']
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 TELEMETRY = '/telemetry'
 TELEMETRY_SUPERTOKENS_API_URL = 'https://api.supertokens.io/0/st/telemetry'
 TELEMETRY_SUPERTOKENS_API_VERSION = '2'
