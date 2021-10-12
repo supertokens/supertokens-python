@@ -169,9 +169,7 @@ def login_options():
 
 
 @app.route('/login', methods=['POST'])
-# @supertokens_middleware()
 def login():
-    print(request.get_json())
     user_id = request.get_json()['userId']
     create_new_session(request, user_id)
     return user_id
@@ -302,7 +300,6 @@ def logout_options():
 
 @app.route('/logout', methods=['POST'])
 @verify_session()
-# @supertokens_middleware()
 def logout():
     session = g.supertokens
 
@@ -319,11 +316,10 @@ def revoke_all_options():
 
 @app.route('/revokeAll', methods=['POST'])
 @verify_session()
-# @supertokens_middleware()
 async def revoke_all():
-    session = g.supertokens
-    revoke_all_sessions_for_user(session.get_user_id())
-    return 'sucess'
+    session_ = g.supertokens
+    revoke_all_sessions_for_user(session_.get_user_id())
+    return 'success'
 
 
 @app.route("/refresh", methods=['OPTIONS'])

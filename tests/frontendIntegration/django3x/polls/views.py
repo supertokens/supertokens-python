@@ -31,7 +31,6 @@ from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user,
 
 module_dir = os.path.dirname(__file__)  # get current directory
 file_path = os.path.join(module_dir, '../templates/index.html')
-print(file_path)
 index_file = open(file_path, "r")
 file_contents = index_file.read()
 index_file.close()
