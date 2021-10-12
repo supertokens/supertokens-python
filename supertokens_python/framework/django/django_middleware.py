@@ -18,8 +18,6 @@ from __future__ import annotations
 import asyncio
 from asgiref.sync import async_to_sync
 
-from supertokens_python.async_to_sync_wrapper import sync
-
 
 def middleware(get_response):
     from supertokens_python import Supertokens
@@ -70,7 +68,7 @@ def middleware(get_response):
 
             except SuperTokensError as e:
                 response = DjangoResponse(HttpResponse())
-                result = sync(st.handle_supertokens_error)(DjangoRequest(request), e, response)
+                result = async_to_sync(st.handle_supertokens_error)(DjangoRequest(request), e, response)
 
             return result.response
 
