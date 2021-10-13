@@ -30,12 +30,11 @@ class Apple(Provider):
     def __init__(self, client_id: str, client_key_id: str, client_private_key: str, client_team_id: str,
                  scope: List[str] = None,
                  authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None):
-        super().__init__('apple')
+        super().__init__('apple', client_id)
         default_scopes = ['email']
 
         if scope is None:
             scope = default_scopes
-        self.client_id = client_id
         self.client_key_id = client_key_id
         self.client_private_key = client_private_key
         self.client_team_id = client_team_id

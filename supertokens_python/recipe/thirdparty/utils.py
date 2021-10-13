@@ -19,6 +19,7 @@ from typing import List, Callable, TYPE_CHECKING, Union
 
 from .interfaces import RecipeInterface, APIInterface
 from .types import INPUT_SCHEMA
+from .constants import DEV_OAUTH_CLIENT_IDS
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyRecipe
@@ -42,7 +43,7 @@ def validate_and_normalise_sign_in_and_up_config(
 def email_verification_create_and_send_custom_email(
         recipe: ThirdPartyRecipe, create_and_send_custom_email):
     async def func(user, link):
-        user_info = await recipe.get_user_by_id(user.id)
+        user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
         if user_info is None:
             raise Exception('Unknown User ID provided')
         return await create_and_send_custom_email(user_info, link)
@@ -53,7 +54,7 @@ def email_verification_create_and_send_custom_email(
 def email_verification_get_email_verification_url(
         recipe: ThirdPartyRecipe, get_email_verification_url):
     async def func(user):
-        user_info = await recipe.get_user_by_id(user.id)
+        user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
         if user_info is None:
             raise Exception(recipe, 'Unknown User ID provided')
         return await get_email_verification_url(user_info)
@@ -118,3 +119,7 @@ def validate_and_normalise_user_input(
     override = OverrideConfig(override_functions, override_apis)
     return ThirdPartyConfig(sign_in_and_up_feature,
                             email_verification_feature, override)
+
+
+def is_using_oauth_development_keys(client_id: str):
+    return client_id in DEV_OAUTH_CLIENT_IDS

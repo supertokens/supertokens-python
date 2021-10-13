@@ -27,11 +27,10 @@ if TYPE_CHECKING:
 class Google(Provider):
     def __init__(self, client_id: str, client_secret: str, scope: List[str] = None,
                  authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None):
-        super().__init__('google')
+        super().__init__('google', client_id)
         default_scopes = ['https://www.googleapis.com/auth/userinfo.email']
         if scope is None:
             scope = default_scopes
-        self.client_id = client_id
         self.client_secret = client_secret
         self.scopes = list(set(scope))
         self.access_token_api_url = 'https://accounts.google.com/o/oauth2/token'
