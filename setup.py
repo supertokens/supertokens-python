@@ -18,7 +18,7 @@ extras_require = {
         'pytest-asyncio==0.14.0',
         'respx==0.16.3',
         'nest-asyncio==1.5.1',
-        'Fastapi>=0.60',
+        'Fastapi==0.68.1',
         'django',
         'Flask==2.0.1',
         'python-dotenv',
@@ -72,8 +72,9 @@ setup(
         "tldextract==3.1.0",
         "asgiref==3.4.1",
         "werkzeug==2.0.1",
-        'starlette~=0.14.2'
+        'starlette~=0.14.2',
+        'typing_extensions==3.10'
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     extras_require=extras_require
 )
