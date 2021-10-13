@@ -17,6 +17,7 @@ import json
 import os
 import sys
 from functools import wraps
+import re
 
 from asgiref.sync import async_to_sync
 from django.http import HttpResponse, JsonResponse
@@ -39,6 +40,15 @@ index_file.close()
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 
+def request_get_header(request, header_key: str) -> bool:
+    regex = re.compile('^HTTP_')
+    header_values = dict((regex.sub('', header), value) for (header, value)
+                         in request.META.items() if header.startswith('HTTP_'))
+    header_key = header_key.upper()
+
+    return header_values.get(header_key, None)
+
+
 def custom_decorator_for_test():
     def session_verify_custom_test(f):
         @wraps(f)
@@ -48,7 +58,7 @@ def custom_decorator_for_test():
                 value = f(request, *args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
-                if request.headers.get("rid") is None:
+                if request.META['HTTP_RID'] is None:
                     return HttpResponse(content='refresh failed')
                 Test.increment_refresh()
                 return HttpResponse(content='refresh success')
@@ -189,8 +199,8 @@ def test_config(request):
 
 def multiple_interceptors(request):
     if request.method == 'POST':
-        result_bool = 'success' if 'interceptorheader2' in request.headers \
-                                   and 'interceptorheader1' in request.headers else 'failure'
+        result_bool = 'success' if request_get_header(request, 'interceptorheader2') is not None \
+            and request_get_header(request, 'interceptorheader1') is not None else 'failure'
         return HttpResponse(result_bool)
     else:
         return send_options_api_response()
@@ -231,9 +241,10 @@ def update_jwt(request):
 
 def testing(request):
     if request.method in ['GET', 'PUT', 'POST', 'DELETE']:
-        if 'testing' in request.headers:
+        header_value = request_get_header(request, 'testing')
+        if header_value is not None:
             resp = HttpResponse('success')
-            resp['testing'] = request.headers['testing']
+            resp['testing'] = header_value
             return resp
         return HttpResponse("success")
 
@@ -264,7 +275,7 @@ def revoke_all(request):
 
 def refresh_attempted_time(request):
     if request.method == 'GET':
-        return HttpResponse(Test.get_refresh_attempted_count())
+        return HttpResponse(str(Test.get_refresh_attempted_count()))
     else:
         return send_options_api_response()
 
@@ -290,7 +301,8 @@ def set_anti_csrf(request):
 
 def refresh_called_time(request):
     if request.method == 'GET':
-        return HttpResponse(Test.get_refresh_called_count())
+        print(Test.get_refresh_called_count())
+        return HttpResponse(str(Test.get_refresh_called_count()))
     else:
         return send_options_api_response()
 
@@ -311,7 +323,7 @@ def ping(request):
 
 def test_header(request):
     if request.method == 'GET':
-        success_info = request.headers.get('st-custom-header')
+        success_info = request_get_header(request, 'st-custom-header')
         return JsonResponse({'success': success_info})
     else:
         return send_options_api_response()
@@ -319,8 +331,8 @@ def test_header(request):
 
 def check_device_info(request):
     if request.method == 'GET':
-        sdk_name = request.headers.get('supertokens-sdk-name')
-        sdk_version = request.headers.get('supertokens-sdk-version')
+        sdk_name = request_get_header(request, 'supertokens-sdk-name')
+        sdk_version = request_get_header(request, 'supertokens-sdk-version')
         return HttpResponse('true' if sdk_name == 'website' and isinstance(
             sdk_version, str) else 'false')
     else:
@@ -328,13 +340,13 @@ def check_device_info(request):
 
 
 def check_rid(request):
-    rid = request.headers.get('rid')
+    rid = request_get_header(request, 'rid')
     return HttpResponse('fail' if rid is None else 'success')
 
 
 def check_allow_credentials(request):
     if request.method == 'GET':
-        return JsonResponse(json.dumps('allow-credentials' in request.headers))
+        return JsonResponse(json.dumps(request_get_header(request, 'allow-credentials') is not None))
     else:
         return send_options_api_response()
 

@@ -22,7 +22,8 @@ extras_require = {
         'django',
         'Flask==2.0.1',
         'python-dotenv',
-        'flask_cors'
+        'flask_cors',
+        'django-cors-headers'
     ])
 }
 

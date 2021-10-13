@@ -14,6 +14,8 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 import json
+from math import ceil
+from time import time
 
 from supertokens_python.framework.response import BaseResponse
 
@@ -32,18 +34,17 @@ class DjangoResponse(BaseResponse):
             key,
             value,
             max_age,
-            expires,
+            ceil((expires - int(time() * 1000)) / 1000),
             path,
             domain,
             secure,
-            httponly,
-            samesite)
+            httponly)
+        self.response.cookies[key]['samesite'] = samesite
 
     def set_status_code(self, status_code):
         self.response.status_code = status_code
 
     def set_header(self, key, value):
-        # check if it is working with httpresponse
         self.response[key] = value
 
     def get_header(self, key):
