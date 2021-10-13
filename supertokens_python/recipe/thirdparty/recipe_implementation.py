@@ -15,7 +15,12 @@ under the License.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union, Literal, List
+from typing import TYPE_CHECKING, Union, List
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 

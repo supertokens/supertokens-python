@@ -22,8 +22,9 @@ if TYPE_CHECKING:
 
 
 class Provider(abc.ABC):
-    def __init__(self, provider_id: str):
+    def __init__(self, provider_id: str, client_id: str):
         self.id = provider_id
+        self.client_id = client_id
 
     @abc.abstractmethod
     async def get_profile_info(self, auth_code_response: any) -> UserInfo:

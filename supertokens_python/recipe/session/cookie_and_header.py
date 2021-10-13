@@ -15,7 +15,13 @@ under the License.
 """
 from __future__ import annotations
 
-from typing import Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+
 from urllib.parse import quote, unquote
 
 from .constants import (
