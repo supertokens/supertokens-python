@@ -15,7 +15,12 @@ under the License.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union, Literal
+from typing import TYPE_CHECKING, Union
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from .interfaces import (
     RecipeInterface, SignInOkResult, SignInWrongCredentialsErrorResult, SignUpOkResult,

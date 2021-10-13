@@ -16,7 +16,12 @@ under the License.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Union, TYPE_CHECKING, Literal
+from typing import Union, TYPE_CHECKING
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse

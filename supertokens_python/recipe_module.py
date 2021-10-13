@@ -17,7 +17,12 @@ under the License.
 from __future__ import annotations
 
 import abc
-from typing import Union, Literal, List, TYPE_CHECKING
+from typing import Union, List, TYPE_CHECKING
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from .framework.response import BaseResponse
 
