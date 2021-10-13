@@ -23,12 +23,11 @@ from httpx import AsyncClient
 class Facebook(Provider):
     def __init__(self, client_id: str, client_secret: str,
                  scope: List[str] = None):
-        super().__init__('facebook')
+        super().__init__('facebook', client_id)
         default_scopes = ['email']
 
         if scope is None:
             scope = default_scopes
-        self.client_id = client_id
         self.client_secret = client_secret
         self.scopes = list(set(scope))
         self.access_token_api_url = 'https://graph.facebook.com/v9.0/oauth/access_token'

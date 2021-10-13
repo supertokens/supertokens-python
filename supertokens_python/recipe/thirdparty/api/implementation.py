@@ -19,7 +19,8 @@ from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 from httpx import AsyncClient
-
+from supertokens_python.recipe.thirdparty.constants import DEV_OAUTH_AUTHORIZATION_URL, DEV_OAUTH_REDIRECT_URL
+from supertokens_python.recipe.thirdparty.utils import is_using_oauth_development_keys
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.recipe.session import create_new_session
 from supertokens_python.recipe.thirdparty.interfaces import APIInterface, SignInUpPostOkResponse, \
@@ -42,13 +43,21 @@ class APIImplementation(APIInterface):
         for key, value in authorisation_url_info.params.items():
             params[key] = value if not callable(
                 value) else value(api_options.request)
+
+        auth_url = authorisation_url_info.url
+        if is_using_oauth_development_keys(provider.client_id):
+            params['actual_redirect_uri'] = authorisation_url_info.url
+            auth_url = DEV_OAUTH_AUTHORIZATION_URL
+
         query_string = urlencode(params)
 
-        url = authorisation_url_info.url + '?' + query_string
+        url = auth_url + '?' + query_string
         return AuthorisationUrlGetOkResponse(url)
 
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
                               api_options: APIOptions) -> SignInUpPostResponse:
+        if is_using_oauth_development_keys(provider.client_id):
+            redirect_uri = DEV_OAUTH_REDIRECT_URL
         try:
             access_token_api_info = provider.get_access_token_api_info(
                 redirect_uri, code)
