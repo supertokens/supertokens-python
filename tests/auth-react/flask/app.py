@@ -159,8 +159,8 @@ def get_session_info():
     return jsonify({
         'sessionHandle': session_.get_handle(),
         'userId': session_.get_user_id(),
-        'jwtPayload': session_.sync_get_session_data(),
-        'sessionData': session_.get_session_data()
+        'jwtPayload': session_.get_jwt_payload(),
+        'sessionData': session_.sync_get_session_data()
     })
 
 

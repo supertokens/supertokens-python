@@ -15,7 +15,6 @@ under the License.
 """
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING, List
 
 from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID
@@ -70,7 +69,7 @@ class APIImplementation(APIInterface):
             except Exception:
                 pass
 
-        asyncio.create_task(send_email())
+        await send_email()
         return GeneratePasswordResetTokenPostOkResponse()
 
     async def password_reset_post(self, form_fields: List[FormField], token: str,
