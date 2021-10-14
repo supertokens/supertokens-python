@@ -15,7 +15,6 @@ under the License.
 """
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING
 
 from supertokens_python.recipe.emailverification.interfaces import (
@@ -70,12 +69,9 @@ class APIImplementation(APIInterface):
         email_verify_link = (await api_options.config.get_email_verification_url(
             user)) + '?token=' + token_result.token + '&rid' + api_options.recipe_id
 
-        async def send_email():
-            try:
-                await api_options.config.create_and_send_custom_email(user, email_verify_link)
-            except Exception:
-                pass
-
-        asyncio.create_task(send_email())
+        try:
+            await api_options.config.create_and_send_custom_email(user, email_verify_link)
+        except Exception:
+            pass
 
         return GenerateEmailVerifyTokenPostOkResponse()

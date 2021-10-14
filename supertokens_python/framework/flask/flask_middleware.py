@@ -15,8 +15,7 @@ under the License.
 """
 
 import json
-
-from asgiref.sync import async_to_sync
+from supertokens_python.async_to_sync_wrapper import sync
 
 
 class Middleware:
@@ -27,7 +26,6 @@ class Middleware:
 
     def set_before_after_request(self):
         app = self.app
-        from asgiref.sync import async_to_sync
         from supertokens_python.framework.flask.flask_request import FlaskRequest
         from supertokens_python.framework.flask.flask_response import FlaskResponse
         from supertokens_python.supertokens import manage_cookies_post_response
@@ -40,9 +38,9 @@ class Middleware:
 
             st = Supertokens.get_instance()
 
-            request = FlaskRequest(request)
-            response = FlaskResponse(Response())
-            result = async_to_sync(st.middleware)(request, response)
+            request_ = FlaskRequest(request)
+            response_ = FlaskResponse(Response())
+            result = sync(st.middleware(request_, response_))
 
             if result is not None:
                 return result.response
@@ -50,24 +48,26 @@ class Middleware:
         @app.after_request
         def after_request(response):
             from flask import g
-            response = FlaskResponse(response)
+            response_ = FlaskResponse(response)
             if hasattr(g, 'supertokens'):
-                manage_cookies_post_response(g.supertokens, response)
+                manage_cookies_post_response(g.supertokens, response_)
 
-            return response.response
+            return response_.response
 
     def set_error_handler(self):
         app = self.app
         from supertokens_python.exceptions import SuperTokensError
+        from flask import request
 
         @app.errorhandler(SuperTokensError)
         def error_handler(error):
             from werkzeug import Response
             from supertokens_python import Supertokens
+            from supertokens_python.framework.flask.flask_request import FlaskRequest
             from supertokens_python.framework.flask.flask_response import FlaskResponse
             st = Supertokens.get_instance()
             response = Response(json.dumps({}),
                                 mimetype='application/json',
                                 status=200)
-            result = async_to_sync(st.handle_supertokens_error)(None, error, FlaskResponse(response))
+            result = sync(st.handle_supertokens_error(FlaskRequest(request), error, FlaskResponse(response)))
             return result.response
