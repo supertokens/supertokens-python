@@ -21,10 +21,12 @@ from asgiref.sync import async_to_sync
 
 class Middleware:
     def __init__(self, app):
-        self.set_before_after_request(app)
-        self.set_error_handler(app)
+        self.app = app
+        self.set_before_after_request()
+        self.set_error_handler()
 
-    def set_before_after_request(self, app):
+    def set_before_after_request(self):
+        app = self.app
         from asgiref.sync import async_to_sync
         from supertokens_python.framework.flask.flask_request import FlaskRequest
         from supertokens_python.framework.flask.flask_response import FlaskResponse
@@ -54,7 +56,8 @@ class Middleware:
 
             return response.response
 
-    def set_error_handler(self, app):
+    def set_error_handler(self):
+        app = self.app
         from supertokens_python.exceptions import SuperTokensError
 
         @app.errorhandler(SuperTokensError)

@@ -29,7 +29,7 @@ class BaseRequest(ABC):
         pass
 
     @abstractmethod
-    def json(self):
+    async def json(self):
         pass
 
     @abstractmethod

@@ -28,7 +28,7 @@ class DjangoRequest(BaseRequest):
     def get_query_param(self, key, default=None):
         return self.request.GET.get(key, default)
 
-    def json(self):
+    async def json(self):
         body = json.loads(self.request.body)
         return body
 

@@ -15,7 +15,7 @@ under the License.
 """
 from __future__ import annotations
 from typing import TYPE_CHECKING
-
+from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
 if TYPE_CHECKING:
@@ -43,12 +43,24 @@ class Session:
         if await session_functions.revoke_session(self.__recipe_implementation, self.__session_handle):
             self.remove_cookies = True
 
+    async def sync_revoke_session(self) -> None:
+        await sync(self.revoke_session())
+
+    def sync_get_session_data(self) -> dict:
+        return sync(self.get_session_data())
+
     async def get_session_data(self) -> dict:
         session_info = await session_functions.get_session_information(self.__recipe_implementation, self.__session_handle)
         return session_info['sessionData']
 
+    def sync_update_session_data(self, new_session_data) -> None:
+        sync(self.update_session_data(new_session_data))
+
     async def update_session_data(self, new_session_data) -> None:
         return await session_functions.update_session_data(self.__recipe_implementation, self.__session_handle, new_session_data)
+
+    async def sync_update_jwt_payload(self, new_jwt_payload) -> None:
+        await sync(self.update_jwt_payload(new_jwt_payload))
 
     async def update_jwt_payload(self, new_jwt_payload) -> None:
         result = await self.__recipe_implementation.querier.send_post_request(NormalisedURLPath('/recipe/session'

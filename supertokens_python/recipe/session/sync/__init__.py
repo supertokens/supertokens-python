@@ -58,6 +58,11 @@ def get_session_data(session_handle: str) -> dict:
     return sync(get_session_data(session_handle))
 
 
+def get_session_information(session_handle: str) -> dict:
+    from supertokens_python.recipe.session import get_session_information
+    return sync(get_session_information(session_handle))
+
+
 def update_session_data(session_handle: str, new_session_data: dict) -> None:
     from supertokens_python.recipe.session import update_session_data
     return sync(update_session_data(session_handle, new_session_data))

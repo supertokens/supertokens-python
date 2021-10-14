@@ -22,8 +22,7 @@ from supertokens_python.framework.flask.flask_request import FlaskRequest
 from supertokens_python.recipe.session import SessionRecipe
 
 
-def verify_session(
-        anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
+def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
     def session_verify(f):
         @wraps(f)
         def wrapped_function(*args, **kwargs):

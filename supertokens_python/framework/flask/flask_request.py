@@ -27,7 +27,7 @@ class FlaskRequest(BaseRequest):
     def get_query_param(self, key, default=None):
         self.req.args.get(key)
 
-    def json(self):
+    async def json(self):
         return self.req.get_json()
 
     def method(self) -> str:

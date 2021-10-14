@@ -70,6 +70,10 @@ async def get_session_data(session_handle: str) -> dict:
     return await SessionRecipe.get_instance().recipe_implementation.get_session_data(session_handle)
 
 
+async def get_session_information(session_handle: str) -> dict:
+    return await SessionRecipe.get_instance().recipe_implementation.get_session_information(session_handle)
+
+
 async def update_session_data(session_handle: str, new_session_data: dict) -> None:
     return await SessionRecipe.get_instance().recipe_implementation.update_session_data(session_handle,
                                                                                         new_session_data)
