@@ -47,10 +47,10 @@ class DjangoRequest(BaseRequest):
         return self.request.get_full_path()
 
     def get_session(self):
-        return self.request.state
+        return self.request.supertokens
 
     def set_session(self, session):
-        self.request.state = session
+        self.request.supertokens = session
 
     def get_path(self) -> str:
         return self.request.path

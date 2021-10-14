@@ -34,7 +34,7 @@ def verify_session(
                 recipe = SessionRecipe.get_instance()
                 session = await recipe.verify_session(request, anti_csrf_check, session_required)
                 request.set_session(session)
-                return f(request.request, *args, **kwargs)
+                return await f(request.request, *args, **kwargs)
             except SuperTokensError as e:
                 response = DjangoResponse(HttpResponse())
                 result = await Supertokens.get_instance().handle_supertokens_error(DjangoRequest(request), e, response)

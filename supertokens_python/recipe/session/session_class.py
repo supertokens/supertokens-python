@@ -43,8 +43,8 @@ class Session:
         if await session_functions.revoke_session(self.__recipe_implementation, self.__session_handle):
             self.remove_cookies = True
 
-    async def sync_revoke_session(self) -> None:
-        await sync(self.revoke_session())
+    def sync_revoke_session(self) -> None:
+        sync(self.revoke_session())
 
     def sync_get_session_data(self) -> dict:
         return sync(self.get_session_data())

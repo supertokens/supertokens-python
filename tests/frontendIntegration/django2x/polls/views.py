@@ -70,6 +70,75 @@ def custom_decorator_for_test():
     return session_verify_custom_test
 
 
+
+def custom_decorator_for_update_jwt():
+    def session_verify_custom_test(f):
+        @wraps(f)
+        def wrapped_function(request, *args, **kwargs):
+            if request.method == 'GET':
+                Test.increment_get_session()
+                value = f(request, *args, **kwargs)
+                if value is not None and value.status_code != 200:
+                    return value
+                session = request.supertokens
+                resp = JsonResponse(session.get_jwt_payload())
+                resp['Cache-Control'] = 'no-cache, private'
+                return resp
+            else:
+                if request.method == 'POST':
+                    value = f(request, *args, **kwargs)
+                    if value is not None and value.status_code != 200:
+                        return value
+                    session = request.supertokens
+                    session.update_jwt_payload(json.loads(request.body))
+                    Test.increment_get_session()
+                    resp = JsonResponse(session.get_jwt_payload())
+                    resp['Cache-Control'] = 'no-cache, private'
+                    return resp
+            return send_options_api_response()
+
+        return wrapped_function
+
+    return session_verify_custom_test
+
+def custom_decorator_for_get_info():
+    def session_verify_custom_test(f):
+        @wraps(f)
+        def wrapped_function(request, *args, **kwargs):
+            if request.method == 'GET':
+                value = f(request, *args, **kwargs)
+                if value is not None and value.status_code != 200:
+                    return value
+                Test.increment_get_session()
+                session = request.supertokens
+                resp = HttpResponse(session.get_user_id())
+                resp['Cache-Control'] = 'no-cache, private'
+                return resp
+            else:
+                return send_options_api_response()
+
+        return wrapped_function
+
+    return session_verify_custom_test
+
+def custom_decorator_for_logout():
+    def session_verify_custom_test(f):
+        @wraps(f)
+        def wrapped_function(request, *args, **kwargs):
+            if request.method == 'POST':
+                value = f(request, *args, **kwargs)
+                if value is not None and value.status_code != 200:
+                    return value
+                session = request.supertokens
+                session.sync_revoke_session()
+                return HttpResponse('success')
+            return send_options_api_response()
+
+        return wrapped_function
+
+    return session_verify_custom_test
+
+
 def try_refresh_token(_):
     return HttpResponse(json.dumps(
         {'error': 'try refresh token'}), content_type="application/json", status=401)
@@ -205,38 +274,15 @@ def multiple_interceptors(request):
     else:
         return send_options_api_response()
 
-
+@custom_decorator_for_get_info()
 @verify_session()
 def get_info(request):
-    if request.method == 'GET':
-        Test.increment_get_session()
-        session = verify_session()(request).state
-        resp = HttpResponse(session.get_user_id())
-        resp['Cache-Control'] = 'no-cache, private'
-        return resp
-    else:
-        return send_options_api_response()
+    return HttpResponse('')
 
-
+@custom_decorator_for_update_jwt()
 @verify_session()
 def update_jwt(request):
-    if request.method == 'GET':
-        Test.increment_get_session()
-        session = verify_session()(request).state
-        resp = JsonResponse(session.get_jwt_payload())
-        resp['Cache-Control'] = 'no-cache, private'
-        return resp
-    else:
-        if request.method == 'POST':
-            session = verify_session()(request).state
-            async_to_sync(session.update_jwt_payload)(json.loads(request.body))
-            Test.increment_get_session()
-            resp = JsonResponse(session.get_jwt_payload())
-            resp['Cache-Control'] = 'no-cache, private'
-            return resp
-
-    # options request
-    return send_options_api_response()
+    return HttpResponse('')
 
 
 def testing(request):
@@ -251,16 +297,10 @@ def testing(request):
     # options
     return send_options_api_response()
 
-
+@custom_decorator_for_logout()
 @verify_session()
 def logout(request):
-    if request.method == 'POST':
-        session = verify_session()(request).state
-        # session.revoke_session()
-        async_to_sync(session.revoke_session)()
-        # revoke_session(session.get_handle())
-        return HttpResponse('success')
-    return send_options_api_response()
+    return HttpResponse('')
 
 
 @verify_session()

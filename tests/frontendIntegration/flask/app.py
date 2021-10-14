@@ -218,6 +218,13 @@ def options():
 def get_info():
     Test.increment_get_session()
     session = g.supertokens
+    print(session.sync_get_session_data())
+    print({
+        'sessionHandle': session.get_handle(),
+        'userId': session.get_user_id(),
+        'jwtPayload': session.get_jwt_payload(),
+        'sessionData': session.sync_get_session_data()
+    })
     resp = make_response(session.get_user_id())
     resp.headers['Cache-Control'] = 'no-cache, private'
     return resp
