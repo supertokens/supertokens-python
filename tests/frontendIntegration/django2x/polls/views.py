@@ -19,7 +19,6 @@ import sys
 from functools import wraps
 import re
 
-from asgiref.sync import async_to_sync
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -70,7 +69,6 @@ def custom_decorator_for_test():
     return session_verify_custom_test
 
 
-
 def custom_decorator_for_update_jwt():
     def session_verify_custom_test(f):
         @wraps(f)
@@ -101,6 +99,7 @@ def custom_decorator_for_update_jwt():
 
     return session_verify_custom_test
 
+
 def custom_decorator_for_get_info():
     def session_verify_custom_test(f):
         @wraps(f)
@@ -120,6 +119,7 @@ def custom_decorator_for_get_info():
         return wrapped_function
 
     return session_verify_custom_test
+
 
 def custom_decorator_for_logout():
     def session_verify_custom_test(f):
@@ -274,10 +274,12 @@ def multiple_interceptors(request):
     else:
         return send_options_api_response()
 
+
 @custom_decorator_for_get_info()
 @verify_session()
 def get_info(request):
     return HttpResponse('')
+
 
 @custom_decorator_for_update_jwt()
 @verify_session()
@@ -296,6 +298,7 @@ def testing(request):
 
     # options
     return send_options_api_response()
+
 
 @custom_decorator_for_logout()
 @verify_session()

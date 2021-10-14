@@ -88,6 +88,7 @@ def custom_decorator_for_update_jwt():
 
     return session_verify_custom_test
 
+
 def custom_decorator_for_get_info():
     def session_verify_custom_test(f):
         @wraps(f)
@@ -107,6 +108,7 @@ def custom_decorator_for_get_info():
         return wrapped_function
 
     return session_verify_custom_test
+
 
 def custom_decorator_for_logout():
     def session_verify_custom_test(f):
@@ -260,6 +262,7 @@ async def multiple_interceptors(request):
     else:
         return send_options_api_response()
 
+
 @custom_decorator_for_get_info()
 @verify_session()
 async def get_info(request):
@@ -282,6 +285,7 @@ async def testing(request):
 
     # options
     return send_options_api_response()
+
 
 @custom_decorator_for_logout()
 @verify_session()

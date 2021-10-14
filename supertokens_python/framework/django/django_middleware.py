@@ -18,6 +18,7 @@ from __future__ import annotations
 import asyncio
 from asgiref.sync import async_to_sync
 
+
 def middleware(get_response):
     from supertokens_python import Supertokens
     from supertokens_python.exceptions import SuperTokensError
@@ -60,8 +61,8 @@ def middleware(get_response):
                     result = get_response(request)
                     result = DjangoResponse(result)
 
-                if hasattr(request, "state") and isinstance(request.state, Session):
-                    manage_cookies_post_response(request.state, result)
+                if hasattr(request, "supertokens") and isinstance(request.supertokens, Session):
+                    manage_cookies_post_response(request.supertokens, result)
 
                 return result.response
 
