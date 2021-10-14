@@ -59,8 +59,8 @@ class Session:
     async def update_session_data(self, new_session_data) -> None:
         return await session_functions.update_session_data(self.__recipe_implementation, self.__session_handle, new_session_data)
 
-    async def sync_update_jwt_payload(self, new_jwt_payload) -> None:
-        await sync(self.update_jwt_payload(new_jwt_payload))
+    def sync_update_jwt_payload(self, new_jwt_payload) -> None:
+        sync(self.update_jwt_payload(new_jwt_payload))
 
     async def update_jwt_payload(self, new_jwt_payload) -> None:
         result = await self.__recipe_implementation.querier.send_post_request(NormalisedURLPath('/recipe/session'
