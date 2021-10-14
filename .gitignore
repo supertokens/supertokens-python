@@ -10,3 +10,6 @@ venv/
 env/
 .env
 .DS_Store
+bin/
+lib/
+pyvenv.cfg

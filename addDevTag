@@ -71,6 +71,16 @@ then
     exit 1
 fi
 
+# add an empty commit if the user has not given a commit hash so that we are sure it's built------------
+if [ $# -eq 0 ]
+then
+    pdoc --html supertokens_python
+    git add --all
+    git commit --allow-empty -m"adding dev-v$version tag to this commit to ensure building"
+    git push
+	commit_hash=`git log --pretty=format:'%H' -n 1`
+fi
+
 
 # tag this commit and push it------------
 

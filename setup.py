@@ -23,7 +23,8 @@ extras_require = {
         'Flask==2.0.1',
         'python-dotenv',
         'flask_cors',
-        'django-cors-headers'
+        'django-cors-headers',
+        'pdoc3'
     ])
 }
 
@@ -38,7 +39,8 @@ exclude_list = [
     "frontendDriverInterfaceSupported.json",
     "coreDriverInterfaceSupported.json",
     ".github",
-    ".circleci"
+    ".circleci",
+    "html"
 ]
 
 setup(
