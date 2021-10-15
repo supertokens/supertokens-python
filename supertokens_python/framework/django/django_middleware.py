@@ -52,8 +52,8 @@ def middleware(get_response):
         def __middleware(request):
             st = Supertokens.get_instance()
             custom_request = DjangoRequest(request)
-            from django.http import HttpResponse
-            response = DjangoResponse(HttpResponse())
+            from django.http import JsonResponse
+            response = DjangoResponse(JsonResponse({}))
             try:
                 result = async_to_sync(st.middleware)(custom_request, response)
 
@@ -67,9 +67,8 @@ def middleware(get_response):
                 return result.response
 
             except SuperTokensError as e:
-                response = DjangoResponse(HttpResponse())
+                response = DjangoResponse(JsonResponse({}))
                 result = async_to_sync(st.handle_supertokens_error)(DjangoRequest(request), e, response)
-
-            return result.response
+                return result.response
 
     return __middleware

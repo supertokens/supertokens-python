@@ -133,7 +133,7 @@ init({
 })
 
 
-ALLOWED_HOSTS = ['localhost.org']
+ALLOWED_HOSTS = ['localhost']
 
 CORS_ORIGIN_WHITELIST = [
     get_website_domain()
@@ -173,6 +173,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'mysite.middleware.custom_cors_middleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

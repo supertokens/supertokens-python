@@ -18,19 +18,12 @@ from django.http import HttpResponse, JsonResponse
 from supertokens_python.recipe.session.framework.django import verify_session
 from django.conf import settings
 
-
-module_dir = os.path.dirname(__file__)  # get current directory
-file_path = os.path.join(module_dir, '../templates/index.html')
-index_file = open(file_path, "r")
-file_contents = index_file.read()
-index_file.close()
-
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 
 @verify_session
 async def session_info(request):
-    session_ = request.state
+    session_ = request.supertokens
     return JsonResponse({
         'sessionHandle': session_.get_handle(),
         'userId': session_.get_user_id(),
@@ -45,6 +38,7 @@ def ping(request):
 
 def token(request):
     latest_url_with_token = getattr(settings, "LATEST_URL_WITH_TOKEN", None)
+    print(latest_url_with_token)
     return JsonResponse({
         'latestURLWithToken': latest_url_with_token
     })
