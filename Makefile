@@ -21,3 +21,6 @@ test:
 
 dev-install:
 	pip3 install -e .[dev]
+
+build-docs:
+	rm -rf html && pdoc --html supertokens_python
