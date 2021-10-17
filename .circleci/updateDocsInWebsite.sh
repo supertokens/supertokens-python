@@ -19,8 +19,8 @@ versionFolder="${array[0]}"."${array[1]}".X
 (cd ../../supertokens-backend-website && mkdir -p ./app/docs/sdk/docs/python/${versionFolder})
 
 # copy docs content from this repo to the supertokens-backend-website repo
-cp -r ../html/supertokens-python/* ../../supertokens-backend-website/app/docs/sdk/docs/python/
-cp -r ../html/supertokens-python/* ../../supertokens-backend-website/app/docs/sdk/docs/python/${versionFolder}
+cp -r ../html/supertokens_python/* ../../supertokens-backend-website/app/docs/sdk/docs/python/
+cp -r ../html/supertokens_python/* ../../supertokens-backend-website/app/docs/sdk/docs/python/${versionFolder}
 
 # push to git
 git config --global user.email "$EMAIL"
