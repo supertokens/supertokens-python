@@ -54,7 +54,7 @@ cd ./test/server/
 npm i -d --quiet --no-progress
 npm i git+https://github.com:supertokens/supertokens-node.git#$3 --quiet --no-progress
 cd ../../../project/tests/auth-react/flask
-python app.py --port 8083 &
+python3 app.py --port 8083 &
 pid=$!
 cd ../../../../supertokens-auth-react/
 SKIP_OAUTH=true npm run test-with-non-node

@@ -49,9 +49,9 @@ git clone git@github.com:supertokens/supertokens-website.git
 cd supertokens-website
 git checkout $2
 cd ../project/tests/frontendIntegration/flask
-python app.py --port 8080 &
+python3 app.py --port 8080 &
 pid=$!
- python app.py --port 8082 &
+python3 app.py --port 8082 &
 pid2=$!
 cd ../../../../supertokens-website/test/server
 npm i -d --quiet --no-progress
