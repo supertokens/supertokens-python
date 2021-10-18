@@ -83,6 +83,7 @@ class SupertokensTest(TestCase):
                 'connection_uri': "http://localhost:3567",
             },
             'framework': 'django',
+            'mode': 'asgi',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "http://api.supertokens.io",
@@ -99,11 +100,11 @@ class SupertokensTest(TestCase):
 
         start_st()
 
-        my_middleware = middleware()(create_new_session_view)
+        my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
         response = await my_middleware(request)
 
-        my_middleware = middleware()(refresh_view)
+        my_middleware = middleware(refresh_view)
         request = self.factory.get('/refresh', {'user_id': 'user_id'})
         cookies = get_cookies(response)
 
@@ -150,7 +151,7 @@ class SupertokensTest(TestCase):
 
         start_st()
 
-        my_middleware = middleware()(create_new_session_view)
+        my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
         response = await my_middleware(request)
         cookies = get_cookies(response)
@@ -159,7 +160,7 @@ class SupertokensTest(TestCase):
         assert len(cookies['sIdRefreshToken']['value']) > 0
         assert len(cookies['sRefreshToken']['value']) > 0
 
-        my_middleware = middleware()(logout_view)
+        my_middleware = middleware(logout_view)
         request = self.factory.post('/logout', {'user_id': 'user_id'})
 
         request.COOKIES["sAccessToken"] = cookies['sAccessToken']['value']
@@ -194,7 +195,7 @@ class SupertokensTest(TestCase):
 
         start_st()
 
-        my_middleware = middleware()(create_new_session_view)
+        my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
         response = await my_middleware(request)
         cookies = get_cookies(response)
@@ -203,7 +204,7 @@ class SupertokensTest(TestCase):
         assert len(cookies['sIdRefreshToken']['value']) > 0
         assert len(cookies['sRefreshToken']['value']) > 0
 
-        my_middleware = middleware()(handle_view)
+        my_middleware = middleware(handle_view)
         request = self.factory.get('/handle', {'user_id': 'user_id'})
 
         request.COOKIES["sAccessToken"] = cookies['sAccessToken']['value']
@@ -237,11 +238,11 @@ class SupertokensTest(TestCase):
 
         start_st()
 
-        my_middleware = middleware()(create_new_session_view)
+        my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
         response = await my_middleware(request)
 
-        my_middleware = middleware()(refresh_view)
+        my_middleware = middleware(refresh_view)
         request = self.factory.get('/refresh', {'user_id': 'user_id'})
         cookies = get_cookies(response)
 
