@@ -1,31 +1,27 @@
-"""
-Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 from __future__ import annotations
 from .session_class import Session
 from supertokens_python.process_state import ProcessState, AllowedProcessStates
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.async_to_sync_wrapper import check_event_loop
 from typing import TYPE_CHECKING
 from .interfaces import RecipeInterface
 from .exceptions import raise_unauthorised_exception, raise_try_refresh_token_exception
 from .cookie_and_header import get_id_refresh_token_from_cookie, get_access_token_from_cookie, get_anti_csrf_header, \
     get_rid_header, get_refresh_token_from_cookie
 from . import session_functions
-
-import asyncio
+from supertokens_python.utils import execute_in_background
 
 
 if TYPE_CHECKING:
@@ -62,12 +58,10 @@ class RecipeImplementation(RecipeInterface):
             except Exception:
                 pass
 
-        if config.framework.lower() == 'flask' or config.framework.lower() == 'django':
-            check_event_loop()
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(call_get_handshake_info())
-        else:
-            asyncio.create_task(call_get_handshake_info())
+        try:
+            execute_in_background(config.mode, call_get_handshake_info)
+        except Exception:
+            pass
 
     async def get_handshake_info(self) -> HandshakeInfo:
         if self.handshake_info is None:

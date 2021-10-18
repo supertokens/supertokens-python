@@ -1,42 +1,61 @@
-"""
-Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 import json
 import os
 import sys
+from functools import wraps
 
-from flask import Flask, request, make_response, Response, jsonify
+from flask import Flask, request, make_response, Response, jsonify, render_template, g
 from flask_cors import CORS
 
 from supertokens_python import init, Supertokens
-from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.flask import error_handler, Middleware
+from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
-from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user, create_new_session, revoke_session, \
-    get_session, update_jwt_payload
+from supertokens_python.recipe.session.syncio import revoke_all_sessions_for_user, create_new_session
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
 index_file.close()
-app = Flask(__name__)
-app.register_error_handler(SuperTokensError, error_handler)
-app.wsgi_app = Middleware(app.wsgi_app)
+
+app = Flask(__name__, template_folder='templates')
+Middleware(app)
 CORS(app, supports_credentials=True)
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
+
+
+def custom_decorator_for_test():
+    def session_verify_custom_test(f):
+        @wraps(f)
+        def wrapped_function(*args, **kwargs):
+            Test.increment_attempted_refresh()
+            try:
+                value = f(*args, **kwargs)
+                if value is not None and value.status_code != 200:
+                    return value
+                if request.headers.get("rid") is None:
+                    return 'refresh failed'
+                Test.increment_refresh()
+                return 'refresh success'
+            except Exception as e:
+                raise e
+
+        return wrapped_function
+
+    return session_verify_custom_test
 
 
 def try_refresh_token(_):
@@ -86,6 +105,7 @@ class Test:
 async def unauthorised_f(error, req, res):
     res.set_status_code(401)
     res.set_content({})
+    return res
 
 
 def apis_override_session(param):
@@ -115,15 +135,16 @@ def config(enable_anti_csrf: bool):
         },
         'recipe_list': [
             session.init({
-                "error_handlers": {
-                    "on_unauthorised": unauthorised_f
-                },
+                "error_handlers":
+                    {
+                        "on_unauthorised": unauthorised_f
+                    },
                 "anti_csrf": "VIA_TOKEN" if enable_anti_csrf else "NONE",
-                "override": {
-                    'apis': apis_override_session
-                }
-            })
-        ],
+                "override":
+                    {
+                        'apis': apis_override_session
+                    }
+            })],
         'telemetry': False
     }
 
@@ -131,9 +152,9 @@ def config(enable_anti_csrf: bool):
 init(config(True))
 
 
-@app.route('/index.html', methods=['OPTIONS'])
+@app.route('/index.html', methods=['GET'])
 def send_file():
-    return file_contents
+    return render_template('index.html')
 
 
 def send_options_api_response():
@@ -179,10 +200,10 @@ def multiple_interceptors_options():
 
 
 @app.route('/multipleInterceptors', methods=['POST'])
-def multiple_interceptors(request):
+def multiple_interceptors():
     result_bool = 'success' if 'interceptorheader2' in request.headers \
                                and 'interceptorheader1' in request.headers else 'failure'
-    return result_bool
+    return str(result_bool)
 
 
 @app.route("/", methods=['OPTIONS'])
@@ -194,7 +215,14 @@ def options():
 @verify_session()
 def get_info():
     Test.increment_get_session()
-    session = get_session(request)
+    session = g.supertokens
+    print(session.sync_get_session_data())
+    print({
+        'sessionHandle': session.get_handle(),
+        'userId': session.get_user_id(),
+        'jwtPayload': session.get_jwt_payload(),
+        'sessionData': session.sync_get_session_data()
+    })
     resp = make_response(session.get_user_id())
     resp.headers['Cache-Control'] = 'no-cache, private'
     return resp
@@ -207,20 +235,22 @@ def update_options():
 
 @app.route('/update-jwt', methods=['GET'])
 @verify_session()
+# @supertokens_middleware(True)
 def update_jwt():
     Test.increment_get_session()
-    session = get_session(request)
+    session = g.supertokens
 
-    resp = make_response(session.get_user_id())
+    resp = make_response(session.get_jwt_payload())
     resp.headers['Cache-Control'] = 'no-cache, private'
     return resp
 
 
 @app.route('/update-jwt', methods=['POST'])
 @verify_session()
+# @supertokens_middleware()
 def update_jwt_post():
-    session = get_session(request)
-    update_jwt_payload(session.get_handle(), request.json())
+    session = g.supertokens
+    sync(session.update_jwt_payload(request.get_json()))
     Test.increment_get_session()
     resp = make_response(session.get_jwt_payload())
     resp.headers['Cache-Control'] = 'no-cache, private'
@@ -276,9 +306,11 @@ def logout_options():
 @app.route('/logout', methods=['POST'])
 @verify_session()
 def logout():
-    session = get_session(request)
-    # session.revoke_session()
-    revoke_session(session.get_handle())
+    session = g.supertokens
+
+    # TODO do not do this. update the api
+    sync(session.revoke_session())
+    # revoke_session(session.get_handle())
     return 'success'
 
 
@@ -290,9 +322,9 @@ def revoke_all_options():
 @app.route('/revokeAll', methods=['POST'])
 @verify_session()
 async def revoke_all():
-    session = get_session(request)
-    revoke_all_sessions_for_user(session.get_user_id())
-    return 'sucess'
+    session_ = g.supertokens
+    revoke_all_sessions_for_user(session_.get_user_id())
+    return 'success'
 
 
 @app.route("/refresh", methods=['OPTIONS'])
@@ -302,22 +334,19 @@ def refresh_options():
 
 @app.route("/refreshAttemptedTime", methods=['GET'])
 def refresh_attempted_time():
-    return Test.get_refresh_attempted_count()
+    return str(Test.get_refresh_attempted_count())
 
 
 @app.route('/auth/session/refresh', methods=['POST'])
+@custom_decorator_for_test()
 @verify_session()
 def refresh():
-    Test.increment_attempted_refresh()
-    if request.headers.get("rid") is None:
-        'refresh failed'
-    Test.increment_refresh()
-    return 'refresh success'
+    return ''
 
 
 @app.route('/setAntiCsrf', methods=['POST'])
 def set_anti_csrf():
-    json = request.get_json()
+    json = request.get_json(silent=True)
     if "enableAntiCsrf" not in json:
         enable_csrf = True
     else:
@@ -397,7 +426,7 @@ def check_allow_credentials_options():
 
 @app.route('/checkAllowCredentials', methods=['GET'])
 def check_allow_credentials():
-    return json.dumps('allow-credentials' in request.headers)
+    return jsonify(json.dumps('allow-credentials' in request.headers))
 
 
 @app.route('/testError', methods=['GET', 'OPTIONS'])
@@ -405,15 +434,6 @@ def test_error():
     if request.method == 'OPTIONS':
         return send_options_api_response()
     return Response('test error message', status=500)
-
-
-# @app.exception_handler(405)
-# def f_405(_, e):
-#     return PlainTextResponse('', status_code=404)
-
-
-# cors middleware added like this due to issue with add_middleware
-# ref: https://github.com/tiangolo/fastapi/issues/1663
 
 
 if __name__ == '__main__':

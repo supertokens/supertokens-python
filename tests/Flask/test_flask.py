@@ -1,19 +1,28 @@
-"""
-Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
+import json
 
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+from _pytest.fixtures import fixture
+from flask import Flask, jsonify, make_response, request
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
-
+from supertokens_python import init
+from supertokens_python.framework.flask import Middleware
+from supertokens_python.recipe import session
+from supertokens_python.recipe.session.framework.flask import verify_session
+from supertokens_python.recipe.session.syncio import create_new_session, refresh_session, get_session, revoke_session
+from tests.Flask.utils import extract_all_cookies
 from tests.utils import set_key_value_in_config, TEST_COOKIE_SAME_SITE_CONFIG_KEY, TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, \
     TEST_ACCESS_TOKEN_MAX_AGE_VALUE, TEST_ACCESS_TOKEN_PATH_CONFIG_KEY, TEST_ACCESS_TOKEN_PATH_VALUE, \
     TEST_COOKIE_DOMAIN_CONFIG_KEY, TEST_COOKIE_DOMAIN_VALUE, TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY, \
@@ -21,19 +30,6 @@ from tests.utils import set_key_value_in_config, TEST_COOKIE_SAME_SITE_CONFIG_KE
     TEST_COOKIE_SECURE_CONFIG_KEY, TEST_DRIVER_CONFIG_COOKIE_DOMAIN, \
     TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH, TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH, TEST_DRIVER_CONFIG_COOKIE_SAME_SITE, \
     start_st, reset, clean_st, setup_st
-import json
-
-from _pytest.fixtures import fixture
-from flask import Flask, jsonify, make_response, request
-
-from supertokens_python.exceptions import SuperTokensError
-from supertokens_python import init
-from supertokens_python.recipe import session
-from supertokens_python.recipe.session.framework.flask import verify_session
-from supertokens_python.recipe.session.sync import create_new_session, refresh_session, get_session, revoke_session
-from supertokens_python.framework.flask import Middleware, error_handler
-
-from tests.Flask.utils import extract_all_cookies
 
 
 def setup_function(f):
@@ -51,9 +47,7 @@ def teardown_function(f):
 def driver_config_app():
     app = Flask(__name__)
     app.app_context().push()
-    app.wsgi_app = Middleware(app.wsgi_app)
-
-    app.register_error_handler(SuperTokensError, error_handler)
+    Middleware(app)
 
     app.testing = True
     init({

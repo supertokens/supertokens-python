@@ -18,6 +18,7 @@ async def __init():
             'connection_uri': "http://localhost:3567",
         },
         'framework': 'django3',
+        'mode': 'asgi',
         'app_info': {
             'app_name': "SuperTokens Demo",
             'api_domain': "api.supertokens.io",

@@ -1,18 +1,16 @@
-"""
-Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 import json
 import os
 import sys
@@ -24,8 +22,8 @@ from django.shortcuts import render
 from supertokens_python import init, Supertokens
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.session.framework.django import verify_session
-from supertokens_python.recipe.session import revoke_all_sessions_for_user, create_new_session, get_session
+from supertokens_python.recipe.session.framework.django.asyncio import verify_session
+from supertokens_python.recipe.session.asyncio import revoke_all_sessions_for_user, create_new_session, get_session
 
 module_dir = os.path.dirname(__file__)  # get current directory
 file_path = os.path.join(module_dir, '../templates/index.html')
@@ -52,6 +50,76 @@ def custom_decorator_for_test():
                 return HttpResponse(content='refresh success')
             except Exception as e:
                 raise e
+
+        return wrapped_function
+
+    return session_verify_custom_test
+
+
+def custom_decorator_for_update_jwt():
+    def session_verify_custom_test(f):
+        @wraps(f)
+        async def wrapped_function(request, *args, **kwargs):
+            if request.method == 'GET':
+                Test.increment_get_session()
+                value = await f(request, *args, **kwargs)
+                if value is not None and value.status_code != 200:
+                    return value
+                session = request.supertokens
+                resp = JsonResponse(session.get_jwt_payload())
+                resp['Cache-Control'] = 'no-cache, private'
+                return resp
+            else:
+                if request.method == 'POST':
+                    value = await f(request, *args, **kwargs)
+                    if value is not None and value.status_code != 200:
+                        return value
+                    session = request.supertokens
+                    await session.update_jwt_payload(json.loads(request.body))
+                    Test.increment_get_session()
+                    resp = JsonResponse(session.get_jwt_payload())
+                    resp['Cache-Control'] = 'no-cache, private'
+                    return resp
+            return send_options_api_response()
+
+        return wrapped_function
+
+    return session_verify_custom_test
+
+
+def custom_decorator_for_get_info():
+    def session_verify_custom_test(f):
+        @wraps(f)
+        async def wrapped_function(request, *args, **kwargs):
+            if request.method == 'GET':
+                value = await f(request, *args, **kwargs)
+                if value is not None and value.status_code != 200:
+                    return value
+                Test.increment_get_session()
+                session = request.supertokens
+                resp = HttpResponse(session.get_user_id())
+                resp['Cache-Control'] = 'no-cache, private'
+                return resp
+            else:
+                return send_options_api_response()
+
+        return wrapped_function
+
+    return session_verify_custom_test
+
+
+def custom_decorator_for_logout():
+    def session_verify_custom_test(f):
+        @wraps(f)
+        async def wrapped_function(request, *args, **kwargs):
+            if request.method == 'POST':
+                value = await f(request, *args, **kwargs)
+                if value is not None and value.status_code != 200:
+                    return value
+                session = request.supertokens
+                await session.revoke_session()
+                return HttpResponse('success')
+            return send_options_api_response()
 
         return wrapped_function
 
@@ -129,6 +197,7 @@ def config(enable_anti_csrf: bool):
             'connection_uri': "http://localhost:9000",
         },
         'framework': 'django',
+        'mode': 'asgi',
         'app_info': {
             'app_name': "SuperTokens",
             'api_domain': "0.0.0.0:" + get_app_port(),
@@ -193,37 +262,16 @@ async def multiple_interceptors(request):
         return send_options_api_response()
 
 
+@custom_decorator_for_get_info()
 @verify_session()
-def get_info(request):
-    if request.method == 'GET':
-        Test.increment_get_session()
-        session = verify_session()(request).state
-        resp = HttpResponse(session.get_user_id())
-        resp['Cache-Control'] = 'no-cache, private'
-        return resp
-    else:
-        return send_options_api_response()
+async def get_info(request):
+    return HttpResponse('')
 
 
+@custom_decorator_for_update_jwt()
 @verify_session()
-def update_jwt(request):
-    if request.method == 'GET':
-        Test.increment_get_session()
-        session = verify_session()(request).state
-        resp = JsonResponse(session.get_jwt_payload())
-        resp['Cache-Control'] = 'no-cache, private'
-        return resp
-    else:
-        if request.method == 'POST':
-            session = (verify_session()(request)).state
-            session.update_jwt_payload(json.loads(request.body))
-            Test.increment_get_session()
-            resp = JsonResponse(session.get_jwt_payload())
-            resp['Cache-Control'] = 'no-cache, private'
-            return resp
-
-    # options request
-    return send_options_api_response()
+async def update_jwt(request):
+    return HttpResponse('')
 
 
 async def testing(request):
@@ -238,15 +286,10 @@ async def testing(request):
     return send_options_api_response()
 
 
+@custom_decorator_for_logout()
 @verify_session()
-def logout(request):
-    if request.method == 'POST':
-        session = verify_session()(request).state
-        # session.revoke_session()
-        session.revoke_session()
-        # revoke_session(session.get_handle())
-        return HttpResponse('success')
-    return send_options_api_response()
+async def logout(request):
+    return HttpResponse('')
 
 
 @verify_session()
@@ -268,11 +311,11 @@ async def refresh_attempted_time(request):
 
 @custom_decorator_for_test()
 @verify_session()
-def refresh(request):
+async def refresh(request):
     return HttpResponse(content='refresh success')
 
 
-async def set_anti_csrf(request):
+def set_anti_csrf(request):
     data = json.loads(request.body)
     if "enableAntiCsrf" not in data:
         enable_csrf = True

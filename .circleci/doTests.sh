@@ -153,6 +153,52 @@ while [ $i -lt $frontendDriverLength ]; do
         fi
     done
 
+    tries=1
+    while [ $tries -le 3 ]
+    do
+        tries=$(( $tries + 1 ))
+        ./setupAndTestWithFrontendWithDjango.sh $coreFree $frontendTag $nodeTag
+        if [[ $? -ne 0 ]]
+        then
+            if [[ $tries -le 3 ]]
+            then
+                rm -rf ../../supertokens-root
+                rm -rf ../../supertokens-website
+                echo "failed test.. retrying!"
+            else
+                echo "test failed for website tests... exiting!"
+                exit 1
+            fi
+        else
+            rm -rf ../../supertokens-root
+            rm -rf ../../supertokens-website
+            break
+        fi
+    done
+
+    tries=1
+    while [ $tries -le 3 ]
+    do
+        tries=$(( $tries + 1 ))
+        ./setupAndTestWithFrontendWithFlask.sh $coreFree $frontendTag $nodeTag
+        if [[ $? -ne 0 ]]
+        then
+            if [[ $tries -le 3 ]]
+            then
+                rm -rf ../../supertokens-root
+                rm -rf ../../supertokens-website
+                echo "failed test.. retrying!"
+            else
+                echo "test failed for website tests... exiting!"
+                exit 1
+            fi
+        else
+            rm -rf ../../supertokens-root
+            rm -rf ../../supertokens-website
+            break
+        fi
+    done
+
     frontendAuthReactVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=auth-react&mode=DEV&version=$frontendDriverVersion" \
     -H 'api-version: 0'`
@@ -185,6 +231,52 @@ while [ $i -lt $frontendDriverLength ]; do
         do
             tries=$(( $tries + 1 ))
             ./setupAndTestWithAuthReact.sh $coreFree $frontendAuthReactTag $nodeTag
+            if [[ $? -ne 0 ]]
+            then
+                if [[ $tries -le 3 ]]
+                then
+                    rm -rf ../../supertokens-root
+                    rm -rf ../../supertokens-auth-react
+                    echo "failed test.. retrying!"
+                else
+                    echo "test failed for auth-react tests... exiting!"
+                    exit 1
+                fi
+            else
+                rm -rf ../../supertokens-root
+                rm -rf ../../supertokens-auth-react
+                break
+            fi
+        done
+
+        tries=1
+        while [ $tries -le 3 ]
+        do
+            tries=$(( $tries + 1 ))
+            ./setupAndTestWithAuthReactWithDjango.sh $coreFree $frontendAuthReactTag $nodeTag
+            if [[ $? -ne 0 ]]
+            then
+                if [[ $tries -le 3 ]]
+                then
+                    rm -rf ../../supertokens-root
+                    rm -rf ../../supertokens-auth-react
+                    echo "failed test.. retrying!"
+                else
+                    echo "test failed for auth-react tests... exiting!"
+                    exit 1
+                fi
+            else
+                rm -rf ../../supertokens-root
+                rm -rf ../../supertokens-auth-react
+                break
+            fi
+        done
+
+        tries=1
+        while [ $tries -le 3 ]
+        do
+            tries=$(( $tries + 1 ))
+            ./setupAndTestWithAuthReactWithFlask.sh $coreFree $frontendAuthReactTag $nodeTag
             if [[ $? -ne 0 ]]
             then
                 if [[ $tries -le 3 ]]

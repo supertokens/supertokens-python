@@ -1,21 +1,18 @@
-"""
-Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING, List
 
 from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID
@@ -26,7 +23,7 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     SignUpPostEmailAlreadyExistsErrorResponse
 )
 from supertokens_python.recipe.emailpassword.types import FormField
-from supertokens_python.recipe.session import create_new_session
+from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.utils import find_first_occurrence_in_list
 
 if TYPE_CHECKING:
@@ -63,14 +60,12 @@ class APIImplementation(APIInterface):
         password_reset_link = await api_options.config.reset_token_using_password_feature.get_reset_password_url(
             user) + '?token=' + token + '&rid=' + api_options.recipe_id
 
-        async def send_email():
-            try:
-                await api_options.config.reset_token_using_password_feature.create_and_send_custom_email(
-                    user, password_reset_link)
-            except Exception:
-                pass
+        try:
+            await api_options.config.reset_token_using_password_feature.create_and_send_custom_email(
+                user, password_reset_link)
+        except Exception:
+            pass
 
-        asyncio.create_task(send_email())
         return GeneratePasswordResetTokenPostOkResponse()
 
     async def password_reset_post(self, form_fields: List[FormField], token: str,
