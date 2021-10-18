@@ -4,7 +4,7 @@ from supertokens_python import init
 from supertokens_python.framework.flask import Middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session.framework.flask import verify_session
-from supertokens_python.recipe.session.sync import create_new_session
+from supertokens_python.recipe.session.syncio import create_new_session
 
 app = Flask(__name__)
 Middleware(app)

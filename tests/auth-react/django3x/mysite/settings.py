@@ -16,8 +16,9 @@ import os
 from corsheaders.defaults import default_headers
 from supertokens_python import init, get_all_cors_headers
 from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword
-from supertokens_python.recipe.thirdparty import Github, Google, Facebook
+from supertokens_python.recipe.thirdpartyemailpassword import Github, Google, Facebook
 from dotenv import load_dotenv
+from django.conf import settings
 
 load_dotenv()
 
@@ -37,6 +38,7 @@ LATEST_URL_WITH_TOKEN = None
 
 async def create_and_send_custom_email(_, url_with_token):
     global LATEST_URL_WITH_TOKEN
+    setattr(settings, "LATEST_URL_WITH_TOKEN", url_with_token)
     LATEST_URL_WITH_TOKEN = url_with_token
 
 
@@ -77,6 +79,7 @@ init({
         'connection_uri': "http://localhost:9000",
     },
     'framework': 'django',
+    'mode': os.environ.get('APP_MODE', 'asgi'),
     'app_info': {
         'app_name': "SuperTokens",
         'api_domain': "0.0.0.0:" + get_api_port(),

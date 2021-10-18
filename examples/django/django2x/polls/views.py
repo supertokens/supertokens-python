@@ -1,7 +1,7 @@
 from django.http import HttpResponse
-from supertokens_python.recipe.session.framework.django.sync import verify_session
+from supertokens_python.recipe.session.framework.django.syncio import verify_session
 
-from supertokens_python.recipe.session.sync import create_new_session
+from supertokens_python.recipe.session.syncio import create_new_session
 
 
 def create(request):

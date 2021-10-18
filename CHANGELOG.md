@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0] - 2021-10-18
+### Changes
+- all the user facing async functions now needs to be imported from asyncio sub directory. For example, importing the async implementation of create_new_session from session recipe has changed from:
+    ```python3
+    from supertokens_python.recipe.session import create_new_session
+    ```
+    to:
+    ```python3
+    from supertokens_python.recipe.session.asyncio import create_new_session
+    ```
+- sync versions of the functions are now needs to be imported from syncio directory instead of the sync directory
+- all the license comments now uses single line comment structure instead of multi-line comment structure
+
+### Added
+- auth-react tests for flask and django
+- if running django in async way, set `mode` to `asgi` in `config`
+
 ## [0.0.3] - 2021-10-13
 ### Added
 - Adds OAuth development keys for Google and Github for faster recipe implementation.

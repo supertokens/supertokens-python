@@ -1,18 +1,4 @@
-"""
-Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
 
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
 
 from __future__ import annotations
 
@@ -58,7 +44,7 @@ import asyncio
 
 
 class AppInfo:
-    def __init__(self, app_info, framework: str):
+    def __init__(self, app_info, framework: str, mode: str):
         self.app_name: str = app_info['app_name']
         self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(app_info[
             'api_gateway_path']) if 'api_gateway_path' in app_info else NormalisedURLPath(
@@ -73,6 +59,7 @@ class AppInfo:
         self.website_base_path: NormalisedURLPath = NormalisedURLPath(
             '/auth') if 'website_base_path' not in app_info else NormalisedURLPath(app_info['website_base_path'])
         self.framework = framework
+        self.mode = mode
 
 
 def manage_cookies_post_response(session: Session, response: BaseResponse):
@@ -123,7 +110,10 @@ class Supertokens:
         validate_the_structure_of_user_input(
             config, INPUT_SCHEMA, 'init_function', None)
         validate_framework(config)
-        self.app_info: AppInfo = AppInfo(config['app_info'], config['framework'])
+        mode = 'asgi' if config['framework'] == 'fastapi' else 'wsgi'
+        if 'mode' in config:
+            mode = config['mode']
+        self.app_info: AppInfo = AppInfo(config['app_info'], config['framework'], mode)
         hosts = list(map(lambda h: NormalisedURLDomain(h.strip()),
                          filter(lambda x: x != '', config['supertokens']['connection_uri'].split(';'))))
         api_key = None

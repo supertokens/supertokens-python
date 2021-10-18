@@ -1,18 +1,16 @@
-"""
-Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 import json
 import os
 import sys
@@ -24,8 +22,8 @@ from django.shortcuts import render
 from supertokens_python import init, Supertokens
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.session.framework.django import verify_session
-from supertokens_python.recipe.session import revoke_all_sessions_for_user, create_new_session, get_session
+from supertokens_python.recipe.session.framework.django.asyncio import verify_session
+from supertokens_python.recipe.session.asyncio import revoke_all_sessions_for_user, create_new_session, get_session
 
 module_dir = os.path.dirname(__file__)  # get current directory
 file_path = os.path.join(module_dir, '../templates/index.html')
@@ -199,6 +197,7 @@ def config(enable_anti_csrf: bool):
             'connection_uri': "http://localhost:9000",
         },
         'framework': 'django',
+        'mode': 'asgi',
         'app_info': {
             'app_name': "SuperTokens",
             'api_domain': "0.0.0.0:" + get_app_port(),
