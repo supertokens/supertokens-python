@@ -18,6 +18,7 @@ from typing import List, Callable, TYPE_CHECKING, Union
 from .interfaces import RecipeInterface, APIInterface
 from .types import INPUT_SCHEMA
 from .constants import DEV_OAUTH_CLIENT_IDS
+from ...exceptions import raise_bad_input_exception
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyRecipe
@@ -35,6 +36,9 @@ def validate_and_normalise_sign_in_and_up_config(
     if config is None:
         config = {}
     providers = config['providers']
+    if providers is None or len(providers) == 0:
+        raise_bad_input_exception('thirdparty recipe requires atleast 1 provider to be passed in '
+                                  'sign_in_and_up_feature.providers config')
     return SignInAndUpFeature(providers)
 
 

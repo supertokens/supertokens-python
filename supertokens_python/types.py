@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+from typing import Union
 
 type_string = {
     'type': 'string'
@@ -61,3 +61,17 @@ INPUT_SCHEMA = {
     'required': ['supertokens', 'app_info', 'recipe_list', 'framework'],
     'additional_properties': False
 }
+
+
+class UsersResponse:
+    def __init__(self, users,
+                 next_pagination_token: Union[str, None]):
+        self.users = users
+        self.next_pagination_token = next_pagination_token
+
+
+class User:
+    def __init__(self, user_id: str, email: str, time_joined: int):
+        self.user_id = user_id
+        self.email = email
+        self.time_joined = time_joined

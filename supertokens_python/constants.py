@@ -14,6 +14,8 @@
 SUPPORTED_CDI_VERSIONS = ['2.9']
 VERSION = '0.1.0'
 TELEMETRY = '/telemetry'
+USER_COUNT = '/users/count'
+USERS = '/users'
 TELEMETRY_SUPERTOKENS_API_URL = 'https://api.supertokens.io/0/st/telemetry'
 TELEMETRY_SUPERTOKENS_API_VERSION = '2'
 ERROR_MESSAGE_KEY = 'message'
