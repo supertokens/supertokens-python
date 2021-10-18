@@ -58,7 +58,7 @@ def get_interface_impl(
         async def sign_in_post(form_fields: List[FormField], api_options: APIOptions):
 
             result = await api_implementation.sign_in_up_post(
-                SignInUpAPIInput('emailpassword', form_fields=form_fields, is_sign_in=False,
+                SignInUpAPIInput('emailpassword', form_fields=form_fields, is_sign_in=True,
                                  options=api_options))
 
             if result.is_ok:

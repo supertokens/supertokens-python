@@ -67,7 +67,7 @@ class Session:
             'userDataInJWT': new_jwt_payload
         })
         if result['status'] == 'UNAUTHORISED':
-            raise_unauthorised_exception(result['message'])
+            raise_unauthorised_exception('Session has probably been revoked while updating JWT payload')
         self.jwt_payload = result['session']['userDataInJWT']
         if 'accessToken' in result and result['accessToken'] is not None:
             self.__access_token = result['accessToken']['token']
