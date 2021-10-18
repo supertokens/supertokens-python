@@ -51,8 +51,7 @@ from .types import (
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyEmailPasswordRecipe
-from supertokens_python.utils import validate_the_structure_of_user_input
-from base64 import b64encode, b64decode
+from supertokens_python.utils import validate_the_structure_of_user_input, utf_base64decode, utf_base64encode
 from supertokens_python.recipe.emailpassword.types import UsersResponse
 
 
@@ -157,7 +156,7 @@ def validate_and_normalise_user_input(
 
 
 def create_new_pagination_token(user_id: str, time_joined: int) -&gt; str:
-    return b64encode(user_id + &#39;;&#39; + str(time_joined))
+    return utf_base64encode(user_id + &#39;;&#39; + str(time_joined))
 
 
 def combine_pagination_tokens(third_party_pagination_token: Union[str, None],
@@ -166,13 +165,12 @@ def combine_pagination_tokens(third_party_pagination_token: Union[str, None],
         third_party_pagination_token = &#39;null&#39;
     if email_password_pagination_token is None:
         email_password_pagination_token = &#39;null&#39;
-    return b64encode(third_party_pagination_token + &#39;;&#39; +
-                     email_password_pagination_token)
+    return utf_base64encode(third_party_pagination_token + &#39;;&#39; + email_password_pagination_token)
 
 
 def extract_pagination_token(
         next_pagination_token: str) -&gt; NextPaginationToken:
-    extracted_tokens = b64decode(next_pagination_token).split(&#39;;&#39;)
+    extracted_tokens = utf_base64decode(next_pagination_token).split(&#39;;&#39;)
     if len(extracted_tokens) != 2:
         raise Exception(&#39;Pagination token is invalid&#39;)
     return NextPaginationToken(None if extracted_tokens[0] == &#39;null&#39; else extracted_tokens[0],
@@ -322,8 +320,7 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
         third_party_pagination_token = &#39;null&#39;
     if email_password_pagination_token is None:
         email_password_pagination_token = &#39;null&#39;
-    return b64encode(third_party_pagination_token + &#39;;&#39; +
-                     email_password_pagination_token)</code></pre>
+    return utf_base64encode(third_party_pagination_token + &#39;;&#39; + email_password_pagination_token)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.create_new_pagination_token"><code class="name flex">
@@ -336,7 +333,7 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def create_new_pagination_token(user_id: str, time_joined: int) -&gt; str:
-    return b64encode(user_id + &#39;;&#39; + str(time_joined))</code></pre>
+    return utf_base64encode(user_id + &#39;;&#39; + str(time_joined))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.email_verification_create_and_send_custom_email"><code class="name flex">
@@ -390,7 +387,7 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
 </summary>
 <pre><code class="python">def extract_pagination_token(
         next_pagination_token: str) -&gt; NextPaginationToken:
-    extracted_tokens = b64decode(next_pagination_token).split(&#39;;&#39;)
+    extracted_tokens = utf_base64decode(next_pagination_token).split(&#39;;&#39;)
     if len(extracted_tokens) != 2:
         raise Exception(&#39;Pagination token is invalid&#39;)
     return NextPaginationToken(None if extracted_tokens[0] == &#39;null&#39; else extracted_tokens[0],
