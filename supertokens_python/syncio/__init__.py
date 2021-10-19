@@ -11,7 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python import Supertokens, UsersResponse
+from supertokens_python import Supertokens
+from supertokens_python.types import UsersResponse
 from supertokens_python.async_to_sync_wrapper import sync
 
 try:
