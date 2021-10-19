@@ -262,13 +262,15 @@ class Supertokens:
         users_list = response['users']
         users = []
         for user in users_list:
+            recipe_id = user['recipeId']
+            user_obj = user['user']
             third_party = None
-            if 'thirdParty' in user:
+            if 'thirdParty' in user_obj:
                 third_party = ThirdPartyInfo(
-                    response['user']['thirdParty']['userId'],
-                    response['user']['thirdParty']['id']
+                    user_obj['thirdParty']['userId'],
+                    user_obj['thirdParty']['id']
                 )
-            users.append(User(user['id'], user['email'], user['timeJoined'], third_party))
+            users.append(User(recipe_id, user_obj['id'], user_obj['email'], user_obj['timeJoined'], third_party))
 
         return UsersResponse(users, next_pagination_token)
 

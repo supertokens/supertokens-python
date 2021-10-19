@@ -77,8 +77,9 @@ class ThirdPartyInfo:
 
 
 class User:
-    def __init__(self, user_id: str, email: str, time_joined: int,
+    def __init__(self, recipe_id: str, user_id: str, email: str, time_joined: int,
                  third_party_info: Union[ThirdPartyInfo, None] = None):
+        self.recipe_id = recipe_id
         self.user_id = user_id
         self.email = email
         self.time_joined = time_joined

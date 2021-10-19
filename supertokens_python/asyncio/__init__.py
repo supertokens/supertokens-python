@@ -11,10 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python import Supertokens, UsersResponse
-
+from supertokens_python import Supertokens
+from supertokens_python.types import UsersResponse
+from typing import Union, List
 try:
-    from typing import Literal, Union, List
+    from typing import Literal
 except ImportError:
     from typing_extensions import Literal
 
