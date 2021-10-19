@@ -48,14 +48,16 @@ class Session:
         return sync(self.get_session_data())
 
     async def get_session_data(self) -> dict:
-        session_info = await session_functions.get_session_information(self.__recipe_implementation, self.__session_handle)
+        session_info = await session_functions.get_session_information(self.__recipe_implementation,
+                                                                       self.__session_handle)
         return session_info['sessionData']
 
     def sync_update_session_data(self, new_session_data) -> None:
         sync(self.update_session_data(new_session_data))
 
     async def update_session_data(self, new_session_data) -> None:
-        return await session_functions.update_session_data(self.__recipe_implementation, self.__session_handle, new_session_data)
+        return await session_functions.update_session_data(self.__recipe_implementation, self.__session_handle,
+                                                           new_session_data)
 
     def sync_update_jwt_payload(self, new_jwt_payload) -> None:
         sync(self.update_jwt_payload(new_jwt_payload))

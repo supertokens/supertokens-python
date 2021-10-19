@@ -11,6 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Union
+
 from deprecated.classic import deprecated
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
@@ -39,26 +41,32 @@ async def is_email_verified(user_id: str):
         user_id, email)
 
 
-@deprecated(reason="Use supertankers.get_user_oldest_first(...) function instead IF using core version >= 3.5")
+@deprecated(reason="Use supertokens.get_user_oldest_first(...) function instead IF using core version >= 3.5")
 async def get_users_oldest_first(limit: int = None, next_pagination: str = None):
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_users_oldest_first(limit, next_pagination)
 
 
-@deprecated(reason="Use supertankers.get_users_newest_first(...) function instead IF using core version >= 3.5")
+@deprecated(reason="Use supertokens.get_users_newest_first(...) function instead IF using core version >= 3.5")
 async def get_users_newest_first(limit: int = None, next_pagination: str = None):
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_users_newest_first(limit, next_pagination)
 
 
-@deprecated(reason="Use supertankers.get_user_count(...) function instead IF using core version >= 3.5")
+@deprecated(reason="Use supertokens.get_user_count(...) function instead IF using core version >= 3.5")
 async def get_user_count():
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_count()
+
+
+async def update_email_or_password(user_id: str, email: Union[str, None] = None,
+                                   password: Union[str, None] = None):
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id, email,
+                                                                                                   password)
 
 
 async def get_user_by_id(user_id: str):
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id)
 
 
-@deprecated(reason="Use supertankers.get_user_by_email(...) function instead IF using core version >= 3.5")
+@deprecated(reason="Use supertokens.get_user_by_email(...) function instead IF using core version >= 3.5")
 async def get_user_by_email(email: str):
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_email(email)
 

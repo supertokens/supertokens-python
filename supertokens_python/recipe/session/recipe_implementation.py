@@ -21,8 +21,7 @@ from .exceptions import raise_unauthorised_exception, raise_try_refresh_token_ex
 from .cookie_and_header import get_id_refresh_token_from_cookie, get_access_token_from_cookie, get_anti_csrf_header, \
     get_rid_header, get_refresh_token_from_cookie
 from . import session_functions
-from supertokens_python.utils import execute_in_background
-
+from supertokens_python.utils import execute_in_background, FRAMEWORKS, frontend_has_interceptor, normalise_http_method
 
 if TYPE_CHECKING:
     from typing import Union, List
@@ -81,6 +80,8 @@ class RecipeImplementation(RecipeInterface):
 
     async def create_new_session(self, request: any, user_id: str, jwt_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -> Session:
+        if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
+            request = FRAMEWORKS[self.config.framework].wrap_request(request)
         session = await session_functions.create_new_session(self, user_id, jwt_payload, session_data)
         access_token = session['accessToken']
         refresh_token = session['refreshToken']
@@ -97,6 +98,9 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_session(self, request: any, anti_csrf_check: Union[bool, None] = None,
                           session_required: bool = True) -> Union[Session, None]:
+        if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
+            request = FRAMEWORKS[self.config.framework].wrap_request(request)
+
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
             if not session_required:
@@ -105,11 +109,13 @@ class RecipeImplementation(RecipeInterface):
                                          'request as cookies?', False)
         access_token = get_access_token_from_cookie(request)
         if access_token is None:
-            raise_try_refresh_token_exception(
-                'Access token has expired. Please call the refresh API')
+            if session_required is True or frontend_has_interceptor(request) or normalise_http_method(request.method()) == 'get':
+                raise_try_refresh_token_exception(
+                    'Access token has expired. Please call the refresh API')
+            return None
         anti_csrf_token = get_anti_csrf_header(request)
         if anti_csrf_check is None:
-            anti_csrf_check = request.method().lower() != 'get'
+            anti_csrf_check = normalise_http_method(request.method()) != 'get'
         new_session = await session_functions.get_session(self, access_token, anti_csrf_token, anti_csrf_check,
                                                           get_rid_header(request) is not None)
         if 'accessToken' in new_session:
@@ -124,6 +130,9 @@ class RecipeImplementation(RecipeInterface):
         return request.get_session()
 
     async def refresh_session(self, request: any) -> Session:
+        if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
+            request = FRAMEWORKS[self.config.framework].wrap_request(request)
+
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
             raise_unauthorised_exception('Session does not exist. Are you sending the session tokens in the request '

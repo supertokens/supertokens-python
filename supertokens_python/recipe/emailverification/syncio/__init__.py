@@ -28,3 +28,13 @@ def verify_email_using_token(token: str):
 def is_email_verified(user_id: str, email: str):
     from supertokens_python.recipe.emailverification.asyncio import is_email_verified
     return sync(is_email_verified(user_id, email))
+
+
+async def unverify_email(user_id: str, email: str):
+    from supertokens_python.recipe.emailverification.asyncio import is_email_verified
+    return sync(is_email_verified(user_id, email))
+
+
+async def revoke_email_verification_tokens(user_id: str, email: str):
+    from supertokens_python.recipe.emailverification.asyncio import revoke_email_verification_tokens
+    return sync(revoke_email_verification_tokens(user_id, email))

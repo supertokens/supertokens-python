@@ -171,3 +171,7 @@ def execute_in_background(mode, func):
         loop.run_until_complete(func())
     else:
         asyncio.create_task(func())
+
+
+def frontend_has_interceptor(request: BaseRequest) -> bool:
+    return get_rid_from_request(request) is None

@@ -14,7 +14,8 @@ from supertokens_python.recipe.emailverification.recipe import EmailVerification
 
 
 async def create_email_verification_token(user_id: str, email: str):
-    return await EmailVerificationRecipe.get_instance().recipe_implementation.create_email_verification_token(user_id, email)
+    return await EmailVerificationRecipe.get_instance().recipe_implementation.create_email_verification_token(user_id,
+                                                                                                              email)
 
 
 async def verify_email_using_token(token: str):
@@ -23,3 +24,12 @@ async def verify_email_using_token(token: str):
 
 async def is_email_verified(user_id: str, email: str):
     return await EmailVerificationRecipe.get_instance().recipe_implementation.is_email_verified(user_id, email)
+
+
+async def unverify_email(user_id: str, email: str):
+    return await EmailVerificationRecipe.get_instance().recipe_implementation.unverify_email(user_id, email)
+
+
+async def revoke_email_verification_tokens(user_id: str, email: str):
+    return await EmailVerificationRecipe.get_instance().recipe_implementation.revoke_email_verification_tokens(user_id,
+                                                                                                               email)

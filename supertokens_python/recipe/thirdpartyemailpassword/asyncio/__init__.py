@@ -22,8 +22,14 @@ async def create_email_verification_token(user_id: str):
 
 
 async def verify_email_using_token(token: str):
-    return await ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
+    response = ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
         token)
+
+    if response.is_ok:
+        user_in_this_recipe = await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(response.user.user_id)
+        return user_in_this_recipe
+
+    return response
 
 
 async def is_email_verified(user_id: str):
@@ -37,19 +43,19 @@ async def unverify_email(user_id: str):
         user_id, email)
 
 
-@deprecated(reason="Use supertankers.get_user_oldest_first(...) function instead IF using core version >= 3.5")
+@deprecated(reason="Use supertokens.get_user_oldest_first(...) function instead IF using core version >= 3.5")
 async def get_users_oldest_first(limit: int = None, next_pagination: str = None):
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_oldest_first(limit,
                                                                                                            next_pagination)
 
 
-@deprecated(reason="Use supertankers.get_users_newest_first(...) function instead IF using core version >= 3.5")
+@deprecated(reason="Use supertokens.get_users_newest_first(...) function instead IF using core version >= 3.5")
 async def get_users_newest_first(limit: int = None, next_pagination: str = None):
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_newest_first(limit,
                                                                                                            next_pagination)
 
 
-@deprecated(reason="Use supertankers.get_user_count(...) function instead IF using core version >= 3.5")
+@deprecated(reason="Use supertokens.get_user_count(...) function instead IF using core version >= 3.5")
 async def get_user_count():
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_count()
 
