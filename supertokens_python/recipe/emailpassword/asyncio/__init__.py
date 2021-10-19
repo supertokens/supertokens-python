@@ -11,6 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Union
+
+from deprecated.classic import deprecated
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 
@@ -28,7 +31,8 @@ async def verify_email_using_token(token: str):
 
 async def unverify_email(user_id: str):
     email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id)
-    return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.unverify_email(user_id, email)
+    return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.unverify_email(
+        user_id, email)
 
 
 async def is_email_verified(user_id: str):
@@ -37,16 +41,25 @@ async def is_email_verified(user_id: str):
         user_id, email)
 
 
+@deprecated(reason="Use supertokens_python.get_user_oldest_first(...) function instead IF using core version >= 3.5")
 async def get_users_oldest_first(limit: int = None, next_pagination: str = None):
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_users_oldest_first(limit, next_pagination)
 
 
+@deprecated(reason="Use supertokens_python.get_users_newest_first(...) function instead IF using core version >= 3.5")
 async def get_users_newest_first(limit: int = None, next_pagination: str = None):
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_users_newest_first(limit, next_pagination)
 
 
+@deprecated(reason="Use supertokens_python.get_user_count(...) function instead IF using core version >= 3.5")
 async def get_user_count():
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_count()
+
+
+async def update_email_or_password(user_id: str, email: Union[str, None] = None,
+                                   password: Union[str, None] = None):
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id, email,
+                                                                                                   password)
 
 
 async def get_user_by_id(user_id: str):

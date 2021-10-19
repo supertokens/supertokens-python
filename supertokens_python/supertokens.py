@@ -16,12 +16,17 @@ from __future__ import annotations
 
 from typing import Union, List, TYPE_CHECKING
 
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+
 from .constants import (
     TELEMETRY,
     RID_KEY_HEADER,
     FDI_KEY_HEADER,
     TELEMETRY_SUPERTOKENS_API_URL,
-    TELEMETRY_SUPERTOKENS_API_VERSION
+    TELEMETRY_SUPERTOKENS_API_VERSION, USER_COUNT, USERS
 )
 from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
@@ -30,7 +35,7 @@ from .recipe.session.cookie_and_header import attach_access_token_to_cookie, cle
     attach_refresh_token_to_cookie, attach_id_refresh_token_to_cookie_and_header, attach_anti_csrf_header, \
     set_front_token_in_headers
 
-from .types import INPUT_SCHEMA
+from .types import INPUT_SCHEMA, UsersResponse, User, ThirdPartyInfo
 from .utils import (
     validate_the_structure_of_user_input,
     normalise_http_method,
@@ -210,6 +215,64 @@ class Supertokens:
                 headers_set.add(header)
 
         return list(headers_set)
+
+    async def get_user_count(self, include_recipe_ids: List[str] = None) -> int:
+        querier = Querier.get_instance(None)
+        include_recipe_ids_str = None
+        if include_recipe_ids is not None:
+            include_recipe_ids_str = ','.join(include_recipe_ids)
+
+        response = await querier.send_get_request(NormalisedURLPath(USER_COUNT), {
+            "includeRecipeIds": include_recipe_ids_str
+        })
+
+        return int(response['count'])
+
+    async def get_users(self, time_joined_order: Literal['ASC', 'DESC'],
+                        limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
+                        include_recipe_ids: List[str] = None) -> UsersResponse:
+        querier = Querier.get_instance(None)
+        params = {
+            'timeJoinedOrder': time_joined_order
+        }
+        if limit is not None:
+            params = {
+                'limit': limit,
+                **params
+            }
+        if pagination_token is not None:
+            params = {
+                'paginationToken': pagination_token,
+                **params
+            }
+
+        include_recipe_ids_str = None
+        if include_recipe_ids is not None:
+            include_recipe_ids_str = ','.join(include_recipe_ids)
+
+        params = {
+            'paginationToken': include_recipe_ids_str,
+            **params
+        }
+
+        response = await querier.send_get_request(NormalisedURLPath(USERS), params)
+        next_pagination_token = None
+        if 'nextPaginationToken' in response:
+            next_pagination_token = response['nextPaginationToken']
+        users_list = response['users']
+        users = []
+        for user in users_list:
+            recipe_id = user['recipeId']
+            user_obj = user['user']
+            third_party = None
+            if 'thirdParty' in user_obj:
+                third_party = ThirdPartyInfo(
+                    user_obj['thirdParty']['userId'],
+                    user_obj['thirdParty']['id']
+                )
+            users.append(User(recipe_id, user_obj['id'], user_obj['email'], user_obj['timeJoined'], third_party))
+
+        return UsersResponse(users, next_pagination_token)
 
     async def middleware(self, request: BaseRequest, response: BaseResponse) -> Union[BaseResponse, None]:
         path = Supertokens.get_instance().app_info.api_gateway_path.append(
