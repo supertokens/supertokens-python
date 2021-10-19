@@ -174,4 +174,4 @@ def execute_in_background(mode, func):
 
 
 def frontend_has_interceptor(request: BaseRequest) -> bool:
-    return get_rid_from_request(request) is None
+    return get_rid_from_request(request) is not None

@@ -18,7 +18,7 @@ from typing import List, Callable, TYPE_CHECKING, Union
 from .interfaces import RecipeInterface, APIInterface
 from .types import INPUT_SCHEMA
 from .constants import DEV_OAUTH_CLIENT_IDS
-from ...exceptions import raise_bad_input_exception
+from supertokens_python.exceptions import raise_bad_input_exception
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyRecipe

@@ -70,8 +70,16 @@ class UsersResponse:
         self.next_pagination_token = next_pagination_token
 
 
+class ThirdPartyInfo:
+    def __init__(self, third_party_user_id: str, third_party_id: str):
+        self.user_id = third_party_user_id
+        self.id = third_party_id
+
+
 class User:
-    def __init__(self, user_id: str, email: str, time_joined: int):
+    def __init__(self, user_id: str, email: str, time_joined: int,
+                 third_party_info: Union[ThirdPartyInfo, None] = None):
         self.user_id = user_id
         self.email = email
         self.time_joined = time_joined
+        self.third_party_info = third_party_info

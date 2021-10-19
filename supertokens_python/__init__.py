@@ -15,13 +15,11 @@
 from . import exceptions
 from .supertokens import Supertokens
 from .recipe import session
-from .types import UsersResponse
-
-try:
-    from typing import Literal, Union, List
-except ImportError:
-    from typing_extensions import Literal
 
 
 def init(config):
     return Supertokens.init(config)
+
+
+def get_all_cors_headers():
+    return Supertokens.get_instance().get_all_cors_headers()

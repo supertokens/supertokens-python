@@ -28,9 +28,6 @@ async def get_users_newest_first(limit: Union[int, None] = None, pagination_toke
                                  include_recipe_ids: List[str] = None) -> UsersResponse:
     return await Supertokens.get_instance().get_users('DESC', limit, pagination_token, include_recipe_ids)
 
-# async def get_users_by_email(email: str):
-#     return await Supertokens.get_instance().
-
 
 async def get_user_count(include_recipe_ids: List[str] = None) -> int:
     return await Supertokens.get_instance().get_user_count(include_recipe_ids)

@@ -35,7 +35,7 @@ from .recipe.session.cookie_and_header import attach_access_token_to_cookie, cle
     attach_refresh_token_to_cookie, attach_id_refresh_token_to_cookie_and_header, attach_anti_csrf_header, \
     set_front_token_in_headers
 
-from .types import INPUT_SCHEMA, UsersResponse, User
+from .types import INPUT_SCHEMA, UsersResponse, User, ThirdPartyInfo
 from .utils import (
     validate_the_structure_of_user_input,
     normalise_http_method,
@@ -218,12 +218,6 @@ class Supertokens:
 
     async def get_user_count(self, include_recipe_ids: List[str] = None) -> int:
         querier = Querier.get_instance(None)
-        api_version = querier.get_api_version()
-
-        if api_version == '2.7':
-            raise Exception('Please use core version >= 3.5 to call this function. Otherwise, you can call '
-                            '<YourRecipe>.getUserCount() instead (for example, EmailPassword.getUserCount())')
-
         include_recipe_ids_str = None
         if include_recipe_ids is not None:
             include_recipe_ids_str = ','.join(include_recipe_ids)
@@ -238,13 +232,6 @@ class Supertokens:
                         limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
                         include_recipe_ids: List[str] = None) -> UsersResponse:
         querier = Querier.get_instance(None)
-        api_version = querier.get_api_version()
-
-        if api_version == '2.7':
-            raise Exception('Please use core version >= 3.5 to call this function. Otherwise, you can call '
-                            '<YourRecipe>.getUsersOldestFirst() or <YourRecipe>.getUsersNewestFirst() instead (for '
-                            'example, EmailPassword.getUsersOldestFirst())')
-
         params = {
             'timeJoinedOrder': time_joined_order
         }
@@ -275,7 +262,13 @@ class Supertokens:
         users_list = response['users']
         users = []
         for user in users_list:
-            users.append(User(user['id'], user['email'], user['timeJoined']))
+            third_party = None
+            if 'thirdParty' in user:
+                third_party = ThirdPartyInfo(
+                    response['user']['thirdParty']['userId'],
+                    response['user']['thirdParty']['id']
+                )
+            users.append(User(user['id'], user['email'], user['timeJoined'], third_party))
 
         return UsersResponse(users, next_pagination_token)
 

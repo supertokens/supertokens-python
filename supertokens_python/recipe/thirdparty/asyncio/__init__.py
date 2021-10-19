@@ -49,17 +49,17 @@ async def revoke_email_verification_tokens(user_id: str):
         user_id, email)
 
 
-@deprecated(reason="Use supertokens.get_user_oldest_first(...) function instead IF using core version >= 3.5")
+@deprecated(reason="Use supertokens_python.get_user_oldest_first(...) function instead IF using core version >= 3.5")
 async def get_users_oldest_first(limit: int = None, next_pagination: str = None):
     return await ThirdPartyRecipe.get_instance().recipe_implementation.get_users_oldest_first(limit, next_pagination)
 
 
-@deprecated(reason="Use supertokens.get_users_newest_first(...) function instead IF using core version >= 3.5")
+@deprecated(reason="Use supertokens_python.get_users_newest_first(...) function instead IF using core version >= 3.5")
 async def get_users_newest_first(limit: int = None, next_pagination: str = None):
     return await ThirdPartyRecipe.get_instance().recipe_implementation.get_users_newest_first(limit, next_pagination)
 
 
-@deprecated(reason="Use supertokens.get_user_count(...) function instead IF using core version >= 3.5")
+@deprecated(reason="Use supertokens_python.get_user_count(...) function instead IF using core version >= 3.5")
 async def get_user_count():
     return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_count()
 
