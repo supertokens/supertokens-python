@@ -11,6 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Union
+
 from deprecated.classic import deprecated
 
 from supertokens_python.async_to_sync_wrapper import sync
@@ -47,6 +49,12 @@ def get_users_newest_first(limit: int = None, next_pagination: str = None):
 def get_user_count():
     from supertokens_python.recipe.emailpassword.asyncio import get_user_count
     return sync(get_user_count())
+
+
+async def update_email_or_password(user_id: str, email: Union[str, None] = None,
+                                   password: Union[str, None] = None):
+    from supertokens_python.recipe.emailpassword.asyncio import update_email_or_password
+    return sync(update_email_or_password(user_id, email, password))
 
 
 def get_user_by_id(user_id: str):

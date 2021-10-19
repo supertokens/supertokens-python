@@ -11,6 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Union
+
 from deprecated.classic import deprecated
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
@@ -52,6 +54,12 @@ async def get_users_newest_first(limit: int = None, next_pagination: str = None)
 @deprecated(reason="Use supertankers.get_user_count(...) function instead IF using core version >= 3.5")
 async def get_user_count():
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_count()
+
+
+async def update_email_or_password(user_id: str, email: Union[str, None] = None,
+                                   password: Union[str, None] = None):
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id, email,
+                                                                                                   password)
 
 
 async def get_user_by_id(user_id: str):
