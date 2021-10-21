@@ -198,5 +198,5 @@ class APIInterface:
         pass
 
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                              api_options: APIOptions):
+                              api_options: APIOptions) -> SignInUpPostResponse:
         pass

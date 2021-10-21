@@ -97,7 +97,7 @@ def manage_cookies_post_response(session: Session, response: BaseResponse):
                 response,
                 session['user_id'],
                 access_token['expiry'],
-                session['jwt_payload']
+                session['access_token_payload']
             )
         refresh_token = session['new_refresh_token_info']
         if refresh_token is not None:

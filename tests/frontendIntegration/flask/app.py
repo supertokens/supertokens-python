@@ -220,7 +220,7 @@ def get_info():
     print({
         'sessionHandle': session.get_handle(),
         'userId': session.get_user_id(),
-        'jwtPayload': session.get_jwt_payload(),
+        'jwtPayload': session.get_access_token_payload(),
         'sessionData': session.sync_get_session_data()
     })
     resp = make_response(session.get_user_id())
@@ -240,7 +240,7 @@ def update_jwt():
     Test.increment_get_session()
     session = g.supertokens
 
-    resp = make_response(session.get_jwt_payload())
+    resp = make_response(session.get_access_token_payload())
     resp.headers['Cache-Control'] = 'no-cache, private'
     return resp
 
@@ -250,9 +250,9 @@ def update_jwt():
 # @supertokens_middleware()
 def update_jwt_post():
     session = g.supertokens
-    sync(session.update_jwt_payload(request.get_json()))
+    sync(session.update_access_token_payload(request.get_json()))
     Test.increment_get_session()
-    resp = make_response(session.get_jwt_payload())
+    resp = make_response(session.get_access_token_payload())
     resp.headers['Cache-Control'] = 'no-cache, private'
     return resp
 

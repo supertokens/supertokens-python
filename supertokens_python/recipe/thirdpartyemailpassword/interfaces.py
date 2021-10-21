@@ -1,17 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Union, List
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
-
 from supertokens_python.recipe.emailpassword.interfaces import CreateResetPasswordResult, ResetPasswordUsingTokenResult, \
     UpdateEmailOrPasswordResult, SignInResult, SignUpResult, EmailExistsGetResponse, \
-    GeneratePasswordResetTokenPostResponse, PasswordResetPostResponse, APIOptions as EmailPasswordApiOptions
+    GeneratePasswordResetTokenPostResponse, PasswordResetPostResponse, APIOptions as EmailPasswordApiOptions, \
+    SignInPostResponse, SignUpPostResponse
 from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.thirdparty.interfaces import SignInUpResult, APIOptions as ThirdPartyApiOptions, \
-    AuthorisationUrlGetResponse
+    AuthorisationUrlGetResponse, SignInUpPostResponse
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartyemailpassword.types import User, UsersResponse
 
@@ -71,121 +67,11 @@ class RecipeInterface(ABC):
         pass
 
 
-class SignInUpPostResponse(ABC):
-    def __init__(self, recipe_type: Literal['emailpassword', 'thirdparty'],
-                 status: Literal[
-                     'OK', 'NO_EMAIL_GIVEN_BY_PROVIDER', 'WRONG_CREDENTIALS_ERROR', 'EMAIL_ALREADY_EXISTS_ERROR'],
-                 user: Union[User, None] = None,
-                 created_new_user: Union[bool, None] = None, auth_code_response: any = None,
-                 error: Union[str, None] = None):
-        self.type = recipe_type
-        self.status = status
-        self.is_ok = False
-        self.is_no_email_given_by_provider = False
-        self.is_wrong_credentials_error = False
-        self.is_email_already_exists_error = False
-        self.user = user
-        self.created_new_user = created_new_user
-        self.error = error
-        self.auth_code_response = auth_code_response
-
-    @abstractmethod
-    def to_json(self):
-        pass
-
-
-class SignInUpPostThirdPartyOkResponse(SignInUpPostResponse):
-    def __init__(self, user: User, created_new_user: bool,
-                 auth_code_response: any):
-        super().__init__('thirdparty', 'OK', user, created_new_user, auth_code_response)
-        self.is_ok = True
-
-    def to_json(self):
-        return {
-            'status': self.status,
-            'user': {
-                'id': self.user.user_id,
-                'email': self.user.email,
-                'timeJoined': self.user.time_joined,
-                'thirdParty': {
-                    'id': self.user.third_party_info.id,
-                    'userId': self.user.third_party_info.user_id
-                }
-            },
-            'createdNewUser': self.created_new_user
-        }
-
-
-class SignInUpPostThirdPartyNoEmailGivenByProviderResponse(
-        SignInUpPostResponse):
-    def __init__(self):
-        super().__init__('thirdparty', 'NO_EMAIL_GIVEN_BY_PROVIDER')
-        self.is_no_email_given_by_provider = True
-
-    def to_json(self):
-        return {
-            'status': self.status
-        }
-
-
-class SignInUpPostEmailPasswordOkResponse(SignInUpPostResponse):
-    def __init__(self, user: User, created_new_user: bool):
-        super().__init__('emailpassword', 'OK', user, created_new_user)
-        self.is_ok = True
-
-    def to_json(self):
-        return {
-            'status': self.status,
-            'user': {
-                'id': self.user.user_id,
-                'email': self.user.email,
-                'timeJoined': self.user.time_joined
-            },
-            'createdNewUser': self.created_new_user
-        }
-
-
-class SignInUpPostEmailPasswordWrongCredentialsErrorResponse(
-        SignInUpPostResponse):
-    def __init__(self):
-        super().__init__('emailpassword', 'WRONG_CREDENTIALS_ERROR')
-        self.is_wrong_credentials_error = True
-
-    def to_json(self):
-        return {
-            'status': self.status
-        }
-
-
-class SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse(
-        SignInUpPostResponse):
-    def __init__(self):
-        super().__init__('emailpassword', 'EMAIL_ALREADY_EXISTS_ERROR')
-        self.is_email_already_exists_error = True
-
-    def to_json(self):
-        return {
-            'status': self.status
-        }
-
-
-class SignInUpAPIInput:
-    def __init__(self, recipe_type: Literal['emailpassword', 'thirdparty'],
-                 options: Union[EmailPasswordApiOptions, ThirdPartyApiOptions], provider: Union[Provider, None] = None,
-                 code: Union[str, None] = None, redirect_uri: Union[str, None] = None, is_sign_in: bool = False,
-                 form_fields: Union[List[FormField], None] = None):
-        self.type = recipe_type
-        self.options = options
-        self.provider = provider
-        self.code = code
-        self.redirect_uri = redirect_uri
-        self.is_sign_in = is_sign_in
-        self.form_fields = form_fields
-
-
 class APIInterface(ABC):
     def __init__(self):
-        self.disable_sign_in_up_post = False
+        self.disable_thirdparty_sign_in_up_post = False
+        self.disable_emailpassword_sign_up_post = False
+        self.disable_emailpassword_sign_in_post = False
         self.disable_authorisation_url_get = False
         self.disable_email_exists_get = False
         self.disable_generate_password_reset_token_post = False
@@ -197,7 +83,18 @@ class APIInterface(ABC):
         pass
 
     @abstractmethod
-    async def sign_in_up_post(self, api_options: SignInUpAPIInput) -> SignInUpPostResponse:
+    async def third_party_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+                                          api_options: ThirdPartyApiOptions) -> SignInUpPostResponse:
+        pass
+
+    @abstractmethod
+    async def email_password_sign_in_post(self, form_fields: List[FormField],
+                                          api_options: EmailPasswordApiOptions) -> SignInPostResponse:
+        pass
+
+    @abstractmethod
+    async def email_password_sign_up_post(self, form_fields: List[FormField],
+                                          api_options: EmailPasswordApiOptions) -> SignUpPostResponse:
         pass
 
     @abstractmethod
