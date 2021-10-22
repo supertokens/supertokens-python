@@ -12,6 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
+import time
+
 from .session_class import Session
 from supertokens_python.process_state import ProcessState, AllowedProcessStates
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -29,19 +32,28 @@ if TYPE_CHECKING:
     from supertokens_python.querier import Querier
 
 
+class KeyInfo:
+    def __init__(self, public_key: str, expiry_time: int, created_at: int):
+        self.public_key = public_key
+        self.expiry_time = expiry_time
+        self.created_at = created_at
+
+
 class HandshakeInfo:
 
     def __init__(self, info):
         self.access_token_blacklisting_enabled = info['accessTokenBlacklistingEnabled']
-        self.jwt_signing_public_key = info['jwtSigningPublicKey']
-        self.jwt_signing_public_key_expiry_time = info['jwtSigningPublicKeyExpiryTime']
+        self.raw_jwt_signing_public_key_list = None
         self.anti_csrf = info['antiCsrf']
         self.access_token_validity = info['accessTokenValidity']
         self.refresh_token_validity = info['refreshTokenValidity']
 
-    def update_jwt_signing_public_key_info(self, new_key, new_expiry):
-        self.jwt_signing_public_key = new_key
-        self.jwt_signing_public_key_expiry_time = new_expiry
+    def set_raw_jwt_signing_public_key_list(self, updated_list: List):
+        self.raw_jwt_signing_public_key_list = updated_list
+
+    def get_jwt_signing_public_key_list(self) -> List:
+        time_now = time.time()
+        return [key for key in self.raw_jwt_signing_public_key_list if key['expiryTime'] > time_now]
 
 
 class RecipeImplementation(RecipeInterface):
@@ -62,8 +74,8 @@ class RecipeImplementation(RecipeInterface):
         except Exception:
             pass
 
-    async def get_handshake_info(self) -> HandshakeInfo:
-        if self.handshake_info is None:
+    async def get_handshake_info(self, force_refetch=False) -> HandshakeInfo:
+        if self.handshake_info is None or len(self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
             ProcessState.get_instance().add_state(
                 AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO)
             response = await self.querier.send_post_request(NormalisedURLPath('/recipe/handshake'), {})
@@ -71,12 +83,17 @@ class RecipeImplementation(RecipeInterface):
                 **response,
                 'antiCsrf': self.config.anti_csrf
             })
+
+            self.update_jwt_signing_public_key_info(response['jwtSigningPublicKeyList'], response['jwtSigningPublicKey'], response['jwtSigningPublicKeyExpiryTime'])
+
         return self.handshake_info
 
-    def update_jwt_signing_public_key_info(self, new_key, new_expiry):
+    def update_jwt_signing_public_key_info(self, key_list: Union[List[KeyInfo], None], public_key: str, expiry_time: int):
+        if key_list is None:
+            key_list = [KeyInfo(public_key, expiry_time, int(time.time()))]
+
         if self.handshake_info is not None:
-            self.handshake_info.update_jwt_signing_public_key_info(
-                new_key, new_expiry)
+            self.handshake_info.set_raw_jwt_signing_public_key_list(key_list)
 
     async def create_new_session(self, request: any, user_id: str, jwt_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -> Session:

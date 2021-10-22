@@ -67,3 +67,12 @@ def get_payload(jwt, signing_public_key):
         raise Exception("jwt verification failed")
 
     return loads(utf_base64decode(payload))
+
+
+def get_payload_without_verifying(jwt: str) -> dict:
+    splitted_input = jwt.split(".")
+    if len(splitted_input) != 3:
+        raise Exception("invalid jwt")
+
+    payload = splitted_input[1]
+    return loads(utf_base64decode(payload))
