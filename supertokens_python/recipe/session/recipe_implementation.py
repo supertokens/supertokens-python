@@ -32,13 +32,6 @@ if TYPE_CHECKING:
     from supertokens_python.querier import Querier
 
 
-class KeyInfo:
-    def __init__(self, public_key: str, expiry_time: int, created_at: int):
-        self.public_key = public_key
-        self.expiry_time = expiry_time
-        self.created_at = created_at
-
-
 class HandshakeInfo:
 
     def __init__(self, info):
@@ -75,7 +68,8 @@ class RecipeImplementation(RecipeInterface):
             pass
 
     async def get_handshake_info(self, force_refetch=False) -> HandshakeInfo:
-        if self.handshake_info is None or len(self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
+        if self.handshake_info is None or len(
+                self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
             ProcessState.get_instance().add_state(
                 AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO)
             response = await self.querier.send_post_request(NormalisedURLPath('/recipe/handshake'), {})
@@ -84,13 +78,19 @@ class RecipeImplementation(RecipeInterface):
                 'antiCsrf': self.config.anti_csrf
             })
 
-            self.update_jwt_signing_public_key_info(response['jwtSigningPublicKeyList'], response['jwtSigningPublicKey'], response['jwtSigningPublicKeyExpiryTime'])
+            self.update_jwt_signing_public_key_info(response['jwtSigningPublicKeyList'],
+                                                    response['jwtSigningPublicKey'],
+                                                    response['jwtSigningPublicKeyExpiryTime'])
 
         return self.handshake_info
 
-    def update_jwt_signing_public_key_info(self, key_list: Union[List[KeyInfo], None], public_key: str, expiry_time: int):
+    def update_jwt_signing_public_key_info(self, key_list: Union[List, None], public_key: str, expiry_time: int):
         if key_list is None:
-            key_list = [KeyInfo(public_key, expiry_time, int(time.time()))]
+            key_list = [{
+                'publicKey': public_key,
+                'expiryTime': expiry_time,
+                'createdAt': int(time.time())
+            }]
 
         if self.handshake_info is not None:
             self.handshake_info.set_raw_jwt_signing_public_key_list(key_list)
@@ -126,7 +126,8 @@ class RecipeImplementation(RecipeInterface):
                                          'request as cookies?', False)
         access_token = get_access_token_from_cookie(request)
         if access_token is None:
-            if session_required is True or frontend_has_interceptor(request) or normalise_http_method(request.method()) == 'get':
+            if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
+                    request.method()) == 'get':
                 raise_try_refresh_token_exception(
                     'Access token has expired. Please call the refresh API')
             return None

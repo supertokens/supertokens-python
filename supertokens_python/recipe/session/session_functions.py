@@ -86,10 +86,7 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
             if payload is None:
                 raise e
 
-            if not isinstance(payload['timeCreated'], int):
-                raise e
-
-            if not isinstance(payload['expiryTime'], int):
+            if not isinstance(payload['timeCreated'], int) or not isinstance(payload['expiryTime'], int):
                 raise e
 
             if payload['expiryTime'] < time.time():
