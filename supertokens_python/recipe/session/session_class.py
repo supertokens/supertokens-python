@@ -25,11 +25,11 @@ from .exceptions import raise_unauthorised_exception
 
 class Session:
     def __init__(self, recipe_implementation: RecipeImplementation, access_token, session_handle,
-                 user_id, jwt_payload):
+                 user_id, access_token_payload):
         self.__recipe_implementation = recipe_implementation
         self.__access_token = access_token
         self.__session_handle = session_handle
-        self.jwt_payload = jwt_payload
+        self.access_token_payload = access_token_payload
         self.user_id = user_id
         self.new_access_token_info = None
         self.new_refresh_token_info = None
@@ -59,18 +59,18 @@ class Session:
         return await session_functions.update_session_data(self.__recipe_implementation, self.__session_handle,
                                                            new_session_data)
 
-    def sync_update_jwt_payload(self, new_jwt_payload) -> None:
-        sync(self.update_jwt_payload(new_jwt_payload))
+    def sync_update_access_token_payload(self, new_access_token_payload) -> None:
+        sync(self.update_access_token_payload(new_access_token_payload))
 
-    async def update_jwt_payload(self, new_jwt_payload) -> None:
+    async def update_access_token_payload(self, new_access_token_payload) -> None:
         result = await self.__recipe_implementation.querier.send_post_request(NormalisedURLPath('/recipe/session'
                                                                                                 '/regenerate'), {
             'accessToken': self.__access_token,
-            'userDataInJWT': new_jwt_payload
+            'userDataInJWT': new_access_token_payload
         })
         if result['status'] == 'UNAUTHORISED':
-            raise_unauthorised_exception('Session has probably been revoked while updating JWT payload')
-        self.jwt_payload = result['session']['userDataInJWT']
+            raise_unauthorised_exception('Session has probably been revoked while updating access token payload')
+        self.access_token_payload = result['session']['userDataInJWT']
         if 'accessToken' in result and result['accessToken'] is not None:
             self.__access_token = result['accessToken']['token']
             self.new_access_token_info = result['accessToken']
@@ -78,8 +78,8 @@ class Session:
     def get_user_id(self) -> str:
         return self.user_id
 
-    def get_jwt_payload(self) -> dict:
-        return self.jwt_payload
+    def get_access_token_payload(self) -> dict:
+        return self.access_token_payload
 
     def get_handle(self) -> str:
         return self.__session_handle

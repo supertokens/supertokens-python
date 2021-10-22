@@ -199,16 +199,16 @@ def update_options():
 @app.get('/update-jwt')
 async def update_jwt(sess: Session = Depends(verify_session())):
     Test.increment_get_session()
-    return JSONResponse(content=sess.get_jwt_payload(), headers={
+    return JSONResponse(content=sess.get_access_token_payload(), headers={
         'Cache-Control': 'no-cache, private'
     })
 
 
 @app.post('/update-jwt')
 async def update_jwt_post(request: Request, session: Session = Depends(verify_session())):
-    await session.update_jwt_payload(await request.json())
+    await session.update_access_token_payload(await request.json())
     Test.increment_get_session()
-    return JSONResponse(content=session.get_jwt_payload(), headers={
+    return JSONResponse(content=session.get_access_token_payload(), headers={
         'Cache-Control': 'no-cache, private'
     })
 

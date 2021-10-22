@@ -18,12 +18,12 @@ from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.utils import FRAMEWORKS
 
 
-async def create_new_session(request, user_id: str, jwt_payload: Union[dict, None] = None,
+async def create_new_session(request, user_id: str, access_token_payload: Union[dict, None] = None,
                              session_data: Union[dict, None] = None) -> Session:
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.create_new_session(request, user_id, jwt_payload,
+    return await SessionRecipe.get_instance().recipe_implementation.create_new_session(request, user_id, access_token_payload,
                                                                                        session_data)
 
 
@@ -68,5 +68,5 @@ async def update_session_data(session_handle: str, new_session_data: dict) -> No
                                                                                         new_session_data)
 
 
-async def update_jwt_payload(session_handle: str, new_jwt_payload: dict) -> None:
-    return await SessionRecipe.get_instance().recipe_implementation.update_jwt_payload(session_handle, new_jwt_payload)
+async def update_access_token_payload(session_handle: str, new_access_token_payload: dict) -> None:
+    return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(session_handle, new_access_token_payload)

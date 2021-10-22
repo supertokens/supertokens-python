@@ -13,10 +13,10 @@
 # under the License.
 from __future__ import annotations
 
-from supertokens_python.recipe.thirdparty.interfaces import APIInterface, APIOptions
+from supertokens_python.recipe.thirdparty.interfaces import APIInterface, APIOptions, \
+    SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostOkResponse
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInterface as ThirdPartyEmailPasswordAPIInterface, \
-    SignInUpAPIInput, SignInUpPostThirdPartyOkResponse, SignInUpPostThirdPartyNoEmailGivenByProviderResponse
+from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInterface as ThirdPartyEmailPasswordAPIInterface
 
 
 def get_interface_impl(
@@ -25,24 +25,22 @@ def get_interface_impl(
 
     if api_implementation.disable_authorisation_url_get:
         implementation.disable_authorisation_url_get = True
-    if api_implementation.disable_sign_in_up_post:
+    if api_implementation.disable_thirdparty_sign_in_up_post:
         implementation.disable_sign_in_up_post = True
 
     if not implementation.disable_sign_in_up_post:
         async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str,
                                   api_options: APIOptions):
-            result = await api_implementation.sign_in_up_post(
-                SignInUpAPIInput('thirdparty', provider=provider, code=code, redirect_uri=redirect_uri,
-                                 options=api_options))
+            result = await api_implementation.third_party_sign_in_up_post(provider, code, redirect_uri, api_options)
 
             if result.is_ok:
-                if result.user.third_party_info is None or result.type == 'emailpassword':
+                if result.user.third_party_info is None:
                     raise Exception('Should never come here')
-                return SignInUpPostThirdPartyOkResponse(
+                return SignInUpPostOkResponse(
                     result.user, result.created_new_user, result.auth_code_response)
 
             elif result.status == 'NO_EMAIL_GIVEN_BY_PROVIDER':
-                return SignInUpPostThirdPartyNoEmailGivenByProviderResponse()
+                return SignInUpPostNoEmailGivenByProviderResponse()
             else:
                 raise Exception('Should never come here')
 

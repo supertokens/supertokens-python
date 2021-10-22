@@ -19,7 +19,7 @@ from .access_token import get_info_from_access_token
 from .jwt import get_payload_without_verifying
 
 if TYPE_CHECKING:
-    from . import RecipeImplementation
+    from .recipe_implementation import RecipeImplementation
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from .exceptions import (
     raise_try_refresh_token_exception,
@@ -31,18 +31,18 @@ from supertokens_python.process_state import AllowedProcessStates, ProcessState
 
 
 async def create_new_session(recipe_implementation: RecipeImplementation, user_id: str,
-                             jwt_payload: Union[dict, None] = None,
+                             access_token_payload: Union[dict, None] = None,
                              session_data: Union[dict, None] = None):
     if session_data is None:
         session_data = {}
-    if jwt_payload is None:
-        jwt_payload = {}
+    if access_token_payload is None:
+        access_token_payload = {}
 
     handshake_info = await recipe_implementation.get_handshake_info()
     enable_anti_csrf = handshake_info.anti_csrf == 'VIA_TOKEN'
     response = await recipe_implementation.querier.send_post_request(NormalisedURLPath('/recipe/session'), {
         'userId': user_id,
-        'userDataInJWT': jwt_payload,
+        'userDataInJWT': access_token_payload,
         'userDataInDatabase': session_data,
         'enableAntiCsrf': enable_anti_csrf
     })
@@ -228,10 +228,10 @@ async def update_session_data(recipe_implementation: RecipeImplementation, sessi
         raise_unauthorised_exception(response['message'])
 
 
-async def update_jwt_payload(recipe_implementation: RecipeImplementation, session_handle: str, new_jwt_payload: dict):
+async def update_access_token_payload(recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: dict):
     response = await recipe_implementation.querier.send_put_request(NormalisedURLPath('/recipe/jwt/data'), {
         'sessionHandle': session_handle,
-        'userDataInJWT': new_jwt_payload
+        'userDataInJWT': new_access_token_payload
     })
     if response['status'] == 'UNAUTHORISED':
         raise_unauthorised_exception(response['message'])

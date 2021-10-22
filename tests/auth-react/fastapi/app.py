@@ -151,7 +151,7 @@ async def get_session_info(session_: Session = Depends(verify_session())):
     return JSONResponse({
         'sessionHandle': session_.get_handle(),
         'userId': session_.get_user_id(),
-        'jwtPayload': session_.get_jwt_payload(),
+        'accessTokenPayload': session_.get_access_token_payload(),
         'sessionData': await session_.get_session_data()
     })
 
