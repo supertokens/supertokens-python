@@ -25,7 +25,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_new_session(self, request: any, user_id: str, jwt_payload: Union[dict, None] = None,
+    async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -> Session:
         pass
 
@@ -63,7 +63,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def update_jwt_payload(self, session_handle: str, new_jwt_payload: dict) -> None:
+    async def update_access_token_payload(self, session_handle: str, new_access_token_payload: dict) -> None:
         pass
 
     @abstractmethod

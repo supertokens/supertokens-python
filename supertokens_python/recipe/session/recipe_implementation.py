@@ -78,11 +78,11 @@ class RecipeImplementation(RecipeInterface):
             self.handshake_info.update_jwt_signing_public_key_info(
                 new_key, new_expiry)
 
-    async def create_new_session(self, request: any, user_id: str, jwt_payload: Union[dict, None] = None,
+    async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -> Session:
         if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
-        session = await session_functions.create_new_session(self, user_id, jwt_payload, session_data)
+        session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
         access_token = session['accessToken']
         refresh_token = session['refreshToken']
         id_refresh_token = session['idRefreshToken']
@@ -176,8 +176,8 @@ class RecipeImplementation(RecipeInterface):
     async def update_session_data(self, session_handle: str, new_session_data: dict) -> None:
         await session_functions.update_session_data(self, session_handle, new_session_data)
 
-    async def update_jwt_payload(self, session_handle: str, new_jwt_payload: dict) -> None:
-        await session_functions.update_jwt_payload(self, session_handle, new_jwt_payload)
+    async def update_access_token_payload(self, session_handle: str, new_access_token_payload: dict) -> None:
+        await session_functions.update_access_token_payload(self, session_handle, new_access_token_payload)
 
     async def get_access_token_lifetime_ms(self) -> int:
         return (await self.get_handshake_info()).access_token_validity
