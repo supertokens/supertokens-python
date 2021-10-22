@@ -1,27 +1,26 @@
-"""
-Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 from httpx import AsyncClient
-
+from supertokens_python.recipe.thirdparty.constants import DEV_OAUTH_AUTHORIZATION_URL, DEV_OAUTH_REDIRECT_URL
+from supertokens_python.recipe.thirdparty.utils import is_using_oauth_development_keys
 from supertokens_python.exceptions import raise_general_exception
-from supertokens_python.recipe.session import create_new_session
+from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.thirdparty.interfaces import APIInterface, SignInUpPostOkResponse, \
     AuthorisationUrlGetOkResponse, SignInUpPostNoEmailGivenByProviderResponse
 
@@ -42,13 +41,21 @@ class APIImplementation(APIInterface):
         for key, value in authorisation_url_info.params.items():
             params[key] = value if not callable(
                 value) else value(api_options.request)
+
+        auth_url = authorisation_url_info.url
+        if is_using_oauth_development_keys(provider.client_id):
+            params['actual_redirect_uri'] = authorisation_url_info.url
+            auth_url = DEV_OAUTH_AUTHORIZATION_URL
+
         query_string = urlencode(params)
 
-        url = authorisation_url_info.url + '?' + query_string
+        url = auth_url + '?' + query_string
         return AuthorisationUrlGetOkResponse(url)
 
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
                               api_options: APIOptions) -> SignInUpPostResponse:
+        if is_using_oauth_development_keys(provider.client_id):
+            redirect_uri = DEV_OAUTH_REDIRECT_URL
         try:
             access_token_api_info = provider.get_access_token_api_info(
                 redirect_uri, code)

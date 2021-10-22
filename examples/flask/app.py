@@ -1,16 +1,14 @@
 from flask import Flask, request, jsonify
-# from flask_cors import CORS
+
 from supertokens_python import init
+from supertokens_python.framework.flask import Middleware
 from supertokens_python.recipe import session
-from supertokens_python.exceptions import SuperTokensError
-from supertokens_python.framework.flask import error_handler, Middleware
 from supertokens_python.recipe.session.framework.flask import verify_session
-from supertokens_python.recipe.session.sync import create_new_session
+from supertokens_python.recipe.session.syncio import create_new_session
 
 app = Flask(__name__)
-app.register_error_handler(SuperTokensError, error_handler)
-app.wsgi_app = Middleware(app.wsgi_app)
-# CORS(app, supports_credentials=True)
+Middleware(app)
+
 
 init({
     'supertokens': {

@@ -1,24 +1,24 @@
-"""
-Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 from __future__ import annotations
 
 from typing import List, Callable, TYPE_CHECKING, Union
 
 from .interfaces import RecipeInterface, APIInterface
 from .types import INPUT_SCHEMA
+from .constants import DEV_OAUTH_CLIENT_IDS
+from supertokens_python.exceptions import raise_bad_input_exception
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyRecipe
@@ -36,13 +36,16 @@ def validate_and_normalise_sign_in_and_up_config(
     if config is None:
         config = {}
     providers = config['providers']
+    if providers is None or len(providers) == 0:
+        raise_bad_input_exception('thirdparty recipe requires atleast 1 provider to be passed in '
+                                  'sign_in_and_up_feature.providers config')
     return SignInAndUpFeature(providers)
 
 
 def email_verification_create_and_send_custom_email(
         recipe: ThirdPartyRecipe, create_and_send_custom_email):
     async def func(user, link):
-        user_info = await recipe.get_user_by_id(user.id)
+        user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
         if user_info is None:
             raise Exception('Unknown User ID provided')
         return await create_and_send_custom_email(user_info, link)
@@ -53,7 +56,7 @@ def email_verification_create_and_send_custom_email(
 def email_verification_get_email_verification_url(
         recipe: ThirdPartyRecipe, get_email_verification_url):
     async def func(user):
-        user_info = await recipe.get_user_by_id(user.id)
+        user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
         if user_info is None:
             raise Exception(recipe, 'Unknown User ID provided')
         return await get_email_verification_url(user_info)
@@ -118,3 +121,7 @@ def validate_and_normalise_user_input(
     override = OverrideConfig(override_functions, override_apis)
     return ThirdPartyConfig(sign_in_and_up_feature,
                             email_verification_feature, override)
+
+
+def is_using_oauth_development_keys(client_id: str):
+    return client_id in DEV_OAUTH_CLIENT_IDS

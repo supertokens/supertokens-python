@@ -1,5 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Union, List, Literal
+from typing import Union, List
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from supertokens_python.recipe.emailpassword.interfaces import CreateResetPasswordResult, ResetPasswordUsingTokenResult, \
     UpdateEmailOrPasswordResult, SignInResult, SignUpResult, EmailExistsGetResponse, \

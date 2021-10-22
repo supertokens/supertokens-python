@@ -1,32 +1,27 @@
-"""
-Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 from __future__ import annotations
 from .session_class import Session
 from supertokens_python.process_state import ProcessState, AllowedProcessStates
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.async_to_sync_wrapper import check_event_loop
 from typing import TYPE_CHECKING
 from .interfaces import RecipeInterface
 from .exceptions import raise_unauthorised_exception, raise_try_refresh_token_exception
 from .cookie_and_header import get_id_refresh_token_from_cookie, get_access_token_from_cookie, get_anti_csrf_header, \
     get_rid_header, get_refresh_token_from_cookie
 from . import session_functions
-
-import asyncio
-
+from supertokens_python.utils import execute_in_background, FRAMEWORKS, frontend_has_interceptor, normalise_http_method
 
 if TYPE_CHECKING:
     from typing import Union, List
@@ -62,12 +57,10 @@ class RecipeImplementation(RecipeInterface):
             except Exception:
                 pass
 
-        if config.framework.lower() == 'flask' or config.framework.lower() == 'django':
-            check_event_loop()
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(call_get_handshake_info())
-        else:
-            asyncio.create_task(call_get_handshake_info())
+        try:
+            execute_in_background(config.mode, call_get_handshake_info)
+        except Exception:
+            pass
 
     async def get_handshake_info(self) -> HandshakeInfo:
         if self.handshake_info is None:
@@ -87,6 +80,8 @@ class RecipeImplementation(RecipeInterface):
 
     async def create_new_session(self, request: any, user_id: str, jwt_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -> Session:
+        if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
+            request = FRAMEWORKS[self.config.framework].wrap_request(request)
         session = await session_functions.create_new_session(self, user_id, jwt_payload, session_data)
         access_token = session['accessToken']
         refresh_token = session['refreshToken']
@@ -103,6 +98,9 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_session(self, request: any, anti_csrf_check: Union[bool, None] = None,
                           session_required: bool = True) -> Union[Session, None]:
+        if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
+            request = FRAMEWORKS[self.config.framework].wrap_request(request)
+
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
             if not session_required:
@@ -111,11 +109,13 @@ class RecipeImplementation(RecipeInterface):
                                          'request as cookies?', False)
         access_token = get_access_token_from_cookie(request)
         if access_token is None:
-            raise_try_refresh_token_exception(
-                'Access token has expired. Please call the refresh API')
+            if session_required is True or frontend_has_interceptor(request) or normalise_http_method(request.method()) == 'get':
+                raise_try_refresh_token_exception(
+                    'Access token has expired. Please call the refresh API')
+            return None
         anti_csrf_token = get_anti_csrf_header(request)
         if anti_csrf_check is None:
-            anti_csrf_check = request.method().lower() != 'get'
+            anti_csrf_check = normalise_http_method(request.method()) != 'get'
         new_session = await session_functions.get_session(self, access_token, anti_csrf_token, anti_csrf_check,
                                                           get_rid_header(request) is not None)
         if 'accessToken' in new_session:
@@ -130,6 +130,9 @@ class RecipeImplementation(RecipeInterface):
         return request.get_session()
 
     async def refresh_session(self, request: any) -> Session:
+        if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
+            request = FRAMEWORKS[self.config.framework].wrap_request(request)
+
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
             raise_unauthorised_exception('Session does not exist. Are you sending the session tokens in the request '

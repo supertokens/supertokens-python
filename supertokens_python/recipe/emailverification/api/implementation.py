@@ -1,21 +1,18 @@
-"""
-Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING
 
 from supertokens_python.recipe.emailverification.interfaces import (
@@ -29,7 +26,7 @@ if TYPE_CHECKING:
         APIOptions, GenerateEmailVerifyTokenPostResponse, IsEmailVerifiedGetResponse, EmailVerifyPostResponse
     )
 from supertokens_python.recipe.emailverification.types import User
-from supertokens_python.recipe.session import get_session
+from supertokens_python.recipe.session.asyncio import get_session
 
 
 class APIImplementation(APIInterface):
@@ -70,12 +67,9 @@ class APIImplementation(APIInterface):
         email_verify_link = (await api_options.config.get_email_verification_url(
             user)) + '?token=' + token_result.token + '&rid' + api_options.recipe_id
 
-        async def send_email():
-            try:
-                await api_options.config.create_and_send_custom_email(user, email_verify_link)
-            except Exception:
-                pass
-
-        asyncio.create_task(send_email())
+        try:
+            await api_options.config.create_and_send_custom_email(user, email_verify_link)
+        except Exception:
+            pass
 
         return GenerateEmailVerifyTokenPostOkResponse()

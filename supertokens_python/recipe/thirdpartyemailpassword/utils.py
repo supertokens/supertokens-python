@@ -1,18 +1,16 @@
-"""
-Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 from __future__ import annotations
 
 from typing import List, Callable, TYPE_CHECKING, Union
@@ -25,8 +23,7 @@ from .types import (
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyEmailPasswordRecipe
-from supertokens_python.utils import validate_the_structure_of_user_input
-from base64 import b64encode, b64decode
+from supertokens_python.utils import validate_the_structure_of_user_input, utf_base64decode, utf_base64encode
 from supertokens_python.recipe.emailpassword.types import UsersResponse
 
 
@@ -131,7 +128,7 @@ def validate_and_normalise_user_input(
 
 
 def create_new_pagination_token(user_id: str, time_joined: int) -> str:
-    return b64encode(user_id + ';' + str(time_joined))
+    return utf_base64encode(user_id + ';' + str(time_joined))
 
 
 def combine_pagination_tokens(third_party_pagination_token: Union[str, None],
@@ -140,13 +137,12 @@ def combine_pagination_tokens(third_party_pagination_token: Union[str, None],
         third_party_pagination_token = 'null'
     if email_password_pagination_token is None:
         email_password_pagination_token = 'null'
-    return b64encode(third_party_pagination_token + ';' +
-                     email_password_pagination_token)
+    return utf_base64encode(third_party_pagination_token + ';' + email_password_pagination_token)
 
 
 def extract_pagination_token(
         next_pagination_token: str) -> NextPaginationToken:
-    extracted_tokens = b64decode(next_pagination_token).split(';')
+    extracted_tokens = utf_base64decode(next_pagination_token).split(';')
     if len(extracted_tokens) != 2:
         raise Exception('Pagination token is invalid')
     return NextPaginationToken(None if extracted_tokens[0] == 'null' else extracted_tokens[0],

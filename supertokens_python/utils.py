@@ -1,18 +1,16 @@
-"""
-Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 
 from __future__ import annotations
 
@@ -36,6 +34,8 @@ from base64 import b64encode, b64decode
 from supertokens_python.framework.django.framework import DjangoFramework
 from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
+from supertokens_python.async_to_sync_wrapper import check_event_loop
+import asyncio
 
 FRAMEWORKS = {
     'fastapi': FastapiFramework(),
@@ -168,3 +168,16 @@ def find_first_occurrence_in_list(
         if condition(item):
             return item
     return None
+
+
+def execute_in_background(mode, func):
+    if mode == 'wsgi':
+        check_event_loop()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(func())
+    else:
+        asyncio.create_task(func())
+
+
+def frontend_has_interceptor(request: BaseRequest) -> bool:
+    return get_rid_from_request(request) is not None

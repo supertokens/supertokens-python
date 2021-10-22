@@ -1,24 +1,22 @@
-"""
-Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 import json
 import os
 import sys
 from functools import wraps
+import re
 
-from asgiref.sync import async_to_sync
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -26,8 +24,8 @@ from django.views.decorators.csrf import csrf_exempt
 from supertokens_python import init, Supertokens
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.session.framework.django.sync import verify_session
-from supertokens_python.recipe.session.sync import revoke_all_sessions_for_user, create_new_session, get_session
+from supertokens_python.recipe.session.framework.django.syncio import verify_session
+from supertokens_python.recipe.session.syncio import revoke_all_sessions_for_user, create_new_session, get_session
 
 module_dir = os.path.dirname(__file__)  # get current directory
 file_path = os.path.join(module_dir, '../templates/index.html')
@@ -39,6 +37,15 @@ index_file.close()
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 
+def request_get_header(request, header_key: str) -> bool:
+    regex = re.compile('^HTTP_')
+    header_values = dict((regex.sub('', header), value) for (header, value)
+                         in request.META.items() if header.startswith('HTTP_'))
+    header_key = header_key.upper()
+
+    return header_values.get(header_key, None)
+
+
 def custom_decorator_for_test():
     def session_verify_custom_test(f):
         @wraps(f)
@@ -48,12 +55,82 @@ def custom_decorator_for_test():
                 value = f(request, *args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
-                if request.headers.get("rid") is None:
+                if request.META['HTTP_RID'] is None:
                     return HttpResponse(content='refresh failed')
                 Test.increment_refresh()
                 return HttpResponse(content='refresh success')
             except Exception as e:
                 raise e
+
+        return wrapped_function
+
+    return session_verify_custom_test
+
+
+def custom_decorator_for_update_jwt():
+    def session_verify_custom_test(f):
+        @wraps(f)
+        def wrapped_function(request, *args, **kwargs):
+            if request.method == 'GET':
+                Test.increment_get_session()
+                value = f(request, *args, **kwargs)
+                if value is not None and value.status_code != 200:
+                    return value
+                session = request.supertokens
+                resp = JsonResponse(session.get_jwt_payload())
+                resp['Cache-Control'] = 'no-cache, private'
+                return resp
+            else:
+                if request.method == 'POST':
+                    value = f(request, *args, **kwargs)
+                    if value is not None and value.status_code != 200:
+                        return value
+                    session = request.supertokens
+                    session.sync_update_jwt_payload(json.loads(request.body))
+                    Test.increment_get_session()
+                    resp = JsonResponse(session.get_jwt_payload())
+                    resp['Cache-Control'] = 'no-cache, private'
+                    return resp
+            return send_options_api_response()
+
+        return wrapped_function
+
+    return session_verify_custom_test
+
+
+def custom_decorator_for_get_info():
+    def session_verify_custom_test(f):
+        @wraps(f)
+        def wrapped_function(request, *args, **kwargs):
+            if request.method == 'GET':
+                value = f(request, *args, **kwargs)
+                if value is not None and value.status_code != 200:
+                    return value
+                Test.increment_get_session()
+                session = request.supertokens
+                resp = HttpResponse(session.get_user_id())
+                resp['Cache-Control'] = 'no-cache, private'
+                return resp
+            else:
+                return send_options_api_response()
+
+        return wrapped_function
+
+    return session_verify_custom_test
+
+
+def custom_decorator_for_logout():
+    def session_verify_custom_test(f):
+        @wraps(f)
+        def wrapped_function(request, *args, **kwargs):
+            if request.method == 'POST':
+                value = f(request, *args, **kwargs)
+                if value is not None and value.status_code != 200:
+                    return value
+                session = request.supertokens
+                session.sync_revoke_session()
+                return HttpResponse('success')
+            return send_options_api_response()
 
         return wrapped_function
 
@@ -189,51 +266,31 @@ def test_config(request):
 
 def multiple_interceptors(request):
     if request.method == 'POST':
-        result_bool = 'success' if 'interceptorheader2' in request.headers \
-                                   and 'interceptorheader1' in request.headers else 'failure'
+        result_bool = 'success' if request_get_header(request, 'interceptorheader2') is not None \
+            and request_get_header(request, 'interceptorheader1') is not None else 'failure'
         return HttpResponse(result_bool)
     else:
         return send_options_api_response()
 
 
+@custom_decorator_for_get_info()
 @verify_session()
 def get_info(request):
-    if request.method == 'GET':
-        Test.increment_get_session()
-        session = verify_session()(request).state
-        resp = HttpResponse(session.get_user_id())
-        resp['Cache-Control'] = 'no-cache, private'
-        return resp
-    else:
-        return send_options_api_response()
+    return HttpResponse('')
 
 
+@custom_decorator_for_update_jwt()
 @verify_session()
 def update_jwt(request):
-    if request.method == 'GET':
-        Test.increment_get_session()
-        session = verify_session()(request).state
-        resp = JsonResponse(session.get_jwt_payload())
-        resp['Cache-Control'] = 'no-cache, private'
-        return resp
-    else:
-        if request.method == 'POST':
-            session = verify_session()(request).state
-            async_to_sync(session.update_jwt_payload)(json.loads(request.body))
-            Test.increment_get_session()
-            resp = JsonResponse(session.get_jwt_payload())
-            resp['Cache-Control'] = 'no-cache, private'
-            return resp
-
-    # options request
-    return send_options_api_response()
+    return HttpResponse('')
 
 
 def testing(request):
     if request.method in ['GET', 'PUT', 'POST', 'DELETE']:
-        if 'testing' in request.headers:
+        header_value = request_get_header(request, 'testing')
+        if header_value is not None:
             resp = HttpResponse('success')
-            resp['testing'] = request.headers['testing']
+            resp['testing'] = header_value
             return resp
         return HttpResponse("success")
 
@@ -241,15 +298,10 @@ def testing(request):
     return send_options_api_response()
 
 
+@custom_decorator_for_logout()
 @verify_session()
 def logout(request):
-    if request.method == 'POST':
-        session = verify_session()(request).state
-        # session.revoke_session()
-        async_to_sync(session.revoke_session)()
-        # revoke_session(session.get_handle())
-        return HttpResponse('success')
-    return send_options_api_response()
+    return HttpResponse('')
 
 
 @verify_session()
@@ -264,7 +316,7 @@ def revoke_all(request):
 
 def refresh_attempted_time(request):
     if request.method == 'GET':
-        return HttpResponse(Test.get_refresh_attempted_count())
+        return HttpResponse(str(Test.get_refresh_attempted_count()))
     else:
         return send_options_api_response()
 
@@ -290,7 +342,8 @@ def set_anti_csrf(request):
 
 def refresh_called_time(request):
     if request.method == 'GET':
-        return HttpResponse(Test.get_refresh_called_count())
+        print(Test.get_refresh_called_count())
+        return HttpResponse(str(Test.get_refresh_called_count()))
     else:
         return send_options_api_response()
 
@@ -311,7 +364,7 @@ def ping(request):
 
 def test_header(request):
     if request.method == 'GET':
-        success_info = request.headers.get('st-custom-header')
+        success_info = request_get_header(request, 'st-custom-header')
         return JsonResponse({'success': success_info})
     else:
         return send_options_api_response()
@@ -319,8 +372,8 @@ def test_header(request):
 
 def check_device_info(request):
     if request.method == 'GET':
-        sdk_name = request.headers.get('supertokens-sdk-name')
-        sdk_version = request.headers.get('supertokens-sdk-version')
+        sdk_name = request_get_header(request, 'supertokens-sdk-name')
+        sdk_version = request_get_header(request, 'supertokens-sdk-version')
         return HttpResponse('true' if sdk_name == 'website' and isinstance(
             sdk_version, str) else 'false')
     else:
@@ -328,13 +381,13 @@ def check_device_info(request):
 
 
 def check_rid(request):
-    rid = request.headers.get('rid')
+    rid = request_get_header(request, 'rid')
     return HttpResponse('fail' if rid is None else 'success')
 
 
 def check_allow_credentials(request):
     if request.method == 'GET':
-        return JsonResponse(json.dumps('allow-credentials' in request.headers))
+        return JsonResponse(json.dumps(request_get_header(request, 'allow-credentials') is not None))
     else:
         return send_options_api_response()
 

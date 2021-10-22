@@ -1,18 +1,16 @@
-"""
-Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 import asyncio
 import json
 
@@ -23,12 +21,14 @@ from pytest import fixture
 from pytest import mark
 
 from supertokens_python import init
+from supertokens_python.recipe import session, emailpassword
+from supertokens_python.recipe.emailpassword.asyncio import revoke_email_verification_token, verify_email_using_token, \
+    create_email_verification_token, is_email_verified, unverify_email
+from supertokens_python.recipe.emailverification.interfaces import APIInterface, APIOptions
 from supertokens_python.exceptions import BadInputError
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.querier import Querier
-from supertokens_python.recipe import session, emailpassword
-from supertokens_python.recipe.emailverification.interfaces import APIInterface, APIOptions
-from supertokens_python.recipe.session import create_new_session, refresh_session, get_session
+from supertokens_python.recipe.session.asyncio import create_new_session, refresh_session, get_session
 from tests.utils import (
     reset, setup_st, clean_st, start_st, sign_up_request, extract_all_cookies, email_verify_token_request,
     set_key_value_in_config, TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY
@@ -167,8 +167,8 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
     user_id = dict_response["user"]["id"]
     cookies = extract_all_cookies(response_1)
 
-    verify_token = await emailpassword.create_email_verification_token(user_id)
-    await emailpassword.verify_email_using_token(verify_token.token)
+    verify_token = await create_email_verification_token(user_id)
+    await verify_email_using_token(verify_token.token)
 
     response = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
                                           cookies['sIdRefreshToken']['value'], response_1.headers.get(
@@ -208,8 +208,11 @@ async def test_the_generate_token_api_with_valid_input_no_session_and_check_outp
 
 
 @mark.asyncio
-async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_try_refresh_token_is_returned(driver_config_client: TestClient):
-    set_key_value_in_config(TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, 2)
+async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_try_refresh_token_is_returned(
+        driver_config_client: TestClient):
+    set_key_value_in_config(
+        TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
+        2)
 
     init({
         'supertokens': {
@@ -341,7 +344,7 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
 
 
 @mark.asyncio
-async def test_the_email_verify_API_with_valid_input(driver_config_client: TestClient):
+async def test_the_email_verify_api_with_valid_input(driver_config_client: TestClient):
     token = None
 
     async def custom_f(user, email_verification_url_token):
@@ -418,7 +421,7 @@ async def test_the_email_verify_API_with_valid_input(driver_config_client: TestC
 
 
 @mark.asyncio
-async def test_the_email_verify_API_with_invalid_token_and_check_error(driver_config_client: TestClient):
+async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_config_client: TestClient):
     token = None
 
     async def custom_f(user, email_verification_url_token):
@@ -495,7 +498,7 @@ async def test_the_email_verify_API_with_invalid_token_and_check_error(driver_co
 
 
 @mark.asyncio
-async def test_the_email_verify_API_with_token_of_not_type_string(driver_config_client: TestClient):
+async def test_the_email_verify_api_with_token_of_not_type_string(driver_config_client: TestClient):
     token = None
 
     async def custom_f(user, email_verification_url_token):
@@ -573,7 +576,7 @@ async def test_the_email_verify_API_with_token_of_not_type_string(driver_config_
 
 
 @mark.asyncio
-async def test_that_the_handlePostEmailVerification_callback_is_called_on_successfull_verification_if_given(
+async def test_that_the_handle_post_email_verification_callback_is_called_on_successful_verification_if_given(
         driver_config_client: TestClient):
     token = None
     user_info_from_callback = None
@@ -795,7 +798,7 @@ async def test_the_email_verify_with_no_session_using_the_get_method(driver_conf
 
 
 @mark.asyncio
-async def test_the_email_verify_API_with_valid_input_overriding_apis(driver_config_client: TestClient):
+async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_config_client: TestClient):
     token = None
     user_info_from_callback = None
 
@@ -893,7 +896,7 @@ async def test_the_email_verify_API_with_valid_input_overriding_apis(driver_conf
 
 
 @mark.asyncio
-async def test_the_email_verify_API_with_valid_input_overriding_apis_throws_error(driver_config_client: TestClient):
+async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_error(driver_config_client: TestClient):
     token = None
     user_info_from_callback = None
 
@@ -1025,10 +1028,10 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     assert dict_response["status"] == "OK"
     user_id = dict_response["user"]["id"]
 
-    verify_token = await emailpassword.create_email_verification_token(user_id)
-    await emailpassword.revoke_email_verification_token(user_id)
+    verify_token = await create_email_verification_token(user_id)
+    await revoke_email_verification_token(user_id)
 
-    response = await emailpassword.verify_email_using_token(verify_token.token)
+    response = await verify_email_using_token(verify_token.token)
     assert response.status == "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
 
 
@@ -1067,12 +1070,12 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     assert dict_response["status"] == "OK"
     user_id = dict_response["user"]["id"]
 
-    verify_token = await emailpassword.create_email_verification_token(user_id)
-    await emailpassword.verify_email_using_token(verify_token.token)
+    verify_token = await create_email_verification_token(user_id)
+    await verify_email_using_token(verify_token.token)
 
-    assert (await emailpassword.is_email_verified(user_id))
+    assert (await is_email_verified(user_id))
 
-    await emailpassword.unverify_email(user_id)
+    await unverify_email(user_id)
 
-    is_verified = await emailpassword.is_email_verified(user_id)
+    is_verified = await is_email_verified(user_id)
     assert is_verified is False

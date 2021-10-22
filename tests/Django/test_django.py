@@ -1,18 +1,16 @@
-"""
-Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 
 import json
 
@@ -23,7 +21,7 @@ from supertokens_python import init
 from supertokens_python.recipe import session
 from supertokens_python.framework.django import middleware
 
-from supertokens_python.recipe.session import create_new_session, refresh_session, get_session
+from supertokens_python.recipe.session.asyncio import create_new_session, refresh_session, get_session
 from tests.utils import start_st, reset, clean_st, setup_st
 
 
@@ -85,6 +83,7 @@ class SupertokensTest(TestCase):
                 'connection_uri': "http://localhost:3567",
             },
             'framework': 'django',
+            'mode': 'asgi',
             'app_info': {
                 'app_name': "SuperTokens Demo",
                 'api_domain': "http://api.supertokens.io",
@@ -101,11 +100,11 @@ class SupertokensTest(TestCase):
 
         start_st()
 
-        my_middleware = middleware()(create_new_session_view)
+        my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
         response = await my_middleware(request)
 
-        my_middleware = middleware()(refresh_view)
+        my_middleware = middleware(refresh_view)
         request = self.factory.get('/refresh', {'user_id': 'user_id'})
         cookies = get_cookies(response)
 
@@ -152,7 +151,7 @@ class SupertokensTest(TestCase):
 
         start_st()
 
-        my_middleware = middleware()(create_new_session_view)
+        my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
         response = await my_middleware(request)
         cookies = get_cookies(response)
@@ -161,7 +160,7 @@ class SupertokensTest(TestCase):
         assert len(cookies['sIdRefreshToken']['value']) > 0
         assert len(cookies['sRefreshToken']['value']) > 0
 
-        my_middleware = middleware()(logout_view)
+        my_middleware = middleware(logout_view)
         request = self.factory.post('/logout', {'user_id': 'user_id'})
 
         request.COOKIES["sAccessToken"] = cookies['sAccessToken']['value']
@@ -196,7 +195,7 @@ class SupertokensTest(TestCase):
 
         start_st()
 
-        my_middleware = middleware()(create_new_session_view)
+        my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
         response = await my_middleware(request)
         cookies = get_cookies(response)
@@ -205,7 +204,7 @@ class SupertokensTest(TestCase):
         assert len(cookies['sIdRefreshToken']['value']) > 0
         assert len(cookies['sRefreshToken']['value']) > 0
 
-        my_middleware = middleware()(handle_view)
+        my_middleware = middleware(handle_view)
         request = self.factory.get('/handle', {'user_id': 'user_id'})
 
         request.COOKIES["sAccessToken"] = cookies['sAccessToken']['value']
@@ -239,11 +238,11 @@ class SupertokensTest(TestCase):
 
         start_st()
 
-        my_middleware = middleware()(create_new_session_view)
+        my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
         response = await my_middleware(request)
 
-        my_middleware = middleware()(refresh_view)
+        my_middleware = middleware(refresh_view)
         request = self.factory.get('/refresh', {'user_id': 'user_id'})
         cookies = get_cookies(response)
 

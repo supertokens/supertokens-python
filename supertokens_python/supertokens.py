@@ -1,29 +1,32 @@
-"""
-Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
-
-This software is licensed under the Apache License, Version 2.0 (the
-"License") as published by the Apache Software Foundation.
-
-You may not use this file except in compliance with the License. You may
-obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 
 from __future__ import annotations
 
 from typing import Union, List, TYPE_CHECKING
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from .constants import (
     TELEMETRY,
     RID_KEY_HEADER,
     FDI_KEY_HEADER,
     TELEMETRY_SUPERTOKENS_API_URL,
-    TELEMETRY_SUPERTOKENS_API_VERSION
+    TELEMETRY_SUPERTOKENS_API_VERSION, USER_COUNT, USERS
 )
 from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
@@ -32,7 +35,7 @@ from .recipe.session.cookie_and_header import attach_access_token_to_cookie, cle
     attach_refresh_token_to_cookie, attach_id_refresh_token_to_cookie_and_header, attach_anti_csrf_header, \
     set_front_token_in_headers
 
-from .types import INPUT_SCHEMA
+from .types import INPUT_SCHEMA, UsersResponse, User, ThirdPartyInfo
 from .utils import (
     validate_the_structure_of_user_input,
     normalise_http_method,
@@ -58,7 +61,7 @@ import asyncio
 
 
 class AppInfo:
-    def __init__(self, app_info, framework: str):
+    def __init__(self, app_info, framework: str, mode: str):
         self.app_name: str = app_info['app_name']
         self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(app_info[
             'api_gateway_path']) if 'api_gateway_path' in app_info else NormalisedURLPath(
@@ -73,6 +76,7 @@ class AppInfo:
         self.website_base_path: NormalisedURLPath = NormalisedURLPath(
             '/auth') if 'website_base_path' not in app_info else NormalisedURLPath(app_info['website_base_path'])
         self.framework = framework
+        self.mode = mode
 
 
 def manage_cookies_post_response(session: Session, response: BaseResponse):
@@ -123,7 +127,10 @@ class Supertokens:
         validate_the_structure_of_user_input(
             config, INPUT_SCHEMA, 'init_function', None)
         validate_framework(config)
-        self.app_info: AppInfo = AppInfo(config['app_info'], config['framework'])
+        mode = 'asgi' if config['framework'] == 'fastapi' else 'wsgi'
+        if 'mode' in config:
+            mode = config['mode']
+        self.app_info: AppInfo = AppInfo(config['app_info'], config['framework'], mode)
         hosts = list(map(lambda h: NormalisedURLDomain(h.strip()),
                          filter(lambda x: x != '', config['supertokens']['connection_uri'].split(';'))))
         api_key = None
@@ -208,6 +215,64 @@ class Supertokens:
                 headers_set.add(header)
 
         return list(headers_set)
+
+    async def get_user_count(self, include_recipe_ids: List[str] = None) -> int:
+        querier = Querier.get_instance(None)
+        include_recipe_ids_str = None
+        if include_recipe_ids is not None:
+            include_recipe_ids_str = ','.join(include_recipe_ids)
+
+        response = await querier.send_get_request(NormalisedURLPath(USER_COUNT), {
+            "includeRecipeIds": include_recipe_ids_str
+        })
+
+        return int(response['count'])
+
+    async def get_users(self, time_joined_order: Literal['ASC', 'DESC'],
+                        limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
+                        include_recipe_ids: List[str] = None) -> UsersResponse:
+        querier = Querier.get_instance(None)
+        params = {
+            'timeJoinedOrder': time_joined_order
+        }
+        if limit is not None:
+            params = {
+                'limit': limit,
+                **params
+            }
+        if pagination_token is not None:
+            params = {
+                'paginationToken': pagination_token,
+                **params
+            }
+
+        include_recipe_ids_str = None
+        if include_recipe_ids is not None:
+            include_recipe_ids_str = ','.join(include_recipe_ids)
+
+        params = {
+            'paginationToken': include_recipe_ids_str,
+            **params
+        }
+
+        response = await querier.send_get_request(NormalisedURLPath(USERS), params)
+        next_pagination_token = None
+        if 'nextPaginationToken' in response:
+            next_pagination_token = response['nextPaginationToken']
+        users_list = response['users']
+        users = []
+        for user in users_list:
+            recipe_id = user['recipeId']
+            user_obj = user['user']
+            third_party = None
+            if 'thirdParty' in user_obj:
+                third_party = ThirdPartyInfo(
+                    user_obj['thirdParty']['userId'],
+                    user_obj['thirdParty']['id']
+                )
+            users.append(User(recipe_id, user_obj['id'], user_obj['email'], user_obj['timeJoined'], third_party))
+
+        return UsersResponse(users, next_pagination_token)
 
     async def middleware(self, request: BaseRequest, response: BaseResponse) -> Union[BaseResponse, None]:
         path = Supertokens.get_instance().app_info.api_gateway_path.append(
