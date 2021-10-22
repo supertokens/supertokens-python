@@ -27,7 +27,7 @@ class FastApiResponse(BaseResponse):
         self.parser_checked = False
 
     def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
-                   domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "Lax"):
+                   domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "lax"):
         # we do ceil because if we do floor, we tests may fail where the access token lifetime is set to 1 second
         self.response.set_cookie(key, value, max_age, ceil((expires - int(time() * 1000)) / 1000), path, domain, secure,
                                  httponly, samesite)
