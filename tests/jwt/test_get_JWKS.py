@@ -25,7 +25,7 @@ from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.interfaces import APIInterface
-from supertokens_python.recipe.session import create_new_session
+from supertokens_python.recipe.session.asyncio import create_new_session
 from tests.utils import (
     reset, setup_st, clean_st, start_st
 )
