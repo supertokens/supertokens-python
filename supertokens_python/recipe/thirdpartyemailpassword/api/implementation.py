@@ -31,31 +31,31 @@ from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInte
 class APIImplementation(APIInterface):
     def __init__(self):
         super().__init__()
-        self.email_password_implementation = EmailPasswordImplementation()
-        self.third_party_implementation = ThirdPartyImplementation()
+        self.emailpassword_implementation = EmailPasswordImplementation()
+        self.thirdparty_implementation = ThirdPartyImplementation()
 
     async def email_exists_get(self, email: str, options: EmailPasswordAPIOptions) -> EmailExistsGetResponse:
-        return await self.email_password_implementation.email_exists_get(email, options)
+        return await self.emailpassword_implementation.email_exists_get(email, options)
 
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
                                                  options: EmailPasswordAPIOptions) -> GeneratePasswordResetTokenPostResponse:
-        return await self.email_password_implementation.generate_password_reset_token_post(form_fields, options)
+        return await self.emailpassword_implementation.generate_password_reset_token_post(form_fields, options)
 
     async def password_reset_post(self, form_fields: List[FormField], token: str,
                                   options: EmailPasswordAPIOptions) -> PasswordResetPostResponse:
-        return await self.email_password_implementation.password_reset_post(form_fields, token, options)
+        return await self.emailpassword_implementation.password_reset_post(form_fields, token, options)
 
-    async def third_party_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                                          api_options: ThirdPartyApiOptions) -> SignInUpPostResponse:
-        return await self.third_party_implementation.sign_in_up_post(provider, code, redirect_uri, api_options)
+    async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+                                         api_options: ThirdPartyApiOptions) -> SignInUpPostResponse:
+        return await self.thirdparty_implementation.sign_in_up_post(provider, code, redirect_uri, api_options)
 
-    async def email_password_sign_in_post(self, form_fields: List[FormField],
-                                          api_options: EmailPasswordApiOptions) -> SignInPostResponse:
-        return await self.email_password_implementation.sign_in_post(form_fields, api_options)
+    async def emailpassword_sign_in_post(self, form_fields: List[FormField],
+                                         api_options: EmailPasswordApiOptions) -> SignInPostResponse:
+        return await self.emailpassword_implementation.sign_in_post(form_fields, api_options)
 
-    async def email_password_sign_up_post(self, form_fields: List[FormField],
-                                          api_options: EmailPasswordApiOptions) -> SignUpPostResponse:
-        return await self.email_password_implementation.sign_up_post(form_fields, api_options)
+    async def emailpassword_sign_up_post(self, form_fields: List[FormField],
+                                         api_options: EmailPasswordApiOptions) -> SignUpPostResponse:
+        return await self.emailpassword_implementation.sign_up_post(form_fields, api_options)
 
     async def authorisation_url_get(self, provider: Provider, api_options: APIOptions) -> AuthorisationUrlGetResponse:
-        return await self.third_party_implementation.authorisation_url_get(provider, api_options)
+        return await self.thirdparty_implementation.authorisation_url_get(provider, api_options)

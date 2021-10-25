@@ -83,18 +83,18 @@ class APIInterface(ABC):
         pass
 
     @abstractmethod
-    async def third_party_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                                          api_options: ThirdPartyApiOptions) -> SignInUpPostResponse:
+    async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+                                         api_options: ThirdPartyApiOptions) -> SignInUpPostResponse:
         pass
 
     @abstractmethod
-    async def email_password_sign_in_post(self, form_fields: List[FormField],
-                                          api_options: EmailPasswordApiOptions) -> SignInPostResponse:
+    async def emailpassword_sign_in_post(self, form_fields: List[FormField],
+                                         api_options: EmailPasswordApiOptions) -> SignInPostResponse:
         pass
 
     @abstractmethod
-    async def email_password_sign_up_post(self, form_fields: List[FormField],
-                                          api_options: EmailPasswordApiOptions) -> SignUpPostResponse:
+    async def emailpassword_sign_up_post(self, form_fields: List[FormField],
+                                         api_options: EmailPasswordApiOptions) -> SignUpPostResponse:
         pass
 
     @abstractmethod

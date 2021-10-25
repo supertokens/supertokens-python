@@ -36,7 +36,7 @@ def get_interface_impl(
     implementation.email_exists_get = api_implementation.email_exists_get
     implementation.generate_password_reset_token_post = api_implementation.generate_password_reset_token_post
     implementation.password_reset_post = api_implementation.password_reset_post
-    implementation.sign_up_post = api_implementation.email_password_sign_up_post
-    implementation.sign_in_post = api_implementation.email_password_sign_in_post
+    implementation.sign_up_post = api_implementation.emailpassword_sign_up_post
+    implementation.sign_in_post = api_implementation.emailpassword_sign_in_post
 
     return implementation
