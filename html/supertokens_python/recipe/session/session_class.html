@@ -53,11 +53,11 @@ from .exceptions import raise_unauthorised_exception
 
 class Session:
     def __init__(self, recipe_implementation: RecipeImplementation, access_token, session_handle,
-                 user_id, jwt_payload):
+                 user_id, access_token_payload):
         self.__recipe_implementation = recipe_implementation
         self.__access_token = access_token
         self.__session_handle = session_handle
-        self.jwt_payload = jwt_payload
+        self.access_token_payload = access_token_payload
         self.user_id = user_id
         self.new_access_token_info = None
         self.new_refresh_token_info = None
@@ -87,18 +87,18 @@ class Session:
         return await session_functions.update_session_data(self.__recipe_implementation, self.__session_handle,
                                                            new_session_data)
 
-    def sync_update_jwt_payload(self, new_jwt_payload) -&gt; None:
-        sync(self.update_jwt_payload(new_jwt_payload))
+    def sync_update_access_token_payload(self, new_access_token_payload) -&gt; None:
+        sync(self.update_access_token_payload(new_access_token_payload))
 
-    async def update_jwt_payload(self, new_jwt_payload) -&gt; None:
+    async def update_access_token_payload(self, new_access_token_payload) -&gt; None:
         result = await self.__recipe_implementation.querier.send_post_request(NormalisedURLPath(&#39;/recipe/session&#39;
                                                                                                 &#39;/regenerate&#39;), {
             &#39;accessToken&#39;: self.__access_token,
-            &#39;userDataInJWT&#39;: new_jwt_payload
+            &#39;userDataInJWT&#39;: new_access_token_payload
         })
         if result[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
-            raise_unauthorised_exception(&#39;Session has probably been revoked while updating JWT payload&#39;)
-        self.jwt_payload = result[&#39;session&#39;][&#39;userDataInJWT&#39;]
+            raise_unauthorised_exception(&#39;Session has probably been revoked while updating access token payload&#39;)
+        self.access_token_payload = result[&#39;session&#39;][&#39;userDataInJWT&#39;]
         if &#39;accessToken&#39; in result and result[&#39;accessToken&#39;] is not None:
             self.__access_token = result[&#39;accessToken&#39;][&#39;token&#39;]
             self.new_access_token_info = result[&#39;accessToken&#39;]
@@ -106,8 +106,8 @@ class Session:
     def get_user_id(self) -&gt; str:
         return self.user_id
 
-    def get_jwt_payload(self) -&gt; dict:
-        return self.jwt_payload
+    def get_access_token_payload(self) -&gt; dict:
+        return self.access_token_payload
 
     def get_handle(self) -&gt; str:
         return self.__session_handle
@@ -130,7 +130,7 @@ class Session:
 <dl>
 <dt id="supertokens_python.recipe.session.session_class.Session"><code class="flex name class">
 <span>class <span class="ident">Session</span></span>
-<span>(</span><span>recipe_implementation: RecipeImplementation, access_token, session_handle, user_id, jwt_payload)</span>
+<span>(</span><span>recipe_implementation: RecipeImplementation, access_token, session_handle, user_id, access_token_payload)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -140,11 +140,11 @@ class Session:
 </summary>
 <pre><code class="python">class Session:
     def __init__(self, recipe_implementation: RecipeImplementation, access_token, session_handle,
-                 user_id, jwt_payload):
+                 user_id, access_token_payload):
         self.__recipe_implementation = recipe_implementation
         self.__access_token = access_token
         self.__session_handle = session_handle
-        self.jwt_payload = jwt_payload
+        self.access_token_payload = access_token_payload
         self.user_id = user_id
         self.new_access_token_info = None
         self.new_refresh_token_info = None
@@ -174,18 +174,18 @@ class Session:
         return await session_functions.update_session_data(self.__recipe_implementation, self.__session_handle,
                                                            new_session_data)
 
-    def sync_update_jwt_payload(self, new_jwt_payload) -&gt; None:
-        sync(self.update_jwt_payload(new_jwt_payload))
+    def sync_update_access_token_payload(self, new_access_token_payload) -&gt; None:
+        sync(self.update_access_token_payload(new_access_token_payload))
 
-    async def update_jwt_payload(self, new_jwt_payload) -&gt; None:
+    async def update_access_token_payload(self, new_access_token_payload) -&gt; None:
         result = await self.__recipe_implementation.querier.send_post_request(NormalisedURLPath(&#39;/recipe/session&#39;
                                                                                                 &#39;/regenerate&#39;), {
             &#39;accessToken&#39;: self.__access_token,
-            &#39;userDataInJWT&#39;: new_jwt_payload
+            &#39;userDataInJWT&#39;: new_access_token_payload
         })
         if result[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
-            raise_unauthorised_exception(&#39;Session has probably been revoked while updating JWT payload&#39;)
-        self.jwt_payload = result[&#39;session&#39;][&#39;userDataInJWT&#39;]
+            raise_unauthorised_exception(&#39;Session has probably been revoked while updating access token payload&#39;)
+        self.access_token_payload = result[&#39;session&#39;][&#39;userDataInJWT&#39;]
         if &#39;accessToken&#39; in result and result[&#39;accessToken&#39;] is not None:
             self.__access_token = result[&#39;accessToken&#39;][&#39;token&#39;]
             self.new_access_token_info = result[&#39;accessToken&#39;]
@@ -193,8 +193,8 @@ class Session:
     def get_user_id(self) -&gt; str:
         return self.user_id
 
-    def get_jwt_payload(self) -&gt; dict:
-        return self.jwt_payload
+    def get_access_token_payload(self) -&gt; dict:
+        return self.access_token_payload
 
     def get_handle(self) -&gt; str:
         return self.__session_handle
@@ -220,6 +220,19 @@ class Session:
     return self.__access_token</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.session_class.Session.get_access_token_payload"><code class="name flex">
+<span>def <span class="ident">get_access_token_payload</span></span>(<span>self) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_access_token_payload(self) -&gt; dict:
+    return self.access_token_payload</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_handle"><code class="name flex">
 <span>def <span class="ident">get_handle</span></span>(<span>self) ‑> str</span>
 </code></dt>
@@ -231,19 +244,6 @@ class Session:
 </summary>
 <pre><code class="python">def get_handle(self) -&gt; str:
     return self.__session_handle</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.session.session_class.Session.get_jwt_payload"><code class="name flex">
-<span>def <span class="ident">get_jwt_payload</span></span>(<span>self) ‑> dict</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_jwt_payload(self) -&gt; dict:
-    return self.jwt_payload</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_session_data"><code class="name flex">
@@ -314,8 +314,8 @@ class Session:
     sync(self.revoke_session())</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.session.session_class.Session.sync_update_jwt_payload"><code class="name flex">
-<span>def <span class="ident">sync_update_jwt_payload</span></span>(<span>self, new_jwt_payload) ‑> None</span>
+<dt id="supertokens_python.recipe.session.session_class.Session.sync_update_access_token_payload"><code class="name flex">
+<span>def <span class="ident">sync_update_access_token_payload</span></span>(<span>self, new_access_token_payload) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -323,8 +323,8 @@ class Session:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def sync_update_jwt_payload(self, new_jwt_payload) -&gt; None:
-    sync(self.update_jwt_payload(new_jwt_payload))</code></pre>
+<pre><code class="python">def sync_update_access_token_payload(self, new_access_token_payload) -&gt; None:
+    sync(self.update_access_token_payload(new_access_token_payload))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.sync_update_session_data"><code class="name flex">
@@ -340,8 +340,8 @@ class Session:
     sync(self.update_session_data(new_session_data))</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.session.session_class.Session.update_jwt_payload"><code class="name flex">
-<span>async def <span class="ident">update_jwt_payload</span></span>(<span>self, new_jwt_payload) ‑> None</span>
+<dt id="supertokens_python.recipe.session.session_class.Session.update_access_token_payload"><code class="name flex">
+<span>async def <span class="ident">update_access_token_payload</span></span>(<span>self, new_access_token_payload) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -349,15 +349,15 @@ class Session:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_jwt_payload(self, new_jwt_payload) -&gt; None:
+<pre><code class="python">async def update_access_token_payload(self, new_access_token_payload) -&gt; None:
     result = await self.__recipe_implementation.querier.send_post_request(NormalisedURLPath(&#39;/recipe/session&#39;
                                                                                             &#39;/regenerate&#39;), {
         &#39;accessToken&#39;: self.__access_token,
-        &#39;userDataInJWT&#39;: new_jwt_payload
+        &#39;userDataInJWT&#39;: new_access_token_payload
     })
     if result[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
-        raise_unauthorised_exception(&#39;Session has probably been revoked while updating JWT payload&#39;)
-    self.jwt_payload = result[&#39;session&#39;][&#39;userDataInJWT&#39;]
+        raise_unauthorised_exception(&#39;Session has probably been revoked while updating access token payload&#39;)
+    self.access_token_payload = result[&#39;session&#39;][&#39;userDataInJWT&#39;]
     if &#39;accessToken&#39; in result and result[&#39;accessToken&#39;] is not None:
         self.__access_token = result[&#39;accessToken&#39;][&#39;token&#39;]
         self.new_access_token_info = result[&#39;accessToken&#39;]</code></pre>
@@ -399,16 +399,16 @@ class Session:
 <h4><code><a title="supertokens_python.recipe.session.session_class.Session" href="#supertokens_python.recipe.session.session_class.Session">Session</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_access_token" href="#supertokens_python.recipe.session.session_class.Session.get_access_token">get_access_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.session_class.Session.get_access_token_payload" href="#supertokens_python.recipe.session.session_class.Session.get_access_token_payload">get_access_token_payload</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_handle" href="#supertokens_python.recipe.session.session_class.Session.get_handle">get_handle</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.session_class.Session.get_jwt_payload" href="#supertokens_python.recipe.session.session_class.Session.get_jwt_payload">get_jwt_payload</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_session_data" href="#supertokens_python.recipe.session.session_class.Session.get_session_data">get_session_data</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.get_user_id" href="#supertokens_python.recipe.session.session_class.Session.get_user_id">get_user_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.revoke_session" href="#supertokens_python.recipe.session.session_class.Session.revoke_session">revoke_session</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.sync_get_session_data" href="#supertokens_python.recipe.session.session_class.Session.sync_get_session_data">sync_get_session_data</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.sync_revoke_session" href="#supertokens_python.recipe.session.session_class.Session.sync_revoke_session">sync_revoke_session</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.session_class.Session.sync_update_jwt_payload" href="#supertokens_python.recipe.session.session_class.Session.sync_update_jwt_payload">sync_update_jwt_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.session_class.Session.sync_update_access_token_payload" href="#supertokens_python.recipe.session.session_class.Session.sync_update_access_token_payload">sync_update_access_token_payload</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.sync_update_session_data" href="#supertokens_python.recipe.session.session_class.Session.sync_update_session_data">sync_update_session_data</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.session_class.Session.update_jwt_payload" href="#supertokens_python.recipe.session.session_class.Session.update_jwt_payload">update_jwt_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.session_class.Session.update_access_token_payload" href="#supertokens_python.recipe.session.session_class.Session.update_access_token_payload">update_access_token_payload</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_class.Session.update_session_data" href="#supertokens_python.recipe.session.session_class.Session.update_session_data">update_session_data</a></code></li>
 </ul>
 </li>

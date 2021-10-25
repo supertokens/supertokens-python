@@ -53,7 +53,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_new_session(self, request: any, user_id: str, jwt_payload: Union[dict, None] = None,
+    async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -&gt; Session:
         pass
 
@@ -91,7 +91,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def update_jwt_payload(self, session_handle: str, new_jwt_payload: dict) -&gt; None:
+    async def update_access_token_payload(self, session_handle: str, new_access_token_payload: dict) -&gt; None:
         pass
 
     @abstractmethod
@@ -277,7 +277,7 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def create_new_session(self, request: any, user_id: str, jwt_payload: Union[dict, None] = None,
+    async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -&gt; Session:
         pass
 
@@ -315,7 +315,7 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def update_jwt_payload(self, session_handle: str, new_jwt_payload: dict) -&gt; None:
+    async def update_access_token_payload(self, session_handle: str, new_access_token_payload: dict) -&gt; None:
         pass
 
     @abstractmethod
@@ -337,7 +337,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>self, request: any, user_id: str, jwt_payload: Union[dict, None] = None, session_data: Union[dict, None] = None) ‑> Session</span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>self, request: any, user_id: str, access_token_payload: Union[dict, None] = None, session_data: Union[dict, None] = None) ‑> Session</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -346,7 +346,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def create_new_session(self, request: any, user_id: str, jwt_payload: Union[dict, None] = None,
+async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
                              session_data: Union[dict, None] = None) -&gt; Session:
     pass</code></pre>
 </details>
@@ -478,8 +478,8 @@ async def revoke_session(self, session_handle: str) -&gt; bool:
     pass</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.update_jwt_payload"><code class="name flex">
-<span>async def <span class="ident">update_jwt_payload</span></span>(<span>self, session_handle: str, new_jwt_payload: dict) ‑> None</span>
+<dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.update_access_token_payload"><code class="name flex">
+<span>async def <span class="ident">update_access_token_payload</span></span>(<span>self, session_handle: str, new_access_token_payload: dict) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -488,7 +488,7 @@ async def revoke_session(self, session_handle: str) -&gt; bool:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def update_jwt_payload(self, session_handle: str, new_jwt_payload: dict) -&gt; None:
+async def update_access_token_payload(self, session_handle: str, new_access_token_payload: dict) -&gt; None:
     pass</code></pre>
 </details>
 </dd>
@@ -630,7 +630,7 @@ def to_json(self):
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.revoke_all_sessions_for_user" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.revoke_all_sessions_for_user">revoke_all_sessions_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.revoke_multiple_sessions" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.revoke_multiple_sessions">revoke_multiple_sessions</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.revoke_session" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.revoke_session">revoke_session</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.update_jwt_payload" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.update_jwt_payload">update_jwt_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.update_access_token_payload" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.update_access_token_payload">update_access_token_payload</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.update_session_data" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.update_session_data">update_session_data</a></code></li>
 </ul>
 </li>

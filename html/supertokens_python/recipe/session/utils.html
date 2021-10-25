@@ -96,10 +96,10 @@ def normalise_session_scope(recipe: SessionRecipe, session_scope: str) -&gt; str
 def normalise_same_site(same_site: str) -&gt; str:
     same_site = same_site.strip()
     same_site = same_site.lower()
-    allowed_values = {&#39;Strict&#39;, &#39;Lax&#39;, &#39;None&#39;}
+    allowed_values = {&#39;strict&#39;, &#39;lax&#39;, &#39;none&#39;}
     if same_site not in allowed_values:
         raise Exception(
-            &#39;cookie same site must be one of &#34;Strict&#34;, &#34;Lax&#34;, or &#34;None&#34;&#39;)
+            &#39;cookie same site must be one of &#34;strict&#34;, &#34;lax&#34;, or &#34;none&#34;&#39;)
     return same_site
 
 
@@ -357,10 +357,10 @@ def validate_and_normalise_user_input(
 <pre><code class="python">def normalise_same_site(same_site: str) -&gt; str:
     same_site = same_site.strip()
     same_site = same_site.lower()
-    allowed_values = {&#39;Strict&#39;, &#39;Lax&#39;, &#39;None&#39;}
+    allowed_values = {&#39;strict&#39;, &#39;lax&#39;, &#39;none&#39;}
     if same_site not in allowed_values:
         raise Exception(
-            &#39;cookie same site must be one of &#34;Strict&#34;, &#34;Lax&#34;, or &#34;None&#34;&#39;)
+            &#39;cookie same site must be one of &#34;strict&#34;, &#34;lax&#34;, or &#34;none&#34;&#39;)
     return same_site</code></pre>
 </details>
 </dd>

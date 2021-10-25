@@ -46,13 +46,14 @@ from typing import List
 from supertokens_python.recipe.emailpassword.api.implementation import APIImplementation as EmailPasswordImplementation
 from supertokens_python.recipe.emailpassword.interfaces import APIOptions as EmailPasswordAPIOptions, \
     PasswordResetPostResponse, \
-    GeneratePasswordResetTokenPostResponse, EmailExistsGetResponse
+    GeneratePasswordResetTokenPostResponse, EmailExistsGetResponse, APIOptions as EmailPasswordApiOptions, \
+    SignUpPostResponse, SignInPostResponse
 from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.thirdparty.api.implementation import APIImplementation as ThirdPartyImplementation
 from supertokens_python.recipe.thirdparty.interfaces import APIOptions, \
-    AuthorisationUrlGetResponse
+    AuthorisationUrlGetResponse, APIOptions as ThirdPartyApiOptions, SignInUpPostResponse
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdpartyemailpassword.interfaces import SignInUpAPIInput, APIInterface
+from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInterface
 
 
 class APIImplementation(APIInterface):
@@ -72,19 +73,17 @@ class APIImplementation(APIInterface):
                                   options: EmailPasswordAPIOptions) -&gt; PasswordResetPostResponse:
         return await self.email_password_implementation.password_reset_post(form_fields, token, options)
 
-    async def sign_in_up_post(self, sign_in_up_input: SignInUpAPIInput):
-        if sign_in_up_input.type == &#39;emailpassword&#39;:
-            if sign_in_up_input.is_sign_in:
-                return await self.email_password_implementation.sign_in_post(sign_in_up_input.form_fields,
-                                                                             sign_in_up_input.options)
-            else:
-                return await self.email_password_implementation.sign_up_post(sign_in_up_input.form_fields,
-                                                                             sign_in_up_input.options)
-        else:
-            return await self.third_party_implementation.sign_in_up_post(sign_in_up_input.provider,
-                                                                         sign_in_up_input.code,
-                                                                         sign_in_up_input.redirect_uri,
-                                                                         sign_in_up_input.options)
+    async def third_party_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+                                          api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+        return await self.third_party_implementation.sign_in_up_post(provider, code, redirect_uri, api_options)
+
+    async def email_password_sign_in_post(self, form_fields: List[FormField],
+                                          api_options: EmailPasswordApiOptions) -&gt; SignInPostResponse:
+        return await self.email_password_implementation.sign_in_post(form_fields, api_options)
+
+    async def email_password_sign_up_post(self, form_fields: List[FormField],
+                                          api_options: EmailPasswordApiOptions) -&gt; SignUpPostResponse:
+        return await self.email_password_implementation.sign_up_post(form_fields, api_options)
 
     async def authorisation_url_get(self, provider: Provider, api_options: APIOptions) -&gt; AuthorisationUrlGetResponse:
         return await self.third_party_implementation.authorisation_url_get(provider, api_options)</code></pre>
@@ -126,19 +125,17 @@ inheritance.</p></div>
                                   options: EmailPasswordAPIOptions) -&gt; PasswordResetPostResponse:
         return await self.email_password_implementation.password_reset_post(form_fields, token, options)
 
-    async def sign_in_up_post(self, sign_in_up_input: SignInUpAPIInput):
-        if sign_in_up_input.type == &#39;emailpassword&#39;:
-            if sign_in_up_input.is_sign_in:
-                return await self.email_password_implementation.sign_in_post(sign_in_up_input.form_fields,
-                                                                             sign_in_up_input.options)
-            else:
-                return await self.email_password_implementation.sign_up_post(sign_in_up_input.form_fields,
-                                                                             sign_in_up_input.options)
-        else:
-            return await self.third_party_implementation.sign_in_up_post(sign_in_up_input.provider,
-                                                                         sign_in_up_input.code,
-                                                                         sign_in_up_input.redirect_uri,
-                                                                         sign_in_up_input.options)
+    async def third_party_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+                                          api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+        return await self.third_party_implementation.sign_in_up_post(provider, code, redirect_uri, api_options)
+
+    async def email_password_sign_in_post(self, form_fields: List[FormField],
+                                          api_options: EmailPasswordApiOptions) -&gt; SignInPostResponse:
+        return await self.email_password_implementation.sign_in_post(form_fields, api_options)
+
+    async def email_password_sign_up_post(self, form_fields: List[FormField],
+                                          api_options: EmailPasswordApiOptions) -&gt; SignUpPostResponse:
+        return await self.email_password_implementation.sign_up_post(form_fields, api_options)
 
     async def authorisation_url_get(self, provider: Provider, api_options: APIOptions) -&gt; AuthorisationUrlGetResponse:
         return await self.third_party_implementation.authorisation_url_get(provider, api_options)</code></pre>
@@ -176,6 +173,34 @@ inheritance.</p></div>
     return await self.email_password_implementation.email_exists_get(email, options)</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.email_password_sign_in_post"><code class="name flex">
+<span>async def <span class="ident">email_password_sign_in_post</span></span>(<span>self, form_fields: List[FormField], api_options: EmailPasswordApiOptions) ‑> <a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostResponse" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInPostResponse">SignInPostResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def email_password_sign_in_post(self, form_fields: List[FormField],
+                                      api_options: EmailPasswordApiOptions) -&gt; SignInPostResponse:
+    return await self.email_password_implementation.sign_in_post(form_fields, api_options)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.email_password_sign_up_post"><code class="name flex">
+<span>async def <span class="ident">email_password_sign_up_post</span></span>(<span>self, form_fields: List[FormField], api_options: EmailPasswordApiOptions) ‑> <a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostResponse" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpPostResponse">SignUpPostResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def email_password_sign_up_post(self, form_fields: List[FormField],
+                                      api_options: EmailPasswordApiOptions) -&gt; SignUpPostResponse:
+    return await self.email_password_implementation.sign_up_post(form_fields, api_options)</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.generate_password_reset_token_post"><code class="name flex">
 <span>async def <span class="ident">generate_password_reset_token_post</span></span>(<span>self, form_fields: List[FormField], options: EmailPasswordAPIOptions) ‑> <a title="supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostResponse" href="../../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostResponse">GeneratePasswordResetTokenPostResponse</a></span>
 </code></dt>
@@ -204,8 +229,8 @@ inheritance.</p></div>
     return await self.email_password_implementation.password_reset_post(form_fields, token, options)</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.sign_in_up_post"><code class="name flex">
-<span>async def <span class="ident">sign_in_up_post</span></span>(<span>self, sign_in_up_input: SignInUpAPIInput)</span>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.third_party_sign_in_up_post"><code class="name flex">
+<span>async def <span class="ident">third_party_sign_in_up_post</span></span>(<span>self, provider: Provider, code: str, redirect_uri: str, api_options: ThirdPartyApiOptions) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -213,19 +238,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def sign_in_up_post(self, sign_in_up_input: SignInUpAPIInput):
-    if sign_in_up_input.type == &#39;emailpassword&#39;:
-        if sign_in_up_input.is_sign_in:
-            return await self.email_password_implementation.sign_in_post(sign_in_up_input.form_fields,
-                                                                         sign_in_up_input.options)
-        else:
-            return await self.email_password_implementation.sign_up_post(sign_in_up_input.form_fields,
-                                                                         sign_in_up_input.options)
-    else:
-        return await self.third_party_implementation.sign_in_up_post(sign_in_up_input.provider,
-                                                                     sign_in_up_input.code,
-                                                                     sign_in_up_input.redirect_uri,
-                                                                     sign_in_up_input.options)</code></pre>
+<pre><code class="python">async def third_party_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+                                      api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+    return await self.third_party_implementation.sign_in_up_post(provider, code, redirect_uri, api_options)</code></pre>
 </details>
 </dd>
 </dl>
@@ -251,9 +266,11 @@ inheritance.</p></div>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.authorisation_url_get" href="#supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.authorisation_url_get">authorisation_url_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.email_exists_get" href="#supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.email_exists_get">email_exists_get</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.email_password_sign_in_post" href="#supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.email_password_sign_in_post">email_password_sign_in_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.email_password_sign_up_post" href="#supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.email_password_sign_up_post">email_password_sign_up_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.generate_password_reset_token_post" href="#supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.generate_password_reset_token_post">generate_password_reset_token_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.password_reset_post" href="#supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.password_reset_post">password_reset_post</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.sign_in_up_post" href="#supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.sign_in_up_post">sign_in_up_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.third_party_sign_in_up_post" href="#supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.third_party_sign_in_up_post">third_party_sign_in_up_post</a></code></li>
 </ul>
 </li>
 </ul>

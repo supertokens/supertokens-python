@@ -41,10 +41,10 @@
 # under the License.
 from __future__ import annotations
 
-from supertokens_python.recipe.thirdparty.interfaces import APIInterface, APIOptions
+from supertokens_python.recipe.thirdparty.interfaces import APIInterface, APIOptions, \
+    SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostOkResponse
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInterface as ThirdPartyEmailPasswordAPIInterface, \
-    SignInUpAPIInput, SignInUpPostThirdPartyOkResponse, SignInUpPostThirdPartyNoEmailGivenByProviderResponse
+from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInterface as ThirdPartyEmailPasswordAPIInterface
 
 
 def get_interface_impl(
@@ -53,24 +53,22 @@ def get_interface_impl(
 
     if api_implementation.disable_authorisation_url_get:
         implementation.disable_authorisation_url_get = True
-    if api_implementation.disable_sign_in_up_post:
+    if api_implementation.disable_thirdparty_sign_in_up_post:
         implementation.disable_sign_in_up_post = True
 
     if not implementation.disable_sign_in_up_post:
         async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str,
                                   api_options: APIOptions):
-            result = await api_implementation.sign_in_up_post(
-                SignInUpAPIInput(&#39;thirdparty&#39;, provider=provider, code=code, redirect_uri=redirect_uri,
-                                 options=api_options))
+            result = await api_implementation.third_party_sign_in_up_post(provider, code, redirect_uri, api_options)
 
             if result.is_ok:
-                if result.user.third_party_info is None or result.type == &#39;emailpassword&#39;:
+                if result.user.third_party_info is None:
                     raise Exception(&#39;Should never come here&#39;)
-                return SignInUpPostThirdPartyOkResponse(
+                return SignInUpPostOkResponse(
                     result.user, result.created_new_user, result.auth_code_response)
 
             elif result.status == &#39;NO_EMAIL_GIVEN_BY_PROVIDER&#39;:
-                return SignInUpPostThirdPartyNoEmailGivenByProviderResponse()
+                return SignInUpPostNoEmailGivenByProviderResponse()
             else:
                 raise Exception(&#39;Should never come here&#39;)
 
@@ -103,24 +101,22 @@ def get_interface_impl(
 
     if api_implementation.disable_authorisation_url_get:
         implementation.disable_authorisation_url_get = True
-    if api_implementation.disable_sign_in_up_post:
+    if api_implementation.disable_thirdparty_sign_in_up_post:
         implementation.disable_sign_in_up_post = True
 
     if not implementation.disable_sign_in_up_post:
         async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str,
                                   api_options: APIOptions):
-            result = await api_implementation.sign_in_up_post(
-                SignInUpAPIInput(&#39;thirdparty&#39;, provider=provider, code=code, redirect_uri=redirect_uri,
-                                 options=api_options))
+            result = await api_implementation.third_party_sign_in_up_post(provider, code, redirect_uri, api_options)
 
             if result.is_ok:
-                if result.user.third_party_info is None or result.type == &#39;emailpassword&#39;:
+                if result.user.third_party_info is None:
                     raise Exception(&#39;Should never come here&#39;)
-                return SignInUpPostThirdPartyOkResponse(
+                return SignInUpPostOkResponse(
                     result.user, result.created_new_user, result.auth_code_response)
 
             elif result.status == &#39;NO_EMAIL_GIVEN_BY_PROVIDER&#39;:
-                return SignInUpPostThirdPartyNoEmailGivenByProviderResponse()
+                return SignInUpPostNoEmailGivenByProviderResponse()
             else:
                 raise Exception(&#39;Should never come here&#39;)
 

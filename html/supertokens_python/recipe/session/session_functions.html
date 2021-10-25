@@ -44,7 +44,7 @@ from typing import Union, TYPE_CHECKING, List
 from .access_token import get_info_from_access_token
 
 if TYPE_CHECKING:
-    from . import RecipeImplementation
+    from .recipe_implementation import RecipeImplementation
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.utils import get_timestamp_ms
 from .exceptions import (
@@ -57,18 +57,18 @@ from supertokens_python.process_state import AllowedProcessStates, ProcessState
 
 
 async def create_new_session(recipe_implementation: RecipeImplementation, user_id: str,
-                             jwt_payload: Union[dict, None] = None,
+                             access_token_payload: Union[dict, None] = None,
                              session_data: Union[dict, None] = None):
     if session_data is None:
         session_data = {}
-    if jwt_payload is None:
-        jwt_payload = {}
+    if access_token_payload is None:
+        access_token_payload = {}
 
     handshake_info = await recipe_implementation.get_handshake_info()
     enable_anti_csrf = handshake_info.anti_csrf == &#39;VIA_TOKEN&#39;
     response = await recipe_implementation.querier.send_post_request(NormalisedURLPath(&#39;/recipe/session&#39;), {
         &#39;userId&#39;: user_id,
-        &#39;userDataInJWT&#39;: jwt_payload,
+        &#39;userDataInJWT&#39;: access_token_payload,
         &#39;userDataInDatabase&#39;: session_data,
         &#39;enableAntiCsrf&#39;: enable_anti_csrf
     })
@@ -212,10 +212,10 @@ async def update_session_data(recipe_implementation: RecipeImplementation, sessi
         raise_unauthorised_exception(response[&#39;message&#39;])
 
 
-async def update_jwt_payload(recipe_implementation: RecipeImplementation, session_handle: str, new_jwt_payload: dict):
+async def update_access_token_payload(recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: dict):
     response = await recipe_implementation.querier.send_put_request(NormalisedURLPath(&#39;/recipe/jwt/data&#39;), {
         &#39;sessionHandle&#39;: session_handle,
-        &#39;userDataInJWT&#39;: new_jwt_payload
+        &#39;userDataInJWT&#39;: new_access_token_payload
     })
     if response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
         raise_unauthorised_exception(response[&#39;message&#39;])
@@ -242,7 +242,7 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.session_functions.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>recipe_implementation: RecipeImplementation, user_id: str, jwt_payload: Union[dict, None] = None, session_data: Union[dict, None] = None)</span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>recipe_implementation: RecipeImplementation, user_id: str, access_token_payload: Union[dict, None] = None, session_data: Union[dict, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -251,18 +251,18 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def create_new_session(recipe_implementation: RecipeImplementation, user_id: str,
-                             jwt_payload: Union[dict, None] = None,
+                             access_token_payload: Union[dict, None] = None,
                              session_data: Union[dict, None] = None):
     if session_data is None:
         session_data = {}
-    if jwt_payload is None:
-        jwt_payload = {}
+    if access_token_payload is None:
+        access_token_payload = {}
 
     handshake_info = await recipe_implementation.get_handshake_info()
     enable_anti_csrf = handshake_info.anti_csrf == &#39;VIA_TOKEN&#39;
     response = await recipe_implementation.querier.send_post_request(NormalisedURLPath(&#39;/recipe/session&#39;), {
         &#39;userId&#39;: user_id,
-        &#39;userDataInJWT&#39;: jwt_payload,
+        &#39;userDataInJWT&#39;: access_token_payload,
         &#39;userDataInDatabase&#39;: session_data,
         &#39;enableAntiCsrf&#39;: enable_anti_csrf
     })
@@ -473,8 +473,8 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
     return len(response[&#39;sessionHandlesRevoked&#39;]) == 1</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.session.session_functions.update_jwt_payload"><code class="name flex">
-<span>async def <span class="ident">update_jwt_payload</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str, new_jwt_payload: dict)</span>
+<dt id="supertokens_python.recipe.session.session_functions.update_access_token_payload"><code class="name flex">
+<span>async def <span class="ident">update_access_token_payload</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: dict)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -482,10 +482,10 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_jwt_payload(recipe_implementation: RecipeImplementation, session_handle: str, new_jwt_payload: dict):
+<pre><code class="python">async def update_access_token_payload(recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: dict):
     response = await recipe_implementation.querier.send_put_request(NormalisedURLPath(&#39;/recipe/jwt/data&#39;), {
         &#39;sessionHandle&#39;: session_handle,
-        &#39;userDataInJWT&#39;: new_jwt_payload
+        &#39;userDataInJWT&#39;: new_access_token_payload
     })
     if response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
         raise_unauthorised_exception(response[&#39;message&#39;])</code></pre>
@@ -535,7 +535,7 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 <li><code><a title="supertokens_python.recipe.session.session_functions.revoke_all_sessions_for_user" href="#supertokens_python.recipe.session.session_functions.revoke_all_sessions_for_user">revoke_all_sessions_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_functions.revoke_multiple_sessions" href="#supertokens_python.recipe.session.session_functions.revoke_multiple_sessions">revoke_multiple_sessions</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_functions.revoke_session" href="#supertokens_python.recipe.session.session_functions.revoke_session">revoke_session</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.session_functions.update_jwt_payload" href="#supertokens_python.recipe.session.session_functions.update_jwt_payload">update_jwt_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.session_functions.update_access_token_payload" href="#supertokens_python.recipe.session.session_functions.update_access_token_payload">update_access_token_payload</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.session_functions.update_session_data" href="#supertokens_python.recipe.session.session_functions.update_session_data">update_session_data</a></code></li>
 </ul>
 </li>

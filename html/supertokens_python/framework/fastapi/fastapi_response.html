@@ -55,7 +55,7 @@ class FastApiResponse(BaseResponse):
         self.parser_checked = False
 
     def set_cookie(self, key: str, value: str = &#34;&#34;, max_age: int = None, expires: int = None, path: str = &#34;/&#34;,
-                   domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;Lax&#34;):
+                   domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
         # we do ceil because if we do floor, we tests may fail where the access token lifetime is set to 1 second
         self.response.set_cookie(key, value, max_age, ceil((expires - int(time() * 1000)) / 1000), path, domain, secure,
                                  httponly, samesite)
@@ -108,7 +108,7 @@ inheritance.</p></div>
         self.parser_checked = False
 
     def set_cookie(self, key: str, value: str = &#34;&#34;, max_age: int = None, expires: int = None, path: str = &#34;/&#34;,
-                   domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;Lax&#34;):
+                   domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
         # we do ceil because if we do floor, we tests may fail where the access token lifetime is set to 1 second
         self.response.set_cookie(key, value, max_age, ceil((expires - int(time() * 1000)) / 1000), path, domain, secure,
                                  httponly, samesite)
@@ -171,7 +171,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_cookie"><code class="name flex">
-<span>def <span class="ident">set_cookie</span></span>(<span>self, key: str, value: str = '', max_age: int = None, expires: int = None, path: str = '/', domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = 'Lax')</span>
+<span>def <span class="ident">set_cookie</span></span>(<span>self, key: str, value: str = '', max_age: int = None, expires: int = None, path: str = '/', domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = 'lax')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -180,7 +180,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def set_cookie(self, key: str, value: str = &#34;&#34;, max_age: int = None, expires: int = None, path: str = &#34;/&#34;,
-               domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;Lax&#34;):
+               domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
     # we do ceil because if we do floor, we tests may fail where the access token lifetime is set to 1 second
     self.response.set_cookie(key, value, max_age, ceil((expires - int(time() * 1000)) / 1000), path, domain, secure,
                              httponly, samesite)</code></pre>

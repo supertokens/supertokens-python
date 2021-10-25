@@ -125,7 +125,7 @@ def manage_cookies_post_response(session: Session, response: BaseResponse):
                 response,
                 session[&#39;user_id&#39;],
                 access_token[&#39;expiry&#39;],
-                session[&#39;jwt_payload&#39;]
+                session[&#39;access_token_payload&#39;]
             )
         refresh_token = session[&#39;new_refresh_token_info&#39;]
         if refresh_token is not None:
@@ -385,7 +385,7 @@ class Supertokens:
                 response,
                 session[&#39;user_id&#39;],
                 access_token[&#39;expiry&#39;],
-                session[&#39;jwt_payload&#39;]
+                session[&#39;access_token_payload&#39;]
             )
         refresh_token = session[&#39;new_refresh_token_info&#39;]
         if refresh_token is not None:
