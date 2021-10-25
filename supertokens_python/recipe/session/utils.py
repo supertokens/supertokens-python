@@ -68,10 +68,10 @@ def normalise_session_scope(recipe: SessionRecipe, session_scope: str) -> str:
 def normalise_same_site(same_site: str) -> str:
     same_site = same_site.strip()
     same_site = same_site.lower()
-    allowed_values = {'Strict', 'Lax', 'None'}
+    allowed_values = {'strict', 'lax', 'none'}
     if same_site not in allowed_values:
         raise Exception(
-            'cookie same site must be one of "Strict", "Lax", or "None"')
+            'cookie same site must be one of "strict", "lax", or "none"')
     return same_site
 
 
