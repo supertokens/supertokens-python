@@ -111,18 +111,18 @@ class APIInterface(ABC):
         pass
 
     @abstractmethod
-    async def third_party_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                                          api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+    async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+                                         api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
         pass
 
     @abstractmethod
-    async def email_password_sign_in_post(self, form_fields: List[FormField],
-                                          api_options: EmailPasswordApiOptions) -&gt; SignInPostResponse:
+    async def emailpassword_sign_in_post(self, form_fields: List[FormField],
+                                         api_options: EmailPasswordApiOptions) -&gt; SignInPostResponse:
         pass
 
     @abstractmethod
-    async def email_password_sign_up_post(self, form_fields: List[FormField],
-                                          api_options: EmailPasswordApiOptions) -&gt; SignUpPostResponse:
+    async def emailpassword_sign_up_post(self, form_fields: List[FormField],
+                                         api_options: EmailPasswordApiOptions) -&gt; SignUpPostResponse:
         pass
 
     @abstractmethod
@@ -175,18 +175,18 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def third_party_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                                          api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+    async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+                                         api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
         pass
 
     @abstractmethod
-    async def email_password_sign_in_post(self, form_fields: List[FormField],
-                                          api_options: EmailPasswordApiOptions) -&gt; SignInPostResponse:
+    async def emailpassword_sign_in_post(self, form_fields: List[FormField],
+                                         api_options: EmailPasswordApiOptions) -&gt; SignInPostResponse:
         pass
 
     @abstractmethod
-    async def email_password_sign_up_post(self, form_fields: List[FormField],
-                                          api_options: EmailPasswordApiOptions) -&gt; SignUpPostResponse:
+    async def emailpassword_sign_up_post(self, form_fields: List[FormField],
+                                         api_options: EmailPasswordApiOptions) -&gt; SignUpPostResponse:
         pass
 
     @abstractmethod
@@ -242,8 +242,8 @@ async def email_exists_get(self, email: str, api_options: EmailPasswordApiOption
     pass</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.email_password_sign_in_post"><code class="name flex">
-<span>async def <span class="ident">email_password_sign_in_post</span></span>(<span>self, form_fields: List[<a title="supertokens_python.recipe.emailpassword.types.FormField" href="../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.FormField">FormField</a>], api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostResponse" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInPostResponse">SignInPostResponse</a></span>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.emailpassword_sign_in_post"><code class="name flex">
+<span>async def <span class="ident">emailpassword_sign_in_post</span></span>(<span>self, form_fields: List[<a title="supertokens_python.recipe.emailpassword.types.FormField" href="../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.FormField">FormField</a>], api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostResponse" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInPostResponse">SignInPostResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -252,13 +252,13 @@ async def email_exists_get(self, email: str, api_options: EmailPasswordApiOption
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def email_password_sign_in_post(self, form_fields: List[FormField],
-                                      api_options: EmailPasswordApiOptions) -&gt; SignInPostResponse:
+async def emailpassword_sign_in_post(self, form_fields: List[FormField],
+                                     api_options: EmailPasswordApiOptions) -&gt; SignInPostResponse:
     pass</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.email_password_sign_up_post"><code class="name flex">
-<span>async def <span class="ident">email_password_sign_up_post</span></span>(<span>self, form_fields: List[<a title="supertokens_python.recipe.emailpassword.types.FormField" href="../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.FormField">FormField</a>], api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostResponse" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpPostResponse">SignUpPostResponse</a></span>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.emailpassword_sign_up_post"><code class="name flex">
+<span>async def <span class="ident">emailpassword_sign_up_post</span></span>(<span>self, form_fields: List[<a title="supertokens_python.recipe.emailpassword.types.FormField" href="../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.FormField">FormField</a>], api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostResponse" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpPostResponse">SignUpPostResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -267,8 +267,8 @@ async def email_password_sign_in_post(self, form_fields: List[FormField],
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def email_password_sign_up_post(self, form_fields: List[FormField],
-                                      api_options: EmailPasswordApiOptions) -&gt; SignUpPostResponse:
+async def emailpassword_sign_up_post(self, form_fields: List[FormField],
+                                     api_options: EmailPasswordApiOptions) -&gt; SignUpPostResponse:
     pass</code></pre>
 </details>
 </dd>
@@ -302,8 +302,8 @@ async def password_reset_post(self, token: str, form_fields: List[FormField],
     pass</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.third_party_sign_in_up_post"><code class="name flex">
-<span>async def <span class="ident">third_party_sign_in_up_post</span></span>(<span>self, provider: <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../thirdparty/provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a>, code: str, redirect_uri: str, api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse" href="../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></span>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.thirdparty_sign_in_up_post"><code class="name flex">
+<span>async def <span class="ident">thirdparty_sign_in_up_post</span></span>(<span>self, provider: <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../thirdparty/provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a>, code: str, redirect_uri: str, api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse" href="../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -312,8 +312,8 @@ async def password_reset_post(self, token: str, form_fields: List[FormField],
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def third_party_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                                      api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+                                     api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
     pass</code></pre>
 </details>
 </dd>
@@ -586,11 +586,11 @@ async def update_email_or_password(self, user_id: str, email: str = None,
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.authorisation_url_get" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.authorisation_url_get">authorisation_url_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.email_exists_get" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.email_exists_get">email_exists_get</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.email_password_sign_in_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.email_password_sign_in_post">email_password_sign_in_post</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.email_password_sign_up_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.email_password_sign_up_post">email_password_sign_up_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.emailpassword_sign_in_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.emailpassword_sign_in_post">emailpassword_sign_in_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.emailpassword_sign_up_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.emailpassword_sign_up_post">emailpassword_sign_up_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.generate_password_reset_token_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.generate_password_reset_token_post">generate_password_reset_token_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.password_reset_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.password_reset_post">password_reset_post</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.third_party_sign_in_up_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.third_party_sign_in_up_post">third_party_sign_in_up_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.thirdparty_sign_in_up_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.thirdparty_sign_in_up_post">thirdparty_sign_in_up_post</a></code></li>
 </ul>
 </li>
 <li>
