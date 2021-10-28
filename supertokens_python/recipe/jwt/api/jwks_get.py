@@ -11,5 +11,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from supertokens_python.recipe.jwt.interfaces import APIInterface, APIOptions
 
-GET_JWKS_API = "/jwt/jwks.json"
+
+async def jwks_get(api_implementation: APIInterface, api_options: APIOptions):
+    if api_implementation.disable_jwks_get:
+        return None
+
+    result = await api_implementation.jwks_get(api_options)
+    api_options.response.set_content(result.to_json())
+
+    return api_options.response

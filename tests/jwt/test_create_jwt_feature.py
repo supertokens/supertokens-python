@@ -21,7 +21,7 @@ from pytest import mark
 from supertokens_python import init
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import jwt
-from supertokens_python.recipe.jwt import create_jwt
+from supertokens_python.recipe.jwt.asyncio import create_jwt
 from supertokens_python.utils import utf_base64decode
 from tests.utils import (
     reset, setup_st, clean_st, start_st

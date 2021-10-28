@@ -11,5 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
+from supertokens_python.exceptions import SuperTokensError
 
-GET_JWKS_API = "/jwt/jwks.json"
+
+class SuperTokensJWTError(SuperTokensError):
+    pass

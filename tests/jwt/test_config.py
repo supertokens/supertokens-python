@@ -48,7 +48,7 @@ async def test_that_the_default_config_sets_values_correctly_for_JWT_recipe():
             'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
         },
-        'recipe_list': [jwt.init({})]
+        'recipe_list': [jwt.init()]
     })
     start_st()
 

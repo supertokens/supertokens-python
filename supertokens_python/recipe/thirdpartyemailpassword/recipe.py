@@ -112,20 +112,20 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                     }
                 }, self.email_verification_recipe)
 
-    def is_error_from_this_or_child_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SupertokensThirdPartyEmailPasswordError)
             or
-            self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+            self.email_verification_recipe.is_error_from_this_recipe_based_on_instance(
                 err)
             or
-            self.email_password_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+            self.email_password_recipe.is_error_from_this_recipe_based_on_instance(
                 err)
             or
             (
                 self.third_party_recipe is not None
                 and
-                self.third_party_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+                self.third_party_recipe.is_error_from_this_recipe_based_on_instance(
                     err)
             )
         )
