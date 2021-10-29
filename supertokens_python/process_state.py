@@ -28,6 +28,7 @@ class ProcessState:
 
     def __init__(self):
         self.history: List[AllowedProcessStates] = []
+        self.service_called = False
 
     @staticmethod
     def get_instance():
@@ -39,6 +40,15 @@ class ProcessState:
         if ('SUPERTOKENS_ENV' in environ) and (
                 environ['SUPERTOKENS_ENV'] == 'testing'):
             self.history.append(state)
+
+    @staticmethod
+    def get_service_called():
+        return ProcessState.get_instance().service_called
+
+    @staticmethod
+    def update_service_called(b):
+        instance = ProcessState.get_instance()
+        instance.service_called = b
 
     def reset(self):
         self.history = []
