@@ -106,11 +106,11 @@ class RecipeImplementation(RecipeInterface):
             self.handshake_info.update_jwt_signing_public_key_info(
                 new_key, new_expiry)
 
-    async def create_new_session(self, request: any, user_id: str, jwt_payload: Union[dict, None] = None,
+    async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -&gt; Session:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
-        session = await session_functions.create_new_session(self, user_id, jwt_payload, session_data)
+        session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
         access_token = session[&#39;accessToken&#39;]
         refresh_token = session[&#39;refreshToken&#39;]
         id_refresh_token = session[&#39;idRefreshToken&#39;]
@@ -204,8 +204,8 @@ class RecipeImplementation(RecipeInterface):
     async def update_session_data(self, session_handle: str, new_session_data: dict) -&gt; None:
         await session_functions.update_session_data(self, session_handle, new_session_data)
 
-    async def update_jwt_payload(self, session_handle: str, new_jwt_payload: dict) -&gt; None:
-        await session_functions.update_jwt_payload(self, session_handle, new_jwt_payload)
+    async def update_access_token_payload(self, session_handle: str, new_access_token_payload: dict) -&gt; None:
+        await session_functions.update_access_token_payload(self, session_handle, new_access_token_payload)
 
     async def get_access_token_lifetime_ms(self) -&gt; int:
         return (await self.get_handshake_info()).access_token_validity
@@ -310,11 +310,11 @@ inheritance.</p></div>
             self.handshake_info.update_jwt_signing_public_key_info(
                 new_key, new_expiry)
 
-    async def create_new_session(self, request: any, user_id: str, jwt_payload: Union[dict, None] = None,
+    async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -&gt; Session:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
-        session = await session_functions.create_new_session(self, user_id, jwt_payload, session_data)
+        session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
         access_token = session[&#39;accessToken&#39;]
         refresh_token = session[&#39;refreshToken&#39;]
         id_refresh_token = session[&#39;idRefreshToken&#39;]
@@ -408,8 +408,8 @@ inheritance.</p></div>
     async def update_session_data(self, session_handle: str, new_session_data: dict) -&gt; None:
         await session_functions.update_session_data(self, session_handle, new_session_data)
 
-    async def update_jwt_payload(self, session_handle: str, new_jwt_payload: dict) -&gt; None:
-        await session_functions.update_jwt_payload(self, session_handle, new_jwt_payload)
+    async def update_access_token_payload(self, session_handle: str, new_access_token_payload: dict) -&gt; None:
+        await session_functions.update_access_token_payload(self, session_handle, new_access_token_payload)
 
     async def get_access_token_lifetime_ms(self) -&gt; int:
         return (await self.get_handshake_info()).access_token_validity
@@ -425,7 +425,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>self, request: any, user_id: str, jwt_payload: Union[dict, None] = None, session_data: Union[dict, None] = None) ‑> Session</span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>self, request: any, user_id: str, access_token_payload: Union[dict, None] = None, session_data: Union[dict, None] = None) ‑> Session</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -433,11 +433,11 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_new_session(self, request: any, user_id: str, jwt_payload: Union[dict, None] = None,
+<pre><code class="python">async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
                              session_data: Union[dict, None] = None) -&gt; Session:
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[self.config.framework].wrap_request(request)
-    session = await session_functions.create_new_session(self, user_id, jwt_payload, session_data)
+    session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
     access_token = session[&#39;accessToken&#39;]
     refresh_token = session[&#39;refreshToken&#39;]
     id_refresh_token = session[&#39;idRefreshToken&#39;]
@@ -646,8 +646,8 @@ inheritance.</p></div>
     return await session_functions.revoke_session(self, session_handle)</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_jwt_payload"><code class="name flex">
-<span>async def <span class="ident">update_jwt_payload</span></span>(<span>self, session_handle: str, new_jwt_payload: dict) ‑> None</span>
+<dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_access_token_payload"><code class="name flex">
+<span>async def <span class="ident">update_access_token_payload</span></span>(<span>self, session_handle: str, new_access_token_payload: dict) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -655,8 +655,8 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_jwt_payload(self, session_handle: str, new_jwt_payload: dict) -&gt; None:
-    await session_functions.update_jwt_payload(self, session_handle, new_jwt_payload)</code></pre>
+<pre><code class="python">async def update_access_token_payload(self, session_handle: str, new_access_token_payload: dict) -&gt; None:
+    await session_functions.update_access_token_payload(self, session_handle, new_access_token_payload)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_jwt_signing_public_key_info"><code class="name flex">
@@ -725,7 +725,7 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_all_sessions_for_user" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_all_sessions_for_user">revoke_all_sessions_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_multiple_sessions" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_multiple_sessions">revoke_multiple_sessions</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_session" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_session">revoke_session</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_jwt_payload" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_jwt_payload">update_jwt_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_access_token_payload" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_access_token_payload">update_access_token_payload</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_jwt_signing_public_key_info" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_jwt_signing_public_key_info">update_jwt_signing_public_key_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_session_data" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_session_data">update_session_data</a></code></li>
 </ul>

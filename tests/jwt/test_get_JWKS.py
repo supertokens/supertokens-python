@@ -22,7 +22,6 @@ from starlette.testclient import TestClient
 
 from supertokens_python import init
 from supertokens_python.framework.fastapi import Middleware
-from supertokens_python.querier import Querier
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.interfaces import APIInterface
 from supertokens_python.recipe.session.asyncio import create_new_session
@@ -57,7 +56,7 @@ async def driver_config_client():
 
 
 def apis_override_get_JWKS(param: APIInterface):
-    param.get_JWKS_GET = None
+    param.disable_jwks_get = True
     return param
 
 
@@ -79,11 +78,6 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
     })
     start_st()
 
-    querier = Querier.get_instance()
-    api_version = await querier.get_api_version()
-    if api_version == "2.8":
-        return
-
     response = driver_config_client.get(
         url="/auth/jwt/jwks.json")
 
@@ -102,14 +96,9 @@ async def test_that_default_getJWKS_works_fine(driver_config_client: TestClient)
             'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
         },
-        'recipe_list': [jwt.init({})]
+        'recipe_list': [jwt.init()]
     })
     start_st()
-
-    querier = Querier.get_instance()
-    api_version = await querier.get_api_version()
-    if api_version == "2.8":
-        return
 
     response = driver_config_client.get(
         url="/auth/jwt/jwks.json")

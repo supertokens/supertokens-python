@@ -41,7 +41,7 @@ class HandshakeInfo:
         self.access_token_validity = info['accessTokenValidity']
         self.refresh_token_validity = info['refreshTokenValidity']
 
-    def set_raw_jwt_signing_public_key_list(self, updated_list: List):
+    def set_jwt_signing_public_key_list(self, updated_list: List):
         self.raw_jwt_signing_public_key_list = updated_list
 
     def get_jwt_signing_public_key_list(self) -> List:
@@ -93,7 +93,7 @@ class RecipeImplementation(RecipeInterface):
             }]
 
         if self.handshake_info is not None:
-            self.handshake_info.set_raw_jwt_signing_public_key_list(key_list)
+            self.handshake_info.set_jwt_signing_public_key_list(key_list)
 
     async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -> Session:

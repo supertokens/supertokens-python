@@ -19,7 +19,6 @@ import time
 from pytest import mark
 
 from supertokens_python import init
-from supertokens_python.querier import Querier
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.asyncio import create_jwt
 from supertokens_python.utils import utf_base64decode
@@ -51,21 +50,14 @@ async def test_that_sending_0_validity_throws_an_error():
             'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
         },
-        'recipe_list': [jwt.init({})]
+        'recipe_list': [jwt.init()]
     })
     start_st()
-
-    querier = Querier.get_instance()
-    api_version = await querier.get_api_version()
-    if api_version == "2.8":
-        return
 
     is_exception = False
     try:
         await create_jwt({}, 0)
-        raise Exception("should not come here")
-    except Exception as e:
-        print(e)
+    except Exception:
         is_exception = True
 
     assert is_exception
@@ -83,22 +75,19 @@ async def test_that_sending_a_invalid_json_throws_an_error():
             'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
         },
-        'recipe_list': [jwt.init({})]
+        'recipe_list': [jwt.init()]
     })
     start_st()
 
-    querier = Querier.get_instance()
-    api_version = await querier.get_api_version()
-    if api_version == "2.8":
-        return
-
     jwt_value = None
+    is_exception = False
     try:
         await create_jwt("not a json", 0)
-        raise Exception("should not come here")
-    except Exception as e:
-        print(e)
+    except Exception:
+        is_exception = True
+
     assert jwt_value is None
+    assert is_exception
 
 
 @mark.asyncio
@@ -113,14 +102,9 @@ async def test_that_returned_JWT_uses_100_years_for_expiry_for_default_config():
             'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
         },
-        'recipe_list': [jwt.init({})]
+        'recipe_list': [jwt.init()]
     })
     start_st()
-
-    querier = Querier.get_instance()
-    api_version = await querier.get_api_version()
-    if api_version == "2.8":
-        return
 
     time_rn = time.time()
 
@@ -148,14 +132,9 @@ async def test_that_jwt_validity_is_same_as_validity_set_in_config():
             'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
         },
-        'recipe_list': [jwt.init({"jwtValiditySeconds": 1000})]
+        'recipe_list': [jwt.init({"jwt_validity_seconds": 1000})]
     })
     start_st()
-
-    querier = Querier.get_instance()
-    api_version = await querier.get_api_version()
-    if api_version == "2.8":
-        return
 
     time_rn = time.time()
 
@@ -183,14 +162,9 @@ async def test_that_jwt_validity_is_same_as_validity_passed_in_createJWT_functio
             'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
         },
-        'recipe_list': [jwt.init({"jwtValiditySeconds": 1000})]
+        'recipe_list': [jwt.init({"jwt_validity_seconds": 1000})]
     })
     start_st()
-
-    querier = Querier.get_instance()
-    api_version = await querier.get_api_version()
-    if api_version == "2.8":
-        return
 
     time_rn = time.time()
     target_expiry_duration = 500

@@ -52,12 +52,9 @@ class JWTRecipe(RecipeModule):
         self.api_implementation = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
 
-    def is_error_from_this_or_child_recipe_based_on_instance(self, err):
-        pass
-
     def get_apis_handled(self) -> List[APIHandled]:
         return [APIHandled(method='get', path_without_api_base_path=NormalisedURLPath(GET_JWKS_API),
-                           request_id=GET_JWKS_API, disabled=self.api_implementation.get_JWKS_GET is None)]
+                           request_id=GET_JWKS_API, disabled=self.api_implementation.jwks_get is None)]
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):

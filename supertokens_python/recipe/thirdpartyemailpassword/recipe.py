@@ -18,9 +18,9 @@ from typing import List, TYPE_CHECKING, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import RecipeModule, APIHandled
-from .api.email_password_api_impementation import get_interface_impl as get_email_password_interface_impl
+from .api.emailpassword_api_impementation import get_interface_impl as get_email_password_interface_impl
 from .api.implementation import APIImplementation
-from .api.third_party_api_implementation import get_interface_impl as get_third_party_interface_impl
+from .api.thirdparty_api_implementation import get_interface_impl as get_third_party_interface_impl
 from .recipeimplementation.email_password_recipe_implementation import \
     RecipeImplementation as EmailPasswordRecipeImplementation
 from .recipeimplementation.implementation import RecipeImplementation
@@ -149,11 +149,11 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
-        if self.email_password_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+        if self.email_password_recipe.is_error_from_this_recipe_based_on_instance(
                 error):
             return self.email_password_recipe.handle_error(
                 request, error, response)
-        if self.third_party_recipe is not None and self.third_party_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+        if self.third_party_recipe is not None and self.third_party_recipe.is_error_from_this_recipe_based_on_instance(
                 error):
             return self.third_party_recipe.handle_error(
                 request, error, response)

@@ -22,7 +22,6 @@ from starlette.testclient import TestClient
 
 from supertokens_python import init
 from supertokens_python.framework.fastapi import Middleware
-from supertokens_python.querier import Querier
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.asyncio import create_jwt
 from supertokens_python.recipe.jwt.interfaces import RecipeInterface, APIInterface
@@ -59,33 +58,40 @@ async def driver_config_client():
 @mark.asyncio
 async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_config_client: TestClient):
     created_jwt = None
-    jwt_keys = None
+    jwt_keys = []
 
     def custom_functions(param: RecipeInterface):
-        temp = param.get_JWKS
+        temp = param.get_jwks
 
         async def get_jwks():
-            response = await temp()
+            response_ = await temp()
 
-            if response.status == "OK":
+            if response_.status == "OK":
                 nonlocal jwt_keys
-                jwt_keys = response.keys
 
-            return response
+                for key in response_.keys:
+                    jwt_keys.append({'kty': key.kty,
+                                     'kid': key.kid,
+                                     'n': key.n,
+                                     'e': key.e,
+                                     'alg': key.alg,
+                                     'use': key.use})
+
+            return response_
 
         temp1 = param.create_jwt
 
-        async def create_jwt(input, input1=None):
-            response = await temp1(input, input1)
+        async def create_jwt_(input1, input2=None):
+            response_ = await temp1(input1, input2)
 
-            if response.status == "OK":
+            if response_.status == "OK":
                 nonlocal created_jwt
-                created_jwt = response.jwt
+                created_jwt = response_.jwt
 
-            return response
+            return response_
 
-        param.create_jwt = create_jwt
-        param.get_JWKS = get_jwks
+        param.create_jwt = create_jwt_
+        param.get_jwks = get_jwks
         return param
 
     init({
@@ -98,16 +104,13 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
             'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
         },
-        'recipe_list': [jwt.init({'override': {
-            'functions': custom_functions
-        }, })]
+        'recipe_list': [jwt.init({
+            'override': {
+                'functions': custom_functions
+            }
+        })]
     })
     start_st()
-
-    querier = Querier.get_instance()
-    api_version = await querier.get_api_version()
-    if api_version == "2.8":
-        return
 
     response = driver_config_client.post(
         url="/jwtcreate",
@@ -134,15 +137,15 @@ async def test_overriding_APIs(driver_config_client: TestClient):
     jwt_keys = None
 
     def custom_api(param: APIInterface):
-        temp = param.get_JWKS_GET
+        temp = param.jwks_get
 
-        async def get_jwks_get(input):
-            response = await temp(input)
+        async def get_jwks_get(input1):
+            response_ = await temp(input1)
             nonlocal jwt_keys
-            jwt_keys = response.keys
-            return response
+            jwt_keys = response_.to_json()['keys']
+            return response_
 
-        param.get_JWKS_GET = get_jwks_get
+        param.jwks_get = get_jwks_get
 
         return param
 
@@ -156,16 +159,13 @@ async def test_overriding_APIs(driver_config_client: TestClient):
             'api_domain': "http://api.supertokens.io",
             'website_domain': "supertokens.io",
         },
-        'recipe_list': [jwt.init({'override': {
-            'apis': custom_api
-        }, })]
+        'recipe_list': [jwt.init({
+            'override': {
+                'apis': custom_api
+            }
+        })]
     })
     start_st()
-
-    querier = Querier.get_instance()
-    api_version = await querier.get_api_version()
-    if api_version == "2.8":
-        return
 
     response = driver_config_client.get(
         url="/auth/jwt/jwks.json"

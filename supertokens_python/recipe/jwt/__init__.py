@@ -14,5 +14,5 @@
 from supertokens_python.recipe.jwt.recipe import JWTRecipe
 
 
-def init(config):
+def init(config=None):
     return JWTRecipe.init(config)

@@ -29,17 +29,13 @@
 <pre><code class="python">from abc import ABC, abstractmethod
 from typing import Union, List
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
-
 from supertokens_python.recipe.emailpassword.interfaces import CreateResetPasswordResult, ResetPasswordUsingTokenResult, \
     UpdateEmailOrPasswordResult, SignInResult, SignUpResult, EmailExistsGetResponse, \
-    GeneratePasswordResetTokenPostResponse, PasswordResetPostResponse, APIOptions as EmailPasswordApiOptions
+    GeneratePasswordResetTokenPostResponse, PasswordResetPostResponse, APIOptions as EmailPasswordApiOptions, \
+    SignInPostResponse, SignUpPostResponse
 from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.thirdparty.interfaces import SignInUpResult, APIOptions as ThirdPartyApiOptions, \
-    AuthorisationUrlGetResponse
+    AuthorisationUrlGetResponse, SignInUpPostResponse
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartyemailpassword.types import User, UsersResponse
 
@@ -99,121 +95,11 @@ class RecipeInterface(ABC):
         pass
 
 
-class SignInUpPostResponse(ABC):
-    def __init__(self, recipe_type: Literal[&#39;emailpassword&#39;, &#39;thirdparty&#39;],
-                 status: Literal[
-                     &#39;OK&#39;, &#39;NO_EMAIL_GIVEN_BY_PROVIDER&#39;, &#39;WRONG_CREDENTIALS_ERROR&#39;, &#39;EMAIL_ALREADY_EXISTS_ERROR&#39;],
-                 user: Union[User, None] = None,
-                 created_new_user: Union[bool, None] = None, auth_code_response: any = None,
-                 error: Union[str, None] = None):
-        self.type = recipe_type
-        self.status = status
-        self.is_ok = False
-        self.is_no_email_given_by_provider = False
-        self.is_wrong_credentials_error = False
-        self.is_email_already_exists_error = False
-        self.user = user
-        self.created_new_user = created_new_user
-        self.error = error
-        self.auth_code_response = auth_code_response
-
-    @abstractmethod
-    def to_json(self):
-        pass
-
-
-class SignInUpPostThirdPartyOkResponse(SignInUpPostResponse):
-    def __init__(self, user: User, created_new_user: bool,
-                 auth_code_response: any):
-        super().__init__(&#39;thirdparty&#39;, &#39;OK&#39;, user, created_new_user, auth_code_response)
-        self.is_ok = True
-
-    def to_json(self):
-        return {
-            &#39;status&#39;: self.status,
-            &#39;user&#39;: {
-                &#39;id&#39;: self.user.user_id,
-                &#39;email&#39;: self.user.email,
-                &#39;timeJoined&#39;: self.user.time_joined,
-                &#39;thirdParty&#39;: {
-                    &#39;id&#39;: self.user.third_party_info.id,
-                    &#39;userId&#39;: self.user.third_party_info.user_id
-                }
-            },
-            &#39;createdNewUser&#39;: self.created_new_user
-        }
-
-
-class SignInUpPostThirdPartyNoEmailGivenByProviderResponse(
-        SignInUpPostResponse):
-    def __init__(self):
-        super().__init__(&#39;thirdparty&#39;, &#39;NO_EMAIL_GIVEN_BY_PROVIDER&#39;)
-        self.is_no_email_given_by_provider = True
-
-    def to_json(self):
-        return {
-            &#39;status&#39;: self.status
-        }
-
-
-class SignInUpPostEmailPasswordOkResponse(SignInUpPostResponse):
-    def __init__(self, user: User, created_new_user: bool):
-        super().__init__(&#39;emailpassword&#39;, &#39;OK&#39;, user, created_new_user)
-        self.is_ok = True
-
-    def to_json(self):
-        return {
-            &#39;status&#39;: self.status,
-            &#39;user&#39;: {
-                &#39;id&#39;: self.user.user_id,
-                &#39;email&#39;: self.user.email,
-                &#39;timeJoined&#39;: self.user.time_joined
-            },
-            &#39;createdNewUser&#39;: self.created_new_user
-        }
-
-
-class SignInUpPostEmailPasswordWrongCredentialsErrorResponse(
-        SignInUpPostResponse):
-    def __init__(self):
-        super().__init__(&#39;emailpassword&#39;, &#39;WRONG_CREDENTIALS_ERROR&#39;)
-        self.is_wrong_credentials_error = True
-
-    def to_json(self):
-        return {
-            &#39;status&#39;: self.status
-        }
-
-
-class SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse(
-        SignInUpPostResponse):
-    def __init__(self):
-        super().__init__(&#39;emailpassword&#39;, &#39;EMAIL_ALREADY_EXISTS_ERROR&#39;)
-        self.is_email_already_exists_error = True
-
-    def to_json(self):
-        return {
-            &#39;status&#39;: self.status
-        }
-
-
-class SignInUpAPIInput:
-    def __init__(self, recipe_type: Literal[&#39;emailpassword&#39;, &#39;thirdparty&#39;],
-                 options: Union[EmailPasswordApiOptions, ThirdPartyApiOptions], provider: Union[Provider, None] = None,
-                 code: Union[str, None] = None, redirect_uri: Union[str, None] = None, is_sign_in: bool = False,
-                 form_fields: Union[List[FormField], None] = None):
-        self.type = recipe_type
-        self.options = options
-        self.provider = provider
-        self.code = code
-        self.redirect_uri = redirect_uri
-        self.is_sign_in = is_sign_in
-        self.form_fields = form_fields
-
-
 class APIInterface(ABC):
     def __init__(self):
-        self.disable_sign_in_up_post = False
+        self.disable_thirdparty_sign_in_up_post = False
+        self.disable_emailpassword_sign_up_post = False
+        self.disable_emailpassword_sign_in_post = False
         self.disable_authorisation_url_get = False
         self.disable_email_exists_get = False
         self.disable_generate_password_reset_token_post = False
@@ -225,7 +111,18 @@ class APIInterface(ABC):
         pass
 
     @abstractmethod
-    async def sign_in_up_post(self, api_options: SignInUpAPIInput) -&gt; SignInUpPostResponse:
+    async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+                                         api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+        pass
+
+    @abstractmethod
+    async def emailpassword_sign_in_post(self, form_fields: List[FormField],
+                                         api_options: EmailPasswordApiOptions) -&gt; SignInPostResponse:
+        pass
+
+    @abstractmethod
+    async def emailpassword_sign_up_post(self, form_fields: List[FormField],
+                                         api_options: EmailPasswordApiOptions) -&gt; SignUpPostResponse:
         pass
 
     @abstractmethod
@@ -264,7 +161,9 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class APIInterface(ABC):
     def __init__(self):
-        self.disable_sign_in_up_post = False
+        self.disable_thirdparty_sign_in_up_post = False
+        self.disable_emailpassword_sign_up_post = False
+        self.disable_emailpassword_sign_in_post = False
         self.disable_authorisation_url_get = False
         self.disable_email_exists_get = False
         self.disable_generate_password_reset_token_post = False
@@ -276,7 +175,18 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def sign_in_up_post(self, api_options: SignInUpAPIInput) -&gt; SignInUpPostResponse:
+    async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+                                         api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+        pass
+
+    @abstractmethod
+    async def emailpassword_sign_in_post(self, form_fields: List[FormField],
+                                         api_options: EmailPasswordApiOptions) -&gt; SignInPostResponse:
+        pass
+
+    @abstractmethod
+    async def emailpassword_sign_up_post(self, form_fields: List[FormField],
+                                         api_options: EmailPasswordApiOptions) -&gt; SignUpPostResponse:
         pass
 
     @abstractmethod
@@ -332,6 +242,36 @@ async def email_exists_get(self, email: str, api_options: EmailPasswordApiOption
     pass</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.emailpassword_sign_in_post"><code class="name flex">
+<span>async def <span class="ident">emailpassword_sign_in_post</span></span>(<span>self, form_fields: List[<a title="supertokens_python.recipe.emailpassword.types.FormField" href="../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.FormField">FormField</a>], api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostResponse" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInPostResponse">SignInPostResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def emailpassword_sign_in_post(self, form_fields: List[FormField],
+                                     api_options: EmailPasswordApiOptions) -&gt; SignInPostResponse:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.emailpassword_sign_up_post"><code class="name flex">
+<span>async def <span class="ident">emailpassword_sign_up_post</span></span>(<span>self, form_fields: List[<a title="supertokens_python.recipe.emailpassword.types.FormField" href="../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.FormField">FormField</a>], api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostResponse" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpPostResponse">SignUpPostResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def emailpassword_sign_up_post(self, form_fields: List[FormField],
+                                     api_options: EmailPasswordApiOptions) -&gt; SignUpPostResponse:
+    pass</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.generate_password_reset_token_post"><code class="name flex">
 <span>async def <span class="ident">generate_password_reset_token_post</span></span>(<span>self, form_fields: List[<a title="supertokens_python.recipe.emailpassword.types.FormField" href="../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.FormField">FormField</a>], api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostResponse" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostResponse">GeneratePasswordResetTokenPostResponse</a></span>
 </code></dt>
@@ -362,8 +302,8 @@ async def password_reset_post(self, token: str, form_fields: List[FormField],
     pass</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.sign_in_up_post"><code class="name flex">
-<span>async def <span class="ident">sign_in_up_post</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpAPIInput" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpAPIInput">SignInUpAPIInput</a>) ‑> <a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></span>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.thirdparty_sign_in_up_post"><code class="name flex">
+<span>async def <span class="ident">thirdparty_sign_in_up_post</span></span>(<span>self, provider: <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../thirdparty/provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a>, code: str, redirect_uri: str, api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse" href="../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -372,7 +312,8 @@ async def password_reset_post(self, token: str, form_fields: List[FormField],
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def sign_in_up_post(self, api_options: SignInUpAPIInput) -&gt; SignInUpPostResponse:
+async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+                                     api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
     pass</code></pre>
 </details>
 </dd>
@@ -624,351 +565,6 @@ async def update_email_or_password(self, user_id: str, email: str = None,
 </dd>
 </dl>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpAPIInput"><code class="flex name class">
-<span>class <span class="ident">SignInUpAPIInput</span></span>
-<span>(</span><span>recipe_type: Literal['emailpassword', 'thirdparty'], options: Union[<a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="../emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>], provider: Optional[<a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../thirdparty/provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a>] = None, code: Optional[str] = None, redirect_uri: Optional[str] = None, is_sign_in: bool = False, form_fields: Optional[List[<a title="supertokens_python.recipe.emailpassword.types.FormField" href="../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.FormField">FormField</a>]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SignInUpAPIInput:
-    def __init__(self, recipe_type: Literal[&#39;emailpassword&#39;, &#39;thirdparty&#39;],
-                 options: Union[EmailPasswordApiOptions, ThirdPartyApiOptions], provider: Union[Provider, None] = None,
-                 code: Union[str, None] = None, redirect_uri: Union[str, None] = None, is_sign_in: bool = False,
-                 form_fields: Union[List[FormField], None] = None):
-        self.type = recipe_type
-        self.options = options
-        self.provider = provider
-        self.code = code
-        self.redirect_uri = redirect_uri
-        self.is_sign_in = is_sign_in
-        self.form_fields = form_fields</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordOkResponse"><code class="flex name class">
-<span>class <span class="ident">SignInUpPostEmailPasswordOkResponse</span></span>
-<span>(</span><span>user: <a title="supertokens_python.recipe.thirdpartyemailpassword.types.User" href="types.html#supertokens_python.recipe.thirdpartyemailpassword.types.User">User</a>, created_new_user: bool)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SignInUpPostEmailPasswordOkResponse(SignInUpPostResponse):
-    def __init__(self, user: User, created_new_user: bool):
-        super().__init__(&#39;emailpassword&#39;, &#39;OK&#39;, user, created_new_user)
-        self.is_ok = True
-
-    def to_json(self):
-        return {
-            &#39;status&#39;: self.status,
-            &#39;user&#39;: {
-                &#39;id&#39;: self.user.user_id,
-                &#39;email&#39;: self.user.email,
-                &#39;timeJoined&#39;: self.user.time_joined
-            },
-            &#39;createdNewUser&#39;: self.created_new_user
-        }</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordOkResponse.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self):
-    return {
-        &#39;status&#39;: self.status,
-        &#39;user&#39;: {
-            &#39;id&#39;: self.user.user_id,
-            &#39;email&#39;: self.user.email,
-            &#39;timeJoined&#39;: self.user.time_joined
-        },
-        &#39;createdNewUser&#39;: self.created_new_user
-    }</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordWrongCredentialsErrorResponse"><code class="flex name class">
-<span>class <span class="ident">SignInUpPostEmailPasswordWrongCredentialsErrorResponse</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SignInUpPostEmailPasswordWrongCredentialsErrorResponse(
-        SignInUpPostResponse):
-    def __init__(self):
-        super().__init__(&#39;emailpassword&#39;, &#39;WRONG_CREDENTIALS_ERROR&#39;)
-        self.is_wrong_credentials_error = True
-
-    def to_json(self):
-        return {
-            &#39;status&#39;: self.status
-        }</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordWrongCredentialsErrorResponse.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self):
-    return {
-        &#39;status&#39;: self.status
-    }</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse"><code class="flex name class">
-<span>class <span class="ident">SignInUpPostResponse</span></span>
-<span>(</span><span>recipe_type: Literal['emailpassword', 'thirdparty'], status: Literal['OK', 'NO_EMAIL_GIVEN_BY_PROVIDER', 'WRONG_CREDENTIALS_ERROR', 'EMAIL_ALREADY_EXISTS_ERROR'], user: Optional[<a title="supertokens_python.recipe.thirdpartyemailpassword.types.User" href="types.html#supertokens_python.recipe.thirdpartyemailpassword.types.User">User</a>] = None, created_new_user: Optional[bool] = None, auth_code_response: <built-in function any> = None, error: Optional[str] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SignInUpPostResponse(ABC):
-    def __init__(self, recipe_type: Literal[&#39;emailpassword&#39;, &#39;thirdparty&#39;],
-                 status: Literal[
-                     &#39;OK&#39;, &#39;NO_EMAIL_GIVEN_BY_PROVIDER&#39;, &#39;WRONG_CREDENTIALS_ERROR&#39;, &#39;EMAIL_ALREADY_EXISTS_ERROR&#39;],
-                 user: Union[User, None] = None,
-                 created_new_user: Union[bool, None] = None, auth_code_response: any = None,
-                 error: Union[str, None] = None):
-        self.type = recipe_type
-        self.status = status
-        self.is_ok = False
-        self.is_no_email_given_by_provider = False
-        self.is_wrong_credentials_error = False
-        self.is_email_already_exists_error = False
-        self.user = user
-        self.created_new_user = created_new_user
-        self.error = error
-        self.auth_code_response = auth_code_response
-
-    @abstractmethod
-    def to_json(self):
-        pass</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordOkResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordOkResponse">SignInUpPostEmailPasswordOkResponse</a></li>
-<li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordWrongCredentialsErrorResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordWrongCredentialsErrorResponse">SignInUpPostEmailPasswordWrongCredentialsErrorResponse</a></li>
-<li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyNoEmailGivenByProviderResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyNoEmailGivenByProviderResponse">SignInUpPostThirdPartyNoEmailGivenByProviderResponse</a></li>
-<li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyOkResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyOkResponse">SignInUpPostThirdPartyOkResponse</a></li>
-<li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse">SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse</a></li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def to_json(self):
-    pass</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyNoEmailGivenByProviderResponse"><code class="flex name class">
-<span>class <span class="ident">SignInUpPostThirdPartyNoEmailGivenByProviderResponse</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SignInUpPostThirdPartyNoEmailGivenByProviderResponse(
-        SignInUpPostResponse):
-    def __init__(self):
-        super().__init__(&#39;thirdparty&#39;, &#39;NO_EMAIL_GIVEN_BY_PROVIDER&#39;)
-        self.is_no_email_given_by_provider = True
-
-    def to_json(self):
-        return {
-            &#39;status&#39;: self.status
-        }</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyNoEmailGivenByProviderResponse.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self):
-    return {
-        &#39;status&#39;: self.status
-    }</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyOkResponse"><code class="flex name class">
-<span>class <span class="ident">SignInUpPostThirdPartyOkResponse</span></span>
-<span>(</span><span>user: <a title="supertokens_python.recipe.thirdpartyemailpassword.types.User" href="types.html#supertokens_python.recipe.thirdpartyemailpassword.types.User">User</a>, created_new_user: bool, auth_code_response: <built-in function any>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SignInUpPostThirdPartyOkResponse(SignInUpPostResponse):
-    def __init__(self, user: User, created_new_user: bool,
-                 auth_code_response: any):
-        super().__init__(&#39;thirdparty&#39;, &#39;OK&#39;, user, created_new_user, auth_code_response)
-        self.is_ok = True
-
-    def to_json(self):
-        return {
-            &#39;status&#39;: self.status,
-            &#39;user&#39;: {
-                &#39;id&#39;: self.user.user_id,
-                &#39;email&#39;: self.user.email,
-                &#39;timeJoined&#39;: self.user.time_joined,
-                &#39;thirdParty&#39;: {
-                    &#39;id&#39;: self.user.third_party_info.id,
-                    &#39;userId&#39;: self.user.third_party_info.user_id
-                }
-            },
-            &#39;createdNewUser&#39;: self.created_new_user
-        }</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyOkResponse.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self):
-    return {
-        &#39;status&#39;: self.status,
-        &#39;user&#39;: {
-            &#39;id&#39;: self.user.user_id,
-            &#39;email&#39;: self.user.email,
-            &#39;timeJoined&#39;: self.user.time_joined,
-            &#39;thirdParty&#39;: {
-                &#39;id&#39;: self.user.third_party_info.id,
-                &#39;userId&#39;: self.user.third_party_info.user_id
-            }
-        },
-        &#39;createdNewUser&#39;: self.created_new_user
-    }</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse"><code class="flex name class">
-<span>class <span class="ident">SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse(
-        SignInUpPostResponse):
-    def __init__(self):
-        super().__init__(&#39;emailpassword&#39;, &#39;EMAIL_ALREADY_EXISTS_ERROR&#39;)
-        self.is_email_already_exists_error = True
-
-    def to_json(self):
-        return {
-            &#39;status&#39;: self.status
-        }</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self):
-    return {
-        &#39;status&#39;: self.status
-    }</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
 </dl>
 </section>
 </article>
@@ -990,9 +586,11 @@ inheritance.</p></div>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.authorisation_url_get" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.authorisation_url_get">authorisation_url_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.email_exists_get" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.email_exists_get">email_exists_get</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.emailpassword_sign_in_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.emailpassword_sign_in_post">emailpassword_sign_in_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.emailpassword_sign_up_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.emailpassword_sign_up_post">emailpassword_sign_up_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.generate_password_reset_token_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.generate_password_reset_token_post">generate_password_reset_token_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.password_reset_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.password_reset_post">password_reset_post</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.sign_in_up_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.sign_in_up_post">sign_in_up_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.thirdparty_sign_in_up_post" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.thirdparty_sign_in_up_post">thirdparty_sign_in_up_post</a></code></li>
 </ul>
 </li>
 <li>
@@ -1010,45 +608,6 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.RecipeInterface.sign_in_up" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.RecipeInterface.sign_in_up">sign_in_up</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.RecipeInterface.sign_up" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.RecipeInterface.sign_up">sign_up</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.RecipeInterface.update_email_or_password" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.RecipeInterface.update_email_or_password">update_email_or_password</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpAPIInput" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpAPIInput">SignInUpAPIInput</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordOkResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordOkResponse">SignInUpPostEmailPasswordOkResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordOkResponse.to_json" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordOkResponse.to_json">to_json</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordWrongCredentialsErrorResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordWrongCredentialsErrorResponse">SignInUpPostEmailPasswordWrongCredentialsErrorResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordWrongCredentialsErrorResponse.to_json" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostEmailPasswordWrongCredentialsErrorResponse.to_json">to_json</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse.to_json" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostResponse.to_json">to_json</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyNoEmailGivenByProviderResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyNoEmailGivenByProviderResponse">SignInUpPostThirdPartyNoEmailGivenByProviderResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyNoEmailGivenByProviderResponse.to_json" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyNoEmailGivenByProviderResponse.to_json">to_json</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyOkResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyOkResponse">SignInUpPostThirdPartyOkResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyOkResponse.to_json" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignInUpPostThirdPartyOkResponse.to_json">to_json</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse">SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse.to_json" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.SignUpPostEmailPasswordEmailAlreadyExistsErrorResponse.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>

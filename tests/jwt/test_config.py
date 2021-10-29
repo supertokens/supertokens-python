@@ -17,7 +17,6 @@ under the License.
 from pytest import mark
 
 from supertokens_python import init
-from supertokens_python.querier import Querier
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt import JWTRecipe
 from tests.utils import (
@@ -52,11 +51,6 @@ async def test_that_the_default_config_sets_values_correctly_for_JWT_recipe():
     })
     start_st()
 
-    querier = Querier.get_instance()
-    api_version = await querier.get_api_version()
-    if api_version == "2.8":
-        return
-
     jwt_recipe = JWTRecipe.get_instance()
     assert jwt_recipe.config.jwt_validity_seconds == 3153600000
 
@@ -74,15 +68,10 @@ async def test_that_the_config_sets_values_correctly_for_JWT_recipe_when_jwt_val
             'website_domain': "supertokens.io",
         },
         'recipe_list': [jwt.init({
-            "jwtValiditySeconds": 24 * 60 * 60  # 24 hours
+            "jwt_validity_seconds": 24 * 60 * 60  # 24 hours
         })]
     })
     start_st()
-
-    querier = Querier.get_instance()
-    api_version = await querier.get_api_version()
-    if api_version == "2.8":
-        return
 
     jwt_recipe = JWTRecipe.get_instance()
     assert jwt_recipe.config.jwt_validity_seconds == 24 * 60 * 60

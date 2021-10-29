@@ -27,7 +27,7 @@ class DjangoResponse(BaseResponse):
         self.parser_checked = False
 
     def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
-                   domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "Lax"):
+                   domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "lax"):
         self.response.set_cookie(
             key,
             value,
