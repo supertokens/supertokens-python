@@ -17,9 +17,8 @@ try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
-from typing import Union, List, TYPE_CHECKING
-if TYPE_CHECKING:
-    from supertokens_python.types import UsersResponse
+from typing import Union, List
+from supertokens_python.types import UsersResponse
 
 
 def get_users_oldest_first(limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
