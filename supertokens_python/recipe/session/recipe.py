@@ -61,7 +61,7 @@ class SessionRecipe(RecipeModule):
         self.api_implementation = api_implementation if self.config.override.apis is None else self.config.override.apis(
             api_implementation)
 
-    def is_error_from_this_or_child_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and isinstance(
             err, SuperTokensSessionError)
 

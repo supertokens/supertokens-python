@@ -140,6 +140,12 @@ def send_non_200_response(message: str, status_code: int, response: BaseResponse
     return response
 
 
+def send_200_response(data_json: dict, response: BaseResponse) -> Union[BaseResponse, None]:
+    response.set_content(data_json)
+    response.set_status_code(200)
+    return response
+
+
 def get_timestamp_ms() -> int:
     return int(time() * 1000)
 

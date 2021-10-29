@@ -11,15 +11,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-AUTHORISATIONURL = '/authorisationurl'
-SIGNINUP = '/signinup'
-SIGNOUT = '/signout'
-SIGNUP_EMAIL_EXISTS = '/signup/email/exists'
-RESET_PASSWORD = '/reset-password'
-DEV_OAUTH_CLIENT_IDS = [
-    '1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com',  # google client id
-    '467101b197249757c71f'  # github client id
-]
-DEV_KEY_IDENTIFIER = "4398792-"
-DEV_OAUTH_AUTHORIZATION_URL = 'https://supertokens.io/dev/oauth/redirect-to-provider'
-DEV_OAUTH_REDIRECT_URL = 'https://supertokens.io/dev/oauth/redirect-to-app'
+from supertokens_python.recipe.jwt.interfaces import APIInterface, APIOptions
+
+
+async def jwks_get(api_implementation: APIInterface, api_options: APIOptions):
+    if api_implementation.disable_jwks_get:
+        return None
+
+    result = await api_implementation.jwks_get(api_options)
+    api_options.response.set_content(result.to_json())
+
+    return api_options.response

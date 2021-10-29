@@ -28,6 +28,11 @@ def verify_email_using_token(token: str):
     return sync(verify_email_using_token(token))
 
 
+async def unverify_email(user_id: str):
+    from supertokens_python.recipe.emailpassword.asyncio import unverify_email
+    return sync(unverify_email(user_id))
+
+
 def is_email_verified(user_id: str):
     from supertokens_python.recipe.emailpassword.asyncio import is_email_verified
     return sync(is_email_verified(user_id))
@@ -85,3 +90,8 @@ def sign_in(email: str, password: str):
 async def sign_up(email: str, password: str):
     from supertokens_python.recipe.emailpassword.asyncio import sign_up
     return sync(sign_up(email, password))
+
+
+async def revoke_email_verification_token(user_id: str):
+    from supertokens_python.recipe.emailpassword.asyncio import revoke_email_verification_token
+    return sync(revoke_email_verification_token(user_id))

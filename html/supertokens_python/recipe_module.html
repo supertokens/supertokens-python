@@ -80,7 +80,7 @@ class RecipeModule(abc.ABC):
         return None
 
     @abc.abstractmethod
-    def is_error_from_this_or_child_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(self, err):
         pass
 
     @abc.abstractmethod
@@ -170,7 +170,7 @@ inheritance.</p></div>
         return None
 
     @abc.abstractmethod
-    def is_error_from_this_or_child_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(self, err):
         pass
 
     @abc.abstractmethod
@@ -287,8 +287,8 @@ async def handle_error(self, request: BaseRequest, err: SuperTokensError, respon
     pass</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe_module.RecipeModule.is_error_from_this_or_child_recipe_based_on_instance"><code class="name flex">
-<span>def <span class="ident">is_error_from_this_or_child_recipe_based_on_instance</span></span>(<span>self, err)</span>
+<dt id="supertokens_python.recipe_module.RecipeModule.is_error_from_this_recipe_based_on_instance"><code class="name flex">
+<span>def <span class="ident">is_error_from_this_recipe_based_on_instance</span></span>(<span>self, err)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -297,7 +297,7 @@ async def handle_error(self, request: BaseRequest, err: SuperTokensError, respon
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abc.abstractmethod
-def is_error_from_this_or_child_recipe_based_on_instance(self, err):
+def is_error_from_this_recipe_based_on_instance(self, err):
     pass</code></pre>
 </details>
 </dd>
@@ -350,7 +350,7 @@ def is_error_from_this_or_child_recipe_based_on_instance(self, err):
 <li><code><a title="supertokens_python.recipe_module.RecipeModule.get_recipe_id" href="#supertokens_python.recipe_module.RecipeModule.get_recipe_id">get_recipe_id</a></code></li>
 <li><code><a title="supertokens_python.recipe_module.RecipeModule.handle_api_request" href="#supertokens_python.recipe_module.RecipeModule.handle_api_request">handle_api_request</a></code></li>
 <li><code><a title="supertokens_python.recipe_module.RecipeModule.handle_error" href="#supertokens_python.recipe_module.RecipeModule.handle_error">handle_error</a></code></li>
-<li><code><a title="supertokens_python.recipe_module.RecipeModule.is_error_from_this_or_child_recipe_based_on_instance" href="#supertokens_python.recipe_module.RecipeModule.is_error_from_this_or_child_recipe_based_on_instance">is_error_from_this_or_child_recipe_based_on_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe_module.RecipeModule.is_error_from_this_recipe_based_on_instance" href="#supertokens_python.recipe_module.RecipeModule.is_error_from_this_recipe_based_on_instance">is_error_from_this_recipe_based_on_instance</a></code></li>
 <li><code><a title="supertokens_python.recipe_module.RecipeModule.return_api_id_if_can_handle_request" href="#supertokens_python.recipe_module.RecipeModule.return_api_id_if_can_handle_request">return_api_id_if_can_handle_request</a></code></li>
 </ul>
 </li>

@@ -12,8 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from supertokens_python import Supertokens
-from supertokens_python.types import UsersResponse
-from typing import Union, List
+from typing import Union, List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from supertokens_python.types import UsersResponse
 try:
     from typing import Literal
 except ImportError:

@@ -11,15 +11,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-AUTHORISATIONURL = '/authorisationurl'
-SIGNINUP = '/signinup'
-SIGNOUT = '/signout'
-SIGNUP_EMAIL_EXISTS = '/signup/email/exists'
-RESET_PASSWORD = '/reset-password'
-DEV_OAUTH_CLIENT_IDS = [
-    '1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com',  # google client id
-    '467101b197249757c71f'  # github client id
-]
-DEV_KEY_IDENTIFIER = "4398792-"
-DEV_OAUTH_AUTHORIZATION_URL = 'https://supertokens.io/dev/oauth/redirect-to-provider'
-DEV_OAUTH_REDIRECT_URL = 'https://supertokens.io/dev/oauth/redirect-to-app'
+from supertokens_python.recipe.jwt.recipe import JWTRecipe
+from supertokens_python.recipe.jwt.types import CreateJwtResult, GetJWKSResult
+import supertokens_python.recipe.jwt.asyncio as asyncio
+from supertokens_python.async_to_sync_wrapper import sync
+
+
+def create_jwt(payload: dict, validity_seconds: int = None) -> [CreateJwtResult, None]:
+    return sync(asyncio.create_jwt(payload, validity_seconds))
+
+
+def get_jwks() -> [GetJWKSResult, None]:
+    return sync(asyncio.get_jwks())
