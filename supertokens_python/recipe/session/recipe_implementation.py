@@ -12,9 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-
-import time
-
 from .session_class import Session
 from supertokens_python.process_state import ProcessState, AllowedProcessStates
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -24,7 +21,8 @@ from .exceptions import raise_unauthorised_exception, raise_try_refresh_token_ex
 from .cookie_and_header import get_id_refresh_token_from_cookie, get_access_token_from_cookie, get_anti_csrf_header, \
     get_rid_header, get_refresh_token_from_cookie
 from . import session_functions
-from supertokens_python.utils import execute_in_background, FRAMEWORKS, frontend_has_interceptor, normalise_http_method
+from supertokens_python.utils import execute_in_background, FRAMEWORKS, frontend_has_interceptor, \
+    normalise_http_method, get_timestamp_ms
 
 if TYPE_CHECKING:
     from typing import Union, List
@@ -45,7 +43,7 @@ class HandshakeInfo:
         self.raw_jwt_signing_public_key_list = updated_list
 
     def get_jwt_signing_public_key_list(self) -> List:
-        time_now = time.time()
+        time_now = get_timestamp_ms()
         return [key for key in self.raw_jwt_signing_public_key_list if key['expiryTime'] > time_now]
 
 
@@ -89,7 +87,7 @@ class RecipeImplementation(RecipeInterface):
             key_list = [{
                 'publicKey': public_key,
                 'expiryTime': expiry_time,
-                'createdAt': int(time.time())
+                'createdAt': get_timestamp_ms()
             }]
 
         if self.handshake_info is not None:
