@@ -52,7 +52,7 @@ class RecipeModule(abc.ABC):
         return None
 
     @abc.abstractmethod
-    def is_error_from_this_or_child_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(self, err):
         pass
 
     @abc.abstractmethod

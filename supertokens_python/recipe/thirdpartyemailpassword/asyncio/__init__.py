@@ -43,6 +43,12 @@ async def unverify_email(user_id: str):
         user_id, email)
 
 
+async def revoke_email_verification_tokens(user_id: str):
+    email = ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id).email
+    return await ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.revoke_email_verification_tokens(
+        user_id, email)
+
+
 @deprecated(reason="Use supertokens_python.get_user_oldest_first(...) function instead IF using core version >= 3.5")
 async def get_users_oldest_first(limit: int = None, next_pagination: str = None):
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_oldest_first(limit,
@@ -90,3 +96,13 @@ async def sign_in(email: str, password: str):
 
 async def sign_up(email: str, password: str):
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_up(email, password)
+
+
+async def update_email_or_password(user_id: str, email: str = None, password: str = None):
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id,
+                                                                                                             email,
+                                                                                                             password)
+
+
+async def get_users_by_email(email: str):
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_by_email(email)

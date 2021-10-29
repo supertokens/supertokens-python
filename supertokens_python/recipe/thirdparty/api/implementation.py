@@ -18,7 +18,8 @@ from urllib.parse import urlencode
 
 from httpx import AsyncClient
 from supertokens_python.recipe.thirdparty.constants import DEV_OAUTH_AUTHORIZATION_URL, DEV_OAUTH_REDIRECT_URL
-from supertokens_python.recipe.thirdparty.utils import is_using_oauth_development_keys
+from supertokens_python.recipe.thirdparty.utils import is_using_oauth_development_client_id, \
+    get_actual_client_id_from_development_client_id
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.thirdparty.interfaces import APIInterface, SignInUpPostOkResponse, \
@@ -43,8 +44,12 @@ class APIImplementation(APIInterface):
                 value) else value(api_options.request)
 
         auth_url = authorisation_url_info.url
-        if is_using_oauth_development_keys(provider.client_id):
+        if is_using_oauth_development_client_id(provider.client_id):
             params['actual_redirect_uri'] = authorisation_url_info.url
+
+            for k, v in params:
+                if params[k] == provider.client_id:
+                    params[k] = get_actual_client_id_from_development_client_id(provider.client_id)
             auth_url = DEV_OAUTH_AUTHORIZATION_URL
 
         query_string = urlencode(params)
@@ -54,11 +59,15 @@ class APIImplementation(APIInterface):
 
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
                               api_options: APIOptions) -> SignInUpPostResponse:
-        if is_using_oauth_development_keys(provider.client_id):
+        if is_using_oauth_development_client_id(provider.client_id):
             redirect_uri = DEV_OAUTH_REDIRECT_URL
         try:
             access_token_api_info = provider.get_access_token_api_info(
                 redirect_uri, code)
+            if is_using_oauth_development_client_id(provider.client_id):
+                for k, v in access_token_api_info.params:
+                    if access_token_api_info.params[k] == provider.client_id:
+                        access_token_api_info.params[k] = get_actual_client_id_from_development_client_id(provider.client_id)
             headers = {
                 'Accept': 'application/json',
                 'Content-Type': 'application/x-www-form-urlencoded'

@@ -317,7 +317,7 @@ class Supertokens:
             return send_non_200_response(str(err), 400, response)
 
         for recipe in self.recipe_modules:
-            if recipe.is_error_from_this_or_child_recipe_based_on_instance(
+            if recipe.is_error_from_this_recipe_based_on_instance(
                     err):
                 return await recipe.handle_error(request, err, response)
         raise err
