@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import List
+from typing import List, Union
 
 from supertokens_python.recipe.emailpassword.api.implementation import APIImplementation as EmailPasswordImplementation
 from supertokens_python.recipe.emailpassword.interfaces import APIOptions as EmailPasswordAPIOptions, \
@@ -46,7 +46,7 @@ class APIImplementation(APIInterface):
         return await self.emailpassword_implementation.password_reset_post(form_fields, token, options)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                                         api_options: ThirdPartyApiOptions) -> SignInUpPostResponse:
+                                         auth_code_response: Union[str, None], api_options: ThirdPartyApiOptions) -> SignInUpPostResponse:
         return await self.thirdparty_implementation.sign_in_up_post(provider, code, redirect_uri, api_options)
 
     async def emailpassword_sign_in_post(self, form_fields: List[FormField],
