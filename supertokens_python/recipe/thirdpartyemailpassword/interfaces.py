@@ -84,7 +84,7 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                                         api_options: ThirdPartyApiOptions) -> SignInUpPostResponse:
+                                         auth_code_response: Union[str, None], api_options: ThirdPartyApiOptions) -> SignInUpPostResponse:
         pass
 
     @abstractmethod

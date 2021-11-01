@@ -13,6 +13,8 @@
 # under the License.
 from __future__ import annotations
 
+from typing import Union
+
 from supertokens_python.recipe.thirdparty.interfaces import APIInterface, APIOptions, \
     SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostOkResponse
 from supertokens_python.recipe.thirdparty.provider import Provider
@@ -30,8 +32,9 @@ def get_interface_impl(
 
     if not implementation.disable_sign_in_up_post:
         async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str,
-                                  api_options: APIOptions):
-            result = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri, api_options)
+                                  auth_code_response: Union[str, None], api_options: APIOptions):
+            result = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri,
+                                                                         auth_code_response, api_options)
 
             if result.is_ok:
                 if result.user.third_party_info is None:

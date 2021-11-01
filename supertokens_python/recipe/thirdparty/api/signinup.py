@@ -27,12 +27,21 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
         return None
     body = await api_options.request.json()
 
+    code = body['code'] if 'code' in body else ""
+    auth_code_response = body['authCodeResponse'] if 'authCodeResponse' in body else None
+
     if 'thirdPartyId' not in body or not isinstance(body['thirdPartyId'], str):
         raise_bad_input_exception(
             'Please provide the thirdPartyId in request body')
 
-    if 'code' not in body or not isinstance(body['code'], str):
-        raise_bad_input_exception('Please provide the code in request body')
+    if not isinstance(code, str):
+        raise_bad_input_exception('Please make sure that the code in the request body is a string')
+
+    if code == '' and auth_code_response is None:
+        raise_bad_input_exception('Please provide one of code or authCodeResponse in the request body')
+
+    if auth_code_response is not None and 'access_token' not in auth_code_response:
+        raise_bad_input_exception('Please provide the access_token inside the authCodeResponse request param')
 
     if 'redirectURI' not in body or not isinstance(body['redirectURI'], str):
         raise_bad_input_exception(
@@ -47,7 +56,7 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
                                                                                  'check your frontend and '
                                                                                  'backend configs.')
 
-    result = await api_implementation.sign_in_up_post(provider, body['code'], body['redirectURI'], api_options)
+    result = await api_implementation.sign_in_up_post(provider, code, body['redirectURI'], auth_code_response, api_options)
     api_options.response.set_content(result.to_json())
 
     return api_options.response

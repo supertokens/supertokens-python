@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from urllib.parse import urlencode
 
 from httpx import AsyncClient
@@ -58,25 +58,29 @@ class APIImplementation(APIInterface):
         return AuthorisationUrlGetOkResponse(url)
 
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                              api_options: APIOptions) -> SignInUpPostResponse:
+                              auth_code_response: Union[str, None], api_options: APIOptions) -> SignInUpPostResponse:
         if is_using_oauth_development_client_id(provider.client_id):
             redirect_uri = DEV_OAUTH_REDIRECT_URL
         try:
-            access_token_api_info = provider.get_access_token_api_info(
-                redirect_uri, code)
-            if is_using_oauth_development_client_id(provider.client_id):
-                for k, v in access_token_api_info.params:
-                    if access_token_api_info.params[k] == provider.client_id:
-                        access_token_api_info.params[k] = get_actual_client_id_from_development_client_id(provider.client_id)
-            headers = {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-            async with AsyncClient() as client:
-                access_token_response = await client.post(access_token_api_info.url, data=access_token_api_info.params,
-                                                          headers=headers)
-                access_token_response = access_token_response.json()
-                user_info = await provider.get_profile_info(access_token_response)
+            if auth_code_response is None:
+                access_token_api_info = provider.get_access_token_api_info(
+                    redirect_uri, code)
+                if is_using_oauth_development_client_id(provider.client_id):
+                    for k, v in access_token_api_info.params:
+                        if access_token_api_info.params[k] == provider.client_id:
+                            access_token_api_info.params[k] = get_actual_client_id_from_development_client_id(
+                                provider.client_id)
+                headers = {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+                async with AsyncClient() as client:
+                    access_token_response = await client.post(access_token_api_info.url, data=access_token_api_info.params,
+                                                              headers=headers)
+                    access_token_response = access_token_response.json()
+            else:
+                access_token_response = auth_code_response
+            user_info = await provider.get_profile_info(access_token_response)
         except Exception as e:
             raise_general_exception(e)
 
