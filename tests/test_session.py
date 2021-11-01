@@ -15,9 +15,11 @@
 from pytest import mark
 
 from supertokens_python import init
+from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.session.asyncio import create_new_session
+from supertokens_python.recipe.session.session_functions import create_new_session, get_session, refresh_session, \
+    revoke_session
 from tests.utils import (
     reset, setup_st, clean_st, start_st
 )
@@ -57,10 +59,38 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
 
     response = await create_new_session(s.recipe_implementation, "", {}, {})
 
-    assert response.get_session_data() is not None
-    assert response.get_access_token() is not None
-    assert response.new_refresh_token_info is not None
-    assert response.new_id_refresh_token_info is not None
-    assert response.new_anti_csrf_token is not None
+    assert response['session'] is not None
+    assert response['accessToken'] is not None
+    assert response['refreshToken'] is not None
+    assert response['idRefreshToken'] is not None
+    assert response['antiCsrfToken'] is not None
 
-    await create_new_session(s.recipe_implementation, response.get_access_token())
+    await get_session(s.recipe_implementation, response['accessToken']['token'], response['antiCsrfToken'], True, response['idRefreshToken']['token'])
+    assert not ProcessState.get_instance().get_service_called()
+
+    response2 = await refresh_session(s.recipe_implementation, response['refreshToken']['token'], response['antiCsrfToken'], True)
+
+    assert response2['session'] is not None
+    assert response2['accessToken'] is not None
+    assert response2['refreshToken'] is not None
+    assert response2['idRefreshToken'] is not None
+    assert response2['antiCsrfToken'] is not None
+
+    response3 = await get_session(s.recipe_implementation, response2['accessToken']['token'], response2['antiCsrfToken'], True, response['idRefreshToken']['token'])
+
+    assert ProcessState.get_instance().get_service_called()
+
+    assert response3['session'] is not None
+    assert response3['accessToken'] is not None
+
+    ProcessState.get_instance().reset()
+
+    response4 = await get_session(s.recipe_implementation, response3['accessToken']['token'], response2['antiCsrfToken'], True, response['idRefreshToken']['token'])
+    assert not ProcessState.get_instance().get_service_called()
+
+    assert response4['session'] is not None
+    assert 'accessToken' not in response4
+
+    response5 = await revoke_session(s.recipe_implementation, response4['session']['handle'])
+
+    assert response5 is True

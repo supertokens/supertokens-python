@@ -58,4 +58,4 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
 
     ProcessState.get_instance().reset()
 
-    assert ProcessState.get_instance().get_service_called()
+    assert not ProcessState.get_instance().get_service_called()
