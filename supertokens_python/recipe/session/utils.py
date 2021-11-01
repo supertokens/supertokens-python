@@ -75,6 +75,11 @@ def normalise_same_site(same_site: str) -> str:
     return same_site
 
 
+def get_url_scheme(url) -> str:
+    url_obj = urlparse(url)
+    return url_obj.scheme
+
+
 def get_top_level_domain_for_same_site_resolution(url: str) -> str:
     url_obj = urlparse(url)
     hostname = url_obj.hostname
@@ -187,7 +192,10 @@ def validate_and_normalise_user_input(
         app_info.api_domain.get_as_string_dangerous())
     top_level_website_domain = get_top_level_domain_for_same_site_resolution(
         app_info.website_domain.get_as_string_dangerous())
-    cookie_same_site = 'None' if top_level_api_domain != top_level_website_domain else 'Lax'
+
+    api_domain_scheme = get_url_scheme(app_info.api_domain.get_as_string_dangerous())
+    website_domain_scheme = get_url_scheme(app_info.website_domain.get_as_string_dangerous())
+    cookie_same_site = 'None' if (top_level_api_domain != top_level_website_domain) or (api_domain_scheme != website_domain_scheme) else 'Lax'
     if 'cookie_same_site' in config:
         cookie_same_site = normalise_same_site(config['cookie_same_site'])
 
