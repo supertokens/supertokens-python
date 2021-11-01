@@ -41,7 +41,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import List
+from typing import List, Union
 
 from supertokens_python.recipe.emailpassword.api.implementation import APIImplementation as EmailPasswordImplementation
 from supertokens_python.recipe.emailpassword.interfaces import APIOptions as EmailPasswordAPIOptions, \
@@ -74,7 +74,7 @@ class APIImplementation(APIInterface):
         return await self.emailpassword_implementation.password_reset_post(form_fields, token, options)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                                         api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+                                         auth_code_response: Union[str, None], api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
         return await self.thirdparty_implementation.sign_in_up_post(provider, code, redirect_uri, api_options)
 
     async def emailpassword_sign_in_post(self, form_fields: List[FormField],
@@ -126,7 +126,7 @@ inheritance.</p></div>
         return await self.emailpassword_implementation.password_reset_post(form_fields, token, options)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                                         api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+                                         auth_code_response: Union[str, None], api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
         return await self.thirdparty_implementation.sign_in_up_post(provider, code, redirect_uri, api_options)
 
     async def emailpassword_sign_in_post(self, form_fields: List[FormField],
@@ -230,7 +230,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.api.implementation.APIImplementation.thirdparty_sign_in_up_post"><code class="name flex">
-<span>async def <span class="ident">thirdparty_sign_in_up_post</span></span>(<span>self, provider: Provider, code: str, redirect_uri: str, api_options: ThirdPartyApiOptions) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></span>
+<span>async def <span class="ident">thirdparty_sign_in_up_post</span></span>(<span>self, provider: Provider, code: str, redirect_uri: str, auth_code_response: Union[str, None], api_options: ThirdPartyApiOptions) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -239,7 +239,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                                     api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+                                     auth_code_response: Union[str, None], api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
     return await self.thirdparty_implementation.sign_in_up_post(provider, code, redirect_uri, api_options)</code></pre>
 </details>
 </dd>

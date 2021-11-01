@@ -112,7 +112,7 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                                         api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+                                         auth_code_response: Union[str, None], api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
         pass
 
     @abstractmethod
@@ -176,7 +176,7 @@ inheritance.</p></div>
 
     @abstractmethod
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                                         api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+                                         auth_code_response: Union[str, None], api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
         pass
 
     @abstractmethod
@@ -303,7 +303,7 @@ async def password_reset_post(self, token: str, form_fields: List[FormField],
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.APIInterface.thirdparty_sign_in_up_post"><code class="name flex">
-<span>async def <span class="ident">thirdparty_sign_in_up_post</span></span>(<span>self, provider: <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../thirdparty/provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a>, code: str, redirect_uri: str, api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse" href="../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></span>
+<span>async def <span class="ident">thirdparty_sign_in_up_post</span></span>(<span>self, provider: <a title="supertokens_python.recipe.thirdparty.provider.Provider" href="../thirdparty/provider.html#supertokens_python.recipe.thirdparty.provider.Provider">Provider</a>, code: str, redirect_uri: str, auth_code_response: Optional[str], api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse" href="../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -313,7 +313,7 @@ async def password_reset_post(self, token: str, form_fields: List[FormField],
 </summary>
 <pre><code class="python">@abstractmethod
 async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
-                                     api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
+                                     auth_code_response: Union[str, None], api_options: ThirdPartyApiOptions) -&gt; SignInUpPostResponse:
     pass</code></pre>
 </details>
 </dd>

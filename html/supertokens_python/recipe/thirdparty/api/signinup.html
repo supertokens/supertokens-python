@@ -55,12 +55,21 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
         return None
     body = await api_options.request.json()
 
+    code = body[&#39;code&#39;] if &#39;code&#39; in body else &#34;&#34;
+    auth_code_response = body[&#39;authCodeResponse&#39;] if &#39;authCodeResponse&#39; in body else None
+
     if &#39;thirdPartyId&#39; not in body or not isinstance(body[&#39;thirdPartyId&#39;], str):
         raise_bad_input_exception(
             &#39;Please provide the thirdPartyId in request body&#39;)
 
-    if &#39;code&#39; not in body or not isinstance(body[&#39;code&#39;], str):
-        raise_bad_input_exception(&#39;Please provide the code in request body&#39;)
+    if not isinstance(code, str):
+        raise_bad_input_exception(&#39;Please make sure that the code in the request body is a string&#39;)
+
+    if code == &#39;&#39; and auth_code_response is None:
+        raise_bad_input_exception(&#39;Please provide one of code or authCodeResponse in the request body&#39;)
+
+    if auth_code_response is not None and &#39;access_token&#39; not in auth_code_response:
+        raise_bad_input_exception(&#39;Please provide the access_token inside the authCodeResponse request param&#39;)
 
     if &#39;redirectURI&#39; not in body or not isinstance(body[&#39;redirectURI&#39;], str):
         raise_bad_input_exception(
@@ -75,7 +84,7 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
                                                                                  &#39;check your frontend and &#39;
                                                                                  &#39;backend configs.&#39;)
 
-    result = await api_implementation.sign_in_up_post(provider, body[&#39;code&#39;], body[&#39;redirectURI&#39;], api_options)
+    result = await api_implementation.sign_in_up_post(provider, code, body[&#39;redirectURI&#39;], auth_code_response, api_options)
     api_options.response.set_content(result.to_json())
 
     return api_options.response</code></pre>
@@ -102,12 +111,21 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
         return None
     body = await api_options.request.json()
 
+    code = body[&#39;code&#39;] if &#39;code&#39; in body else &#34;&#34;
+    auth_code_response = body[&#39;authCodeResponse&#39;] if &#39;authCodeResponse&#39; in body else None
+
     if &#39;thirdPartyId&#39; not in body or not isinstance(body[&#39;thirdPartyId&#39;], str):
         raise_bad_input_exception(
             &#39;Please provide the thirdPartyId in request body&#39;)
 
-    if &#39;code&#39; not in body or not isinstance(body[&#39;code&#39;], str):
-        raise_bad_input_exception(&#39;Please provide the code in request body&#39;)
+    if not isinstance(code, str):
+        raise_bad_input_exception(&#39;Please make sure that the code in the request body is a string&#39;)
+
+    if code == &#39;&#39; and auth_code_response is None:
+        raise_bad_input_exception(&#39;Please provide one of code or authCodeResponse in the request body&#39;)
+
+    if auth_code_response is not None and &#39;access_token&#39; not in auth_code_response:
+        raise_bad_input_exception(&#39;Please provide the access_token inside the authCodeResponse request param&#39;)
 
     if &#39;redirectURI&#39; not in body or not isinstance(body[&#39;redirectURI&#39;], str):
         raise_bad_input_exception(
@@ -122,7 +140,7 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
                                                                                  &#39;check your frontend and &#39;
                                                                                  &#39;backend configs.&#39;)
 
-    result = await api_implementation.sign_in_up_post(provider, body[&#39;code&#39;], body[&#39;redirectURI&#39;], api_options)
+    result = await api_implementation.sign_in_up_post(provider, code, body[&#39;redirectURI&#39;], auth_code_response, api_options)
     api_options.response.set_content(result.to_json())
 
     return api_options.response</code></pre>
