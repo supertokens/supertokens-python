@@ -168,6 +168,12 @@ def send_non_200_response(message: str, status_code: int, response: BaseResponse
     return response
 
 
+def send_200_response(data_json: dict, response: BaseResponse) -&gt; Union[BaseResponse, None]:
+    response.set_content(data_json)
+    response.set_status_code(200)
+    return response
+
+
 def get_timestamp_ms() -&gt; int:
     return int(time() * 1000)
 
@@ -416,6 +422,21 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
     return method.lower()</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.utils.send_200_response"><code class="name flex">
+<span>def <span class="ident">send_200_response</span></span>(<span>data_json: dict, response: BaseResponse) ‑> Optional[<a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def send_200_response(data_json: dict, response: BaseResponse) -&gt; Union[BaseResponse, None]:
+    response.set_content(data_json)
+    response.set_status_code(200)
+    return response</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.utils.send_non_200_response"><code class="name flex">
 <span>def <span class="ident">send_non_200_response</span></span>(<span>message: str, status_code: int, response: BaseResponse) ‑> Optional[<a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a>]</span>
 </code></dt>
@@ -538,6 +559,7 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 <li><code><a title="supertokens_python.utils.is_5xx_error" href="#supertokens_python.utils.is_5xx_error">is_5xx_error</a></code></li>
 <li><code><a title="supertokens_python.utils.is_an_ip_address" href="#supertokens_python.utils.is_an_ip_address">is_an_ip_address</a></code></li>
 <li><code><a title="supertokens_python.utils.normalise_http_method" href="#supertokens_python.utils.normalise_http_method">normalise_http_method</a></code></li>
+<li><code><a title="supertokens_python.utils.send_200_response" href="#supertokens_python.utils.send_200_response">send_200_response</a></code></li>
 <li><code><a title="supertokens_python.utils.send_non_200_response" href="#supertokens_python.utils.send_non_200_response">send_non_200_response</a></code></li>
 <li><code><a title="supertokens_python.utils.utf_base64decode" href="#supertokens_python.utils.utf_base64decode">utf_base64decode</a></code></li>
 <li><code><a title="supertokens_python.utils.utf_base64encode" href="#supertokens_python.utils.utf_base64encode">utf_base64encode</a></code></li>

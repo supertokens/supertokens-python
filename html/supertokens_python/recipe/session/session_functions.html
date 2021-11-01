@@ -40,13 +40,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
+import time
 from typing import Union, TYPE_CHECKING, List
 from .access_token import get_info_from_access_token
+from .jwt import get_payload_without_verifying
 
 if TYPE_CHECKING:
     from .recipe_implementation import RecipeImplementation
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.utils import get_timestamp_ms
 from .exceptions import (
     raise_try_refresh_token_exception,
     raise_unauthorised_exception,
@@ -72,57 +74,91 @@ async def create_new_session(recipe_implementation: RecipeImplementation, user_i
         &#39;userDataInDatabase&#39;: session_data,
         &#39;enableAntiCsrf&#39;: enable_anti_csrf
     })
-    recipe_implementation.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKey&#39;],
+    recipe_implementation.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;], response[&#39;jwtSigningPublicKey&#39;],
                                                              response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
     response.pop(&#39;status&#39;, None)
     response.pop(&#39;jwtSigningPublicKey&#39;, None)
     response.pop(&#39;jwtSigningPublicKeyExpiryTime&#39;, None)
+    response.pop(&#39;jwtSigningPublicKeyList&#39;, None)
 
     return response
 
 
-async def get_session(recipe_implementation: RecipeImplementation, access_token: str, anti_csrf_token: Union[str, None],
+async def get_session(recipe_implementation: RecipeImplementation, access_token: str,
+                      anti_csrf_token: Union[str, None],
                       do_anti_csrf_check: bool, contains_custom_header: bool):
     handshake_info = await recipe_implementation.get_handshake_info()
-    fallback_to_core = True
-    try:
-        if handshake_info.jwt_signing_public_key_expiry_time &gt; get_timestamp_ms():
+    access_token_info = None
+    found_a_sign_key_that_is_older_than_the_access_token = False
+
+    for key in handshake_info.get_jwt_signing_public_key_list():
+        try:
             access_token_info = get_info_from_access_token(access_token,
-                                                           handshake_info.jwt_signing_public_key,
+                                                           key[&#39;publicKey&#39;],
                                                            handshake_info.anti_csrf == &#39;VIA_TOKEN&#39;
                                                            and do_anti_csrf_check)
 
-            if handshake_info.anti_csrf == &#39;VIA_TOKEN&#39; and do_anti_csrf_check:
-                if anti_csrf_token is None or anti_csrf_token != access_token_info[
-                        &#39;antiCsrfToken&#39;]:
-                    if anti_csrf_token is None:
-                        raise_try_refresh_token_exception(&#39;Provided antiCsrfToken is undefined. If you do not &#39;
-                                                          &#39;want anti-csrf check for this API, please set &#39;
-                                                          &#39;doAntiCsrfCheck to false for this API&#39;)
-                    else:
-                        raise_try_refresh_token_exception(
-                            &#39;anti-csrf check failed&#39;)
-            elif handshake_info.anti_csrf == &#39;VIA_CUSTOM_HEADER&#39; and do_anti_csrf_check:
-                if not contains_custom_header:
-                    fallback_to_core = False
-                    raise_unauthorised_exception(&#39;anti-csrf check failed. Please pass \&#39;rid: &#34;session&#34;\&#39; &#39;
-                                                 &#39;header in the request, or set doAntiCsrfCheck to false &#39;
-                                                 &#39;for this API&#39;)
-            if not handshake_info.access_token_blacklisting_enabled and \
-                    access_token_info[&#39;parentRefreshTokenHash1&#39;] is None:
-                return {
-                    &#39;session&#39;: {
-                        &#39;handle&#39;: access_token_info[&#39;sessionHandle&#39;],
-                        &#39;userId&#39;: access_token_info[&#39;userId&#39;],
-                        &#39;userDataInJWT&#39;: access_token_info[&#39;userData&#39;]
-                    }
-                }
-    except TryRefreshTokenError as e:
-        if not fallback_to_core:
-            raise e
+            found_a_sign_key_that_is_older_than_the_access_token = True
+
+        except Exception as e:
+            payload = None
+
+            if e.__class__ != TryRefreshTokenError:
+                raise e
+
+            try:
+                payload = get_payload_without_verifying(access_token)
+            except BaseException:
+                raise e
+
+            if payload is None:
+                raise e
+
+            if not isinstance(payload[&#39;timeCreated&#39;], int) or not isinstance(payload[&#39;expiryTime&#39;], int):
+                raise e
+
+            if payload[&#39;expiryTime&#39;] &lt; time.time():
+                raise e
+
+            if payload[&#39;timeCreated&#39;] &gt;= key[&#39;createdAt&#39;]:
+                found_a_sign_key_that_is_older_than_the_access_token = True
+                break
+
+    if not found_a_sign_key_that_is_older_than_the_access_token:
+        raise_try_refresh_token_exception(
+            &#39;anti-csrf check failed&#39;)
+
+    if handshake_info.anti_csrf == &#39;VIA_TOKEN&#39; and do_anti_csrf_check:
+        if access_token_info is not None:
+            if anti_csrf_token is None or anti_csrf_token != access_token_info[
+                    &#39;antiCsrfToken&#39;]:
+                if anti_csrf_token is None:
+                    raise_try_refresh_token_exception(&#39;Provided antiCsrfToken is undefined. If you do not &#39;
+                                                      &#39;want anti-csrf check for this API, please set &#39;
+                                                      &#39;doAntiCsrfCheck to false for this API&#39;)
+                else:
+                    raise_try_refresh_token_exception(
+                        &#39;anti-csrf check failed&#39;)
+
+    elif handshake_info.anti_csrf == &#39;VIA_CUSTOM_HEADER&#39; and do_anti_csrf_check:
+        if not contains_custom_header:
+            raise_unauthorised_exception(&#39;anti-csrf check failed. Please pass \&#39;rid: &#34;session&#34;\&#39; &#39;
+                                         &#39;header in the request, or set doAntiCsrfCheck to false &#39;
+                                         &#39;for this API&#39;)
+
+    if access_token_info is not None and not handshake_info.access_token_blacklisting_enabled and \
+            access_token_info[&#39;parentRefreshTokenHash1&#39;] is None:
+        return {
+            &#39;session&#39;: {
+                &#39;handle&#39;: access_token_info[&#39;sessionHandle&#39;],
+                &#39;userId&#39;: access_token_info[&#39;userId&#39;],
+                &#39;userDataInJWT&#39;: access_token_info[&#39;userData&#39;]
+            }
+        }
 
     ProcessState.get_instance().add_state(
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY)
+
     data = {
         &#39;accessToken&#39;: access_token,
         &#39;doAntiCsrfCheck&#39;: do_anti_csrf_check,
@@ -133,16 +169,21 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
 
     response = await recipe_implementation.querier.send_post_request(NormalisedURLPath(&#39;/recipe/session/verify&#39;), data)
     if response[&#39;status&#39;] == &#39;OK&#39;:
-        handshake_info = await recipe_implementation.get_handshake_info()
-        handshake_info.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKey&#39;],
-                                                          response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
+        recipe_implementation.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;], response[&#39;jwtSigningPublicKey&#39;],
+                                                                 response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
         response.pop(&#39;status&#39;, None)
         response.pop(&#39;jwtSigningPublicKey&#39;, None)
         response.pop(&#39;jwtSigningPublicKeyExpiryTime&#39;, None)
+        response.pop(&#39;jwtSigningPublicKeyList&#39;, None)
         return response
     elif response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
         raise_unauthorised_exception(response[&#39;message&#39;])
     else:
+
+        if response[&#39;jwtSigningPublicKeyList&#39;] is not None or response[&#39;jwtSigningPublicKey&#39;] is not None or response[&#39;jwtSigningPublicKeyExpiryTime&#39;] is not None:
+            recipe_implementation.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;], response[&#39;jwtSigningPublicKey&#39;], response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
+        else:
+            await recipe_implementation.get_handshake_info(True)
         raise_try_refresh_token_exception(response[&#39;message&#39;])
 
 
@@ -266,11 +307,12 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
         &#39;userDataInDatabase&#39;: session_data,
         &#39;enableAntiCsrf&#39;: enable_anti_csrf
     })
-    recipe_implementation.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKey&#39;],
+    recipe_implementation.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;], response[&#39;jwtSigningPublicKey&#39;],
                                                              response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
     response.pop(&#39;status&#39;, None)
     response.pop(&#39;jwtSigningPublicKey&#39;, None)
     response.pop(&#39;jwtSigningPublicKeyExpiryTime&#39;, None)
+    response.pop(&#39;jwtSigningPublicKeyList&#39;, None)
 
     return response</code></pre>
 </details>
@@ -300,48 +342,81 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_session(recipe_implementation: RecipeImplementation, access_token: str, anti_csrf_token: Union[str, None],
+<pre><code class="python">async def get_session(recipe_implementation: RecipeImplementation, access_token: str,
+                      anti_csrf_token: Union[str, None],
                       do_anti_csrf_check: bool, contains_custom_header: bool):
     handshake_info = await recipe_implementation.get_handshake_info()
-    fallback_to_core = True
-    try:
-        if handshake_info.jwt_signing_public_key_expiry_time &gt; get_timestamp_ms():
+    access_token_info = None
+    found_a_sign_key_that_is_older_than_the_access_token = False
+
+    for key in handshake_info.get_jwt_signing_public_key_list():
+        try:
             access_token_info = get_info_from_access_token(access_token,
-                                                           handshake_info.jwt_signing_public_key,
+                                                           key[&#39;publicKey&#39;],
                                                            handshake_info.anti_csrf == &#39;VIA_TOKEN&#39;
                                                            and do_anti_csrf_check)
 
-            if handshake_info.anti_csrf == &#39;VIA_TOKEN&#39; and do_anti_csrf_check:
-                if anti_csrf_token is None or anti_csrf_token != access_token_info[
-                        &#39;antiCsrfToken&#39;]:
-                    if anti_csrf_token is None:
-                        raise_try_refresh_token_exception(&#39;Provided antiCsrfToken is undefined. If you do not &#39;
-                                                          &#39;want anti-csrf check for this API, please set &#39;
-                                                          &#39;doAntiCsrfCheck to false for this API&#39;)
-                    else:
-                        raise_try_refresh_token_exception(
-                            &#39;anti-csrf check failed&#39;)
-            elif handshake_info.anti_csrf == &#39;VIA_CUSTOM_HEADER&#39; and do_anti_csrf_check:
-                if not contains_custom_header:
-                    fallback_to_core = False
-                    raise_unauthorised_exception(&#39;anti-csrf check failed. Please pass \&#39;rid: &#34;session&#34;\&#39; &#39;
-                                                 &#39;header in the request, or set doAntiCsrfCheck to false &#39;
-                                                 &#39;for this API&#39;)
-            if not handshake_info.access_token_blacklisting_enabled and \
-                    access_token_info[&#39;parentRefreshTokenHash1&#39;] is None:
-                return {
-                    &#39;session&#39;: {
-                        &#39;handle&#39;: access_token_info[&#39;sessionHandle&#39;],
-                        &#39;userId&#39;: access_token_info[&#39;userId&#39;],
-                        &#39;userDataInJWT&#39;: access_token_info[&#39;userData&#39;]
-                    }
-                }
-    except TryRefreshTokenError as e:
-        if not fallback_to_core:
-            raise e
+            found_a_sign_key_that_is_older_than_the_access_token = True
+
+        except Exception as e:
+            payload = None
+
+            if e.__class__ != TryRefreshTokenError:
+                raise e
+
+            try:
+                payload = get_payload_without_verifying(access_token)
+            except BaseException:
+                raise e
+
+            if payload is None:
+                raise e
+
+            if not isinstance(payload[&#39;timeCreated&#39;], int) or not isinstance(payload[&#39;expiryTime&#39;], int):
+                raise e
+
+            if payload[&#39;expiryTime&#39;] &lt; time.time():
+                raise e
+
+            if payload[&#39;timeCreated&#39;] &gt;= key[&#39;createdAt&#39;]:
+                found_a_sign_key_that_is_older_than_the_access_token = True
+                break
+
+    if not found_a_sign_key_that_is_older_than_the_access_token:
+        raise_try_refresh_token_exception(
+            &#39;anti-csrf check failed&#39;)
+
+    if handshake_info.anti_csrf == &#39;VIA_TOKEN&#39; and do_anti_csrf_check:
+        if access_token_info is not None:
+            if anti_csrf_token is None or anti_csrf_token != access_token_info[
+                    &#39;antiCsrfToken&#39;]:
+                if anti_csrf_token is None:
+                    raise_try_refresh_token_exception(&#39;Provided antiCsrfToken is undefined. If you do not &#39;
+                                                      &#39;want anti-csrf check for this API, please set &#39;
+                                                      &#39;doAntiCsrfCheck to false for this API&#39;)
+                else:
+                    raise_try_refresh_token_exception(
+                        &#39;anti-csrf check failed&#39;)
+
+    elif handshake_info.anti_csrf == &#39;VIA_CUSTOM_HEADER&#39; and do_anti_csrf_check:
+        if not contains_custom_header:
+            raise_unauthorised_exception(&#39;anti-csrf check failed. Please pass \&#39;rid: &#34;session&#34;\&#39; &#39;
+                                         &#39;header in the request, or set doAntiCsrfCheck to false &#39;
+                                         &#39;for this API&#39;)
+
+    if access_token_info is not None and not handshake_info.access_token_blacklisting_enabled and \
+            access_token_info[&#39;parentRefreshTokenHash1&#39;] is None:
+        return {
+            &#39;session&#39;: {
+                &#39;handle&#39;: access_token_info[&#39;sessionHandle&#39;],
+                &#39;userId&#39;: access_token_info[&#39;userId&#39;],
+                &#39;userDataInJWT&#39;: access_token_info[&#39;userData&#39;]
+            }
+        }
 
     ProcessState.get_instance().add_state(
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY)
+
     data = {
         &#39;accessToken&#39;: access_token,
         &#39;doAntiCsrfCheck&#39;: do_anti_csrf_check,
@@ -352,16 +427,21 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 
     response = await recipe_implementation.querier.send_post_request(NormalisedURLPath(&#39;/recipe/session/verify&#39;), data)
     if response[&#39;status&#39;] == &#39;OK&#39;:
-        handshake_info = await recipe_implementation.get_handshake_info()
-        handshake_info.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKey&#39;],
-                                                          response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
+        recipe_implementation.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;], response[&#39;jwtSigningPublicKey&#39;],
+                                                                 response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
         response.pop(&#39;status&#39;, None)
         response.pop(&#39;jwtSigningPublicKey&#39;, None)
         response.pop(&#39;jwtSigningPublicKeyExpiryTime&#39;, None)
+        response.pop(&#39;jwtSigningPublicKeyList&#39;, None)
         return response
     elif response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
         raise_unauthorised_exception(response[&#39;message&#39;])
     else:
+
+        if response[&#39;jwtSigningPublicKeyList&#39;] is not None or response[&#39;jwtSigningPublicKey&#39;] is not None or response[&#39;jwtSigningPublicKeyExpiryTime&#39;] is not None:
+            recipe_implementation.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;], response[&#39;jwtSigningPublicKey&#39;], response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
+        else:
+            await recipe_implementation.get_handshake_info(True)
         raise_try_refresh_token_exception(response[&#39;message&#39;])</code></pre>
 </details>
 </dd>

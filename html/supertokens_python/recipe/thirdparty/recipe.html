@@ -95,11 +95,11 @@ class ThirdPartyRecipe(RecipeModule):
         self.api_implementation = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
 
-    def is_error_from_this_or_child_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensThirdPartyError)
             or
-            self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+            self.email_verification_recipe.is_error_from_this_recipe_based_on_instance(
                 err)
         )
 
@@ -216,11 +216,11 @@ inheritance.</p></div>
         self.api_implementation = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
 
-    def is_error_from_this_or_child_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensThirdPartyError)
             or
-            self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+            self.email_verification_recipe.is_error_from_this_recipe_based_on_instance(
                 err)
         )
 
@@ -455,8 +455,8 @@ def reset():
             request, error, response)</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.is_error_from_this_or_child_recipe_based_on_instance"><code class="name flex">
-<span>def <span class="ident">is_error_from_this_or_child_recipe_based_on_instance</span></span>(<span>self, err)</span>
+<dt id="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.is_error_from_this_recipe_based_on_instance"><code class="name flex">
+<span>def <span class="ident">is_error_from_this_recipe_based_on_instance</span></span>(<span>self, err)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -464,11 +464,11 @@ def reset():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def is_error_from_this_or_child_recipe_based_on_instance(self, err):
+<pre><code class="python">def is_error_from_this_recipe_based_on_instance(self, err):
     return isinstance(err, SuperTokensError) and (
         isinstance(err, SuperTokensThirdPartyError)
         or
-        self.email_verification_recipe.is_error_from_this_or_child_recipe_based_on_instance(
+        self.email_verification_recipe.is_error_from_this_recipe_based_on_instance(
             err)
     )</code></pre>
 </details>
@@ -501,7 +501,7 @@ def reset():
 <li><code><a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.handle_api_request" href="#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.handle_api_request">handle_api_request</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.handle_error" href="#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.handle_error">handle_error</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.init" href="#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.init">init</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.is_error_from_this_or_child_recipe_based_on_instance" href="#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.is_error_from_this_or_child_recipe_based_on_instance">is_error_from_this_or_child_recipe_based_on_instance</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.is_error_from_this_recipe_based_on_instance" href="#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.is_error_from_this_recipe_based_on_instance">is_error_from_this_recipe_based_on_instance</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.recipe_id" href="#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.recipe_id">recipe_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.reset" href="#supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.reset">reset</a></code></li>
 </ul>

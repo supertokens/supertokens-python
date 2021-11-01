@@ -71,6 +71,12 @@ async def unverify_email(user_id: str):
         user_id, email)
 
 
+async def revoke_email_verification_tokens(user_id: str):
+    email = ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id).email
+    return await ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.revoke_email_verification_tokens(
+        user_id, email)
+
+
 @deprecated(reason=&#34;Use supertokens_python.get_user_oldest_first(...) function instead IF using core version &gt;= 3.5&#34;)
 async def get_users_oldest_first(limit: int = None, next_pagination: str = None):
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_oldest_first(limit,
@@ -117,7 +123,17 @@ async def sign_in(email: str, password: str):
 
 
 async def sign_up(email: str, password: str):
-    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_up(email, password)</code></pre>
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_up(email, password)
+
+
+async def update_email_or_password(user_id: str, email: str = None, password: str = None):
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id,
+                                                                                                             email,
+                                                                                                             password)
+
+
+async def get_users_by_email(email: str):
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_by_email(email)</code></pre>
 </details>
 </section>
 <section>
@@ -195,6 +211,19 @@ async def get_user_count():
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_count()</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_users_by_email"><code class="name flex">
+<span>async def <span class="ident">get_users_by_email</span></span>(<span>email: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def get_users_by_email(email: str):
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_by_email(email)</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_users_newest_first"><code class="name flex">
 <span>async def <span class="ident">get_users_newest_first</span></span>(<span>limit: int = None, next_pagination: str = None)</span>
 </code></dt>
@@ -253,6 +282,21 @@ async def get_users_oldest_first(limit: int = None, next_pagination: str = None)
                                                                                                                new_password)</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.revoke_email_verification_tokens"><code class="name flex">
+<span>async def <span class="ident">revoke_email_verification_tokens</span></span>(<span>user_id: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def revoke_email_verification_tokens(user_id: str):
+    email = ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id).email
+    return await ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.revoke_email_verification_tokens(
+        user_id, email)</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_in"><code class="name flex">
 <span>async def <span class="ident">sign_in</span></span>(<span>email: str, password: str)</span>
 </code></dt>
@@ -309,6 +353,21 @@ async def get_users_oldest_first(limit: int = None, next_pagination: str = None)
         user_id, email)</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.update_email_or_password"><code class="name flex">
+<span>async def <span class="ident">update_email_or_password</span></span>(<span>user_id: str, email: str = None, password: str = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def update_email_or_password(user_id: str, email: str = None, password: str = None):
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id,
+                                                                                                             email,
+                                                                                                             password)</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.verify_email_using_token"><code class="name flex">
 <span>async def <span class="ident">verify_email_using_token</span></span>(<span>token: str)</span>
 </code></dt>
@@ -352,14 +411,17 @@ async def get_users_oldest_first(limit: int = None, next_pagination: str = None)
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_user_by_id" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_user_by_id">get_user_by_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_user_by_third_party_info" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_user_by_third_party_info">get_user_by_third_party_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_user_count" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_user_count">get_user_count</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_users_by_email" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_users_by_email">get_users_by_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_users_newest_first" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_users_newest_first">get_users_newest_first</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_users_oldest_first" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_users_oldest_first">get_users_oldest_first</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.is_email_verified" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.is_email_verified">is_email_verified</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.reset_password_using_token" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.reset_password_using_token">reset_password_using_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.revoke_email_verification_tokens" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.revoke_email_verification_tokens">revoke_email_verification_tokens</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_in" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_in">sign_in</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_in_up" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_in_up">sign_in_up</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_up" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_up">sign_up</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.unverify_email" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.unverify_email">unverify_email</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.update_email_or_password" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.update_email_or_password">update_email_or_password</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.verify_email_using_token" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.verify_email_using_token">verify_email_using_token</a></code></li>
 </ul>
 </li>

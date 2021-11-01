@@ -52,3 +52,4 @@ class ProcessState:
 
     def reset(self):
         self.history = []
+        self.service_called = False

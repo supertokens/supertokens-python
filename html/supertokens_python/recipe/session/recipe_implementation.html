@@ -49,7 +49,8 @@ from .exceptions import raise_unauthorised_exception, raise_try_refresh_token_ex
 from .cookie_and_header import get_id_refresh_token_from_cookie, get_access_token_from_cookie, get_anti_csrf_header, \
     get_rid_header, get_refresh_token_from_cookie
 from . import session_functions
-from supertokens_python.utils import execute_in_background, FRAMEWORKS, frontend_has_interceptor, normalise_http_method
+from supertokens_python.utils import execute_in_background, FRAMEWORKS, frontend_has_interceptor, \
+    normalise_http_method, get_timestamp_ms
 
 if TYPE_CHECKING:
     from typing import Union, List
@@ -61,15 +62,17 @@ class HandshakeInfo:
 
     def __init__(self, info):
         self.access_token_blacklisting_enabled = info[&#39;accessTokenBlacklistingEnabled&#39;]
-        self.jwt_signing_public_key = info[&#39;jwtSigningPublicKey&#39;]
-        self.jwt_signing_public_key_expiry_time = info[&#39;jwtSigningPublicKeyExpiryTime&#39;]
+        self.raw_jwt_signing_public_key_list = None
         self.anti_csrf = info[&#39;antiCsrf&#39;]
         self.access_token_validity = info[&#39;accessTokenValidity&#39;]
         self.refresh_token_validity = info[&#39;refreshTokenValidity&#39;]
 
-    def update_jwt_signing_public_key_info(self, new_key, new_expiry):
-        self.jwt_signing_public_key = new_key
-        self.jwt_signing_public_key_expiry_time = new_expiry
+    def set_jwt_signing_public_key_list(self, updated_list: List):
+        self.raw_jwt_signing_public_key_list = updated_list
+
+    def get_jwt_signing_public_key_list(self) -&gt; List:
+        time_now = get_timestamp_ms()
+        return [key for key in self.raw_jwt_signing_public_key_list if key[&#39;expiryTime&#39;] &gt; time_now]
 
 
 class RecipeImplementation(RecipeInterface):
@@ -90,8 +93,9 @@ class RecipeImplementation(RecipeInterface):
         except Exception:
             pass
 
-    async def get_handshake_info(self) -&gt; HandshakeInfo:
-        if self.handshake_info is None:
+    async def get_handshake_info(self, force_refetch=False) -&gt; HandshakeInfo:
+        if self.handshake_info is None or len(
+                self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
             ProcessState.get_instance().add_state(
                 AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO)
             response = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/handshake&#39;), {})
@@ -99,12 +103,23 @@ class RecipeImplementation(RecipeInterface):
                 **response,
                 &#39;antiCsrf&#39;: self.config.anti_csrf
             })
+
+            self.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;],
+                                                    response[&#39;jwtSigningPublicKey&#39;],
+                                                    response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
+
         return self.handshake_info
 
-    def update_jwt_signing_public_key_info(self, new_key, new_expiry):
+    def update_jwt_signing_public_key_info(self, key_list: Union[List, None], public_key: str, expiry_time: int):
+        if key_list is None:
+            key_list = [{
+                &#39;publicKey&#39;: public_key,
+                &#39;expiryTime&#39;: expiry_time,
+                &#39;createdAt&#39;: get_timestamp_ms()
+            }]
+
         if self.handshake_info is not None:
-            self.handshake_info.update_jwt_signing_public_key_info(
-                new_key, new_expiry)
+            self.handshake_info.set_jwt_signing_public_key_list(key_list)
 
     async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -&gt; Session:
@@ -137,7 +152,8 @@ class RecipeImplementation(RecipeInterface):
                                          &#39;request as cookies?&#39;, False)
         access_token = get_access_token_from_cookie(request)
         if access_token is None:
-            if session_required is True or frontend_has_interceptor(request) or normalise_http_method(request.method()) == &#39;get&#39;:
+            if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
+                    request.method()) == &#39;get&#39;:
                 raise_try_refresh_token_exception(
                     &#39;Access token has expired. Please call the refresh API&#39;)
             return None
@@ -237,20 +253,22 @@ class RecipeImplementation(RecipeInterface):
 
     def __init__(self, info):
         self.access_token_blacklisting_enabled = info[&#39;accessTokenBlacklistingEnabled&#39;]
-        self.jwt_signing_public_key = info[&#39;jwtSigningPublicKey&#39;]
-        self.jwt_signing_public_key_expiry_time = info[&#39;jwtSigningPublicKeyExpiryTime&#39;]
+        self.raw_jwt_signing_public_key_list = None
         self.anti_csrf = info[&#39;antiCsrf&#39;]
         self.access_token_validity = info[&#39;accessTokenValidity&#39;]
         self.refresh_token_validity = info[&#39;refreshTokenValidity&#39;]
 
-    def update_jwt_signing_public_key_info(self, new_key, new_expiry):
-        self.jwt_signing_public_key = new_key
-        self.jwt_signing_public_key_expiry_time = new_expiry</code></pre>
+    def set_jwt_signing_public_key_list(self, updated_list: List):
+        self.raw_jwt_signing_public_key_list = updated_list
+
+    def get_jwt_signing_public_key_list(self) -&gt; List:
+        time_now = get_timestamp_ms()
+        return [key for key in self.raw_jwt_signing_public_key_list if key[&#39;expiryTime&#39;] &gt; time_now]</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo.update_jwt_signing_public_key_info"><code class="name flex">
-<span>def <span class="ident">update_jwt_signing_public_key_info</span></span>(<span>self, new_key, new_expiry)</span>
+<dt id="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo.get_jwt_signing_public_key_list"><code class="name flex">
+<span>def <span class="ident">get_jwt_signing_public_key_list</span></span>(<span>self) ‑> List</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -258,9 +276,22 @@ class RecipeImplementation(RecipeInterface):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def update_jwt_signing_public_key_info(self, new_key, new_expiry):
-    self.jwt_signing_public_key = new_key
-    self.jwt_signing_public_key_expiry_time = new_expiry</code></pre>
+<pre><code class="python">def get_jwt_signing_public_key_list(self) -&gt; List:
+    time_now = get_timestamp_ms()
+    return [key for key in self.raw_jwt_signing_public_key_list if key[&#39;expiryTime&#39;] &gt; time_now]</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo.set_jwt_signing_public_key_list"><code class="name flex">
+<span>def <span class="ident">set_jwt_signing_public_key_list</span></span>(<span>self, updated_list: List)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_jwt_signing_public_key_list(self, updated_list: List):
+    self.raw_jwt_signing_public_key_list = updated_list</code></pre>
 </details>
 </dd>
 </dl>
@@ -294,8 +325,9 @@ inheritance.</p></div>
         except Exception:
             pass
 
-    async def get_handshake_info(self) -&gt; HandshakeInfo:
-        if self.handshake_info is None:
+    async def get_handshake_info(self, force_refetch=False) -&gt; HandshakeInfo:
+        if self.handshake_info is None or len(
+                self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
             ProcessState.get_instance().add_state(
                 AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO)
             response = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/handshake&#39;), {})
@@ -303,12 +335,23 @@ inheritance.</p></div>
                 **response,
                 &#39;antiCsrf&#39;: self.config.anti_csrf
             })
+
+            self.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;],
+                                                    response[&#39;jwtSigningPublicKey&#39;],
+                                                    response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
+
         return self.handshake_info
 
-    def update_jwt_signing_public_key_info(self, new_key, new_expiry):
+    def update_jwt_signing_public_key_info(self, key_list: Union[List, None], public_key: str, expiry_time: int):
+        if key_list is None:
+            key_list = [{
+                &#39;publicKey&#39;: public_key,
+                &#39;expiryTime&#39;: expiry_time,
+                &#39;createdAt&#39;: get_timestamp_ms()
+            }]
+
         if self.handshake_info is not None:
-            self.handshake_info.update_jwt_signing_public_key_info(
-                new_key, new_expiry)
+            self.handshake_info.set_jwt_signing_public_key_list(key_list)
 
     async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -&gt; Session:
@@ -341,7 +384,8 @@ inheritance.</p></div>
                                          &#39;request as cookies?&#39;, False)
         access_token = get_access_token_from_cookie(request)
         if access_token is None:
-            if session_required is True or frontend_has_interceptor(request) or normalise_http_method(request.method()) == &#39;get&#39;:
+            if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
+                    request.method()) == &#39;get&#39;:
                 raise_try_refresh_token_exception(
                     &#39;Access token has expired. Please call the refresh API&#39;)
             return None
@@ -479,7 +523,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_handshake_info"><code class="name flex">
-<span>async def <span class="ident">get_handshake_info</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo" href="#supertokens_python.recipe.session.recipe_implementation.HandshakeInfo">HandshakeInfo</a></span>
+<span>async def <span class="ident">get_handshake_info</span></span>(<span>self, force_refetch=False) ‑> <a title="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo" href="#supertokens_python.recipe.session.recipe_implementation.HandshakeInfo">HandshakeInfo</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -487,8 +531,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_handshake_info(self) -&gt; HandshakeInfo:
-    if self.handshake_info is None:
+<pre><code class="python">async def get_handshake_info(self, force_refetch=False) -&gt; HandshakeInfo:
+    if self.handshake_info is None or len(
+            self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
         ProcessState.get_instance().add_state(
             AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO)
         response = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/handshake&#39;), {})
@@ -496,6 +541,11 @@ inheritance.</p></div>
             **response,
             &#39;antiCsrf&#39;: self.config.anti_csrf
         })
+
+        self.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;],
+                                                response[&#39;jwtSigningPublicKey&#39;],
+                                                response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
+
     return self.handshake_info</code></pre>
 </details>
 </dd>
@@ -534,7 +584,8 @@ inheritance.</p></div>
                                      &#39;request as cookies?&#39;, False)
     access_token = get_access_token_from_cookie(request)
     if access_token is None:
-        if session_required is True or frontend_has_interceptor(request) or normalise_http_method(request.method()) == &#39;get&#39;:
+        if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
+                request.method()) == &#39;get&#39;:
             raise_try_refresh_token_exception(
                 &#39;Access token has expired. Please call the refresh API&#39;)
         return None
@@ -660,7 +711,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_jwt_signing_public_key_info"><code class="name flex">
-<span>def <span class="ident">update_jwt_signing_public_key_info</span></span>(<span>self, new_key, new_expiry)</span>
+<span>def <span class="ident">update_jwt_signing_public_key_info</span></span>(<span>self, key_list: Union[List, None], public_key: str, expiry_time: int)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -668,10 +719,16 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def update_jwt_signing_public_key_info(self, new_key, new_expiry):
+<pre><code class="python">def update_jwt_signing_public_key_info(self, key_list: Union[List, None], public_key: str, expiry_time: int):
+    if key_list is None:
+        key_list = [{
+            &#39;publicKey&#39;: public_key,
+            &#39;expiryTime&#39;: expiry_time,
+            &#39;createdAt&#39;: get_timestamp_ms()
+        }]
+
     if self.handshake_info is not None:
-        self.handshake_info.update_jwt_signing_public_key_info(
-            new_key, new_expiry)</code></pre>
+        self.handshake_info.set_jwt_signing_public_key_list(key_list)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_session_data"><code class="name flex">
@@ -708,7 +765,8 @@ inheritance.</p></div>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo" href="#supertokens_python.recipe.session.recipe_implementation.HandshakeInfo">HandshakeInfo</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo.update_jwt_signing_public_key_info" href="#supertokens_python.recipe.session.recipe_implementation.HandshakeInfo.update_jwt_signing_public_key_info">update_jwt_signing_public_key_info</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo.get_jwt_signing_public_key_list" href="#supertokens_python.recipe.session.recipe_implementation.HandshakeInfo.get_jwt_signing_public_key_list">get_jwt_signing_public_key_list</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo.set_jwt_signing_public_key_list" href="#supertokens_python.recipe.session.recipe_implementation.HandshakeInfo.set_jwt_signing_public_key_list">set_jwt_signing_public_key_list</a></code></li>
 </ul>
 </li>
 <li>

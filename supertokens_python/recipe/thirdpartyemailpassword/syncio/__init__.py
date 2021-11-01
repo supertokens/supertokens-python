@@ -91,3 +91,18 @@ def sign_in(email: str, password: str):
 def sign_up(email: str, password: str):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import sign_up
     return sync(sign_up(email, password))
+
+
+def update_email_or_password(user_id: str, email: str = None, password: str = None):
+    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import update_email_or_password
+    return sync(update_email_or_password(user_id, email, password))
+
+
+def get_users_by_email(email: str):
+    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import get_users_by_email
+    return sync(get_users_by_email(email))
+
+
+async def revoke_email_verification_tokens(user_id: str):
+    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import revoke_email_verification_tokens
+    return sync(revoke_email_verification_tokens(user_id))

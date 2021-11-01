@@ -17,7 +17,7 @@ from typing import List, Callable, TYPE_CHECKING, Union
 
 from .interfaces import RecipeInterface, APIInterface
 from .types import INPUT_SCHEMA
-from .constants import DEV_OAUTH_CLIENT_IDS
+from .constants import DEV_OAUTH_CLIENT_IDS, DEV_KEY_IDENTIFIER
 from supertokens_python.exceptions import raise_bad_input_exception
 
 if TYPE_CHECKING:
@@ -123,5 +123,11 @@ def validate_and_normalise_user_input(
                             email_verification_feature, override)
 
 
-def is_using_oauth_development_keys(client_id: str):
-    return client_id in DEV_OAUTH_CLIENT_IDS
+def is_using_oauth_development_client_id(client_id: str):
+    return client_id.startswith(DEV_KEY_IDENTIFIER) or client_id in DEV_OAUTH_CLIENT_IDS
+
+
+def get_actual_client_id_from_development_client_id(client_id: str):
+    if client_id.startswith(DEV_KEY_IDENTIFIER):
+        return client_id.split(DEV_KEY_IDENTIFIER, 1)[1]
+    return client_id

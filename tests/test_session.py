@@ -64,6 +64,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     assert response['refreshToken'] is not None
     assert response['idRefreshToken'] is not None
     assert response['antiCsrfToken'] is not None
+    assert len(response.keys()) == 5
 
     await get_session(s.recipe_implementation, response['accessToken']['token'], response['antiCsrfToken'], True, response['idRefreshToken']['token'])
     assert not ProcessState.get_instance().get_service_called()
@@ -75,6 +76,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     assert response2['refreshToken'] is not None
     assert response2['idRefreshToken'] is not None
     assert response2['antiCsrfToken'] is not None
+    assert len(response.keys()) == 5
 
     response3 = await get_session(s.recipe_implementation, response2['accessToken']['token'], response2['antiCsrfToken'], True, response['idRefreshToken']['token'])
 
@@ -82,6 +84,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
 
     assert response3['session'] is not None
     assert response3['accessToken'] is not None
+    assert len(response3.keys()) == 2
 
     ProcessState.get_instance().reset()
 
@@ -90,6 +93,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
 
     assert response4['session'] is not None
     assert 'accessToken' not in response4
+    assert len(response4.keys()) == 1
 
     response5 = await revoke_session(s.recipe_implementation, response4['session']['handle'])
 

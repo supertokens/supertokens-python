@@ -94,6 +94,15 @@ def get_payload(jwt, signing_public_key):
     except BaseException:
         raise Exception(&#34;jwt verification failed&#34;)
 
+    return loads(utf_base64decode(payload))
+
+
+def get_payload_without_verifying(jwt: str) -&gt; dict:
+    splitted_input = jwt.split(&#34;.&#34;)
+    if len(splitted_input) != 3:
+        raise Exception(&#34;invalid jwt&#34;)
+
+    payload = splitted_input[1]
     return loads(utf_base64decode(payload))</code></pre>
 </details>
 </section>
@@ -139,6 +148,24 @@ def get_payload(jwt, signing_public_key):
     return loads(utf_base64decode(payload))</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.jwt.get_payload_without_verifying"><code class="name flex">
+<span>def <span class="ident">get_payload_without_verifying</span></span>(<span>jwt: str) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_payload_without_verifying(jwt: str) -&gt; dict:
+    splitted_input = jwt.split(&#34;.&#34;)
+    if len(splitted_input) != 3:
+        raise Exception(&#34;invalid jwt&#34;)
+
+    payload = splitted_input[1]
+    return loads(utf_base64decode(payload))</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -158,6 +185,7 @@ def get_payload(jwt, signing_public_key):
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.session.jwt.get_payload" href="#supertokens_python.recipe.session.jwt.get_payload">get_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.jwt.get_payload_without_verifying" href="#supertokens_python.recipe.session.jwt.get_payload_without_verifying">get_payload_without_verifying</a></code></li>
 </ul>
 </li>
 </ul>
