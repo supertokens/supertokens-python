@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renames all "jwt" related functions in session recipe to use "access_token" instead
 - jwt recipe and unit tests
 - Support for FDI 1.10: Allow thirdparty `/signinup POST` API to take `authCodeResponse` XOR `code` so that it can supprt OAuth via PKCE
+- Apple provider disabled for now
 
 ### Changes
 - Bug fix: https://github.com/supertokens/supertokens-python/issues/42

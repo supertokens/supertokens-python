@@ -16,13 +16,13 @@ from . import exceptions
 from supertokens_python.recipe.thirdparty import (
     Google,
     Github,
-    Apple,
+    # Apple,
     Facebook
 )
 
 Google = Google
 Github = Github
-Apple = Apple
+# Apple = Apple
 Facebook = Facebook
 
 
