@@ -66,6 +66,7 @@ class RecipeImplementation(RecipeInterface):
         if self.handshake_info is None:
             ProcessState.get_instance().add_state(
                 AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO)
+            ProcessState.get_instance().update_service_called(True)
             response = await self.querier.send_post_request(NormalisedURLPath('/recipe/handshake'), {})
             self.handshake_info = HandshakeInfo({
                 **response,

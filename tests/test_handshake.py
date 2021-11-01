@@ -54,8 +54,9 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     session_recipe_instance = SessionRecipe.get_instance()
     await session_recipe_instance.recipe_implementation.get_handshake_info()
 
-    assert not ProcessState.get_instance().get_service_called()
+    assert ProcessState.get_instance().get_service_called()
 
     ProcessState.get_instance().reset()
+    await session_recipe_instance.recipe_implementation.get_handshake_info()
 
     assert not ProcessState.get_instance().get_service_called()
