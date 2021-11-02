@@ -311,7 +311,7 @@ class Supertokens:
 
     async def handle_supertokens_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse):
         if isinstance(err, GeneralError):
-            return send_non_200_response(str(err), 500, response)
+            raise err
 
         if isinstance(err, BadInputError):
             return send_non_200_response(str(err), 400, response)
