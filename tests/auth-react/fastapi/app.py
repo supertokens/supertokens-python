@@ -138,6 +138,12 @@ init({
     'telemetry': False
 })
 
+
+@app.exception_handler(Exception)
+async def exception_handler(_, __):
+    return JSONResponse(status_code=500, content={})
+
+
 app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
 
 
