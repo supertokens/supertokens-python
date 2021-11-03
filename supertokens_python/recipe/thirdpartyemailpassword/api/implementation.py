@@ -26,36 +26,47 @@ from supertokens_python.recipe.thirdparty.interfaces import APIOptions, \
     AuthorisationUrlGetResponse, APIOptions as ThirdPartyApiOptions, SignInUpPostResponse
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInterface
+from .emailpassword_api_impementation import get_interface_impl as get_ep_interface_impl
+from .thirdparty_api_implementation import get_interface_impl as get_tp_interface_impl
 
 
 class APIImplementation(APIInterface):
     def __init__(self):
         super().__init__()
-        self.emailpassword_implementation = EmailPasswordImplementation()
-        self.thirdparty_implementation = ThirdPartyImplementation()
+        emailpassword_implementation = EmailPasswordImplementation()
+        self.ep_email_exists_get = emailpassword_implementation.email_exists_get
+        self.ep_generate_password_reset_token_post = emailpassword_implementation.generate_password_reset_token_post
+        self.ep_password_reset_post = emailpassword_implementation.password_reset_post
+        self.ep_sign_in_post = emailpassword_implementation.sign_in_post
+        self.ep_sign_up_post = emailpassword_implementation.sign_up_post
+        emailpassword_implementation = get_ep_interface_impl(self)
+        thirdparty_implementation = ThirdPartyImplementation()
+        self.tp_authorisation_url_get = thirdparty_implementation.authorisation_url_get
+        self.tp_sign_in_up_post = thirdparty_implementation.sign_in_up_post
+        thirdparty_implementation = get_tp_interface_impl(self)
 
     async def email_exists_get(self, email: str, options: EmailPasswordAPIOptions) -> EmailExistsGetResponse:
-        return await self.emailpassword_implementation.email_exists_get(email, options)
+        return await self.ep_email_exists_get(email, options)
 
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
                                                  options: EmailPasswordAPIOptions) -> GeneratePasswordResetTokenPostResponse:
-        return await self.emailpassword_implementation.generate_password_reset_token_post(form_fields, options)
+        return await self.ep_generate_password_reset_token_post(form_fields, options)
 
     async def password_reset_post(self, form_fields: List[FormField], token: str,
                                   options: EmailPasswordAPIOptions) -> PasswordResetPostResponse:
-        return await self.emailpassword_implementation.password_reset_post(form_fields, token, options)
+        return await self.ep_password_reset_post(form_fields, token, options)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
                                          auth_code_response: Union[str, None], api_options: ThirdPartyApiOptions) -> SignInUpPostResponse:
-        return await self.thirdparty_implementation.sign_in_up_post(provider, code, redirect_uri, api_options)
+        return await self.tp_sign_in_up_post(provider, code, redirect_uri, api_options)
 
     async def emailpassword_sign_in_post(self, form_fields: List[FormField],
                                          api_options: EmailPasswordApiOptions) -> SignInPostResponse:
-        return await self.emailpassword_implementation.sign_in_post(form_fields, api_options)
+        return await self.ep_sign_in_post(form_fields, api_options)
 
     async def emailpassword_sign_up_post(self, form_fields: List[FormField],
                                          api_options: EmailPasswordApiOptions) -> SignUpPostResponse:
-        return await self.emailpassword_implementation.sign_up_post(form_fields, api_options)
+        return await self.ep_sign_up_post(form_fields, api_options)
 
     async def authorisation_url_get(self, provider: Provider, api_options: APIOptions) -> AuthorisationUrlGetResponse:
-        return await self.thirdparty_implementation.authorisation_url_get(provider, api_options)
+        return await self.tp_authorisation_url_get(provider, api_options)
