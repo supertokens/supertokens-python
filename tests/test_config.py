@@ -131,3 +131,111 @@ def testing_URL_domain_normalisation():
         normalise_url_domain_or_throw_error("/.netlify/functions/api")
     except Exception as e:
         assert str(e) == 'Please provide a valid domain name'
+
+
+def testing_override_test():
+    m = None
+
+    class OI:
+        def __init__(self):
+            pass
+
+        def some_other_func(self):
+            nonlocal m
+            m = 1
+
+        def some_func(self):
+            self.some_other_func()
+
+    class A(OI):
+        def __init__(self):
+            super().__init__()
+
+        def some_other_func(self):
+            nonlocal m
+            m = 2
+
+    b = A()
+
+    def some_other_func():
+        nonlocal m
+        m = 4
+
+    b.some_other_func = some_other_func
+
+    b.some_func()
+
+    assert m == 4
+
+
+def testing_super_recipe_tests():
+    m = 0
+
+    class EP:
+        def __init__(self):
+            pass
+
+        def sign_up(self):
+            self.get_user()
+
+        def get_user(self):
+            nonlocal m
+            m = 1
+
+    class TPEP:
+        def __init__(self):
+            ep = EP()
+            self.o_sign_up = ep.sign_up
+            self.o_get_user = ep.get_user
+            dep = DerivedEP(self)
+            ep.sign_up = dep.sign_up
+            ep.get_user = dep.get_user
+
+        def sign_up(self):
+            self.o_sign_up()
+
+        def get_users(self):
+            self.o_get_user()
+
+    class DerivedEP(EP):
+        def __init__(self, tpep):
+            super().__init__()
+            self.tpep = tpep
+
+        def sign_up(self):
+            self.tpep.sign_up()
+
+        def get_user(self):
+            self.tpep.get_users()
+
+    def override(tpep):
+        o_sign_up = tpep.sign_up
+        o_get_users = tpep.get_users
+
+        def sign_up():
+            o_sign_up()
+
+        def get_users():
+            nonlocal m
+            m = 5
+            o_get_users()
+            if m == 1:
+                m = 2
+
+        tpep.sign_up = sign_up
+        tpep.get_users = get_users
+        return tpep
+
+    base_tpep = TPEP()
+
+    override_tpep = override(base_tpep)
+
+    override_tpep.sign_up()
+    assert m == 2
+
+    m = 1
+    ep = DerivedEP(override_tpep)
+
+    ep.get_user()
+
+    assert m == 2

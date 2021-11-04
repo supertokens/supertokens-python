@@ -16,10 +16,3 @@ SIGNINUP = '/signinup'
 SIGNOUT = '/signout'
 SIGNUP_EMAIL_EXISTS = '/signup/email/exists'
 RESET_PASSWORD = '/reset-password'
-DEV_OAUTH_CLIENT_IDS = [
-    '1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com',  # google client id
-    '467101b197249757c71f'  # github client id
-]
-DEV_KEY_IDENTIFIER = "4398792-"
-DEV_OAUTH_AUTHORIZATION_URL = 'https://supertokens.io/dev/oauth/redirect-to-provider'
-DEV_OAUTH_REDIRECT_URL = 'https://supertokens.io/dev/oauth/redirect-to-app'

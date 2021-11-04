@@ -103,6 +103,11 @@ def normalise_same_site(same_site: str) -&gt; str:
     return same_site
 
 
+def get_url_scheme(url) -&gt; str:
+    url_obj = urlparse(url)
+    return url_obj.scheme
+
+
 def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
     url_obj = urlparse(url)
     hostname = url_obj.hostname
@@ -215,7 +220,10 @@ def validate_and_normalise_user_input(
         app_info.api_domain.get_as_string_dangerous())
     top_level_website_domain = get_top_level_domain_for_same_site_resolution(
         app_info.website_domain.get_as_string_dangerous())
-    cookie_same_site = &#39;None&#39; if top_level_api_domain != top_level_website_domain else &#39;Lax&#39;
+
+    api_domain_scheme = get_url_scheme(app_info.api_domain.get_as_string_dangerous())
+    website_domain_scheme = get_url_scheme(app_info.website_domain.get_as_string_dangerous())
+    cookie_same_site = &#39;None&#39; if (top_level_api_domain != top_level_website_domain) or (api_domain_scheme != website_domain_scheme) else &#39;Lax&#39;
     if &#39;cookie_same_site&#39; in config:
         cookie_same_site = normalise_same_site(config[&#39;cookie_same_site&#39;])
 
@@ -345,6 +353,20 @@ def validate_and_normalise_user_input(
     return parsed_url.domain + &#39;.&#39; + parsed_url.suffix</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.utils.get_url_scheme"><code class="name flex">
+<span>def <span class="ident">get_url_scheme</span></span>(<span>url) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_url_scheme(url) -&gt; str:
+    url_obj = urlparse(url)
+    return url_obj.scheme</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.session.utils.normalise_same_site"><code class="name flex">
 <span>def <span class="ident">normalise_same_site</span></span>(<span>same_site: str) ‑> str</span>
 </code></dt>
@@ -427,7 +449,10 @@ def validate_and_normalise_user_input(
         app_info.api_domain.get_as_string_dangerous())
     top_level_website_domain = get_top_level_domain_for_same_site_resolution(
         app_info.website_domain.get_as_string_dangerous())
-    cookie_same_site = &#39;None&#39; if top_level_api_domain != top_level_website_domain else &#39;Lax&#39;
+
+    api_domain_scheme = get_url_scheme(app_info.api_domain.get_as_string_dangerous())
+    website_domain_scheme = get_url_scheme(app_info.website_domain.get_as_string_dangerous())
+    cookie_same_site = &#39;None&#39; if (top_level_api_domain != top_level_website_domain) or (api_domain_scheme != website_domain_scheme) else &#39;Lax&#39;
     if &#39;cookie_same_site&#39; in config:
         cookie_same_site = normalise_same_site(config[&#39;cookie_same_site&#39;])
 
@@ -660,6 +685,7 @@ def validate_and_normalise_user_input(
 <li><code><a title="supertokens_python.recipe.session.utils.default_try_refresh_token_callback" href="#supertokens_python.recipe.session.utils.default_try_refresh_token_callback">default_try_refresh_token_callback</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.utils.default_unauthorised_callback" href="#supertokens_python.recipe.session.utils.default_unauthorised_callback">default_unauthorised_callback</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.utils.get_top_level_domain_for_same_site_resolution" href="#supertokens_python.recipe.session.utils.get_top_level_domain_for_same_site_resolution">get_top_level_domain_for_same_site_resolution</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.utils.get_url_scheme" href="#supertokens_python.recipe.session.utils.get_url_scheme">get_url_scheme</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.utils.normalise_same_site" href="#supertokens_python.recipe.session.utils.normalise_same_site">normalise_same_site</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.utils.normalise_session_scope" href="#supertokens_python.recipe.session.utils.normalise_session_scope">normalise_session_scope</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.utils.validate_and_normalise_user_input" href="#supertokens_python.recipe.session.utils.validate_and_normalise_user_input">validate_and_normalise_user_input</a></code></li>

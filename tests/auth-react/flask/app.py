@@ -176,5 +176,11 @@ def index(path):
     return ''
 
 
+@app.errorhandler(Exception)
+def all_exception_handler(_: Exception):
+    print('inside exception handler')
+    return 'Error', 500
+
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=int(get_api_port()), threaded=True)
