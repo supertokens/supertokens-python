@@ -120,7 +120,6 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
 
     if access_token_info is not None and not handshake_info.access_token_blacklisting_enabled and \
             access_token_info['parentRefreshTokenHash1'] is None:
-        ProcessState.update_service_called(False)
         return {
             'session': {
                 'handle': access_token_info['sessionHandle'],
@@ -131,7 +130,6 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
 
     ProcessState.get_instance().add_state(
         AllowedProcessStates.CALLING_SERVICE_IN_VERIFY)
-    ProcessState.update_service_called(True)
 
     data = {
         'accessToken': access_token,

@@ -70,7 +70,6 @@ class RecipeImplementation(RecipeInterface):
                 self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
             ProcessState.get_instance().add_state(
                 AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO)
-            ProcessState.get_instance().update_service_called(True)
             response = await self.querier.send_post_request(NormalisedURLPath('/recipe/handshake'), {})
             self.handshake_info = HandshakeInfo({
                 **response,

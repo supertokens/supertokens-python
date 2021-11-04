@@ -15,7 +15,7 @@
 from pytest import mark
 
 from supertokens_python import init
-from supertokens_python.process_state import ProcessState
+from supertokens_python.process_state import ProcessState, AllowedProcessStates
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
 from tests.utils import (
@@ -54,9 +54,9 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     session_recipe_instance = SessionRecipe.get_instance()
     await session_recipe_instance.recipe_implementation.get_handshake_info()
 
-    assert ProcessState.get_instance().get_service_called()
+    assert AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO in ProcessState.get_instance().history
 
     ProcessState.get_instance().reset()
     await session_recipe_instance.recipe_implementation.get_handshake_info()
 
-    assert not ProcessState.get_instance().get_service_called()
+    assert AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO not in ProcessState.get_instance().history

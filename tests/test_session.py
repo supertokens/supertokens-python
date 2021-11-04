@@ -15,7 +15,7 @@
 from pytest import mark
 
 from supertokens_python import init
-from supertokens_python.process_state import ProcessState
+from supertokens_python.process_state import ProcessState, AllowedProcessStates
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.session_functions import create_new_session, get_session, refresh_session, \
@@ -67,7 +67,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     assert len(response.keys()) == 5
 
     await get_session(s.recipe_implementation, response['accessToken']['token'], response['antiCsrfToken'], True, response['idRefreshToken']['token'])
-    assert not ProcessState.get_instance().get_service_called()
+    assert AllowedProcessStates.CALLING_SERVICE_IN_VERIFY not in ProcessState.get_instance().history
 
     response2 = await refresh_session(s.recipe_implementation, response['refreshToken']['token'], response['antiCsrfToken'], True)
 
@@ -80,7 +80,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
 
     response3 = await get_session(s.recipe_implementation, response2['accessToken']['token'], response2['antiCsrfToken'], True, response['idRefreshToken']['token'])
 
-    assert ProcessState.get_instance().get_service_called()
+    assert AllowedProcessStates.CALLING_SERVICE_IN_VERIFY in ProcessState.get_instance().history
 
     assert response3['session'] is not None
     assert response3['accessToken'] is not None
@@ -89,7 +89,7 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     ProcessState.get_instance().reset()
 
     response4 = await get_session(s.recipe_implementation, response3['accessToken']['token'], response2['antiCsrfToken'], True, response['idRefreshToken']['token'])
-    assert not ProcessState.get_instance().get_service_called()
+    assert AllowedProcessStates.CALLING_SERVICE_IN_VERIFY not in ProcessState.get_instance().history
 
     assert response4['session'] is not None
     assert 'accessToken' not in response4
