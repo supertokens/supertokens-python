@@ -13,8 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for FDI 1.10: Allow thirdparty `/signinup POST` API to take `authCodeResponse` XOR `code` so that it can supprt OAuth via PKCE
 - Apple provider disabled for now
 
-### Changes
+### Bug Fixes
 - Bug fix: https://github.com/supertokens/supertokens-python/issues/42
+- Bug fix: https://github.com/supertokens/supertokens-python/issues/10
 - Bug fix: https://github.com/supertokens/supertokens-python/issues/13
 
 ## [0.1.0] - 2021-10-18
