@@ -14,15 +14,18 @@
 
 from __future__ import annotations
 import abc
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
+
 if TYPE_CHECKING:
     from .types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI
 
 
 class Provider(abc.ABC):
-    def __init__(self, provider_id: str, client_id: str):
+    def __init__(self, provider_id: str, client_id: str, is_default=False):
         self.id = provider_id
         self.client_id = client_id
+        self.is_default = is_default
+        self.redirect_uri = None
 
     @abc.abstractmethod
     async def get_profile_info(self, auth_code_response: any) -> UserInfo:
@@ -36,3 +39,6 @@ class Provider(abc.ABC):
     def get_access_token_api_info(
             self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
         pass
+
+    def get_redirect_uri(self) -> Union[None, str]:
+        return self.redirect_uri

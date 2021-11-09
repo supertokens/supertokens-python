@@ -31,6 +31,10 @@ class BaseRequest(ABC):
         pass
 
     @abstractmethod
+    async def form_data(self):
+        pass
+
+    @abstractmethod
     def method(self) -> str:
         pass
 

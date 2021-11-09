@@ -14,6 +14,7 @@
 from typing import Union
 
 from supertokens_python.framework.request import BaseRequest
+from urllib.parse import parse_qsl
 
 
 class FastApiRequest(BaseRequest):
@@ -50,3 +51,6 @@ class FastApiRequest(BaseRequest):
 
     def get_path(self) -> str:
         return self.request.url.path
+
+    async def form_data(self):
+        return dict(parse_qsl((await self.request.body()).decode('utf-8')))

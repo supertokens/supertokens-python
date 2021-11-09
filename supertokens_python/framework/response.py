@@ -50,3 +50,7 @@ class BaseResponse(ABC):
     @abstractmethod
     def set_content(self, content):
         pass
+
+    @abstractmethod
+    def set_html_content(self, content):
+        pass
