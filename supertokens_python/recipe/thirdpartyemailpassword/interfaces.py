@@ -76,6 +76,7 @@ class APIInterface(ABC):
         self.disable_email_exists_get = False
         self.disable_generate_password_reset_token_post = False
         self.disable_password_reset_post = False
+        self.disable_apple_redirect_handler_post = False
 
     @abstractmethod
     async def authorisation_url_get(self, provider: Provider,
@@ -109,4 +110,8 @@ class APIInterface(ABC):
     @abstractmethod
     async def password_reset_post(self, token: str, form_fields: List[FormField],
                                   api_options: EmailPasswordApiOptions) -> PasswordResetPostResponse:
+        pass
+
+    @abstractmethod
+    async def apple_redirect_handler_post(self, code: str, state: str, api_options: ThirdPartyApiOptions):
         pass

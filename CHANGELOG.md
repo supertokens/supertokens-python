@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2021-11-10
+
+### Changes
+- When routing, ignores `rid` value `"anti-csrf"`: https://github.com/supertokens/supertokens-python/issues/54
+- `get_redirect_uri` function added to social providers in case we set the `redirect_uri` on the backend.
+- Adds optional `is_default` param to auth providers so that they can be reused with different credentials.
+
 ## [0.2.0] - 2021-10-22
 
 ### Breaking change

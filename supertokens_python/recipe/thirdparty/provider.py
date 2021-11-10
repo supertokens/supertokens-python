@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 
 class Provider(abc.ABC):
-    def __init__(self, provider_id: str, client_id: str, is_default=False):
+    def __init__(self, provider_id: str, client_id: str, is_default: bool):
         self.id = provider_id
         self.client_id = client_id
         self.is_default = is_default

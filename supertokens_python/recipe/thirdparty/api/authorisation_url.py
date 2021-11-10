@@ -14,7 +14,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from supertokens_python.utils import find_first_occurrence_in_list
+from supertokens_python.recipe.thirdparty.utils import find_right_provider
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
@@ -31,12 +31,9 @@ async def handle_authorisation_url_api(api_implementation: APIInterface, api_opt
         raise_bad_input_exception(
             'Please provide the thirdPartyId as a GET param')
 
-    provider: Provider = find_first_occurrence_in_list(
-        lambda x: x.id == third_party_id, api_options.providers)
+    provider: Provider = find_right_provider(api_options.providers, third_party_id, None)
     if provider is None:
-        raise_bad_input_exception('The third party provider ' + third_party_id + 'seems to not be configured '
-                                                                                 'on the backend. Please '
-                                                                                 'check your frontend and '
+        raise_bad_input_exception('The third party provider ' + third_party_id + 'seems to be missing from the '
                                                                                  'backend configs.')
 
     result = await api_implementation.authorisation_url_get(provider, api_options)

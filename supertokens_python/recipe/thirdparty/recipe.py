@@ -32,11 +32,13 @@ from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from .utils import validate_and_normalise_user_input
 from .api import (
     handle_sign_in_up_api,
-    handle_authorisation_url_api
+    handle_authorisation_url_api,
+    handle_apple_redirect_api
 )
 from .constants import (
     SIGNINUP,
-    AUTHORISATIONURL
+    AUTHORISATIONURL,
+    APPLE_REDIRECT_HANDLER
 )
 from .exceptions import (
     SuperTokensThirdPartyError
@@ -68,19 +70,18 @@ class ThirdPartyRecipe(RecipeModule):
             self.config.override.apis(api_implementation)
 
     def is_error_from_this_recipe_based_on_instance(self, err):
-        return isinstance(err, SuperTokensError) and (
-            isinstance(err, SuperTokensThirdPartyError)
-            or
-            self.email_verification_recipe.is_error_from_this_recipe_based_on_instance(
-                err)
-        )
+        return isinstance(err, SuperTokensError) and (isinstance(err,
+                                                                 SuperTokensThirdPartyError) or self.email_verification_recipe.is_error_from_this_recipe_based_on_instance(
+            err))
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [
             APIHandled(NormalisedURLPath(SIGNINUP), 'post', SIGNINUP,
                        self.api_implementation.disable_sign_in_up_post),
             APIHandled(NormalisedURLPath(AUTHORISATIONURL), 'get', AUTHORISATIONURL,
-                       self.api_implementation.disable_authorisation_url_get)
+                       self.api_implementation.disable_authorisation_url_get),
+            APIHandled(NormalisedURLPath(APPLE_REDIRECT_HANDLER), 'post', APPLE_REDIRECT_HANDLER,
+                       self.api_implementation.disable_apple_redirect_handler_post)
         ] + self.email_verification_recipe.get_apis_handled()
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
@@ -88,11 +89,17 @@ class ThirdPartyRecipe(RecipeModule):
         if request_id == SIGNINUP:
             return await handle_sign_in_up_api(self.api_implementation,
                                                APIOptions(request, response, self.recipe_id, self.config,
-                                                          self.recipe_implementation, self.providers))
+                                                          self.recipe_implementation, self.providers, self.app_info))
         elif request_id == AUTHORISATIONURL:
             return await handle_authorisation_url_api(self.api_implementation,
                                                       APIOptions(request, response, self.recipe_id, self.config,
-                                                                 self.recipe_implementation, self.providers))
+                                                                 self.recipe_implementation, self.providers,
+                                                                 self.app_info))
+        elif request_id == APPLE_REDIRECT_HANDLER:
+            return await handle_apple_redirect_api(self.api_implementation,
+                                                   APIOptions(request, response, self.recipe_id, self.config,
+                                                              self.recipe_implementation, self.providers,
+                                                              self.app_info))
         else:
             return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 

@@ -27,7 +27,6 @@ if TYPE_CHECKING:
         AuthorisationUrlGetResponse
     from supertokens_python.recipe.thirdparty.provider import Provider
 
-
 DEV_OAUTH_CLIENT_IDS = [
     '1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com',  # google client id
     '467101b197249757c71f'  # github client id
@@ -59,6 +58,15 @@ class APIImplementation(APIInterface):
             params[key] = value if not callable(
                 value) else value(api_options.request)
 
+        if provider.get_redirect_uri() is not None and not is_using_oauth_development_client_id(provider.client_id):
+            # the backend wants to set the redirectURI - so we set that here.
+            # we add the not development keys because the oauth provider will
+            # redirect to supertokens.io's URL which will redirect the app
+            # to the the user's website, which will handle the callback as usual.
+            # If we add this, then instead, the supertokens' site will redirect
+            # the user to this API layer, which is not needed.
+            params['redirect_uri'] = provider.get_redirect_uri()
+
         auth_url = authorisation_url_info.url
         if is_using_oauth_development_client_id(provider.client_id):
             params['actual_redirect_uri'] = authorisation_url_info.url
@@ -73,10 +81,14 @@ class APIImplementation(APIInterface):
         url = auth_url + '?' + query_string
         return AuthorisationUrlGetOkResponse(url)
 
-    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None],
                               auth_code_response: Union[str, None], api_options: APIOptions) -> SignInUpPostResponse:
         if is_using_oauth_development_client_id(provider.client_id):
             redirect_uri = DEV_OAUTH_REDIRECT_URL
+        elif provider.get_redirect_uri() is not None:
+            # we overwrite the redirectURI provided by the frontend
+            # since the backend wants to take charge of setting this.
+            redirect_uri = provider.get_redirect_uri()
         try:
             if auth_code_response is None:
                 access_token_api_info = provider.get_access_token_api_info(
@@ -91,7 +103,8 @@ class APIImplementation(APIInterface):
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }
                 async with AsyncClient() as client:
-                    access_token_response = await client.post(access_token_api_info.url, data=access_token_api_info.params,
+                    access_token_response = await client.post(access_token_api_info.url,
+                                                              data=access_token_api_info.params,
                                                               headers=headers)
                     access_token_response = access_token_response.json()
             else:
@@ -112,3 +125,9 @@ class APIImplementation(APIInterface):
 
         return SignInUpPostOkResponse(
             user, signinup_response.created_new_user, access_token_response)
+
+    async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions):
+        app_info = api_options.app_info
+        redirect_uri = app_info.website_domain.get_as_string_dangerous() + app_info.website_base_path.get_as_string_dangerous() + '/callback/apple?state=' + state + '&code=' + code
+        html_content = '<html><head><script>window.location.replace("' + redirect_uri + '");</script></head></html>'
+        api_options.response.set_html_content(html_content)

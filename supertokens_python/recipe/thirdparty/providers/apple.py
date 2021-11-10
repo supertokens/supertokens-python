@@ -16,6 +16,9 @@ from __future__ import annotations
 from supertokens_python.recipe.thirdparty.provider import Provider
 from typing import List, Union, Dict, Callable, TYPE_CHECKING
 from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
+from supertokens_python.recipe.thirdparty.api.implementation import get_actual_client_id_from_development_client_id
+from supertokens_python.recipe.thirdparty.constants import APPLE_REDIRECT_HANDLER
+from supertokens_python.supertokens import Supertokens
 from jwt import encode, decode
 from time import time
 from re import sub
@@ -27,8 +30,9 @@ if TYPE_CHECKING:
 class Apple(Provider):
     def __init__(self, client_id: str, client_key_id: str, client_private_key: str, client_team_id: str,
                  scope: List[str] = None,
-                 authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None):
-        super().__init__('apple', client_id)
+                 authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None,
+                 is_default: bool = False):
+        super().__init__('apple', client_id, is_default)
         default_scopes = ['email']
 
         if scope is None:
@@ -49,7 +53,7 @@ class Apple(Provider):
             'iat': time(),
             'exp': time() + (86400 * 180),  # 6 months
             'aud': 'https://appleid.apple.com',
-            'sub': self.client_id
+            'sub': get_actual_client_id_from_development_client_id(self.client_id)
         }
         headers = {
             'kid': self.client_key_id
@@ -93,3 +97,6 @@ class Apple(Provider):
             'redirect_uri': redirect_uri
         }
         return AccessTokenAPI(self.access_token_api_url, params)
+
+    def get_redirect_uri(self) -> Union[None, str]:
+        return Supertokens.get_instance().app_info.api_domain.get_as_string_dangerous() + APPLE_REDIRECT_HANDLER

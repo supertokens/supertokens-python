@@ -14,7 +14,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from supertokens_python.utils import find_first_occurrence_in_list
+from supertokens_python.recipe.thirdparty.utils import find_right_provider
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
@@ -29,6 +29,7 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
 
     code = body['code'] if 'code' in body else ""
     auth_code_response = body['authCodeResponse'] if 'authCodeResponse' in body else None
+    client_id = body['clientId'] if 'clientId' in body else None
 
     if 'thirdPartyId' not in body or not isinstance(body['thirdPartyId'], str):
         raise_bad_input_exception(
@@ -48,15 +49,19 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
             'Please provide the redirectURI in request body')
 
     third_party_id = body['thirdPartyId']
-    provider: Provider = find_first_occurrence_in_list(
-        lambda x: x.id == third_party_id, api_options.providers)
+    provider: Provider = find_right_provider(api_options.providers, third_party_id, client_id)
     if provider is None:
-        raise_bad_input_exception('The third party provider ' + third_party_id + ' seems to not be configured '
-                                                                                 'on the backend. Please '
-                                                                                 'check your frontend and '
-                                                                                 'backend configs.')
+        if client_id is None:
+            raise_bad_input_exception('The third party provider ' + third_party_id + ' seems to be missing from the '
+                                                                                     'backend configs.')
+        raise_bad_input_exception('The third party provider ' + third_party_id + ' seems to be missing from the '
+                                                                                 'backend configs. If it is '
+                                                                                 'configured, then please make sure '
+                                                                                 'that you are passing the correct '
+                                                                                 'clientId from the frontend.')
 
-    result = await api_implementation.sign_in_up_post(provider, code, body['redirectURI'], auth_code_response, api_options)
+    result = await api_implementation.sign_in_up_post(provider, code, body['redirectURI'], client_id,
+                                                      auth_code_response, api_options)
     api_options.response.set_content(result.to_json())
 
     return api_options.response

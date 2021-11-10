@@ -43,6 +43,7 @@ class APIImplementation(APIInterface):
         thirdparty_implementation = ThirdPartyImplementation()
         self.tp_authorisation_url_get = thirdparty_implementation.authorisation_url_get
         self.tp_sign_in_up_post = thirdparty_implementation.sign_in_up_post
+        self.tp_apple_redirect_handler_post = thirdparty_implementation.apple_redirect_handler_post
         thirdparty_implementation = get_tp_interface_impl(self)
 
     async def email_exists_get(self, email: str, options: EmailPasswordAPIOptions) -> EmailExistsGetResponse:
@@ -70,3 +71,6 @@ class APIImplementation(APIInterface):
 
     async def authorisation_url_get(self, provider: Provider, api_options: APIOptions) -> AuthorisationUrlGetResponse:
         return await self.tp_authorisation_url_get(provider, api_options)
+
+    async def apple_redirect_handler_post(self, code: str, state: str, api_options: ThirdPartyApiOptions):
+        return await self.tp_apple_redirect_handler_post(code, state, api_options)
