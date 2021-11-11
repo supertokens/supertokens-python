@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.1] - 2021-10-22
 - When routing, ignores `rid` value `"anti-csrf"`: https://github.com/supertokens/supertokens-node/issues/202
+- Removes empty awslambda folder from framework
+- If json parsing fails in the frameworks, catches those exceptions and returns an empty object.
 
 ## [0.2.0] - 2021-10-22
 
