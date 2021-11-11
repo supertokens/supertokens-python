@@ -27,7 +27,10 @@ class FastApiRequest(BaseRequest):
         return self.request.query_params.get(key, default)
 
     async def json(self):
-        return await self.request.json()
+        try:
+            return await self.request.json()
+        except Exception:
+            return {}
 
     def method(self) -> str:
         return self.request.method
