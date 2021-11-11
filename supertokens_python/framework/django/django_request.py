@@ -28,8 +28,11 @@ class DjangoRequest(BaseRequest):
         return self.request.GET.get(key, default)
 
     async def json(self):
-        body = json.loads(self.request.body)
-        return body
+        try:
+            body = json.loads(self.request.body)
+            return body
+        except Exception:
+            return {}
 
     def method(self) -> str:
         return self.request.method
