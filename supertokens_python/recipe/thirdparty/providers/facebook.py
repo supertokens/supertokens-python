@@ -20,8 +20,8 @@ from httpx import AsyncClient
 
 class Facebook(Provider):
     def __init__(self, client_id: str, client_secret: str,
-                 scope: List[str] = None):
-        super().__init__('facebook', client_id)
+                 scope: List[str] = None, is_default: bool = False):
+        super().__init__('facebook', client_id, is_default)
         default_scopes = ['email']
 
         if scope is None:

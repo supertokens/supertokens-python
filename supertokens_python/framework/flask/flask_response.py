@@ -25,6 +25,10 @@ class FlaskResponse(BaseResponse):
         self.response = response
         self.headers = list()
 
+    def set_html_content(self, content):
+        self.response.data = content
+        self.set_header('Content-Type', 'text/html')
+
     def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
                    domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "lax"):
         if self.response is None:

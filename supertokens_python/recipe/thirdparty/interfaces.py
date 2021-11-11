@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from .utils import ThirdPartyConfig
     from .types import User, UsersResponse
+    from supertokens_python.supertokens import AppInfo
 
 
 class SignInUpResult(ABC):
@@ -83,13 +84,15 @@ class RecipeInterface(ABC):
 
 class APIOptions:
     def __init__(self, request: BaseRequest, response: Union[BaseResponse, None], recipe_id: str,
-                 config: ThirdPartyConfig, recipe_implementation: RecipeInterface, providers: List[Provider]):
+                 config: ThirdPartyConfig, recipe_implementation: RecipeInterface, providers: List[Provider],
+                 app_info: AppInfo):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
         self.config = config
         self.providers = providers
         self.recipe_implementation = recipe_implementation
+        self.app_info = app_info
 
 
 class SignInUpPostResponse(ABC):
@@ -193,10 +196,14 @@ class APIInterface:
     def __init__(self):
         self.disable_sign_in_up_post = False
         self.disable_authorisation_url_get = False
+        self.disable_apple_redirect_handler_post = False
 
     async def authorisation_url_get(self, provider: Provider, api_options: APIOptions) -> AuthorisationUrlGetResponse:
         pass
 
-    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None],
                               auth_code_response: Union[str, None], api_options: APIOptions) -> SignInUpPostResponse:
+        pass
+
+    async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions):
         pass

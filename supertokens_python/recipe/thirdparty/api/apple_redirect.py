@@ -11,9 +11,22 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-AUTHORISATIONURL = '/authorisationurl'
-SIGNINUP = '/signinup'
-SIGNOUT = '/signout'
-SIGNUP_EMAIL_EXISTS = '/signup/email/exists'
-RESET_PASSWORD = '/reset-password'
-APPLE_REDIRECT_HANDLER = "/callback/apple"
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
+
+
+async def handle_apple_redirect_api(api_implementation: APIInterface, api_options: APIOptions):
+    if api_implementation.disable_apple_redirect_handler_post:
+        return None
+    body = await api_options.request.form_data()
+
+    code = body['code'] if 'code' in body else ""
+    state = body['state'] if 'state' in body else ""
+
+    # this will redirect the user...
+    await api_implementation.apple_redirect_handler_post(code, state, api_options)
+
+    return api_options.response

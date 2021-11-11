@@ -57,20 +57,10 @@ class FlaskRequest(BaseRequest):
         from flask import g
         g.supertokens = session
 
-        # if session is None:
-        #     self.req.environ['additional_storage'] = None
-        # else:
-        #     self.req.environ['additional_storage'] = {
-        #         'new_access_token_info' : session['new_access_token_info'],
-        #         'new_anti_csrf_token' : session['new_anti_csrf_token'],
-        #         'new_id_refresh_token_info' : session['new_id_refresh_token_info'],
-        #         'new_refresh_token_info' : session['new_refresh_token_info'],
-        #         'remove_cookies' : session['remove_cookies'],
-        #         'user_id' : session['user_id'],
-        #         'jwt_payload' : session['jwt_payload'],
-        #     }
-
     def get_path(self) -> str:
         if isinstance(self.req, dict):
             return self.req['PATH_INFO']
         return self.req.base_url
+
+    async def form_data(self):
+        return self.req.form.to_dict()

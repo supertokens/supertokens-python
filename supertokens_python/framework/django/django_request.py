@@ -15,6 +15,7 @@
 import json
 from typing import Any, Union
 from supertokens_python.framework.request import BaseRequest
+from urllib.parse import parse_qsl
 
 
 class DjangoRequest(BaseRequest):
@@ -55,3 +56,6 @@ class DjangoRequest(BaseRequest):
 
     def get_path(self) -> str:
         return self.request.path
+
+    async def form_data(self):
+        return dict(parse_qsl(self.request.body.decode('utf-8')))

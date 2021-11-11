@@ -38,6 +38,36 @@ def validate_and_normalise_sign_in_and_up_config(
     if providers is None or len(providers) == 0:
         raise_bad_input_exception('thirdparty recipe requires atleast 1 provider to be passed in '
                                   'sign_in_and_up_feature.providers config')
+
+    # we check if there are multiple providers with the same id that have isDefault as true.
+    # In this case, we want to throw an error..
+
+    default_providers_set = set()
+    all_providers_set = set()
+
+    for provider in providers:
+        provider_id = provider.id
+        all_providers_set.add(provider_id)
+        is_default = provider.is_default
+
+        if not is_default:
+            # if this id is not being used by any other provider, we treat this as the is_default
+            other_providers_with_same_id = list(filter(lambda p: p.id == provider_id and provider != p, providers))
+            if len(other_providers_with_same_id) == 0:
+                # we treat this as the isDefault now.
+                is_default = True
+        if is_default:
+            if provider_id in default_providers_set:
+                raise_bad_input_exception(
+                    'You have provided multiple third party providers that have the id: "' + provider_id + '" '
+                    'and are marked as "is_default: True". Please only mark one of them as is_default.')
+            default_providers_set.add(provider_id)
+
+    if len(default_providers_set) != len(all_providers_set):
+        # this means that there is no provider marked as is_default
+        raise_bad_input_exception('The providers array has multiple entries for the same third party provider. Please '
+                                  'mark one of them as the default one by using "is_default: true".')
+
     return SignInAndUpFeature(providers)
 
 
@@ -120,3 +150,30 @@ def validate_and_normalise_user_input(
     override = OverrideConfig(override_functions, override_apis)
     return ThirdPartyConfig(sign_in_and_up_feature,
                             email_verification_feature, override)
+
+
+def find_right_provider(
+        providers: List[Provider],
+        third_party_id: str,
+        client_id: Union[str, None]
+) -> Union[Provider, None]:
+    for provider in providers:
+        provider_id = provider.id
+        if provider_id != third_party_id:
+            continue
+
+        # first if there is only one provider with third_party_id in the providers array
+        other_providers_with_same_id = list(filter(lambda p: p.id == provider_id and provider != p, providers))
+        if len(other_providers_with_same_id) == 0:
+            # then we always return that.
+            return provider
+
+        # otherwise, we look for the is_default provider if client_id is missing
+        if client_id is None and provider.is_default:
+            return provider
+
+        # otherwise, we return a provider that matches based on client Id as well.
+        if provider.client_id == client_id:
+            return provider
+
+    return None

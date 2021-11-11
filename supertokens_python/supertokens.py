@@ -285,8 +285,8 @@ class Supertokens:
             return None
         else:
             request_rid = get_rid_from_request(request)
-            if request_rid == "anti-csrf":
-                # See https://github.com/supertokens/supertokens-python/issues/54
+            if request_rid is not None and request_rid == 'anti-csrf':
+                # see https://github.com/supertokens/supertokens-python/issues/54
                 request_rid = None
             request_id = None
             matched_recipe = None

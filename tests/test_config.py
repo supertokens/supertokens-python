@@ -80,6 +80,7 @@ def testing_URL_path_normalisation():
     assert normalise_url_path_or_throw_error("127.0.0.1/one/two") == "/one/two"
     assert normalise_url_path_or_throw_error("https://127.0.0.1:80/one/two") == "/one/two"
     assert normalise_url_path_or_throw_error("/") == ""
+    assert normalise_url_path_or_throw_error("") == ""
 
     assert normalise_url_path_or_throw_error("/.netlify/functions/api") == "/.netlify/functions/api"
     assert normalise_url_path_or_throw_error("/netlify/.functions/api") == "/netlify/.functions/api"

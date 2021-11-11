@@ -29,6 +29,8 @@ def get_interface_impl(
         implementation.disable_authorisation_url_get = True
     if api_implementation.disable_thirdparty_sign_in_up_post:
         implementation.disable_sign_in_up_post = True
+    if api_implementation.disable_apple_redirect_handler_post:
+        implementation.disable_apple_redirect_handler_post = True
 
     if not implementation.disable_sign_in_up_post:
         async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str,
