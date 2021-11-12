@@ -16,7 +16,7 @@ from . import exceptions
 from .providers import (
     Google,
     Github,
-    # Apple,
+    Apple,
     Facebook
 )
 

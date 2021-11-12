@@ -13,5 +13,5 @@
 # under the License.
 from .facebook import Facebook
 from .github import Github
-# from .apple import Apple
+from .apple import Apple
 from .google import Google

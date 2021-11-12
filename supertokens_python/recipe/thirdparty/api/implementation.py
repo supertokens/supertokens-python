@@ -71,7 +71,7 @@ class APIImplementation(APIInterface):
         if is_using_oauth_development_client_id(provider.client_id):
             params['actual_redirect_uri'] = authorisation_url_info.url
 
-            for k, v in params:
+            for k, v in params.items():
                 if params[k] == provider.client_id:
                     params[k] = get_actual_client_id_from_development_client_id(provider.client_id)
             auth_url = DEV_OAUTH_AUTHORIZATION_URL
@@ -94,7 +94,7 @@ class APIImplementation(APIInterface):
                 access_token_api_info = provider.get_access_token_api_info(
                     redirect_uri, code)
                 if is_using_oauth_development_client_id(provider.client_id):
-                    for k, v in access_token_api_info.params:
+                    for k, v in access_token_api_info.params.items():
                         if access_token_api_info.params[k] == provider.client_id:
                             access_token_api_info.params[k] = get_actual_client_id_from_development_client_id(
                                 provider.client_id)

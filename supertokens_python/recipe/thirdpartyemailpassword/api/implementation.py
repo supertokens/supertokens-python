@@ -57,9 +57,9 @@ class APIImplementation(APIInterface):
                                   options: EmailPasswordAPIOptions) -> PasswordResetPostResponse:
         return await self.ep_password_reset_post(form_fields, token, options)
 
-    async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str,
+    async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None],
                                          auth_code_response: Union[str, None], api_options: ThirdPartyApiOptions) -> SignInUpPostResponse:
-        return await self.tp_sign_in_up_post(provider, code, redirect_uri, api_options)
+        return await self.tp_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options)
 
     async def emailpassword_sign_in_post(self, form_fields: List[FormField],
                                          api_options: EmailPasswordApiOptions) -> SignInPostResponse:

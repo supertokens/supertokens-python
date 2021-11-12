@@ -23,8 +23,7 @@ from jwt import encode, decode
 from time import time
 from re import sub
 from httpx import AsyncClient
-from jwt.algorithms import RSAAlgorithm
-from json import dumps
+from jwt.algorithms import RSAAlgorithm, RSAPublicKey
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -37,7 +36,7 @@ class Apple(Provider):
                  is_default: bool = False):
         super().__init__('apple', client_id, is_default)
         self.APPLE_PUBLIC_KEY_URL = "https://appleid.apple.com/auth/keys"
-        self.APPLE_PUBLIC_KEY = None
+        self.APPLE_PUBLIC_KEYS = []
         self.APPLE_KEY_CACHE_EXP = 60 * 60 * 24
         self.APPLE_LAST_KEY_FETCH = 0
         default_scopes = ['email']
@@ -85,9 +84,10 @@ class Apple(Provider):
             raise Exception(
                 'no user info found from user\'s id token received from apple')
 
-        user_id = payload['email']
+        user_id = payload['sub']
+        email = payload['email']
         is_email_verified = payload['email_verified'] if 'email_verified' in payload else False
-        return UserInfo(user_id, UserInfoEmail(user_id, is_email_verified))
+        return UserInfo(user_id, UserInfoEmail(email, is_email_verified))
 
     def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
         params = {
@@ -119,17 +119,26 @@ class Apple(Provider):
         self.redirect_uri += APPLE_REDIRECT_HANDLER
         return self.redirect_uri
 
-    async def _fetch_apple_public_key(self):
+    async def _fetch_apple_public_keys(self) -> List[RSAPublicKey]:
         # Check to see if the public key is unset or is stale before returning
-        if (self.APPLE_LAST_KEY_FETCH + self.APPLE_KEY_CACHE_EXP) < int(time()) or self.APPLE_PUBLIC_KEY is None:
+        if (self.APPLE_LAST_KEY_FETCH + self.APPLE_KEY_CACHE_EXP) < int(time()) or len(self.APPLE_PUBLIC_KEYS) == 0:
             async with AsyncClient() as client:
                 response = await client.get(self.APPLE_PUBLIC_KEY_URL)
                 key_payload = response.json()
-                self.APPLE_PUBLIC_KEY = RSAAlgorithm.from_jwk(dumps(key_payload["keys"][0]))
+                for key in key_payload["keys"]:
+                    self.APPLE_PUBLIC_KEYS.append(RSAAlgorithm.from_jwk(key))
                 self.APPLE_LAST_KEY_FETCH = int(time())
 
-        return self.APPLE_PUBLIC_KEY
+        return self.APPLE_PUBLIC_KEYS
 
     async def _verify_apple_id_token(self, token):
-        public_key = await self._fetch_apple_public_key()
-        decode(token, public_key, audience=self.client_id, algorithm="RS256")
+        public_keys = await self._fetch_apple_public_keys()
+        err = "Id token verification failed"
+        for key in public_keys:
+            try:
+                decode(jwt=token, key=key,
+                       audience=[get_actual_client_id_from_development_client_id(self.client_id)], algorithms=["RS256"])
+                return
+            except Exception as e:
+                err = e
+        raise err
