@@ -16,7 +16,7 @@ from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword
 from supertokens_python.recipe.session import Session
 from supertokens_python.recipe.session.framework.fastapi import verify_session
-from supertokens_python.recipe.thirdparty import Github, Google, Facebook, Apple
+from supertokens_python.recipe.thirdparty import Github, Google, Apple
 
 load_dotenv()
 
@@ -37,34 +37,6 @@ def get_website_domain():
     return 'http://localhost:' + get_website_port()
 
 
-latest_url_with_token = None
-
-
-async def create_and_send_custom_email(_, url_with_token):
-    global latest_url_with_token
-    latest_url_with_token = url_with_token
-
-
-async def validate_age(value):
-    try:
-        if int(value) < 18:
-            return "You must be over 18 to register"
-    except Exception:
-        pass
-
-    return None
-
-form_fields = [{
-    'id': 'name'
-}, {
-    'id': 'age',
-    'validate': validate_age
-}, {
-    'id': 'country',
-    'optional': True
-}]
-
-
 init({
     'supertokens': {
         'connection_uri': "https://try.supertokens.io",
@@ -77,26 +49,12 @@ init({
     },
     'recipe_list': [
         session.init({}),
-        emailpassword.init({
-            'sign_up_feature': {
-                'form_fields': form_fields
-            },
-            'reset_password_using_token_feature': {
-                'create_and_send_custom_email': create_and_send_custom_email
-            },
-            'email_verification_feature': {
-                'create_and_send_custom_email': create_and_send_custom_email
-            }
-        }),
         thirdparty.init({
             'sign_in_and_up_feature': {
                 'providers': [
                     Google(
                         client_id=os.environ.get('GOOGLE_CLIENT_ID'),
                         client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
-                    ), Facebook(
-                        client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
-                        client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
                     ), Github(
                         client_id=os.environ.get('GITHUB_CLIENT_ID'),
                         client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
@@ -109,17 +67,12 @@ init({
                 ]
             }
         }),
+        emailpassword.init(),
         thirdpartyemailpassword.init({
-            'sign_up_feature': {
-                'form_fields': form_fields
-            },
             'providers': [
                 Google(
                     client_id=os.environ.get('GOOGLE_CLIENT_ID'),
                     client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
-                ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
                 ), Github(
                     client_id=os.environ.get('GITHUB_CLIENT_ID'),
                     client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
