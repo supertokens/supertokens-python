@@ -42,15 +42,18 @@
 
 from __future__ import annotations
 import abc
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
+
 if TYPE_CHECKING:
     from .types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI
 
 
 class Provider(abc.ABC):
-    def __init__(self, provider_id: str, client_id: str):
+    def __init__(self, provider_id: str, client_id: str, is_default: bool):
         self.id = provider_id
         self.client_id = client_id
+        self.is_default = is_default
+        self.redirect_uri = None
 
     @abc.abstractmethod
     async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
@@ -63,7 +66,10 @@ class Provider(abc.ABC):
     @abc.abstractmethod
     def get_access_token_api_info(
             self, redirect_uri: str, auth_code_from_request: str) -&gt; AccessTokenAPI:
-        pass</code></pre>
+        pass
+
+    def get_redirect_uri(self) -&gt; Union[None, str]:
+        return self.redirect_uri</code></pre>
 </details>
 </section>
 <section>
@@ -77,7 +83,7 @@ class Provider(abc.ABC):
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.provider.Provider"><code class="flex name class">
 <span>class <span class="ident">Provider</span></span>
-<span>(</span><span>provider_id: str, client_id: str)</span>
+<span>(</span><span>provider_id: str, client_id: str, is_default: bool)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -87,9 +93,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Provider(abc.ABC):
-    def __init__(self, provider_id: str, client_id: str):
+    def __init__(self, provider_id: str, client_id: str, is_default: bool):
         self.id = provider_id
         self.client_id = client_id
+        self.is_default = is_default
+        self.redirect_uri = None
 
     @abc.abstractmethod
     async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
@@ -102,7 +110,10 @@ inheritance.</p></div>
     @abc.abstractmethod
     def get_access_token_api_info(
             self, redirect_uri: str, auth_code_from_request: str) -&gt; AccessTokenAPI:
-        pass</code></pre>
+        pass
+
+    def get_redirect_uri(self) -&gt; Union[None, str]:
+        return self.redirect_uri</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -110,6 +121,7 @@ inheritance.</p></div>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.providers.apple.Apple" href="providers/apple.html#supertokens_python.recipe.thirdparty.providers.apple.Apple">Apple</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.providers.facebook.Facebook" href="providers/facebook.html#supertokens_python.recipe.thirdparty.providers.facebook.Facebook">Facebook</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.providers.github.Github" href="providers/github.html#supertokens_python.recipe.thirdparty.providers.github.Github">Github</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.providers.google.Google" href="providers/google.html#supertokens_python.recipe.thirdparty.providers.google.Google">Google</a></li>
@@ -159,6 +171,19 @@ async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
     pass</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_redirect_uri"><code class="name flex">
+<span>def <span class="ident">get_redirect_uri</span></span>(<span>self) ‑> Optional[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_redirect_uri(self) -&gt; Union[None, str]:
+    return self.redirect_uri</code></pre>
+</details>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -183,6 +208,7 @@ async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
 <li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_access_token_api_info" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_access_token_api_info">get_access_token_api_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_authorisation_redirect_api_info" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_authorisation_redirect_api_info">get_authorisation_redirect_api_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_profile_info" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_profile_info">get_profile_info</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_redirect_uri" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_redirect_uri">get_redirect_uri</a></code></li>
 </ul>
 </li>
 </ul>

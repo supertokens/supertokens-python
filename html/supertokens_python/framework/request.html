@@ -59,6 +59,10 @@ class BaseRequest(ABC):
         pass
 
     @abstractmethod
+    async def form_data(self):
+        pass
+
+    @abstractmethod
     def method(self) -&gt; str:
         pass
 
@@ -120,6 +124,10 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
+    async def form_data(self):
+        pass
+
+    @abstractmethod
     def method(self) -&gt; str:
         pass
 
@@ -159,6 +167,20 @@ inheritance.</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
+<dt id="supertokens_python.framework.request.BaseRequest.form_data"><code class="name flex">
+<span>async def <span class="ident">form_data</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def form_data(self):
+    pass</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.framework.request.BaseRequest.get_cookie"><code class="name flex">
 <span>def <span class="ident">get_cookie</span></span>(<span>self, key: str) ‑> Optional[str]</span>
 </code></dt>
@@ -306,6 +328,7 @@ def url(self):
 <li>
 <h4><code><a title="supertokens_python.framework.request.BaseRequest" href="#supertokens_python.framework.request.BaseRequest">BaseRequest</a></code></h4>
 <ul class="two-column">
+<li><code><a title="supertokens_python.framework.request.BaseRequest.form_data" href="#supertokens_python.framework.request.BaseRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.request.BaseRequest.get_cookie" href="#supertokens_python.framework.request.BaseRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.request.BaseRequest.get_header" href="#supertokens_python.framework.request.BaseRequest.get_header">get_header</a></code></li>
 <li><code><a title="supertokens_python.framework.request.BaseRequest.get_path" href="#supertokens_python.framework.request.BaseRequest.get_path">get_path</a></code></li>

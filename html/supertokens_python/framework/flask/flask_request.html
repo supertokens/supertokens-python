@@ -54,7 +54,10 @@ class FlaskRequest(BaseRequest):
         return self.req.args.get(key, default)
 
     async def json(self):
-        return self.req.get_json()
+        try:
+            return self.req.get_json()
+        except Exception:
+            return {}
 
     def method(self) -&gt; str:
         if isinstance(self.req, dict):
@@ -82,23 +85,13 @@ class FlaskRequest(BaseRequest):
         from flask import g
         g.supertokens = session
 
-        # if session is None:
-        #     self.req.environ[&#39;additional_storage&#39;] = None
-        # else:
-        #     self.req.environ[&#39;additional_storage&#39;] = {
-        #         &#39;new_access_token_info&#39; : session[&#39;new_access_token_info&#39;],
-        #         &#39;new_anti_csrf_token&#39; : session[&#39;new_anti_csrf_token&#39;],
-        #         &#39;new_id_refresh_token_info&#39; : session[&#39;new_id_refresh_token_info&#39;],
-        #         &#39;new_refresh_token_info&#39; : session[&#39;new_refresh_token_info&#39;],
-        #         &#39;remove_cookies&#39; : session[&#39;remove_cookies&#39;],
-        #         &#39;user_id&#39; : session[&#39;user_id&#39;],
-        #         &#39;jwt_payload&#39; : session[&#39;jwt_payload&#39;],
-        #     }
-
     def get_path(self) -&gt; str:
         if isinstance(self.req, dict):
             return self.req[&#39;PATH_INFO&#39;]
-        return self.req.base_url</code></pre>
+        return self.req.base_url
+
+    async def form_data(self):
+        return self.req.form.to_dict()</code></pre>
 </details>
 </section>
 <section>
@@ -131,7 +124,10 @@ inheritance.</p></div>
         return self.req.args.get(key, default)
 
     async def json(self):
-        return self.req.get_json()
+        try:
+            return self.req.get_json()
+        except Exception:
+            return {}
 
     def method(self) -&gt; str:
         if isinstance(self.req, dict):
@@ -159,23 +155,13 @@ inheritance.</p></div>
         from flask import g
         g.supertokens = session
 
-        # if session is None:
-        #     self.req.environ[&#39;additional_storage&#39;] = None
-        # else:
-        #     self.req.environ[&#39;additional_storage&#39;] = {
-        #         &#39;new_access_token_info&#39; : session[&#39;new_access_token_info&#39;],
-        #         &#39;new_anti_csrf_token&#39; : session[&#39;new_anti_csrf_token&#39;],
-        #         &#39;new_id_refresh_token_info&#39; : session[&#39;new_id_refresh_token_info&#39;],
-        #         &#39;new_refresh_token_info&#39; : session[&#39;new_refresh_token_info&#39;],
-        #         &#39;remove_cookies&#39; : session[&#39;remove_cookies&#39;],
-        #         &#39;user_id&#39; : session[&#39;user_id&#39;],
-        #         &#39;jwt_payload&#39; : session[&#39;jwt_payload&#39;],
-        #     }
-
     def get_path(self) -&gt; str:
         if isinstance(self.req, dict):
             return self.req[&#39;PATH_INFO&#39;]
-        return self.req.base_url</code></pre>
+        return self.req.base_url
+
+    async def form_data(self):
+        return self.req.form.to_dict()</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -184,6 +170,19 @@ inheritance.</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
+<dt id="supertokens_python.framework.flask.flask_request.FlaskRequest.form_data"><code class="name flex">
+<span>async def <span class="ident">form_data</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def form_data(self):
+    return self.req.form.to_dict()</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.framework.flask.flask_request.FlaskRequest.get_cookie"><code class="name flex">
 <span>def <span class="ident">get_cookie</span></span>(<span>self, key: str) ‑> Optional[str]</span>
 </code></dt>
@@ -266,7 +265,10 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def json(self):
-    return self.req.get_json()</code></pre>
+    try:
+        return self.req.get_json()
+    except Exception:
+        return {}</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.flask.flask_request.FlaskRequest.method"><code class="name flex">
@@ -332,6 +334,7 @@ inheritance.</p></div>
 <li>
 <h4><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest" href="#supertokens_python.framework.flask.flask_request.FlaskRequest">FlaskRequest</a></code></h4>
 <ul class="two-column">
+<li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.form_data" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_cookie" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_header" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_header">get_header</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_request.FlaskRequest.get_path" href="#supertokens_python.framework.flask.flask_request.FlaskRequest.get_path">get_path</a></code></li>

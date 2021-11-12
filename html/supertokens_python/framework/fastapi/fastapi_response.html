@@ -54,6 +54,10 @@ class FastApiResponse(BaseResponse):
         self.original = response
         self.parser_checked = False
 
+    def set_html_content(self, content):
+        self.response.body = bytes(content, &#34;utf-8&#34;)
+        self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+
     def set_cookie(self, key: str, value: str = &#34;&#34;, max_age: int = None, expires: int = None, path: str = &#34;/&#34;,
                    domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
         # we do ceil because if we do floor, we tests may fail where the access token lifetime is set to 1 second
@@ -106,6 +110,10 @@ inheritance.</p></div>
         self.response = response
         self.original = response
         self.parser_checked = False
+
+    def set_html_content(self, content):
+        self.response.body = bytes(content, &#34;utf-8&#34;)
+        self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
 
     def set_cookie(self, key: str, value: str = &#34;&#34;, max_age: int = None, expires: int = None, path: str = &#34;/&#34;,
                    domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
@@ -199,6 +207,20 @@ inheritance.</p></div>
     self.response.headers[key] = value</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_html_content"><code class="name flex">
+<span>def <span class="ident">set_html_content</span></span>(<span>self, content)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_html_content(self, content):
+    self.response.body = bytes(content, &#34;utf-8&#34;)
+    self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_status_code"><code class="name flex">
 <span>def <span class="ident">set_status_code</span></span>(<span>self, status_code)</span>
 </code></dt>
@@ -232,11 +254,12 @@ inheritance.</p></div>
 <ul>
 <li>
 <h4><code><a title="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse" href="#supertokens_python.framework.fastapi.fastapi_response.FastApiResponse">FastApiResponse</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.get_header" href="#supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.get_header">get_header</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_content" href="#supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_content">set_content</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_cookie" href="#supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_cookie">set_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_header" href="#supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_header">set_header</a></code></li>
+<li><code><a title="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_html_content" href="#supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_html_content">set_html_content</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_status_code" href="#supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_status_code">set_status_code</a></code></li>
 </ul>
 </li>

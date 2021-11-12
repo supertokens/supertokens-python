@@ -43,6 +43,7 @@
 import json
 from typing import Any, Union
 from supertokens_python.framework.request import BaseRequest
+from urllib.parse import parse_qsl
 
 
 class DjangoRequest(BaseRequest):
@@ -55,8 +56,11 @@ class DjangoRequest(BaseRequest):
         return self.request.GET.get(key, default)
 
     async def json(self):
-        body = json.loads(self.request.body)
-        return body
+        try:
+            body = json.loads(self.request.body)
+            return body
+        except Exception:
+            return {}
 
     def method(self) -&gt; str:
         return self.request.method
@@ -79,7 +83,10 @@ class DjangoRequest(BaseRequest):
         self.request.supertokens = session
 
     def get_path(self) -&gt; str:
-        return self.request.path</code></pre>
+        return self.request.path
+
+    async def form_data(self):
+        return dict(parse_qsl(self.request.body.decode(&#39;utf-8&#39;)))</code></pre>
 </details>
 </section>
 <section>
@@ -112,8 +119,11 @@ inheritance.</p></div>
         return self.request.GET.get(key, default)
 
     async def json(self):
-        body = json.loads(self.request.body)
-        return body
+        try:
+            body = json.loads(self.request.body)
+            return body
+        except Exception:
+            return {}
 
     def method(self) -&gt; str:
         return self.request.method
@@ -136,7 +146,10 @@ inheritance.</p></div>
         self.request.supertokens = session
 
     def get_path(self) -&gt; str:
-        return self.request.path</code></pre>
+        return self.request.path
+
+    async def form_data(self):
+        return dict(parse_qsl(self.request.body.decode(&#39;utf-8&#39;)))</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -145,6 +158,19 @@ inheritance.</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
+<dt id="supertokens_python.framework.django.django_request.DjangoRequest.form_data"><code class="name flex">
+<span>async def <span class="ident">form_data</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def form_data(self):
+    return dict(parse_qsl(self.request.body.decode(&#39;utf-8&#39;)))</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest.get_cookie"><code class="name flex">
 <span>def <span class="ident">get_cookie</span></span>(<span>self, key: str) ‑> Optional[str]</span>
 </code></dt>
@@ -222,8 +248,11 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def json(self):
-    body = json.loads(self.request.body)
-    return body</code></pre>
+    try:
+        body = json.loads(self.request.body)
+        return body
+    except Exception:
+        return {}</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest.method"><code class="name flex">
@@ -286,6 +315,7 @@ inheritance.</p></div>
 <li>
 <h4><code><a title="supertokens_python.framework.django.django_request.DjangoRequest" href="#supertokens_python.framework.django.django_request.DjangoRequest">DjangoRequest</a></code></h4>
 <ul class="two-column">
+<li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.form_data" href="#supertokens_python.framework.django.django_request.DjangoRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_cookie" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_header" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_header">get_header</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_path" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_path">get_path</a></code></li>
