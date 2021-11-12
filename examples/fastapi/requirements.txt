@@ -1,2 +1,2 @@
 fastapi==0.68.1
-supertokens-python==0.0.1
+supertokens-python==0.2
