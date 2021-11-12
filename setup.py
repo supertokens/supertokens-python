@@ -76,7 +76,8 @@ setup(
         "werkzeug==2.0.1",
         'starlette~=0.14.2',
         'typing_extensions==3.10',
-        'Deprecated==1.2.13'
+        'Deprecated==1.2.13',
+        'cryptography==35.0'
     ],
     python_requires='>=3.7',
     extras_require=extras_require

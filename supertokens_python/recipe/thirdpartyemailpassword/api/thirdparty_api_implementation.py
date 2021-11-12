@@ -33,9 +33,9 @@ def get_interface_impl(
         implementation.disable_apple_redirect_handler_post = True
 
     if not implementation.disable_sign_in_up_post:
-        async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str,
+        async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None],
                                   auth_code_response: Union[str, None], api_options: APIOptions):
-            result = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri,
+            result = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri, client_id,
                                                                          auth_code_response, api_options)
 
             if result.is_ok:
