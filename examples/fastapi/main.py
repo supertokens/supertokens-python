@@ -53,13 +53,27 @@ init({
             'sign_in_and_up_feature': {
                 'providers': [
                     Google(
+                        is_default=True,
                         client_id=os.environ.get('GOOGLE_CLIENT_ID'),
                         client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
+                    ), Google(
+                        client_id=os.environ.get('GOOGLE_CLIENT_ID_MOBILE'),
+                        client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
                     ), Github(
+                        is_default=True,
                         client_id=os.environ.get('GITHUB_CLIENT_ID'),
                         client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
+                    ), Github(
+                        client_id=os.environ.get('GITHUB_CLIENT_ID_MOBILE'),
+                        client_secret=os.environ.get('GITHUB_CLIENT_SECRET_MOBILE')
                     ), Apple(
+                        is_default=True,
                         client_id=os.environ.get('APPLE_CLIENT_ID'),
+                        client_key_id=os.environ.get('APPLE_KEY_ID'),
+                        client_team_id=os.environ.get('APPLE_TEAM_ID'),
+                        client_private_key=os.environ.get('APPLE_PRIVATE_KEY')
+                    ), Apple(
+                        client_id=os.environ.get('APPLE_CLIENT_ID_MOBILE'),
                         client_key_id=os.environ.get('APPLE_KEY_ID'),
                         client_team_id=os.environ.get('APPLE_TEAM_ID'),
                         client_private_key=os.environ.get('APPLE_PRIVATE_KEY')
@@ -71,13 +85,27 @@ init({
         thirdpartyemailpassword.init({
             'providers': [
                 Google(
+                    is_default=True,
                     client_id=os.environ.get('GOOGLE_CLIENT_ID'),
                     client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
+                ), Google(
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID_MOBILE'),
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
                 ), Github(
+                    is_default=True,
                     client_id=os.environ.get('GITHUB_CLIENT_ID'),
                     client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
+                ), Github(
+                    client_id=os.environ.get('GITHUB_CLIENT_ID_MOBILE'),
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET_MOBILE')
                 ), Apple(
+                    is_default=True,
                     client_id=os.environ.get('APPLE_CLIENT_ID'),
+                    client_key_id=os.environ.get('APPLE_KEY_ID'),
+                    client_team_id=os.environ.get('APPLE_TEAM_ID'),
+                    client_private_key=os.environ.get('APPLE_PRIVATE_KEY')
+                ), Apple(
+                    client_id=os.environ.get('APPLE_CLIENT_ID_MOBILE'),
                     client_key_id=os.environ.get('APPLE_KEY_ID'),
                     client_team_id=os.environ.get('APPLE_TEAM_ID'),
                     client_private_key=os.environ.get('APPLE_PRIVATE_KEY')
