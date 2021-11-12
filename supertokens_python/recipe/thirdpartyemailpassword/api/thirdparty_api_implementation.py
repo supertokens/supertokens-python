@@ -52,5 +52,6 @@ def get_interface_impl(
         implementation.sign_in_up_post = sign_in_up_post
 
     implementation.authorisation_url_get = api_implementation.authorisation_url_get
+    implementation.apple_redirect_handler_post = api_implementation.apple_redirect_handler_post
 
     return implementation

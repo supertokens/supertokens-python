@@ -27,7 +27,7 @@ class FastApiResponse(BaseResponse):
         self.parser_checked = False
 
     def set_html_content(self, content):
-        self.response.content = content
+        self.response.body = bytes(content, "utf-8")
         self.set_header('Content-Type', 'text/html')
 
     def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
