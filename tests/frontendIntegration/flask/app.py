@@ -104,7 +104,7 @@ class Test:
 
 async def unauthorised_f(error, req, res):
     res.set_status_code(401)
-    res.set_content({})
+    res.set_json_content({})
     return res
 
 

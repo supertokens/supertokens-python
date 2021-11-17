@@ -51,7 +51,7 @@ class FastApiResponse(BaseResponse):
             self.response.status_code = status_code
             self.status_set = True
 
-    def set_content(self, content):
+    def set_json_content(self, content):
         if not self.response_sent:
             self.set_header('Content-Type', 'application/json; charset=utf-8')
             self.response.body = json.dumps(

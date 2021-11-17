@@ -86,11 +86,11 @@ class EmailVerificationRecipe(RecipeModule):
 
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
         if isinstance(error, EmailVerificationInvalidTokenError):
-            response.set_content(
+            response.set_json_content(
                 {'status': 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'})
             return response
         else:
-            response.set_content({'status': 'EMAIL_ALREADY_VERIFIED_ERROR'})
+            response.set_json_content({'status': 'EMAIL_ALREADY_VERIFIED_ERROR'})
             return response
 
     def get_all_cors_headers(self) -> List[str]:

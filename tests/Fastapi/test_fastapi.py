@@ -412,7 +412,7 @@ async def test_custom_response(driver_config_client: TestClient):
         async def email_exists_get(email: str, api_options: APIOptions):
             response_dict = {'custom': True}
             api_options.response.set_status_code(203)
-            api_options.response.set_content(response_dict)
+            api_options.response.set_json_content(response_dict)
             return await original_func(email, api_options)
 
         original_implementation.email_exists_get = email_exists_get

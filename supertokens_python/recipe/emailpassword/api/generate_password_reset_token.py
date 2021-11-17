@@ -27,6 +27,6 @@ async def handle_generate_password_reset_token_api(api_implementation: APIInterf
                                                             form_fields_raw)
     response = await api_implementation.generate_password_reset_token_post(form_fields, api_options)
 
-    api_options.response.set_content(response.to_json())
+    api_options.response.set_json_content(response.to_json())
 
     return api_options.response

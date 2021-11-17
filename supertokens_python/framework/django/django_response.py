@@ -61,7 +61,7 @@ class DjangoResponse(BaseResponse):
         else:
             return None
 
-    def set_content(self, content):
+    def set_json_content(self, content):
         if not self.response_sent:
             self.set_header('Content-Type', 'application/json; charset=utf-8')
             self.response.content = json.dumps(
