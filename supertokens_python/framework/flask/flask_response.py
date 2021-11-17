@@ -87,6 +87,7 @@ class FlaskResponse(BaseResponse):
 
     def set_content(self, content):
         if not self.response_sent:
+            self.set_header('Content-Type', 'application/json; charset=utf-8')
             self.response.data = json.dumps(
                 content,
                 ensure_ascii=False,
