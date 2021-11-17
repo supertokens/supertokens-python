@@ -25,7 +25,7 @@ class FlaskResponse(BaseResponse):
         self.response = response
         self.headers = list()
         self.response_sent = False
-        self.status_set = True
+        self.status_set = False
 
     def set_html_content(self, content):
         if not self.response_sent:

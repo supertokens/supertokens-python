@@ -16,6 +16,8 @@ import json
 
 from _pytest.fixtures import fixture
 from flask import Flask, jsonify, make_response, request
+from supertokens_python.recipe import emailpassword
+from supertokens_python.recipe.emailpassword.interfaces import APIOptions
 
 from supertokens_python import init
 from supertokens_python.framework.flask import Middleware
@@ -45,6 +47,19 @@ def teardown_function(f):
 
 @fixture(scope='function')
 def driver_config_app():
+    def override_email_password_apis(original_implementation):
+
+        original_func = original_implementation.email_exists_get
+
+        def email_exists_get(email: str, api_options: APIOptions):
+            response_dict = {'custom': True}
+            api_options.response.set_status_code(203)
+            api_options.response.set_content(response_dict)
+            return original_func(email, api_options)
+
+        original_implementation.email_exists_get = email_exists_get
+        return original_implementation
+
     app = Flask(__name__)
     app.app_context().push()
     Middleware(app)
@@ -61,7 +76,11 @@ def driver_config_app():
             'website_domain': "supertokens.io",
             'api_base_path': "/auth"
         },
-        'recipe_list': [session.init(
+        'recipe_list': [emailpassword.init({
+            'override': {
+                'apis': override_email_password_apis
+            }
+        }), session.init(
             {
                 'anti_csrf': 'VIA_TOKEN',
                 'cookie_domain': 'supertokens.io'
@@ -361,3 +380,14 @@ def test_login_handle(driver_config_app):
 
     response_dict = json.loads(response_2.data)
     assert "s" in response_dict
+
+
+def test_custom_response(driver_config_app):
+    start_st()
+
+    test_client = driver_config_app.test_client()
+    response = test_client.get('/auth/signup/email/exists?email=test@example.com')
+
+    dict_response = json.loads(response.data)
+    assert response.status_code == 203
+    assert dict_response["custom"]
