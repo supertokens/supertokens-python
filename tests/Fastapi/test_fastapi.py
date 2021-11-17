@@ -21,6 +21,8 @@ from pytest import mark
 
 from supertokens_python import init
 from supertokens_python.recipe import session
+from supertokens_python.recipe import emailpassword
+from supertokens_python.recipe.emailpassword.interfaces import APIOptions
 from supertokens_python.framework.fastapi import Middleware
 
 from supertokens_python.recipe.session.asyncio import create_new_session, refresh_session, get_session
@@ -399,3 +401,46 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
         }
     )
     assert response_3.status_code == 401  # not authorized because no refresh tokens
+
+
+@mark.asyncio
+async def test_custom_response(driver_config_client: TestClient):
+    def override_email_password_apis(original_implementation):
+
+        original_func = original_implementation.email_exists_get
+
+        async def email_exists_get(email: str, api_options: APIOptions):
+            response_dict = {'custom': True}
+            api_options.response.set_status_code(203)
+            api_options.response.set_content(response_dict)
+            return await original_func(email, api_options)
+
+        original_implementation.email_exists_get = email_exists_get
+        return original_implementation
+
+    init({
+        'supertokens': {
+            'connection_uri': "http://localhost:3567",
+        },
+        'framework': 'fastapi',
+        'app_info': {
+            'app_name': "SuperTokens Demo",
+            'api_domain': "http://api.supertokens.io",
+            'website_domain': "supertokens.io",
+            'api_base_path': "/auth"
+        },
+        'recipe_list': [emailpassword.init({
+            'override': {
+                'apis': override_email_password_apis
+            }
+        })],
+    })
+    start_st()
+
+    response = driver_config_client.get(
+        url='/auth/signup/email/exists?email=test@example.com',
+    )
+
+    dict_response = json.loads(response.text)
+    assert response.status_code == 203
+    assert dict_response["custom"]

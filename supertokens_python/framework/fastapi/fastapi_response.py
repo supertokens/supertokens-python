@@ -26,6 +26,7 @@ class FastApiResponse(BaseResponse):
         self.original = response
         self.parser_checked = False
         self.response_sent = False
+        self.status_set = False
 
     def set_html_content(self, content):
         if not self.response_sent:
@@ -46,7 +47,9 @@ class FastApiResponse(BaseResponse):
         return self.response.headers.get(key, None)
 
     def set_status_code(self, status_code):
-        self.response.status_code = status_code
+        if not self.status_set:
+            self.response.status_code = status_code
+            self.status_set = True
 
     def set_content(self, content):
         if not self.response_sent:
