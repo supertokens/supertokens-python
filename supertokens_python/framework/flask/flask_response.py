@@ -24,10 +24,13 @@ class FlaskResponse(BaseResponse):
         super().__init__({})
         self.response = response
         self.headers = list()
+        self.response_sent = False
 
     def set_html_content(self, content):
-        self.response.data = content
-        self.set_header('Content-Type', 'text/html')
+        if not self.response_sent:
+            self.response.data = content
+            self.set_header('Content-Type', 'text/html')
+            self.response_sent = True
 
     def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
                    domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "lax"):
@@ -80,10 +83,12 @@ class FlaskResponse(BaseResponse):
             return self.response.headers
 
     def set_content(self, content):
-        self.response.data = json.dumps(
-            content,
-            ensure_ascii=False,
-            allow_nan=False,
-            indent=None,
-            separators=(",", ":"),
-        ).encode("utf-8")
+        if not self.response_sent:
+            self.response.data = json.dumps(
+                content,
+                ensure_ascii=False,
+                allow_nan=False,
+                indent=None,
+                separators=(",", ":"),
+            ).encode("utf-8")
+            self.response_sent = True
