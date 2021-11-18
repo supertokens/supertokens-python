@@ -134,14 +134,14 @@ def send_non_200_response(message: str, status_code: int, response: BaseResponse
         raise_general_exception(
             'Calling sendNon200Response with status code < 300')
     response.set_status_code(status_code)
-    response.set_content(content={
+    response.set_json_content(content={
         ERROR_MESSAGE_KEY: message
     })
     return response
 
 
 def send_200_response(data_json: dict, response: BaseResponse) -> Union[BaseResponse, None]:
-    response.set_content(data_json)
+    response.set_json_content(data_json)
     response.set_status_code(200)
     return response
 

@@ -48,7 +48,7 @@ class BaseResponse(ABC):
         pass
 
     @abstractmethod
-    def set_content(self, content):
+    def set_json_content(self, content):
         pass
 
     @abstractmethod

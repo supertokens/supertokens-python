@@ -17,7 +17,7 @@ set-up-hooks:
 	chmod +x .git/hooks/pre-commit
 
 test:
-	pytest
+	pytest ./tests/
 
 dev-install:
 	pip3 install -e .[dev]

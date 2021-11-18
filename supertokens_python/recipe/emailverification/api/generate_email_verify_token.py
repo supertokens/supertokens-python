@@ -19,5 +19,5 @@ async def handle_generate_email_verify_token_api(api_implementation: APIInterfac
     if api_implementation.disable_generate_email_verify_token_post:
         return None
     result = await api_implementation.generate_email_verify_token_post(api_options)
-    api_options.response.set_content(result.to_json())
+    api_options.response.set_json_content(result.to_json())
     return api_options.response
