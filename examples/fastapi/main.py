@@ -16,7 +16,7 @@ from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword
 from supertokens_python.recipe.session import Session
 from supertokens_python.recipe.session.framework.fastapi import verify_session
-from supertokens_python.recipe.thirdparty import Github, Google, Apple
+from supertokens_python.recipe.thirdparty import Github, Google, Apple, Discord, GoogleWorkspaces
 
 load_dotenv()
 
@@ -77,6 +77,14 @@ init({
                         client_key_id=os.environ.get('APPLE_KEY_ID'),
                         client_team_id=os.environ.get('APPLE_TEAM_ID'),
                         client_private_key=os.environ.get('APPLE_PRIVATE_KEY')
+                    ), GoogleWorkspaces(
+                        is_default=True,
+                        client_id=os.environ.get('GOOGLE_WORKSPACES_CLIENT_ID'),
+                        client_secret=os.environ.get('GOOGLE_WORKSPACES_CLIENT_SECRET')
+                    ), Discord(
+                        is_default=True,
+                        client_id=os.environ.get('DISCORD_CLIENT_ID'),
+                        client_secret=os.environ.get('DISCORD_CLIENT_SECRET')
                     )
                 ]
             }
@@ -109,6 +117,14 @@ init({
                     client_key_id=os.environ.get('APPLE_KEY_ID'),
                     client_team_id=os.environ.get('APPLE_TEAM_ID'),
                     client_private_key=os.environ.get('APPLE_PRIVATE_KEY')
+                ), GoogleWorkspaces(
+                    is_default=True,
+                    client_id=os.environ.get('GOOGLE_WORKSPACES_CLIENT_ID'),
+                    client_secret=os.environ.get('GOOGLE_WORKSPACES_CLIENT_SECRET')
+                ), Discord(
+                    is_default=True,
+                    client_id=os.environ.get('DISCORD_CLIENT_ID'),
+                    client_secret=os.environ.get('DISCORD_CLIENT_SECRET')
                 )
             ]
         })
