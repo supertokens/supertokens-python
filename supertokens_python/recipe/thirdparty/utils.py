@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from .recipe import ThirdPartyRecipe
     from .provider import Provider
 from supertokens_python.utils import validate_the_structure_of_user_input
+from jwt import PyJWKClient, decode
 
 
 class SignInAndUpFeature:
@@ -177,3 +178,25 @@ def find_right_provider(
             return provider
 
     return None
+
+
+def verify_id_token_from_jwks_endpoint(id_token: str, jwks_uri: str, audience: str, issuers: List[str]):
+    jwks_client = PyJWKClient(jwks_uri)
+    signing_key = jwks_client.get_signing_key_from_jwt(id_token)
+
+    data = decode(
+        id_token,
+        signing_key.key,
+        algorithms=["RS256"],
+        audience=audience,
+        options={"verify_exp": False})
+
+    issuer_found = False
+    for issuer in issuers:
+        if data['iss'] == issuer:
+            issuer_found = True
+
+    if not issuer_found:
+        raise Exception('no required issuer found')
+
+    return data

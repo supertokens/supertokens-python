@@ -17,7 +17,9 @@ from supertokens_python.recipe.thirdparty import (
     Google,
     Github,
     Apple,
-    Facebook
+    Facebook,
+    Discord,
+    GoogleWorkspaces
 )
 
 Google = Google

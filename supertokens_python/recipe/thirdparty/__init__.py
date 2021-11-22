@@ -17,7 +17,9 @@ from .providers import (
     Google,
     Github,
     Apple,
-    Facebook
+    Facebook,
+    Discord,
+    GoogleWorkspaces
 )
 
 

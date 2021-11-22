@@ -15,3 +15,5 @@ from .facebook import Facebook
 from .github import Github
 from .apple import Apple
 from .google import Google
+from .google_workspaces import GoogleWorkspaces
+from .discord import Discord
