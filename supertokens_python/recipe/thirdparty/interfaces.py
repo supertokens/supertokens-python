@@ -96,13 +96,14 @@ class APIOptions:
 
 
 class SignInUpPostResponse(ABC):
-    def __init__(self, status: Literal['OK', 'NO_EMAIL_GIVEN_BY_PROVIDER'], user: Union[User, None] = None,
+    def __init__(self, status: Literal['OK', 'NO_EMAIL_GIVEN_BY_PROVIDER', 'FIELD_ERROR'], user: Union[User, None] = None,
                  created_new_user: Union[bool, None] = None, auth_code_response: any = None,
                  error: Union[str, None] = None):
         self.type = 'thirdparty'
         self.status = status
         self.is_ok = False
         self.is_no_email_given_by_provider = False
+        self.is_field_error = False
         self.user = user
         self.created_new_user = created_new_user
         self.error = error
@@ -172,6 +173,18 @@ class SignInUpPostNoEmailGivenByProviderResponse(SignInUpPostResponse):
     def to_json(self):
         return {
             'status': self.status
+        }
+
+
+class SignInUpPostFieldErrorResponse(SignInUpPostResponse):
+    def __init__(self, error: str):
+        super().__init__('FIELD_ERROR', error=error)
+        self.is_field_error = True
+
+    def to_json(self):
+        return {
+            'status': self.status,
+            'error': self.error
         }
 
 

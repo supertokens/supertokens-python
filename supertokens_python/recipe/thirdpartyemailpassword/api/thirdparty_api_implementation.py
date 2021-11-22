@@ -16,7 +16,7 @@ from __future__ import annotations
 from typing import Union
 
 from supertokens_python.recipe.thirdparty.interfaces import APIInterface, APIOptions, \
-    SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostOkResponse
+    SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostOkResponse, SignInUpPostFieldErrorResponse
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInterface as ThirdPartyEmailPasswordAPIInterface
 
@@ -47,7 +47,7 @@ def get_interface_impl(
             elif result.status == 'NO_EMAIL_GIVEN_BY_PROVIDER':
                 return SignInUpPostNoEmailGivenByProviderResponse()
             else:
-                raise Exception('Should never come here')
+                return SignInUpPostFieldErrorResponse(result.error)
 
         implementation.sign_in_up_post = sign_in_up_post
 
