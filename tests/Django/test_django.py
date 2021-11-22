@@ -20,6 +20,7 @@ from django.test import TestCase, RequestFactory
 from supertokens_python import init
 from supertokens_python.recipe import session
 from supertokens_python.framework.django import middleware
+from supertokens_python.recipe import emailpassword
 
 from supertokens_python.recipe.session.asyncio import create_new_session, refresh_session, get_session
 from tests.utils import start_st, reset, clean_st, setup_st
@@ -52,6 +53,10 @@ async def create_new_session_view(request):
 async def refresh_view(request):
     await refresh_session(request)
     return JsonResponse({'foo': 'bar'})
+
+
+async def custom_response_view(request):
+    pass
 
 
 async def logout_view(request):
@@ -253,3 +258,45 @@ class SupertokensTest(TestCase):
         response = await my_middleware(request)
         # not authorized because no access refresh token
         assert response.status_code == 401
+
+    async def test_custom_response(self):
+        def override_email_password_apis(original_implementation):
+
+            original_func = original_implementation.email_exists_get
+
+            async def email_exists_get(email: str, api_options):
+                response_dict = {'custom': True}
+                api_options.response.set_status_code(203)
+                api_options.response.set_json_content(response_dict)
+                return await original_func(email, api_options)
+
+            original_implementation.email_exists_get = email_exists_get
+            return original_implementation
+
+        init({
+            'supertokens': {
+                'connection_uri': "http://localhost:3567",
+            },
+            'framework': 'django',
+            'app_info': {
+                'app_name': "SuperTokens Demo",
+                'api_domain': "http://api.supertokens.io",
+                'website_domain': "supertokens.io",
+                'api_base_path': "/auth"
+            },
+            'recipe_list': [emailpassword.init({
+                'override': {
+                    'apis': override_email_password_apis
+                }
+            })],
+        })
+
+        start_st()
+
+        my_middleware = middleware(custom_response_view)
+        request = self.factory.get('/auth/signup/email/exists?email=test@example.com')
+        response = await my_middleware(request)
+
+        assert response.status_code == 203
+        dict_response = json.loads(response.content)
+        assert dict_response["custom"]

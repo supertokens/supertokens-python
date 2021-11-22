@@ -35,6 +35,6 @@ async def handle_password_reset_api(api_implementation: APIInterface, api_option
 
     token = body['token']
     response = await api_implementation.password_reset_post(form_fields, token, api_options)
-    api_options.response.set_content(response.to_json())
+    api_options.response.set_json_content(response.to_json())
 
     return api_options.response

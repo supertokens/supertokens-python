@@ -38,7 +38,6 @@ def middleware(get_response):
                     result = DjangoResponse(result)
                 if hasattr(request, "supertokens") and isinstance(request.supertokens, Session):
                     manage_cookies_post_response(request.supertokens, result)
-
                 return result.response
 
             except SuperTokensError as e:
@@ -50,8 +49,8 @@ def middleware(get_response):
         def __middleware(request):
             st = Supertokens.get_instance()
             custom_request = DjangoRequest(request)
-            from django.http import JsonResponse
-            response = DjangoResponse(JsonResponse({}))
+            from django.http import HttpResponse
+            response = DjangoResponse(HttpResponse())
             try:
                 result = async_to_sync(st.middleware)(custom_request, response)
 
@@ -61,11 +60,10 @@ def middleware(get_response):
 
                 if hasattr(request, "supertokens") and isinstance(request.supertokens, Session):
                     manage_cookies_post_response(request.supertokens, result)
-
                 return result.response
 
             except SuperTokensError as e:
-                response = DjangoResponse(JsonResponse({}))
+                response = DjangoResponse(HttpResponse())
                 result = async_to_sync(st.handle_supertokens_error)(DjangoRequest(request), e, response)
                 return result.response
 

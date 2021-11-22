@@ -25,10 +25,14 @@ class FastApiResponse(BaseResponse):
         self.response = response
         self.original = response
         self.parser_checked = False
+        self.response_sent = False
+        self.status_set = False
 
     def set_html_content(self, content):
-        self.response.body = bytes(content, "utf-8")
-        self.set_header('Content-Type', 'text/html')
+        if not self.response_sent:
+            self.response.body = bytes(content, "utf-8")
+            self.set_header('Content-Type', 'text/html')
+            self.response_sent = True
 
     def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
                    domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "lax"):
@@ -43,13 +47,18 @@ class FastApiResponse(BaseResponse):
         return self.response.headers.get(key, None)
 
     def set_status_code(self, status_code):
-        self.response.status_code = status_code
+        if not self.status_set:
+            self.response.status_code = status_code
+            self.status_set = True
 
-    def set_content(self, content):
-        self.response.body = json.dumps(
-            content,
-            ensure_ascii=False,
-            allow_nan=False,
-            indent=None,
-            separators=(",", ":"),
-        ).encode("utf-8")
+    def set_json_content(self, content):
+        if not self.response_sent:
+            self.set_header('Content-Type', 'application/json; charset=utf-8')
+            self.response.body = json.dumps(
+                content,
+                ensure_ascii=False,
+                allow_nan=False,
+                indent=None,
+                separators=(",", ":"),
+            ).encode("utf-8")
+            self.response_sent = True
