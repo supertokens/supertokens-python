@@ -53,10 +53,14 @@ class DjangoResponse(BaseResponse):
         self.response = response
         self.original = response
         self.parser_checked = False
+        self.response_sent = False
+        self.status_set = False
 
     def set_html_content(self, content):
-        self.response.content = content
-        self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+        if not self.response_sent:
+            self.response.content = content
+            self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+            self.response_sent = True
 
     def set_cookie(self, key: str, value: str = &#34;&#34;, max_age: int = None, expires: int = None, path: str = &#34;/&#34;,
                    domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
@@ -72,7 +76,9 @@ class DjangoResponse(BaseResponse):
         self.response.cookies[key][&#39;samesite&#39;] = samesite
 
     def set_status_code(self, status_code):
-        self.response.status_code = status_code
+        if not self.status_set:
+            self.response.status_code = status_code
+            self.status_set = True
 
     def set_header(self, key, value):
         self.response[key] = value
@@ -83,14 +89,17 @@ class DjangoResponse(BaseResponse):
         else:
             return None
 
-    def set_content(self, content):
-        self.response.content = json.dumps(
-            content,
-            ensure_ascii=False,
-            allow_nan=False,
-            indent=None,
-            separators=(&#34;,&#34;, &#34;:&#34;),
-        ).encode(&#34;utf-8&#34;)</code></pre>
+    def set_json_content(self, content):
+        if not self.response_sent:
+            self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
+            self.response.content = json.dumps(
+                content,
+                ensure_ascii=False,
+                allow_nan=False,
+                indent=None,
+                separators=(&#34;,&#34;, &#34;:&#34;),
+            ).encode(&#34;utf-8&#34;)
+            self.response_sent = True</code></pre>
 </details>
 </section>
 <section>
@@ -120,10 +129,14 @@ inheritance.</p></div>
         self.response = response
         self.original = response
         self.parser_checked = False
+        self.response_sent = False
+        self.status_set = False
 
     def set_html_content(self, content):
-        self.response.content = content
-        self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+        if not self.response_sent:
+            self.response.content = content
+            self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+            self.response_sent = True
 
     def set_cookie(self, key: str, value: str = &#34;&#34;, max_age: int = None, expires: int = None, path: str = &#34;/&#34;,
                    domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
@@ -139,7 +152,9 @@ inheritance.</p></div>
         self.response.cookies[key][&#39;samesite&#39;] = samesite
 
     def set_status_code(self, status_code):
-        self.response.status_code = status_code
+        if not self.status_set:
+            self.response.status_code = status_code
+            self.status_set = True
 
     def set_header(self, key, value):
         self.response[key] = value
@@ -150,14 +165,17 @@ inheritance.</p></div>
         else:
             return None
 
-    def set_content(self, content):
-        self.response.content = json.dumps(
-            content,
-            ensure_ascii=False,
-            allow_nan=False,
-            indent=None,
-            separators=(&#34;,&#34;, &#34;:&#34;),
-        ).encode(&#34;utf-8&#34;)</code></pre>
+    def set_json_content(self, content):
+        if not self.response_sent:
+            self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
+            self.response.content = json.dumps(
+                content,
+                ensure_ascii=False,
+                allow_nan=False,
+                indent=None,
+                separators=(&#34;,&#34;, &#34;:&#34;),
+            ).encode(&#34;utf-8&#34;)
+            self.response_sent = True</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -180,25 +198,6 @@ inheritance.</p></div>
         return self.response[key]
     else:
         return None</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.framework.django.django_response.DjangoResponse.set_content"><code class="name flex">
-<span>def <span class="ident">set_content</span></span>(<span>self, content)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def set_content(self, content):
-    self.response.content = json.dumps(
-        content,
-        ensure_ascii=False,
-        allow_nan=False,
-        indent=None,
-        separators=(&#34;,&#34;, &#34;:&#34;),
-    ).encode(&#34;utf-8&#34;)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.django.django_response.DjangoResponse.set_cookie"><code class="name flex">
@@ -247,8 +246,32 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def set_html_content(self, content):
-    self.response.content = content
-    self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)</code></pre>
+    if not self.response_sent:
+        self.response.content = content
+        self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+        self.response_sent = True</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.framework.django.django_response.DjangoResponse.set_json_content"><code class="name flex">
+<span>def <span class="ident">set_json_content</span></span>(<span>self, content)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_json_content(self, content):
+    if not self.response_sent:
+        self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
+        self.response.content = json.dumps(
+            content,
+            ensure_ascii=False,
+            allow_nan=False,
+            indent=None,
+            separators=(&#34;,&#34;, &#34;:&#34;),
+        ).encode(&#34;utf-8&#34;)
+        self.response_sent = True</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.django.django_response.DjangoResponse.set_status_code"><code class="name flex">
@@ -261,7 +284,9 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def set_status_code(self, status_code):
-    self.response.status_code = status_code</code></pre>
+    if not self.status_set:
+        self.response.status_code = status_code
+        self.status_set = True</code></pre>
 </details>
 </dd>
 </dl>
@@ -286,10 +311,10 @@ inheritance.</p></div>
 <h4><code><a title="supertokens_python.framework.django.django_response.DjangoResponse" href="#supertokens_python.framework.django.django_response.DjangoResponse">DjangoResponse</a></code></h4>
 <ul class="two-column">
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.get_header" href="#supertokens_python.framework.django.django_response.DjangoResponse.get_header">get_header</a></code></li>
-<li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.set_content" href="#supertokens_python.framework.django.django_response.DjangoResponse.set_content">set_content</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.set_cookie" href="#supertokens_python.framework.django.django_response.DjangoResponse.set_cookie">set_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.set_header" href="#supertokens_python.framework.django.django_response.DjangoResponse.set_header">set_header</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.set_html_content" href="#supertokens_python.framework.django.django_response.DjangoResponse.set_html_content">set_html_content</a></code></li>
+<li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.set_json_content" href="#supertokens_python.framework.django.django_response.DjangoResponse.set_json_content">set_json_content</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_response.DjangoResponse.set_status_code" href="#supertokens_python.framework.django.django_response.DjangoResponse.set_status_code">set_status_code</a></code></li>
 </ul>
 </li>
