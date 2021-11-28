@@ -11,12 +11,25 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union, List
+from typing import Union, List, Literal
 
 from .session_class import Session
 from .recipe import SessionRecipe
 from . import exceptions
+from .utils import InputErrorHandlers, OverrideConfig
 
 
-def init(config=None):
-    return SessionRecipe.init(config)
+def init(cookie_domain: Union[str, None] = None,
+         cookie_secure: Union[str, None] = None,
+         cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
+         session_expired_status_code: Union[str, None] = None,
+         anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+         error_handlers: Union[InputErrorHandlers, None] = None,
+         override: Union[OverrideConfig, None] = None):
+    return SessionRecipe.init(cookie_domain,
+                              cookie_secure,
+                              cookie_same_site,
+                              session_expired_status_code,
+                              anti_csrf,
+                              error_handlers,
+                              override)

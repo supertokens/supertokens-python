@@ -19,7 +19,7 @@ from fastapi.testclient import TestClient
 from pytest import fixture
 from pytest import mark
 
-from supertokens_python import init
+from supertokens_python import init, SupertokensConfig, InputAppInfo
 from supertokens_python.recipe import session
 from supertokens_python.recipe import emailpassword
 from supertokens_python.recipe.emailpassword.interfaces import APIOptions
@@ -89,34 +89,30 @@ async def driver_config_client():
     return TestClient(app)
 
 
-def apis_override_email_password(param):
-    param.refresh_post = None
+def apis_override_session(param):
+    param.disable_refresh_post = True
     return param
 
 
 @mark.asyncio
 async def test_login_refresh(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN',
-                'cookie_domain': 'supertokens.io',
-                "override": {
-                    'apis': apis_override_email_password
-                }
-            }
-        )],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN',
+            cookie_domain='supertokens.io',
+            override=session.OverrideConfig(
+                apis=apis_override_session
+            )
+        )]
+    )
     start_st()
 
     response_1 = driver_config_client.get('/login')
@@ -132,9 +128,9 @@ async def test_login_refresh(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
     response_3 = driver_config_client.post(
         url='/refresh',
@@ -160,31 +156,27 @@ async def test_login_refresh(driver_config_client: TestClient):
     assert cookies_3['sAccessToken']['httponly']
     assert cookies_3['sRefreshToken']['httponly']
     assert cookies_3['sIdRefreshToken']['httponly']
-    assert cookies_3['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_3['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_3['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_3['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_3['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_3['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
 
 @mark.asyncio
 async def test_login_logout(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN',
-                'cookie_domain': 'supertokens.io'
-            }
-        )],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN',
+            cookie_domain='supertokens.io'
+        )]
+    )
     start_st()
 
     response_1 = driver_config_client.get('/login')
@@ -200,9 +192,9 @@ async def test_login_logout(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sAccessToken']['secure'] is None
     assert cookies_1['sRefreshToken']['secure'] is None
     assert cookies_1['sIdRefreshToken']['secure'] is None
@@ -229,9 +221,9 @@ async def test_login_logout(driver_config_client: TestClient):
     assert cookies_2['sAccessToken']['httponly']
     assert cookies_2['sRefreshToken']['httponly']
     assert cookies_2['sIdRefreshToken']['httponly']
-    assert cookies_2['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_2['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_2['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_2['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_2['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_2['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_2['sAccessToken']['secure'] is None
     assert cookies_2['sRefreshToken']['secure'] is None
     assert cookies_2['sIdRefreshToken']['secure'] is None
@@ -239,24 +231,20 @@ async def test_login_logout(driver_config_client: TestClient):
 
 @mark.asyncio
 async def test_login_info(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN',
-                'cookie_domain': 'supertokens.io'
-            }
-        )],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN',
+            cookie_domain='supertokens.io'
+        )]
+    )
     start_st()
 
     response_1 = driver_config_client.get('/login')
@@ -272,9 +260,9 @@ async def test_login_info(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sAccessToken']['secure'] is None
     assert cookies_1['sRefreshToken']['secure'] is None
     assert cookies_1['sIdRefreshToken']['secure'] is None
@@ -295,24 +283,20 @@ async def test_login_info(driver_config_client: TestClient):
 
 @mark.asyncio
 async def test_login_handle(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN',
-                'cookie_domain': 'supertokens.io'
-            }
-        )],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN',
+            cookie_domain='supertokens.io'
+        )]
+    )
     start_st()
 
     response_1 = driver_config_client.get('/login')
@@ -328,9 +312,9 @@ async def test_login_handle(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sAccessToken']['secure'] is None
     assert cookies_1['sRefreshToken']['secure'] is None
     assert cookies_1['sIdRefreshToken']['secure'] is None
@@ -351,24 +335,20 @@ async def test_login_handle(driver_config_client: TestClient):
 
 @mark.asyncio
 async def test_login_refresh_error_handler(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN',
-                'cookie_domain': 'supertokens.io'
-            }
-        )],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN',
+            cookie_domain='supertokens.io'
+        )]
+    )
     start_st()
 
     response_1 = driver_config_client.get('/login')
@@ -384,9 +364,9 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sAccessToken']['secure'] is None
     assert cookies_1['sRefreshToken']['secure'] is None
     assert cookies_1['sIdRefreshToken']['secure'] is None
@@ -418,23 +398,21 @@ async def test_custom_response(driver_config_client: TestClient):
         original_implementation.email_exists_get = email_exists_get
         return original_implementation
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [emailpassword.init({
-            'override': {
-                'apis': override_email_password_apis
-            }
-        })],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(
+            override=emailpassword.OverrideConfig(
+                apis=override_email_password_apis
+            )
+        )]
+    )
     start_st()
 
     response = driver_config_client.get(

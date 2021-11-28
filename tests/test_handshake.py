@@ -14,7 +14,7 @@
 
 from pytest import mark
 
-from supertokens_python import init
+from supertokens_python import init, SupertokensConfig, InputAppInfo
 from supertokens_python.process_state import ProcessState, AllowedProcessStates
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
@@ -36,19 +36,16 @@ def teardown_function(f):
 
 @mark.asyncio
 async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-        },
-        'recipe_list': [session.init()
-                        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init()]
+    )
     start_st()
 
     session_recipe_instance = SessionRecipe.get_instance()

@@ -18,7 +18,7 @@ import time
 
 from pytest import mark
 
-from supertokens_python import init
+from supertokens_python import init, SupertokensConfig, InputAppInfo
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.asyncio import create_jwt
 from supertokens_python.utils import utf_base64decode
@@ -40,18 +40,16 @@ def teardown_function(f):
 
 @mark.asyncio
 async def test_that_sending_0_validity_throws_an_error():
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-        },
-        'recipe_list': [jwt.init()]
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='http://api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[jwt.init()]
+    )
     start_st()
 
     is_exception = False
@@ -65,18 +63,16 @@ async def test_that_sending_0_validity_throws_an_error():
 
 @mark.asyncio
 async def test_that_sending_a_invalid_json_throws_an_error():
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-        },
-        'recipe_list': [jwt.init()]
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='http://api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[jwt.init()]
+    )
     start_st()
 
     jwt_value = None
@@ -92,18 +88,16 @@ async def test_that_sending_a_invalid_json_throws_an_error():
 
 @mark.asyncio
 async def test_that_returned_JWT_uses_100_years_for_expiry_for_default_config():
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-        },
-        'recipe_list': [jwt.init()]
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='http://api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[jwt.init()]
+    )
     start_st()
 
     time_rn = time.time()
@@ -122,18 +116,18 @@ async def test_that_returned_JWT_uses_100_years_for_expiry_for_default_config():
 
 @mark.asyncio
 async def test_that_jwt_validity_is_same_as_validity_set_in_config():
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-        },
-        'recipe_list': [jwt.init({"jwt_validity_seconds": 1000})]
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='http://api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[jwt.init(
+            jwt_validity_seconds=1000
+        )]
+    )
     start_st()
 
     time_rn = time.time()
@@ -152,18 +146,18 @@ async def test_that_jwt_validity_is_same_as_validity_set_in_config():
 
 @mark.asyncio
 async def test_that_jwt_validity_is_same_as_validity_passed_in_createJWT_function():
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-        },
-        'recipe_list': [jwt.init({"jwt_validity_seconds": 1000})]
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='http://api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[jwt.init(
+            jwt_validity_seconds=1000
+        )]
+    )
     start_st()
 
     time_rn = time.time()

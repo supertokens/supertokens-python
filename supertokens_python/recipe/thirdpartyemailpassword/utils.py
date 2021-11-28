@@ -15,29 +15,20 @@ from __future__ import annotations
 
 from typing import List, Callable, TYPE_CHECKING, Union
 
+from supertokens_python.recipe.thirdparty.provider import Provider
+
 from .interfaces import RecipeInterface, APIInterface
 from .types import (
     INPUT_SCHEMA,
     NextPaginationToken
 )
+from ..emailpassword.utils import InputSignUpFeature, InputResetPasswordUsingTokenFeature
+from ..emailverification.utils import InputEmailVerificationConfig, ParentRecipeEmailVerificationConfig
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyEmailPasswordRecipe
 from supertokens_python.utils import validate_the_structure_of_user_input, utf_base64decode, utf_base64encode
 from supertokens_python.recipe.emailpassword.types import UsersResponse
-
-
-class SignUpFeature:
-    def __init__(self, form_fields: List):
-        self.form_fields = form_fields
-
-
-def validate_and_normalise_sign_up_config(config=None) -> SignUpFeature:
-    if config is None:
-        config = {}
-    form_fields = config['form_fields'] if 'form_fields' in config else []
-
-    return SignUpFeature(form_fields)
 
 
 def email_verification_create_and_send_custom_email(recipe: ThirdPartyEmailPasswordRecipe,
@@ -63,42 +54,40 @@ def email_verification_get_email_verification_url(
 
 
 def validate_and_normalise_email_verification_config(
-        recipe: ThirdPartyEmailPasswordRecipe, config=None, override=None):
+        recipe: ThirdPartyEmailPasswordRecipe, config=Union[InputEmailVerificationConfig, None]):
     create_and_send_custom_email = None
     get_email_verification_url = None
     if config is None:
-        config = {}
-    if override is None:
-        override = {}
-    if 'create_and_send_custom_email' in config:
-        create_and_send_custom_email = email_verification_create_and_send_custom_email(recipe, config[
-            'create_and_send_custom_email'])
-    if 'get_email_verification_url' in config:
+        config = InputEmailVerificationConfig()
+    if config.create_and_send_custom_email is not None:
+        create_and_send_custom_email = email_verification_create_and_send_custom_email(recipe,
+                                                                                       config.create_and_send_custom_email)
+    if config.get_email_verification_url is not None:
         get_email_verification_url = email_verification_get_email_verification_url(recipe,
-                                                                                   config['get_email_verification_url'])
+                                                                                   config.get_email_verification_url)
 
-    return {
-        'get_email_for_user_id': recipe.get_email_for_user_id,
-        'create_and_send_custom_email': create_and_send_custom_email,
-        'get_email_verification_url': get_email_verification_url,
-        'override': override
-    }
+    return ParentRecipeEmailVerificationConfig(
+        get_email_for_user_id=recipe.get_email_for_user_id,
+        create_and_send_custom_email=create_and_send_custom_email,
+        get_email_verification_url=get_email_verification_url,
+        override=config.override
+    )
 
 
 class OverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None],
-                 apis: Union[Callable[[APIInterface], APIInterface], None]):
+    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+                 apis: Union[Callable[[APIInterface], APIInterface], None] = None):
         self.functions = functions
         self.apis = apis
 
 
 class ThirdPartyEmailPasswordConfig:
     def __init__(self,
-                 sign_up_feature: SignUpFeature,
-                 email_verification_feature: any,
-                 providers: List,
-                 reset_password_using_token_feature: any,
-                 override: OverrideConfig):
+                 providers: List[Provider],
+                 email_verification_feature: ParentRecipeEmailVerificationConfig,
+                 sign_up_feature: Union[InputSignUpFeature, None],
+                 reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None],
+                 override: Union[OverrideConfig, None]):
         self.sign_up_feature = sign_up_feature
         self.email_verification_feature = email_verification_feature
         self.providers = providers
@@ -107,23 +96,21 @@ class ThirdPartyEmailPasswordConfig:
 
 
 def validate_and_normalise_user_input(
-        recipe: ThirdPartyEmailPasswordRecipe, config) -> ThirdPartyEmailPasswordConfig:
-    validate_the_structure_of_user_input(
-        config, INPUT_SCHEMA, 'thirdpartyemailpassword recipe', recipe)
-    sign_up_feature = validate_and_normalise_sign_up_config(
-        config['sign_up_feature'] if 'sign_up_feature' in config else None)
+        recipe: ThirdPartyEmailPasswordRecipe,
+        sign_up_feature: Union[InputSignUpFeature, None] = None,
+        reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
+        email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+        override: Union[OverrideConfig, None] = None,
+        providers: Union[List[Provider], None] = None
+) -> ThirdPartyEmailPasswordConfig:
     email_verification_feature = validate_and_normalise_email_verification_config(
         recipe,
-        config['email_verification_feature'] if 'email_verification_feature' in config else None)
-    providers = config['providers'] if 'providers' in config else []
-    reset_password_using_token_feature = config[
-        'reset_password_using_token_feature'] if 'reset_password_using_token_feature' in config else {}
-    override_functions = config['override']['functions'] if 'override' in config and 'functions' in config[
-        'override'] else None
-    override_apis = config['override']['apis'] if 'override' in config and 'apis' in config[
-        'override'] else None
-    override = OverrideConfig(override_functions, override_apis)
-    return ThirdPartyEmailPasswordConfig(sign_up_feature, email_verification_feature, providers,
+        email_verification_feature)
+    if providers is None:
+        providers = []
+    if override is None:
+        override = OverrideConfig()
+    return ThirdPartyEmailPasswordConfig(providers, email_verification_feature, sign_up_feature,
                                          reset_password_using_token_feature, override)
 
 

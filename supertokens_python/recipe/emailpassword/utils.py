@@ -18,7 +18,7 @@ from re import fullmatch
 from typing import List, Union, Callable, Awaitable, TYPE_CHECKING
 
 from .interfaces import RecipeInterface, APIInterface
-from .types import User, FormField, NormalisedFormField, INPUT_SCHEMA
+from .types import User, FormField, NormalisedFormField, INPUT_SCHEMA, InputFormField
 
 if TYPE_CHECKING:
     from .recipe import EmailPasswordRecipe
@@ -30,6 +30,7 @@ from .constants import (
 )
 from supertokens_python.utils import get_filtered_list, validate_the_structure_of_user_input
 from httpx import AsyncClient
+from supertokens_python.recipe.emailverification.utils import InputEmailVerificationConfig, ParentRecipeEmailVerificationConfig
 
 
 async def default_validator(_):
@@ -111,31 +112,31 @@ def default_create_and_send_custom_email(
     return func
 
 
+class InputSignUpFeature:
+    def __init__(self, form_fields: Union[List[InputFormField], None] = None):
+        if form_fields is None:
+            form_fields = []
+        self.form_fields = normalise_sign_up_form_fields(form_fields)
+
+
 class SignUpFeature:
     def __init__(self, form_fields: List[NormalisedFormField]):
         self.form_fields = form_fields
 
 
-def normalise_sign_up_form_fields(form_fields) -> List[NormalisedFormField]:
+def normalise_sign_up_form_fields(form_fields: List[InputFormField]) -> List[NormalisedFormField]:
     normalised_form_fields = []
-    if form_fields is not None and isinstance(form_fields, list):
-        for field in form_fields:
-            if 'id' in field and field['id'] == FORM_FIELD_PASSWORD_ID:
-                validator = field['validate'] if 'validate' in field else default_password_validator
-                normalised_form_fields.append(
-                    NormalisedFormField(
-                        field['id'], validator, False))
-            elif 'id' in field and field['id'] == FORM_FIELD_EMAIL_ID:
-                validator = field['validate'] if 'validate' in field else default_email_validator
-                normalised_form_fields.append(
-                    NormalisedFormField(
-                        field['id'], validator, False))
-            else:
-                validator = field['validate'] if 'validate' in field else default_validator
-                optional = field['optional'] if 'optional' in field else False
-                normalised_form_fields.append(
-                    NormalisedFormField(
-                        field['id'], validator, optional))
+    for field in form_fields:
+        if field.id == FORM_FIELD_PASSWORD_ID:
+            validator = field.validate if field.validate is not None else default_password_validator
+            normalised_form_fields.append(NormalisedFormField(field.id, validator, False))
+        elif field.id == FORM_FIELD_EMAIL_ID:
+            validator = field.validate if field.validate is not None else default_email_validator
+            normalised_form_fields.append(NormalisedFormField(field.id, validator, False))
+        else:
+            validator = field.validate if field.validate is not None else default_validator
+            optional = field.optional if field.optional is not None else False
+            normalised_form_fields.append(NormalisedFormField(field.id, validator, optional))
     if len(get_filtered_list(lambda x: x.id ==
            FORM_FIELD_PASSWORD_ID, normalised_form_fields)) == 0:
         normalised_form_fields.append(
@@ -180,6 +181,14 @@ def validate_and_normalise_sign_in_config(
     return SignInFeature(form_fields)
 
 
+class InputResetPasswordUsingTokenFeature:
+    def __init__(self,
+                 get_reset_password_url: Union[Callable[[User], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[User, str], Awaitable], None] = None):
+        self.get_reset_password_url = get_reset_password_url
+        self.create_and_send_custom_email = create_and_send_custom_email
+
+
 class ResetPasswordUsingTokenFeature:
     def __init__(self,
                  form_fields_for_password_reset_form: List[NormalisedFormField],
@@ -192,24 +201,18 @@ class ResetPasswordUsingTokenFeature:
         self.create_and_send_custom_email = create_and_send_custom_email
 
 
-def validate_and_normalise_reset_password_using_token_config(app_info: AppInfo, sign_up_config: SignUpFeature,
-                                                             config=None) -> ResetPasswordUsingTokenFeature:
-    if config is None:
-        config = {}
+def validate_and_normalise_reset_password_using_token_config(app_info: AppInfo, sign_up_config: InputSignUpFeature,
+                                                             config: InputResetPasswordUsingTokenFeature) -> ResetPasswordUsingTokenFeature:
     form_fields_for_password_reset_form = list(map(lambda y: NormalisedFormField(y.id, y.validate, False),
                                                    get_filtered_list(lambda x: x.id == FORM_FIELD_PASSWORD_ID,
                                                                      sign_up_config.form_fields)))
     form_fields_for_generate_token_form = list(map(lambda y: NormalisedFormField(y.id, y.validate, False),
                                                    get_filtered_list(lambda x: x.id == FORM_FIELD_EMAIL_ID,
                                                                      sign_up_config.form_fields)))
-    get_reset_password_url = config[
-        'get_reset_password_url'] if 'get_reset_password_url' in config else default_get_reset_password_url(app_info)
-    create_and_send_custom_email = config[
-        'create_and_send_custom_email'] if 'create_and_send_custom_email' in config else default_create_and_send_custom_email(
-        app_info)
-    return ResetPasswordUsingTokenFeature(form_fields_for_password_reset_form,
-                                          form_fields_for_generate_token_form, get_reset_password_url,
-                                          create_and_send_custom_email)
+    get_reset_password_url = config.get_reset_password_url if config.get_reset_password_url is not None else default_get_reset_password_url(app_info)
+    create_and_send_custom_email = config.create_and_send_custom_email if config.create_and_send_custom_email is not None else default_create_and_send_custom_email(app_info)
+    return ResetPasswordUsingTokenFeature(form_fields_for_password_reset_form, form_fields_for_generate_token_form,
+                                          get_reset_password_url, create_and_send_custom_email)
 
 
 def email_verification_create_and_send_custom_email(
@@ -235,30 +238,28 @@ def email_verification_get_email_verification_url(
 
 
 def validate_and_normalise_email_verification_config(
-        recipe: EmailPasswordRecipe, config=None, override=None):
+        recipe: EmailPasswordRecipe, config=Union[InputEmailVerificationConfig, None]):
     create_and_send_custom_email = None
     get_email_verification_url = None
     if config is None:
-        config = {}
-    if override is None:
-        override = {}
-    if 'create_and_send_custom_email' in config:
-        create_and_send_custom_email = email_verification_create_and_send_custom_email(recipe, config[
-            'create_and_send_custom_email'])
-    if 'get_email_verification_url' in config:
+        config = InputEmailVerificationConfig()
+    if config.create_and_send_custom_email is not None:
+        create_and_send_custom_email = email_verification_create_and_send_custom_email(recipe,
+                                                                                       config.create_and_send_custom_email)
+    if config.get_email_verification_url is not None:
         get_email_verification_url = email_verification_get_email_verification_url(recipe,
-                                                                                   config['get_email_verification_url'])
-    return {
-        'get_email_for_user_id': recipe.get_email_for_user_id,
-        'create_and_send_custom_email': create_and_send_custom_email,
-        'get_email_verification_url': get_email_verification_url,
-        'override': override
-    }
+                                                                                   config.get_email_verification_url)
+    return ParentRecipeEmailVerificationConfig(
+        get_email_for_user_id=recipe.get_email_for_user_id,
+        create_and_send_custom_email=create_and_send_custom_email,
+        get_email_verification_url=get_email_verification_url,
+        override=config.override
+    )
 
 
 class OverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None],
-                 apis: Union[Callable[[APIInterface], APIInterface], None]):
+    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+                 apis: Union[Callable[[APIInterface], APIInterface], None] = None):
         self.functions = functions
         self.apis = apis
 
@@ -267,36 +268,35 @@ class EmailPasswordConfig:
     def __init__(self,
                  sign_up_feature: SignUpFeature,
                  sign_in_feature: SignInFeature,
-                 reset_token_using_password_feature: ResetPasswordUsingTokenFeature,
-                 email_verification_feature: any,
+                 reset_password_using_token_feature: ResetPasswordUsingTokenFeature,
+                 email_verification_feature: ParentRecipeEmailVerificationConfig,
                  override: OverrideConfig):
         self.sign_up_feature = sign_up_feature
         self.sign_in_feature = sign_in_feature
-        self.reset_token_using_password_feature = reset_token_using_password_feature
+        self.reset_password_using_token_feature = reset_password_using_token_feature
         self.email_verification_feature = email_verification_feature
         self.override = override
 
 
 def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: AppInfo,
-                                      config) -> EmailPasswordConfig:
-    validate_the_structure_of_user_input(
-        config, INPUT_SCHEMA, 'emailpassword recipe', recipe)
-    sign_up_feature = validate_and_normalise_sign_up_config(
-        config['sign_up_feature'] if 'sign_up_feature' in config else None)
-    sign_in_feature = validate_and_normalise_sign_in_config(sign_up_feature)
-    reset_token_using_password_feature = validate_and_normalise_reset_password_using_token_config(
-        app_info,
-        sign_up_feature,
-        config['reset_password_using_token_feature'] if 'reset_password_using_token_feature' in config else None)
+                                      sign_up_feature: Union[InputSignUpFeature, None] = None,
+                                      reset_password_using_token_feature: Union[
+                                          InputResetPasswordUsingTokenFeature, None] = None,
+                                      email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+                                      override: Union[OverrideConfig, None] = None) -> EmailPasswordConfig:
+    if override is None:
+        override = OverrideConfig()
+    if reset_password_using_token_feature is None:
+        reset_password_using_token_feature = InputResetPasswordUsingTokenFeature()
     email_verification_feature = validate_and_normalise_email_verification_config(
         recipe,
-        config['email_verification_feature'] if 'email_verification_feature' in config else None,
-        config['override']['email_verification_feature'] if 'override' in config and 'email_verification_feature' in
-                                                            config['override'] else None)
-    override_functions = config['override']['functions'] if 'override' in config and 'functions' in config[
-        'override'] else None
-    override_apis = config['override']['apis'] if 'override' in config and 'apis' in config[
-        'override'] else None
-    override = OverrideConfig(override_functions, override_apis)
-    return EmailPasswordConfig(sign_up_feature, sign_in_feature,
-                               reset_token_using_password_feature, email_verification_feature, override)
+        email_verification_feature)
+    if sign_up_feature is None:
+        sign_up_feature = InputSignUpFeature()
+    return EmailPasswordConfig(SignUpFeature(sign_up_feature.form_fields),
+                               SignInFeature(normalise_sign_in_form_fields(sign_up_feature.form_fields)),
+                               validate_and_normalise_reset_password_using_token_config(
+                                   app_info,
+                                   sign_up_feature,
+                                   reset_password_using_token_feature
+                               ), email_verification_feature, override)

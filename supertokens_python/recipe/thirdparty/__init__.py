@@ -11,6 +11,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Union
+
+from .utils import SignInAndUpFeature, OverrideConfig
+
 from .recipe import ThirdPartyRecipe
 from . import exceptions
 from .providers import (
@@ -19,7 +23,10 @@ from .providers import (
     Apple,
     Facebook
 )
+from ..emailverification.utils import InputEmailVerificationConfig
 
 
-def init(config=None):
-    return ThirdPartyRecipe.init(config)
+def init(sign_in_and_up_feature: SignInAndUpFeature,
+         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+         override: Union[OverrideConfig, None] = None):
+    return ThirdPartyRecipe.init(sign_in_and_up_feature, email_verification_feature, override)

@@ -11,6 +11,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Union, List
+
+from .utils import OverrideConfig
+
+from supertokens_python.recipe.thirdparty.provider import Provider
+
 from .recipe import ThirdPartyEmailPasswordRecipe
 from . import exceptions
 from supertokens_python.recipe.thirdparty import (
@@ -19,6 +25,8 @@ from supertokens_python.recipe.thirdparty import (
     Apple,
     Facebook
 )
+from ..emailpassword import InputResetPasswordUsingTokenFeature, InputSignUpFeature
+from ..emailverification.utils import InputEmailVerificationConfig
 
 Google = Google
 Github = Github
@@ -26,5 +34,11 @@ Apple = Apple
 Facebook = Facebook
 
 
-def init(config=None):
-    return ThirdPartyEmailPasswordRecipe.init(config)
+def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
+         reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
+         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+         override: Union[OverrideConfig, None] = None,
+         providers: Union[List[Provider], None] = None):
+    return ThirdPartyEmailPasswordRecipe.init(sign_up_feature, reset_password_using_token_feature,
+                                              email_verification_feature,
+                                              override, providers)

@@ -15,13 +15,14 @@ import json
 import os
 import sys
 from functools import wraps
+from typing import Literal
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
-from supertokens_python import init, Supertokens
+from supertokens_python import init, Supertokens, SupertokensConfig, InputAppInfo
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session import SessionRecipe, InputErrorHandlers
 from supertokens_python.recipe.session.framework.django.asyncio import verify_session
 from supertokens_python.recipe.session.asyncio import revoke_all_sessions_for_user, create_new_session, get_session
 
@@ -192,32 +193,32 @@ def get_app_port():
 
 
 def config(enable_anti_csrf: bool):
-    return {
-        'supertokens': {
-            'connection_uri': "http://localhost:9000",
-        },
-        'framework': 'django',
-        'mode': 'asgi',
-        'app_info': {
-            'app_name': "SuperTokens",
-            'api_domain': "0.0.0.0:" + get_app_port(),
-            'website_domain': "http://localhost.org:8080",
-        },
-        'recipe_list': [
-            session.init({
-                "error_handlers": {
-                    "on_unauthorised": unauthorised_f
-                },
-                "anti_csrf": "VIA_TOKEN" if enable_anti_csrf else "NONE",
-                "override": {
-                    'apis': apis_override_session
-                }
-            })],
-        'telemetry': False
-    }
+    anti_csrf: Literal['VIA_TOKEN', 'NONE'] = "NONE"
+    if enable_anti_csrf:
+        anti_csrf = "VIA_TOKEN"
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:9000'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Python SDK",
+            api_domain="0.0.0.0:" + get_app_port(),
+            website_domain="http://localhost.org:8080"
+        ),
+        framework='django',
+        mode='asgi',
+        recipe_list=[session.init(
+            error_handlers=InputErrorHandlers(
+                on_unauthorised=unauthorised_f
+            ),
+            anti_csrf=anti_csrf,
+            override=session.OverrideConfig(
+                apis=apis_override_session
+            )
+        )],
+        telemetry=False
+    )
 
 
-init(config(True))
+config(True)
 
 
 async def send_file(request):
@@ -324,7 +325,7 @@ def set_anti_csrf(request):
     if enable_csrf is not None:
         Supertokens.reset()
         SessionRecipe.reset()
-        init(config(enable_csrf))
+        config(enable_csrf)
     return HttpResponse('success')
 
 

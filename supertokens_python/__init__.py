@@ -15,10 +15,17 @@
 from . import exceptions
 from .supertokens import Supertokens
 from .recipe import session
+from typing import List, Union, Literal
+from .supertokens import SupertokensConfig, InputAppInfo
 
 
-def init(config):
-    return Supertokens.init(config)
+def init(app_info: InputAppInfo,
+         framework: Literal['fastapi', 'flask', 'django'],
+         supertokens_config: SupertokensConfig,
+         recipe_list: List[any],
+         mode: Union[Literal['asgi', 'wsgi'], None] = None,
+         telemetry: Union[bool, None] = None):
+    return Supertokens.init(app_info, framework, supertokens_config, recipe_list, mode, telemetry)
 
 
 def get_all_cors_headers():

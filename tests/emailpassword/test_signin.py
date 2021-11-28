@@ -19,7 +19,7 @@ from fastapi.testclient import TestClient
 from pytest import fixture
 from pytest import mark
 
-from supertokens_python import init
+from supertokens_python import init, SupertokensConfig, InputAppInfo
 from supertokens_python.recipe import session, emailpassword
 from supertokens_python.recipe.emailpassword.interfaces import APIInterface
 from supertokens_python.framework.fastapi import Middleware
@@ -89,25 +89,21 @@ async def test_that_disabling_api_the_default_signin_API_does_not_work(driver_co
         param.disable_sign_in_post = True
         return param
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init({
-                'override': {
-                    'apis': apis_override_email_password
-                }
-            })
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(
+            override=emailpassword.OverrideConfig(
+                apis=apis_override_email_password
+            )
+        )]
+    )
     start_st()
 
     response_1 = driver_config_client.post(
@@ -130,22 +126,17 @@ async def test_that_disabling_api_the_default_signin_API_does_not_work(driver_co
 
 @mark.asyncio
 async def test_singinAPI_works_when_input_is_fine(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init(),
-            session.init()
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(), session.init()]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -180,22 +171,17 @@ async def test_singinAPI_works_when_input_is_fine(driver_config_client: TestClie
 
 @mark.asyncio
 async def test_singinAPI_throws_an_error_when_email_does_not_match(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init(),
-            session.init()
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(), session.init()]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -228,22 +214,17 @@ async def test_singinAPI_throws_an_error_when_email_does_not_match(driver_config
 
 @mark.asyncio
 async def test_singin_api_throws_an_error_when_email_does_not_match(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init(),
-            session.init()
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(), session.init()]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -276,22 +257,17 @@ async def test_singin_api_throws_an_error_when_email_does_not_match(driver_confi
 
 @mark.asyncio
 async def test_singinAPI_throws_an_error_if_password_is_incorrect(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init(),
-            session.init()
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(), session.init()]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -324,22 +300,17 @@ async def test_singinAPI_throws_an_error_if_password_is_incorrect(driver_config_
 
 @mark.asyncio
 async def test_bad_input_not_a_JSON_to_signin_api(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init(),
-            session.init()
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(), session.init()]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -363,22 +334,17 @@ async def test_bad_input_not_a_JSON_to_signin_api(driver_config_client: TestClie
 
 @mark.asyncio
 async def test_bad_input_not_a_JSON_to_signin_API(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init(),
-            session.init()
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(), session.init()]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -402,24 +368,19 @@ async def test_bad_input_not_a_JSON_to_signin_API(driver_config_client: TestClie
 
 @mark.asyncio
 async def test_that_a_successful_signin_yields_a_session(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init(),
-            session.init({
-                'anti_csrf': 'VIA_TOKEN'
-            })
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(), session.init(
+            anti_csrf='VIA_TOKEN'
+        )]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -458,22 +419,17 @@ async def test_that_a_successful_signin_yields_a_session(driver_config_client: T
 @mark.asyncio
 async def test_email_field_validation_error(
         driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init(),
-            session.init()
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(), session.init()]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -507,22 +463,17 @@ async def test_email_field_validation_error(
 @mark.asyncio
 async def test_formFields_has_no_email_field(
         driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init(),
-            session.init()
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(), session.init()]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -550,22 +501,17 @@ async def test_formFields_has_no_email_field(
 @mark.asyncio
 async def test_formFields_has_no_password_field(
         driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init(),
-            session.init()
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(), session.init()]
+    )
     start_st()
 
     response_1 = sign_up_request(

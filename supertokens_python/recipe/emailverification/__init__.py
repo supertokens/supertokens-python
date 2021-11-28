@@ -13,7 +13,8 @@
 # under the License.
 from .recipe import EmailVerificationRecipe
 from . import exceptions
+from .utils import ParentRecipeEmailVerificationConfig
 
 
-def init(config):
+def init(config: ParentRecipeEmailVerificationConfig):
     return EmailVerificationRecipe.init(config)

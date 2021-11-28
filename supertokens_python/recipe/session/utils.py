@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Callable, Union, Awaitable, Literal
 from urllib.parse import urlparse
 
 from tldextract import extract
@@ -94,6 +94,14 @@ def get_top_level_domain_for_same_site_resolution(url: str) -> str:
     return parsed_url.domain + '.' + parsed_url.suffix
 
 
+class InputErrorHandlers:
+    def __init__(self,
+                 on_token_theft_detected: Union[Callable[[BaseRequest, str, str], Awaitable[None]], None] = None,
+                 on_unauthorised: Union[Callable[[BaseRequest, str, BaseResponse], Awaitable[None]], None] = None):
+        self.on_token_theft_detected = on_token_theft_detected
+        self.on_unauthorised = on_unauthorised
+
+
 class ErrorHandlers:
     def __init__(self, recipe: SessionRecipe, on_token_theft_detected,
                  on_try_refresh_token, on_unauthorised):
@@ -149,7 +157,7 @@ async def default_token_theft_detected_callback(_: BaseRequest, session_handle: 
 
 class OverrideConfig:
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
-                                        None], apis: Union[Callable[[APIInterface], APIInterface], None]):
+                                        None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
         self.functions = functions
         self.apis = apis
 
@@ -180,14 +188,15 @@ class SessionConfig:
 
 
 def validate_and_normalise_user_input(
-        recipe: SessionRecipe, app_info: AppInfo, config=None):
-    if config is None:
-        config = {}
-
-    validate_the_structure_of_user_input(
-        config, INPUT_SCHEMA, 'session recipe', recipe)
-    cookie_domain = normalise_session_scope(
-        recipe, config['cookie_domain']) if 'cookie_domain' in config else None
+        recipe: SessionRecipe, app_info: AppInfo,
+        cookie_domain: Union[str, None] = None,
+        cookie_secure: Union[str, None] = None,
+        cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
+        session_expired_status_code: Union[str, None] = None,
+        anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+        error_handlers: Union[InputErrorHandlers, None] = None,
+        override: Union[OverrideConfig, None] = None):
+    cookie_domain = normalise_session_scope(recipe, cookie_domain) if cookie_domain is not None else None
     top_level_api_domain = get_top_level_domain_for_same_site_resolution(
         app_info.api_domain.get_as_string_dangerous())
     top_level_website_domain = get_top_level_domain_for_same_site_resolution(
@@ -195,26 +204,29 @@ def validate_and_normalise_user_input(
 
     api_domain_scheme = get_url_scheme(app_info.api_domain.get_as_string_dangerous())
     website_domain_scheme = get_url_scheme(app_info.website_domain.get_as_string_dangerous())
-    cookie_same_site = 'None' if (top_level_api_domain != top_level_website_domain) or (api_domain_scheme != website_domain_scheme) else 'Lax'
-    if 'cookie_same_site' in config:
-        cookie_same_site = normalise_same_site(config['cookie_same_site'])
+    if cookie_same_site is not None:
+        cookie_same_site = normalise_same_site(cookie_same_site)
+    elif (top_level_api_domain != top_level_website_domain) or (api_domain_scheme != website_domain_scheme):
+        cookie_same_site = 'none'
+    else:
+        cookie_same_site = 'lax'
 
-    cookie_secure = config[
-        'cookie_secure'] if 'cookie_secure' in config else app_info.api_domain.get_as_string_dangerous().startswith(
+    cookie_secure = cookie_secure if cookie_secure is not None else app_info.api_domain.get_as_string_dangerous().startswith(
         'https')
-    session_expired_status_code = config[
-        'session_expired_status_code'] if 'session_expired_status_code' in config else 401
-    anti_csrf = 'VIA_CUSTOM_HEADER' if cookie_same_site == 'none' else 'NONE'
-    if 'anti_csrf' in config:
-        anti_csrf = config['anti_csrf']
+
+    session_expired_status_code = session_expired_status_code if session_expired_status_code is not None else 401
+    if anti_csrf is None:
+        anti_csrf = 'VIA_CUSTOM_HEADER' if cookie_same_site == 'none' else 'NONE'
 
     on_token_theft_detected = default_token_theft_detected_callback
     on_try_refresh_token = default_try_refresh_token_callback
     on_unauthorised = default_unauthorised_callback
-    if 'error_handlers' in config and 'on_token_theft_detected' in config['error_handlers']:
-        on_token_theft_detected = config['error_handlers']['on_token_theft_detected']
-    if 'error_handlers' in config and 'on_unauthorised' in config['error_handlers']:
-        on_unauthorised = config['error_handlers']['on_unauthorised']
+    if error_handlers is None:
+        error_handlers = InputErrorHandlers()
+    if error_handlers.on_token_theft_detected is not None:
+        on_token_theft_detected = error_handlers.on_token_theft_detected
+    if error_handlers.on_unauthorised is not None:
+        on_unauthorised = error_handlers.on_unauthorised
     error_handlers = ErrorHandlers(
         recipe,
         on_token_theft_detected,
@@ -229,11 +241,8 @@ def validate_and_normalise_user_input(
         raise_general_exception('Since your API and website domain are different, for sessions to work, please use '
                                 'https on your apiDomain and don\'t set cookieSecure to false.')
 
-    override_functions = config['override']['functions'] if 'override' in config and 'functions' in config[
-        'override'] else None
-    override_apis = config['override']['apis'] if 'override' in config and 'apis' in config[
-        'override'] else None
-    override = OverrideConfig(override_functions, override_apis)
+    if override is None:
+        override = OverrideConfig()
 
     return SessionConfig(
         app_info.api_base_path.append(NormalisedURLPath(SESSION_REFRESH)),

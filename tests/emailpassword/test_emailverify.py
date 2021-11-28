@@ -20,7 +20,7 @@ from fastapi.testclient import TestClient
 from pytest import fixture
 from pytest import mark
 
-from supertokens_python import init
+from supertokens_python import init, SupertokensConfig, InputAppInfo
 from supertokens_python.recipe import session, emailpassword
 from supertokens_python.recipe.emailpassword.asyncio import revoke_email_verification_token, verify_email_using_token, \
     create_email_verification_token, is_email_verified, unverify_email
@@ -33,6 +33,7 @@ from tests.utils import (
     reset, setup_st, clean_st, start_st, sign_up_request, extract_all_cookies, email_verify_token_request,
     set_key_value_in_config, TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY
 )
+from supertokens_python.recipe.emailverification.utils import OverrideConfig
 
 
 def setup_function(f):
@@ -91,25 +92,19 @@ async def driver_config_client():
 
 @mark.asyncio
 async def test_the_generate_token_api_with_valid_input_email_not_verified(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init({})
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init()]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -134,25 +129,19 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(driver
 
 @mark.asyncio
 async def test_the_generate_token_api_with_valid_input_email_verified_and_test_error(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init({})
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init()]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -180,25 +169,19 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
 
 @mark.asyncio
 async def test_the_generate_token_api_with_valid_input_no_session_and_check_output(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init({})
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init()]
+    )
     start_st()
 
     response_1 = driver_config_client.post(url='/auth/user/email/verify/token')
@@ -214,25 +197,19 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
         TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
         2)
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init({})
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init()]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -287,34 +264,28 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
     user_info = None
     email_token = None
 
-    def custom_f(user, email_verification_url_token):
+    async def custom_f(user, email_verification_url_token):
         nonlocal user_info, email_token
         user_info = user
         email_token = email_verification_url_token
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init({
-                'email_verification_feature': {
-                    'create_and_send_custom_email': custom_f
-                }
-            })
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init(
+            email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                create_and_send_custom_email=custom_f
+            )
+        )]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -352,29 +323,23 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init({
-                'email_verification_feature': {
-                    'create_and_send_custom_email': custom_f
-                }
-            })
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init(
+            email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                create_and_send_custom_email=custom_f
+            )
+        )]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -429,29 +394,23 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_co
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init({
-                'email_verification_feature': {
-                    'create_and_send_custom_email': custom_f
-                }
-            })
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init(
+            email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                create_and_send_custom_email=custom_f
+            )
+        )]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -506,29 +465,23 @@ async def test_the_email_verify_api_with_token_of_not_type_string(driver_config_
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init({
-                'email_verification_feature': {
-                    'create_and_send_custom_email': custom_f
-                }
-            })
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init(
+            email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                create_and_send_custom_email=custom_f
+            )
+        )]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -602,35 +555,26 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         param.email_verify_post = email_verify_post
         return param
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init({
-                'email_verification_feature': {
-                    'create_and_send_custom_email': custom_f
-                },
-                'override': {
-                    'email_verification_feature':
-                        {
-                            'apis': apis_override_email_password
-                        }
-                }
-            })
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init(
+            email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                create_and_send_custom_email=custom_f,
+                override=OverrideConfig(
+                    apis=apis_override_email_password
+                )
+            )
+        )]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -691,29 +635,23 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(driver_con
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init({
-                'email_verification_feature': {
-                    'create_and_send_custom_email': custom_f
-                }
-            })
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init(
+            email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                create_and_send_custom_email=custom_f
+            )
+        )]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -769,25 +707,19 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(driver_con
 
 @mark.asyncio
 async def test_the_email_verify_with_no_session_using_the_get_method(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init()
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init()]
+    )
     start_st()
 
     response_4 = driver_config_client.get(url="/auth/user/email/verify")
@@ -823,35 +755,26 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
         param.email_verify_post = email_verify_post
         return param
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init({
-                'email_verification_feature': {
-                    'create_and_send_custom_email': custom_f
-                },
-                'override': {
-                    'email_verification_feature':
-                        {
-                            'apis': apis_override_email_password
-                        }
-                }
-            })
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init(
+            email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                create_and_send_custom_email=custom_f,
+                override=OverrideConfig(
+                    apis=apis_override_email_password
+                )
+            )
+        )]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -921,35 +844,26 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
         param.email_verify_post = email_verify_post
         return param
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init({
-                'email_verification_feature': {
-                    'create_and_send_custom_email': custom_f
-                },
-                'override': {
-                    'email_verification_feature':
-                        {
-                            'apis': apis_override_email_password
-                        }
-                }
-            })
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init(
+            email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                create_and_send_custom_email=custom_f,
+                override=OverrideConfig(
+                    apis=apis_override_email_password
+                )
+            )
+        )]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -995,25 +909,19 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
 
 @mark.asyncio
 async def test_the_generate_token_api_with_valid_input_and_then_remove_token(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init()
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init()]
+    )
     start_st()
 
     version = await Querier.get_instance().get_api_version()
@@ -1037,25 +945,19 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
 
 @mark.asyncio
 async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_email(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN'
-            }
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
         ),
-            emailpassword.init()
-        ],
-    })
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN'
+        ), emailpassword.init()]
+    )
     start_st()
 
     version = await Querier.get_instance().get_api_version()

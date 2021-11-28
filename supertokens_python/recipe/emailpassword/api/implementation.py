@@ -57,11 +57,11 @@ class APIImplementation(APIInterface):
             return GeneratePasswordResetTokenPostOkResponse()
 
         token = token_result.token
-        password_reset_link = await api_options.config.reset_token_using_password_feature.get_reset_password_url(
+        password_reset_link = await api_options.config.reset_password_using_token_feature.get_reset_password_url(
             user) + '?token=' + token + '&rid=' + api_options.recipe_id
 
         try:
-            await api_options.config.reset_token_using_password_feature.create_and_send_custom_email(
+            await api_options.config.reset_password_using_token_feature.create_and_send_custom_email(
                 user, password_reset_link)
         except Exception:
             pass

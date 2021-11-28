@@ -11,8 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python.recipe.jwt.recipe import JWTRecipe
+from typing import Union
+
+from .utils import OverrideConfig
+
+from .recipe import JWTRecipe
 
 
-def init(config=None):
-    return JWTRecipe.init(config)
+def init(jwt_validity_seconds: Union[int, None] = None,
+         override: Union[OverrideConfig, None] = None):
+    return JWTRecipe.init(jwt_validity_seconds, override)

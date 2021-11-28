@@ -25,7 +25,7 @@ async def handle_password_reset_api(api_implementation: APIInterface, api_option
         return None
     body = await api_options.request.json()
     form_fields_raw = body['formFields'] if 'formFields' in body else []
-    form_fields = await validate_form_fields_or_throw_error(api_options.config.reset_token_using_password_feature.form_fields_for_password_reset_form,
+    form_fields = await validate_form_fields_or_throw_error(api_options.config.reset_password_using_token_feature.form_fields_for_password_reset_form,
                                                             form_fields_raw)
 
     if 'token' not in body:

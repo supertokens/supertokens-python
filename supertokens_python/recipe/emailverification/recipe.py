@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
 
 from supertokens_python.recipe.emailverification.exceptions import EmailVerificationInvalidTokenError
 
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from .utils import validate_and_normalise_user_input
+from .utils import validate_and_normalise_user_input, ParentRecipeEmailVerificationConfig
 from .api import (
     handle_generate_email_verify_token_api,
     handle_email_verify_api
@@ -48,7 +48,7 @@ class EmailVerificationRecipe(RecipeModule):
     recipe_id = 'emailverification'
     __instance = None
 
-    def __init__(self, recipe_id: str, app_info: AppInfo, config):
+    def __init__(self, recipe_id: str, app_info: AppInfo, config: ParentRecipeEmailVerificationConfig):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, config)
         recipe_implementation = RecipeImplementation(
@@ -97,7 +97,7 @@ class EmailVerificationRecipe(RecipeModule):
         return []
 
     @staticmethod
-    def init(config=None):
+    def init(config: ParentRecipeEmailVerificationConfig):
         def func(app_info: AppInfo):
             if EmailVerificationRecipe.__instance is None:
                 EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id,

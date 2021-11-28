@@ -15,15 +15,16 @@ import json
 import os
 import sys
 from functools import wraps
+from typing import Literal
 
 from flask import Flask, request, make_response, Response, jsonify, render_template, g
 from flask_cors import CORS
 
-from supertokens_python import init, Supertokens
+from supertokens_python import init, Supertokens, SupertokensConfig, InputAppInfo
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session import SessionRecipe, InputErrorHandlers
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.syncio import revoke_all_sessions_for_user, create_new_session
 
@@ -123,33 +124,31 @@ def get_app_port():
 
 
 def config(enable_anti_csrf: bool):
-    return {
-        'supertokens': {
-            'connection_uri': "http://localhost:9000",
-        },
-        'framework': 'flask',
-        'app_info': {
-            'app_name': "SuperTokens",
-            'api_domain': "0.0.0.0:" + get_app_port(),
-            'website_domain': "http://localhost.org:8080",
-        },
-        'recipe_list': [
-            session.init({
-                "error_handlers":
-                    {
-                        "on_unauthorised": unauthorised_f
-                    },
-                "anti_csrf": "VIA_TOKEN" if enable_anti_csrf else "NONE",
-                "override":
-                    {
-                        'apis': apis_override_session
-                    }
-            })],
-        'telemetry': False
-    }
+    anti_csrf: Literal['VIA_TOKEN', 'NONE'] = "NONE"
+    if enable_anti_csrf:
+        anti_csrf = "VIA_TOKEN"
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:9000'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Python SDK",
+            api_domain="0.0.0.0:" + get_app_port(),
+            website_domain="http://localhost.org:8080"
+        ),
+        framework='flask',
+        recipe_list=[session.init(
+            error_handlers=InputErrorHandlers(
+                on_unauthorised=unauthorised_f
+            ),
+            anti_csrf=anti_csrf,
+            override=session.OverrideConfig(
+                apis=apis_override_session
+            )
+        )],
+        telemetry=False
+    )
 
 
-init(config(True))
+config(True)
 
 
 @app.route('/index.html', methods=['GET'])
@@ -354,7 +353,7 @@ def set_anti_csrf():
     if enable_csrf is not None:
         Supertokens.reset()
         SessionRecipe.reset()
-        init(config(enable_csrf))
+        config(enable_csrf)
     return 'success', 200
 
 
