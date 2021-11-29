@@ -408,7 +408,7 @@ async def test_custom_response(driver_config_client: TestClient):
         ),
         framework='fastapi',
         recipe_list=[emailpassword.init(
-            override=emailpassword.OverrideConfig(
+            override=emailpassword.InputOverrideConfig(
                 apis=override_email_password_apis
             )
         )]

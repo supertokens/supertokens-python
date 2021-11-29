@@ -15,7 +15,7 @@ from typing import Union
 
 from .recipe import EmailPasswordRecipe
 from . import exceptions
-from .utils import InputSignUpFeature, InputResetPasswordUsingTokenFeature, OverrideConfig
+from .utils import InputSignUpFeature, InputResetPasswordUsingTokenFeature, InputOverrideConfig
 from ..emailverification.utils import InputEmailVerificationConfig
 
 
@@ -23,7 +23,7 @@ def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
          reset_password_using_token_feature: Union[
              InputResetPasswordUsingTokenFeature, None] = None,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[OverrideConfig, None] = None):
+         override: Union[InputOverrideConfig, None] = None):
     return EmailPasswordRecipe.init(
         sign_up_feature,
         reset_password_using_token_feature,

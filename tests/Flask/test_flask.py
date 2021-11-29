@@ -78,7 +78,7 @@ def driver_config_app():
             anti_csrf='VIA_TOKEN',
             cookie_domain='supertokens.io'
         ), emailpassword.init(
-            override=emailpassword.OverrideConfig(
+            override=emailpassword.InputOverrideConfig(
                 apis=override_email_password_apis
             )
         )]

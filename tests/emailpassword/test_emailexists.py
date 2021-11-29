@@ -166,7 +166,7 @@ async def test_that_if_disabling_api_the_default_email_exists_api_does_not_work(
             anti_csrf='VIA_TOKEN',
             cookie_domain='supertokens.io'
         ), emailpassword.init(
-            override=emailpassword.OverrideConfig(
+            override=emailpassword.InputOverrideConfig(
                 apis=apis_override_email_password
             )
         )]

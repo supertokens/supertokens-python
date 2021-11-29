@@ -568,8 +568,10 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
             anti_csrf='VIA_TOKEN'
         ), emailpassword.init(
             email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                create_and_send_custom_email=custom_f,
-                override=OverrideConfig(
+                create_and_send_custom_email=custom_f
+            ),
+            override=emailpassword.InputOverrideConfig(
+                email_verification_feature=OverrideConfig(
                     apis=apis_override_email_password
                 )
             )
@@ -768,8 +770,10 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
             anti_csrf='VIA_TOKEN'
         ), emailpassword.init(
             email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                create_and_send_custom_email=custom_f,
-                override=OverrideConfig(
+                create_and_send_custom_email=custom_f
+            ),
+            override=emailpassword.InputOverrideConfig(
+                email_verification_feature=OverrideConfig(
                     apis=apis_override_email_password
                 )
             )
@@ -857,8 +861,10 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
             anti_csrf='VIA_TOKEN'
         ), emailpassword.init(
             email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                create_and_send_custom_email=custom_f,
-                override=OverrideConfig(
+                create_and_send_custom_email=custom_f
+            ),
+            override=emailpassword.InputOverrideConfig(
+                email_verification_feature=OverrideConfig(
                     apis=apis_override_email_password
                 )
             )

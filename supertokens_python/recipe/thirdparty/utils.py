@@ -22,7 +22,10 @@ from supertokens_python.exceptions import raise_bad_input_exception
 if TYPE_CHECKING:
     from .recipe import ThirdPartyRecipe
     from .provider import Provider
-from supertokens_python.recipe.emailverification.utils import InputEmailVerificationConfig, ParentRecipeEmailVerificationConfig
+from supertokens_python.recipe.emailverification.utils import (
+    InputEmailVerificationConfig, ParentRecipeEmailVerificationConfig,
+    OverrideConfig as EmailVerificationOverrideConfig
+)
 
 
 class SignInAndUpFeature:
@@ -84,7 +87,8 @@ def email_verification_get_email_verification_url(
 
 
 def validate_and_normalise_email_verification_config(
-        recipe: ThirdPartyRecipe, config=Union[InputEmailVerificationConfig, None]) -> ParentRecipeEmailVerificationConfig:
+        recipe: ThirdPartyRecipe, config: Union[InputEmailVerificationConfig, None], override: InputOverrideConfig)\
+        -> ParentRecipeEmailVerificationConfig:
     create_and_send_custom_email = None
     get_email_verification_url = None
     if config is None:
@@ -99,8 +103,17 @@ def validate_and_normalise_email_verification_config(
         get_email_for_user_id=recipe.get_email_for_user_id,
         create_and_send_custom_email=create_and_send_custom_email,
         get_email_verification_url=get_email_verification_url,
-        override=config.override
+        override=override.email_verification_feature
     )
+
+
+class InputOverrideConfig:
+    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+                 apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+                 email_verification_feature: Union[EmailVerificationOverrideConfig, None] = None):
+        self.functions = functions
+        self.apis = apis
+        self.email_verification_feature = email_verification_feature
 
 
 class OverrideConfig:
@@ -124,13 +137,15 @@ def validate_and_normalise_user_input(
         recipe: ThirdPartyRecipe,
         sign_in_and_up_feature: SignInAndUpFeature,
         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-        override: Union[OverrideConfig, None] = None) -> ThirdPartyConfig:
+        override: Union[InputOverrideConfig, None] = None) -> ThirdPartyConfig:
+    if override is None:
+        override = InputOverrideConfig()
     email_verification_feature = validate_and_normalise_email_verification_config(
         recipe,
-        email_verification_feature)
-    if override is None:
-        override = OverrideConfig()
-    return ThirdPartyConfig(sign_in_and_up_feature, email_verification_feature, override)
+        email_verification_feature, override)
+    return ThirdPartyConfig(sign_in_and_up_feature, email_verification_feature,
+                            OverrideConfig(functions=override.functions, apis=override.apis)
+                            )
 
 
 def find_right_provider(

@@ -42,10 +42,10 @@ from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from .utils import (
-    validate_and_normalise_user_input, OverrideConfig
+    validate_and_normalise_user_input, InputOverrideConfig
 )
-from supertokens_python.recipe.thirdparty.utils import OverrideConfig as TPOverrideConfig, SignInAndUpFeature
-from supertokens_python.recipe.emailpassword.utils import OverrideConfig as EPOverrideConfig
+from supertokens_python.recipe.thirdparty.utils import InputOverrideConfig as TPOverrideConfig, SignInAndUpFeature
+from supertokens_python.recipe.emailpassword.utils import InputOverrideConfig as EPOverrideConfig
 
 
 class ThirdPartyEmailPasswordRecipe(RecipeModule):
@@ -56,7 +56,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                  sign_up_feature: Union[InputSignUpFeature, None] = None,
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-                 override: Union[OverrideConfig, None] = None,
+                 override: Union[InputOverrideConfig, None] = None,
                  providers: Union[List[Provider], None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
                  email_password_recipe: Union[EmailPasswordRecipe,
@@ -184,7 +184,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
     def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
              reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-             override: Union[OverrideConfig, None] = None,
+             override: Union[InputOverrideConfig, None] = None,
              providers: Union[List[Provider], None] = None):
         def func(app_info: AppInfo):
             if ThirdPartyEmailPasswordRecipe.__instance is None:

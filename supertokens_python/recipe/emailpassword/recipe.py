@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 from supertokens_python.exceptions import raise_general_exception, SuperTokensError
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from .utils import validate_and_normalise_user_input, InputSignUpFeature, InputResetPasswordUsingTokenFeature, \
-    OverrideConfig
+    InputOverrideConfig
 from .api import (
     handle_sign_up_api,
     handle_sign_in_api,
@@ -59,7 +59,7 @@ class EmailPasswordRecipe(RecipeModule):
                  reset_password_using_token_feature: Union[
                       InputResetPasswordUsingTokenFeature, None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-                 override: Union[OverrideConfig, None] = None,
+                 override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, app_info, sign_up_feature,
@@ -142,7 +142,7 @@ class EmailPasswordRecipe(RecipeModule):
              reset_password_using_token_feature: Union[
                   InputResetPasswordUsingTokenFeature, None] = None,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-             override: Union[OverrideConfig, None] = None):
+             override: Union[InputOverrideConfig, None] = None):
         def func(app_info: AppInfo):
             if EmailPasswordRecipe.__instance is None:
                 EmailPasswordRecipe.__instance = EmailPasswordRecipe(EmailPasswordRecipe.recipe_id, app_info,

@@ -27,11 +27,11 @@ if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
-    from .utils import SignInAndUpFeature, OverrideConfig
+    from .utils import SignInAndUpFeature, InputOverrideConfig
     from supertokens_python.recipe.emailverification.utils import InputEmailVerificationConfig
 from supertokens_python.exceptions import raise_general_exception, SuperTokensError
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
-from .utils import ThirdPartyConfig, validate_and_normalise_user_input
+from .utils import validate_and_normalise_user_input
 from .api import (
     handle_sign_in_up_api,
     handle_authorisation_url_api,
@@ -54,7 +54,7 @@ class ThirdPartyRecipe(RecipeModule):
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  sign_in_and_up_feature: SignInAndUpFeature,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-                 override: Union[OverrideConfig, None] = None,
+                 override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, sign_in_and_up_feature,
@@ -120,7 +120,7 @@ class ThirdPartyRecipe(RecipeModule):
     @staticmethod
     def init(sign_in_and_up_feature: SignInAndUpFeature,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-             override: Union[OverrideConfig, None] = None):
+             override: Union[InputOverrideConfig, None] = None):
         def func(app_info: AppInfo):
             if ThirdPartyRecipe.__instance is None:
                 ThirdPartyRecipe.__instance = ThirdPartyRecipe(

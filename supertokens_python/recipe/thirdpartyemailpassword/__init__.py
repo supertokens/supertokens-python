@@ -13,7 +13,7 @@
 # under the License.
 from typing import Union, List
 
-from .utils import OverrideConfig
+from .utils import InputOverrideConfig
 
 from supertokens_python.recipe.thirdparty.provider import Provider
 
@@ -37,7 +37,7 @@ Facebook = Facebook
 def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
          reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[OverrideConfig, None] = None,
+         override: Union[InputOverrideConfig, None] = None,
          providers: Union[List[Provider], None] = None):
     return ThirdPartyEmailPasswordRecipe.init(sign_up_feature, reset_password_using_token_feature,
                                               email_verification_feature,

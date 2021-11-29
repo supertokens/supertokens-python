@@ -99,7 +99,7 @@ async def test_that_disabling_api_the_default_signin_API_does_not_work(driver_co
         ),
         framework='fastapi',
         recipe_list=[emailpassword.init(
-            override=emailpassword.OverrideConfig(
+            override=emailpassword.InputOverrideConfig(
                 apis=apis_override_email_password
             )
         )]

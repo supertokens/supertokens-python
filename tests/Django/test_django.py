@@ -271,7 +271,7 @@ class SupertokensTest(TestCase):
             framework='django',
             mode='asgi',
             recipe_list=[emailpassword.init(
-                override=emailpassword.OverrideConfig(
+                override=emailpassword.InputOverrideConfig(
                     apis=override_email_password_apis
                 )
             )]

@@ -13,7 +13,7 @@
 # under the License.
 from typing import Union
 
-from .utils import SignInAndUpFeature, OverrideConfig
+from .utils import SignInAndUpFeature, InputOverrideConfig
 
 from .recipe import ThirdPartyRecipe
 from . import exceptions
@@ -28,5 +28,5 @@ from ..emailverification.utils import InputEmailVerificationConfig
 
 def init(sign_in_and_up_feature: SignInAndUpFeature,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[OverrideConfig, None] = None):
+         override: Union[InputOverrideConfig, None] = None):
     return ThirdPartyRecipe.init(sign_in_and_up_feature, email_verification_feature, override)

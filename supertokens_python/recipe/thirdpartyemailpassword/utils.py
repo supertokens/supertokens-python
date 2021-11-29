@@ -23,12 +23,15 @@ from .types import (
     NextPaginationToken
 )
 from ..emailpassword.utils import InputSignUpFeature, InputResetPasswordUsingTokenFeature
-from ..emailverification.utils import InputEmailVerificationConfig, ParentRecipeEmailVerificationConfig
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyEmailPasswordRecipe
 from supertokens_python.utils import validate_the_structure_of_user_input, utf_base64decode, utf_base64encode
 from supertokens_python.recipe.emailpassword.types import UsersResponse
+from supertokens_python.recipe.emailverification.utils import (
+    InputEmailVerificationConfig, ParentRecipeEmailVerificationConfig,
+    OverrideConfig as EmailVerificationOverrideConfig
+)
 
 
 def email_verification_create_and_send_custom_email(recipe: ThirdPartyEmailPasswordRecipe,
@@ -54,7 +57,8 @@ def email_verification_get_email_verification_url(
 
 
 def validate_and_normalise_email_verification_config(
-        recipe: ThirdPartyEmailPasswordRecipe, config=Union[InputEmailVerificationConfig, None]):
+        recipe: ThirdPartyEmailPasswordRecipe, config: Union[InputEmailVerificationConfig, None],
+        override: InputOverrideConfig):
     create_and_send_custom_email = None
     get_email_verification_url = None
     if config is None:
@@ -70,8 +74,17 @@ def validate_and_normalise_email_verification_config(
         get_email_for_user_id=recipe.get_email_for_user_id,
         create_and_send_custom_email=create_and_send_custom_email,
         get_email_verification_url=get_email_verification_url,
-        override=config.override
+        override=override.email_verification_feature
     )
+
+
+class InputOverrideConfig:
+    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+                 apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+                 email_verification_feature: Union[EmailVerificationOverrideConfig, None] = None):
+        self.functions = functions
+        self.apis = apis
+        self.email_verification_feature = email_verification_feature
 
 
 class OverrideConfig:
@@ -100,18 +113,22 @@ def validate_and_normalise_user_input(
         sign_up_feature: Union[InputSignUpFeature, None] = None,
         reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-        override: Union[OverrideConfig, None] = None,
+        override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[Provider], None] = None
 ) -> ThirdPartyEmailPasswordConfig:
-    email_verification_feature = validate_and_normalise_email_verification_config(
-        recipe,
-        email_verification_feature)
     if providers is None:
         providers = []
     if override is None:
-        override = OverrideConfig()
+        override = InputOverrideConfig()
+    email_verification_feature = validate_and_normalise_email_verification_config(
+        recipe,
+        email_verification_feature,
+        override
+    )
     return ThirdPartyEmailPasswordConfig(providers, email_verification_feature, sign_up_feature,
-                                         reset_password_using_token_feature, override)
+                                         reset_password_using_token_feature,
+                                         OverrideConfig(functions=override.functions, apis=override.apis)
+                                         )
 
 
 def create_new_pagination_token(user_id: str, time_joined: int) -> str:

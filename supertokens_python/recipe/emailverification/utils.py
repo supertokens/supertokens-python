@@ -50,11 +50,9 @@ class OverrideConfig:
 
 class InputEmailVerificationConfig:
     def __init__(self,
-                 override: Union[OverrideConfig, None] = None,
                  get_email_verification_url: Union[Callable[[User], Awaitable[str]], None] = None,
                  create_and_send_custom_email: Union[Callable[[User, str], Awaitable[None]], None] = None
                  ):
-        self.override = override
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
 

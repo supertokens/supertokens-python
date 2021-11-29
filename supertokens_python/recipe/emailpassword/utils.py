@@ -18,7 +18,7 @@ from re import fullmatch
 from typing import List, Union, Callable, Awaitable, TYPE_CHECKING
 
 from .interfaces import RecipeInterface, APIInterface
-from .types import User, FormField, NormalisedFormField, INPUT_SCHEMA, InputFormField
+from .types import User, FormField, NormalisedFormField, InputFormField
 
 if TYPE_CHECKING:
     from .recipe import EmailPasswordRecipe
@@ -28,9 +28,13 @@ from .constants import (
     FORM_FIELD_PASSWORD_ID,
     RESET_PASSWORD
 )
-from supertokens_python.utils import get_filtered_list, validate_the_structure_of_user_input
+from supertokens_python.utils import get_filtered_list
 from httpx import AsyncClient
-from supertokens_python.recipe.emailverification.utils import InputEmailVerificationConfig, ParentRecipeEmailVerificationConfig
+from supertokens_python.recipe.emailverification.utils import (
+    InputEmailVerificationConfig,
+    ParentRecipeEmailVerificationConfig,
+    OverrideConfig as EmailVerificationOverrideConfig
+)
 
 
 async def default_validator(_):
@@ -238,7 +242,7 @@ def email_verification_get_email_verification_url(
 
 
 def validate_and_normalise_email_verification_config(
-        recipe: EmailPasswordRecipe, config=Union[InputEmailVerificationConfig, None]):
+        recipe: EmailPasswordRecipe, config: Union[InputEmailVerificationConfig, None], override: InputOverrideConfig):
     create_and_send_custom_email = None
     get_email_verification_url = None
     if config is None:
@@ -253,8 +257,17 @@ def validate_and_normalise_email_verification_config(
         get_email_for_user_id=recipe.get_email_for_user_id,
         create_and_send_custom_email=create_and_send_custom_email,
         get_email_verification_url=get_email_verification_url,
-        override=config.override
+        override=override.email_verification_feature
     )
+
+
+class InputOverrideConfig:
+    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+                 apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+                 email_verification_feature: Union[EmailVerificationOverrideConfig, None] = None):
+        self.functions = functions
+        self.apis = apis
+        self.email_verification_feature = email_verification_feature
 
 
 class OverrideConfig:
@@ -283,14 +296,16 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
                                       reset_password_using_token_feature: Union[
                                           InputResetPasswordUsingTokenFeature, None] = None,
                                       email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-                                      override: Union[OverrideConfig, None] = None) -> EmailPasswordConfig:
+                                      override: Union[InputOverrideConfig, None] = None) -> EmailPasswordConfig:
     if override is None:
-        override = OverrideConfig()
+        override = InputOverrideConfig()
     if reset_password_using_token_feature is None:
         reset_password_using_token_feature = InputResetPasswordUsingTokenFeature()
     email_verification_feature = validate_and_normalise_email_verification_config(
         recipe,
-        email_verification_feature)
+        email_verification_feature,
+        override
+    )
     if sign_up_feature is None:
         sign_up_feature = InputSignUpFeature()
     return EmailPasswordConfig(SignUpFeature(sign_up_feature.form_fields),
@@ -299,4 +314,6 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
                                    app_info,
                                    sign_up_feature,
                                    reset_password_using_token_feature
-                               ), email_verification_feature, override)
+                               ), email_verification_feature, OverrideConfig(functions=override.functions,
+                                                                             apis=override.apis)
+                               )
