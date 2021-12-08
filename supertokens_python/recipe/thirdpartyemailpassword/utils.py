@@ -19,14 +19,13 @@ from supertokens_python.recipe.thirdparty.provider import Provider
 
 from .interfaces import RecipeInterface, APIInterface
 from .types import (
-    INPUT_SCHEMA,
     NextPaginationToken
 )
 from ..emailpassword.utils import InputSignUpFeature, InputResetPasswordUsingTokenFeature
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyEmailPasswordRecipe
-from supertokens_python.utils import validate_the_structure_of_user_input, utf_base64decode, utf_base64encode
+from supertokens_python.utils import utf_base64decode, utf_base64encode
 from supertokens_python.recipe.emailpassword.types import UsersResponse
 from supertokens_python.recipe.emailverification.utils import (
     InputEmailVerificationConfig, ParentRecipeEmailVerificationConfig,

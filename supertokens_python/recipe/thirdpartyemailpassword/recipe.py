@@ -95,7 +95,8 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             self.email_password_recipe = email_password_recipe
         else:
             self.email_password_recipe = EmailPasswordRecipe(recipe_id, app_info,
-                                                             InputSignUpFeature(self.config.sign_up_feature.form_fields),
+                                                             InputSignUpFeature(
+                                                                 self.config.sign_up_feature.form_fields),
                                                              self.config.reset_password_using_token_feature,
                                                              None,
                                                              EPOverrideConfig(
@@ -115,31 +116,34 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         else:
             self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
             if len(self.config.providers) != 0:
-                self.third_party_recipe = ThirdPartyRecipe(recipe_id, app_info,
-                                                           SignInAndUpFeature(self.config.providers),
-                                                           None,
-                                                           TPOverrideConfig(
-                                                               func_override_third_party,
-                                                               apis_override_third_party
-                                                           ),
-                                                           self.email_verification_recipe)
+                self.third_party_recipe = ThirdPartyRecipe(
+                    recipe_id,
+                    app_info,
+                    SignInAndUpFeature(self.config.providers),
+                    None,
+                    TPOverrideConfig(
+                        func_override_third_party,
+                        apis_override_third_party
+                    ),
+                    self.email_verification_recipe
+                )
 
     def is_error_from_this_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and (
-                isinstance(err, SupertokensThirdPartyEmailPasswordError)
-                or
-                self.email_verification_recipe.is_error_from_this_recipe_based_on_instance(
+            isinstance(err, SupertokensThirdPartyEmailPasswordError)
+            or
+            self.email_verification_recipe.is_error_from_this_recipe_based_on_instance(
+                err)
+            or
+            self.email_password_recipe.is_error_from_this_recipe_based_on_instance(
+                err)
+            or
+            (
+                self.third_party_recipe is not None
+                and
+                self.third_party_recipe.is_error_from_this_recipe_based_on_instance(
                     err)
-                or
-                self.email_password_recipe.is_error_from_this_recipe_based_on_instance(
-                    err)
-                or
-                (
-                        self.third_party_recipe is not None
-                        and
-                        self.third_party_recipe.is_error_from_this_recipe_based_on_instance(
-                            err)
-                )
+            )
         )
 
     def get_apis_handled(self) -> List[APIHandled]:

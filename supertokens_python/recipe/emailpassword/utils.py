@@ -141,15 +141,13 @@ def normalise_sign_up_form_fields(form_fields: List[InputFormField]) -> List[Nor
             validator = field.validate if field.validate is not None else default_validator
             optional = field.optional if field.optional is not None else False
             normalised_form_fields.append(NormalisedFormField(field.id, validator, optional))
-    if len(get_filtered_list(lambda x: x.id ==
-           FORM_FIELD_PASSWORD_ID, normalised_form_fields)) == 0:
+    if len(get_filtered_list(lambda x: x.id == FORM_FIELD_PASSWORD_ID, normalised_form_fields)) == 0:
         normalised_form_fields.append(
             NormalisedFormField(
                 FORM_FIELD_PASSWORD_ID,
                 default_password_validator,
                 False))
-    if len(get_filtered_list(lambda x: x.id ==
-           FORM_FIELD_EMAIL_ID, normalised_form_fields)) == 0:
+    if len(get_filtered_list(lambda x: x.id == FORM_FIELD_EMAIL_ID, normalised_form_fields)) == 0:
         normalised_form_fields.append(
             NormalisedFormField(
                 FORM_FIELD_EMAIL_ID,
@@ -213,8 +211,10 @@ def validate_and_normalise_reset_password_using_token_config(app_info: AppInfo, 
     form_fields_for_generate_token_form = list(map(lambda y: NormalisedFormField(y.id, y.validate, False),
                                                    get_filtered_list(lambda x: x.id == FORM_FIELD_EMAIL_ID,
                                                                      sign_up_config.form_fields)))
-    get_reset_password_url = config.get_reset_password_url if config.get_reset_password_url is not None else default_get_reset_password_url(app_info)
-    create_and_send_custom_email = config.create_and_send_custom_email if config.create_and_send_custom_email is not None else default_create_and_send_custom_email(app_info)
+    get_reset_password_url = config.get_reset_password_url if config.get_reset_password_url is not None else default_get_reset_password_url(
+        app_info)
+    create_and_send_custom_email = config.create_and_send_custom_email if config.create_and_send_custom_email is not None else default_create_and_send_custom_email(
+        app_info)
     return ResetPasswordUsingTokenFeature(form_fields_for_password_reset_form, form_fields_for_generate_token_form,
                                           get_reset_password_url, create_and_send_custom_email)
 
@@ -308,12 +308,14 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
     )
     if sign_up_feature is None:
         sign_up_feature = InputSignUpFeature()
-    return EmailPasswordConfig(SignUpFeature(sign_up_feature.form_fields),
-                               SignInFeature(normalise_sign_in_form_fields(sign_up_feature.form_fields)),
-                               validate_and_normalise_reset_password_using_token_config(
-                                   app_info,
-                                   sign_up_feature,
-                                   reset_password_using_token_feature
-                               ), email_verification_feature, OverrideConfig(functions=override.functions,
-                                                                             apis=override.apis)
-                               )
+    return EmailPasswordConfig(
+        SignUpFeature(sign_up_feature.form_fields),
+        SignInFeature(normalise_sign_in_form_fields(sign_up_feature.form_fields)),
+        validate_and_normalise_reset_password_using_token_config(
+            app_info,
+            sign_up_feature,
+            reset_password_using_token_feature
+        ),
+        email_verification_feature,
+        OverrideConfig(functions=override.functions, apis=override.apis)
+    )

@@ -16,7 +16,6 @@ from __future__ import annotations
 from typing import List, Callable, TYPE_CHECKING, Union
 
 from .interfaces import RecipeInterface, APIInterface
-from .types import INPUT_SCHEMA
 from supertokens_python.exceptions import raise_bad_input_exception
 
 if TYPE_CHECKING:

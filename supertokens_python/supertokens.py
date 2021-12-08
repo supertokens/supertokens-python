@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Union, List, TYPE_CHECKING
+from typing import Union, List, TYPE_CHECKING, Callable
 
 try:
     from typing import Literal
@@ -35,12 +35,11 @@ from .recipe.session.cookie_and_header import attach_access_token_to_cookie, cle
     attach_refresh_token_to_cookie, attach_id_refresh_token_to_cookie_and_header, attach_anti_csrf_header, \
     set_front_token_in_headers
 
-from .types import INPUT_SCHEMA, UsersResponse, User, ThirdPartyInfo
+from .types import UsersResponse, User, ThirdPartyInfo
 from .utils import (
-    validate_the_structure_of_user_input,
     normalise_http_method,
     get_rid_from_request,
-    send_non_200_response, validate_framework
+    send_non_200_response
 )
 
 if TYPE_CHECKING:
@@ -154,7 +153,7 @@ class Supertokens:
                  app_info: InputAppInfo,
                  framework: Literal['fastapi', 'flask', 'django'],
                  supertokens_config: SupertokensConfig,
-                 recipe_list: List[any],
+                 recipe_list: List[Callable[[AppInfo], RecipeModule]],
                  mode: Union[Literal['asgi', 'wsgi'], None] = None,
                  telemetry: Union[bool, None] = None
                  ):
@@ -178,7 +177,7 @@ class Supertokens:
 
         self.recipe_modules: List[RecipeModule] = list(map(lambda func: func(self.app_info), recipe_list))
 
-        if telemetry is None :
+        if telemetry is None:
             telemetry = ('SUPERTOKENS_ENV' not in environ) or (environ['SUPERTOKENS_ENV'] != 'testing')
 
         if telemetry:
@@ -215,7 +214,7 @@ class Supertokens:
     def init(app_info: InputAppInfo,
              framework: Literal['fastapi', 'flask', 'django'],
              supertokens_config: SupertokensConfig,
-             recipe_list: List[any],
+             recipe_list: List[Callable[[AppInfo], RecipeModule]],
              mode: Union[Literal['asgi', 'wsgi'], None] = None,
              telemetry: Union[bool, None] = None):
         if Supertokens.__instance is None:

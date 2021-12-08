@@ -15,14 +15,14 @@
 from . import exceptions
 from .supertokens import Supertokens
 from .recipe import session
-from typing import List, Union, Literal
-from .supertokens import SupertokensConfig, InputAppInfo
+from typing import List, Union, Literal, Callable
+from .supertokens import SupertokensConfig, InputAppInfo, AppInfo, RecipeModule
 
 
 def init(app_info: InputAppInfo,
          framework: Literal['fastapi', 'flask', 'django'],
          supertokens_config: SupertokensConfig,
-         recipe_list: List[any],
+         recipe_list: List[Callable[[AppInfo], RecipeModule]],
          mode: Union[Literal['asgi', 'wsgi'], None] = None,
          telemetry: Union[bool, None] = None):
     return Supertokens.init(app_info, framework, supertokens_config, recipe_list, mode, telemetry)

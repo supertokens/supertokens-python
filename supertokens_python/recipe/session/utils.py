@@ -21,10 +21,9 @@ from tldextract import extract
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.framework import BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.utils import validate_the_structure_of_user_input, is_an_ip_address, send_non_200_response
+from supertokens_python.utils import is_an_ip_address, send_non_200_response
 from .constants import SESSION_REFRESH
 from .cookie_and_header import clear_cookies
-from .types import INPUT_SCHEMA
 
 if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface

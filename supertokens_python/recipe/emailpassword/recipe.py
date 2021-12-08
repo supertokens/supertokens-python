@@ -47,7 +47,7 @@ from .constants import (
 )
 
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.emailverification.utils import InputEmailVerificationConfig, ParentRecipeEmailVerificationConfig
+from supertokens_python.recipe.emailverification.utils import InputEmailVerificationConfig
 
 
 class EmailPasswordRecipe(RecipeModule):
@@ -56,8 +56,7 @@ class EmailPasswordRecipe(RecipeModule):
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  sign_up_feature: Union[InputSignUpFeature, None] = None,
-                 reset_password_using_token_feature: Union[
-                      InputResetPasswordUsingTokenFeature, None] = None,
+                 reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None):
@@ -139,8 +138,7 @@ class EmailPasswordRecipe(RecipeModule):
 
     @staticmethod
     def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
-             reset_password_using_token_feature: Union[
-                  InputResetPasswordUsingTokenFeature, None] = None,
+             reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
              override: Union[InputOverrideConfig, None] = None):
         def func(app_info: AppInfo):

@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, TYPE_CHECKING, Union
+from typing import List, TYPE_CHECKING
 
 from supertokens_python.recipe.emailverification.exceptions import EmailVerificationInvalidTokenError
 
