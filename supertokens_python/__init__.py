@@ -16,7 +16,8 @@ from . import exceptions
 from .supertokens import Supertokens
 from .recipe import session
 from typing import List, Union, Literal, Callable
-from .supertokens import SupertokensConfig, InputAppInfo, AppInfo, RecipeModule
+from .supertokens import SupertokensConfig, InputAppInfo, AppInfo
+from .recipe_module import RecipeModule
 
 
 def init(app_info: InputAppInfo,
