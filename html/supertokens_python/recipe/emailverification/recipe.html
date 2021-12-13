@@ -114,11 +114,11 @@ class EmailVerificationRecipe(RecipeModule):
 
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
         if isinstance(error, EmailVerificationInvalidTokenError):
-            response.set_content(
+            response.set_json_content(
                 {&#39;status&#39;: &#39;EMAIL_VERIFICATION_INVALID_TOKEN_ERROR&#39;})
             return response
         else:
-            response.set_content({&#39;status&#39;: &#39;EMAIL_ALREADY_VERIFIED_ERROR&#39;})
+            response.set_json_content({&#39;status&#39;: &#39;EMAIL_ALREADY_VERIFIED_ERROR&#39;})
             return response
 
     def get_all_cors_headers(self) -&gt; List[str]:
@@ -215,11 +215,11 @@ inheritance.</p></div>
 
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
         if isinstance(error, EmailVerificationInvalidTokenError):
-            response.set_content(
+            response.set_json_content(
                 {&#39;status&#39;: &#39;EMAIL_VERIFICATION_INVALID_TOKEN_ERROR&#39;})
             return response
         else:
-            response.set_content({&#39;status&#39;: &#39;EMAIL_ALREADY_VERIFIED_ERROR&#39;})
+            response.set_json_content({&#39;status&#39;: &#39;EMAIL_ALREADY_VERIFIED_ERROR&#39;})
             return response
 
     def get_all_cors_headers(self) -&gt; List[str]:
@@ -393,11 +393,11 @@ def reset():
 </summary>
 <pre><code class="python">async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
     if isinstance(error, EmailVerificationInvalidTokenError):
-        response.set_content(
+        response.set_json_content(
             {&#39;status&#39;: &#39;EMAIL_VERIFICATION_INVALID_TOKEN_ERROR&#39;})
         return response
     else:
-        response.set_content({&#39;status&#39;: &#39;EMAIL_ALREADY_VERIFIED_ERROR&#39;})
+        response.set_json_content({&#39;status&#39;: &#39;EMAIL_ALREADY_VERIFIED_ERROR&#39;})
         return response</code></pre>
 </details>
 </dd>

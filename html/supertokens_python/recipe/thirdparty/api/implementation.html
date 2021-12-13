@@ -48,7 +48,7 @@ from httpx import AsyncClient
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.thirdparty.interfaces import APIInterface, SignInUpPostOkResponse, \
-    AuthorisationUrlGetOkResponse, SignInUpPostNoEmailGivenByProviderResponse
+    AuthorisationUrlGetOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, SignInUpPostResponse, \
@@ -137,10 +137,13 @@ class APIImplementation(APIInterface):
                     access_token_response = access_token_response.json()
             else:
                 access_token_response = auth_code_response
-            user_info = await provider.get_profile_info(access_token_response)
         except Exception as e:
             raise_general_exception(e)
 
+        try:
+            user_info = await provider.get_profile_info(access_token_response)
+        except Exception as e:
+            return SignInUpPostFieldErrorResponse(str(e))
         email = user_info.email.id if user_info.email is not None else None
         email_verified = user_info.email.is_verified if user_info.email is not None else None
         if email is None or email_verified is None:
@@ -273,10 +276,13 @@ class APIImplementation(APIInterface):
                     access_token_response = access_token_response.json()
             else:
                 access_token_response = auth_code_response
-            user_info = await provider.get_profile_info(access_token_response)
         except Exception as e:
             raise_general_exception(e)
 
+        try:
+            user_info = await provider.get_profile_info(access_token_response)
+        except Exception as e:
+            return SignInUpPostFieldErrorResponse(str(e))
         email = user_info.email.id if user_info.email is not None else None
         email_verified = user_info.email.is_verified if user_info.email is not None else None
         if email is None or email_verified is None:
@@ -396,10 +402,13 @@ class APIImplementation(APIInterface):
                 access_token_response = access_token_response.json()
         else:
             access_token_response = auth_code_response
-        user_info = await provider.get_profile_info(access_token_response)
     except Exception as e:
         raise_general_exception(e)
 
+    try:
+        user_info = await provider.get_profile_info(access_token_response)
+    except Exception as e:
+        return SignInUpPostFieldErrorResponse(str(e))
     email = user_info.email.id if user_info.email is not None else None
     email_verified = user_info.email.is_verified if user_info.email is not None else None
     if email is None or email_verified is None:

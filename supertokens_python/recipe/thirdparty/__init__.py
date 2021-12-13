@@ -21,7 +21,9 @@ from .providers import (
     Google,
     Github,
     Apple,
-    Facebook
+    Facebook,
+    Discord,
+    GoogleWorkspaces
 )
 from ..emailverification.utils import InputEmailVerificationConfig
 

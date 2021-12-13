@@ -150,7 +150,7 @@ class EmailPasswordRecipe(RecipeModule):
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
         if isinstance(error, SuperTokensEmailPasswordError):
             if isinstance(error, FieldError):
-                response.set_content(
+                response.set_json_content(
                     {&#39;status&#39;: &#39;FIELD_ERROR&#39;, &#39;formFields&#39;: error.get_json_form_fields()})
                 return response
         return await self.email_verification_recipe.handle_error(request, error, response)
@@ -290,7 +290,7 @@ inheritance.</p></div>
     async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
         if isinstance(error, SuperTokensEmailPasswordError):
             if isinstance(error, FieldError):
-                response.set_content(
+                response.set_json_content(
                     {&#39;status&#39;: &#39;FIELD_ERROR&#39;, &#39;formFields&#39;: error.get_json_form_fields()})
                 return response
         return await self.email_verification_recipe.handle_error(request, error, response)
@@ -512,7 +512,7 @@ def reset():
 <pre><code class="python">async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
     if isinstance(error, SuperTokensEmailPasswordError):
         if isinstance(error, FieldError):
-            response.set_content(
+            response.set_json_content(
                 {&#39;status&#39;: &#39;FIELD_ERROR&#39;, &#39;formFields&#39;: error.get_json_form_fields()})
             return response
     return await self.email_verification_recipe.handle_error(request, error, response)</code></pre>

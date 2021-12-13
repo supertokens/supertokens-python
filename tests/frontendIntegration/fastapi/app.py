@@ -14,7 +14,7 @@
 import json
 import os
 import sys
-from typing import Literal
+from typing import Literal, Union
 
 import uvicorn
 from starlette.requests import Request
@@ -25,7 +25,7 @@ from supertokens_python.recipe.session.framework.fastapi import verify_session
 
 from supertokens_python import init, get_all_cors_headers, Supertokens, SupertokensConfig, InputAppInfo
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session.asyncio import Session, revoke_all_sessions_for_user, create_new_session, SessionRecipe
+from supertokens_python.recipe.session.asyncio import SessionInterface, revoke_all_sessions_for_user, create_new_session, SessionRecipe
 from fastapi import FastAPI, Depends
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
@@ -37,6 +37,9 @@ index_file.close()
 app = FastAPI(debug=True)
 app.add_middleware(Middleware)
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
+
+last_set_enable_anti_csrf = True
+last_set_enable_jwt = False
 
 
 class Test:
@@ -86,6 +89,23 @@ def apis_override_session(param):
     return param
 
 
+def functions_override_session(param):
+    original_create_new_session = param.create_new_session
+
+    async def create_new_session_custom(request: any, user_id: str, access_token_payload: Union[dict, None] = None,
+                                        session_data: Union[dict, None] = None) -> SessionInterface:
+        if access_token_payload is None:
+            access_token_payload = {}
+        access_token_payload = {
+            **access_token_payload,
+            'customClaim': 'customValue'
+        }
+        return await original_create_new_session(request, user_id, access_token_payload, session_data)
+    param.create_new_session = create_new_session_custom
+
+    return param
+
+
 def get_app_port():
     argvv = sys.argv
     for i in range(0, len(argvv)):
@@ -95,32 +115,55 @@ def get_app_port():
     return '8080'
 
 
-def config(enable_anti_csrf: bool):
+def config(enable_anti_csrf: bool, enable_jwt: bool, jwt_property_name: Union[str, None]):
     anti_csrf: Literal['VIA_TOKEN', 'NONE'] = "NONE"
     if enable_anti_csrf:
         anti_csrf = "VIA_TOKEN"
-    init(
-        supertokens_config=SupertokensConfig('http://localhost:9000'),
-        app_info=InputAppInfo(
-            app_name="SuperTokens Python SDK",
-            api_domain="0.0.0.0:" + get_app_port(),
-            website_domain="http://localhost.org:8080"
-        ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            error_handlers=InputErrorHandlers(
-                on_unauthorised=unauthorised_f
+    if enable_jwt:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:9000'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Python SDK",
+                api_domain="0.0.0.0:" + get_app_port(),
+                website_domain="http://localhost.org:8080"
             ),
-            anti_csrf=anti_csrf,
-            override=session.OverrideConfig(
-                apis=apis_override_session
-            )
-        )],
-        telemetry=False
-    )
+            framework='fastapi',
+            recipe_list=[session.init(
+                error_handlers=InputErrorHandlers(
+                    on_unauthorised=unauthorised_f
+                ),
+                anti_csrf=anti_csrf,
+                override=session.InputOverrideConfig(
+                    apis=apis_override_session,
+                    functions=functions_override_session
+                ),
+                jwt=session.JWTConfig(enable_jwt, jwt_property_name)
+            )],
+            telemetry=False
+        )
+    else:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:9000'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Python SDK",
+                api_domain="0.0.0.0:" + get_app_port(),
+                website_domain="http://localhost.org:8080"
+            ),
+            framework='fastapi',
+            recipe_list=[session.init(
+                error_handlers=InputErrorHandlers(
+                    on_unauthorised=unauthorised_f
+                ),
+                anti_csrf=anti_csrf,
+                override=session.InputOverrideConfig(
+                    apis=apis_override_session
+                )
+            )],
+            telemetry=False
+        )
 
 
-config(True)
+config(True, False, None)
 
 app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
 
@@ -143,8 +186,8 @@ def login_options():
 @app.post('/login')
 async def login(request: Request):
     user_id = (await request.json())['userId']
-    await create_new_session(request, user_id)
-    return PlainTextResponse(content=user_id)
+    _session = await create_new_session(request, user_id)
+    return PlainTextResponse(content=_session.get_user_id())
 
 
 @app.options("/beforeeach")
@@ -186,7 +229,7 @@ def options():
 
 
 @app.get('/')
-async def get_info(r_session: Session = Depends(verify_session())):
+async def get_info(r_session: SessionInterface = Depends(verify_session())):
     Test.increment_get_session()
     return PlainTextResponse(content=r_session.get_user_id(), headers={
         'Cache-Control': 'no-cache, private'
@@ -199,7 +242,7 @@ def update_options():
 
 
 @app.get('/update-jwt')
-async def update_jwt(sess: Session = Depends(verify_session())):
+async def update_jwt(sess: SessionInterface = Depends(verify_session())):
     Test.increment_get_session()
     return JSONResponse(content=sess.get_access_token_payload(), headers={
         'Cache-Control': 'no-cache, private'
@@ -207,10 +250,10 @@ async def update_jwt(sess: Session = Depends(verify_session())):
 
 
 @app.post('/update-jwt')
-async def update_jwt_post(request: Request, session: Session = Depends(verify_session())):
-    await session.update_access_token_payload(await request.json())
+async def update_jwt_post(request: Request, _session: SessionInterface = Depends(verify_session())):
+    await _session.update_access_token_payload(await request.json())
     Test.increment_get_session()
-    return JSONResponse(content=session.get_access_token_payload(), headers={
+    return JSONResponse(content=_session.get_access_token_payload(), headers={
         'Cache-Control': 'no-cache, private'
     })
 
@@ -258,8 +301,8 @@ def logout_options():
 
 
 @app.post('/logout')
-async def logout(session: Session = Depends(verify_session())):
-    await session.revoke_session()
+async def logout(_session: SessionInterface = Depends(verify_session())):
+    await _session.revoke_session()
     return PlainTextResponse(content='success')
 
 
@@ -269,8 +312,8 @@ def revoke_all_options():
 
 
 @app.post('/revokeAll')
-async def revoke_all(session: Session = Depends(verify_session())):
-    await revoke_all_sessions_for_user(session.get_user_id())
+async def revoke_all(_session: SessionInterface = Depends(verify_session())):
+    await revoke_all_sessions_for_user(_session.get_user_id())
     return PlainTextResponse(content='success')
 
 
@@ -301,15 +344,36 @@ async def refresh(request: Request):
 
 @app.post('/setAntiCsrf')
 async def set_anti_csrf(request: Request):
+    global last_set_enable_anti_csrf
     json = await request.json()
     if "enableAntiCsrf" not in json:
         enable_csrf = True
     else:
         enable_csrf = json["enableAntiCsrf"]
+
+    last_set_enable_anti_csrf = enable_csrf
     if enable_csrf is not None:
         Supertokens.reset()
         SessionRecipe.reset()
-        config(enable_csrf)
+        config(enable_csrf, False, None)
+    return PlainTextResponse(content='success')
+
+
+@app.post('/setEnableJWT')
+async def set_enable_jwt(request: Request):
+    global last_set_enable_jwt
+    global last_set_enable_anti_csrf
+    json = await request.json()
+    if "enableJWT" not in json:
+        enable_jwt = False
+    else:
+        enable_jwt = json["enableJWT"]
+
+    last_set_enable_jwt = enable_jwt
+    if enable_jwt is not None:
+        Supertokens.reset()
+        SessionRecipe.reset()
+        config(last_set_enable_anti_csrf, enable_jwt, None)
     return PlainTextResponse(content='success')
 
 
@@ -374,6 +438,31 @@ def check_rid(request: Request):
     rid = request.headers.get('rid')
 
     return PlainTextResponse('fail' if rid is None else 'success')
+
+
+@app.get('/featureFlags')
+def feature_flags(_: Request):
+    global last_set_enable_jwt
+
+    return JSONResponse({
+        'sessionJwt': last_set_enable_jwt
+    })
+
+
+@app.get('/reinitialiseBackendConfig')
+async def reinitialize(request: Request):
+    global last_set_enable_jwt
+    global last_set_enable_anti_csrf
+    json = await request.json()
+    if "jwtPropertyName" not in json:
+        jwt_property_name = None
+    else:
+        jwt_property_name = json["jwtPropertyName"]
+
+    Supertokens.reset()
+    SessionRecipe.reset()
+    config(last_set_enable_anti_csrf, last_set_enable_jwt, jwt_property_name)
+    return PlainTextResponse(content='')
 
 
 @app.options("/checkAllowCredentials")

@@ -124,13 +124,14 @@ class APIOptions:
 
 
 class SignInUpPostResponse(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;, &#39;NO_EMAIL_GIVEN_BY_PROVIDER&#39;], user: Union[User, None] = None,
+    def __init__(self, status: Literal[&#39;OK&#39;, &#39;NO_EMAIL_GIVEN_BY_PROVIDER&#39;, &#39;FIELD_ERROR&#39;], user: Union[User, None] = None,
                  created_new_user: Union[bool, None] = None, auth_code_response: any = None,
                  error: Union[str, None] = None):
         self.type = &#39;thirdparty&#39;
         self.status = status
         self.is_ok = False
         self.is_no_email_given_by_provider = False
+        self.is_field_error = False
         self.user = user
         self.created_new_user = created_new_user
         self.error = error
@@ -200,6 +201,18 @@ class SignInUpPostNoEmailGivenByProviderResponse(SignInUpPostResponse):
     def to_json(self):
         return {
             &#39;status&#39;: self.status
+        }
+
+
+class SignInUpPostFieldErrorResponse(SignInUpPostResponse):
+    def __init__(self, error: str):
+        super().__init__(&#39;FIELD_ERROR&#39;, error=error)
+        self.is_field_error = True
+
+    def to_json(self):
+        return {
+            &#39;status&#39;: self.status,
+            &#39;error&#39;: self.error
         }
 
 
@@ -737,6 +750,53 @@ inheritance.</p></div>
 <li>abc.ABC</li>
 </ul>
 </dd>
+<dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldErrorResponse"><code class="flex name class">
+<span>class <span class="ident">SignInUpPostFieldErrorResponse</span></span>
+<span>(</span><span>error: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SignInUpPostFieldErrorResponse(SignInUpPostResponse):
+    def __init__(self, error: str):
+        super().__init__(&#39;FIELD_ERROR&#39;, error=error)
+        self.is_field_error = True
+
+    def to_json(self):
+        return {
+            &#39;status&#39;: self.status,
+            &#39;error&#39;: self.error
+        }</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse">SignInUpPostResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    return {
+        &#39;status&#39;: self.status,
+        &#39;error&#39;: self.error
+    }</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse"><code class="flex name class">
 <span>class <span class="ident">SignInUpPostNoEmailGivenByProviderResponse</span></span>
 </code></dt>
@@ -849,7 +909,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse"><code class="flex name class">
 <span>class <span class="ident">SignInUpPostResponse</span></span>
-<span>(</span><span>status: "Literal[('OK', 'NO_EMAIL_GIVEN_BY_PROVIDER')]", user: Union[User, None] = None, created_new_user: Union[bool, None] = None, auth_code_response: any = None, error: Union[str, None] = None)</span>
+<span>(</span><span>status: "Literal[('OK', 'NO_EMAIL_GIVEN_BY_PROVIDER', 'FIELD_ERROR')]", user: Union[User, None] = None, created_new_user: Union[bool, None] = None, auth_code_response: any = None, error: Union[str, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -859,13 +919,14 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class SignInUpPostResponse(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;, &#39;NO_EMAIL_GIVEN_BY_PROVIDER&#39;], user: Union[User, None] = None,
+    def __init__(self, status: Literal[&#39;OK&#39;, &#39;NO_EMAIL_GIVEN_BY_PROVIDER&#39;, &#39;FIELD_ERROR&#39;], user: Union[User, None] = None,
                  created_new_user: Union[bool, None] = None, auth_code_response: any = None,
                  error: Union[str, None] = None):
         self.type = &#39;thirdparty&#39;
         self.status = status
         self.is_ok = False
         self.is_no_email_given_by_provider = False
+        self.is_field_error = False
         self.user = user
         self.created_new_user = created_new_user
         self.error = error
@@ -881,6 +942,7 @@ inheritance.</p></div>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldErrorResponse" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldErrorResponse">SignInUpPostFieldErrorResponse</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResponse" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResponse">SignInUpPostOkResponse</a></li>
 </ul>
@@ -1004,6 +1066,12 @@ inheritance.</p></div>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldErrorResponse" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldErrorResponse">SignInUpPostFieldErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldErrorResponse.to_json" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldErrorResponse.to_json">to_json</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a></code></h4>

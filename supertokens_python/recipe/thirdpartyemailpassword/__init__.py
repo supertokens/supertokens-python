@@ -23,7 +23,9 @@ from supertokens_python.recipe.thirdparty import (
     Google,
     Github,
     Apple,
-    Facebook
+    Facebook,
+    Discord,
+    GoogleWorkspaces
 )
 from ..emailpassword import InputResetPasswordUsingTokenFeature, InputSignUpFeature
 from ..emailverification.utils import InputEmailVerificationConfig
@@ -32,6 +34,8 @@ Google = Google
 Github = Github
 Apple = Apple
 Facebook = Facebook
+Discord = Discord
+GoogleWorkspaces = GoogleWorkspaces
 
 
 def init(sign_up_feature: Union[InputSignUpFeature, None] = None,

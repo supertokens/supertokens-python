@@ -114,7 +114,6 @@ class Apple(Provider):
     def get_redirect_uri(self) -> Union[None, str]:
         app_info = Supertokens.get_instance().app_info
         self.redirect_uri = app_info.api_domain.get_as_string_dangerous()
-        self.redirect_uri += app_info.api_gateway_path.get_as_string_dangerous()
         self.redirect_uri += app_info.api_base_path.get_as_string_dangerous()
         self.redirect_uri += APPLE_REDIRECT_HANDLER
         return self.redirect_uri

@@ -53,7 +53,7 @@ class JWTRecipe(RecipeModule):
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [APIHandled(method='get', path_without_api_base_path=NormalisedURLPath(GET_JWKS_API),
-                           request_id=GET_JWKS_API, disabled=self.api_implementation.jwks_get is None)]
+                           request_id=GET_JWKS_API, disabled=self.api_implementation.disable_jwks_get)]
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):

@@ -46,10 +46,10 @@ if TYPE_CHECKING:
     from .recipe_module import RecipeModule
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
+    from supertokens_python.recipe.session import SessionInterface
 from os import environ
 from httpx import AsyncClient
 from .exceptions import raise_general_exception
-from supertokens_python.recipe.session import Session
 from .exceptions import (
     SuperTokensError,
     GeneralError,
@@ -82,7 +82,7 @@ class InputAppInfo:
         self.website_base_path = website_base_path
 
 
-class AppInfo():
+class AppInfo:
     def __init__(self, app_name: str, api_domain: str, website_domain: str,
                  framework: Literal['fastapi', 'flask', 'django'], api_gateway_path: str = '',
                  api_base_path: str = '/auth', website_base_path: str = '/auth',
@@ -105,7 +105,7 @@ class AppInfo():
         self.mode = mode
 
 
-def manage_cookies_post_response(session: Session, response: BaseResponse):
+def manage_cookies_post_response(session: SessionInterface, response: BaseResponse):
     recipe = SessionRecipe.get_instance()
     if session['remove_cookies']:
         clear_cookies(recipe, response)

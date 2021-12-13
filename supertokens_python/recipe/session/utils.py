@@ -24,6 +24,8 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.utils import is_an_ip_address, send_non_200_response
 from .constants import SESSION_REFRESH
 from .cookie_and_header import clear_cookies
+from supertokens_python.recipe.openid import InputOverrideConfig as OpenIdInputOverrideConfig
+from .with_jwt.constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE
 
 if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface
@@ -154,11 +156,34 @@ async def default_token_theft_detected_callback(_: BaseRequest, session_handle: 
     ).config.session_expired_status_code, response)
 
 
+class InputOverrideConfig:
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+        openid_feature: Union[OpenIdInputOverrideConfig, None] = None
+    ):
+        self.functions = functions
+        self.apis = apis
+        self.openid_feature = openid_feature
+
+
 class OverrideConfig:
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
                                         None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
         self.functions = functions
         self.apis = apis
+
+
+class JWTConfig:
+    def __init__(self, enable: bool, property_name_in_access_token_payload: Union[str, None] = None, issuer: Union[str, None] = None):
+        if property_name_in_access_token_payload is None:
+            property_name_in_access_token_payload = 'jwt'
+        if property_name_in_access_token_payload == ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY:
+            raise Exception(JWT_RESERVED_KEY_USE_ERROR_MESSAGE)
+        self.enable = enable
+        self.property_name_in_access_token_payload = property_name_in_access_token_payload
+        self.issuer = issuer
 
 
 class SessionConfig:
@@ -172,7 +197,8 @@ class SessionConfig:
                  anti_csrf: str,
                  override: OverrideConfig,
                  framework: str,
-                 mode: str
+                 mode: str,
+                 jwt: JWTConfig
                  ):
         self.refresh_token_path = refresh_token_path
         self.cookie_domain = cookie_domain
@@ -184,17 +210,20 @@ class SessionConfig:
         self.override = override
         self.framework = framework
         self.mode = mode
+        self.jwt = jwt
 
 
 def validate_and_normalise_user_input(
-        recipe: SessionRecipe, app_info: AppInfo,
-        cookie_domain: Union[str, None] = None,
-        cookie_secure: Union[str, None] = None,
-        cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
-        session_expired_status_code: Union[str, None] = None,
-        anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
-        error_handlers: Union[InputErrorHandlers, None] = None,
-        override: Union[OverrideConfig, None] = None):
+    recipe: SessionRecipe, app_info: AppInfo,
+    cookie_domain: Union[str, None] = None,
+    cookie_secure: Union[str, None] = None,
+    cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
+    session_expired_status_code: Union[str, None] = None,
+    anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+    error_handlers: Union[InputErrorHandlers, None] = None,
+    override: Union[InputOverrideConfig, None] = None,
+    jwt: Union[JWTConfig, None] = None
+):
     cookie_domain = normalise_session_scope(recipe, cookie_domain) if cookie_domain is not None else None
     top_level_api_domain = get_top_level_domain_for_same_site_resolution(
         app_info.api_domain.get_as_string_dangerous())
@@ -241,7 +270,10 @@ def validate_and_normalise_user_input(
                                 'https on your apiDomain and don\'t set cookieSecure to false.')
 
     if override is None:
-        override = OverrideConfig()
+        override = InputOverrideConfig()
+
+    if jwt is None:
+        jwt = JWTConfig(False)
 
     return SessionConfig(
         app_info.api_base_path.append(NormalisedURLPath(SESSION_REFRESH)),
@@ -251,7 +283,8 @@ def validate_and_normalise_user_input(
         session_expired_status_code,
         error_handlers,
         anti_csrf,
-        override,
+        OverrideConfig(override.functions, override.apis),
         app_info.framework,
-        app_info.mode
+        app_info.mode,
+        jwt
     )

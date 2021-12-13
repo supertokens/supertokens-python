@@ -51,6 +51,7 @@ if TYPE_CHECKING:
     from .recipe import ThirdPartyRecipe
     from .provider import Provider
 from supertokens_python.utils import validate_the_structure_of_user_input
+from jwt import PyJWKClient, decode
 
 
 class SignInAndUpFeature:
@@ -204,7 +205,29 @@ def find_right_provider(
         if provider.client_id == client_id:
             return provider
 
-    return None</code></pre>
+    return None
+
+
+def verify_id_token_from_jwks_endpoint(id_token: str, jwks_uri: str, audience: str, issuers: List[str]):
+    jwks_client = PyJWKClient(jwks_uri)
+    signing_key = jwks_client.get_signing_key_from_jwt(id_token)
+
+    data = decode(
+        id_token,
+        signing_key.key,
+        algorithms=[&#34;RS256&#34;],
+        audience=audience,
+        options={&#34;verify_exp&#34;: False})
+
+    issuer_found = False
+    for issuer in issuers:
+        if data[&#39;iss&#39;] == issuer:
+            issuer_found = True
+
+    if not issuer_found:
+        raise Exception(&#39;no required issuer found&#39;)
+
+    return data</code></pre>
 </details>
 </section>
 <section>
@@ -400,6 +423,37 @@ def find_right_provider(
                             email_verification_feature, override)</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.thirdparty.utils.verify_id_token_from_jwks_endpoint"><code class="name flex">
+<span>def <span class="ident">verify_id_token_from_jwks_endpoint</span></span>(<span>id_token: str, jwks_uri: str, audience: str, issuers: List[str])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def verify_id_token_from_jwks_endpoint(id_token: str, jwks_uri: str, audience: str, issuers: List[str]):
+    jwks_client = PyJWKClient(jwks_uri)
+    signing_key = jwks_client.get_signing_key_from_jwt(id_token)
+
+    data = decode(
+        id_token,
+        signing_key.key,
+        algorithms=[&#34;RS256&#34;],
+        audience=audience,
+        options={&#34;verify_exp&#34;: False})
+
+    issuer_found = False
+    for issuer in issuers:
+        if data[&#39;iss&#39;] == issuer:
+            issuer_found = True
+
+    if not issuer_found:
+        raise Exception(&#39;no required issuer found&#39;)
+
+    return data</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -479,6 +533,7 @@ def find_right_provider(
 <li><code><a title="supertokens_python.recipe.thirdparty.utils.validate_and_normalise_email_verification_config" href="#supertokens_python.recipe.thirdparty.utils.validate_and_normalise_email_verification_config">validate_and_normalise_email_verification_config</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.utils.validate_and_normalise_sign_in_and_up_config" href="#supertokens_python.recipe.thirdparty.utils.validate_and_normalise_sign_in_and_up_config">validate_and_normalise_sign_in_and_up_config</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.utils.validate_and_normalise_user_input" href="#supertokens_python.recipe.thirdparty.utils.validate_and_normalise_user_input">validate_and_normalise_user_input</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.utils.verify_id_token_from_jwks_endpoint" href="#supertokens_python.recipe.thirdparty.utils.verify_id_token_from_jwks_endpoint">verify_id_token_from_jwks_endpoint</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>

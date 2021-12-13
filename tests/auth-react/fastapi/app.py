@@ -28,7 +28,7 @@ from supertokens_python import init, get_all_cors_headers, SupertokensConfig, In
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword
 from supertokens_python.recipe.emailpassword.types import InputFormField
-from supertokens_python.recipe.session import Session
+from supertokens_python.recipe.session import SessionInterface
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.thirdparty import Github, Google, Facebook
 
@@ -142,7 +142,7 @@ def ping():
 
 
 @app.get('/sessionInfo')
-async def get_session_info(session_: Session = Depends(verify_session())):
+async def get_session_info(session_: SessionInterface = Depends(verify_session())):
     return JSONResponse({
         'sessionHandle': session_.get_handle(),
         'userId': session_.get_user_id(),

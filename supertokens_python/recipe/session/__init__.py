@@ -13,10 +13,10 @@
 # under the License.
 from typing import Union, List, Literal
 
-from .session_class import Session
+from .interfaces import SessionInterface
 from .recipe import SessionRecipe
 from . import exceptions
-from .utils import InputErrorHandlers, OverrideConfig
+from .utils import InputErrorHandlers, InputOverrideConfig, JWTConfig
 
 
 def init(cookie_domain: Union[str, None] = None,
@@ -25,11 +25,13 @@ def init(cookie_domain: Union[str, None] = None,
          session_expired_status_code: Union[str, None] = None,
          anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
          error_handlers: Union[InputErrorHandlers, None] = None,
-         override: Union[OverrideConfig, None] = None):
+         override: Union[InputOverrideConfig, None] = None,
+         jwt: Union[JWTConfig, None] = None):
     return SessionRecipe.init(cookie_domain,
                               cookie_secure,
                               cookie_same_site,
                               session_expired_status_code,
                               anti_csrf,
                               error_handlers,
-                              override)
+                              override,
+                              jwt)

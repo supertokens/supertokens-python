@@ -108,7 +108,7 @@ async def test_login_refresh(driver_config_client: TestClient):
         recipe_list=[session.init(
             anti_csrf='VIA_TOKEN',
             cookie_domain='supertokens.io',
-            override=session.OverrideConfig(
+            override=session.InputOverrideConfig(
                 apis=apis_override_session
             )
         )]

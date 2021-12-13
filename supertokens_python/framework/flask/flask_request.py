@@ -21,6 +21,7 @@ class FlaskRequest(BaseRequest):
     def __init__(self, req):
         super().__init__()
         self.req = req
+        self.original = req
 
     def get_query_param(self, key, default=None):
         return self.req.args.get(key, default)
