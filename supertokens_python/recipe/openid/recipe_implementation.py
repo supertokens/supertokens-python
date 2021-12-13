@@ -17,16 +17,24 @@ from supertokens_python.querier import Querier
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .utils import OpenIdConfig
-    from .interfaces import CreateJwtResult, GetOpenIdDiscoveryConfigurationResult
+    from .interfaces import CreateJwtResult
     from supertokens_python.supertokens import AppInfo
 from .interfaces import RecipeInterface, GetJWKSResult
 from supertokens_python.recipe.jwt.interfaces import RecipeInterface as JWTRecipeInterface
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.jwt.constants import GET_JWKS_API
+from .interfaces import GetOpenIdDiscoveryConfigurationResult
 
 
 class RecipeImplementation(RecipeInterface):
 
     async def get_open_id_discovery_configuration(self) -> GetOpenIdDiscoveryConfigurationResult:
-        pass
+        issuer = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.get_as_string_dangerous()
+
+        jwks_uri = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.append(
+            NormalisedURLPath(GET_JWKS_API)).get_as_string_dangerous()
+
+        return GetOpenIdDiscoveryConfigurationResult('OK', issuer, jwks_uri)
 
     def __init__(self, querier: Querier, config: OpenIdConfig, app_info: AppInfo, jwt_recipe_implementation: JWTRecipeInterface):
         super().__init__()

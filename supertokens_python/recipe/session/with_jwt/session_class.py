@@ -19,7 +19,6 @@ from typing import TYPE_CHECKING
 
 from jwt import decode
 
-from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.session.with_jwt.constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
 from supertokens_python.recipe.session.with_jwt.utills import add_jwt_to_access_token_payload
 from supertokens_python.utils import get_timestamp_ms
@@ -30,40 +29,16 @@ if TYPE_CHECKING:
 from supertokens_python.recipe.session.interfaces import SessionInterface
 
 
-class SessionWithJWT(SessionInterface):
-    def __init__(self, original_session: SessionInterface, openid_recipe_implementation: OpenIdRecipeInterface):
-        super().__init__()
-        self.original_session = original_session
-        self.openid_recipe_implementation = openid_recipe_implementation
+def get_session_with_jwt(original_session: SessionInterface, openid_recipe_implementation: OpenIdRecipeInterface) -> SessionInterface:
+    original_update_access_token_payload = original_session.update_access_token_payload
 
-    async def revoke_session(self) -> None:
-        return await self.original_session.revoke_session()
-
-    def sync_revoke_session(self) -> None:
-        return sync(self.revoke_session())
-
-    def sync_get_session_data(self) -> dict:
-        return sync(self.get_session_data())
-
-    async def get_session_data(self) -> dict:
-        return await self.original_session.get_session_data()
-
-    def sync_update_session_data(self, new_session_data) -> None:
-        sync(self.update_session_data(new_session_data))
-
-    async def update_session_data(self, new_session_data) -> None:
-        return await self.original_session.update_session_data(new_session_data)
-
-    def sync_update_access_token_payload(self, new_access_token_payload) -> None:
-        sync(self.update_access_token_payload(new_access_token_payload))
-
-    async def update_access_token_payload(self, new_access_token_payload) -> None:
+    async def update_access_token_payload(new_access_token_payload) -> None:
         if new_access_token_payload is None:
             new_access_token_payload = {}
-        access_token_payload = self.get_access_token_payload()
+        access_token_payload = original_session.get_access_token_payload()
 
         if ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY not in access_token_payload:
-            return await self.original_session.update_access_token_payload(new_access_token_payload)
+            return await original_update_access_token_payload(new_access_token_payload)
 
         jwt_property_name = access_token_payload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]
 
@@ -90,21 +65,12 @@ class SessionWithJWT(SessionInterface):
         new_access_token_payload = await add_jwt_to_access_token_payload(
             access_token_payload=new_access_token_payload,
             jwt_expiry=jwt_expiry,
-            user_id=self.get_user_id(),
+            user_id=original_session.get_user_id(),
             jwt_property_name=jwt_property_name,
-            openid_recipe_implementation=self.openid_recipe_implementation
+            openid_recipe_implementation=openid_recipe_implementation
         )
 
-        return await self.original_session.update_access_token_payload(new_access_token_payload)
+        return await original_update_access_token_payload(new_access_token_payload)
 
-    def get_user_id(self) -> str:
-        return self.original_session.get_user_id()
-
-    def get_access_token_payload(self) -> dict:
-        return self.original_session.get_access_token_payload()
-
-    def get_handle(self) -> str:
-        return self.original_session.get_handle()
-
-    def get_access_token(self) -> str:
-        return self.original_session.get_access_token()
+    original_session.update_access_token_payload = update_access_token_payload
+    return original_session

@@ -449,7 +449,7 @@ def feature_flags(_: Request):
     })
 
 
-@app.get('/reinitialiseBackendConfig')
+@app.post('/reinitialiseBackendConfig')
 async def reinitialize(request: Request):
     global last_set_enable_jwt
     global last_set_enable_anti_csrf

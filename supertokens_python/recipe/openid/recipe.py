@@ -68,7 +68,7 @@ class OpenIdRecipe(RecipeModule):
 
         if request_id == GET_DISCOVERY_CONFIG_URL:
             return await open_id_discovery_configuration_get(self.api_implementation, options)
-        return self.jwt_recipe.handle_api_request(request_id, request, path, method, response)
+        return await self.jwt_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse):
         if isinstance(err, SuperTokensOpenIdError):

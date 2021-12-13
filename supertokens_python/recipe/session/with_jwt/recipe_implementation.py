@@ -20,7 +20,7 @@ from jwt import decode
 from supertokens_python.querier import Querier
 from supertokens_python.utils import get_timestamp_ms
 from .constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
-from .session_class import SessionWithJWT
+from .session_class import get_session_with_jwt
 from supertokens_python.recipe.session.recipe_implementation import RecipeImplementation
 from .utills import add_jwt_to_access_token_payload
 from ..interfaces import SessionInterface
@@ -55,14 +55,14 @@ class RecipeImplementationWithJWT(RecipeImplementation):
         )
         session = await RecipeImplementation.create_new_session(
             self, request, user_id, access_token_payload, session_data)
-        return SessionWithJWT(session, self.openid_recipe_implementation)
+        return get_session_with_jwt(session, self.openid_recipe_implementation)
 
     async def get_session(self, request: any, anti_csrf_check: Union[bool, None] = None,
                           session_required: bool = True) -> Union[SessionInterface, None]:
         session_container = await RecipeImplementation.get_session(self, request, anti_csrf_check, session_required)
         if session_container is None:
             return None
-        return SessionWithJWT(session_container, self.openid_recipe_implementation)
+        return get_session_with_jwt(session_container, self.openid_recipe_implementation)
 
     async def refresh_session(self, request: any) -> SessionInterface:
         access_token_validity_in_seconds = ceil(await self.get_access_token_lifetime_ms() / 1000)
@@ -79,7 +79,7 @@ class RecipeImplementationWithJWT(RecipeImplementation):
         )
 
         await new_session.update_access_token_payload(access_token_payload)
-        return SessionWithJWT(new_session, self.openid_recipe_implementation)
+        return get_session_with_jwt(new_session, self.openid_recipe_implementation)
 
     async def update_access_token_payload(self, session_handle: str, new_access_token_payload: dict) -> None:
         if new_access_token_payload is None:

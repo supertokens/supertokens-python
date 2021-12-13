@@ -489,7 +489,7 @@ def feature_flags():
     })
 
 
-@app.route('/reinitialiseBackendConfig', methods=['GET'])
+@app.route('/reinitialiseBackendConfig', methods=['POST'])
 def reinitialize():
     global last_set_enable_jwt
     global last_set_enable_anti_csrf
