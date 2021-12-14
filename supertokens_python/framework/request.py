@@ -21,7 +21,7 @@ class BaseRequest(ABC):
 
     def __init__(self):
         self.wrapper_used = True
-        self.original = None
+        self.request = None
 
     @abstractmethod
     def get_query_param(self, key, default=None):

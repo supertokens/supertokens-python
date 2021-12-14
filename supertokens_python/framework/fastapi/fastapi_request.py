@@ -22,7 +22,6 @@ class FastApiRequest(BaseRequest):
     def __init__(self, request):
         super().__init__()
         self.request = request
-        self.original = request
 
     def get_query_param(self, key, default=None):
         return self.request.query_params.get(key, default)

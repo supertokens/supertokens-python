@@ -20,33 +20,32 @@ class FlaskRequest(BaseRequest):
 
     def __init__(self, req):
         super().__init__()
-        self.req = req
-        self.original = req
+        self.request = req
 
     def get_query_param(self, key, default=None):
-        return self.req.args.get(key, default)
+        return self.request.args.get(key, default)
 
     async def json(self):
         try:
-            return self.req.get_json()
+            return self.request.get_json()
         except Exception:
             return {}
 
     def method(self) -> str:
-        if isinstance(self.req, dict):
-            return self.req['REQUEST_METHOD']
-        return self.req.method
+        if isinstance(self.request, dict):
+            return self.request['REQUEST_METHOD']
+        return self.request.method
 
     def get_cookie(self, key: str) -> Union[str, None]:
-        return self.req.cookies.get(key, None)
+        return self.request.cookies.get(key, None)
 
     def get_header(self, key: str) -> Any:
-        if isinstance(self.req, dict):
-            return self.req.get(key, None)
-        return self.req.headers.get(key)
+        if isinstance(self.request, dict):
+            return self.request.get(key, None)
+        return self.request.headers.get(key)
 
     def url(self):
-        return self.req.url
+        return self.request.url
 
     def get_session(self):
         from flask import g
@@ -59,9 +58,9 @@ class FlaskRequest(BaseRequest):
         g.supertokens = session
 
     def get_path(self) -> str:
-        if isinstance(self.req, dict):
-            return self.req['PATH_INFO']
-        return self.req.base_url
+        if isinstance(self.request, dict):
+            return self.request['PATH_INFO']
+        return self.request.base_url
 
     async def form_data(self):
-        return self.req.form.to_dict()
+        return self.request.form.to_dict()
