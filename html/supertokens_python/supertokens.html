@@ -42,7 +42,7 @@
 
 from __future__ import annotations
 
-from typing import Union, List, TYPE_CHECKING
+from typing import Union, List, TYPE_CHECKING, Callable
 
 try:
     from typing import Literal
@@ -63,22 +63,21 @@ from .recipe.session.cookie_and_header import attach_access_token_to_cookie, cle
     attach_refresh_token_to_cookie, attach_id_refresh_token_to_cookie_and_header, attach_anti_csrf_header, \
     set_front_token_in_headers
 
-from .types import INPUT_SCHEMA, UsersResponse, User, ThirdPartyInfo
+from .types import UsersResponse, User, ThirdPartyInfo
 from .utils import (
-    validate_the_structure_of_user_input,
     normalise_http_method,
     get_rid_from_request,
-    send_non_200_response, validate_framework
+    send_non_200_response
 )
 
 if TYPE_CHECKING:
     from .recipe_module import RecipeModule
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
+    from supertokens_python.recipe.session import SessionInterface
 from os import environ
 from httpx import AsyncClient
 from .exceptions import raise_general_exception
-from supertokens_python.recipe.session import Session
 from .exceptions import (
     SuperTokensError,
     GeneralError,
@@ -88,26 +87,53 @@ from supertokens_python.recipe.session import SessionRecipe
 import asyncio
 
 
+class SupertokensConfig:
+    def __init__(self, connection_uri: str, api_key: Union[str, None] = None):
+        self.connection_uri = connection_uri
+        self.api_key = api_key
+
+
+class InputAppInfo:
+    def __init__(self,
+                 app_name: str,
+                 api_domain: str,
+                 website_domain: str,
+                 api_gateway_path: str = &#39;&#39;,
+                 api_base_path: str = &#39;/auth&#39;,
+                 website_base_path: str = &#39;/auth&#39;,
+                 ):
+        self.app_name = app_name
+        self.api_gateway_path = api_gateway_path
+        self.api_domain = api_domain
+        self.website_domain = website_domain
+        self.api_base_path = api_base_path
+        self.website_base_path = website_base_path
+
+
 class AppInfo:
-    def __init__(self, app_info, framework: str, mode: str):
-        self.app_name: str = app_info[&#39;app_name&#39;]
-        self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(app_info[
-            &#39;api_gateway_path&#39;]) if &#39;api_gateway_path&#39; in app_info else NormalisedURLPath(
-            &#39;&#39;)
-        self.api_domain: NormalisedURLDomain = NormalisedURLDomain(
-            app_info[&#39;api_domain&#39;])
-        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(
-            app_info[&#39;website_domain&#39;])
-        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(
-            NormalisedURLPath(&#39;/auth&#39;) if &#39;api_base_path&#39; not in app_info else NormalisedURLPath(
-                app_info[&#39;api_base_path&#39;]))
-        self.website_base_path: NormalisedURLPath = NormalisedURLPath(
-            &#39;/auth&#39;) if &#39;website_base_path&#39; not in app_info else NormalisedURLPath(app_info[&#39;website_base_path&#39;])
+    def __init__(self, app_name: str, api_domain: str, website_domain: str,
+                 framework: Literal[&#39;fastapi&#39;, &#39;flask&#39;, &#39;django&#39;], api_gateway_path: str = &#39;&#39;,
+                 api_base_path: str = &#39;/auth&#39;, website_base_path: str = &#39;/auth&#39;,
+                 mode: Union[Literal[&#39;asgi&#39;, &#39;wsgi&#39;], None] = None):
+        self.app_name = app_name
+        self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(api_gateway_path)
+        self.api_domain: NormalisedURLDomain = NormalisedURLDomain(api_domain)
+        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(website_domain)
+        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(NormalisedURLPath(api_base_path))
+        self.website_base_path: NormalisedURLPath = NormalisedURLPath(website_base_path)
+        if framework == &#39;fastapi&#39;:
+            mode = &#39;asgi&#39;
+        elif framework == &#39;flask&#39;:
+            mode = &#39;wsgi&#39;
+        elif mode is not None:
+            mode = mode
+        else:
+            mode = &#39;wsgi&#39;
         self.framework = framework
         self.mode = mode
 
 
-def manage_cookies_post_response(session: Session, response: BaseResponse):
+def manage_cookies_post_response(session: SessionInterface, response: BaseResponse):
     recipe = SessionRecipe.get_instance()
     if session[&#39;remove_cookies&#39;]:
         clear_cookies(recipe, response)
@@ -151,38 +177,39 @@ def manage_cookies_post_response(session: Session, response: BaseResponse):
 class Supertokens:
     __instance = None
 
-    def __init__(self, config):
-        validate_the_structure_of_user_input(
-            config, INPUT_SCHEMA, &#39;init_function&#39;, None)
-        validate_framework(config)
-        mode = &#39;asgi&#39; if config[&#39;framework&#39;] == &#39;fastapi&#39; else &#39;wsgi&#39;
-        if &#39;mode&#39; in config:
-            mode = config[&#39;mode&#39;]
-        self.app_info: AppInfo = AppInfo(config[&#39;app_info&#39;], config[&#39;framework&#39;], mode)
+    def __init__(self,
+                 app_info: InputAppInfo,
+                 framework: Literal[&#39;fastapi&#39;, &#39;flask&#39;, &#39;django&#39;],
+                 supertokens_config: SupertokensConfig,
+                 recipe_list: List[Callable[[AppInfo], RecipeModule]],
+                 mode: Union[Literal[&#39;asgi&#39;, &#39;wsgi&#39;], None] = None,
+                 telemetry: Union[bool, None] = None
+                 ):
+        self.app_info = AppInfo(
+            app_info.app_name,
+            app_info.api_domain,
+            app_info.website_domain,
+            framework,
+            app_info.api_gateway_path,
+            app_info.api_base_path,
+            app_info.website_base_path,
+            mode
+        )
         hosts = list(map(lambda h: NormalisedURLDomain(h.strip()),
-                         filter(lambda x: x != &#39;&#39;, config[&#39;supertokens&#39;][&#39;connection_uri&#39;].split(&#39;;&#39;))))
-        api_key = None
-        if &#39;api_key&#39; in config[&#39;supertokens&#39;]:
-            api_key = config[&#39;supertokens&#39;][&#39;api_key&#39;]
-        Querier.init(hosts, api_key)
+                         filter(lambda x: x != &#39;&#39;, supertokens_config.connection_uri.split(&#39;;&#39;))))
+        Querier.init(hosts, supertokens_config.api_key)
 
-        if &#39;recipe_list&#39; not in config or not isinstance(config[&#39;recipe_list&#39;], list) or len(
-                config[&#39;recipe_list&#39;]) == 0:
+        if len(recipe_list) == 0:
             raise_general_exception(
                 None, &#39;Please provide at least one recipe to the supertokens.init function call&#39;)
 
-        self.recipe_modules: List[RecipeModule] = list(
-            map(lambda func: func(self.app_info), config[&#39;recipe_list&#39;]))
+        self.recipe_modules: List[RecipeModule] = list(map(lambda func: func(self.app_info), recipe_list))
 
-        telemetry = (
-            &#39;SUPERTOKENS_ENV&#39; not in environ) or (
-            environ[&#39;SUPERTOKENS_ENV&#39;] != &#39;testing&#39;)
-        if &#39;telemetry&#39; in config:
-            telemetry = config[&#39;telemetry&#39;]
+        if telemetry is None:
+            telemetry = (&#39;SUPERTOKENS_ENV&#39; not in environ) or (environ[&#39;SUPERTOKENS_ENV&#39;] != &#39;testing&#39;)
 
         if telemetry:
-            if self.app_info.framework.lower(
-            ) == &#39;flask&#39; or self.app_info.framework.lower() == &#39;django&#39;:
+            if self.app_info.framework.lower() == &#39;flask&#39; or self.app_info.framework.lower() == &#39;django&#39;:
                 loop = asyncio.get_event_loop()
                 loop.run_until_complete(self.send_telemetry())
             else:
@@ -212,9 +239,14 @@ class Supertokens:
             pass
 
     @staticmethod
-    def init(config):
+    def init(app_info: InputAppInfo,
+             framework: Literal[&#39;fastapi&#39;, &#39;flask&#39;, &#39;django&#39;],
+             supertokens_config: SupertokensConfig,
+             recipe_list: List[Callable[[AppInfo], RecipeModule]],
+             mode: Union[Literal[&#39;asgi&#39;, &#39;wsgi&#39;], None] = None,
+             telemetry: Union[bool, None] = None):
         if Supertokens.__instance is None:
-            Supertokens.__instance = Supertokens(config)
+            Supertokens.__instance = Supertokens(app_info, framework, supertokens_config, recipe_list, mode, telemetry)
 
     @staticmethod
     def reset():
@@ -362,7 +394,7 @@ class Supertokens:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.supertokens.manage_cookies_post_response"><code class="name flex">
-<span>def <span class="ident">manage_cookies_post_response</span></span>(<span>session: Session, response: BaseResponse)</span>
+<span>def <span class="ident">manage_cookies_post_response</span></span>(<span>session: SessionInterface, response: BaseResponse)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -370,7 +402,7 @@ class Supertokens:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def manage_cookies_post_response(session: Session, response: BaseResponse):
+<pre><code class="python">def manage_cookies_post_response(session: SessionInterface, response: BaseResponse):
     recipe = SessionRecipe.get_instance()
     if session[&#39;remove_cookies&#39;]:
         clear_cookies(recipe, response)
@@ -418,7 +450,7 @@ class Supertokens:
 <dl>
 <dt id="supertokens_python.supertokens.AppInfo"><code class="flex name class">
 <span>class <span class="ident">AppInfo</span></span>
-<span>(</span><span>app_info, framework: str, mode: str)</span>
+<span>(</span><span>app_name: str, api_domain: str, website_domain: str, framework: "Literal[('fastapi', 'flask', 'django')]", api_gateway_path: str = '', api_base_path: str = '/auth', website_base_path: str = '/auth', mode: "Union[Literal[('asgi', 'wsgi')], None]" = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -427,27 +459,58 @@ class Supertokens:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class AppInfo:
-    def __init__(self, app_info, framework: str, mode: str):
-        self.app_name: str = app_info[&#39;app_name&#39;]
-        self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(app_info[
-            &#39;api_gateway_path&#39;]) if &#39;api_gateway_path&#39; in app_info else NormalisedURLPath(
-            &#39;&#39;)
-        self.api_domain: NormalisedURLDomain = NormalisedURLDomain(
-            app_info[&#39;api_domain&#39;])
-        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(
-            app_info[&#39;website_domain&#39;])
-        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(
-            NormalisedURLPath(&#39;/auth&#39;) if &#39;api_base_path&#39; not in app_info else NormalisedURLPath(
-                app_info[&#39;api_base_path&#39;]))
-        self.website_base_path: NormalisedURLPath = NormalisedURLPath(
-            &#39;/auth&#39;) if &#39;website_base_path&#39; not in app_info else NormalisedURLPath(app_info[&#39;website_base_path&#39;])
+    def __init__(self, app_name: str, api_domain: str, website_domain: str,
+                 framework: Literal[&#39;fastapi&#39;, &#39;flask&#39;, &#39;django&#39;], api_gateway_path: str = &#39;&#39;,
+                 api_base_path: str = &#39;/auth&#39;, website_base_path: str = &#39;/auth&#39;,
+                 mode: Union[Literal[&#39;asgi&#39;, &#39;wsgi&#39;], None] = None):
+        self.app_name = app_name
+        self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(api_gateway_path)
+        self.api_domain: NormalisedURLDomain = NormalisedURLDomain(api_domain)
+        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(website_domain)
+        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(NormalisedURLPath(api_base_path))
+        self.website_base_path: NormalisedURLPath = NormalisedURLPath(website_base_path)
+        if framework == &#39;fastapi&#39;:
+            mode = &#39;asgi&#39;
+        elif framework == &#39;flask&#39;:
+            mode = &#39;wsgi&#39;
+        elif mode is not None:
+            mode = mode
+        else:
+            mode = &#39;wsgi&#39;
         self.framework = framework
         self.mode = mode</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.supertokens.InputAppInfo"><code class="flex name class">
+<span>class <span class="ident">InputAppInfo</span></span>
+<span>(</span><span>app_name: str, api_domain: str, website_domain: str, api_gateway_path: str = '', api_base_path: str = '/auth', website_base_path: str = '/auth')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class InputAppInfo:
+    def __init__(self,
+                 app_name: str,
+                 api_domain: str,
+                 website_domain: str,
+                 api_gateway_path: str = &#39;&#39;,
+                 api_base_path: str = &#39;/auth&#39;,
+                 website_base_path: str = &#39;/auth&#39;,
+                 ):
+        self.app_name = app_name
+        self.api_gateway_path = api_gateway_path
+        self.api_domain = api_domain
+        self.website_domain = website_domain
+        self.api_base_path = api_base_path
+        self.website_base_path = website_base_path</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.supertokens.Supertokens"><code class="flex name class">
 <span>class <span class="ident">Supertokens</span></span>
-<span>(</span><span>config)</span>
+<span>(</span><span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: "Literal[('fastapi', 'flask', 'django')]", supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="#supertokens_python.supertokens.AppInfo">AppInfo</a>], RecipeModule]], mode: "Union[Literal[('asgi', 'wsgi')], None]" = None, telemetry: Union[bool, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -458,38 +521,39 @@ class Supertokens:
 <pre><code class="python">class Supertokens:
     __instance = None
 
-    def __init__(self, config):
-        validate_the_structure_of_user_input(
-            config, INPUT_SCHEMA, &#39;init_function&#39;, None)
-        validate_framework(config)
-        mode = &#39;asgi&#39; if config[&#39;framework&#39;] == &#39;fastapi&#39; else &#39;wsgi&#39;
-        if &#39;mode&#39; in config:
-            mode = config[&#39;mode&#39;]
-        self.app_info: AppInfo = AppInfo(config[&#39;app_info&#39;], config[&#39;framework&#39;], mode)
+    def __init__(self,
+                 app_info: InputAppInfo,
+                 framework: Literal[&#39;fastapi&#39;, &#39;flask&#39;, &#39;django&#39;],
+                 supertokens_config: SupertokensConfig,
+                 recipe_list: List[Callable[[AppInfo], RecipeModule]],
+                 mode: Union[Literal[&#39;asgi&#39;, &#39;wsgi&#39;], None] = None,
+                 telemetry: Union[bool, None] = None
+                 ):
+        self.app_info = AppInfo(
+            app_info.app_name,
+            app_info.api_domain,
+            app_info.website_domain,
+            framework,
+            app_info.api_gateway_path,
+            app_info.api_base_path,
+            app_info.website_base_path,
+            mode
+        )
         hosts = list(map(lambda h: NormalisedURLDomain(h.strip()),
-                         filter(lambda x: x != &#39;&#39;, config[&#39;supertokens&#39;][&#39;connection_uri&#39;].split(&#39;;&#39;))))
-        api_key = None
-        if &#39;api_key&#39; in config[&#39;supertokens&#39;]:
-            api_key = config[&#39;supertokens&#39;][&#39;api_key&#39;]
-        Querier.init(hosts, api_key)
+                         filter(lambda x: x != &#39;&#39;, supertokens_config.connection_uri.split(&#39;;&#39;))))
+        Querier.init(hosts, supertokens_config.api_key)
 
-        if &#39;recipe_list&#39; not in config or not isinstance(config[&#39;recipe_list&#39;], list) or len(
-                config[&#39;recipe_list&#39;]) == 0:
+        if len(recipe_list) == 0:
             raise_general_exception(
                 None, &#39;Please provide at least one recipe to the supertokens.init function call&#39;)
 
-        self.recipe_modules: List[RecipeModule] = list(
-            map(lambda func: func(self.app_info), config[&#39;recipe_list&#39;]))
+        self.recipe_modules: List[RecipeModule] = list(map(lambda func: func(self.app_info), recipe_list))
 
-        telemetry = (
-            &#39;SUPERTOKENS_ENV&#39; not in environ) or (
-            environ[&#39;SUPERTOKENS_ENV&#39;] != &#39;testing&#39;)
-        if &#39;telemetry&#39; in config:
-            telemetry = config[&#39;telemetry&#39;]
+        if telemetry is None:
+            telemetry = (&#39;SUPERTOKENS_ENV&#39; not in environ) or (environ[&#39;SUPERTOKENS_ENV&#39;] != &#39;testing&#39;)
 
         if telemetry:
-            if self.app_info.framework.lower(
-            ) == &#39;flask&#39; or self.app_info.framework.lower() == &#39;django&#39;:
+            if self.app_info.framework.lower() == &#39;flask&#39; or self.app_info.framework.lower() == &#39;django&#39;:
                 loop = asyncio.get_event_loop()
                 loop.run_until_complete(self.send_telemetry())
             else:
@@ -519,9 +583,14 @@ class Supertokens:
             pass
 
     @staticmethod
-    def init(config):
+    def init(app_info: InputAppInfo,
+             framework: Literal[&#39;fastapi&#39;, &#39;flask&#39;, &#39;django&#39;],
+             supertokens_config: SupertokensConfig,
+             recipe_list: List[Callable[[AppInfo], RecipeModule]],
+             mode: Union[Literal[&#39;asgi&#39;, &#39;wsgi&#39;], None] = None,
+             telemetry: Union[bool, None] = None):
         if Supertokens.__instance is None:
-            Supertokens.__instance = Supertokens(config)
+            Supertokens.__instance = Supertokens(app_info, framework, supertokens_config, recipe_list, mode, telemetry)
 
     @staticmethod
     def reset():
@@ -681,7 +750,7 @@ def get_instance() -&gt; Supertokens:
 </details>
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>config)</span>
+<span>def <span class="ident">init</span></span>(<span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: "Literal[('fastapi', 'flask', 'django')]", supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="#supertokens_python.supertokens.AppInfo">AppInfo</a>], RecipeModule]], mode: "Union[Literal[('asgi', 'wsgi')], None]" = None, telemetry: Union[bool, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -690,9 +759,14 @@ def get_instance() -&gt; Supertokens:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def init(config):
+def init(app_info: InputAppInfo,
+         framework: Literal[&#39;fastapi&#39;, &#39;flask&#39;, &#39;django&#39;],
+         supertokens_config: SupertokensConfig,
+         recipe_list: List[Callable[[AppInfo], RecipeModule]],
+         mode: Union[Literal[&#39;asgi&#39;, &#39;wsgi&#39;], None] = None,
+         telemetry: Union[bool, None] = None):
     if Supertokens.__instance is None:
-        Supertokens.__instance = Supertokens(config)</code></pre>
+        Supertokens.__instance = Supertokens(app_info, framework, supertokens_config, recipe_list, mode, telemetry)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens.reset"><code class="name flex">
@@ -922,6 +996,22 @@ def reset():
 </dd>
 </dl>
 </dd>
+<dt id="supertokens_python.supertokens.SupertokensConfig"><code class="flex name class">
+<span>class <span class="ident">SupertokensConfig</span></span>
+<span>(</span><span>connection_uri: str, api_key: Union[str, None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SupertokensConfig:
+    def __init__(self, connection_uri: str, api_key: Union[str, None] = None):
+        self.connection_uri = connection_uri
+        self.api_key = api_key</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 </article>
@@ -947,6 +1037,9 @@ def reset():
 <h4><code><a title="supertokens_python.supertokens.AppInfo" href="#supertokens_python.supertokens.AppInfo">AppInfo</a></code></h4>
 </li>
 <li>
+<h4><code><a title="supertokens_python.supertokens.InputAppInfo" href="#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a></code></h4>
+</li>
+<li>
 <h4><code><a title="supertokens_python.supertokens.Supertokens" href="#supertokens_python.supertokens.Supertokens">Supertokens</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_all_cors_headers" href="#supertokens_python.supertokens.Supertokens.get_all_cors_headers">get_all_cors_headers</a></code></li>
@@ -959,6 +1052,9 @@ def reset():
 <li><code><a title="supertokens_python.supertokens.Supertokens.reset" href="#supertokens_python.supertokens.Supertokens.reset">reset</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.send_telemetry" href="#supertokens_python.supertokens.Supertokens.send_telemetry">send_telemetry</a></code></li>
 </ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.supertokens.SupertokensConfig" href="#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a></code></h4>
 </li>
 </ul>
 </li>

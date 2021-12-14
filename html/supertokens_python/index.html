@@ -43,10 +43,18 @@
 from . import exceptions
 from .supertokens import Supertokens
 from .recipe import session
+from typing import List, Union, Literal, Callable
+from .supertokens import SupertokensConfig, InputAppInfo, AppInfo
+from .recipe_module import RecipeModule
 
 
-def init(config):
-    return Supertokens.init(config)
+def init(app_info: InputAppInfo,
+         framework: Literal[&#39;fastapi&#39;, &#39;flask&#39;, &#39;django&#39;],
+         supertokens_config: SupertokensConfig,
+         recipe_list: List[Callable[[AppInfo], RecipeModule]],
+         mode: Union[Literal[&#39;asgi&#39;, &#39;wsgi&#39;], None] = None,
+         telemetry: Union[bool, None] = None):
+    return Supertokens.init(app_info, framework, supertokens_config, recipe_list, mode, telemetry)
 
 
 def get_all_cors_headers():
@@ -137,7 +145,7 @@ def get_all_cors_headers():
 </details>
 </dd>
 <dt id="supertokens_python.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>config)</span>
+<span>def <span class="ident">init</span></span>(<span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="supertokens.html#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: Literal['fastapi', 'flask', 'django'], supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="supertokens.html#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="supertokens.html#supertokens_python.supertokens.AppInfo">AppInfo</a>], <a title="supertokens_python.recipe_module.RecipeModule" href="recipe_module.html#supertokens_python.recipe_module.RecipeModule">RecipeModule</a>]], mode: Optional[Literal['asgi', 'wsgi']] = None, telemetry: Optional[bool] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -145,8 +153,13 @@ def get_all_cors_headers():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def init(config):
-    return Supertokens.init(config)</code></pre>
+<pre><code class="python">def init(app_info: InputAppInfo,
+         framework: Literal[&#39;fastapi&#39;, &#39;flask&#39;, &#39;django&#39;],
+         supertokens_config: SupertokensConfig,
+         recipe_list: List[Callable[[AppInfo], RecipeModule]],
+         mode: Union[Literal[&#39;asgi&#39;, &#39;wsgi&#39;], None] = None,
+         telemetry: Union[bool, None] = None):
+    return Supertokens.init(app_info, framework, supertokens_config, recipe_list, mode, telemetry)</code></pre>
 </details>
 </dd>
 </dl>

@@ -55,6 +55,8 @@ if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
+    from .utils import SignInAndUpFeature, InputOverrideConfig
+    from supertokens_python.recipe.emailverification.utils import InputEmailVerificationConfig
 from supertokens_python.exceptions import raise_general_exception, SuperTokensError
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from .utils import validate_and_normalise_user_input
@@ -77,12 +79,14 @@ class ThirdPartyRecipe(RecipeModule):
     recipe_id = &#39;thirdparty&#39;
     __instance = None
 
-    def __init__(self, recipe_id: str, app_info: AppInfo, config=None,
+    def __init__(self, recipe_id: str, app_info: AppInfo,
+                 sign_in_and_up_feature: SignInAndUpFeature,
+                 email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+                 override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None):
         super().__init__(recipe_id, app_info)
-        if config is None:
-            config = {}
-        self.config = validate_and_normalise_user_input(self, config)
+        self.config = validate_and_normalise_user_input(self, sign_in_and_up_feature,
+                                                        email_verification_feature, override)
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
         else:
@@ -142,11 +146,13 @@ class ThirdPartyRecipe(RecipeModule):
         return [] + self.email_verification_recipe.get_all_cors_headers()
 
     @staticmethod
-    def init(config=None):
+    def init(sign_in_and_up_feature: SignInAndUpFeature,
+             email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+             override: Union[InputOverrideConfig, None] = None):
         def func(app_info: AppInfo):
             if ThirdPartyRecipe.__instance is None:
                 ThirdPartyRecipe.__instance = ThirdPartyRecipe(
-                    ThirdPartyRecipe.recipe_id, app_info, config)
+                    ThirdPartyRecipe.recipe_id, app_info, sign_in_and_up_feature, email_verification_feature, override)
                 return ThirdPartyRecipe.__instance
             else:
                 raise_general_exception(None, &#39;ThirdParty recipe has already been initialised. Please check your &#39;
@@ -190,7 +196,7 @@ class ThirdPartyRecipe(RecipeModule):
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe"><code class="flex name class">
 <span>class <span class="ident">ThirdPartyRecipe</span></span>
-<span>(</span><span>recipe_id: str, app_info: AppInfo, config=None, email_verification_recipe: Union[EmailVerificationRecipe, None] = None)</span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, sign_in_and_up_feature: SignInAndUpFeature, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, override: Union[InputOverrideConfig, None] = None, email_verification_recipe: Union[EmailVerificationRecipe, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -203,12 +209,14 @@ inheritance.</p></div>
     recipe_id = &#39;thirdparty&#39;
     __instance = None
 
-    def __init__(self, recipe_id: str, app_info: AppInfo, config=None,
+    def __init__(self, recipe_id: str, app_info: AppInfo,
+                 sign_in_and_up_feature: SignInAndUpFeature,
+                 email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+                 override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None):
         super().__init__(recipe_id, app_info)
-        if config is None:
-            config = {}
-        self.config = validate_and_normalise_user_input(self, config)
+        self.config = validate_and_normalise_user_input(self, sign_in_and_up_feature,
+                                                        email_verification_feature, override)
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
         else:
@@ -268,11 +276,13 @@ inheritance.</p></div>
         return [] + self.email_verification_recipe.get_all_cors_headers()
 
     @staticmethod
-    def init(config=None):
+    def init(sign_in_and_up_feature: SignInAndUpFeature,
+             email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+             override: Union[InputOverrideConfig, None] = None):
         def func(app_info: AppInfo):
             if ThirdPartyRecipe.__instance is None:
                 ThirdPartyRecipe.__instance = ThirdPartyRecipe(
-                    ThirdPartyRecipe.recipe_id, app_info, config)
+                    ThirdPartyRecipe.recipe_id, app_info, sign_in_and_up_feature, email_verification_feature, override)
                 return ThirdPartyRecipe.__instance
             else:
                 raise_general_exception(None, &#39;ThirdParty recipe has already been initialised. Please check your &#39;
@@ -337,7 +347,7 @@ def get_instance() -&gt; ThirdPartyRecipe:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>config=None)</span>
+<span>def <span class="ident">init</span></span>(<span>sign_in_and_up_feature: SignInAndUpFeature, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, override: Union[InputOverrideConfig, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -346,11 +356,13 @@ def get_instance() -&gt; ThirdPartyRecipe:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def init(config=None):
+def init(sign_in_and_up_feature: SignInAndUpFeature,
+         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+         override: Union[InputOverrideConfig, None] = None):
     def func(app_info: AppInfo):
         if ThirdPartyRecipe.__instance is None:
             ThirdPartyRecipe.__instance = ThirdPartyRecipe(
-                ThirdPartyRecipe.recipe_id, app_info, config)
+                ThirdPartyRecipe.recipe_id, app_info, sign_in_and_up_feature, email_verification_feature, override)
             return ThirdPartyRecipe.__instance
         else:
             raise_general_exception(None, &#39;ThirdParty recipe has already been initialised. Please check your &#39;

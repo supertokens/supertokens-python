@@ -43,7 +43,9 @@
 from typing import Union, List
 
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.recipe.session.asyncio import Session
+from supertokens_python.recipe.openid.interfaces import CreateJwtResult, GetOpenIdDiscoveryConfigurationResult, \
+    GetJWKSResult
+from supertokens_python.recipe.session.asyncio import SessionInterface
 
 
 def create_new_session(request, user_id: str, access_token_payload: Union[dict, None] = None,
@@ -53,13 +55,13 @@ def create_new_session(request, user_id: str, access_token_payload: Union[dict, 
         request, user_id, access_token_payload, session_data))
 
 
-def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -&gt; Union[Session,
+def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -&gt; Union[SessionInterface,
                                                                                                             None]:
     from supertokens_python.recipe.session.asyncio import get_session as async_get_session
     return sync(async_get_session(request, anti_csrf_check, session_required))
 
 
-def refresh_session(request) -&gt; Session:
+def refresh_session(request) -&gt; SessionInterface:
     from supertokens_python.recipe.session.asyncio import refresh_session as async_refresh_session
     return sync(async_refresh_session(request))
 
@@ -91,7 +93,25 @@ def update_session_data(session_handle: str, new_session_data: dict) -&gt; None:
 
 async def update_access_token_payload(session_handle: str, new_access_token_payload: dict) -&gt; None:
     from supertokens_python.recipe.session.asyncio import update_access_token_payload as async_update_access_token_payload
-    return sync(async_update_access_token_payload(session_handle, new_access_token_payload))</code></pre>
+    return sync(async_update_access_token_payload(session_handle, new_access_token_payload))
+
+
+async def create_jwt(payload: dict, validity_seconds: int = None) -&gt; [CreateJwtResult, None]:
+    from supertokens_python.recipe.session.asyncio import \
+        create_jwt as async_create_jwt
+    return sync(async_create_jwt(payload, validity_seconds))
+
+
+async def get_jwks() -&gt; [GetJWKSResult, None]:
+    from supertokens_python.recipe.session.asyncio import \
+        get_jwks as async_get_jwks
+    return sync(async_get_jwks())
+
+
+async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigurationResult, None]:
+    from supertokens_python.recipe.session.asyncio import \
+        get_open_id_discovery_configuration as async_get_open_id_discovery_configuration
+    return sync(async_get_open_id_discovery_configuration())</code></pre>
 </details>
 </section>
 <section>
@@ -101,6 +121,21 @@ async def update_access_token_payload(session_handle: str, new_access_token_payl
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="supertokens_python.recipe.session.syncio.create_jwt"><code class="name flex">
+<span>async def <span class="ident">create_jwt</span></span>(<span>payload: dict, validity_seconds: int = None) ‑> [<class '<a title="supertokens_python.recipe.openid.interfaces.CreateJwtResult" href="../../openid/interfaces.html#supertokens_python.recipe.openid.interfaces.CreateJwtResult">CreateJwtResult</a>'>, None]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def create_jwt(payload: dict, validity_seconds: int = None) -&gt; [CreateJwtResult, None]:
+    from supertokens_python.recipe.session.asyncio import \
+        create_jwt as async_create_jwt
+    return sync(async_create_jwt(payload, validity_seconds))</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.session.syncio.create_new_session"><code class="name flex">
 <span>def <span class="ident">create_new_session</span></span>(<span>request, user_id: str, access_token_payload: Optional[dict] = None, session_data: Optional[dict] = None)</span>
 </code></dt>
@@ -117,8 +152,8 @@ async def update_access_token_payload(session_handle: str, new_access_token_payl
         request, user_id, access_token_payload, session_data))</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.session.syncio.get_session"><code class="name flex">
-<span>def <span class="ident">get_session</span></span>(<span>request, anti_csrf_check: Optional[bool] = None, session_required: bool = True) ‑> Optional[<a title="supertokens_python.recipe.session.session_class.Session" href="../session_class.html#supertokens_python.recipe.session.session_class.Session">Session</a>]</span>
+<dt id="supertokens_python.recipe.session.syncio.get_jwks"><code class="name flex">
+<span>async def <span class="ident">get_jwks</span></span>(<span>) ‑> [<class '<a title="supertokens_python.recipe.openid.interfaces.GetJWKSResult" href="../../openid/interfaces.html#supertokens_python.recipe.openid.interfaces.GetJWKSResult">GetJWKSResult</a>'>, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -126,7 +161,37 @@ async def update_access_token_payload(session_handle: str, new_access_token_payl
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -&gt; Union[Session,
+<pre><code class="python">async def get_jwks() -&gt; [GetJWKSResult, None]:
+    from supertokens_python.recipe.session.asyncio import \
+        get_jwks as async_get_jwks
+    return sync(async_get_jwks())</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.syncio.get_open_id_discovery_configuration"><code class="name flex">
+<span>async def <span class="ident">get_open_id_discovery_configuration</span></span>(<span>) ‑> [<class '<a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="../../openid/interfaces.html#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a>'>, None]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigurationResult, None]:
+    from supertokens_python.recipe.session.asyncio import \
+        get_open_id_discovery_configuration as async_get_open_id_discovery_configuration
+    return sync(async_get_open_id_discovery_configuration())</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.syncio.get_session"><code class="name flex">
+<span>def <span class="ident">get_session</span></span>(<span>request, anti_csrf_check: Optional[bool] = None, session_required: bool = True) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionInterface" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionInterface">SessionInterface</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -&gt; Union[SessionInterface,
                                                                                                             None]:
     from supertokens_python.recipe.session.asyncio import get_session as async_get_session
     return sync(async_get_session(request, anti_csrf_check, session_required))</code></pre>
@@ -147,7 +212,7 @@ async def update_access_token_payload(session_handle: str, new_access_token_payl
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.refresh_session"><code class="name flex">
-<span>def <span class="ident">refresh_session</span></span>(<span>request) ‑> <a title="supertokens_python.recipe.session.session_class.Session" href="../session_class.html#supertokens_python.recipe.session.session_class.Session">Session</a></span>
+<span>def <span class="ident">refresh_session</span></span>(<span>request) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionInterface" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionInterface">SessionInterface</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -155,7 +220,7 @@ async def update_access_token_payload(session_handle: str, new_access_token_payl
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def refresh_session(request) -&gt; Session:
+<pre><code class="python">def refresh_session(request) -&gt; SessionInterface:
     from supertokens_python.recipe.session.asyncio import refresh_session as async_refresh_session
     return sync(async_refresh_session(request))</code></pre>
 </details>
@@ -248,7 +313,10 @@ async def update_access_token_payload(session_handle: str, new_access_token_payl
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.session.syncio.create_jwt" href="#supertokens_python.recipe.session.syncio.create_jwt">create_jwt</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.create_new_session" href="#supertokens_python.recipe.session.syncio.create_new_session">create_new_session</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.syncio.get_jwks" href="#supertokens_python.recipe.session.syncio.get_jwks">get_jwks</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.syncio.get_open_id_discovery_configuration" href="#supertokens_python.recipe.session.syncio.get_open_id_discovery_configuration">get_open_id_discovery_configuration</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.get_session" href="#supertokens_python.recipe.session.syncio.get_session">get_session</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.get_session_information" href="#supertokens_python.recipe.session.syncio.get_session_information">get_session_information</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.syncio.refresh_session" href="#supertokens_python.recipe.session.syncio.refresh_session">refresh_session</a></code></li>

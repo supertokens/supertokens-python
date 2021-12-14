@@ -47,6 +47,7 @@ async def jwks_get(api_implementation: APIInterface, api_options: APIOptions):
         return None
 
     result = await api_implementation.jwks_get(api_options)
+    api_options.response.set_header(&#34;Access-Control-Allow-Origin&#34;, &#34;*&#34;)
     api_options.response.set_json_content(result.to_json())
 
     return api_options.response</code></pre>
@@ -73,6 +74,7 @@ async def jwks_get(api_implementation: APIInterface, api_options: APIOptions):
         return None
 
     result = await api_implementation.jwks_get(api_options)
+    api_options.response.set_header(&#34;Access-Control-Allow-Origin&#34;, &#34;*&#34;)
     api_options.response.set_json_content(result.to_json())
 
     return api_options.response</code></pre>

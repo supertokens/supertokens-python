@@ -269,7 +269,11 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
     if response[&#39;status&#39;] == &#39;OK&#39;:
         return {
             &#39;sessionData&#39;: response[&#39;userDataInDatabase&#39;],
-            &#39;jwtPayload&#39;: response[&#39;userDataInJWT&#39;]
+            &#39;accessTokenPayload&#39;: response[&#39;userDataInJWT&#39;],
+            &#39;userId&#39;: response[&#39;userId&#39;],
+            &#39;expiry&#39;: response[&#39;expiry&#39;],
+            &#39;timeCreated&#39;: response[&#39;timeCreated&#39;],
+            &#39;sessionHandle&#39;: response[&#39;sessionHandle&#39;]
         }
     else:
         raise_unauthorised_exception(response[&#39;message&#39;])</code></pre>
@@ -461,7 +465,11 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
     if response[&#39;status&#39;] == &#39;OK&#39;:
         return {
             &#39;sessionData&#39;: response[&#39;userDataInDatabase&#39;],
-            &#39;jwtPayload&#39;: response[&#39;userDataInJWT&#39;]
+            &#39;accessTokenPayload&#39;: response[&#39;userDataInJWT&#39;],
+            &#39;userId&#39;: response[&#39;userId&#39;],
+            &#39;expiry&#39;: response[&#39;expiry&#39;],
+            &#39;timeCreated&#39;: response[&#39;timeCreated&#39;],
+            &#39;sessionHandle&#39;: response[&#39;sessionHandle&#39;]
         }
     else:
         raise_unauthorised_exception(response[&#39;message&#39;])</code></pre>

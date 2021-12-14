@@ -47,10 +47,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .utils import JWTConfig
     from .interfaces import CreateJwtResult
+    from supertokens_python.supertokens import AppInfo
 from .types import JsonWebKey
 from supertokens_python.recipe.jwt.interfaces import RecipeInterface, GetJWKSResult,\
     CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm
-from supertokens_python.supertokens import AppInfo
 
 
 class RecipeImplementation(RecipeInterface):
@@ -61,7 +61,7 @@ class RecipeImplementation(RecipeInterface):
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload: dict, validity_seconds: int = None) -&gt; CreateJwtResult:
+    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
@@ -125,7 +125,7 @@ inheritance.</p></div>
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload: dict, validity_seconds: int = None) -&gt; CreateJwtResult:
+    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
@@ -168,7 +168,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.jwt.recipe_implementation.RecipeImplementation.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: dict, validity_seconds: int = None) ‑> CreateJwtResult</span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: dict = None, validity_seconds: int = None) ‑> CreateJwtResult</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -176,7 +176,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_jwt(self, payload: dict, validity_seconds: int = None) -&gt; CreateJwtResult:
+<pre><code class="python">async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
     if validity_seconds is None:
         validity_seconds = self.config.jwt_validity_seconds
 

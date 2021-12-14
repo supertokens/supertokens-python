@@ -148,6 +148,14 @@ class FormField:
         self.value = value
 
 
+class InputFormField:
+    def __init__(self, id: str, validate: Union[Callable[[
+                 str], Awaitable[Union[str, None]]], None] = None, optional: Union[bool, None] = None):
+        self.id = id
+        self.validate = validate
+        self.optional = optional
+
+
 class NormalisedFormField:
     def __init__(self, id: str, validate: Callable[[
                  str], Awaitable[Union[str, None]]], optional: bool):
@@ -195,6 +203,24 @@ class NormalisedFormField:
     def __init__(self, id: str, value: any):
         self.id = id
         self.value = value</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.emailpassword.types.InputFormField"><code class="flex name class">
+<span>class <span class="ident">InputFormField</span></span>
+<span>(</span><span>id: str, validate: Optional[Callable[[str], Awaitable[Optional[str]]]] = None, optional: Optional[bool] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class InputFormField:
+    def __init__(self, id: str, validate: Union[Callable[[
+                 str], Awaitable[Union[str, None]]], None] = None, optional: Union[bool, None] = None):
+        self.id = id
+        self.validate = validate
+        self.optional = optional</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.types.NormalisedFormField"><code class="flex name class">
@@ -270,6 +296,9 @@ class NormalisedFormField:
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.emailpassword.types.FormField" href="#supertokens_python.recipe.emailpassword.types.FormField">FormField</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailpassword.types.InputFormField" href="#supertokens_python.recipe.emailpassword.types.InputFormField">InputFormField</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.emailpassword.types.NormalisedFormField" href="#supertokens_python.recipe.emailpassword.types.NormalisedFormField">NormalisedFormField</a></code></h4>

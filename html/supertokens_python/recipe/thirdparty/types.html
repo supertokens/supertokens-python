@@ -43,67 +43,6 @@ from typing import Callable, Union, List, Dict
 
 from supertokens_python.framework.request import BaseRequest
 
-type_string = {
-    &#39;type&#39;: &#39;string&#39;
-}
-
-type_boolean = {
-    &#39;type&#39;: &#39;boolean&#39;
-}
-
-type_number = {
-    &#39;type&#39;: &#39;number&#39;
-}
-
-type_any = {}
-
-SIGN_IN_AND_UP_FEATURE_INPUT_SCHEMA = {
-    &#39;type&#39;: &#39;object&#39;,
-    &#39;properties&#39;: {
-        &#39;providers&#39;: {
-            &#39;type&#39;: &#39;array&#39;
-        }
-    },
-    &#39;required&#39;: [&#39;providers&#39;],
-    &#39;additionalProperties&#39;: False
-}
-
-EMAIL_VERIFICATION_FEATURE_INPUT_SCHEMA = {
-    &#39;type&#39;: &#39;object&#39;,
-    &#39;properties&#39;: {
-        &#39;get_email_verification_url&#39;: type_any,
-        &#39;create_and_send_custom_email&#39;: type_any
-    },
-    &#39;additionalProperties&#39;: False
-}
-
-OVERRIDE_INPUT_SCHEMA = {
-    &#39;type&#39;: &#39;object&#39;,
-    &#39;properties&#39;: {
-        &#39;functions&#39;: type_any,
-        &#39;apis&#39;: type_any,
-        &#39;email_verification_feature&#39;: {
-            &#39;type&#39;: &#39;object&#39;,
-            &#39;properties&#39;: {
-                &#39;functions&#39;: type_any,
-                &#39;apis&#39;: type_any
-            },
-            &#39;additionalProperties&#39;: False
-        }
-    },
-    &#39;additionalProperties&#39;: False
-}
-
-INPUT_SCHEMA = {
-    &#39;type&#39;: &#39;object&#39;,
-    &#39;properties&#39;: {
-        &#39;sign_in_and_up_feature&#39;: SIGN_IN_AND_UP_FEATURE_INPUT_SCHEMA,
-        &#39;email_verification_feature&#39;: EMAIL_VERIFICATION_FEATURE_INPUT_SCHEMA,
-        &#39;override&#39;: OVERRIDE_INPUT_SCHEMA
-    },
-    &#39;additionalProperties&#39;: False
-}
-
 
 class ThirdPartyInfo:
     def __init__(self, third_party_user_id: str, third_party_id: str):

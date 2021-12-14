@@ -41,9 +41,10 @@
 # under the License.
 from .recipe import EmailVerificationRecipe
 from . import exceptions
+from .utils import ParentRecipeEmailVerificationConfig, OverrideConfig as InputOverrideConfig
 
 
-def init(config):
+def init(config: ParentRecipeEmailVerificationConfig):
     return EmailVerificationRecipe.init(config)</code></pre>
 </details>
 </section>
@@ -98,7 +99,7 @@ def init(config):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>config)</span>
+<span>def <span class="ident">init</span></span>(<span>config: <a title="supertokens_python.recipe.emailverification.utils.ParentRecipeEmailVerificationConfig" href="utils.html#supertokens_python.recipe.emailverification.utils.ParentRecipeEmailVerificationConfig">ParentRecipeEmailVerificationConfig</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -106,7 +107,7 @@ def init(config):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def init(config):
+<pre><code class="python">def init(config: ParentRecipeEmailVerificationConfig):
     return EmailVerificationRecipe.init(config)</code></pre>
 </details>
 </dd>

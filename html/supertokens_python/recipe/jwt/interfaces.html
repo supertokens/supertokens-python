@@ -78,7 +78,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload, validity_seconds=None) -&gt; CreateJwtResult:
+    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
         pass
 
     @abstractmethod
@@ -366,7 +366,7 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload, validity_seconds=None) -&gt; CreateJwtResult:
+    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
         pass
 
     @abstractmethod
@@ -384,7 +384,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.jwt.interfaces.RecipeInterface.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload, validity_seconds=None) ‑> <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResult" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtResult">CreateJwtResult</a></span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: dict = None, validity_seconds: int = None) ‑> <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResult" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtResult">CreateJwtResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -393,7 +393,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def create_jwt(self, payload, validity_seconds=None) -&gt; CreateJwtResult:
+async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
     pass</code></pre>
 </details>
 </dd>

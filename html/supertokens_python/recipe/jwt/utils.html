@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 
 class OverrideConfig:
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
-                                        None], apis: Union[Callable[[APIInterface], APIInterface], None]):
+                                        None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
         self.functions = functions
         self.apis = apis
 
@@ -59,17 +59,15 @@ class JWTConfig:
         self.jwt_validity_seconds = jwt_validity_seconds
 
 
-def validate_and_normalise_user_input(config):
-    override_functions = config[&#39;override&#39;][&#39;functions&#39;] if &#39;override&#39; in config and &#39;functions&#39; in config[
-        &#39;override&#39;] else None
-    override_apis = config[&#39;override&#39;][&#39;apis&#39;] if &#39;override&#39; in config and &#39;apis&#39; in config[
-        &#39;override&#39;] else None
+def validate_and_normalise_user_input(
+        jwt_validity_seconds: Union[int, None] = None,
+        override: Union[OverrideConfig, None] = None):
+    if override is None:
+        override = OverrideConfig()
+    if jwt_validity_seconds is None:
+        jwt_validity_seconds = 3153600000
 
-    override_config = OverrideConfig(override_functions, override_apis)
-
-    jwt_validity_seconds = 3153600000 if &#34;jwt_validity_seconds&#34; not in config else config[&#39;jwt_validity_seconds&#39;]
-
-    return JWTConfig(override_config, jwt_validity_seconds)</code></pre>
+    return JWTConfig(override, jwt_validity_seconds)</code></pre>
 </details>
 </section>
 <section>
@@ -80,7 +78,7 @@ def validate_and_normalise_user_input(config):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.jwt.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>config)</span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>jwt_validity_seconds: Union[int, None] = None, override: Union[<a title="supertokens_python.recipe.jwt.utils.OverrideConfig" href="#supertokens_python.recipe.jwt.utils.OverrideConfig">OverrideConfig</a>, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -88,17 +86,15 @@ def validate_and_normalise_user_input(config):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_and_normalise_user_input(config):
-    override_functions = config[&#39;override&#39;][&#39;functions&#39;] if &#39;override&#39; in config and &#39;functions&#39; in config[
-        &#39;override&#39;] else None
-    override_apis = config[&#39;override&#39;][&#39;apis&#39;] if &#39;override&#39; in config and &#39;apis&#39; in config[
-        &#39;override&#39;] else None
+<pre><code class="python">def validate_and_normalise_user_input(
+        jwt_validity_seconds: Union[int, None] = None,
+        override: Union[OverrideConfig, None] = None):
+    if override is None:
+        override = OverrideConfig()
+    if jwt_validity_seconds is None:
+        jwt_validity_seconds = 3153600000
 
-    override_config = OverrideConfig(override_functions, override_apis)
-
-    jwt_validity_seconds = 3153600000 if &#34;jwt_validity_seconds&#34; not in config else config[&#39;jwt_validity_seconds&#39;]
-
-    return JWTConfig(override_config, jwt_validity_seconds)</code></pre>
+    return JWTConfig(override, jwt_validity_seconds)</code></pre>
 </details>
 </dd>
 </dl>
@@ -124,7 +120,7 @@ def validate_and_normalise_user_input(config):
 </dd>
 <dt id="supertokens_python.recipe.jwt.utils.OverrideConfig"><code class="flex name class">
 <span>class <span class="ident">OverrideConfig</span></span>
-<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None], apis: Union[Callable[[APIInterface], APIInterface], None])</span>
+<span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -134,7 +130,7 @@ def validate_and_normalise_user_input(config):
 </summary>
 <pre><code class="python">class OverrideConfig:
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
-                                        None], apis: Union[Callable[[APIInterface], APIInterface], None]):
+                                        None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
         self.functions = functions
         self.apis = apis</code></pre>
 </details>
