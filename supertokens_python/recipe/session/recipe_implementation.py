@@ -13,7 +13,6 @@
 # under the License.
 from __future__ import annotations
 from .session_class import Session
-from .interfaces import SessionInterface
 from supertokens_python.process_state import ProcessState, AllowedProcessStates
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from typing import TYPE_CHECKING
@@ -95,7 +94,7 @@ class RecipeImplementation(RecipeInterface):
             self.handshake_info.set_jwt_signing_public_key_list(key_list)
 
     async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
-                                 session_data: Union[dict, None] = None) -> SessionInterface:
+                                 session_data: Union[dict, None] = None) -> Session:
         if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
         session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
@@ -113,7 +112,7 @@ class RecipeImplementation(RecipeInterface):
         return request.get_session()
 
     async def get_session(self, request: any, anti_csrf_check: Union[bool, None] = None,
-                          session_required: bool = True) -> Union[SessionInterface, None]:
+                          session_required: bool = True) -> Union[Session, None]:
         if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
@@ -146,7 +145,7 @@ class RecipeImplementation(RecipeInterface):
         request.set_session(session)
         return request.get_session()
 
-    async def refresh_session(self, request: any) -> SessionInterface:
+    async def refresh_session(self, request: any) -> Session:
         if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
 

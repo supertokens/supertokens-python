@@ -26,10 +26,10 @@ from supertokens_python.utils import get_timestamp_ms
 if TYPE_CHECKING:
     from supertokens_python.recipe.openid.interfaces import RecipeInterface as OpenIdRecipeInterface
 
-from supertokens_python.recipe.session.interfaces import SessionInterface
+from supertokens_python.recipe.session import Session
 
 
-def get_session_with_jwt(original_session: SessionInterface, openid_recipe_implementation: OpenIdRecipeInterface) -> SessionInterface:
+def get_session_with_jwt(original_session: Session, openid_recipe_implementation: OpenIdRecipeInterface) -> Session:
     original_update_access_token_payload = original_session.update_access_token_payload
 
     async def update_access_token_payload(new_access_token_payload) -> None:

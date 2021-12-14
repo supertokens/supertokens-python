@@ -24,7 +24,7 @@ from supertokens_python import init, Supertokens, SupertokensConfig, InputAppInf
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session import SessionRecipe, InputErrorHandlers, SessionInterface
+from supertokens_python.recipe.session import SessionRecipe, InputErrorHandlers, Session
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.syncio import revoke_all_sessions_for_user, create_new_session
 
@@ -121,7 +121,7 @@ def functions_override_session(param):
     original_create_new_session = param.create_new_session
 
     async def create_new_session_custom(_request, user_id, access_token_payload: Union[dict, None] = None,
-                                        session_data: Union[dict, None] = None) -> SessionInterface:
+                                        session_data: Union[dict, None] = None) -> Session:
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {

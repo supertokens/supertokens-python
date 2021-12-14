@@ -18,59 +18,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.jwt.interfaces import RecipeInterface as JWTRecipeInterface
     from .utils import SessionConfig
-
-
-class SessionInterface(ABC):
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    async def revoke_session(self) -> None:
-        pass
-
-    @abstractmethod
-    def sync_revoke_session(self) -> None:
-        pass
-
-    @abstractmethod
-    def sync_get_session_data(self) -> dict:
-        pass
-
-    @abstractmethod
-    async def get_session_data(self) -> dict:
-        pass
-
-    @abstractmethod
-    def sync_update_session_data(self, new_session_data) -> None:
-        pass
-
-    @abstractmethod
-    async def update_session_data(self, new_session_data) -> None:
-        pass
-
-    @abstractmethod
-    def sync_update_access_token_payload(self, new_access_token_payload) -> None:
-        pass
-
-    @abstractmethod
-    async def update_access_token_payload(self, new_access_token_payload) -> None:
-        pass
-
-    @abstractmethod
-    def get_user_id(self) -> str:
-        pass
-
-    @abstractmethod
-    def get_access_token_payload(self) -> dict:
-        pass
-
-    @abstractmethod
-    def get_handle(self) -> str:
-        pass
-
-    @abstractmethod
-    def get_access_token(self) -> str:
-        pass
+    from .session_class import Session
 
 
 class RecipeInterface(ABC):
@@ -79,16 +27,16 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
-                                 session_data: Union[dict, None] = None) -> SessionInterface:
+                                 session_data: Union[dict, None] = None) -> Session:
         pass
 
     @abstractmethod
     async def get_session(self, request: any, anti_csrf_check: Union[bool, None] = None,
-                          session_required: bool = True) -> Union[SessionInterface, None]:
+                          session_required: bool = True) -> Union[Session, None]:
         pass
 
     @abstractmethod
-    async def refresh_session(self, request: any) -> SessionInterface:
+    async def refresh_session(self, request: any) -> Session:
         pass
 
     @abstractmethod
@@ -175,5 +123,5 @@ class APIInterface(ABC):
         pass
 
     @abstractmethod
-    async def verify_session(self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -> Union[SessionInterface, None]:
+    async def verify_session(self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -> Union[Session, None]:
         pass

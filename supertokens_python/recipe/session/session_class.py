@@ -15,7 +15,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from .interfaces import SessionInterface
 
 if TYPE_CHECKING:
     from .recipe_implementation import RecipeImplementation
@@ -24,7 +23,7 @@ from . import session_functions
 from .exceptions import raise_unauthorised_exception
 
 
-class Session(SessionInterface):
+class Session:
     def __init__(self, recipe_implementation: RecipeImplementation, access_token, session_handle, user_id,
                  access_token_payload):
         super().__init__()

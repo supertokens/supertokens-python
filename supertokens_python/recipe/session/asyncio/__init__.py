@@ -15,13 +15,13 @@ from typing import Union, List
 
 from supertokens_python.recipe.openid.interfaces import CreateJwtResult, GetJWKSResult, \
     GetOpenIdDiscoveryConfigurationResult
-from supertokens_python.recipe.session.interfaces import SessionInterface
+from supertokens_python.recipe.session.session_class import Session
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.utils import FRAMEWORKS
 
 
 async def create_new_session(request, user_id: str, access_token_payload: Union[dict, None] = None,
-                             session_data: Union[dict, None] = None) -> SessionInterface:
+                             session_data: Union[dict, None] = None) -> Session:
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)
@@ -38,7 +38,7 @@ async def get_session(request, anti_csrf_check: Union[bool, None] = None, sessio
                                                                                 session_required)
 
 
-async def refresh_session(request) -> SessionInterface:
+async def refresh_session(request) -> Session:
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)

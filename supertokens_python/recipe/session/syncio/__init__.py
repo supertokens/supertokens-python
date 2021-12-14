@@ -17,7 +17,7 @@ from typing import Union, List
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.openid.interfaces import CreateJwtResult, GetOpenIdDiscoveryConfigurationResult, \
     GetJWKSResult
-from supertokens_python.recipe.session.asyncio import SessionInterface
+from supertokens_python.recipe.session.asyncio import Session
 
 
 def create_new_session(request, user_id: str, access_token_payload: Union[dict, None] = None,
@@ -27,13 +27,13 @@ def create_new_session(request, user_id: str, access_token_payload: Union[dict, 
         request, user_id, access_token_payload, session_data))
 
 
-def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -> Union[SessionInterface,
+def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -> Union[Session,
                                                                                                             None]:
     from supertokens_python.recipe.session.asyncio import get_session as async_get_session
     return sync(async_get_session(request, anti_csrf_check, session_required))
 
 
-def refresh_session(request) -> SessionInterface:
+def refresh_session(request) -> Session:
     from supertokens_python.recipe.session.asyncio import refresh_session as async_refresh_session
     return sync(async_refresh_session(request))
 

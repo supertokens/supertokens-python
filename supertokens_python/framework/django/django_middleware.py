@@ -22,7 +22,7 @@ def middleware(get_response):
     from supertokens_python.exceptions import SuperTokensError
     from supertokens_python.framework.django.django_request import DjangoRequest
     from supertokens_python.framework.django.django_response import DjangoResponse
-    from supertokens_python.recipe.session import SessionInterface
+    from supertokens_python.recipe.session import Session
     from supertokens_python.supertokens import manage_cookies_post_response
 
     if asyncio.iscoroutinefunction(get_response):
@@ -36,7 +36,7 @@ def middleware(get_response):
                 if result is None:
                     result = await get_response(request)
                     result = DjangoResponse(result)
-                if hasattr(request, "supertokens") and isinstance(request.supertokens, SessionInterface):
+                if hasattr(request, "supertokens") and isinstance(request.supertokens, Session):
                     manage_cookies_post_response(request.supertokens, result)
                 return result.response
 
@@ -58,7 +58,7 @@ def middleware(get_response):
                     result = get_response(request)
                     result = DjangoResponse(result)
 
-                if hasattr(request, "supertokens") and isinstance(request.supertokens, SessionInterface):
+                if hasattr(request, "supertokens") and isinstance(request.supertokens, Session):
                     manage_cookies_post_response(request.supertokens, result)
                 return result.response
 

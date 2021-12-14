@@ -19,7 +19,8 @@ from supertokens_python.recipe.session.interfaces import APIInterface, SignOutOk
 from supertokens_python.utils import normalise_http_method
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session.interfaces import APIOptions, SignOutResponse, SessionInterface
+    from supertokens_python.recipe.session.interfaces import APIOptions, SignOutResponse
+    from supertokens_python.recipe.session import Session
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
 
 
@@ -42,7 +43,7 @@ class APIImplementation(APIInterface):
         return SignOutOkayResponse()
 
     async def verify_session(self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None,
-                             session_required: bool = True) -> Union[SessionInterface, None]:
+                             session_required: bool = True) -> Union[Session, None]:
         method = normalise_http_method(api_options.request.method())
         if method == 'options' or method == 'trace':
             return None

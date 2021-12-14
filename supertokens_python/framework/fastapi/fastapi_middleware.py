@@ -25,7 +25,7 @@ class Middleware(BaseHTTPMiddleware):
         from supertokens_python.framework.fastapi.fastapi_response import FastApiResponse
         from supertokens_python import Supertokens
         from supertokens_python.exceptions import SuperTokensError
-        from supertokens_python.recipe.session import SessionInterface
+        from supertokens_python.recipe.session import Session
         from supertokens_python.supertokens import manage_cookies_post_response
         st = Supertokens.get_instance()
         from fastapi.responses import Response
@@ -39,7 +39,7 @@ class Middleware(BaseHTTPMiddleware):
                 result = FastApiResponse(response)
 
             if hasattr(request.state, "supertokens") and isinstance(
-                    request.state.supertokens, SessionInterface):
+                    request.state.supertokens, Session):
                 manage_cookies_post_response(request.state.supertokens, result)
             return result.response
         except SuperTokensError as e:

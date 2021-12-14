@@ -23,7 +23,7 @@ from .constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
 from .session_class import get_session_with_jwt
 from supertokens_python.recipe.session.recipe_implementation import RecipeImplementation
 from .utills import add_jwt_to_access_token_payload
-from ..interfaces import SessionInterface
+from supertokens_python.recipe.session import Session
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.utils import SessionConfig
 from math import ceil
@@ -42,7 +42,7 @@ class RecipeImplementationWithJWT(RecipeImplementation):
         self.openid_recipe_implementation = openid_recipe_implementation
 
     async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
-                                 session_data: Union[dict, None] = None) -> SessionInterface:
+                                 session_data: Union[dict, None] = None) -> Session:
         if access_token_payload is None:
             access_token_payload = {}
         access_token_validity_in_seconds = ceil(await self.get_access_token_lifetime_ms() / 1000)
@@ -58,13 +58,13 @@ class RecipeImplementationWithJWT(RecipeImplementation):
         return get_session_with_jwt(session, self.openid_recipe_implementation)
 
     async def get_session(self, request: any, anti_csrf_check: Union[bool, None] = None,
-                          session_required: bool = True) -> Union[SessionInterface, None]:
+                          session_required: bool = True) -> Union[Session, None]:
         session_container = await RecipeImplementation.get_session(self, request, anti_csrf_check, session_required)
         if session_container is None:
             return None
         return get_session_with_jwt(session_container, self.openid_recipe_implementation)
 
-    async def refresh_session(self, request: any) -> SessionInterface:
+    async def refresh_session(self, request: any) -> Session:
         access_token_validity_in_seconds = ceil(await self.get_access_token_lifetime_ms() / 1000)
 
         # Refresh session first because this will create a new access token
