@@ -11,12 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union, List, Literal
+from typing import Union, Literal
 
 from .interfaces import SessionInterface
 from .recipe import SessionRecipe
 from . import exceptions
 from .utils import InputErrorHandlers, InputOverrideConfig, JWTConfig
+from supertokens_python.recipe.openid import InputOverrideConfig as OpenIdInputOverrideConfig, JWTOverrideConfig
 
 
 def init(cookie_domain: Union[str, None] = None,

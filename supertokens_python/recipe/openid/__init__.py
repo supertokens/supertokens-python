@@ -16,6 +16,7 @@ from typing import Union
 from .utils import InputOverrideConfig
 
 from .recipe import OpenIdRecipe
+from supertokens_python.recipe.jwt import OverrideConfig as JWTOverrideConfig
 
 
 def init(jwt_validity_seconds: Union[int, None] = None,
