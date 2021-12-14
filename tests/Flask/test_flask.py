@@ -19,7 +19,7 @@ from flask import Flask, jsonify, make_response, request
 from supertokens_python.recipe import emailpassword
 from supertokens_python.recipe.emailpassword.interfaces import APIOptions
 
-from supertokens_python import init
+from supertokens_python import init, SupertokensConfig, InputAppInfo
 from supertokens_python.framework.flask import Middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session.framework.flask import verify_session
@@ -65,28 +65,24 @@ def driver_config_app():
     Middleware(app)
 
     app.testing = True
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'flask',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [emailpassword.init({
-            'override': {
-                'apis': override_email_password_apis
-            }
-        }), session.init(
-            {
-                'anti_csrf': 'VIA_TOKEN',
-                'cookie_domain': 'supertokens.io'
-            }
-        )],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='flask',
+        recipe_list=[session.init(
+            anti_csrf='VIA_TOKEN',
+            cookie_domain='supertokens.io'
+        ), emailpassword.init(
+            override=emailpassword.InputOverrideConfig(
+                apis=override_email_password_apis
+            )
+        )]
+    )
 
     @app.route('/test')
     def t():
@@ -169,9 +165,9 @@ def test_cookie_login_and_refresh(driver_config_app):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
     test_client = driver_config_app.test_client()
     test_client.set_cookie(
@@ -198,9 +194,9 @@ def test_cookie_login_and_refresh(driver_config_app):
     assert cookies_2['sAccessToken']['httponly']
     assert cookies_2['sRefreshToken']['httponly']
     assert cookies_2['sIdRefreshToken']['httponly']
-    assert cookies_2['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_2['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_2['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_2['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_2['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_2['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
 
 def test_login_refresh_no_csrf(driver_config_app):
@@ -241,9 +237,9 @@ def test_login_refresh_no_csrf(driver_config_app):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
     test_client = driver_config_app.test_client()
     test_client.set_cookie(
@@ -303,9 +299,9 @@ def test_login_logout(driver_config_app):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'] == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
     test_client = driver_config_app.test_client()
     test_client.set_cookie(

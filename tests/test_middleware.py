@@ -17,7 +17,7 @@ from fastapi.testclient import TestClient
 from pytest import fixture
 from pytest import mark
 
-from supertokens_python import init
+from supertokens_python import init, SupertokensConfig, InputAppInfo
 from supertokens_python.recipe import session, emailpassword
 from supertokens_python.framework.fastapi import Middleware
 from tests.utils import (
@@ -44,19 +44,17 @@ async def driver_config_client():
 
 
 @mark.asyncio
-async def test_rid_with_session_and_non_existant_api_in_session_recipe_gives_404(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io"
-        },
-        'recipe_list': [session.init({}), emailpassword.init({})],
-    })
+async def test_rid_with_session_and_non_existent_api_in_session_recipe_gives_404(driver_config_client: TestClient):
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(), emailpassword.init()]
+    )
     start_st()
 
     response = driver_config_client.post(
@@ -69,18 +67,16 @@ async def test_rid_with_session_and_non_existant_api_in_session_recipe_gives_404
 
 @mark.asyncio
 async def test_no_rid_with_existent_API_does_not_give_404(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io"
-        },
-        'recipe_list': [session.init({}), emailpassword.init({})],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(), emailpassword.init()]
+    )
     start_st()
 
     response = driver_config_client.post(
@@ -90,18 +86,16 @@ async def test_no_rid_with_existent_API_does_not_give_404(driver_config_client: 
 
 @mark.asyncio
 async def test_rid_as_anticsrf_with_existent_API_does_not_give_404(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io"
-        },
-        'recipe_list': [session.init({}), emailpassword.init({})],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(), emailpassword.init()]
+    )
     start_st()
 
     response = driver_config_client.post(
@@ -114,18 +108,16 @@ async def test_rid_as_anticsrf_with_existent_API_does_not_give_404(driver_config
 
 @mark.asyncio
 async def test_random_rid_with_existent_API_does_gives_404(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io"
-        },
-        'recipe_list': [session.init({}), emailpassword.init({})],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(), emailpassword.init()]
+    )
     start_st()
 
     response = driver_config_client.post(

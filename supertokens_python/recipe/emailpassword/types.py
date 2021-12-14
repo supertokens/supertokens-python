@@ -120,6 +120,14 @@ class FormField:
         self.value = value
 
 
+class InputFormField:
+    def __init__(self, id: str, validate: Union[Callable[[
+                 str], Awaitable[Union[str, None]]], None] = None, optional: Union[bool, None] = None):
+        self.id = id
+        self.validate = validate
+        self.optional = optional
+
+
 class NormalisedFormField:
     def __init__(self, id: str, validate: Callable[[
                  str], Awaitable[Union[str, None]]], optional: bool):

@@ -241,7 +241,11 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
     if response['status'] == 'OK':
         return {
             'sessionData': response['userDataInDatabase'],
-            'jwtPayload': response['userDataInJWT']
+            'accessTokenPayload': response['userDataInJWT'],
+            'userId': response['userId'],
+            'expiry': response['expiry'],
+            'timeCreated': response['timeCreated'],
+            'sessionHandle': response['sessionHandle']
         }
     else:
         raise_unauthorised_exception(response['message'])

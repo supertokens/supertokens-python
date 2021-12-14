@@ -27,6 +27,8 @@ if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
+    from .utils import SignInAndUpFeature, InputOverrideConfig
+    from supertokens_python.recipe.emailverification.utils import InputEmailVerificationConfig
 from supertokens_python.exceptions import raise_general_exception, SuperTokensError
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from .utils import validate_and_normalise_user_input
@@ -49,12 +51,14 @@ class ThirdPartyRecipe(RecipeModule):
     recipe_id = 'thirdparty'
     __instance = None
 
-    def __init__(self, recipe_id: str, app_info: AppInfo, config=None,
+    def __init__(self, recipe_id: str, app_info: AppInfo,
+                 sign_in_and_up_feature: SignInAndUpFeature,
+                 email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+                 override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None):
         super().__init__(recipe_id, app_info)
-        if config is None:
-            config = {}
-        self.config = validate_and_normalise_user_input(self, config)
+        self.config = validate_and_normalise_user_input(self, sign_in_and_up_feature,
+                                                        email_verification_feature, override)
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
         else:
@@ -114,11 +118,13 @@ class ThirdPartyRecipe(RecipeModule):
         return [] + self.email_verification_recipe.get_all_cors_headers()
 
     @staticmethod
-    def init(config=None):
+    def init(sign_in_and_up_feature: SignInAndUpFeature,
+             email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+             override: Union[InputOverrideConfig, None] = None):
         def func(app_info: AppInfo):
             if ThirdPartyRecipe.__instance is None:
                 ThirdPartyRecipe.__instance = ThirdPartyRecipe(
-                    ThirdPartyRecipe.recipe_id, app_info, config)
+                    ThirdPartyRecipe.recipe_id, app_info, sign_in_and_up_feature, email_verification_feature, override)
                 return ThirdPartyRecipe.__instance
             else:
                 raise_general_exception(None, 'ThirdParty recipe has already been initialised. Please check your '

@@ -24,10 +24,11 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 from starlette.types import ASGIApp
 
-from supertokens_python import init, get_all_cors_headers
+from supertokens_python import init, get_all_cors_headers, SupertokensConfig, InputAppInfo
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword
-from supertokens_python.recipe.session import Session
+from supertokens_python.recipe.emailpassword.types import InputFormField
+from supertokens_python.recipe.session import SessionInterface
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.thirdparty import Github, Google, Facebook
 
@@ -67,61 +68,49 @@ async def validate_age(value):
 
     return None
 
-form_fields = [{
-    'id': 'name'
-}, {
-    'id': 'age',
-    'validate': validate_age
-}, {
-    'id': 'country',
-    'optional': True
-}]
+form_fields = [
+    InputFormField('name'),
+    InputFormField('age', validate=validate_age),
+    InputFormField('country', optional=True)
+]
 
 
-init({
-    'supertokens': {
-        'connection_uri': "http://localhost:9000",
-    },
-    'framework': 'fastapi',
-    'app_info': {
-        'app_name': "SuperTokens",
-        'api_domain': "0.0.0.0:" + get_api_port(),
-        'website_domain': get_website_domain(),
-    },
-    'recipe_list': [
-        session.init({}),
-        emailpassword.init({
-            'sign_up_feature': {
-                'form_fields': form_fields
-            },
-            'reset_password_using_token_feature': {
-                'create_and_send_custom_email': create_and_send_custom_email
-            },
-            'email_verification_feature': {
-                'create_and_send_custom_email': create_and_send_custom_email
-            }
-        }),
-        thirdparty.init({
-            'sign_in_and_up_feature': {
-                'providers': [
-                    Google(
-                        client_id=os.environ.get('GOOGLE_CLIENT_ID'),
-                        client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
-                    ), Facebook(
-                        client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
-                        client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
-                    ), Github(
-                        client_id=os.environ.get('GITHUB_CLIENT_ID'),
-                        client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
-                    )
-                ]
-            }
-        }),
-        thirdpartyemailpassword.init({
-            'sign_up_feature': {
-                'form_fields': form_fields
-            },
-            'providers': [
+init(
+    supertokens_config=SupertokensConfig('http://localhost:9000'),
+    app_info=InputAppInfo(
+        app_name="SuperTokens Demo",
+        api_domain="0.0.0.0:" + get_api_port(),
+        website_domain=get_website_domain()
+    ),
+    framework='fastapi',
+    recipe_list=[
+        session.init(),
+        emailpassword.init(
+            sign_up_feature=emailpassword.InputSignUpFeature(form_fields),
+            reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
+                create_and_send_custom_email=create_and_send_custom_email
+            ),
+            email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                create_and_send_custom_email=create_and_send_custom_email
+            )
+        ),
+        thirdparty.init(
+            sign_in_and_up_feature=thirdparty.SignInAndUpFeature([
+                Google(
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
+                ), Facebook(
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
+                ), Github(
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'),
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
+                )
+            ])
+        ),
+        thirdpartyemailpassword.init(
+            sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(form_fields),
+            providers=[
                 Google(
                     client_id=os.environ.get('GOOGLE_CLIENT_ID'),
                     client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
@@ -133,10 +122,10 @@ init({
                     client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
                 )
             ]
-        })
+        )
     ],
-    'telemetry': False
-})
+    telemetry=False
+)
 
 
 @app.exception_handler(Exception)
@@ -153,7 +142,7 @@ def ping():
 
 
 @app.get('/sessionInfo')
-async def get_session_info(session_: Session = Depends(verify_session())):
+async def get_session_info(session_: SessionInterface = Depends(verify_session())):
     return JSONResponse({
         'sessionHandle': session_.get_handle(),
         'userId': session_.get_user_id(),

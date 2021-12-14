@@ -50,7 +50,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload, validity_seconds=None) -> CreateJwtResult:
+    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -> CreateJwtResult:
         pass
 
     @abstractmethod

@@ -17,7 +17,7 @@ import json
 from django.http import JsonResponse
 from django.test import TestCase, RequestFactory
 
-from supertokens_python import init
+from supertokens_python import init, SupertokensConfig, InputAppInfo
 from supertokens_python.recipe import session
 from supertokens_python.framework.django import middleware
 from supertokens_python.recipe import emailpassword
@@ -83,25 +83,21 @@ class SupertokensTest(TestCase):
         clean_st()
 
     async def test_login_refresh(self):
-        init({
-            'supertokens': {
-                'connection_uri': "http://localhost:3567",
-            },
-            'framework': 'django',
-            'mode': 'asgi',
-            'app_info': {
-                'app_name': "SuperTokens Demo",
-                'api_domain': "http://api.supertokens.io",
-                'website_domain': "supertokens.io",
-                'api_base_path': "/auth"
-            },
-            'recipe_list': [session.init(
-                {
-                    'anti_csrf': 'VIA_TOKEN',
-                    'cookie_domain': 'supertokens.io'
-                }
-            )],
-        })
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='django',
+            mode='asgi',
+            recipe_list=[session.init(
+                anti_csrf='VIA_TOKEN',
+                cookie_domain='supertokens.io'
+            )]
+        )
 
         start_st()
 
@@ -135,24 +131,21 @@ class SupertokensTest(TestCase):
         assert refreshed_cookies['sRefreshToken']['secure'] == cookies['sRefreshToken']['secure']
 
     async def test_login_logout(self):
-        init({
-            'supertokens': {
-                'connection_uri': "http://localhost:3567",
-            },
-            'framework': 'django',
-            'app_info': {
-                'app_name': "SuperTokens Demo",
-                'api_domain': "http://api.supertokens.io",
-                'website_domain': "supertokens.io",
-                'api_base_path': "/auth"
-            },
-            'recipe_list': [session.init(
-                {
-                    'anti_csrf': 'VIA_TOKEN',
-                    'cookie_domain': 'supertokens.io'
-                }
-            )],
-        })
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='django',
+            mode='asgi',
+            recipe_list=[session.init(
+                anti_csrf='VIA_TOKEN',
+                cookie_domain='supertokens.io'
+            )]
+        )
 
         start_st()
 
@@ -179,24 +172,21 @@ class SupertokensTest(TestCase):
         assert logout_cookies['sIdRefreshToken']['value'] == ''
 
     async def test_login_handle(self):
-        init({
-            'supertokens': {
-                'connection_uri': "http://localhost:3567",
-            },
-            'framework': 'django',
-            'app_info': {
-                'app_name': "SuperTokens Demo",
-                'api_domain': "http://api.supertokens.io",
-                'website_domain': "supertokens.io",
-                'api_base_path': "/auth"
-            },
-            'recipe_list': [session.init(
-                {
-                    'anti_csrf': 'VIA_TOKEN',
-                    'cookie_domain': 'supertokens.io'
-                }
-            )],
-        })
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='django',
+            mode='asgi',
+            recipe_list=[session.init(
+                anti_csrf='VIA_TOKEN',
+                cookie_domain='supertokens.io'
+            )]
+        )
 
         start_st()
 
@@ -222,24 +212,21 @@ class SupertokensTest(TestCase):
         assert handle_cookies == {}
 
     async def test_login_refresh_error_handler(self):
-        init({
-            'supertokens': {
-                'connection_uri': "http://localhost:3567",
-            },
-            'framework': 'django',
-            'app_info': {
-                'app_name': "SuperTokens Demo",
-                'api_domain': "http://api.supertokens.io",
-                'website_domain': "supertokens.io",
-                'api_base_path': "/auth"
-            },
-            'recipe_list': [session.init(
-                {
-                    'anti_csrf': 'VIA_TOKEN',
-                    'cookie_domain': 'supertokens.io'
-                }
-            )],
-        })
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='django',
+            mode='asgi',
+            recipe_list=[session.init(
+                anti_csrf='VIA_TOKEN',
+                cookie_domain='supertokens.io'
+            )]
+        )
 
         start_st()
 
@@ -273,23 +260,22 @@ class SupertokensTest(TestCase):
             original_implementation.email_exists_get = email_exists_get
             return original_implementation
 
-        init({
-            'supertokens': {
-                'connection_uri': "http://localhost:3567",
-            },
-            'framework': 'django',
-            'app_info': {
-                'app_name': "SuperTokens Demo",
-                'api_domain': "http://api.supertokens.io",
-                'website_domain': "supertokens.io",
-                'api_base_path': "/auth"
-            },
-            'recipe_list': [emailpassword.init({
-                'override': {
-                    'apis': override_email_password_apis
-                }
-            })],
-        })
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='django',
+            mode='asgi',
+            recipe_list=[emailpassword.init(
+                override=emailpassword.InputOverrideConfig(
+                    apis=override_email_password_apis
+                )
+            )]
+        )
 
         start_st()
 

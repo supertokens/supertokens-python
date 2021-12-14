@@ -20,7 +20,7 @@ from fastapi.testclient import TestClient
 from pytest import fixture
 from pytest import mark
 
-from supertokens_python import init
+from supertokens_python import init, SupertokensConfig, InputAppInfo
 from supertokens_python.recipe import session, emailpassword
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.recipe.session.asyncio import create_new_session, refresh_session, get_session
@@ -85,21 +85,17 @@ async def driver_config_client():
 
 @mark.asyncio
 async def test_email_validation_checks_in_generate_token_API(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init({})
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init()]
+    )
     start_st()
 
     response_1 = driver_config_client.post(
@@ -129,26 +125,21 @@ async def test_that_generated_password_link_is_correct(driver_config_client: Tes
         token_info = password_reset_url_with_token.split("?")[1].split("&")[0]
         rid_info = password_reset_url_with_token.split("?")[1].split("&")[1]
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init({
-                'reset_password_using_token_feature': {
-                    'create_and_send_custom_email': custom_f
-                }
-            }),
-            session.init()
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(), emailpassword.init(
+            reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
+                create_and_send_custom_email=custom_f
+            )
+        )]
+    )
     start_st()
 
     response_1 = sign_up_request(
@@ -171,28 +162,24 @@ async def test_that_generated_password_link_is_correct(driver_config_client: Tes
     await asyncio.sleep(1)
 
     assert response_1.status_code == 200
-    assert reset_url == "https://supertokens.io/auth/reset-password"
+    assert reset_url == "http://supertokens.io/auth/reset-password"
     assert "token=" in token_info
     assert "rid=emailpassword" in rid_info
 
 
 @mark.asyncio
 async def test_password_validation(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init({})
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init()]
+    )
     start_st()
 
     response_1 = driver_config_client.post(
@@ -229,20 +216,17 @@ async def test_password_validation(driver_config_client: TestClient):
 
 @mark.asyncio
 async def test_token_missing_from_input(driver_config_client: TestClient):
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-        },
-        'recipe_list': [
-            emailpassword.init({})
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init()]
+    )
     start_st()
 
     response_1 = driver_config_client.post(
@@ -269,26 +253,21 @@ async def test_valid_token_input_and_passoword_has_changed(driver_config_client:
         token_info = password_reset_url_with_token.split("?")[1].split("&")[
             0].split("=")[1]
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-            'api_base_path': "/auth"
-        },
-        'recipe_list': [
-            emailpassword.init({
-                'reset_password_using_token_feature': {
-                    'create_and_send_custom_email': custom_f
-                }
-            }),
-            session.init()
-        ],
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(
+            reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
+                create_and_send_custom_email=custom_f
+            )
+        ), session.init()]
+    )
     start_st()
 
     response_1 = sign_up_request(

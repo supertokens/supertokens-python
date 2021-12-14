@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
 
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.jwt.api.jwks_get import jwks_get
@@ -22,7 +22,7 @@ from supertokens_python.recipe.jwt.api.implementation import APIImplementation
 from supertokens_python.recipe.jwt.constants import GET_JWKS_API
 from supertokens_python.recipe.jwt.interfaces import APIOptions
 from supertokens_python.recipe.jwt.recipe_implementation import RecipeImplementation
-from supertokens_python.recipe.jwt.utils import validate_and_normalise_user_input
+from supertokens_python.recipe.jwt.utils import validate_and_normalise_user_input, OverrideConfig
 from supertokens_python.recipe.jwt.exceptions import SuperTokensJWTError
 
 if TYPE_CHECKING:
@@ -39,11 +39,10 @@ class JWTRecipe(RecipeModule):
     recipe_id = 'jwt'
     __instance = None
 
-    def __init__(self, recipe_id: str, app_info: AppInfo, config):
+    def __init__(self, recipe_id: str, app_info: AppInfo, jwt_validity_seconds: Union[int, None] = None,
+                 override: Union[OverrideConfig, None] = None):
         super().__init__(recipe_id, app_info)
-        if config is None:
-            config = {}
-        self.config = validate_and_normalise_user_input(config)
+        self.config = validate_and_normalise_user_input(jwt_validity_seconds, override)
 
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id), self.config, app_info)
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
@@ -54,7 +53,7 @@ class JWTRecipe(RecipeModule):
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [APIHandled(method='get', path_without_api_base_path=NormalisedURLPath(GET_JWKS_API),
-                           request_id=GET_JWKS_API, disabled=self.api_implementation.jwks_get is None)]
+                           request_id=GET_JWKS_API, disabled=self.api_implementation.disable_jwks_get)]
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
@@ -72,10 +71,11 @@ class JWTRecipe(RecipeModule):
         return isinstance(err, SuperTokensError) and isinstance(err, SuperTokensJWTError)
 
     @staticmethod
-    def init(config=None):
+    def init(jwt_validity_seconds: Union[int, None] = None,
+             override: Union[OverrideConfig, None] = None):
         def func(app_info: AppInfo):
             if JWTRecipe.__instance is None:
-                JWTRecipe.__instance = JWTRecipe(JWTRecipe.recipe_id, app_info, config)
+                JWTRecipe.__instance = JWTRecipe(JWTRecipe.recipe_id, app_info, jwt_validity_seconds, override)
                 return JWTRecipe.__instance
             else:
                 raise_general_exception('JWT recipe has already been initialised. Please check '

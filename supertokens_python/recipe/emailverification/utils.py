@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
     from .types import User
     from .interfaces import RecipeInterface, APIInterface
-    from typing import Callable, Union
+    from typing import Callable, Union, Awaitable
 from os import environ
 
 
@@ -42,18 +42,40 @@ def default_create_and_send_custom_email(app_info: AppInfo):
 
 
 class OverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
-                 None], apis: Union[Callable[[APIInterface], APIInterface], None]):
+    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+                 apis: Union[Callable[[APIInterface], APIInterface], None] = None):
         self.functions = functions
         self.apis = apis
 
 
+class InputEmailVerificationConfig:
+    def __init__(self,
+                 get_email_verification_url: Union[Callable[[User], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[User, str], Awaitable[None]], None] = None
+                 ):
+        self.get_email_verification_url = get_email_verification_url
+        self.create_and_send_custom_email = create_and_send_custom_email
+
+
+class ParentRecipeEmailVerificationConfig:
+    def __init__(self,
+                 get_email_for_user_id: Callable[[str], Awaitable[str]],
+                 override: Union[OverrideConfig, None] = None,
+                 get_email_verification_url: Union[Callable[[User], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[User, str], Awaitable[None]], None] = None
+                 ):
+        self.override = override
+        self.get_email_verification_url = get_email_verification_url
+        self.create_and_send_custom_email = create_and_send_custom_email
+        self.get_email_for_user_id = get_email_for_user_id
+
+
 class EmailVerificationConfig:
     def __init__(self,
-                 get_email_for_user_id,
-                 get_email_verification_url,
-                 create_and_send_custom_email,
-                 override: OverrideConfig
+                 override: OverrideConfig,
+                 get_email_verification_url: Callable[[User], Awaitable[str]],
+                 create_and_send_custom_email: Callable[[User, str], Awaitable[None]],
+                 get_email_for_user_id: Callable[[str], Awaitable[str]]
                  ):
         self.get_email_for_user_id = get_email_for_user_id
         self.get_email_verification_url = get_email_verification_url
@@ -61,24 +83,17 @@ class EmailVerificationConfig:
         self.override = override
 
 
-def validate_and_normalise_user_input(app_info: AppInfo, config):
-    get_email_verification_url = config[
-        'get_email_verification_url'] if 'get_email_verification_url' in config and config['get_email_verification_url'] is not None else default_get_email_verification_url(
-        app_info)
-    create_and_send_custom_email = config[
-        'create_and_send_custom_email'] if 'create_and_send_custom_email' in config and config[
-        'create_and_send_custom_email'] is not None else default_create_and_send_custom_email(
-        app_info)
-    get_email_for_user_id = config['get_email_for_user_id']
-    override_functions = config['override']['functions'] if 'override' in config and 'functions' in config[
-        'override'] else None
-    override_apis = config['override']['apis'] if 'override' in config and 'apis' in config[
-        'override'] else None
-    override = OverrideConfig(override_functions, override_apis)
-
+def validate_and_normalise_user_input(app_info: AppInfo, config: ParentRecipeEmailVerificationConfig):
+    get_email_verification_url = config.get_email_verification_url if config.get_email_verification_url is not None \
+        else default_get_email_verification_url(app_info)
+    create_and_send_custom_email = config.create_and_send_custom_email if config.create_and_send_custom_email is not None \
+        else default_create_and_send_custom_email(app_info)
+    override = config.override
+    if override is None:
+        override = OverrideConfig()
     return EmailVerificationConfig(
-        get_email_for_user_id,
-        get_email_verification_url,
-        create_and_send_custom_email,
-        override
+        override=override,
+        get_email_for_user_id=config.get_email_for_user_id,
+        create_and_send_custom_email=create_and_send_custom_email,
+        get_email_verification_url=get_email_verification_url
     )

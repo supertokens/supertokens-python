@@ -20,7 +20,7 @@ from pytest import mark
 from starlette.requests import Request
 from starlette.testclient import TestClient
 
-from supertokens_python import init
+from supertokens_python import init, SupertokensConfig, InputAppInfo
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.asyncio import create_jwt
@@ -94,22 +94,20 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
         param.get_jwks = get_jwks
         return param
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-        },
-        'recipe_list': [jwt.init({
-            'override': {
-                'functions': custom_functions
-            }
-        })]
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='http://api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[jwt.init(
+            override=jwt.OverrideConfig(
+                functions=custom_functions
+            )
+        )]
+    )
     start_st()
 
     response = driver_config_client.post(
@@ -149,22 +147,20 @@ async def test_overriding_APIs(driver_config_client: TestClient):
 
         return param
 
-    init({
-        'supertokens': {
-            'connection_uri': "http://localhost:3567",
-        },
-        'framework': 'fastapi',
-        'app_info': {
-            'app_name': "SuperTokens Demo",
-            'api_domain': "http://api.supertokens.io",
-            'website_domain': "supertokens.io",
-        },
-        'recipe_list': [jwt.init({
-            'override': {
-                'apis': custom_api
-            }
-        })]
-    })
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='http://api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[jwt.init(
+            override=jwt.OverrideConfig(
+                apis=custom_api
+            )
+        )]
+    )
     start_st()
 
     response = driver_config_client.get(

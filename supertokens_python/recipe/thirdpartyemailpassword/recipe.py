@@ -16,6 +16,8 @@ from __future__ import annotations
 from os import environ
 from typing import List, TYPE_CHECKING, Union
 
+from supertokens_python.recipe.thirdparty.provider import Provider
+
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import RecipeModule, APIHandled
 from .api.emailpassword_api_impementation import get_interface_impl as get_email_password_interface_impl
@@ -28,6 +30,8 @@ from .recipeimplementation.third_party_recipe_implementation import \
     RecipeImplementation as ThirdPartyRecipeImplementation
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.querier import Querier
+from ..emailpassword.utils import InputSignUpFeature, InputResetPasswordUsingTokenFeature
+from ..emailverification.utils import InputEmailVerificationConfig
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -38,23 +42,33 @@ from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from .utils import (
-    validate_and_normalise_user_input
+    validate_and_normalise_user_input, InputOverrideConfig
 )
+from supertokens_python.recipe.thirdparty.utils import InputOverrideConfig as TPOverrideConfig, SignInAndUpFeature
+from supertokens_python.recipe.emailpassword.utils import InputOverrideConfig as EPOverrideConfig
 
 
 class ThirdPartyEmailPasswordRecipe(RecipeModule):
     recipe_id = 'thirdpartyemailpassword'
     __instance = None
 
-    def __init__(self, recipe_id: str, app_info: AppInfo, config=None,
+    def __init__(self, recipe_id: str, app_info: AppInfo,
+                 sign_up_feature: Union[InputSignUpFeature, None] = None,
+                 reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
+                 email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+                 override: Union[InputOverrideConfig, None] = None,
+                 providers: Union[List[Provider], None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
                  email_password_recipe: Union[EmailPasswordRecipe,
                                               None] = None,
                  third_party_recipe: Union[ThirdPartyRecipe, None] = None):
         super().__init__(recipe_id, app_info)
-        if config is None:
-            config = {}
-        self.config = validate_and_normalise_user_input(self, config)
+        self.config = validate_and_normalise_user_input(self,
+                                                        sign_up_feature,
+                                                        reset_password_using_token_feature,
+                                                        email_verification_feature,
+                                                        override,
+                                                        providers)
 
         recipe_implementation = RecipeImplementation(Querier.get_instance(EmailPasswordRecipe.recipe_id),
                                                      Querier.get_instance(ThirdPartyRecipe.recipe_id))
@@ -80,16 +94,16 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         if email_password_recipe is not None:
             self.email_password_recipe = email_password_recipe
         else:
-            self.email_password_recipe = EmailPasswordRecipe(recipe_id, app_info, {
-                'sign_up_feature': {
-                    'form_fields': self.config.sign_up_feature.form_fields,
-                },
-                'reset_password_using_token_feature': self.config.reset_password_using_token_feature,
-                'override': {
-                    'functions': func_override_email_password,
-                    'apis': apis_override_email_password
-                }
-            }, self.email_verification_recipe)
+            self.email_password_recipe = EmailPasswordRecipe(recipe_id, app_info,
+                                                             InputSignUpFeature(
+                                                                 self.config.sign_up_feature.form_fields),
+                                                             self.config.reset_password_using_token_feature,
+                                                             None,
+                                                             EPOverrideConfig(
+                                                                 func_override_email_password,
+                                                                 apis_override_email_password
+                                                             ),
+                                                             self.email_verification_recipe)
 
         def func_override_third_party(_):
             return ThirdPartyRecipeImplementation(self.recipe_implementation)
@@ -102,15 +116,17 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         else:
             self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
             if len(self.config.providers) != 0:
-                self.third_party_recipe = ThirdPartyRecipe(recipe_id, app_info, {
-                    'sign_in_and_up_feature': {
-                        'providers': self.config.providers
-                    },
-                    'override': {
-                        'functions': func_override_third_party,
-                        'apis': apis_override_third_party
-                    }
-                }, self.email_verification_recipe)
+                self.third_party_recipe = ThirdPartyRecipe(
+                    recipe_id,
+                    app_info,
+                    SignInAndUpFeature(self.config.providers),
+                    None,
+                    TPOverrideConfig(
+                        func_override_third_party,
+                        apis_override_third_party
+                    ),
+                    self.email_verification_recipe
+                )
 
     def is_error_from_this_recipe_based_on_instance(self, err):
         return isinstance(err, SuperTokensError) and (
@@ -169,15 +185,23 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         return cors_headers
 
     @staticmethod
-    def init(config=None):
+    def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
+             reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
+             email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+             override: Union[InputOverrideConfig, None] = None,
+             providers: Union[List[Provider], None] = None):
         def func(app_info: AppInfo):
             if ThirdPartyEmailPasswordRecipe.__instance is None:
                 ThirdPartyEmailPasswordRecipe.__instance = ThirdPartyEmailPasswordRecipe(
-                    ThirdPartyEmailPasswordRecipe.recipe_id, app_info, config)
+                    ThirdPartyEmailPasswordRecipe.recipe_id, app_info, sign_up_feature,
+                    reset_password_using_token_feature,
+                    email_verification_feature,
+                    override,
+                    providers)
                 return ThirdPartyEmailPasswordRecipe.__instance
             else:
                 raise Exception(None, 'ThirdPartyEmailPassword recipe has already been initialised. Please '
-                                'check your code for bugs.')
+                                      'check your code for bugs.')
 
         return func
 

@@ -15,67 +15,6 @@ from typing import Callable, Union, List, Dict
 
 from supertokens_python.framework.request import BaseRequest
 
-type_string = {
-    'type': 'string'
-}
-
-type_boolean = {
-    'type': 'boolean'
-}
-
-type_number = {
-    'type': 'number'
-}
-
-type_any = {}
-
-SIGN_IN_AND_UP_FEATURE_INPUT_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'providers': {
-            'type': 'array'
-        }
-    },
-    'required': ['providers'],
-    'additionalProperties': False
-}
-
-EMAIL_VERIFICATION_FEATURE_INPUT_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'get_email_verification_url': type_any,
-        'create_and_send_custom_email': type_any
-    },
-    'additionalProperties': False
-}
-
-OVERRIDE_INPUT_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'functions': type_any,
-        'apis': type_any,
-        'email_verification_feature': {
-            'type': 'object',
-            'properties': {
-                'functions': type_any,
-                'apis': type_any
-            },
-            'additionalProperties': False
-        }
-    },
-    'additionalProperties': False
-}
-
-INPUT_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'sign_in_and_up_feature': SIGN_IN_AND_UP_FEATURE_INPUT_SCHEMA,
-        'email_verification_feature': EMAIL_VERIFICATION_FEATURE_INPUT_SCHEMA,
-        'override': OVERRIDE_INPUT_SCHEMA
-    },
-    'additionalProperties': False
-}
-
 
 class ThirdPartyInfo:
     def __init__(self, third_party_user_id: str, third_party_id: str):

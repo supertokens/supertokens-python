@@ -13,13 +13,15 @@
 # under the License.
 from typing import Union, List
 
-from supertokens_python.recipe.session.session_class import Session
+from supertokens_python.recipe.openid.interfaces import CreateJwtResult, GetJWKSResult, \
+    GetOpenIdDiscoveryConfigurationResult
+from supertokens_python.recipe.session.interfaces import SessionInterface
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.utils import FRAMEWORKS
 
 
 async def create_new_session(request, user_id: str, access_token_payload: Union[dict, None] = None,
-                             session_data: Union[dict, None] = None) -> Session:
+                             session_data: Union[dict, None] = None) -> SessionInterface:
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)
@@ -28,7 +30,7 @@ async def create_new_session(request, user_id: str, access_token_payload: Union[
 
 
 async def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -> Union[
-        Session, None]:
+        SessionRecipe, None]:
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)
@@ -36,7 +38,7 @@ async def get_session(request, anti_csrf_check: Union[bool, None] = None, sessio
                                                                                 session_required)
 
 
-async def refresh_session(request) -> Session:
+async def refresh_session(request) -> SessionInterface:
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)
@@ -70,3 +72,33 @@ async def update_session_data(session_handle: str, new_session_data: dict) -> No
 
 async def update_access_token_payload(session_handle: str, new_access_token_payload: dict) -> None:
     return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(session_handle, new_access_token_payload)
+
+
+async def create_jwt(payload: dict, validity_seconds: int = None) -> [CreateJwtResult, None]:
+    openid_recipe = SessionRecipe.get_instance().openid_recipe
+
+    if openid_recipe is not None:
+        return await openid_recipe.recipe_implementation.create_jwt(payload, validity_seconds)
+
+    raise 'create_jwt cannot be used without enabling the JWT feature. Please set \'enable: True\' for jwt config ' \
+          'when initialising the Session recipe'
+
+
+async def get_jwks() -> [GetJWKSResult, None]:
+    openid_recipe = SessionRecipe.get_instance().openid_recipe
+
+    if openid_recipe is not None:
+        return openid_recipe.recipe_implementation.get_jwks()
+
+    raise 'get_jwks cannot be used without enabling the JWT feature. Please set \'enable: True\' for jwt config ' \
+          'when initialising the Session recipe'
+
+
+async def get_open_id_discovery_configuration() -> [GetOpenIdDiscoveryConfigurationResult, None]:
+    openid_recipe = SessionRecipe.get_instance().openid_recipe
+
+    if openid_recipe is not None:
+        return openid_recipe.recipe_implementation.get_open_id_discovery_configuration()
+
+    raise 'get_open_id_discovery_configuration cannot be used without enabling the JWT feature. Please set \'enable: ' \
+          'True\' for jwt config when initialising the Session recipe'

@@ -19,10 +19,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .utils import JWTConfig
     from .interfaces import CreateJwtResult
+    from supertokens_python.supertokens import AppInfo
 from .types import JsonWebKey
 from supertokens_python.recipe.jwt.interfaces import RecipeInterface, GetJWKSResult,\
     CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm
-from supertokens_python.supertokens import AppInfo
 
 
 class RecipeImplementation(RecipeInterface):
@@ -33,7 +33,7 @@ class RecipeImplementation(RecipeInterface):
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload: dict, validity_seconds: int = None) -> CreateJwtResult:
+    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -> CreateJwtResult:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 

@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Union, List, TYPE_CHECKING
+from typing import Union, List, TYPE_CHECKING, Callable
 
 try:
     from typing import Literal
@@ -35,22 +35,21 @@ from .recipe.session.cookie_and_header import attach_access_token_to_cookie, cle
     attach_refresh_token_to_cookie, attach_id_refresh_token_to_cookie_and_header, attach_anti_csrf_header, \
     set_front_token_in_headers
 
-from .types import INPUT_SCHEMA, UsersResponse, User, ThirdPartyInfo
+from .types import UsersResponse, User, ThirdPartyInfo
 from .utils import (
-    validate_the_structure_of_user_input,
     normalise_http_method,
     get_rid_from_request,
-    send_non_200_response, validate_framework
+    send_non_200_response
 )
 
 if TYPE_CHECKING:
     from .recipe_module import RecipeModule
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
+    from supertokens_python.recipe.session import SessionInterface
 from os import environ
 from httpx import AsyncClient
 from .exceptions import raise_general_exception
-from supertokens_python.recipe.session import Session
 from .exceptions import (
     SuperTokensError,
     GeneralError,
@@ -60,26 +59,53 @@ from supertokens_python.recipe.session import SessionRecipe
 import asyncio
 
 
+class SupertokensConfig:
+    def __init__(self, connection_uri: str, api_key: Union[str, None] = None):
+        self.connection_uri = connection_uri
+        self.api_key = api_key
+
+
+class InputAppInfo:
+    def __init__(self,
+                 app_name: str,
+                 api_domain: str,
+                 website_domain: str,
+                 api_gateway_path: str = '',
+                 api_base_path: str = '/auth',
+                 website_base_path: str = '/auth',
+                 ):
+        self.app_name = app_name
+        self.api_gateway_path = api_gateway_path
+        self.api_domain = api_domain
+        self.website_domain = website_domain
+        self.api_base_path = api_base_path
+        self.website_base_path = website_base_path
+
+
 class AppInfo:
-    def __init__(self, app_info, framework: str, mode: str):
-        self.app_name: str = app_info['app_name']
-        self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(app_info[
-            'api_gateway_path']) if 'api_gateway_path' in app_info else NormalisedURLPath(
-            '')
-        self.api_domain: NormalisedURLDomain = NormalisedURLDomain(
-            app_info['api_domain'])
-        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(
-            app_info['website_domain'])
-        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(
-            NormalisedURLPath('/auth') if 'api_base_path' not in app_info else NormalisedURLPath(
-                app_info['api_base_path']))
-        self.website_base_path: NormalisedURLPath = NormalisedURLPath(
-            '/auth') if 'website_base_path' not in app_info else NormalisedURLPath(app_info['website_base_path'])
+    def __init__(self, app_name: str, api_domain: str, website_domain: str,
+                 framework: Literal['fastapi', 'flask', 'django'], api_gateway_path: str = '',
+                 api_base_path: str = '/auth', website_base_path: str = '/auth',
+                 mode: Union[Literal['asgi', 'wsgi'], None] = None):
+        self.app_name = app_name
+        self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(api_gateway_path)
+        self.api_domain: NormalisedURLDomain = NormalisedURLDomain(api_domain)
+        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(website_domain)
+        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(NormalisedURLPath(api_base_path))
+        self.website_base_path: NormalisedURLPath = NormalisedURLPath(website_base_path)
+        if framework == 'fastapi':
+            mode = 'asgi'
+        elif framework == 'flask':
+            mode = 'wsgi'
+        elif mode is not None:
+            mode = mode
+        else:
+            mode = 'wsgi'
         self.framework = framework
         self.mode = mode
 
 
-def manage_cookies_post_response(session: Session, response: BaseResponse):
+def manage_cookies_post_response(session: SessionInterface, response: BaseResponse):
     recipe = SessionRecipe.get_instance()
     if session['remove_cookies']:
         clear_cookies(recipe, response)
@@ -123,38 +149,39 @@ def manage_cookies_post_response(session: Session, response: BaseResponse):
 class Supertokens:
     __instance = None
 
-    def __init__(self, config):
-        validate_the_structure_of_user_input(
-            config, INPUT_SCHEMA, 'init_function', None)
-        validate_framework(config)
-        mode = 'asgi' if config['framework'] == 'fastapi' else 'wsgi'
-        if 'mode' in config:
-            mode = config['mode']
-        self.app_info: AppInfo = AppInfo(config['app_info'], config['framework'], mode)
+    def __init__(self,
+                 app_info: InputAppInfo,
+                 framework: Literal['fastapi', 'flask', 'django'],
+                 supertokens_config: SupertokensConfig,
+                 recipe_list: List[Callable[[AppInfo], RecipeModule]],
+                 mode: Union[Literal['asgi', 'wsgi'], None] = None,
+                 telemetry: Union[bool, None] = None
+                 ):
+        self.app_info = AppInfo(
+            app_info.app_name,
+            app_info.api_domain,
+            app_info.website_domain,
+            framework,
+            app_info.api_gateway_path,
+            app_info.api_base_path,
+            app_info.website_base_path,
+            mode
+        )
         hosts = list(map(lambda h: NormalisedURLDomain(h.strip()),
-                         filter(lambda x: x != '', config['supertokens']['connection_uri'].split(';'))))
-        api_key = None
-        if 'api_key' in config['supertokens']:
-            api_key = config['supertokens']['api_key']
-        Querier.init(hosts, api_key)
+                         filter(lambda x: x != '', supertokens_config.connection_uri.split(';'))))
+        Querier.init(hosts, supertokens_config.api_key)
 
-        if 'recipe_list' not in config or not isinstance(config['recipe_list'], list) or len(
-                config['recipe_list']) == 0:
+        if len(recipe_list) == 0:
             raise_general_exception(
                 None, 'Please provide at least one recipe to the supertokens.init function call')
 
-        self.recipe_modules: List[RecipeModule] = list(
-            map(lambda func: func(self.app_info), config['recipe_list']))
+        self.recipe_modules: List[RecipeModule] = list(map(lambda func: func(self.app_info), recipe_list))
 
-        telemetry = (
-            'SUPERTOKENS_ENV' not in environ) or (
-            environ['SUPERTOKENS_ENV'] != 'testing')
-        if 'telemetry' in config:
-            telemetry = config['telemetry']
+        if telemetry is None:
+            telemetry = ('SUPERTOKENS_ENV' not in environ) or (environ['SUPERTOKENS_ENV'] != 'testing')
 
         if telemetry:
-            if self.app_info.framework.lower(
-            ) == 'flask' or self.app_info.framework.lower() == 'django':
+            if self.app_info.framework.lower() == 'flask' or self.app_info.framework.lower() == 'django':
                 loop = asyncio.get_event_loop()
                 loop.run_until_complete(self.send_telemetry())
             else:
@@ -184,9 +211,14 @@ class Supertokens:
             pass
 
     @staticmethod
-    def init(config):
+    def init(app_info: InputAppInfo,
+             framework: Literal['fastapi', 'flask', 'django'],
+             supertokens_config: SupertokensConfig,
+             recipe_list: List[Callable[[AppInfo], RecipeModule]],
+             mode: Union[Literal['asgi', 'wsgi'], None] = None,
+             telemetry: Union[bool, None] = None):
         if Supertokens.__instance is None:
-            Supertokens.__instance = Supertokens(config)
+            Supertokens.__instance = Supertokens(app_info, framework, supertokens_config, recipe_list, mode, telemetry)
 
     @staticmethod
     def reset():

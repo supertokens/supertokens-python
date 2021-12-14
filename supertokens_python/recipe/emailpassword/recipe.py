@@ -29,7 +29,8 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 from supertokens_python.exceptions import raise_general_exception, SuperTokensError
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
-from .utils import validate_and_normalise_user_input
+from .utils import validate_and_normalise_user_input, InputSignUpFeature, InputResetPasswordUsingTokenFeature, \
+    InputOverrideConfig
 from .api import (
     handle_sign_up_api,
     handle_sign_in_api,
@@ -46,18 +47,23 @@ from .constants import (
 )
 
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.emailverification.utils import InputEmailVerificationConfig
 
 
 class EmailPasswordRecipe(RecipeModule):
     recipe_id = 'emailpassword'
     __instance = None
 
-    def __init__(self, recipe_id: str, app_info: AppInfo, config=None,
+    def __init__(self, recipe_id: str, app_info: AppInfo,
+                 sign_up_feature: Union[InputSignUpFeature, None] = None,
+                 reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
+                 email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+                 override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None):
         super().__init__(recipe_id, app_info)
-        if config is None:
-            config = {}
-        self.config = validate_and_normalise_user_input(self, app_info, config)
+        self.config = validate_and_normalise_user_input(self, app_info, sign_up_feature,
+                                                        reset_password_using_token_feature,
+                                                        email_verification_feature, override)
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
         else:
@@ -131,11 +137,17 @@ class EmailPasswordRecipe(RecipeModule):
         return [] + self.email_verification_recipe.get_all_cors_headers()
 
     @staticmethod
-    def init(config=None):
+    def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
+             reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
+             email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+             override: Union[InputOverrideConfig, None] = None):
         def func(app_info: AppInfo):
             if EmailPasswordRecipe.__instance is None:
                 EmailPasswordRecipe.__instance = EmailPasswordRecipe(EmailPasswordRecipe.recipe_id, app_info,
-                                                                     config)
+                                                                     sign_up_feature,
+                                                                     reset_password_using_token_feature,
+                                                                     email_verification_feature,
+                                                                     override)
                 return EmailPasswordRecipe.__instance
             else:
                 raise Exception(None, 'Emailpassword recipe has already been initialised. Please check your '

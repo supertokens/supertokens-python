@@ -15,13 +15,14 @@ import json
 import os
 import sys
 from functools import wraps
+from typing import Literal, Union
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
-from supertokens_python import init, Supertokens
+from supertokens_python import init, Supertokens, SupertokensConfig, InputAppInfo
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session import SessionRecipe, InputErrorHandlers, SessionInterface
 from supertokens_python.recipe.session.framework.django.asyncio import verify_session
 from supertokens_python.recipe.session.asyncio import revoke_all_sessions_for_user, create_new_session, get_session
 
@@ -33,6 +34,9 @@ file_contents = index_file.read()
 index_file.close()
 
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
+
+last_set_enable_anti_csrf = True
+last_set_enable_jwt = False
 
 
 def custom_decorator_for_test():
@@ -182,6 +186,23 @@ def apis_override_session(param):
     return param
 
 
+def functions_override_session(param):
+    original_create_new_session = param.create_new_session
+
+    async def create_new_session_custom(request: any, user_id: str, access_token_payload: Union[dict, None] = None,
+                                        session_data: Union[dict, None] = None) -> SessionInterface:
+        if access_token_payload is None:
+            access_token_payload = {}
+        access_token_payload = {
+            **access_token_payload,
+            'customClaim': 'customValue'
+        }
+        return await original_create_new_session(request, user_id, access_token_payload, session_data)
+    param.create_new_session = create_new_session_custom
+
+    return param
+
+
 def get_app_port():
     argvv = sys.argv
     for i in range(0, len(argvv)):
@@ -191,33 +212,57 @@ def get_app_port():
     return '8080'
 
 
-def config(enable_anti_csrf: bool):
-    return {
-        'supertokens': {
-            'connection_uri': "http://localhost:9000",
-        },
-        'framework': 'django',
-        'mode': 'asgi',
-        'app_info': {
-            'app_name': "SuperTokens",
-            'api_domain': "0.0.0.0:" + get_app_port(),
-            'website_domain': "http://localhost.org:8080",
-        },
-        'recipe_list': [
-            session.init({
-                "error_handlers": {
-                    "on_unauthorised": unauthorised_f
-                },
-                "anti_csrf": "VIA_TOKEN" if enable_anti_csrf else "NONE",
-                "override": {
-                    'apis': apis_override_session
-                }
-            })],
-        'telemetry': False
-    }
+def config(enable_anti_csrf: bool, enable_jwt: bool, jwt_property_name: Union[str, None]):
+    anti_csrf: Literal['VIA_TOKEN', 'NONE'] = "NONE"
+    if enable_anti_csrf:
+        anti_csrf = "VIA_TOKEN"
+    if enable_jwt:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:9000'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Python SDK",
+                api_domain="0.0.0.0:" + get_app_port(),
+                website_domain="http://localhost.org:8080"
+            ),
+            framework='django',
+            mode='asgi',
+            recipe_list=[session.init(
+                error_handlers=InputErrorHandlers(
+                    on_unauthorised=unauthorised_f
+                ),
+                anti_csrf=anti_csrf,
+                override=session.InputOverrideConfig(
+                    apis=apis_override_session,
+                    functions=functions_override_session
+                ),
+                jwt=session.JWTConfig(enable_jwt, jwt_property_name)
+            )],
+            telemetry=False
+        )
+    else:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:9000'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Python SDK",
+                api_domain="0.0.0.0:" + get_app_port(),
+                website_domain="http://localhost.org:8080"
+            ),
+            framework='django',
+            mode='asgi',
+            recipe_list=[session.init(
+                error_handlers=InputErrorHandlers(
+                    on_unauthorised=unauthorised_f
+                ),
+                anti_csrf=anti_csrf,
+                override=session.InputOverrideConfig(
+                    apis=apis_override_session
+                )
+            )],
+            telemetry=False
+        )
 
 
-init(config(True))
+config(True, False, None)
 
 
 async def send_file(request):
@@ -232,8 +277,8 @@ async def login(request):
     if request.method == 'POST':
         user_id = json.loads(request.body)['userId']
 
-        await create_new_session(request, user_id)
-        return HttpResponse(user_id)
+        session_ = await create_new_session(request, user_id)
+        return HttpResponse(session_.get_user_id())
     else:
         return send_options_api_response()
 
@@ -316,16 +361,58 @@ async def refresh(request):
 
 
 def set_anti_csrf(request):
+    global last_set_enable_anti_csrf
     data = json.loads(request.body)
     if "enableAntiCsrf" not in data:
         enable_csrf = True
     else:
         enable_csrf = data["enableAntiCsrf"]
+
+    last_set_enable_anti_csrf = enable_csrf
     if enable_csrf is not None:
         Supertokens.reset()
         SessionRecipe.reset()
-        init(config(enable_csrf))
+        config(enable_csrf, False, None)
     return HttpResponse('success')
+
+
+def set_enable_jwt(request):
+    global last_set_enable_jwt
+    global last_set_enable_anti_csrf
+    data = json.loads(request.body)
+    if "enableJWT" not in data:
+        enable_jwt = False
+    else:
+        enable_jwt = data["enableJWT"]
+
+    last_set_enable_jwt = enable_jwt
+    if enable_jwt is not None:
+        Supertokens.reset()
+        SessionRecipe.reset()
+        config(last_set_enable_anti_csrf, enable_jwt, None)
+    return HttpResponse('success')
+
+
+def feature_flags(request):
+    global last_set_enable_jwt
+    return JsonResponse({
+        'sessionJwt': last_set_enable_jwt
+    })
+
+
+async def reinitialize(request):
+    global last_set_enable_jwt
+    global last_set_enable_anti_csrf
+    data = json.loads(request.body)
+    if "jwtPropertyName" not in data:
+        jwt_property_name = True
+    else:
+        jwt_property_name = data["jwtPropertyName"]
+
+    Supertokens.reset()
+    SessionRecipe.reset()
+    config(last_set_enable_anti_csrf, last_set_enable_jwt, jwt_property_name)
+    return HttpResponse('')
 
 
 async def refresh_called_time(request):

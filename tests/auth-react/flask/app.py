@@ -17,9 +17,10 @@ from dotenv import load_dotenv
 from flask import Flask, make_response, jsonify, g
 from flask_cors import CORS
 
-from supertokens_python import init, get_all_cors_headers
+from supertokens_python import init, get_all_cors_headers, SupertokensConfig, InputAppInfo
 from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword
+from supertokens_python.recipe.emailpassword.types import InputFormField
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.thirdpartyemailpassword import Github, Google, Facebook
 
@@ -57,15 +58,63 @@ async def validate_age(value):
 
     return None
 
-form_fields = [{
-    'id': 'name'
-}, {
-    'id': 'age',
-    'validate': validate_age
-}, {
-    'id': 'country',
-    'optional': True
-}]
+form_fields = [
+    InputFormField('name'),
+    InputFormField('age', validate=validate_age),
+    InputFormField('country', optional=True)
+]
+
+init(
+    supertokens_config=SupertokensConfig('http://localhost:9000'),
+    app_info=InputAppInfo(
+        app_name="SuperTokens Demo",
+        api_domain="0.0.0.0:" + get_api_port(),
+        website_domain=get_website_domain()
+    ),
+    framework='flask',
+    recipe_list=[
+        session.init(),
+        emailpassword.init(
+            sign_up_feature=emailpassword.InputSignUpFeature(form_fields),
+            reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
+                create_and_send_custom_email=create_and_send_custom_email
+            ),
+            email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                create_and_send_custom_email=create_and_send_custom_email
+            )
+        ),
+        thirdparty.init(
+            sign_in_and_up_feature=thirdparty.SignInAndUpFeature([
+                Google(
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
+                ), Facebook(
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
+                ), Github(
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'),
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
+                )
+            ])
+        ),
+        thirdpartyemailpassword.init(
+            sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(form_fields),
+            providers=[
+                Google(
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
+                ), Facebook(
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
+                ), Github(
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'),
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
+                )
+            ]
+        )
+    ],
+    telemetry=False
+)
 
 init({
     'supertokens': {

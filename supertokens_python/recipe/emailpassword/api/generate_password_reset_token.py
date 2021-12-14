@@ -23,7 +23,7 @@ async def handle_generate_password_reset_token_api(api_implementation: APIInterf
         return None
     body = await api_options.request.json()
     form_fields_raw = body['formFields'] if 'formFields' in body else []
-    form_fields = await validate_form_fields_or_throw_error(api_options.config.reset_token_using_password_feature.form_fields_for_generate_token_form,
+    form_fields = await validate_form_fields_or_throw_error(api_options.config.reset_password_using_token_feature.form_fields_for_generate_token_form,
                                                             form_fields_raw)
     response = await api_implementation.generate_password_reset_token_post(form_fields, api_options)
 
