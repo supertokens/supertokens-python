@@ -381,7 +381,7 @@ def set_enable_jwt(request):
     global last_set_enable_anti_csrf
     data = json.loads(request.body)
     if "enableJWT" not in data:
-        enable_jwt = True
+        enable_jwt = False
     else:
         enable_jwt = data["enableJWT"]
 

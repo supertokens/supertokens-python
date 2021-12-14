@@ -15,7 +15,7 @@ from typing import Union
 
 from .recipe import EmailPasswordRecipe
 from . import exceptions
-from .utils import InputSignUpFeature, InputResetPasswordUsingTokenFeature, InputOverrideConfig
+from .utils import InputSignUpFeature, InputResetPasswordUsingTokenFeature, InputOverrideConfig, InputFormField
 from ..emailverification.utils import InputEmailVerificationConfig
 
 

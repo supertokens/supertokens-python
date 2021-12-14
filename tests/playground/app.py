@@ -14,6 +14,8 @@
 
 from supertokens_python import init, InputAppInfo, SupertokensConfig
 from supertokens_python.recipe import emailpassword
+# from supertokens_python.recipe.emailpassword import InputFormField
+# from supertokens_python.recipe.emailverification import InputOverrideConfig as EVInputOverrideConfig
 # from supertokens_python.recipe.session.utils import OverrideConfig
 
 init(
@@ -28,8 +30,6 @@ init(
     ),
     framework='fastapi',
     recipe_list=[
-        emailpassword.init(
-            override=emailpassword.InputOverrideConfig()
-        )
+        emailpassword.init()
     ]
 )

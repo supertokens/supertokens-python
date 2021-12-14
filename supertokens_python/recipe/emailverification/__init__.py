@@ -13,7 +13,7 @@
 # under the License.
 from .recipe import EmailVerificationRecipe
 from . import exceptions
-from .utils import ParentRecipeEmailVerificationConfig
+from .utils import ParentRecipeEmailVerificationConfig, OverrideConfig as InputOverrideConfig
 
 
 def init(config: ParentRecipeEmailVerificationConfig):
