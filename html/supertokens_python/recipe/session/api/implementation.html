@@ -47,7 +47,8 @@ from supertokens_python.recipe.session.interfaces import APIInterface, SignOutOk
 from supertokens_python.utils import normalise_http_method
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session.interfaces import APIOptions, SignOutResponse, SessionInterface
+    from supertokens_python.recipe.session.interfaces import APIOptions, SignOutResponse
+    from supertokens_python.recipe.session import Session
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
 
 
@@ -70,7 +71,7 @@ class APIImplementation(APIInterface):
         return SignOutOkayResponse()
 
     async def verify_session(self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None,
-                             session_required: bool = True) -&gt; Union[SessionInterface, None]:
+                             session_required: bool = True) -&gt; Union[Session, None]:
         method = normalise_http_method(api_options.request.method())
         if method == &#39;options&#39; or method == &#39;trace&#39;:
             return None
@@ -121,7 +122,7 @@ inheritance.</p></div>
         return SignOutOkayResponse()
 
     async def verify_session(self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None,
-                             session_required: bool = True) -&gt; Union[SessionInterface, None]:
+                             session_required: bool = True) -&gt; Union[Session, None]:
         method = normalise_http_method(api_options.request.method())
         if method == &#39;options&#39; or method == &#39;trace&#39;:
             return None
@@ -175,7 +176,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.api.implementation.APIImplementation.verify_session"><code class="name flex">
-<span>async def <span class="ident">verify_session</span></span>(<span>self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) ‑> Union[SessionInterface, None]</span>
+<span>async def <span class="ident">verify_session</span></span>(<span>self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) ‑> Union[Session, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -184,7 +185,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def verify_session(self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None,
-                         session_required: bool = True) -&gt; Union[SessionInterface, None]:
+                         session_required: bool = True) -&gt; Union[Session, None]:
     method = normalise_http_method(api_options.request.method())
     if method == &#39;options&#39; or method == &#39;trace&#39;:
         return None

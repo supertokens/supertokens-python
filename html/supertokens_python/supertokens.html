@@ -74,7 +74,7 @@ if TYPE_CHECKING:
     from .recipe_module import RecipeModule
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.recipe.session import SessionInterface
+    from supertokens_python.recipe.session import Session
 from os import environ
 from httpx import AsyncClient
 from .exceptions import raise_general_exception
@@ -133,7 +133,7 @@ class AppInfo:
         self.mode = mode
 
 
-def manage_cookies_post_response(session: SessionInterface, response: BaseResponse):
+def manage_cookies_post_response(session: Session, response: BaseResponse):
     recipe = SessionRecipe.get_instance()
     if session[&#39;remove_cookies&#39;]:
         clear_cookies(recipe, response)
@@ -394,7 +394,7 @@ class Supertokens:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.supertokens.manage_cookies_post_response"><code class="name flex">
-<span>def <span class="ident">manage_cookies_post_response</span></span>(<span>session: SessionInterface, response: BaseResponse)</span>
+<span>def <span class="ident">manage_cookies_post_response</span></span>(<span>session: Session, response: BaseResponse)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -402,7 +402,7 @@ class Supertokens:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def manage_cookies_post_response(session: SessionInterface, response: BaseResponse):
+<pre><code class="python">def manage_cookies_post_response(session: Session, response: BaseResponse):
     recipe = SessionRecipe.get_instance()
     if session[&#39;remove_cookies&#39;]:
         clear_cookies(recipe, response)

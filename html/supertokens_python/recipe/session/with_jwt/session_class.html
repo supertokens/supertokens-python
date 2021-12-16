@@ -54,10 +54,10 @@ from supertokens_python.utils import get_timestamp_ms
 if TYPE_CHECKING:
     from supertokens_python.recipe.openid.interfaces import RecipeInterface as OpenIdRecipeInterface
 
-from supertokens_python.recipe.session.interfaces import SessionInterface
+from supertokens_python.recipe.session import Session
 
 
-def get_session_with_jwt(original_session: SessionInterface, openid_recipe_implementation: OpenIdRecipeInterface) -&gt; SessionInterface:
+def get_session_with_jwt(original_session: Session, openid_recipe_implementation: OpenIdRecipeInterface) -&gt; Session:
     original_update_access_token_payload = original_session.update_access_token_payload
 
     async def update_access_token_payload(new_access_token_payload) -&gt; None:
@@ -112,7 +112,7 @@ def get_session_with_jwt(original_session: SessionInterface, openid_recipe_imple
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.with_jwt.session_class.get_session_with_jwt"><code class="name flex">
-<span>def <span class="ident">get_session_with_jwt</span></span>(<span>original_session: SessionInterface, openid_recipe_implementation: OpenIdRecipeInterface) ‑> SessionInterface</span>
+<span>def <span class="ident">get_session_with_jwt</span></span>(<span>original_session: Session, openid_recipe_implementation: OpenIdRecipeInterface) ‑> Session</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -120,7 +120,7 @@ def get_session_with_jwt(original_session: SessionInterface, openid_recipe_imple
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_session_with_jwt(original_session: SessionInterface, openid_recipe_implementation: OpenIdRecipeInterface) -&gt; SessionInterface:
+<pre><code class="python">def get_session_with_jwt(original_session: Session, openid_recipe_implementation: OpenIdRecipeInterface) -&gt; Session:
     original_update_access_token_payload = original_session.update_access_token_payload
 
     async def update_access_token_payload(new_access_token_payload) -&gt; None:

@@ -41,7 +41,6 @@
 # under the License.
 from __future__ import annotations
 from .session_class import Session
-from .interfaces import SessionInterface
 from supertokens_python.process_state import ProcessState, AllowedProcessStates
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from typing import TYPE_CHECKING
@@ -123,7 +122,7 @@ class RecipeImplementation(RecipeInterface):
             self.handshake_info.set_jwt_signing_public_key_list(key_list)
 
     async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
-                                 session_data: Union[dict, None] = None) -&gt; SessionInterface:
+                                 session_data: Union[dict, None] = None) -&gt; Session:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
         session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
@@ -141,7 +140,7 @@ class RecipeImplementation(RecipeInterface):
         return request.get_session()
 
     async def get_session(self, request: any, anti_csrf_check: Union[bool, None] = None,
-                          session_required: bool = True) -&gt; Union[SessionInterface, None]:
+                          session_required: bool = True) -&gt; Union[Session, None]:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
@@ -174,7 +173,7 @@ class RecipeImplementation(RecipeInterface):
         request.set_session(session)
         return request.get_session()
 
-    async def refresh_session(self, request: any) -&gt; SessionInterface:
+    async def refresh_session(self, request: any) -&gt; Session:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
@@ -355,7 +354,7 @@ inheritance.</p></div>
             self.handshake_info.set_jwt_signing_public_key_list(key_list)
 
     async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
-                                 session_data: Union[dict, None] = None) -&gt; SessionInterface:
+                                 session_data: Union[dict, None] = None) -&gt; Session:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
         session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
@@ -373,7 +372,7 @@ inheritance.</p></div>
         return request.get_session()
 
     async def get_session(self, request: any, anti_csrf_check: Union[bool, None] = None,
-                          session_required: bool = True) -&gt; Union[SessionInterface, None]:
+                          session_required: bool = True) -&gt; Union[Session, None]:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
@@ -406,7 +405,7 @@ inheritance.</p></div>
         request.set_session(session)
         return request.get_session()
 
-    async def refresh_session(self, request: any) -&gt; SessionInterface:
+    async def refresh_session(self, request: any) -&gt; Session:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
@@ -474,7 +473,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>self, request: any, user_id: str, access_token_payload: Union[dict, None] = None, session_data: Union[dict, None] = None) ‑> SessionInterface</span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>self, request: any, user_id: str, access_token_payload: Union[dict, None] = None, session_data: Union[dict, None] = None) ‑> Session</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -483,7 +482,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
-                             session_data: Union[dict, None] = None) -&gt; SessionInterface:
+                             session_data: Union[dict, None] = None) -&gt; Session:
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[self.config.framework].wrap_request(request)
     session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
@@ -568,7 +567,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_session"><code class="name flex">
-<span>async def <span class="ident">get_session</span></span>(<span>self, request: any, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) ‑> Union[SessionInterface, None]</span>
+<span>async def <span class="ident">get_session</span></span>(<span>self, request: any, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) ‑> Union[Session, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -577,7 +576,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_session(self, request: any, anti_csrf_check: Union[bool, None] = None,
-                      session_required: bool = True) -&gt; Union[SessionInterface, None]:
+                      session_required: bool = True) -&gt; Union[Session, None]:
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
@@ -625,7 +624,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.refresh_session"><code class="name flex">
-<span>async def <span class="ident">refresh_session</span></span>(<span>self, request: any) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionInterface" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionInterface">SessionInterface</a></span>
+<span>async def <span class="ident">refresh_session</span></span>(<span>self, request: any) ‑> <a title="supertokens_python.recipe.session.session_class.Session" href="session_class.html#supertokens_python.recipe.session.session_class.Session">Session</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -633,7 +632,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def refresh_session(self, request: any) -&gt; SessionInterface:
+<pre><code class="python">async def refresh_session(self, request: any) -&gt; Session:
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
