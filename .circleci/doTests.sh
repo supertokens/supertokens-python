@@ -261,30 +261,7 @@ while [ $i -lt $frontendDriverLength ]; do
                     rm -rf ../../supertokens-root
                     rm -rf ../../supertokens-auth-react
                     echo "failed test.. retrying!"
-                else
-                    echo "test failed for auth-react tests... exiting!"
                     exit 1
-                fi
-            else
-                rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-auth-react
-                echo "test failed for auth-react tests... exiting!"
-                exit 1
-            fi
-#        done
-
-        tries=1
-        while [ $tries -le 3 ]
-        do
-            tries=$(( $tries + 1 ))
-            ./setupAndTestWithAuthReactWithFlask.sh $coreFree $frontendAuthReactTag $nodeTag
-            if [[ $? -ne 0 ]]
-            then
-                if [[ $tries -le 3 ]]
-                then
-                    rm -rf ../../supertokens-root
-                    rm -rf ../../supertokens-auth-react
-                    echo "failed test.. retrying!"
                 else
                     echo "test failed for auth-react tests... exiting!"
                     exit 1
@@ -294,7 +271,30 @@ while [ $i -lt $frontendDriverLength ]; do
                 rm -rf ../../supertokens-auth-react
                 break
             fi
-        done
+#        done
+
+#        tries=1
+#        while [ $tries -le 3 ]
+#        do
+#            tries=$(( $tries + 1 ))
+#            ./setupAndTestWithAuthReactWithFlask.sh $coreFree $frontendAuthReactTag $nodeTag
+#            if [[ $? -ne 0 ]]
+#            then
+#                if [[ $tries -le 3 ]]
+#                then
+#                    rm -rf ../../supertokens-root
+#                    rm -rf ../../supertokens-auth-react
+#                    echo "failed test.. retrying!"
+#                else
+#                    echo "test failed for auth-react tests... exiting!"
+#                    exit 1
+#                fi
+#            else
+#                rm -rf ../../supertokens-root
+#                rm -rf ../../supertokens-auth-react
+#                break
+#            fi
+#        done
     fi
 
 done

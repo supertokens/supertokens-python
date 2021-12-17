@@ -116,66 +116,6 @@ init(
     telemetry=False
 )
 
-init({
-    'supertokens': {
-        'connection_uri': "http://localhost:9000",
-    },
-    'framework': 'flask',
-    'app_info': {
-        'app_name': "SuperTokens",
-        'api_domain': "0.0.0.0:" + get_api_port(),
-        'website_domain': get_website_domain(),
-    },
-    'recipe_list': [
-        session.init({}),
-        emailpassword.init({
-            'sign_up_feature': {
-                'form_fields': form_fields
-            },
-            'reset_password_using_token_feature': {
-                'create_and_send_custom_email': create_and_send_custom_email
-            },
-            'email_verification_feature': {
-                'create_and_send_custom_email': create_and_send_custom_email
-            }
-        }),
-        thirdparty.init({
-            'sign_in_and_up_feature': {
-                'providers': [
-                    Google(
-                        client_id=os.environ.get('GOOGLE_CLIENT_ID'),
-                        client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
-                    ), Facebook(
-                        client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
-                        client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
-                    ), Github(
-                        client_id=os.environ.get('GITHUB_CLIENT_ID'),
-                        client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
-                    )
-                ]
-            }
-        }),
-        thirdpartyemailpassword.init({
-            'sign_up_feature': {
-                'form_fields': form_fields
-            },
-            'providers': [
-                Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
-                ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
-                ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'),
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
-                )
-            ]
-        })
-    ],
-    'telemetry': False
-})
-
 
 def make_default_options_response():
     _response = make_response()
