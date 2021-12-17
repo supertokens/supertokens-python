@@ -18,14 +18,45 @@ jobs:
     steps:
       - checkout
       - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
-      - slack/status
   test-unit:
     docker:
       - image: rishabhpoddar/supertokens_python_driver_testing
     resource_class: large
     steps:
       - checkout
-      - run: exit 1
+      - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: make dev-install
+      - run: (cd .circleci/ && ./doUnitTests.sh)
+      - slack/status
+  test-website-fastapi:
+    docker:
+      - image: rishabhpoddar/supertokens_python_driver_testing
+    resource_class: large
+    steps:
+      - checkout
+      - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: make dev-install
+      - run: (cd .circleci/ && ./websiteFastApi.sh)
+      - slack/status
+  test-website-flask:
+    docker:
+      - image: rishabhpoddar/supertokens_python_driver_testing
+    resource_class: large
+    steps:
+      - checkout
+      - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: make dev-install
+      - run: (cd .circleci/ && ./websiteFlask.sh)
+      - slack/status
+  test-website-django:
+    docker:
+      - image: rishabhpoddar/supertokens_python_driver_testing
+    resource_class: large
+    steps:
+      - checkout
+      - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+      - run: make dev-install
+      - run: (cd .circleci/ && ./websiteDjango.sh)
       - slack/status
   test-success:
     docker:
@@ -56,8 +87,6 @@ workflows:
             branches:
               ignore: /.*/
       - test-dev-tag-as-not-passed:
-          context:
-            - slack-notification
           filters:
             tags:
               only: /dev-v[0-9]+(\.[0-9]+)*/
@@ -73,9 +102,42 @@ workflows:
               only: /dev-v[0-9]+(\.[0-9]+)*/
             branches:
               ignore: /.*/
+      - test-website-fastapi:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          filters:
+            tags:
+              only: /dev-v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+      - test-website-flask:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          filters:
+            tags:
+              only: /dev-v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+      - test-website-django:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          filters:
+            tags:
+              only: /dev-v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
       - test-success:
           requires:
             - test-unit
+            - test-website-fastapi
+            - test-website-flask
+            - test-website-django
           context:
             - slack-notification
           filters:
