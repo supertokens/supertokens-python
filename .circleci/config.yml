@@ -20,7 +20,7 @@ jobs:
       - checkout
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make dev-install
-      - run: (cd .circleci/ && ./doTests.sh)
+#      - run: (cd .circleci/ && ./doTests.sh)
       - slack/status
   update-docs:
     docker:
