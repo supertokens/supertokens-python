@@ -12,7 +12,14 @@ jobs:
       - run: python setup.py sdist bdist_wheel
       - run: twine upload -u $USERNAME -p $PASSWORD dist/*
       - slack/status
-  test:
+  test-dev-tag-as-not-passed:
+    docker:
+      - image: rishabhpoddar/supertokens_python_driver_testing
+    steps:
+      - checkout
+      - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
+      - slack/status
+  test-unit:
     docker:
       - image: rishabhpoddar/supertokens_python_driver_testing
     resource_class: large
@@ -20,7 +27,14 @@ jobs:
       - checkout
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make dev-install
-      - run: (cd .circleci/ && ./doTests.sh)
+      - run: (cd .circleci/ && ./doUnitTests.sh)
+      - slack/status
+  test-success:
+    docker:
+      - image: rishabhpoddar/supertokens_python_driver_testing
+    steps:
+      - checkout
+      - run: (cd .circleci/ && ./markAsSuccess.sh)
       - slack/status
   update-docs:
     docker:
@@ -43,7 +57,27 @@ workflows:
               only: /v[0-9]+(\.[0-9]+)*/
             branches:
               ignore: /.*/
-      - test:
+      - test-dev-tag-as-not-passed:
+          context:
+            - slack-notification
+          filters:
+            tags:
+              only: /dev-v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+      - test-unit:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          filters:
+            tags:
+              only: /dev-v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+      - test-success:
+          requires:
+            - test-unit
           context:
             - slack-notification
           filters:
