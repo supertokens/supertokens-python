@@ -56,13 +56,13 @@ while [ $i -lt $coreDriverLength ]; do
     coreFree=$(echo $coreFree | jq .core | tr -d '"')
 
     someTestsRan=true
-    ./setupAndTestWithFreeCore.sh $coreFree $coreDriverVersion
-    if [[ $? -ne 0 ]]
-    then
-        echo "test failed... exiting!"
-        exit 1
-    fi
-    rm -rf ../../supertokens-root
+#    ./setupAndTestWithFreeCore.sh $coreFree $coreDriverVersion
+#    if [[ $? -ne 0 ]]
+#    then
+#        echo "test failed... exiting!"
+#        exit 1
+#    fi
+#    rm -rf ../../supertokens-root
 done
 
 someFrontendTestsRan=false
@@ -130,74 +130,74 @@ while [ $i -lt $frontendDriverLength ]; do
 
     someFrontendTestsRan=true
 
-    tries=1
-    while [ $tries -le 3 ]
-    do
-        tries=$(( $tries + 1 ))
-        ./setupAndTestWithFrontend.sh $coreFree $frontendTag $nodeTag
-        if [[ $? -ne 0 ]]
-        then
-            if [[ $tries -le 3 ]]
-            then
-                rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-website
-                echo "failed test.. retrying!"
-            else
-                echo "test failed for website tests... exiting!"
-                exit 1
-            fi
-        else
-            rm -rf ../../supertokens-root
-            rm -rf ../../supertokens-website
-            break
-        fi
-    done
-
-    tries=1
-    while [ $tries -le 3 ]
-    do
-        tries=$(( $tries + 1 ))
-        ./setupAndTestWithFrontendWithDjango.sh $coreFree $frontendTag $nodeTag
-        if [[ $? -ne 0 ]]
-        then
-            if [[ $tries -le 3 ]]
-            then
-                rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-website
-                echo "failed test.. retrying!"
-            else
-                echo "test failed for website tests... exiting!"
-                exit 1
-            fi
-        else
-            rm -rf ../../supertokens-root
-            rm -rf ../../supertokens-website
-            break
-        fi
-    done
-
-    tries=1
-    while [ $tries -le 3 ]
-    do
-        tries=$(( $tries + 1 ))
-        ./setupAndTestWithFrontendWithFlask.sh $coreFree $frontendTag $nodeTag
-        if [[ $? -ne 0 ]]
-        then
-            if [[ $tries -le 3 ]]
-            then
-                rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-website
-                echo "failed test.. retrying!"
-            else
-                echo "test failed for website tests... exiting!"
-                exit 1
-            fi
-        else
-            rm -rf ../../supertokens-root
-            rm -rf ../../supertokens-website
-            break
-        fi
-    done
+#    tries=1
+#    while [ $tries -le 3 ]
+#    do
+#        tries=$(( $tries + 1 ))
+#        ./setupAndTestWithFrontend.sh $coreFree $frontendTag $nodeTag
+#        if [[ $? -ne 0 ]]
+#        then
+#            if [[ $tries -le 3 ]]
+#            then
+#                rm -rf ../../supertokens-root
+#                rm -rf ../../supertokens-website
+#                echo "failed test.. retrying!"
+#            else
+#                echo "test failed for website tests... exiting!"
+#                exit 1
+#            fi
+#        else
+#            rm -rf ../../supertokens-root
+#            rm -rf ../../supertokens-website
+#            break
+#        fi
+#    done
+#
+#    tries=1
+#    while [ $tries -le 3 ]
+#    do
+#        tries=$(( $tries + 1 ))
+#        ./setupAndTestWithFrontendWithDjango.sh $coreFree $frontendTag $nodeTag
+#        if [[ $? -ne 0 ]]
+#        then
+#            if [[ $tries -le 3 ]]
+#            then
+#                rm -rf ../../supertokens-root
+#                rm -rf ../../supertokens-website
+#                echo "failed test.. retrying!"
+#            else
+#                echo "test failed for website tests... exiting!"
+#                exit 1
+#            fi
+#        else
+#            rm -rf ../../supertokens-root
+#            rm -rf ../../supertokens-website
+#            break
+#        fi
+#    done
+#
+#    tries=1
+#    while [ $tries -le 3 ]
+#    do
+#        tries=$(( $tries + 1 ))
+#        ./setupAndTestWithFrontendWithFlask.sh $coreFree $frontendTag $nodeTag
+#        if [[ $? -ne 0 ]]
+#        then
+#            if [[ $tries -le 3 ]]
+#            then
+#                rm -rf ../../supertokens-root
+#                rm -rf ../../supertokens-website
+#                echo "failed test.. retrying!"
+#            else
+#                echo "test failed for website tests... exiting!"
+#                exit 1
+#            fi
+#        else
+#            rm -rf ../../supertokens-root
+#            rm -rf ../../supertokens-website
+#            break
+#        fi
+#    done
 
     frontendAuthReactVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=auth-react&mode=DEV&version=$frontendDriverVersion" \
@@ -226,32 +226,32 @@ while [ $i -lt $frontendDriverLength ]; do
         # we skip 1.8 since the SDK with just 1.8 doesn't have the right scripts
         continue
     else
-        tries=1
-        while [ $tries -le 3 ]
-        do
-            tries=$(( $tries + 1 ))
-            ./setupAndTestWithAuthReact.sh $coreFree $frontendAuthReactTag $nodeTag
-            if [[ $? -ne 0 ]]
-            then
-                if [[ $tries -le 3 ]]
-                then
-                    rm -rf ../../supertokens-root
-                    rm -rf ../../supertokens-auth-react
-                    echo "failed test.. retrying!"
-                else
-                    echo "test failed for auth-react tests... exiting!"
-                    exit 1
-                fi
-            else
-                rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-auth-react
-                break
-            fi
-        done
+#        tries=1
+#        while [ $tries -le 3 ]
+#        do
+#            tries=$(( $tries + 1 ))
+#            ./setupAndTestWithAuthReact.sh $coreFree $frontendAuthReactTag $nodeTag
+#            if [[ $? -ne 0 ]]
+#            then
+#                if [[ $tries -le 3 ]]
+#                then
+#                    rm -rf ../../supertokens-root
+#                    rm -rf ../../supertokens-auth-react
+#                    echo "failed test.. retrying!"
+#                else
+#                    echo "test failed for auth-react tests... exiting!"
+#                    exit 1
+#                fi
+#            else
+#                rm -rf ../../supertokens-root
+#                rm -rf ../../supertokens-auth-react
+#                break
+#            fi
+#        done
 
         tries=1
-        while [ $tries -le 3 ]
-        do
+#        while [ $tries -le 3 ]
+#        do
             tries=$(( $tries + 1 ))
             ./setupAndTestWithAuthReactWithDjango.sh $coreFree $frontendAuthReactTag $nodeTag
             if [[ $? -ne 0 ]]
@@ -268,9 +268,10 @@ while [ $i -lt $frontendDriverLength ]; do
             else
                 rm -rf ../../supertokens-root
                 rm -rf ../../supertokens-auth-react
-                break
+                echo "test failed for auth-react tests... exiting!"
+                exit 1
             fi
-        done
+#        done
 
         tries=1
         while [ $tries -le 3 ]
