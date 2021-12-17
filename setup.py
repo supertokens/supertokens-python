@@ -24,7 +24,8 @@ extras_require = {
         'python-dotenv',
         'flask_cors',
         'django-cors-headers',
-        'pdoc3'
+        'pdoc3',
+        'tzdata'
     ])
 }
 
