@@ -25,9 +25,7 @@ jobs:
     resource_class: large
     steps:
       - checkout
-      - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-      - run: make dev-install
-      - run: (cd .circleci/ && ./doUnitTests.sh)
+      - run: exit 1
       - slack/status
   test-success:
     docker:

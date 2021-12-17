@@ -86,101 +86,32 @@ while [ $i -lt $frontendDriverLength ]; do
 
     someFrontendTestsRan=true
 
-    frontendAuthReactVersionXY=`curl -s -X GET \
-    "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=auth-react&mode=DEV&version=$frontendDriverVersion" \
-    -H 'api-version: 0'`
-    if [[ `echo $frontendAuthReactVersionXY | jq .frontend` == "null" ]]
-    then
-        echo "fetching latest X.Y version for frontend given frontend-driver-interface X.Y version: $frontendDriverVersion, name: auth-react gave response: $frontend. Please make sure all relevant frontend libs have been pushed."
-        exit 1
-    fi
-    frontendAuthReactVersionXY=$(echo $frontendAuthReactVersionXY | jq .frontend | tr -d '"')
-
-    frontendAuthReactInfo=`curl -s -X GET \
-    "https://api.supertokens.io/0/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendAuthReactVersionXY&name=auth-react" \
-    -H 'api-version: 0'`
-    if [[ `echo $frontendAuthReactInfo | jq .tag` == "null" ]]
-    then
-        echo "fetching latest X.Y.Z version for frontend, X.Y version: $frontendAuthReactVersionXY gave response: $frontendAuthReactInfo"
-        exit 1
-    fi
-    frontendAuthReactTag=$(echo $frontendAuthReactInfo | jq .tag | tr -d '"')
-    frontendAuthReactVersion=$(echo $frontendAuthReactInfo | jq .version | tr -d '"')
-
-    if [[ $frontendDriverVersion == '1.3' || $frontendDriverVersion == '1.8' ]]; then
-        # we skip this since the tests for auth-react here are not reliable due to race conditions...
-
-        # we skip 1.8 since the SDK with just 1.8 doesn't have the right scripts
-        continue
-    else
-        tries=1
-        while [ $tries -le 3 ]
-        do
-            tries=$(( $tries + 1 ))
-            ./setupAndTestWithAuthReact.sh $coreFree $frontendAuthReactTag $nodeTag
-            if [[ $? -ne 0 ]]
+    tries=1
+    while [ $tries -le 3 ]
+    do
+        tries=$(( $tries + 1 ))
+        ./setupAndTestWithFrontend.sh $coreFree $frontendTag $nodeTag
+        if [[ $? -ne 0 ]]
+        then
+            if [[ $tries -le 3 ]]
             then
-                if [[ $tries -le 3 ]]
-                then
-                    rm -rf ../../supertokens-root
-                    rm -rf ../../supertokens-auth-react
-                    echo "failed test.. retrying!"
-                else
-                    echo "test failed for auth-react tests... exiting!"
-                    exit 1
-                fi
-            else
                 rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-auth-react
-                break
-            fi
-        done
-
-        tries=1
-        while [ $tries -le 3 ]
-        do
-            tries=$(( $tries + 1 ))
-            ./setupAndTestWithAuthReactWithDjango.sh $coreFree $frontendAuthReactTag $nodeTag
-            if [[ $? -ne 0 ]]
-            then
-                if [[ $tries -le 3 ]]
-                then
-                    rm -rf ../../supertokens-root
-                    rm -rf ../../supertokens-auth-react
-                    echo "failed test.. retrying!"
-                else
-                    echo "test failed for auth-react tests... exiting!"
-                    exit 1
-                fi
+                rm -rf ../../supertokens-website
+                echo "failed test.. retrying!"
             else
-                rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-auth-react
-                break
+                echo "test failed for website tests... exiting!"
+                exit 1
             fi
-        done
-
-        tries=1
-        while [ $tries -le 3 ]
-        do
-            tries=$(( $tries + 1 ))
-            ./setupAndTestWithAuthReactWithFlask.sh $coreFree $frontendAuthReactTag $nodeTag
-            if [[ $? -ne 0 ]]
-            then
-                if [[ $tries -le 3 ]]
-                then
-                    rm -rf ../../supertokens-root
-                    rm -rf ../../supertokens-auth-react
-                    echo "failed test.. retrying!"
-                else
-                    echo "test failed for auth-react tests... exiting!"
-                    exit 1
-                fi
-            else
-                rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-auth-react
-                break
-            fi
-        done
-    fi
-
+        else
+            rm -rf ../../supertokens-root
+            rm -rf ../../supertokens-website
+            break
+        fi
+    done
 done
+
+if [[ $someFrontendTestsRan = "false" ]]
+then
+    echo "no tests ran... failing!"
+    exit 1
+fi
