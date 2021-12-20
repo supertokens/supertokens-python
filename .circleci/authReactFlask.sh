@@ -21,50 +21,6 @@ while IFS='"' read -ra ADDR; do
     done
 done <<< "$version"
 
-responseStatus=`curl -s -o /dev/null -w "%{http_code}" -X PUT \
-  https://api.supertokens.io/0/driver \
-  -H 'Content-Type: application/json' \
-  -H 'api-version: 0' \
-  -d "{
-	\"password\": \"$SUPERTOKENS_API_KEY\",
-	\"version\":\"$version\",
-    \"name\": \"python\",
-	\"frontendDriverInterfaces\": $frontendDriverArray,
-	\"coreDriverInterfaces\": $coreDriverArray
-}"`
-if [ $responseStatus -ne "200" ]
-then
-    echo "failed core PUT API status code: $responseStatus. Exiting!"
-	exit 1
-fi
-
-someTestsRan=false
-i=0
-while [ $i -lt $coreDriverLength ]; do
-    coreDriverVersion=`echo $coreDriverArray | jq ".[$i]"`
-    coreDriverVersion=`echo $coreDriverVersion | tr -d '"'`
-    i=$((i+1))
-
-    coreFree=`curl -s -X GET \
-    "https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$coreDriverVersion" \
-    -H 'api-version: 0'`
-    if [[ `echo $coreFree | jq .core` == "null" ]]
-    then
-        echo "fetching latest X.Y version for core given core-driver-interface X.Y version: $coreDriverVersion, planType: FREE gave response: $coreFree. Please make sure all relevant cores have been pushed."
-        exit 1
-    fi
-    coreFree=$(echo $coreFree | jq .core | tr -d '"')
-
-    someTestsRan=true
-    ./setupAndTestWithFreeCore.sh $coreFree $coreDriverVersion
-    if [[ $? -ne 0 ]]
-    then
-        echo "test failed... exiting!"
-        exit 1
-    fi
-    rm -rf ../../supertokens-root
-done
-
 someFrontendTestsRan=false
 i=0
 coreDriverVersion=`echo $coreDriverArray | jq ". | last"`
@@ -130,75 +86,6 @@ while [ $i -lt $frontendDriverLength ]; do
 
     someFrontendTestsRan=true
 
-    tries=1
-    while [ $tries -le 3 ]
-    do
-        tries=$(( $tries + 1 ))
-        ./setupAndTestWithFrontend.sh $coreFree $frontendTag $nodeTag
-        if [[ $? -ne 0 ]]
-        then
-            if [[ $tries -le 3 ]]
-            then
-                rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-website
-                echo "failed test.. retrying!"
-            else
-                echo "test failed for website tests... exiting!"
-                exit 1
-            fi
-        else
-            rm -rf ../../supertokens-root
-            rm -rf ../../supertokens-website
-            break
-        fi
-    done
-
-    tries=1
-    while [ $tries -le 3 ]
-    do
-        tries=$(( $tries + 1 ))
-        ./setupAndTestWithFrontendWithDjango.sh $coreFree $frontendTag $nodeTag
-        if [[ $? -ne 0 ]]
-        then
-            if [[ $tries -le 3 ]]
-            then
-                rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-website
-                echo "failed test.. retrying!"
-            else
-                echo "test failed for website tests... exiting!"
-                exit 1
-            fi
-        else
-            rm -rf ../../supertokens-root
-            rm -rf ../../supertokens-website
-            break
-        fi
-    done
-
-    tries=1
-    while [ $tries -le 3 ]
-    do
-        tries=$(( $tries + 1 ))
-        ./setupAndTestWithFrontendWithFlask.sh $coreFree $frontendTag $nodeTag
-        if [[ $? -ne 0 ]]
-        then
-            if [[ $tries -le 3 ]]
-            then
-                rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-website
-                echo "failed test.. retrying!"
-            else
-                echo "test failed for website tests... exiting!"
-                exit 1
-            fi
-        else
-            rm -rf ../../supertokens-root
-            rm -rf ../../supertokens-website
-            break
-        fi
-    done
-
     frontendAuthReactVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=auth-react&mode=DEV&version=$frontendDriverVersion" \
     -H 'api-version: 0'`
@@ -230,52 +117,6 @@ while [ $i -lt $frontendDriverLength ]; do
         while [ $tries -le 3 ]
         do
             tries=$(( $tries + 1 ))
-            ./setupAndTestWithAuthReact.sh $coreFree $frontendAuthReactTag $nodeTag
-            if [[ $? -ne 0 ]]
-            then
-                if [[ $tries -le 3 ]]
-                then
-                    rm -rf ../../supertokens-root
-                    rm -rf ../../supertokens-auth-react
-                    echo "failed test.. retrying!"
-                else
-                    echo "test failed for auth-react tests... exiting!"
-                    exit 1
-                fi
-            else
-                rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-auth-react
-                break
-            fi
-        done
-
-        tries=1
-        while [ $tries -le 3 ]
-        do
-            tries=$(( $tries + 1 ))
-            ./setupAndTestWithAuthReactWithDjango.sh $coreFree $frontendAuthReactTag $nodeTag
-            if [[ $? -ne 0 ]]
-            then
-                if [[ $tries -le 3 ]]
-                then
-                    rm -rf ../../supertokens-root
-                    rm -rf ../../supertokens-auth-react
-                    echo "failed test.. retrying!"
-                else
-                    echo "test failed for auth-react tests... exiting!"
-                    exit 1
-                fi
-            else
-                rm -rf ../../supertokens-root
-                rm -rf ../../supertokens-auth-react
-                break
-            fi
-        done
-
-        tries=1
-        while [ $tries -le 3 ]
-        do
-            tries=$(( $tries + 1 ))
             ./setupAndTestWithAuthReactWithFlask.sh $coreFree $frontendAuthReactTag $nodeTag
             if [[ $? -ne 0 ]]
             then
@@ -298,25 +139,8 @@ while [ $i -lt $frontendDriverLength ]; do
 
 done
 
-if [[ $someFrontendTestsRan = "true" ]] && [[ $someTestsRan = "true" ]]
+if [[ $someFrontendTestsRan = "false" ]]
 then
-    echo "calling /driver PATCH to make testing passed"
-    responseStatus=`curl -s -o /dev/null -w "%{http_code}" -X PATCH \
-        https://api.supertokens.io/0/driver \
-        -H 'Content-Type: application/json' \
-        -H 'api-version: 0' \
-        -d "{
-            \"password\": \"$SUPERTOKENS_API_KEY\",
-            \"version\":\"$version\",
-            \"name\": \"python\",
-            \"testPassed\": true
-        }"`
-    if [ $responseStatus -ne "200" ]
-    then
-        echo "patch api failed"
-        exit 1
-    fi
-else
-    echo "no test ran"
+    echo "no tests ran... failing!"
     exit 1
 fi
