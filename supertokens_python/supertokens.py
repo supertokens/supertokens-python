@@ -93,12 +93,10 @@ class AppInfo:
         self.website_domain: NormalisedURLDomain = NormalisedURLDomain(website_domain)
         self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(NormalisedURLPath(api_base_path))
         self.website_base_path: NormalisedURLPath = NormalisedURLPath(website_base_path)
-        if framework == 'fastapi':
-            mode = 'asgi'
-        elif framework == 'flask':
-            mode = 'wsgi'
-        elif mode is not None:
+        if mode is not None:
             mode = mode
+        elif framework == 'fastapi':
+            mode = 'asgi'
         else:
             mode = 'wsgi'
         self.framework = framework

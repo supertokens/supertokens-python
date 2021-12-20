@@ -121,12 +121,10 @@ class AppInfo:
         self.website_domain: NormalisedURLDomain = NormalisedURLDomain(website_domain)
         self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(NormalisedURLPath(api_base_path))
         self.website_base_path: NormalisedURLPath = NormalisedURLPath(website_base_path)
-        if framework == &#39;fastapi&#39;:
-            mode = &#39;asgi&#39;
-        elif framework == &#39;flask&#39;:
-            mode = &#39;wsgi&#39;
-        elif mode is not None:
+        if mode is not None:
             mode = mode
+        elif framework == &#39;fastapi&#39;:
+            mode = &#39;asgi&#39;
         else:
             mode = &#39;wsgi&#39;
         self.framework = framework
@@ -469,12 +467,10 @@ class Supertokens:
         self.website_domain: NormalisedURLDomain = NormalisedURLDomain(website_domain)
         self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(NormalisedURLPath(api_base_path))
         self.website_base_path: NormalisedURLPath = NormalisedURLPath(website_base_path)
-        if framework == &#39;fastapi&#39;:
-            mode = &#39;asgi&#39;
-        elif framework == &#39;flask&#39;:
-            mode = &#39;wsgi&#39;
-        elif mode is not None:
+        if mode is not None:
             mode = mode
+        elif framework == &#39;fastapi&#39;:
+            mode = &#39;asgi&#39;
         else:
             mode = &#39;wsgi&#39;
         self.framework = framework
