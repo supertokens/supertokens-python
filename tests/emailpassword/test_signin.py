@@ -20,10 +20,13 @@ from pytest import fixture
 from pytest import mark
 
 from supertokens_python import init, SupertokensConfig, InputAppInfo
+from supertokens_python.asyncio import get_user_count, delete_user
+from supertokens_python.querier import Querier
 from supertokens_python.recipe import session, emailpassword
 from supertokens_python.recipe.emailpassword.interfaces import APIInterface
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.recipe.session.asyncio import create_new_session, refresh_session, get_session
+from supertokens_python.utils import compare_version
 from tests.utils import (
     reset, setup_st, clean_st, start_st, sign_up_request, extract_all_cookies
 )
@@ -534,5 +537,50 @@ async def test_formFields_has_no_password_field(
         })
 
     assert response_2.status_code == 400
+
+
+@mark.asyncio
+async def test_delete_user(driver_config_client: TestClient):
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(), session.init(
+            anti_csrf='VIA_TOKEN'
+        )]
+    )
+    start_st()
+
+    response_1 = sign_up_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpass123")
+    assert response_1.status_code == 200
+    dict_response = json.loads(response_1.text)
+    assert dict_response["status"] == "OK"
+
+    user_count = await get_user_count()
+    assert user_count == 1
+
+    version = await Querier.get_instance().get_api_version()
+
+    if compare_version(version, "2.10") == version:
+        await delete_user(dict_response["user"]["id"])
+        user_count = await get_user_count()
+        assert user_count == 0
+    else:
+        error_raised = True
+        try:
+            await delete_user(dict_response["user"]["id"])
+            error_raised = False
+        except Exception:
+            pass
+
+        assert error_raised
 
 # TODO add few more tests
