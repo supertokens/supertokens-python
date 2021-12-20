@@ -117,7 +117,7 @@ while [ $i -lt $frontendDriverLength ]; do
         while [ $tries -le 3 ]
         do
             tries=$(( $tries + 1 ))
-            ./setupAndTestWithFrontendWithDjango.sh $coreFree $frontendAuthReactTag $nodeTag
+            ./setupAndTestWithAuthReactWithDjango.sh $coreFree $frontendAuthReactTag $nodeTag
             if [[ $? -ne 0 ]]
             then
                 if [[ $tries -le 3 ]]
