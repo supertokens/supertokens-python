@@ -26,7 +26,7 @@ from .constants import (
     RID_KEY_HEADER,
     FDI_KEY_HEADER,
     TELEMETRY_SUPERTOKENS_API_URL,
-    TELEMETRY_SUPERTOKENS_API_VERSION, USER_COUNT, USERS
+    TELEMETRY_SUPERTOKENS_API_VERSION, USER_COUNT, USERS, USER_DELETE
 )
 from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
@@ -37,6 +37,7 @@ from .recipe.session.cookie_and_header import attach_access_token_to_cookie, cle
 
 from .types import UsersResponse, User, ThirdPartyInfo
 from .utils import (
+    compare_version,
     normalise_http_method,
     get_rid_from_request,
     send_non_200_response
@@ -257,6 +258,21 @@ class Supertokens:
         })
 
         return int(response['count'])
+
+    async def delete_user(self, user_id: str) -> None:
+        querier = Querier.get_instance(None)
+
+        cdi_version = await querier.get_api_version()
+
+        if compare_version(cdi_version, "2.10") == cdi_version:
+            await querier.send_post_request(NormalisedURLPath(USER_DELETE), {
+                "userId": user_id
+            })
+
+            return None
+        else:
+            raise_general_exception(
+                None, 'Please upgrade the SuperTokens core to >= 3.7.0')
 
     async def get_users(self, time_joined_order: Literal['ASC', 'DESC'],
                         limit: Union[int, None] = None, pagination_token: Union[str, None] = None,

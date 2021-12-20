@@ -32,3 +32,7 @@ async def get_users_newest_first(limit: Union[int, None] = None, pagination_toke
 
 async def get_user_count(include_recipe_ids: List[str] = None) -> int:
     return await Supertokens.get_instance().get_user_count(include_recipe_ids)
+
+
+async def delete_user(user_id: str) -> None:
+    return await Supertokens.get_instance().delete_user(user_id)
