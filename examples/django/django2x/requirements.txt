@@ -1,2 +1,0 @@
-django==2.2.23
-supertokens-python==0.0.1

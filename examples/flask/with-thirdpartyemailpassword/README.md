@@ -1,6 +1,6 @@
-# Django3 example
+# Flask example
 
-This is an example to show how to use supertokens-python library with Flask framework. This example works with Flask version 2.0.1 and python version 3.8. 
+This is an example to show how to use supertokens-python library with Flask framework and ThirdpartyEmailpassword recipe. 
 
 ## Installation
 
