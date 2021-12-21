@@ -59,7 +59,11 @@ async def get_users_newest_first(limit: Union[int, None] = None, pagination_toke
 
 
 async def get_user_count(include_recipe_ids: List[str] = None) -&gt; int:
-    return await Supertokens.get_instance().get_user_count(include_recipe_ids)</code></pre>
+    return await Supertokens.get_instance().get_user_count(include_recipe_ids)
+
+
+async def delete_user(user_id: str) -&gt; None:
+    return await Supertokens.get_instance().delete_user(user_id)</code></pre>
 </details>
 </section>
 <section>
@@ -69,6 +73,19 @@ async def get_user_count(include_recipe_ids: List[str] = None) -&gt; int:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="supertokens_python.asyncio.delete_user"><code class="name flex">
+<span>async def <span class="ident">delete_user</span></span>(<span>user_id: str) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def delete_user(user_id: str) -&gt; None:
+    return await Supertokens.get_instance().delete_user(user_id)</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.asyncio.get_user_count"><code class="name flex">
 <span>async def <span class="ident">get_user_count</span></span>(<span>include_recipe_ids: List[str] = None) ‑> int</span>
 </code></dt>
@@ -128,6 +145,7 @@ async def get_user_count(include_recipe_ids: List[str] = None) -&gt; int:
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="supertokens_python.asyncio.delete_user" href="#supertokens_python.asyncio.delete_user">delete_user</a></code></li>
 <li><code><a title="supertokens_python.asyncio.get_user_count" href="#supertokens_python.asyncio.get_user_count">get_user_count</a></code></li>
 <li><code><a title="supertokens_python.asyncio.get_users_newest_first" href="#supertokens_python.asyncio.get_users_newest_first">get_users_newest_first</a></code></li>
 <li><code><a title="supertokens_python.asyncio.get_users_oldest_first" href="#supertokens_python.asyncio.get_users_oldest_first">get_users_oldest_first</a></code></li>
