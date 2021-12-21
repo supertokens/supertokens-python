@@ -92,6 +92,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             return get_email_password_interface_impl(self.api_implementation)
 
         form_fields = None if self.config.sign_up_feature is None else self.config.sign_up_feature.form_fields
+
         if email_password_recipe is not None:
             self.email_password_recipe = email_password_recipe
         else:

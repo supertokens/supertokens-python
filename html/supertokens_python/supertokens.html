@@ -54,7 +54,7 @@ from .constants import (
     RID_KEY_HEADER,
     FDI_KEY_HEADER,
     TELEMETRY_SUPERTOKENS_API_URL,
-    TELEMETRY_SUPERTOKENS_API_VERSION, USER_COUNT, USERS
+    TELEMETRY_SUPERTOKENS_API_VERSION, USER_COUNT, USERS, USER_DELETE
 )
 from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
@@ -65,6 +65,7 @@ from .recipe.session.cookie_and_header import attach_access_token_to_cookie, cle
 
 from .types import UsersResponse, User, ThirdPartyInfo
 from .utils import (
+    compare_version,
     normalise_http_method,
     get_rid_from_request,
     send_non_200_response
@@ -285,6 +286,21 @@ class Supertokens:
         })
 
         return int(response[&#39;count&#39;])
+
+    async def delete_user(self, user_id: str) -&gt; None:
+        querier = Querier.get_instance(None)
+
+        cdi_version = await querier.get_api_version()
+
+        if compare_version(cdi_version, &#34;2.10&#34;) == cdi_version:
+            await querier.send_post_request(NormalisedURLPath(USER_DELETE), {
+                &#34;userId&#34;: user_id
+            })
+
+            return None
+        else:
+            raise_general_exception(
+                None, &#39;Please upgrade the SuperTokens core to &gt;= 3.7.0&#39;)
 
     async def get_users(self, time_joined_order: Literal[&#39;ASC&#39;, &#39;DESC&#39;],
                         limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
@@ -628,6 +644,21 @@ class Supertokens:
 
         return int(response[&#39;count&#39;])
 
+    async def delete_user(self, user_id: str) -&gt; None:
+        querier = Querier.get_instance(None)
+
+        cdi_version = await querier.get_api_version()
+
+        if compare_version(cdi_version, &#34;2.10&#34;) == cdi_version:
+            await querier.send_post_request(NormalisedURLPath(USER_DELETE), {
+                &#34;userId&#34;: user_id
+            })
+
+            return None
+        else:
+            raise_general_exception(
+                None, &#39;Please upgrade the SuperTokens core to &gt;= 3.7.0&#39;)
+
     async def get_users(self, time_joined_order: Literal[&#39;ASC&#39;, &#39;DESC&#39;],
                         limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
                         include_recipe_ids: List[str] = None) -&gt; UsersResponse:
@@ -787,6 +818,31 @@ def reset():
 </dl>
 <h3>Methods</h3>
 <dl>
+<dt id="supertokens_python.supertokens.Supertokens.delete_user"><code class="name flex">
+<span>async def <span class="ident">delete_user</span></span>(<span>self, user_id: str) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def delete_user(self, user_id: str) -&gt; None:
+    querier = Querier.get_instance(None)
+
+    cdi_version = await querier.get_api_version()
+
+    if compare_version(cdi_version, &#34;2.10&#34;) == cdi_version:
+        await querier.send_post_request(NormalisedURLPath(USER_DELETE), {
+            &#34;userId&#34;: user_id
+        })
+
+        return None
+    else:
+        raise_general_exception(
+            None, &#39;Please upgrade the SuperTokens core to &gt;= 3.7.0&#39;)</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.supertokens.Supertokens.get_all_cors_headers"><code class="name flex">
 <span>def <span class="ident">get_all_cors_headers</span></span>(<span>self) ‑> List[str]</span>
 </code></dt>
@@ -1038,6 +1094,7 @@ def reset():
 <li>
 <h4><code><a title="supertokens_python.supertokens.Supertokens" href="#supertokens_python.supertokens.Supertokens">Supertokens</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.supertokens.Supertokens.delete_user" href="#supertokens_python.supertokens.Supertokens.delete_user">delete_user</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_all_cors_headers" href="#supertokens_python.supertokens.Supertokens.get_all_cors_headers">get_all_cors_headers</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_instance" href="#supertokens_python.supertokens.Supertokens.get_instance">get_instance</a></code></li>
 <li><code><a title="supertokens_python.supertokens.Supertokens.get_user_count" href="#supertokens_python.supertokens.Supertokens.get_user_count">get_user_count</a></code></li>
