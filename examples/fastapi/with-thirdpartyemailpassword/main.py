@@ -11,12 +11,12 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 from starlette.types import ASGIApp
 
-from supertokens_python import init, get_all_cors_headers
+from supertokens_python import init, get_all_cors_headers, SupertokensConfig, InputAppInfo
 from supertokens_python.framework.fastapi import Middleware
-from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword
+from supertokens_python.recipe import session, thirdpartyemailpassword
 from supertokens_python.recipe.session import Session
 from supertokens_python.recipe.session.framework.fastapi import verify_session
-from supertokens_python.recipe.thirdparty import Github, Google, Apple, Discord, GoogleWorkspaces
+from supertokens_python.recipe.thirdpartyemailpassword import Github, Google, Apple, Discord, GoogleWorkspaces
 
 load_dotenv()
 
@@ -37,61 +37,20 @@ def get_website_domain():
     return 'http://localhost:' + get_website_port()
 
 
-init({
-    'supertokens': {
-        'connection_uri': "https://try.supertokens.io",
-    },
-    'framework': 'fastapi',
-    'app_info': {
-        'app_name': "SuperTokens",
-        'api_domain': "0.0.0.0:" + get_api_port(),
-        'website_domain': get_website_domain(),
-    },
-    'recipe_list': [
-        session.init({}),
-        thirdparty.init({
-            'sign_in_and_up_feature': {
-                'providers': [
-                    Google(
-                        is_default=True,
-                        client_id=os.environ.get('GOOGLE_CLIENT_ID'),
-                        client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
-                    ), Google(
-                        client_id=os.environ.get('GOOGLE_CLIENT_ID_MOBILE'),
-                        client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
-                    ), Github(
-                        is_default=True,
-                        client_id=os.environ.get('GITHUB_CLIENT_ID'),
-                        client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
-                    ), Github(
-                        client_id=os.environ.get('GITHUB_CLIENT_ID_MOBILE'),
-                        client_secret=os.environ.get('GITHUB_CLIENT_SECRET_MOBILE')
-                    ), Apple(
-                        is_default=True,
-                        client_id=os.environ.get('APPLE_CLIENT_ID'),
-                        client_key_id=os.environ.get('APPLE_KEY_ID'),
-                        client_team_id=os.environ.get('APPLE_TEAM_ID'),
-                        client_private_key=os.environ.get('APPLE_PRIVATE_KEY')
-                    ), Apple(
-                        client_id=os.environ.get('APPLE_CLIENT_ID_MOBILE'),
-                        client_key_id=os.environ.get('APPLE_KEY_ID'),
-                        client_team_id=os.environ.get('APPLE_TEAM_ID'),
-                        client_private_key=os.environ.get('APPLE_PRIVATE_KEY')
-                    ), GoogleWorkspaces(
-                        is_default=True,
-                        client_id=os.environ.get('GOOGLE_WORKSPACES_CLIENT_ID'),
-                        client_secret=os.environ.get('GOOGLE_WORKSPACES_CLIENT_SECRET')
-                    ), Discord(
-                        is_default=True,
-                        client_id=os.environ.get('DISCORD_CLIENT_ID'),
-                        client_secret=os.environ.get('DISCORD_CLIENT_SECRET')
-                    )
-                ]
-            }
-        }),
-        emailpassword.init(),
-        thirdpartyemailpassword.init({
-            'providers': [
+init(
+    supertokens_config=SupertokensConfig(
+        connection_uri='https://try.supertokens.io'
+    ),
+    app_info=InputAppInfo(
+        app_name='Supertokens',
+        api_domain='0.0.0.0' + get_api_port(),
+        website_domain=get_website_domain()
+    ),
+    framework='fastapi',
+    recipe_list=[
+        session.init(),
+        thirdpartyemailpassword.init(
+            providers=[
                 Google(
                     is_default=True,
                     client_id=os.environ.get('GOOGLE_CLIENT_ID'),
@@ -127,11 +86,10 @@ init({
                     client_secret=os.environ.get('DISCORD_CLIENT_SECRET')
                 )
             ]
-        })
+        )
     ],
-    'telemetry': False
-})
-
+    telemetry=False
+)
 
 app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
 

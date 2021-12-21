@@ -91,12 +91,12 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         def apis_override_email_password(_):
             return get_email_password_interface_impl(self.api_implementation)
 
+        form_fields = None if self.config.sign_up_feature is None else self.config.sign_up_feature.form_fields
         if email_password_recipe is not None:
             self.email_password_recipe = email_password_recipe
         else:
             self.email_password_recipe = EmailPasswordRecipe(recipe_id, app_info,
-                                                             InputSignUpFeature(
-                                                                 self.config.sign_up_feature.form_fields),
+                                                             InputSignUpFeature(form_fields),
                                                              self.config.reset_password_using_token_feature,
                                                              None,
                                                              EPOverrideConfig(

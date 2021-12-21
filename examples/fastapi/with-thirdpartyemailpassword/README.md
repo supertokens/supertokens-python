@@ -1,6 +1,6 @@
 # Django3 example
 
-This is an example to show how to use supertokens-python library with FastAPI framework. This example works with fastapi version 0.68.1 and python version 3.8. 
+This is an example to show how to use supertokens-python library with FastAPI framework and ThirdpartyEmailpassword recipe. 
 
 ## Installation
 
@@ -12,5 +12,5 @@ source create_env.sh
 ## Start web app
 
 ```bash
-uvicorn main:app --reload
+uvicorn main:app --reload --host=0.0.0.0 --port=3001
 ```
