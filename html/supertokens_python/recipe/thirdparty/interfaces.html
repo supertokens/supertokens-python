@@ -511,7 +511,7 @@ def to_json(self):
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.PasswordResetResponse"><code class="flex name class">
 <span>class <span class="ident">PasswordResetResponse</span></span>
-<span>(</span><span>status: "Literal['OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR']")</span>
+<span>(</span><span>status: "Literal[('OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR')]")</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -909,7 +909,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostResponse"><code class="flex name class">
 <span>class <span class="ident">SignInUpPostResponse</span></span>
-<span>(</span><span>status: "Literal['OK', 'NO_EMAIL_GIVEN_BY_PROVIDER', 'FIELD_ERROR']", user: Union[User, None] = None, created_new_user: Union[bool, None] = None, auth_code_response: any = None, error: Union[str, None] = None)</span>
+<span>(</span><span>status: "Literal[('OK', 'NO_EMAIL_GIVEN_BY_PROVIDER', 'FIELD_ERROR')]", user: Union[User, None] = None, created_new_user: Union[bool, None] = None, auth_code_response: any = None, error: Union[str, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -966,7 +966,7 @@ def to_json(self):
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpResult"><code class="flex name class">
 <span>class <span class="ident">SignInUpResult</span></span>
-<span>(</span><span>status: "Literal['OK', 'FIELD_ERROR']", user: Union[User, None] = None, created_new_user: Union[bool, None] = None, error: Union[str, None] = None)</span>
+<span>(</span><span>status: "Literal[('OK', 'FIELD_ERROR')]", user: Union[User, None] = None, created_new_user: Union[bool, None] = None, error: Union[str, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
