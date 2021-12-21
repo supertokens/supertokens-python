@@ -1,4 +1,4 @@
-# Django3 example
+# FastAPI example
 
 This is an example to show how to use supertokens-python library with FastAPI framework and ThirdpartyEmailpassword recipe. 
 
