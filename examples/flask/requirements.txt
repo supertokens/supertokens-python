@@ -1,3 +1,0 @@
-flask==2.0.1
-flask_cors==3.0.10
-supertokens-python==0.0.1
