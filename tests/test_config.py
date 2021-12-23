@@ -11,12 +11,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+from supertokens_python import init, SupertokensConfig, InputAppInfo
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe import session
+from supertokens_python.recipe.session import SessionRecipe
 from tests.utils import (
-    reset, setup_st, clean_st
+    reset, setup_st, clean_st, start_st
 )
+from pytest import mark
 
 
 def setup_function(f):
@@ -132,6 +135,297 @@ def testing_URL_domain_normalisation():
         normalise_url_domain_or_throw_error("/.netlify/functions/api")
     except Exception as e:
         assert str(e) == 'Please provide a valid domain name'
+
+
+@mark.asyncio
+async def test_same_site_values():
+    start_st()
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="api.supertokens.io",
+            website_domain="supertokens.io"
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(
+            cookie_same_site='lax'
+        )]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'lax'
+
+    reset()
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="api.supertokens.io",
+            website_domain="supertokens.io"
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(
+            cookie_same_site='none'
+        )]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'none'
+
+    reset()
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="api.supertokens.io",
+            website_domain="supertokens.io"
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(
+            cookie_same_site='strict'
+        )]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'strict'
+
+    reset()
+
+    test_passed = True
+    try:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="api.supertokens.io",
+                website_domain="supertokens.io"
+            ),
+            framework='fastapi',
+            recipe_list=[session.init(
+                cookie_same_site='random'
+            )]
+        )
+        test_passed = False
+    except Exception as e:
+        assert str(e) == 'cookie same site must be one of "strict", "lax", or "none"'
+
+    assert test_passed
+    reset()
+
+    test_passed = True
+    try:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="api.supertokens.io",
+                website_domain="supertokens.io"
+            ),
+            framework='fastapi',
+            recipe_list=[session.init(
+                cookie_same_site=' '
+            )]
+        )
+        test_passed = False
+    except Exception as e:
+        assert str(e) == 'cookie same site must be one of "strict", "lax", or "none"'
+
+    assert test_passed
+    reset()
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="api.supertokens.io",
+            website_domain="supertokens.io"
+        ),
+        framework='fastapi',
+        recipe_list=[session.init()]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'lax'
+
+    reset()
+
+
+@mark.asyncio
+async def test_config_values():
+    start_st()
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="api.supertokens.io",
+            website_domain="supertokens.io",
+            api_base_path='/'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_CUSTOM_HEADER'
+        )]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'lax'
+    assert SessionRecipe.get_instance().config.anti_csrf == 'VIA_CUSTOM_HEADER'
+    assert SessionRecipe.get_instance().config.cookie_secure
+
+    reset()
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
+            api_base_path='test/',
+            website_base_path='test1/'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init()]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'lax'
+    assert SessionRecipe.get_instance().config.anti_csrf == 'NONE'
+    assert SessionRecipe.get_instance().config.cookie_secure
+
+    reset()
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="api.supertokens.com",
+            website_domain="supertokens.io",
+            api_base_path='test/',
+            website_base_path='test1/'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init()]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'none'
+    assert SessionRecipe.get_instance().config.anti_csrf == 'VIA_CUSTOM_HEADER'
+    assert SessionRecipe.get_instance().config.cookie_secure
+
+    reset()
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="api.supertokens.co.uk",
+            website_domain="supertokens.co.uk",
+            api_base_path='test/',
+            website_base_path='test1/'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init()]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'lax'
+    assert SessionRecipe.get_instance().config.anti_csrf == 'NONE'
+    assert SessionRecipe.get_instance().config.cookie_secure
+
+    reset()
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="127.0.0.1:3000",
+            website_domain="127.0.0.1:9000",
+            api_base_path='test/',
+            website_base_path='test1/'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init()]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'lax'
+    assert SessionRecipe.get_instance().config.anti_csrf == 'NONE'
+    assert not SessionRecipe.get_instance().config.cookie_secure
+
+    reset()
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="127.0.0.1:3000",
+            website_domain="127.0.0.1:9000",
+            api_base_path='test/',
+            website_base_path='test1/'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init(
+            anti_csrf='VIA_CUSTOM_HEADER'
+        )]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'lax'
+    assert SessionRecipe.get_instance().config.anti_csrf == 'VIA_CUSTOM_HEADER'
+    assert not SessionRecipe.get_instance().config.cookie_secure
+
+    reset()
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="api.supertokens.io",
+            website_domain="127.0.0.1:9000",
+            api_base_path='test/',
+            website_base_path='test1/'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init()]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'none'
+    assert SessionRecipe.get_instance().config.anti_csrf == 'VIA_CUSTOM_HEADER'
+    assert SessionRecipe.get_instance().config.cookie_secure
+
+    reset()
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="127.0.0.1:3000",
+            website_domain="127.0.0.1:9000",
+            api_base_path='test/',
+            website_base_path='test1/'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init()]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'lax'
+    assert SessionRecipe.get_instance().config.anti_csrf == 'NONE'
+    assert not SessionRecipe.get_instance().config.cookie_secure
+
+    reset()
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="https://localhost",
+            website_domain="http://localhost:3000",
+            api_base_path='test/',
+            website_base_path='test1/'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init()]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'none'
+    assert SessionRecipe.get_instance().config.cookie_secure
+
+    reset()
 
 
 def testing_override_test():
