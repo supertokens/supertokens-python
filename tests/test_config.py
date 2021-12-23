@@ -249,6 +249,21 @@ async def test_same_site_values():
 
     reset()
 
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="https://platform-services-uat.com",
+            website_domain="https://platform-ui-uat.com"
+        ),
+        framework='fastapi',
+        recipe_list=[session.init()]
+    )
+
+    assert SessionRecipe.get_instance().config.cookie_same_site == 'none'
+
+    reset()
+
 
 @mark.asyncio
 async def test_config_values():
