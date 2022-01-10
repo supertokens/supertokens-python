@@ -46,7 +46,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.3.1",
+    version="0.3.2",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.io",
@@ -78,7 +78,8 @@ setup(
         'starlette~=0.14.2',
         'typing_extensions==3.10',
         'Deprecated==1.2.13',
-        'cryptography==35.0'
+        'cryptography==35.0',
+        'phonenumbers==8.12'
     ],
     python_requires='>=3.7',
     extras_require=extras_require

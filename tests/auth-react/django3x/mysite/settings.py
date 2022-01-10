@@ -11,15 +11,25 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import typing
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from corsheaders.defaults import default_headers
-from supertokens_python import init, get_all_cors_headers, SupertokensConfig, InputAppInfo
-from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword
+from supertokens_python import init, get_all_cors_headers, SupertokensConfig, InputAppInfo, Supertokens
+from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword, passwordless
 from supertokens_python.recipe.emailpassword.types import InputFormField
-from supertokens_python.recipe.thirdpartyemailpassword import Github, Google, Facebook
+from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
+from supertokens_python.recipe.emailverification import EmailVerificationRecipe
+from supertokens_python.recipe.jwt import JWTRecipe
+from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.thirdpartyemailpassword import Github, Google, Facebook, ThirdPartyEmailPasswordRecipe
+from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from dotenv import load_dotenv
 from django.conf import settings
+from supertokens_python.recipe.passwordless import (
+    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig,
+    ContactPhoneOnlyConfig, CreateAndSendCustomTextMessageOrEmailParameters, PasswordlessRecipe
+)
 
 load_dotenv()
 
@@ -71,16 +81,65 @@ def get_website_domain():
     return 'http://localhost:' + get_website_port()
 
 
-init(
-    supertokens_config=SupertokensConfig('http://localhost:9000'),
-    app_info=InputAppInfo(
-        app_name="SuperTokens Demo",
-        api_domain="0.0.0.0:" + get_api_port(),
-        website_domain=get_website_domain()
-    ),
-    framework='django',
-    mode=os.environ.get('APP_MODE', 'asgi'),
-    recipe_list=[
+CODE_STORE = dict()
+
+
+async def save_code(param: CreateAndSendCustomTextMessageOrEmailParameters):
+    global CODE_STORE
+    codes = getattr(settings, "CODE_STORE", None)
+    if codes is None:
+        codes = []
+    codes.append({
+        'urlWithLinkCode': param.url_with_link_code,
+        'userInputCode': param.user_input_code
+    })
+    CODE_STORE[param.pre_auth_session_id] = codes
+    setattr(settings, "CODE_STORE", CODE_STORE)
+
+
+def custom_init(contact_method: typing.Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = None,
+                flow_type: typing.Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = None):
+    PasswordlessRecipe.reset()
+    JWTRecipe.reset()
+    EmailVerificationRecipe.reset()
+    SessionRecipe.reset()
+    ThirdPartyRecipe.reset()
+    EmailPasswordRecipe.reset()
+    ThirdPartyEmailPasswordRecipe.reset()
+    Supertokens.reset()
+
+    if contact_method is not None and flow_type is not None:
+        if contact_method == 'PHONE':
+            passwordless_init = passwordless.init(
+                contact_config=ContactPhoneOnlyConfig(
+                    create_and_send_custom_text_message=save_code
+                ),
+                flow_type=flow_type
+            )
+        elif contact_method == 'EMAIL':
+            passwordless_init = passwordless.init(
+                contact_config=ContactEmailOnlyConfig(
+                    create_and_send_custom_email=save_code
+                ),
+                flow_type=flow_type
+            )
+        else:
+            passwordless_init = passwordless.init(
+                contact_config=ContactEmailOrPhoneConfig(
+                    create_and_send_custom_email=save_code,
+                    create_and_send_custom_text_message=save_code
+                ),
+                flow_type=flow_type
+            )
+    else:
+        passwordless_init = passwordless.init(
+            contact_config=ContactPhoneOnlyConfig(
+                create_and_send_custom_text_message=save_code
+            ),
+            flow_type='USER_INPUT_CODE_AND_MAGIC_LINK'
+        )
+
+    recipe_list = [
         session.init(),
         emailpassword.init(
             sign_up_feature=emailpassword.InputSignUpFeature(form_fields),
@@ -119,11 +178,24 @@ init(
                     client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
                 )
             ]
-        )
-    ],
-    telemetry=False
-)
+        ),
+        passwordless_init
+    ]
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:9000'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="0.0.0.0:" + get_api_port(),
+            website_domain=get_website_domain()
+        ),
+        framework='django',
+        mode=os.environ.get('APP_MODE', 'asgi'),
+        recipe_list=recipe_list,
+        telemetry=False
+    )
 
+
+custom_init()
 
 ALLOWED_HOSTS = ['localhost']
 

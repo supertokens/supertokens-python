@@ -220,7 +220,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise Exception(
                 None, 'calling testing function in non testing env')
-        ThirdPartyRecipe.__instance = None
+        ThirdPartyEmailPasswordRecipe.__instance = None
 
     async def get_email_for_user_id(self, user_id: str) -> str:
         user_info = await self.recipe_implementation.get_user_by_id(user_id)
