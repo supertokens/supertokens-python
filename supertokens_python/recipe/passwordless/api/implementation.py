@@ -21,7 +21,7 @@ from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIO
     ConsumeCodePostExpiredUserInputCodeErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse, \
     ConsumeCodePostRestartFlowErrorResponse
 from supertokens_python.recipe.passwordless.utils import ContactPhoneOnlyConfig, ContactEmailOnlyConfig, \
-    ContactEmailOrPhoneConfig, CreateAndSendCustomTextMessageOrEmailParameters
+    ContactEmailOrPhoneConfig, CreateAndSendCustomTextMessageParameters, CreateAndSendCustomEmailParameters
 from supertokens_python.recipe.session.asyncio import create_new_session
 
 
@@ -45,8 +45,7 @@ class APIImplementation(APIInterface):
         try:
             if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
                     (isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig) and email is not None):
-                await api_options.config.contact_config.create_and_send_custom_email(CreateAndSendCustomTextMessageOrEmailParameters(
-                    phone_number=None,
+                await api_options.config.contact_config.create_and_send_custom_email(CreateAndSendCustomEmailParameters(
                     email=email,
                     user_input_code=user_input_code,
                     url_with_link_code=magic_link,
@@ -55,8 +54,7 @@ class APIImplementation(APIInterface):
                 ))
             elif isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig) or \
                     isinstance(api_options.config.contact_config, ContactPhoneOnlyConfig):
-                await api_options.config.contact_config.create_and_send_custom_text_message(CreateAndSendCustomTextMessageOrEmailParameters(
-                    email=None,
+                await api_options.config.contact_config.create_and_send_custom_text_message(CreateAndSendCustomTextMessageParameters(
                     phone_number=phone_number,
                     user_input_code=user_input_code,
                     url_with_link_code=magic_link,
@@ -106,8 +104,7 @@ class APIImplementation(APIInterface):
                     if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
                             (isinstance(api_options.config.contact_config,
                                         ContactEmailOrPhoneConfig) and device_info.email is not None):
-                        await api_options.config.contact_config.create_and_send_custom_email(CreateAndSendCustomTextMessageOrEmailParameters(
-                            phone_number=None,
+                        await api_options.config.contact_config.create_and_send_custom_email(CreateAndSendCustomEmailParameters(
                             email=device_info.email,
                             user_input_code=user_input_code,
                             url_with_link_code=magic_link,
@@ -116,8 +113,7 @@ class APIImplementation(APIInterface):
                         ))
                     elif isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig) or \
                             isinstance(api_options.config.contact_config, ContactPhoneOnlyConfig):
-                        await api_options.config.contact_config.create_and_send_custom_text_message(CreateAndSendCustomTextMessageOrEmailParameters(
-                            email=None,
+                        await api_options.config.contact_config.create_and_send_custom_text_message(CreateAndSendCustomTextMessageParameters(
                             phone_number=device_info.phone_number,
                             user_input_code=user_input_code,
                             url_with_link_code=magic_link,

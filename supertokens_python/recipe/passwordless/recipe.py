@@ -44,7 +44,7 @@ from supertokens_python.recipe_module import RecipeModule, APIHandled
 
 
 class PasswordlessRecipe(RecipeModule):
-    recipe_id = 'Passwordless'
+    recipe_id = 'passwordless'
     __instance = None
 
     def __init__(self, recipe_id: str, app_info: AppInfo, contact_config: ContactConfig,

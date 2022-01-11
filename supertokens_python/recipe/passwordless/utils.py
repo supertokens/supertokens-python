@@ -34,7 +34,7 @@ async def default_validate_phone_number(value: str):
 
 def default_get_link_domain_and_path(app_info: AppInfo):
     async def get_link_domain_and_path(_: str):
-        return app_info.website_domain.get_as_string_dangerous() + app_info.website_base_path.get_as_string_dangerous()
+        return app_info.website_domain.get_as_string_dangerous() + app_info.website_base_path.get_as_string_dangerous() + '/verify'
     return get_link_domain_and_path
 
 
@@ -45,28 +45,40 @@ async def default_validate_email(value: str):
 
 
 async def default_create_and_send_custom_text_message(
-    params: CreateAndSendCustomTextMessageOrEmailParameters
+    params: CreateAndSendCustomEmailParameters
 ):
     # TODO
     pass
 
 
 async def default_create_and_send_custom_email(
-    param: CreateAndSendCustomTextMessageOrEmailParameters
+    param: CreateAndSendCustomTextMessageParameters
 ):
     # TODO
     pass
 
 
-class CreateAndSendCustomTextMessageOrEmailParameters:
+class CreateAndSendCustomEmailParameters:
     def __init__(self,
                  code_life_time: int,
                  pre_auth_session_id: str,
-                 phone_number: Union[str, None],
-                 email: Union[str, None],
+                 email: str,
                  user_input_code: Union[str, None] = None,
                  url_with_link_code: Union[str, None] = None):
         self.email = email
+        self.code_life_time = code_life_time
+        self.pre_auth_session_id = pre_auth_session_id
+        self.user_input_code = user_input_code
+        self.url_with_link_code = url_with_link_code
+
+
+class CreateAndSendCustomTextMessageParameters:
+    def __init__(self,
+                 code_life_time: int,
+                 pre_auth_session_id: str,
+                 phone_number: str,
+                 user_input_code: Union[str, None] = None,
+                 url_with_link_code: Union[str, None] = None):
         self.phone_number = phone_number
         self.code_life_time = code_life_time
         self.pre_auth_session_id = pre_auth_session_id
@@ -89,7 +101,7 @@ class ContactConfig(ABC):
 class ContactPhoneOnlyConfig(ContactConfig):
     def __init__(self,
                  create_and_send_custom_text_message: Callable[
-                     [CreateAndSendCustomTextMessageOrEmailParameters], Awaitable[None]],
+                     [CreateAndSendCustomTextMessageParameters], Awaitable[None]],
                  validate_phone_number: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__('PHONE')
@@ -100,7 +112,7 @@ class ContactPhoneOnlyConfig(ContactConfig):
 class ContactEmailOnlyConfig(ContactConfig):
     def __init__(self,
                  create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomTextMessageOrEmailParameters], Awaitable[None]],
+                     [CreateAndSendCustomEmailParameters], Awaitable[None]],
                  validate_email_address: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None
                  ):
         super().__init__('EMAIL')
@@ -111,9 +123,9 @@ class ContactEmailOnlyConfig(ContactConfig):
 class ContactEmailOrPhoneConfig(ContactConfig):
     def __init__(self,
                  create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomTextMessageOrEmailParameters], Awaitable[None]],
+                     [CreateAndSendCustomEmailParameters], Awaitable[None]],
                  create_and_send_custom_text_message: Callable[
-                     [CreateAndSendCustomTextMessageOrEmailParameters], Awaitable[None]],
+                     [CreateAndSendCustomTextMessageParameters], Awaitable[None]],
                  validate_email_address: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None,
                  validate_phone_number: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None,
                  ):

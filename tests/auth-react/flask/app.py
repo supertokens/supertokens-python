@@ -30,7 +30,8 @@ from supertokens_python.recipe.thirdpartyemailpassword import Github, Google, Fa
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.passwordless import (
     ContactEmailOnlyConfig, ContactEmailOrPhoneConfig,
-    ContactPhoneOnlyConfig, CreateAndSendCustomTextMessageOrEmailParameters, PasswordlessRecipe
+    ContactPhoneOnlyConfig, CreateAndSendCustomTextMessageParameters, PasswordlessRecipe,
+    CreateAndSendCustomEmailParameters
 )
 
 load_dotenv()
@@ -55,7 +56,7 @@ latest_url_with_token = None
 code_store = dict()
 
 
-async def save_code(param: CreateAndSendCustomTextMessageOrEmailParameters):
+async def save_code(param: typing.Union[CreateAndSendCustomTextMessageParameters, CreateAndSendCustomEmailParameters]):
     codes = code_store.get(param.pre_auth_session_id)
     if codes is None:
         codes = []

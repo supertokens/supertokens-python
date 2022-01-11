@@ -14,7 +14,8 @@
 from typing import Union, Literal, Callable, Awaitable
 
 from .utils import ContactConfig, OverrideConfig as InputOverrideConfig, ContactPhoneOnlyConfig, \
-    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, CreateAndSendCustomTextMessageOrEmailParameters
+    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, CreateAndSendCustomTextMessageParameters, \
+    CreateAndSendCustomEmailParameters
 
 from .recipe import PasswordlessRecipe
 

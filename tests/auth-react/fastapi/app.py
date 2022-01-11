@@ -38,7 +38,8 @@ from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.thirdparty import Github, Google, Facebook, ThirdPartyRecipe
 from supertokens_python.recipe.passwordless import (
     ContactEmailOnlyConfig, ContactEmailOrPhoneConfig,
-    ContactPhoneOnlyConfig, CreateAndSendCustomTextMessageOrEmailParameters, PasswordlessRecipe
+    ContactPhoneOnlyConfig, CreateAndSendCustomTextMessageParameters, PasswordlessRecipe,
+    CreateAndSendCustomEmailParameters
 )
 
 load_dotenv()
@@ -50,7 +51,7 @@ os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 code_store = dict()
 
 
-async def save_code(param: CreateAndSendCustomTextMessageOrEmailParameters):
+async def save_code(param: typing.Union[CreateAndSendCustomEmailParameters, CreateAndSendCustomTextMessageParameters]):
     codes = code_store.get(param.pre_auth_session_id)
     if codes is None:
         codes = []
