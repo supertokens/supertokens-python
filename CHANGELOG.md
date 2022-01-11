@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 -   Adds passwordless recipe
 -   Adds compatibility with FDI 1.11, 1.12 and CDI 2.10, 2.11
--   passwordless test changes for auith-react
+-   passwordless test changes for auth-react
 
 ### Fixes
 - Bug in ThirdpartyEmailpassword recipe init function when InputSignUpFeature is not passed.
