@@ -11,17 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-SUPPORTED_CDI_VERSIONS = ['2.9', '2.10']
-VERSION = '0.3.2'
-TELEMETRY = '/telemetry'
-USER_COUNT = '/users/count'
-USER_DELETE = '/user/remove'
-USERS = '/users'
-TELEMETRY_SUPERTOKENS_API_URL = 'https://api.supertokens.io/0/st/telemetry'
-TELEMETRY_SUPERTOKENS_API_VERSION = '2'
-ERROR_MESSAGE_KEY = 'message'
-API_KEY_HEADER = 'api-key'
-RID_KEY_HEADER = 'rid'
-FDI_KEY_HEADER = 'fdi-version'
-API_VERSION = '/apiversion'
-API_VERSION_HEADER = 'cdi-version'
+from __future__ import annotations
+from supertokens_python.exceptions import SuperTokensError
+
+
+class SuperTokensPasswordlessError(SuperTokensError):
+    pass

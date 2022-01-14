@@ -11,15 +11,19 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import typing
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from corsheaders.defaults import default_headers
 from supertokens_python import init, get_all_cors_headers, SupertokensConfig, InputAppInfo
-from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword
+from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword, passwordless
 from supertokens_python.recipe.emailpassword.types import InputFormField
 from supertokens_python.recipe.thirdpartyemailpassword import Github, Google, Facebook
 from dotenv import load_dotenv
 from django.conf import settings
+from supertokens_python.recipe.passwordless import (
+    ContactPhoneOnlyConfig, CreateAndSendCustomTextMessageParameters, CreateAndSendCustomEmailParameters
+)
 
 load_dotenv()
 
@@ -71,6 +75,69 @@ def get_website_domain():
     return 'http://localhost:' + get_website_port()
 
 
+CODE_STORE = dict()
+
+
+async def save_code(param: typing.Union[CreateAndSendCustomTextMessageParameters, CreateAndSendCustomEmailParameters]):
+    global CODE_STORE
+    codes = getattr(settings, "CODE_STORE", None)
+    if codes is None:
+        codes = []
+    codes.append({
+        'urlWithLinkCode': param.url_with_link_code,
+        'userInputCode': param.user_input_code
+    })
+    CODE_STORE[param.pre_auth_session_id] = codes
+    setattr(settings, "CODE_STORE", CODE_STORE)
+
+
+recipe_list = [
+    session.init(),
+    emailpassword.init(
+        sign_up_feature=emailpassword.InputSignUpFeature(form_fields),
+        reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
+            create_and_send_custom_email=create_and_send_custom_email
+        ),
+        email_verification_feature=emailpassword.InputEmailVerificationConfig(
+            create_and_send_custom_email=create_and_send_custom_email
+        )
+    ),
+    thirdparty.init(
+        sign_in_and_up_feature=thirdparty.SignInAndUpFeature([
+            Google(
+                client_id=os.environ.get('GOOGLE_CLIENT_ID'),
+                client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
+            ), Facebook(
+                client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
+                client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
+            ), Github(
+                client_id=os.environ.get('GITHUB_CLIENT_ID'),
+                client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
+            )
+        ])
+    ),
+    thirdpartyemailpassword.init(
+        sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(form_fields),
+        providers=[
+            Google(
+                client_id=os.environ.get('GOOGLE_CLIENT_ID'),
+                client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
+            ), Facebook(
+                client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
+                client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
+            ), Github(
+                client_id=os.environ.get('GITHUB_CLIENT_ID'),
+                client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
+            )
+        ]
+    ),
+    passwordless.init(
+        contact_config=ContactPhoneOnlyConfig(
+            create_and_send_custom_text_message=save_code
+        ),
+        flow_type='USER_INPUT_CODE_AND_MAGIC_LINK'
+    )
+]
 init(
     supertokens_config=SupertokensConfig('http://localhost:9000'),
     app_info=InputAppInfo(
@@ -80,47 +147,7 @@ init(
     ),
     framework='django',
     mode=os.environ.get('APP_MODE', 'asgi'),
-    recipe_list=[
-        session.init(),
-        emailpassword.init(
-            sign_up_feature=emailpassword.InputSignUpFeature(form_fields),
-            reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
-                create_and_send_custom_email=create_and_send_custom_email
-            ),
-            email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                create_and_send_custom_email=create_and_send_custom_email
-            )
-        ),
-        thirdparty.init(
-            sign_in_and_up_feature=thirdparty.SignInAndUpFeature([
-                Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
-                ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
-                ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'),
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
-                )
-            ])
-        ),
-        thirdpartyemailpassword.init(
-            sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(form_fields),
-            providers=[
-                Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
-                ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
-                ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'),
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
-                )
-            ]
-        )
-    ],
+    recipe_list=recipe_list,
     telemetry=False
 )
 
