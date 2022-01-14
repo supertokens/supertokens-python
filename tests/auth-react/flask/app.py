@@ -37,7 +37,6 @@ from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
 from typing import List, Union, Dict, Callable, TYPE_CHECKING
 from supertokens_python.framework.request import BaseRequest
-
 from httpx import AsyncClient
 
 load_dotenv()

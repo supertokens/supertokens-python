@@ -29,7 +29,6 @@ from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
 from typing import List, Union, Dict, Callable, TYPE_CHECKING
 from supertokens_python.framework.request import BaseRequest
-
 from httpx import AsyncClient
 
 load_dotenv()
@@ -160,9 +159,9 @@ recipe_list = [
                 client_id=os.environ.get('GITHUB_CLIENT_ID'),
                 client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
             ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'),
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')
-                )
+                client_id=os.environ.get('AUTH0_CLIENT_ID'),
+                client_secret=os.environ.get('AUTH0_CLIENT_SECRET')
+            )
         ])
     ),
     thirdpartyemailpassword.init(
@@ -178,9 +177,9 @@ recipe_list = [
                 client_id=os.environ.get('GITHUB_CLIENT_ID'),
                 client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
             ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'),
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')
-                )
+                client_id=os.environ.get('AUTH0_CLIENT_ID'),
+                client_secret=os.environ.get('AUTH0_CLIENT_SECRET')
+            )
         ]
     ),
     passwordless.init(
