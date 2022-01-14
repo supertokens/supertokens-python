@@ -931,7 +931,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version == "2.9" or version == "2.10"
+    assert version == "2.9" or version == "2.10" or version == "2.11"
 
     response_1 = sign_up_request(
         driver_config_client,
@@ -967,7 +967,7 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version == "2.9" or version == "2.10"
+    assert version == "2.9" or version == "2.10" or version == "2.11"
 
     response_1 = sign_up_request(
         driver_config_client,
