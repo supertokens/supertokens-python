@@ -4,18 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.2] - 2022-01-09
+## [0.4.0] - 2022-01-09
 
 ### Added
 -   Adds passwordless recipe
--   Adds compatibility with FDI 1.11, 1.12 and CDI 2.10, 2.11
--   passwordless test changes for auth-react
-
-### Fixes
-- Bug in ThirdpartyEmailpassword recipe init function when InputSignUpFeature is not passed.
-
-### Added
-- delete_user function
+-   Adds compatibility with FDI 1.12 and CDI 2.11
 
 ## [0.3.1] - 2021-12-20
 
@@ -24,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - delete_user function
+- Compatibility with CDI 2.10
 
 ## [0.3.0] - 2021-12-10
 
