@@ -103,13 +103,13 @@ form_fields = [
     InputFormField('country', optional=True)
 ]
 
+
 class CustomAuth0Provider(Provider):
     def __init__(self, client_id: str, client_secret: str, scope: List[str] = None,
                  authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None):
         super().__init__('auth0', client_id, False)
         self.authorisation_redirect_url = "https://" + os.environ.get('AUTH0_DOMAIN') + "/authorize"
         self.access_token_api_url = "https://" + os.environ.get('AUTH0_DOMAIN') + "/oauth/token"
-        
 
     async def get_profile_info(self, auth_code_response: any) -> UserInfo:
         access_token: str = auth_code_response['access_token']
@@ -210,7 +210,7 @@ def custom_init(contact_method: typing.Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE
                 ), CustomAuth0Provider(
                     client_id=os.environ.get('AUTH0_CLIENT_ID'),
                     client_secret=os.environ.get('AUTH0_CLIENT_SECRET')
-                )                               
+                )
             ])
         ),
         thirdpartyemailpassword.init(
