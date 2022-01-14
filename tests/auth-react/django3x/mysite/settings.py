@@ -24,11 +24,8 @@ from django.conf import settings
 from supertokens_python.recipe.passwordless import (
     ContactPhoneOnlyConfig, CreateAndSendCustomTextMessageParameters, CreateAndSendCustomEmailParameters
 )
-
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
-from typing import List, Union, Dict, Callable, TYPE_CHECKING
-from supertokens_python.framework.request import BaseRequest
 from httpx import AsyncClient
 
 load_dotenv()
@@ -82,11 +79,12 @@ def get_website_domain():
 
 
 class CustomAuth0Provider(Provider):
-    def __init__(self, client_id: str, client_secret: str, scope: List[str] = None,
-                 authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None):
+    def __init__(self, client_id: str, client_secret: str, domain: str):
         super().__init__('auth0', client_id, False)
-        self.authorisation_redirect_url = "https://" + os.environ.get('AUTH0_DOMAIN') + "/authorize"
-        self.access_token_api_url = "https://" + os.environ.get('AUTH0_DOMAIN') + "/oauth/token"
+        self.domain = domain
+        self.client_secret = client_secret
+        self.authorisation_redirect_url = "https://" + self.domain + "/authorize"
+        self.access_token_api_url = "https://" + self.domain + "/oauth/token"
 
     async def get_profile_info(self, auth_code_response: any) -> UserInfo:
         access_token: str = auth_code_response['access_token']
@@ -94,7 +92,7 @@ class CustomAuth0Provider(Provider):
             'Authorization': 'Bearer ' + access_token,
         }
         async with AsyncClient() as client:
-            response = await client.get(url="https://" + os.environ.get('AUTH0_DOMAIN') + "/userinfo", headers=headers)
+            response = await client.get(url="https://" + self.domain + "/userinfo", headers=headers)
             user_info = response.json()
 
             return UserInfo(user_info['sub'], UserInfoEmail(user_info['name'], True))
@@ -103,7 +101,7 @@ class CustomAuth0Provider(Provider):
         params = {
             'scope': 'openid profile',
             'response_type': 'code',
-            'client_id': os.environ.get('AUTH0_CLIENT_ID'),
+            'client_id': self.client_id,
         }
         return AuthorisationRedirectAPI(
             self.authorisation_redirect_url, params)
@@ -111,8 +109,8 @@ class CustomAuth0Provider(Provider):
     def get_access_token_api_info(
             self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
         params = {
-            'client_id': os.environ.get('AUTH0_CLIENT_ID'),
-            'client_secret': os.environ.get('AUTH0_CLIENT_SECRET'),
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
             'grant_type': 'authorization_code',
             'code': auth_code_from_request,
             'redirect_uri': redirect_uri
@@ -160,6 +158,7 @@ recipe_list = [
                 client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
             ), CustomAuth0Provider(
                 client_id=os.environ.get('AUTH0_CLIENT_ID'),
+                domain=os.environ.get('AUTH0_DOMAIN'),
                 client_secret=os.environ.get('AUTH0_CLIENT_SECRET')
             )
         ])
@@ -178,6 +177,7 @@ recipe_list = [
                 client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
             ), CustomAuth0Provider(
                 client_id=os.environ.get('AUTH0_CLIENT_ID'),
+                domain=os.environ.get('AUTH0_DOMAIN'),
                 client_secret=os.environ.get('AUTH0_CLIENT_SECRET')
             )
         ]
