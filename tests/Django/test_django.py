@@ -251,11 +251,11 @@ class SupertokensTest(TestCase):
 
             original_func = original_implementation.email_exists_get
 
-            async def email_exists_get(email: str, api_options):
+            async def email_exists_get(email: str, api_options, _):
                 response_dict = {'custom': True}
                 api_options.response.set_status_code(203)
                 api_options.response.set_json_content(response_dict)
-                return await original_func(email, api_options)
+                return await original_func(email, api_options, _)
 
             original_implementation.email_exists_get = email_exists_get
             return original_implementation

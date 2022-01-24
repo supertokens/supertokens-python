@@ -13,23 +13,38 @@
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 
 
-async def create_email_verification_token(user_id: str, email: str):
+async def create_email_verification_token(user_id: str, email: str, user_context=None):
+    if user_context is None:
+        user_context = {}
     return await EmailVerificationRecipe.get_instance().recipe_implementation.create_email_verification_token(user_id,
-                                                                                                              email)
+                                                                                                              email,
+                                                                                                              user_context)
 
 
-async def verify_email_using_token(token: str):
-    return await EmailVerificationRecipe.get_instance().recipe_implementation.verify_email_using_token(token)
+async def verify_email_using_token(token: str, user_context=None):
+    if user_context is None:
+        user_context = {}
+    return await EmailVerificationRecipe.get_instance().recipe_implementation.verify_email_using_token(token,
+                                                                                                       user_context)
 
 
-async def is_email_verified(user_id: str, email: str):
-    return await EmailVerificationRecipe.get_instance().recipe_implementation.is_email_verified(user_id, email)
+async def is_email_verified(user_id: str, email: str, user_context=None):
+    if user_context is None:
+        user_context = {}
+    return await EmailVerificationRecipe.get_instance().recipe_implementation.is_email_verified(user_id, email,
+                                                                                                user_context)
 
 
-async def unverify_email(user_id: str, email: str):
-    return await EmailVerificationRecipe.get_instance().recipe_implementation.unverify_email(user_id, email)
+async def unverify_email(user_id: str, email: str, user_context=None):
+    if user_context is None:
+        user_context = {}
+    return await EmailVerificationRecipe.get_instance().recipe_implementation.unverify_email(user_id, email,
+                                                                                             user_context)
 
 
-async def revoke_email_verification_tokens(user_id: str, email: str):
+async def revoke_email_verification_tokens(user_id: str, email: str, user_context=None):
+    if user_context is None:
+        user_context = {}
     return await EmailVerificationRecipe.get_instance().recipe_implementation.revoke_email_verification_tokens(user_id,
-                                                                                                               email)
+                                                                                                               email,
+                                                                                                               user_context)

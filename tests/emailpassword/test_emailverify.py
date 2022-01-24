@@ -264,7 +264,7 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
     user_info = None
     email_token = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(user, email_verification_url_token, _):
         nonlocal user_info, email_token
         user_info = user
         email_token = email_verification_url_token
@@ -318,7 +318,7 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
 async def test_the_email_verify_api_with_valid_input(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(user, email_verification_url_token, _):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -389,7 +389,7 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
 async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(user, email_verification_url_token, _):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -460,7 +460,7 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_co
 async def test_the_email_verify_api_with_token_of_not_type_string(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(user, email_verification_url_token, _):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -534,7 +534,7 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     token = None
     user_info_from_callback = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(user, email_verification_url_token, _):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -542,10 +542,10 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
 
-        async def email_verify_post(token: str, api_options: APIOptions):
+        async def email_verify_post(token: str, api_options: APIOptions, _):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options)
+            response = await temp(token, api_options, _)
 
             if response.status == "OK":
                 user_info_from_callback = response.user
@@ -632,7 +632,7 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
 async def test_the_email_verify_with_valid_input_using_the_get_method(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(user, email_verification_url_token, _):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -736,7 +736,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
     token = None
     user_info_from_callback = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(user, email_verification_url_token, _):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -744,10 +744,10 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
 
-        async def email_verify_post(token: str, api_options: APIOptions):
+        async def email_verify_post(token: str, api_options: APIOptions, _):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options)
+            response = await temp(token, api_options, _)
 
             if response.status == "OK":
                 user_info_from_callback = response.user
@@ -827,7 +827,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     token = None
     user_info_from_callback = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(user, email_verification_url_token, _):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -835,10 +835,10 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
 
-        async def email_verify_post(token: str, api_options: APIOptions):
+        async def email_verify_post(token: str, api_options: APIOptions, _):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options)
+            response = await temp(token, api_options, _)
 
             if response.status == "OK":
                 user_info_from_callback = response.user

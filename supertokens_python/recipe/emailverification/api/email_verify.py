@@ -32,12 +32,12 @@ async def handle_email_verify_api(api_implementation: APIInterface, api_options:
                 'The email verification token must be a string')
 
         token = body['token']
-        result = await api_implementation.email_verify_post(token, api_options)
+        result = await api_implementation.email_verify_post(token, api_options, {})
     else:
         if api_implementation.disable_is_email_verified_get:
             return None
 
-        result = await api_implementation.is_email_verified_get(api_options)
+        result = await api_implementation.is_email_verified_get(api_options, {})
 
     api_options.response.set_json_content(result.to_json())
     return api_options.response

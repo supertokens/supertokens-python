@@ -34,9 +34,9 @@ def get_interface_impl(
 
     if not implementation.disable_sign_in_up_post:
         async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None],
-                                  auth_code_response: Union[str, None], api_options: APIOptions):
+                                  auth_code_response: Union[str, None], api_options: APIOptions, user_context: any):
             result = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri, client_id,
-                                                                         auth_code_response, api_options)
+                                                                         auth_code_response, api_options, user_context)
 
             if result.is_ok:
                 if result.user.third_party_info is None:

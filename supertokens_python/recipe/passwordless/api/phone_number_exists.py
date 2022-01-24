@@ -23,7 +23,7 @@ async def phone_number_exists(api_implementation: APIInterface, api_options: API
     if phone_number is None or not isinstance(phone_number, str):
         raise_bad_input_exception('Please provide the phoneNumber as a GET param')
 
-    result = await api_implementation.phone_number_exists_get(phone_number, api_options)
+    result = await api_implementation.phone_number_exists_get(phone_number, api_options, {})
     api_options.response.set_json_content(result.to_json())
 
     return api_options.response

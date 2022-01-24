@@ -11,10 +11,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python.recipe.openid.interfaces import APIInterface, APIOptions, OpenIdDiscoveryConfigurationGetResponse
+from supertokens_python.recipe.openid.interfaces import APIInterface, APIOptions,\
+    OpenIdDiscoveryConfigurationGetResponse
 
 
 class APIImplementation(APIInterface):
-    async def open_id_discovery_configuration_get(self, api_options: APIOptions) -> OpenIdDiscoveryConfigurationGetResponse:
-        response = await api_options.recipe_implementation.get_open_id_discovery_configuration()
+    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context=None) ->\
+            OpenIdDiscoveryConfigurationGetResponse:
+        response = await api_options.recipe_implementation.get_open_id_discovery_configuration(user_context)
         return OpenIdDiscoveryConfigurationGetResponse(response.status, response.issuer, response.jwks_uri)

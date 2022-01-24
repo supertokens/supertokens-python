@@ -50,11 +50,11 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -> CreateJwtResult:
+    async def create_jwt(self, user_context: any, payload: dict = None, validity_seconds: int = None) -> CreateJwtResult:
         pass
 
     @abstractmethod
-    async def get_jwks(self) -> GetJWKSResult:
+    async def get_jwks(self, user_context: any) -> GetJWKSResult:
         pass
 
 
@@ -97,5 +97,5 @@ class APIInterface:
         self.disable_jwks_get = False
 
     @abstractmethod
-    async def jwks_get(self, api_options: APIOptions) -> JWKSGetResponse:
+    async def jwks_get(self, api_options: APIOptions, user_context: any) -> JWKSGetResponse:
         pass

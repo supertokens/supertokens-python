@@ -119,7 +119,7 @@ async def test_that_generated_password_link_is_correct(driver_config_client: Tes
     token_info = None
     rid_info = None
 
-    async def custom_f(user, password_reset_url_with_token):
+    async def custom_f(user, password_reset_url_with_token, _):
         nonlocal reset_url, token_info, rid_info
         reset_url = password_reset_url_with_token.split("?")[0]
         token_info = password_reset_url_with_token.split("?")[1].split("&")[0]
@@ -248,7 +248,7 @@ async def test_token_missing_from_input(driver_config_client: TestClient):
 async def test_valid_token_input_and_passoword_has_changed(driver_config_client: TestClient):
     token_info = None
 
-    async def custom_f(user, password_reset_url_with_token):
+    async def custom_f(user, password_reset_url_with_token, _):
         nonlocal token_info
         token_info = password_reset_url_with_token.split("?")[1].split("&")[
             0].split("=")[1]

@@ -28,16 +28,16 @@ class RecipeImplementation(RecipeInterface):
         super().__init__()
         self.recipe_implementation = recipe_implementation
 
-    async def get_user_by_id(self, user_id: str) -> Union[User, None]:
-        user = await self.recipe_implementation.get_user_by_id(user_id)
+    async def get_user_by_id(self, user_id: str, user_context: any) -> Union[User, None]:
+        user = await self.recipe_implementation.get_user_by_id(user_id, user_context)
 
         if user is None or user.third_party_info is not None:
             return None
 
         return user
 
-    async def get_user_by_email(self, email: str) -> Union[User, None]:
-        results = await self.recipe_implementation.get_users_by_email(email)
+    async def get_user_by_email(self, email: str, user_context: any) -> Union[User, None]:
+        results = await self.recipe_implementation.get_users_by_email(email, user_context)
 
         for result in results:
             if result.third_party_info is None:
@@ -45,17 +45,17 @@ class RecipeImplementation(RecipeInterface):
 
         return None
 
-    async def create_reset_password_token(self, user_id: str) -> CreateResetPasswordResult:
-        return await self.recipe_implementation.create_reset_password_token(user_id)
+    async def create_reset_password_token(self, user_id: str, user_context: any) -> CreateResetPasswordResult:
+        return await self.recipe_implementation.create_reset_password_token(user_id, user_context)
 
-    async def reset_password_using_token(self, token: str, new_password: str) -> ResetPasswordUsingTokenResult:
-        return await self.recipe_implementation.reset_password_using_token(token, new_password)
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: any) -> ResetPasswordUsingTokenResult:
+        return await self.recipe_implementation.reset_password_using_token(token, new_password, user_context)
 
-    async def sign_in(self, email: str, password: str) -> SignInResult:
-        return await self.recipe_implementation.sign_in(email, password)
+    async def sign_in(self, email: str, password: str, user_context: any) -> SignInResult:
+        return await self.recipe_implementation.sign_in(email, password, user_context)
 
-    async def sign_up(self, email: str, password: str) -> SignUpResult:
-        return await self.recipe_implementation.sign_up(email, password)
+    async def sign_up(self, email: str, password: str, user_context: any) -> SignUpResult:
+        return await self.recipe_implementation.sign_up(email, password, user_context)
 
     async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
         raise Exception("Should never be called")
@@ -66,6 +66,6 @@ class RecipeImplementation(RecipeInterface):
     async def get_user_count(self) -> int:
         raise Exception("Should never be called")
 
-    async def update_email_or_password(self, user_id: str, email: Union[str, None] = None,
+    async def update_email_or_password(self, user_id: str, user_context: any, email: Union[str, None] = None,
                                        password: Union[str, None] = None) -> UpdateEmailOrPasswordResult:
-        return await self.recipe_implementation.update_password_or_email(user_id, email, password)
+        return await self.recipe_implementation.update_email_or_password(user_id, user_context, email, password)

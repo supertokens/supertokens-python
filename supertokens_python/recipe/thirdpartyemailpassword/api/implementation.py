@@ -46,31 +46,31 @@ class APIImplementation(APIInterface):
         self.tp_apple_redirect_handler_post = thirdparty_implementation.apple_redirect_handler_post
         thirdparty_implementation = get_tp_interface_impl(self)
 
-    async def email_exists_get(self, email: str, options: EmailPasswordAPIOptions) -> EmailExistsGetResponse:
-        return await self.ep_email_exists_get(email, options)
+    async def email_exists_get(self, email: str, options: EmailPasswordAPIOptions, user_context: any) -> EmailExistsGetResponse:
+        return await self.ep_email_exists_get(email, options, user_context)
 
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
-                                                 options: EmailPasswordAPIOptions) -> GeneratePasswordResetTokenPostResponse:
-        return await self.ep_generate_password_reset_token_post(form_fields, options)
+                                                 options: EmailPasswordAPIOptions, user_context: any) -> GeneratePasswordResetTokenPostResponse:
+        return await self.ep_generate_password_reset_token_post(form_fields, options, user_context)
 
     async def password_reset_post(self, form_fields: List[FormField], token: str,
-                                  options: EmailPasswordAPIOptions) -> PasswordResetPostResponse:
-        return await self.ep_password_reset_post(form_fields, token, options)
+                                  options: EmailPasswordAPIOptions, user_context: any) -> PasswordResetPostResponse:
+        return await self.ep_password_reset_post(form_fields, token, options, user_context)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None],
-                                         auth_code_response: Union[str, None], api_options: ThirdPartyApiOptions) -> SignInUpPostResponse:
-        return await self.tp_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options)
+                                         auth_code_response: Union[str, None], api_options: ThirdPartyApiOptions, user_context: any) -> SignInUpPostResponse:
+        return await self.tp_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
 
     async def emailpassword_sign_in_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordApiOptions) -> SignInPostResponse:
-        return await self.ep_sign_in_post(form_fields, api_options)
+                                         api_options: EmailPasswordApiOptions, user_context: any) -> SignInPostResponse:
+        return await self.ep_sign_in_post(form_fields, api_options, user_context)
 
     async def emailpassword_sign_up_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordApiOptions) -> SignUpPostResponse:
-        return await self.ep_sign_up_post(form_fields, api_options)
+                                         api_options: EmailPasswordApiOptions, user_context: any) -> SignUpPostResponse:
+        return await self.ep_sign_up_post(form_fields, api_options, user_context)
 
-    async def authorisation_url_get(self, provider: Provider, api_options: APIOptions) -> AuthorisationUrlGetResponse:
-        return await self.tp_authorisation_url_get(provider, api_options)
+    async def authorisation_url_get(self, provider: Provider, api_options: APIOptions, user_context: any) -> AuthorisationUrlGetResponse:
+        return await self.tp_authorisation_url_get(provider, api_options, user_context)
 
-    async def apple_redirect_handler_post(self, code: str, state: str, api_options: ThirdPartyApiOptions):
-        return await self.tp_apple_redirect_handler_post(code, state, api_options)
+    async def apple_redirect_handler_post(self, code: str, state: str, api_options: ThirdPartyApiOptions, user_context: any):
+        return await self.tp_apple_redirect_handler_post(code, state, api_options, user_context)

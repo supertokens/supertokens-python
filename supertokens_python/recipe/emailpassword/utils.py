@@ -15,10 +15,10 @@ from __future__ import annotations
 
 from os import environ
 from re import fullmatch
-from typing import List, Union, Callable, Awaitable, TYPE_CHECKING
+from typing import List, Union, Callable, Awaitable, TYPE_CHECKING, Any
 
 from .interfaces import RecipeInterface, APIInterface
-from .types import User, FormField, NormalisedFormField, InputFormField
+from .types import User, NormalisedFormField, InputFormField
 
 if TYPE_CHECKING:
     from .recipe import EmailPasswordRecipe
@@ -39,14 +39,6 @@ from supertokens_python.recipe.emailverification.utils import (
 
 async def default_validator(_):
     return None
-
-
-async def default_handle_post_sign_up(_: User, __: List[FormField]):
-    pass
-
-
-async def default_handle_post_sign_in(_: User):
-    pass
 
 
 async def default_password_validator(value) -> Union[str, None]:
@@ -87,8 +79,8 @@ async def default_email_validator(value) -> Union[str, None]:
 
 
 def default_get_reset_password_url(
-        app_info: AppInfo) -> Callable[[User], Awaitable[str]]:
-    async def func(_: User):
+        app_info: AppInfo) -> Callable[[User, Any], Awaitable[str]]:
+    async def func(_: User, __):
         return app_info.website_domain.get_as_string_dangerous(
         ) + app_info.website_base_path.get_as_string_dangerous() + RESET_PASSWORD
 
@@ -96,8 +88,8 @@ def default_get_reset_password_url(
 
 
 def default_create_and_send_custom_email(
-        app_info: AppInfo) -> Callable[[User, str], Awaitable]:
-    async def func(user: User, password_reset_url_with_token: str):
+        app_info: AppInfo) -> Callable[[User, str, Any], Awaitable]:
+    async def func(user: User, password_reset_url_with_token: str, _):
         if ('SUPERTOKENS_ENV' in environ) and (
                 environ['SUPERTOKENS_ENV'] == 'testing'):
             return
@@ -185,8 +177,8 @@ def validate_and_normalise_sign_in_config(
 
 class InputResetPasswordUsingTokenFeature:
     def __init__(self,
-                 get_reset_password_url: Union[Callable[[User], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[User, str], Awaitable], None] = None):
+                 get_reset_password_url: Union[Callable[[User, Any], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[User, str, Any], Awaitable], None] = None):
         self.get_reset_password_url = get_reset_password_url
         self.create_and_send_custom_email = create_and_send_custom_email
 
@@ -195,8 +187,8 @@ class ResetPasswordUsingTokenFeature:
     def __init__(self,
                  form_fields_for_password_reset_form: List[NormalisedFormField],
                  form_fields_for_generate_token_form: List[NormalisedFormField],
-                 get_reset_password_url: Callable[[User], Awaitable[str]],
-                 create_and_send_custom_email: Callable[[User, str], Awaitable]):
+                 get_reset_password_url: Callable[[User, Any], Awaitable[str]],
+                 create_and_send_custom_email: Callable[[User, str, Any], Awaitable]):
         self.form_fields_for_password_reset_form = form_fields_for_password_reset_form
         self.form_fields_for_generate_token_form = form_fields_for_generate_token_form
         self.get_reset_password_url = get_reset_password_url
@@ -221,22 +213,22 @@ def validate_and_normalise_reset_password_using_token_config(app_info: AppInfo, 
 
 def email_verification_create_and_send_custom_email(
         recipe: EmailPasswordRecipe, create_and_send_custom_email):
-    async def func(user, link):
-        user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id)
+    async def func(user, link, user_context):
+        user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id, user_context)
         if user_info is None:
             raise Exception('Unknown User ID provided')
-        return await create_and_send_custom_email(user_info, link)
+        return await create_and_send_custom_email(user_info, link, user_context)
 
     return func
 
 
 def email_verification_get_email_verification_url(
         recipe: EmailPasswordRecipe, get_email_verification_url):
-    async def func(user):
-        user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
+    async def func(user, user_context):
+        user_info = await recipe.recipe_implementation.get_user_by_id(user.id, user_context)
         if user_info is None:
             raise Exception('Unknown User ID provided')
-        return await get_email_verification_url(user_info)
+        return await get_email_verification_url(user_info, user_context)
 
     return func
 

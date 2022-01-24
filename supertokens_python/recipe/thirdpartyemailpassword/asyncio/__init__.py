@@ -16,37 +16,49 @@ from deprecated.classic import deprecated
 from supertokens_python.recipe.thirdpartyemailpassword.recipe import ThirdPartyEmailPasswordRecipe
 
 
-async def create_email_verification_token(user_id: str):
+async def create_email_verification_token(user_id: str, user_context=None):
+    if user_context is None:
+        user_context = {}
+    email = await ThirdPartyEmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
     return await ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.create_email_verification_token(
-        user_id)
+        user_id, email, user_context)
 
 
-async def verify_email_using_token(token: str):
+async def verify_email_using_token(token: str, user_context=None):
+    if user_context is None:
+        user_context = {}
     response = ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
-        token)
+        token, user_context)
 
     if response.is_ok:
-        user_in_this_recipe = await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(response.user.user_id)
+        user_in_this_recipe = await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(response.user.user_id, user_context)
         return user_in_this_recipe
 
     return response
 
 
-async def is_email_verified(user_id: str):
+async def is_email_verified(user_id: str, user_context=None):
+    if user_context is None:
+        user_context = {}
+    email = await ThirdPartyEmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
     return await ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.is_email_verified(
-        user_id)
+        user_id, email, user_context)
 
 
-async def unverify_email(user_id: str):
-    email = ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id).email
+async def unverify_email(user_id: str, user_context=None):
+    if user_context is None:
+        user_context = {}
+    email = await ThirdPartyEmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
     return await ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.unverify_email(
-        user_id, email)
+        user_id, email, user_context)
 
 
-async def revoke_email_verification_tokens(user_id: str):
-    email = ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id).email
+async def revoke_email_verification_tokens(user_id: str, user_context=None):
+    if user_context is None:
+        user_context = {}
+    email = await ThirdPartyEmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
     return await ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.revoke_email_verification_tokens(
-        user_id, email)
+        user_id, email, user_context)
 
 
 @deprecated(reason="Use supertokens_python.get_user_oldest_first(...) function instead IF using core version >= 3.5")
@@ -66,43 +78,65 @@ async def get_user_count():
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_count()
 
 
-async def get_user_by_id(user_id: str):
-    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id)
+async def get_user_by_id(user_id: str, user_context=None):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id, user_context)
 
 
-async def get_user_by_third_party_info(third_party_id: str, third_party_user_id: str):
+async def get_user_by_third_party_info(third_party_id: str, third_party_user_id: str, user_context=None):
+    if user_context is None:
+        user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_third_party_info(
-        third_party_id, third_party_user_id)
+        third_party_id, third_party_user_id, user_context)
 
 
-async def sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool):
+async def sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context=None):
+    if user_context is None:
+        user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_in_up(third_party_id,
                                                                                                third_party_user_id,
-                                                                                               email, email_verified)
+                                                                                               email, email_verified,
+                                                                                               user_context)
 
 
-async def create_reset_password_token(user_id: str):
-    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.create_reset_password_token(user_id)
+async def create_reset_password_token(user_id: str, user_context=None):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.create_reset_password_token(user_id,
+                                                                                                                user_context)
 
 
-async def reset_password_using_token(token: str, new_password: str):
+async def reset_password_using_token(token: str, new_password: str, user_context=None):
+    if user_context is None:
+        user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(token,
-                                                                                                               new_password)
+                                                                                                               new_password,
+                                                                                                               user_context)
 
 
-async def sign_in(email: str, password: str):
-    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_in(email, password)
+async def sign_in(email: str, password: str, user_context=None):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_in(email, password, user_context)
 
 
-async def sign_up(email: str, password: str):
-    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_up(email, password)
+async def sign_up(email: str, password: str, user_context=None):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_up(email, password, user_context)
 
 
-async def update_email_or_password(user_id: str, email: str = None, password: str = None):
+async def update_email_or_password(user_id: str, email: str = None, password: str = None, user_context=None):
+    if user_context is None:
+        user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id,
+                                                                                                             user_context,
                                                                                                              email,
                                                                                                              password)
 
 
-async def get_users_by_email(email: str):
-    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_by_email(email)
+async def get_users_by_email(email: str, user_context=None):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_by_email(email, user_context)

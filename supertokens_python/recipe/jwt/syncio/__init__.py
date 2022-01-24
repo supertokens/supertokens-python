@@ -11,15 +11,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python.recipe.jwt.recipe import JWTRecipe
 from supertokens_python.recipe.jwt.types import CreateJwtResult, GetJWKSResult
 import supertokens_python.recipe.jwt.asyncio as asyncio
 from supertokens_python.async_to_sync_wrapper import sync
 
 
-def create_jwt(payload: dict, validity_seconds: int = None) -> [CreateJwtResult, None]:
-    return sync(asyncio.create_jwt(payload, validity_seconds))
+def create_jwt(payload: dict, validity_seconds: int = None, user_context=None) -> [CreateJwtResult, None]:
+    if user_context is None:
+        user_context = {}
+    return sync(asyncio.create_jwt(payload, validity_seconds, user_context))
 
 
-def get_jwks() -> [GetJWKSResult, None]:
-    return sync(asyncio.get_jwks())
+def get_jwks(user_context=None) -> [GetJWKSResult, None]:
+    if user_context is None:
+        user_context = {}
+    return sync(asyncio.get_jwks(user_context))

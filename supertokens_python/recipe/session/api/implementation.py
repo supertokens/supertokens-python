@@ -28,12 +28,12 @@ class APIImplementation(APIInterface):
     def __init__(self):
         super().__init__()
 
-    async def refresh_post(self, api_options: APIOptions):
-        await api_options.recipe_implementation.refresh_session(api_options.request)
+    async def refresh_post(self, api_options: APIOptions, user_context: any):
+        await api_options.recipe_implementation.refresh_session(api_options.request, user_context)
 
-    async def signout_post(self, api_options: APIOptions) -> SignOutResponse:
+    async def signout_post(self, api_options: APIOptions, user_context: any) -> SignOutResponse:
         try:
-            session = await api_options.recipe_implementation.get_session(api_options.request)
+            session = await api_options.recipe_implementation.get_session(api_options.request, user_context)
         except UnauthorisedError:
             return SignOutOkayResponse()
 
@@ -42,7 +42,7 @@ class APIImplementation(APIInterface):
         await session.revoke_session()
         return SignOutOkayResponse()
 
-    async def verify_session(self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None,
+    async def verify_session(self, api_options: APIOptions, user_context: any, anti_csrf_check: Union[bool, None] = None,
                              session_required: bool = True) -> Union[Session, None]:
         method = normalise_http_method(api_options.request.method())
         if method == 'options' or method == 'trace':
@@ -50,7 +50,8 @@ class APIImplementation(APIInterface):
         incoming_path = NormalisedURLPath(api_options.request.get_path())
         refresh_token_path = api_options.config.refresh_token_path
         if incoming_path.equals(refresh_token_path) and method == 'post':
-            return await api_options.recipe_implementation.refresh_session(api_options.request)
+            return await api_options.recipe_implementation.refresh_session(api_options.request, user_context)
         else:
-            return await api_options.recipe_implementation.get_session(api_options.request, anti_csrf_check,
+            return await api_options.recipe_implementation.get_session(api_options.request, user_context,
+                                                                       anti_csrf_check,
                                                                        session_required)

@@ -53,20 +53,21 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str) -> Union[User, None]:
+    async def get_user_by_id(self, user_id: str, user_context: any) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_users_by_email(self, email: str) -> List[User]:
+    async def get_users_by_email(self, email: str, user_context: any) -> List[User]:
         pass
 
     @abstractmethod
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str) -> Union[User, None]:
+    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str,
+                                          user_context: any) -> Union[User, None]:
         pass
 
     @abstractmethod
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool) -> SignInUpResult:
+                         email_verified: bool, user_context: any) -> SignInUpResult:
         pass
 
     @abstractmethod
@@ -211,12 +212,14 @@ class APIInterface:
         self.disable_authorisation_url_get = False
         self.disable_apple_redirect_handler_post = False
 
-    async def authorisation_url_get(self, provider: Provider, api_options: APIOptions) -> AuthorisationUrlGetResponse:
+    async def authorisation_url_get(self, provider: Provider,
+                                    api_options: APIOptions, user_context: any) -> AuthorisationUrlGetResponse:
         pass
 
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None],
-                              auth_code_response: Union[str, None], api_options: APIOptions) -> SignInUpPostResponse:
+                              auth_code_response: Union[str, None], api_options: APIOptions,
+                              user_context: any) -> SignInUpPostResponse:
         pass
 
-    async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions):
+    async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions, user_context: any):
         pass

@@ -42,7 +42,7 @@ async def consume_code(api_implementation: APIInterface, api_options: APIOptions
 
     pre_auth_session_id = body['preAuthSessionId']
     result = await api_implementation.consume_code_post(
-        pre_auth_session_id, user_input_code, device_id, link_code, api_options)
+        pre_auth_session_id, user_input_code, device_id, link_code, api_options, {})
     api_options.response.set_json_content(result.to_json())
 
     return api_options.response

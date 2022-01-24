@@ -16,29 +16,29 @@ from deprecated.classic import deprecated
 from supertokens_python.async_to_sync_wrapper import sync
 
 
-def create_email_verification_token(user_id: str):
+def create_email_verification_token(user_id: str, user_context=None):
     from supertokens_python.recipe.thirdparty.asyncio import create_email_verification_token
-    return sync(create_email_verification_token(user_id))
+    return sync(create_email_verification_token(user_id, user_context))
 
 
-def verify_email_using_token(token: str):
+def verify_email_using_token(token: str, user_context=None):
     from supertokens_python.recipe.thirdparty.asyncio import verify_email_using_token
-    return sync(verify_email_using_token(token))
+    return sync(verify_email_using_token(token, user_context))
 
 
-def is_email_verified(user_id: str):
+def is_email_verified(user_id: str, user_context=None):
     from supertokens_python.recipe.thirdparty.asyncio import is_email_verified
-    return sync(is_email_verified(user_id))
+    return sync(is_email_verified(user_id, user_context))
 
 
-def unverify_email(user_id: str):
+def unverify_email(user_id: str, user_context=None):
     from supertokens_python.recipe.thirdparty.asyncio import unverify_email
-    return sync(unverify_email(user_id))
+    return sync(unverify_email(user_id, user_context))
 
 
-async def revoke_email_verification_tokens(user_id: str):
+async def revoke_email_verification_tokens(user_id: str, user_context=None):
     from supertokens_python.recipe.thirdparty.asyncio import revoke_email_verification_tokens
-    return sync(revoke_email_verification_tokens(user_id))
+    return sync(revoke_email_verification_tokens(user_id, user_context))
 
 
 @deprecated(reason="Use supertokens_python.get_user_oldest_first(...) function instead IF using core version >= 3.5")
@@ -59,25 +59,25 @@ def get_user_count():
     return sync(get_user_count())
 
 
-def get_user_by_id(user_id: str):
+def get_user_by_id(user_id: str, user_context=None):
     from supertokens_python.recipe.thirdparty.asyncio import get_user_by_id
-    return sync(get_user_by_id(user_id))
+    return sync(get_user_by_id(user_id, user_context))
 
 
-async def get_users_by_email(email: str):
+async def get_users_by_email(email: str, user_context=None):
     from supertokens_python.recipe.thirdparty.asyncio import get_users_by_email
-    return sync(get_users_by_email(email))
+    return sync(get_users_by_email(email, user_context))
 
 
 def get_user_by_third_party_info(
-        third_party_id: str, third_party_user_id: str):
+        third_party_id: str, third_party_user_id: str, user_context=None):
     from supertokens_python.recipe.thirdparty.asyncio import get_user_by_third_party_info
     return sync(get_user_by_third_party_info(
-        third_party_id, third_party_user_id))
+        third_party_id, third_party_user_id, user_context))
 
 
 def sign_in_up(third_party_id: str, third_party_user_id: str,
-               email: str, email_verified: bool):
+               email: str, email_verified: bool, user_context=None):
     from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
     return sync(sign_in_up(third_party_id,
-                           third_party_user_id, email, email_verified))
+                           third_party_user_id, email, email_verified, user_context))

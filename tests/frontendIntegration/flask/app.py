@@ -120,7 +120,7 @@ def apis_override_session(param):
 def functions_override_session(param):
     original_create_new_session = param.create_new_session
 
-    async def create_new_session_custom(_request, user_id, access_token_payload: Union[dict, None] = None,
+    async def create_new_session_custom(_request, user_id, user_context: any, access_token_payload: Union[dict, None] = None,
                                         session_data: Union[dict, None] = None) -> Session:
         if access_token_payload is None:
             access_token_payload = {}
@@ -128,7 +128,7 @@ def functions_override_session(param):
             **access_token_payload,
             'customClaim': 'customValue'
         }
-        return await original_create_new_session(_request, user_id, access_token_payload, session_data)
+        return await original_create_new_session(_request, user_id, user_context, access_token_payload, session_data)
     param.create_new_session = create_new_session_custom
 
     return param

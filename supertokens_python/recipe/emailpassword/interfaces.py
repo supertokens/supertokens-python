@@ -159,27 +159,27 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str) -> Union[User, None]:
+    async def get_user_by_id(self, user_id: str, user_context: any) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_user_by_email(self, email: str) -> Union[User, None]:
+    async def get_user_by_email(self, email: str, user_context: any) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def create_reset_password_token(self, user_id: str) -> CreateResetPasswordResult:
+    async def create_reset_password_token(self, user_id: str, user_context: any) -> CreateResetPasswordResult:
         pass
 
     @abstractmethod
-    async def reset_password_using_token(self, token: str, new_password: str) -> ResetPasswordUsingTokenResult:
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: any) -> ResetPasswordUsingTokenResult:
         pass
 
     @abstractmethod
-    async def sign_in(self, email: str, password: str) -> SignInResult:
+    async def sign_in(self, email: str, password: str, user_context: any) -> SignInResult:
         pass
 
     @abstractmethod
-    async def sign_up(self, email: str, password: str) -> SignUpResult:
+    async def sign_up(self, email: str, password: str, user_context: any) -> SignUpResult:
         pass
 
     @abstractmethod
@@ -195,7 +195,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def update_email_or_password(self, user_id: str, email: Union[str, None] = None,
+    async def update_email_or_password(self, user_id: str, user_context: any, email: Union[str, None] = None,
                                        password: Union[str, None] = None) -> UpdateEmailOrPasswordResult:
         pass
 
@@ -435,19 +435,24 @@ class APIInterface:
         self.disable_sign_in_post = False
         self.disable_sign_up_post = False
 
-    async def email_exists_get(self, email: str, api_options: APIOptions) -> EmailExistsGetResponse:
+    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: any) -> EmailExistsGetResponse:
         pass
 
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
-                                                 api_options: APIOptions) -> GeneratePasswordResetTokenPostResponse:
+                                                 api_options: APIOptions,
+                                                 user_context: any) -> GeneratePasswordResetTokenPostResponse:
         pass
 
     async def password_reset_post(self, form_fields: List[FormField], token: str,
-                                  api_options: APIOptions) -> PasswordResetPostResponse:
+                                  api_options: APIOptions, user_context: any) -> PasswordResetPostResponse:
         pass
 
-    async def sign_in_post(self, form_fields: List[FormField], api_options: APIOptions) -> SignInPostResponse:
+    async def sign_in_post(self, form_fields: List[FormField],
+                           api_options: APIOptions,
+                           user_context: any) -> SignInPostResponse:
         pass
 
-    async def sign_up_post(self, form_fields: List[FormField], api_options: APIOptions) -> SignUpPostResponse:
+    async def sign_up_post(self, form_fields: List[FormField],
+                           api_options: APIOptions,
+                           user_context: any) -> SignUpPostResponse:
         pass

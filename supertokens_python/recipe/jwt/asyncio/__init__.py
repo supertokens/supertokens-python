@@ -15,9 +15,13 @@ from supertokens_python.recipe.jwt.recipe import JWTRecipe
 from supertokens_python.recipe.jwt.types import CreateJwtResult, GetJWKSResult
 
 
-async def create_jwt(payload: dict, validity_seconds: int = None) -> [CreateJwtResult, None]:
-    return await JWTRecipe.get_instance().recipe_implementation.create_jwt(payload, validity_seconds)
+async def create_jwt(payload: dict, validity_seconds: int = None, user_context=None) -> [CreateJwtResult, None]:
+    if user_context is None:
+        user_context = {}
+    return await JWTRecipe.get_instance().recipe_implementation.create_jwt(user_context, payload, validity_seconds)
 
 
-async def get_jwks() -> [GetJWKSResult, None]:
-    return await JWTRecipe.get_instance().recipe_implementation.get_jwks()
+async def get_jwks(user_context=None) -> [GetJWKSResult, None]:
+    if user_context is None:
+        user_context = {}
+    return await JWTRecipe.get_instance().recipe_implementation.get_jwks(user_context)

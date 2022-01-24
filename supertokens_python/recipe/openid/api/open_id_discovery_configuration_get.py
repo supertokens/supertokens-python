@@ -18,7 +18,7 @@ async def open_id_discovery_configuration_get(api_implementation: APIInterface, 
     if api_implementation.disable_open_id_discovery_configuration_get:
         return None
 
-    result = await api_implementation.open_id_discovery_configuration_get(api_options)
+    result = await api_implementation.open_id_discovery_configuration_get(api_options, {})
     api_options.response.set_header("Access-Control-Allow-Origin", "*")
     api_options.response.set_json_content(result.to_json())
 

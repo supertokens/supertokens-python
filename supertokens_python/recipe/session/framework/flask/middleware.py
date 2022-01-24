@@ -20,7 +20,10 @@ from supertokens_python.framework.flask.flask_request import FlaskRequest
 from supertokens_python.recipe.session import SessionRecipe
 
 
-def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
+def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context=None):
+    if user_context is None:
+        user_context = {}
+
     def session_verify(f):
         @wraps(f)
         def wrapped_function(*args, **kwargs):
@@ -30,6 +33,7 @@ def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: 
             session = sync(
                 recipe.verify_session(
                     request,
+                    user_context,
                     anti_csrf_check,
                     session_required))
             request.set_session(session)

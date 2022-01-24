@@ -70,7 +70,7 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
         except Exception:
             phone_number = phone_number.strip()
     result = await api_implementation.create_code_post(
-        email=email, phone_number=phone_number, api_options=api_options)
+        email=email, phone_number=phone_number, api_options=api_options, user_context={})
     api_options.response.set_json_content(result.to_json())
 
     return api_options.response

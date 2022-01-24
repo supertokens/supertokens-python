@@ -70,8 +70,8 @@ class RecipeImplementation(RecipeInterface):
             self.tp_get_user_count = thirdparty_implementation.get_user_count
             thirdparty_implementation = DerivedThirdPartyImplementation(self)
 
-    async def get_user_by_id(self, user_id: str) -> Union[User, None]:
-        user = await self.ep_get_user_by_id(user_id)
+    async def get_user_by_id(self, user_id: str, user_context: any) -> Union[User, None]:
+        user = await self.ep_get_user_by_id(user_id, user_context)
 
         if user is not None:
             return user
@@ -80,41 +80,41 @@ class RecipeImplementation(RecipeInterface):
 
         return await self.tp_get_user_by_id(user_id)
 
-    async def get_users_by_email(self, email: str) -> List[User]:
-        user = await self.ep_get_user_by_email(email)
+    async def get_users_by_email(self, email: str, user_context: any) -> List[User]:
+        user = await self.ep_get_user_by_email(email, user_context)
 
         if self.tp_get_users_by_email is None:
             return [user] if user is not None else []
 
-        users = await self.tp_get_users_by_email(email)
+        users = await self.tp_get_users_by_email(email, user_context)
 
         if user is not None:
             users.append(user)
 
         return users
 
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str) -> Union[User, None]:
-        return await self.tp_get_user_by_thirdparty_info(third_party_id, third_party_user_id)
+    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: any) -> Union[User, None]:
+        return await self.tp_get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool) -> SignInUpResult:
-        return await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified)
+                         email_verified: bool, user_context: any) -> SignInUpResult:
+        return await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
 
-    async def sign_in(self, email: str, password: str) -> SignInResult:
-        return await self.ep_sign_in(email, password)
+    async def sign_in(self, email: str, password: str, user_context: any) -> SignInResult:
+        return await self.ep_sign_in(email, password, user_context)
 
-    async def sign_up(self, email: str, password: str) -> SignUpResult:
-        return await self.ep_sign_up(email, password)
+    async def sign_up(self, email: str, password: str, user_context: any) -> SignUpResult:
+        return await self.ep_sign_up(email, password, user_context)
 
-    async def create_reset_password_token(self, user_id: str) -> CreateResetPasswordResult:
-        return await self.ep_create_reset_password_token(user_id)
+    async def create_reset_password_token(self, user_id: str, user_context: any) -> CreateResetPasswordResult:
+        return await self.ep_create_reset_password_token(user_id, user_context)
 
-    async def reset_password_using_token(self, token: str, new_password: str) -> ResetPasswordUsingTokenResult:
-        return await self.ep_reset_password_using_token(token, new_password)
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: any) -> ResetPasswordUsingTokenResult:
+        return await self.ep_reset_password_using_token(token, new_password, user_context)
 
-    async def update_email_or_password(self, user_id: str, email: str = None,
+    async def update_email_or_password(self, user_id: str, user_context: any, email: str = None,
                                        password: str = None) -> UpdateEmailOrPasswordResult:
-        return await self.ep_update_email_or_password(user_id, email, password)
+        return await self.ep_update_email_or_password(user_id, user_context, email, password)
 
     @deprecated(reason="This method is deprecated")
     async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:

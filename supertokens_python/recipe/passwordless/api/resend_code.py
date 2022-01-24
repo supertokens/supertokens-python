@@ -29,7 +29,7 @@ async def resend_code(api_implementation: APIInterface, api_options: APIOptions)
     pre_auth_session_id = body['preAuthSessionId']
     device_id = body['deviceId']
 
-    result = await api_implementation.resend_code_post(device_id, pre_auth_session_id, api_options)
+    result = await api_implementation.resend_code_post(device_id, pre_auth_session_id, api_options, {})
     api_options.response.set_json_content(result.to_json())
 
     return api_options.response

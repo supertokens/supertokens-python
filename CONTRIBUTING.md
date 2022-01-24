@@ -14,7 +14,7 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 
 ## Development Setup
 
-You will need to setup the `supertokens-core` in order to to run the `supertokens-python` tests, you can setup `supertokens-core` by following this [guide](https://github.com/supertokens/supertokens-core/blob/master/CONTRIBUTING.md#development-setup)  
+You will need to setup the `supertokens-core` in order to run the `supertokens-python` tests, you can setup `supertokens-core` by following this [guide](https://github.com/supertokens/supertokens-core/blob/master/CONTRIBUTING.md#development-setup)  
 **Note: If you are not contributing to the `supertokens-core` you can skip steps 1 & 4 under Project Setup of the `supertokens-core` contributing guide.**
 
 ### Prerequisites
