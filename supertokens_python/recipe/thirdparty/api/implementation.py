@@ -125,10 +125,10 @@ class APIImplementation(APIInterface):
         signinup_response = await api_options.recipe_implementation.sign_in_up(provider.id, user_info.user_id, email,
                                                                                email_verified, user_context)
         user = signinup_response.user
-        await create_new_session(api_options.request, user.user_id, user_context=user_context)
+        session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
 
         return SignInUpPostOkResponse(
-            user, signinup_response.created_new_user, access_token_response)
+            user, signinup_response.created_new_user, access_token_response, session)
 
     async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions, user_context: any):
         app_info = api_options.app_info

@@ -89,8 +89,8 @@ class APIImplementation(APIInterface):
             return SignInPostWrongCredentialsErrorResponse()
 
         user = result.user
-        await create_new_session(api_options.request, user.user_id, user_context=user_context)
-        return SignInPostOkResponse(user)
+        session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
+        return SignInPostOkResponse(user, session)
 
     async def sign_up_post(self, form_fields: List[FormField], api_options: APIOptions, user_context: any) -> SignUpPostResponse:
         password = find_first_occurrence_in_list(
@@ -104,5 +104,5 @@ class APIImplementation(APIInterface):
             return SignUpPostEmailAlreadyExistsErrorResponse()
 
         user = result.user
-        await create_new_session(api_options.request, user.user_id, user_context=user_context)
-        return SignUpPostOkResponse(user)
+        session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
+        return SignUpPostOkResponse(user, session)

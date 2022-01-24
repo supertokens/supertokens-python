@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking Change
 - User context property added for all recipes' apis and functions
 
+### Added
+- Returns session from all APIs where a session is created
+
 ## [0.4.0] - 2022-01-09
 
 ### Added

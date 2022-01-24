@@ -42,7 +42,7 @@ def get_interface_impl(
                 if result.user.third_party_info is None:
                     raise Exception('Should never come here')
                 return SignInUpPostOkResponse(
-                    result.user, result.created_new_user, result.auth_code_response)
+                    result.user, result.created_new_user, result.auth_code_response, result.session)
 
             elif result.status == 'NO_EMAIL_GIVEN_BY_PROVIDER':
                 return SignInUpPostNoEmailGivenByProviderResponse()

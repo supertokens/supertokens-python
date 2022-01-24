@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from .utils import ThirdPartyConfig
     from .types import User, UsersResponse
     from supertokens_python.supertokens import AppInfo
+    from supertokens_python.recipe.session import Session
 
 
 class SignInUpResult(ABC):
@@ -99,7 +100,8 @@ class APIOptions:
 class SignInUpPostResponse(ABC):
     def __init__(self, status: Literal['OK', 'NO_EMAIL_GIVEN_BY_PROVIDER', 'FIELD_ERROR'], user: Union[User, None] = None,
                  created_new_user: Union[bool, None] = None, auth_code_response: any = None,
-                 error: Union[str, None] = None):
+                 error: Union[str, None] = None,
+                 session: Union[Session, None] = None):
         self.type = 'thirdparty'
         self.status = status
         self.is_ok = False
@@ -109,6 +111,7 @@ class SignInUpPostResponse(ABC):
         self.created_new_user = created_new_user
         self.error = error
         self.auth_code_response = auth_code_response
+        self.session = session
 
     @abstractmethod
     def to_json(self):
@@ -146,8 +149,9 @@ class PasswordResetResponse(ABC):
 
 class SignInUpPostOkResponse(SignInUpPostResponse):
     def __init__(self, user: User, created_new_user: bool,
-                 auth_code_response: any):
-        super().__init__('OK', user, created_new_user, auth_code_response)
+                 auth_code_response: any,
+                 session: Session):
+        super().__init__('OK', user, created_new_user, auth_code_response, session=session)
         self.is_ok = True
 
     def to_json(self):
