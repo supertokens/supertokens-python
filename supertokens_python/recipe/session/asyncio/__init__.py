@@ -28,6 +28,7 @@ async def create_new_session(request, user_id: str, access_token_payload: Union[
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(request, user_id,
+                                                                                       user_context,
                                                                                        access_token_payload,
                                                                                        session_data)
 
