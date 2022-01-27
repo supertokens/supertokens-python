@@ -11,7 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union, Literal
+from typing import Union
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from .session_class import Session
 from .recipe import SessionRecipe
