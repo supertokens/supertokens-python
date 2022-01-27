@@ -15,7 +15,11 @@ import json
 import os
 import sys
 from functools import wraps
-from typing import Literal, Union
+from typing import Union
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from flask import Flask, request, make_response, Response, jsonify, render_template, g
 from flask_cors import CORS
