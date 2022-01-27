@@ -464,7 +464,7 @@ class Supertokens:
 <dl>
 <dt id="supertokens_python.supertokens.AppInfo"><code class="flex name class">
 <span>class <span class="ident">AppInfo</span></span>
-<span>(</span><span>app_name: str, api_domain: str, website_domain: str, framework: "Literal['fastapi', 'flask', 'django']", api_gateway_path: str = '', api_base_path: str = '/auth', website_base_path: str = '/auth', mode: "Union[Literal['asgi', 'wsgi'], None]" = None)</span>
+<span>(</span><span>app_name: str, api_domain: str, website_domain: str, framework: "Literal[('fastapi', 'flask', 'django')]", api_gateway_path: str = '', api_base_path: str = '/auth', website_base_path: str = '/auth', mode: "Union[Literal[('asgi', 'wsgi')], None]" = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -522,7 +522,7 @@ class Supertokens:
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens"><code class="flex name class">
 <span>class <span class="ident">Supertokens</span></span>
-<span>(</span><span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: "Literal['fastapi', 'flask', 'django']", supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="#supertokens_python.supertokens.AppInfo">AppInfo</a>], RecipeModule]], mode: "Union[Literal['asgi', 'wsgi'], None]" = None, telemetry: Union[bool, None] = None)</span>
+<span>(</span><span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: "Literal[('fastapi', 'flask', 'django')]", supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="#supertokens_python.supertokens.AppInfo">AppInfo</a>], RecipeModule]], mode: "Union[Literal[('asgi', 'wsgi')], None]" = None, telemetry: Union[bool, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -777,7 +777,7 @@ def get_instance() -&gt; Supertokens:
 </details>
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: "Literal['fastapi', 'flask', 'django']", supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="#supertokens_python.supertokens.AppInfo">AppInfo</a>], RecipeModule]], mode: "Union[Literal['asgi', 'wsgi'], None]" = None, telemetry: Union[bool, None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>app_info: <a title="supertokens_python.supertokens.InputAppInfo" href="#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a>, framework: "Literal[('fastapi', 'flask', 'django')]", supertokens_config: <a title="supertokens_python.supertokens.SupertokensConfig" href="#supertokens_python.supertokens.SupertokensConfig">SupertokensConfig</a>, recipe_list: List[Callable[[<a title="supertokens_python.supertokens.AppInfo" href="#supertokens_python.supertokens.AppInfo">AppInfo</a>], RecipeModule]], mode: "Union[Literal[('asgi', 'wsgi')], None]" = None, telemetry: Union[bool, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -887,7 +887,7 @@ def reset():
 </details>
 </dd>
 <dt id="supertokens_python.supertokens.Supertokens.get_users"><code class="name flex">
-<span>async def <span class="ident">get_users</span></span>(<span>self, time_joined_order: "Literal['ASC', 'DESC']", limit: Union[int, None] = None, pagination_token: Union[str, None] = None, include_recipe_ids: List[str] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
+<span>async def <span class="ident">get_users</span></span>(<span>self, time_joined_order: "Literal[('ASC', 'DESC')]", limit: Union[int, None] = None, pagination_token: Union[str, None] = None, include_recipe_ids: List[str] = None) ‑> <a title="supertokens_python.types.UsersResponse" href="types.html#supertokens_python.types.UsersResponse">UsersResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
