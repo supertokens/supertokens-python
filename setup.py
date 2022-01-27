@@ -46,7 +46,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.4.0",
+    version="0.4.1",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.io",
@@ -57,7 +57,6 @@ setup(
     packages=find_packages(exclude=exclude_list),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Intended Audience :: Developers",
