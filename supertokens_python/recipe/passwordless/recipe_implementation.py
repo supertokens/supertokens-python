@@ -36,7 +36,7 @@ class RecipeImplementation(RecipeInterface):
         super().__init__()
         self.querier = querier
 
-    async def create_code(self, email: Union[None, str] = None, phone_number: Union[None, str] = None,
+    async def create_code(self, user_context: any, email: Union[None, str] = None, phone_number: Union[None, str] = None,
                           user_input_code: Union[None, str] = None) -> CreateCodeResult:
         data = {}
         if user_input_code is not None:
@@ -65,7 +65,7 @@ class RecipeImplementation(RecipeInterface):
             code_life_time=result['codeLifetime'],
         )
 
-    async def create_new_code_for_device(self, device_id: str,
+    async def create_new_code_for_device(self, user_context: any, device_id: str,
                                          user_input_code: Union[str, None] = None) -> CreateNewCodeForDeviceResult:
         data = {
             'deviceId': device_id
@@ -90,7 +90,8 @@ class RecipeImplementation(RecipeInterface):
             time_created=result['timeCreated']
         )
 
-    async def consume_code(self, pre_auth_session_id: str, user_input_code: Union[str, None] = None,
+    async def consume_code(self, pre_auth_session_id: str, user_context: any,
+                           user_input_code: Union[str, None] = None,
                            device_id: Union[str, None] = None, link_code: Union[str, None] = None) -> ConsumeCodeResult:
         data = {
             'preAuthSessionId': pre_auth_session_id
@@ -131,7 +132,7 @@ class RecipeImplementation(RecipeInterface):
             maximum_code_input_attempts=result['maximumCodeInputAttempts']
         )
 
-    async def get_user_by_id(self, user_id: str) -> Union[User, None]:
+    async def get_user_by_id(self, user_id: str, user_context: any) -> Union[User, None]:
         param = {
             'userId': user_id
         }
@@ -149,7 +150,7 @@ class RecipeImplementation(RecipeInterface):
                         time_joined=result['user']['timeJoined'])
         return None
 
-    async def get_user_by_email(self, email: str) -> Union[User, None]:
+    async def get_user_by_email(self, email: str, user_context: any) -> Union[User, None]:
         param = {
             'email': email
         }
@@ -167,7 +168,7 @@ class RecipeImplementation(RecipeInterface):
                         time_joined=result['user']['timeJoined'])
         return None
 
-    async def get_user_by_phone_number(self, phone_number: str) -> Union[User, None]:
+    async def get_user_by_phone_number(self, phone_number: str, user_context: any) -> Union[User, None]:
         param = {
             'phoneNumber': phone_number
         }
@@ -185,7 +186,7 @@ class RecipeImplementation(RecipeInterface):
                         time_joined=result['user']['timeJoined'])
         return None
 
-    async def update_user(self, user_id: str, email: Union[str, None] = None,
+    async def update_user(self, user_id: str, user_context: any, email: Union[str, None] = None,
                           phone_number: Union[str, None] = None) -> UpdateUserResult:
         data = {
             'userId': user_id
@@ -209,7 +210,7 @@ class RecipeImplementation(RecipeInterface):
             return UpdateUserEmailAlreadyExistsErrorResult()
         return UpdateUserPhoneNumberAlreadyExistsErrorResult()
 
-    async def revoke_all_codes(self, email: Union[str, None] = None,
+    async def revoke_all_codes(self, user_context: any, email: Union[str, None] = None,
                                phone_number: Union[str, None] = None) -> RevokeAllCodesResult:
         data = {}
         if email is not None:
@@ -225,14 +226,14 @@ class RecipeImplementation(RecipeInterface):
         await self.querier.send_post_request(NormalisedURLPath('/recipe/signinup/codes/remove'), data)
         return RevokeAllCodesOkResult()
 
-    async def revoke_code(self, code_id: str) -> RevokeCodeResult:
+    async def revoke_code(self, code_id: str, user_context: any) -> RevokeCodeResult:
         data = {
             'codeId': code_id
         }
         await self.querier.send_post_request(NormalisedURLPath('/recipe/signinup/code/remove'), data)
         return RevokeCodeOkResult()
 
-    async def list_codes_by_email(self, email: str) -> List[DeviceType]:
+    async def list_codes_by_email(self, email: str, user_context: any) -> List[DeviceType]:
         param = {
             'email': email
         }
@@ -263,7 +264,7 @@ class RecipeImplementation(RecipeInterface):
                 ))
         return devices
 
-    async def list_codes_by_phone_number(self, phone_number: str) -> List[DeviceType]:
+    async def list_codes_by_phone_number(self, phone_number: str, user_context: any) -> List[DeviceType]:
         param = {
             'phoneNumber': phone_number
         }
@@ -294,7 +295,7 @@ class RecipeImplementation(RecipeInterface):
                 ))
         return devices
 
-    async def list_codes_by_device_id(self, device_id: str) -> Union[DeviceType, None]:
+    async def list_codes_by_device_id(self, device_id: str, user_context: any) -> Union[DeviceType, None]:
         param = {
             'deviceId': device_id
         }
@@ -323,7 +324,7 @@ class RecipeImplementation(RecipeInterface):
             )
         return None
 
-    async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str) -> Union[DeviceType, None]:
+    async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str, user_context: any) -> Union[DeviceType, None]:
         param = {
             'preAuthSessionId': pre_auth_session_id
         }

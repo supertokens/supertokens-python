@@ -50,7 +50,7 @@ class APIImplementation(APIInterface):
     def __init__(self):
         super().__init__()
 
-    async def authorisation_url_get(self, provider: Provider, api_options: APIOptions) -> AuthorisationUrlGetResponse:
+    async def authorisation_url_get(self, provider: Provider, api_options: APIOptions, user_context: any) -> AuthorisationUrlGetResponse:
         authorisation_url_info = provider.get_authorisation_redirect_api_info()
 
         params = {}
@@ -82,7 +82,8 @@ class APIImplementation(APIInterface):
         return AuthorisationUrlGetOkResponse(url)
 
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None],
-                              auth_code_response: Union[str, None], api_options: APIOptions) -> SignInUpPostResponse:
+                              auth_code_response: Union[str, None], api_options: APIOptions,
+                              user_context: any) -> SignInUpPostResponse:
         if is_using_oauth_development_client_id(provider.client_id):
             redirect_uri = DEV_OAUTH_REDIRECT_URL
         elif provider.get_redirect_uri() is not None:
@@ -122,14 +123,14 @@ class APIImplementation(APIInterface):
             return SignInUpPostNoEmailGivenByProviderResponse()
 
         signinup_response = await api_options.recipe_implementation.sign_in_up(provider.id, user_info.user_id, email,
-                                                                               email_verified)
+                                                                               email_verified, user_context)
         user = signinup_response.user
-        await create_new_session(api_options.request, user.user_id)
+        session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
 
         return SignInUpPostOkResponse(
-            user, signinup_response.created_new_user, access_token_response)
+            user, signinup_response.created_new_user, access_token_response, session)
 
-    async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions):
+    async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions, user_context: any):
         app_info = api_options.app_info
         redirect_uri = app_info.website_domain.get_as_string_dangerous() + app_info.website_base_path.get_as_string_dangerous() + '/callback/apple?state=' + state + '&code=' + code
         html_content = '<html><head><script>window.location.replace("' + redirect_uri + '");</script></head></html>'

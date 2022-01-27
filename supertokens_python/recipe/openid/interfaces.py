@@ -58,15 +58,15 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -> CreateJwtResult:
+    async def create_jwt(self, user_context: any, payload: dict = None, validity_seconds: int = None) -> CreateJwtResult:
         pass
 
     @abstractmethod
-    async def get_jwks(self) -> GetJWKSResult:
+    async def get_jwks(self, user_context: any) -> GetJWKSResult:
         pass
 
     @abstractmethod
-    async def get_open_id_discovery_configuration(self) -> GetOpenIdDiscoveryConfigurationResult:
+    async def get_open_id_discovery_configuration(self, user_context: any) -> GetOpenIdDiscoveryConfigurationResult:
         pass
 
 
@@ -100,5 +100,6 @@ class APIInterface:
         self.disable_open_id_discovery_configuration_get = False
 
     @abstractmethod
-    async def open_id_discovery_configuration_get(self, api_options: APIOptions) -> OpenIdDiscoveryConfigurationGetResponse:
+    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: any) ->\
+            OpenIdDiscoveryConfigurationGetResponse:
         pass

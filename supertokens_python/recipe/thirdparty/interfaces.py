@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from .utils import ThirdPartyConfig
     from .types import User, UsersResponse
     from supertokens_python.supertokens import AppInfo
+    from supertokens_python.recipe.session import Session
 
 
 class SignInUpResult(ABC):
@@ -53,20 +54,21 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str) -> Union[User, None]:
+    async def get_user_by_id(self, user_id: str, user_context: any) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_users_by_email(self, email: str) -> List[User]:
+    async def get_users_by_email(self, email: str, user_context: any) -> List[User]:
         pass
 
     @abstractmethod
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str) -> Union[User, None]:
+    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str,
+                                          user_context: any) -> Union[User, None]:
         pass
 
     @abstractmethod
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool) -> SignInUpResult:
+                         email_verified: bool, user_context: any) -> SignInUpResult:
         pass
 
     @abstractmethod
@@ -98,7 +100,8 @@ class APIOptions:
 class SignInUpPostResponse(ABC):
     def __init__(self, status: Literal['OK', 'NO_EMAIL_GIVEN_BY_PROVIDER', 'FIELD_ERROR'], user: Union[User, None] = None,
                  created_new_user: Union[bool, None] = None, auth_code_response: any = None,
-                 error: Union[str, None] = None):
+                 error: Union[str, None] = None,
+                 session: Union[Session, None] = None):
         self.type = 'thirdparty'
         self.status = status
         self.is_ok = False
@@ -108,6 +111,7 @@ class SignInUpPostResponse(ABC):
         self.created_new_user = created_new_user
         self.error = error
         self.auth_code_response = auth_code_response
+        self.session = session
 
     @abstractmethod
     def to_json(self):
@@ -145,8 +149,9 @@ class PasswordResetResponse(ABC):
 
 class SignInUpPostOkResponse(SignInUpPostResponse):
     def __init__(self, user: User, created_new_user: bool,
-                 auth_code_response: any):
-        super().__init__('OK', user, created_new_user, auth_code_response)
+                 auth_code_response: any,
+                 session: Session):
+        super().__init__('OK', user, created_new_user, auth_code_response, session=session)
         self.is_ok = True
 
     def to_json(self):
@@ -211,12 +216,14 @@ class APIInterface:
         self.disable_authorisation_url_get = False
         self.disable_apple_redirect_handler_post = False
 
-    async def authorisation_url_get(self, provider: Provider, api_options: APIOptions) -> AuthorisationUrlGetResponse:
+    async def authorisation_url_get(self, provider: Provider,
+                                    api_options: APIOptions, user_context: any) -> AuthorisationUrlGetResponse:
         pass
 
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None],
-                              auth_code_response: Union[str, None], api_options: APIOptions) -> SignInUpPostResponse:
+                              auth_code_response: Union[str, None], api_options: APIOptions,
+                              user_context: any) -> SignInUpPostResponse:
         pass
 
-    async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions):
+    async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions, user_context: any):
         pass

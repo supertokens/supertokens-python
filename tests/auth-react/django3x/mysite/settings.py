@@ -44,7 +44,7 @@ DEBUG = True
 LATEST_URL_WITH_TOKEN = None
 
 
-async def create_and_send_custom_email(_, url_with_token):
+async def create_and_send_custom_email(_, url_with_token, __):
     global LATEST_URL_WITH_TOKEN
     setattr(settings, "LATEST_URL_WITH_TOKEN", url_with_token)
     LATEST_URL_WITH_TOKEN = url_with_token
@@ -121,7 +121,7 @@ class CustomAuth0Provider(Provider):
 CODE_STORE = dict()
 
 
-async def save_code(param: typing.Union[CreateAndSendCustomTextMessageParameters, CreateAndSendCustomEmailParameters]):
+async def save_code(param: typing.Union[CreateAndSendCustomTextMessageParameters, CreateAndSendCustomEmailParameters], _):
     global CODE_STORE
     codes = getattr(settings, "CODE_STORE", None)
     if codes is None:

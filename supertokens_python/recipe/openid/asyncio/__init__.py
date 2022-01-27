@@ -15,13 +15,19 @@ from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.openid.interfaces import CreateJwtResult, GetJWKSResult, GetOpenIdDiscoveryConfigurationResult
 
 
-async def create_jwt(payload: dict, validity_seconds: int = None) -> [CreateJwtResult, None]:
-    return await OpenIdRecipe.get_instance().recipe_implementation.create_jwt(payload, validity_seconds)
+async def create_jwt(payload: dict, validity_seconds: int = None, user_context=None) -> [CreateJwtResult, None]:
+    if user_context is None:
+        user_context = {}
+    return await OpenIdRecipe.get_instance().recipe_implementation.create_jwt(user_context, payload, validity_seconds)
 
 
-async def get_jwks() -> [GetJWKSResult, None]:
-    return await OpenIdRecipe.get_instance().recipe_implementation.get_jwks()
+async def get_jwks(user_context=None) -> [GetJWKSResult, None]:
+    if user_context is None:
+        user_context = {}
+    return await OpenIdRecipe.get_instance().recipe_implementation.get_jwks(user_context)
 
 
-async def get_open_id_discovery_configuration() -> [GetOpenIdDiscoveryConfigurationResult, None]:
-    return await OpenIdRecipe.get_instance().recipe_implementation.get_open_id_discovery_configuration()
+async def get_open_id_discovery_configuration(user_context=None) -> [GetOpenIdDiscoveryConfigurationResult, None]:
+    if user_context is None:
+        user_context = {}
+    return await OpenIdRecipe.get_instance().recipe_implementation.get_open_id_discovery_configuration(user_context)

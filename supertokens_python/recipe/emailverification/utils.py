@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 from httpx import AsyncClient
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
     from .types import User
@@ -23,7 +23,7 @@ from os import environ
 
 
 def default_get_email_verification_url(app_info: AppInfo):
-    async def func(_: User):
+    async def func(_: User, __):
         return app_info.website_domain.get_as_string_dangerous(
         ) + app_info.website_base_path.get_as_string_dangerous() + '/verify-email'
     return func
@@ -50,8 +50,8 @@ class OverrideConfig:
 
 class InputEmailVerificationConfig:
     def __init__(self,
-                 get_email_verification_url: Union[Callable[[User], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[User, str], Awaitable[None]], None] = None
+                 get_email_verification_url: Union[Callable[[User, Any], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[User, str, Any], Awaitable[None]], None] = None
                  ):
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
@@ -59,10 +59,10 @@ class InputEmailVerificationConfig:
 
 class ParentRecipeEmailVerificationConfig:
     def __init__(self,
-                 get_email_for_user_id: Callable[[str], Awaitable[str]],
+                 get_email_for_user_id: Callable[[str, Any], Awaitable[str]],
                  override: Union[OverrideConfig, None] = None,
-                 get_email_verification_url: Union[Callable[[User], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[User, str], Awaitable[None]], None] = None
+                 get_email_verification_url: Union[Callable[[User, Any], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[User, str, Any], Awaitable[None]], None] = None
                  ):
         self.override = override
         self.get_email_verification_url = get_email_verification_url
@@ -73,9 +73,9 @@ class ParentRecipeEmailVerificationConfig:
 class EmailVerificationConfig:
     def __init__(self,
                  override: OverrideConfig,
-                 get_email_verification_url: Callable[[User], Awaitable[str]],
-                 create_and_send_custom_email: Callable[[User, str], Awaitable[None]],
-                 get_email_for_user_id: Callable[[str], Awaitable[str]]
+                 get_email_verification_url: Callable[[User, Any], Awaitable[str]],
+                 create_and_send_custom_email: Callable[[User, str, Any], Awaitable[None]],
+                 get_email_for_user_id: Callable[[str, Any], Awaitable[str]]
                  ):
         self.get_email_for_user_id = get_email_for_user_id
         self.get_email_verification_url = get_email_verification_url

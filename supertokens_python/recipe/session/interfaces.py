@@ -26,53 +26,55 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
+    async def create_new_session(self, request: any, user_id: str, user_context: any,
+                                 access_token_payload: Union[dict, None] = None,
                                  session_data: Union[dict, None] = None) -> Session:
         pass
 
     @abstractmethod
-    async def get_session(self, request: any, anti_csrf_check: Union[bool, None] = None,
+    async def get_session(self, request: any, user_context: any, anti_csrf_check: Union[bool, None] = None,
                           session_required: bool = True) -> Union[Session, None]:
         pass
 
     @abstractmethod
-    async def refresh_session(self, request: any) -> Session:
+    async def refresh_session(self, request: any, user_context: any) -> Session:
         pass
 
     @abstractmethod
-    async def revoke_session(self, session_handle: str) -> bool:
+    async def revoke_session(self, session_handle: str, user_context: any) -> bool:
         pass
 
     @abstractmethod
-    async def revoke_all_sessions_for_user(self, user_id: str) -> List[str]:
+    async def revoke_all_sessions_for_user(self, user_id: str, user_context: any) -> List[str]:
         pass
 
     @abstractmethod
-    async def get_all_session_handles_for_user(self, user_id: str) -> List[str]:
+    async def get_all_session_handles_for_user(self, user_id: str, user_context: any) -> List[str]:
         pass
 
     @abstractmethod
-    async def revoke_multiple_sessions(self, session_handles: List[str]) -> List[str]:
+    async def revoke_multiple_sessions(self, session_handles: List[str], user_context: any) -> List[str]:
         pass
 
     @abstractmethod
-    async def get_session_information(self, session_handle: str) -> dict:
+    async def get_session_information(self, session_handle: str, user_context: any) -> dict:
         pass
 
     @abstractmethod
-    async def update_session_data(self, session_handle: str, new_session_data: dict) -> None:
+    async def update_session_data(self, session_handle: str, new_session_data: dict, user_context: any) -> None:
         pass
 
     @abstractmethod
-    async def update_access_token_payload(self, session_handle: str, new_access_token_payload: dict) -> None:
+    async def update_access_token_payload(self, session_handle: str,
+                                          new_access_token_payload: dict, user_context: any) -> None:
         pass
 
     @abstractmethod
-    async def get_access_token_lifetime_ms(self) -> int:
+    async def get_access_token_lifetime_ms(self, user_context: any) -> int:
         pass
 
     @abstractmethod
-    async def get_refresh_token_lifetime_ms(self) -> int:
+    async def get_refresh_token_lifetime_ms(self, user_context: any) -> int:
         pass
 
 
@@ -115,13 +117,15 @@ class APIInterface(ABC):
         self.disable_signout_post = False
 
     @abstractmethod
-    async def refresh_post(self, api_options: APIOptions):
+    async def refresh_post(self, api_options: APIOptions, user_context: any):
         pass
 
     @abstractmethod
-    async def signout_post(self, api_options: APIOptions) -> SignOutResponse:
+    async def signout_post(self, api_options: APIOptions, user_context: any) -> SignOutResponse:
         pass
 
     @abstractmethod
-    async def verify_session(self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -> Union[Session, None]:
+    async def verify_session(self, api_options: APIOptions, user_context: any,
+                             anti_csrf_check: Union[bool, None] = None,
+                             session_required: bool = True) -> Union[Session, None]:
         pass

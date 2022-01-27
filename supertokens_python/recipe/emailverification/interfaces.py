@@ -102,23 +102,23 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_email_verification_token(self, user_id: str, email: str) -> CreateEmailVerificationTokenResult:
+    async def create_email_verification_token(self, user_id: str, email: str, user_context: any) -> CreateEmailVerificationTokenResult:
         pass
 
     @abstractmethod
-    async def verify_email_using_token(self, token: str) -> VerifyEmailUsingTokenResult:
+    async def verify_email_using_token(self, token: str, user_context: any) -> VerifyEmailUsingTokenResult:
         pass
 
     @abstractmethod
-    async def is_email_verified(self, user_id: str, email: str) -> bool:
+    async def is_email_verified(self, user_id: str, email: str, user_context: any) -> bool:
         pass
 
     @abstractmethod
-    async def revoke_email_verification_tokens(self, user_id: str, email: str) -> RevokeEmailVerificationTokensResult:
+    async def revoke_email_verification_tokens(self, user_id: str, email: str, user_context: any) -> RevokeEmailVerificationTokensResult:
         pass
 
     @abstractmethod
-    async def unverify_email(self, user_id: str, email: str) -> UnverifyEmailResult:
+    async def unverify_email(self, user_id: str, email: str, user_context: any) -> UnverifyEmailResult:
         pass
 
 
@@ -226,13 +226,14 @@ class APIInterface(ABC):
         self.disable_generate_email_verify_token_post = False
 
     @abstractmethod
-    async def email_verify_post(self, token: str, api_options: APIOptions) -> EmailVerifyPostResponse:
+    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: any) -> EmailVerifyPostResponse:
         pass
 
     @abstractmethod
-    async def is_email_verified_get(self, api_options: APIOptions) -> IsEmailVerifiedGetResponse:
+    async def is_email_verified_get(self, api_options: APIOptions, user_context: any) -> IsEmailVerifiedGetResponse:
         pass
 
     @abstractmethod
-    async def generate_email_verify_token_post(self, api_options: APIOptions) -> GenerateEmailVerifyTokenPostResponse:
+    async def generate_email_verify_token_post(self, api_options: APIOptions,
+                                               user_context: any) -> GenerateEmailVerifyTokenPostResponse:
         pass

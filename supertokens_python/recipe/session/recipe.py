@@ -189,7 +189,8 @@ class SessionRecipe(RecipeModule):
                 None, 'calling testing function in non testing env')
         SessionRecipe.__instance = None
 
-    async def verify_session(self, request: BaseRequest, anti_csrf_check: Union[bool, None] = None,
+    async def verify_session(self, request: BaseRequest, user_context: any,
+                             anti_csrf_check: Union[bool, None] = None,
                              session_required: bool = True):
         return await self.api_implementation.verify_session(
             APIOptions(

@@ -212,6 +212,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def create_code(self,
+                          user_context: any,
                           email: Union[None, str] = None,
                           phone_number: Union[None, str] = None,
                           user_input_code: Union[None, str] = None) -> CreateCodeResult:
@@ -219,6 +220,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def create_new_code_for_device(self,
+                                         user_context: any,
                                          device_id: str,
                                          user_input_code: Union[str, None] = None) -> CreateNewCodeForDeviceResult:
         pass
@@ -226,49 +228,53 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def consume_code(self,
                            pre_auth_session_id: str,
+                           user_context: any,
                            user_input_code: Union[str, None] = None,
                            device_id: Union[str, None] = None,
                            link_code: Union[str, None] = None) -> ConsumeCodeResult:
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str) -> Union[User, None]:
+    async def get_user_by_id(self, user_id: str, user_context: any) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_user_by_email(self, email: str) -> Union[User, None]:
+    async def get_user_by_email(self, email: str, user_context: any) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_user_by_phone_number(self, phone_number: str) -> Union[User, None]:
+    async def get_user_by_phone_number(self, phone_number: str, user_context: any) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def update_user(self, user_id: str, email: Union[str, None] = None, phone_number: Union[str, None] = None) -> UpdateUserResult:
+    async def update_user(self, user_id: str, user_context: any,
+                          email: Union[str, None] = None, phone_number: Union[str, None] = None) -> UpdateUserResult:
         pass
 
     @abstractmethod
-    async def revoke_all_codes(self, email: Union[str, None] = None, phone_number: Union[str, None] = None) -> RevokeAllCodesResult:
+    async def revoke_all_codes(self, user_context: any,
+                               email: Union[str, None] = None, phone_number: Union[str, None] = None) -> RevokeAllCodesResult:
         pass
 
     @abstractmethod
-    async def revoke_code(self, code_id: str) -> RevokeCodeResult:
+    async def revoke_code(self, code_id: str, user_context: any) -> RevokeCodeResult:
         pass
 
     @abstractmethod
-    async def list_codes_by_email(self, email: str) -> List[DeviceType]:
+    async def list_codes_by_email(self, email: str, user_context: any) -> List[DeviceType]:
         pass
 
     @abstractmethod
-    async def list_codes_by_phone_number(self, phone_number: str) -> List[DeviceType]:
+    async def list_codes_by_phone_number(self, phone_number: str, user_context: any) -> List[DeviceType]:
         pass
 
     @abstractmethod
-    async def list_codes_by_device_id(self, device_id: str) -> Union[DeviceType, None]:
+    async def list_codes_by_device_id(self, device_id: str, user_context: any) -> Union[DeviceType, None]:
         pass
 
     @abstractmethod
-    async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str) -> Union[DeviceType, None]:
+    async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str,
+                                                user_context: any) -> Union[DeviceType, None]:
         pass
 
 
@@ -583,14 +589,16 @@ class APIInterface:
     async def create_code_post(self,
                                email: Union[str, None],
                                phone_number: Union[str, None],
-                               api_options: APIOptions) -> CreateCodePostResponse:
+                               api_options: APIOptions,
+                               user_context: any) -> CreateCodePostResponse:
         pass
 
     @abstractmethod
     async def resend_code_post(self,
                                device_id: str,
                                pre_auth_session_id: str,
-                               api_options: APIOptions) -> ResendCodePostResponse:
+                               api_options: APIOptions,
+                               user_context: any) -> ResendCodePostResponse:
         pass
 
     @abstractmethod
@@ -599,17 +607,20 @@ class APIInterface:
                                 user_input_code: Union[str, None],
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
-                                api_options: APIOptions) -> ConsumeCodePostResponse:
+                                api_options: APIOptions,
+                                user_context: any) -> ConsumeCodePostResponse:
         pass
 
     @abstractmethod
     async def email_exists_get(self,
                                email: str,
-                               api_options: APIOptions) -> EmailExistsGetResponse:
+                               api_options: APIOptions,
+                               user_context: any) -> EmailExistsGetResponse:
         pass
 
     @abstractmethod
     async def phone_number_exists_get(self,
                                       phone_number: str,
-                                      api_options: APIOptions) -> PhoneNumberExistsGetResponse:
+                                      api_options: APIOptions,
+                                      user_context: any) -> PhoneNumberExistsGetResponse:
         pass

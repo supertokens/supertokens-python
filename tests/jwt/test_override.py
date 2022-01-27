@@ -63,8 +63,8 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
     def custom_functions(param: RecipeInterface):
         temp = param.get_jwks
 
-        async def get_jwks():
-            response_ = await temp()
+        async def get_jwks(_):
+            response_ = await temp(_)
 
             if response_.status == "OK":
                 nonlocal jwt_keys
@@ -81,8 +81,8 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
 
         temp1 = param.create_jwt
 
-        async def create_jwt_(input1, input2=None):
-            response_ = await temp1(input1, input2)
+        async def create_jwt_(_, input1, input2=None):
+            response_ = await temp1(_, input1, input2)
 
             if response_.status == "OK":
                 nonlocal created_jwt
@@ -137,8 +137,8 @@ async def test_overriding_APIs(driver_config_client: TestClient):
     def custom_api(param: APIInterface):
         temp = param.jwks_get
 
-        async def get_jwks_get(input1):
-            response_ = await temp(input1)
+        async def get_jwks_get(input1, _):
+            response_ = await temp(input1, _)
             nonlocal jwt_keys
             jwt_keys = response_.to_json()['keys']
             return response_

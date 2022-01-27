@@ -139,21 +139,22 @@ class PasswordlessRecipe(RecipeModule):
                 'calling testing function in non testing env')
         PasswordlessRecipe.__instance = None
 
-    async def create_magic_link(self, email: Union[str, None], phone_number: Union) -> str:
+    async def create_magic_link(self, email: Union[str, None], phone_number: Union[str, None], user_context=None) -> str:
         user_input_code = None
         if self.config.get_custom_user_input_code is not None:
             user_input_code = await self.config.get_custom_user_input_code()
 
         code_info = await self.recipe_implementation.create_code(
-            email=email, phone_number=phone_number, user_input_code=user_input_code)
-        magic_link = await self.config.get_link_domain_and_path(email if email is not None else phone_number)
+            email=email, phone_number=phone_number, user_input_code=user_input_code, user_context=user_context)
+        magic_link = await self.config.get_link_domain_and_path(email if email is not None else phone_number,
+                                                                user_context)
         magic_link += '?rid=' + self.get_recipe_id() + '&preAuthSessionId=' + code_info.pre_auth_session_id + '#' + \
             code_info.link_code
         return magic_link
 
-    async def signinup(self, email: Union[str, None], phone_number: Union) -> ConsumeCodeOkResult:
+    async def signinup(self, email: Union[str, None], phone_number: Union[str, None], user_context=None) -> ConsumeCodeOkResult:
         code_info = await self.recipe_implementation.create_code(
-            email=email, phone_number=phone_number)
+            email=email, phone_number=phone_number, user_context=user_context)
         consume_code_result = await self.recipe_implementation.consume_code(
             link_code=code_info.link_code,
             pre_auth_session_id=code_info.pre_auth_session_id,

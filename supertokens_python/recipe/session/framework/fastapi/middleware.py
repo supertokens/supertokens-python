@@ -18,13 +18,15 @@ from supertokens_python.recipe.session import SessionRecipe, Session
 
 
 def verify_session(
-        anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
+        anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context=None):
+    if user_context is None:
+        user_context = {}
     from fastapi.requests import Request
 
     async def func(request: Request) -> Union[Session, None]:
         request = FastApiRequest(request)
         recipe = SessionRecipe.get_instance()
-        session = await recipe.verify_session(request, anti_csrf_check, session_required)
+        session = await recipe.verify_session(request, user_context, anti_csrf_check, session_required)
 
         request.set_session(session)
         return request.get_session()

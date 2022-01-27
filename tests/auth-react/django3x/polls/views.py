@@ -79,7 +79,7 @@ class CustomAuth0Provider(Provider):
         return AccessTokenAPI(self.access_token_api_url, params)
 
 
-async def save_code(param: typing.Union[CreateAndSendCustomEmailParameters, CreateAndSendCustomTextMessageParameters]):
+async def save_code(param: typing.Union[CreateAndSendCustomEmailParameters, CreateAndSendCustomTextMessageParameters], _):
     code_store = getattr(settings, "CODE_STORE", None)
     codes = []
     if code_store is not None:
@@ -98,7 +98,7 @@ async def save_code(param: typing.Union[CreateAndSendCustomEmailParameters, Crea
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 
-async def create_and_send_custom_email(_, url_with_token):
+async def create_and_send_custom_email(_, url_with_token, __):
     setattr(settings, "LATEST_URL_WITH_TOKEN", url_with_token)
 
 

@@ -27,6 +27,6 @@ async def handle_apple_redirect_api(api_implementation: APIInterface, api_option
     state = body['state'] if 'state' in body else ""
 
     # this will redirect the user...
-    await api_implementation.apple_redirect_handler_post(code, state, api_options)
+    await api_implementation.apple_redirect_handler_post(code, state, api_options, {})
 
     return api_options.response

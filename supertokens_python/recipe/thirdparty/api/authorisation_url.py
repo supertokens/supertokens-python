@@ -36,7 +36,7 @@ async def handle_authorisation_url_api(api_implementation: APIInterface, api_opt
         raise_bad_input_exception('The third party provider ' + third_party_id + ' seems to be missing from the '
                                                                                  'backend configs.')
 
-    result = await api_implementation.authorisation_url_get(provider, api_options)
+    result = await api_implementation.authorisation_url_get(provider, api_options, {})
     api_options.response.set_json_content(result.to_json())
 
     return api_options.response

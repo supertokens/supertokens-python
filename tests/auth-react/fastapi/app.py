@@ -55,7 +55,7 @@ os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 code_store = dict()
 
 
-async def save_code(param: typing.Union[CreateAndSendCustomEmailParameters, CreateAndSendCustomTextMessageParameters]):
+async def save_code(param: typing.Union[CreateAndSendCustomEmailParameters, CreateAndSendCustomTextMessageParameters], _):
     codes = code_store.get(param.pre_auth_session_id)
     if codes is None:
         codes = []
@@ -81,7 +81,7 @@ def get_website_domain():
 latest_url_with_token = None
 
 
-async def create_and_send_custom_email(_, url_with_token):
+async def create_and_send_custom_email(_, url_with_token, __):
     global latest_url_with_token
     latest_url_with_token = url_with_token
 
@@ -251,7 +251,8 @@ custom_init()
 
 
 @app.exception_handler(Exception)
-async def exception_handler(_, __):
+async def exception_handler(a, b):
+    print(a, b)
     return JSONResponse(status_code=500, content={})
 
 

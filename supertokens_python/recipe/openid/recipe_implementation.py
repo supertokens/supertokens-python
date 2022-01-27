@@ -28,7 +28,7 @@ from .interfaces import GetOpenIdDiscoveryConfigurationResult
 
 class RecipeImplementation(RecipeInterface):
 
-    async def get_open_id_discovery_configuration(self) -> GetOpenIdDiscoveryConfigurationResult:
+    async def get_open_id_discovery_configuration(self, user_context: any) -> GetOpenIdDiscoveryConfigurationResult:
         issuer = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.get_as_string_dangerous()
 
         jwks_uri = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.append(
@@ -43,7 +43,7 @@ class RecipeImplementation(RecipeInterface):
         self.app_info = app_info
         self.jwt_recipe_implementation = jwt_recipe_implementation
 
-    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -> CreateJwtResult:
+    async def create_jwt(self, user_context: any, payload: dict = None, validity_seconds: int = None) -> CreateJwtResult:
         if payload is None:
             payload = {}
 
@@ -52,7 +52,7 @@ class RecipeImplementation(RecipeInterface):
             'iss': issuer,
             **payload
         }
-        return await self.jwt_recipe_implementation.create_jwt(payload, validity_seconds)
+        return await self.jwt_recipe_implementation.create_jwt(user_context, payload, validity_seconds)
 
-    async def get_jwks(self) -> GetJWKSResult:
-        return await self.jwt_recipe_implementation.get_jwks()
+    async def get_jwks(self, user_context: any) -> GetJWKSResult:
+        return await self.jwt_recipe_implementation.get_jwks(user_context)

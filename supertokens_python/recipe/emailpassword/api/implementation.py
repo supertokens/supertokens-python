@@ -37,72 +37,72 @@ class APIImplementation(APIInterface):
     def __init__(self):
         super().__init__()
 
-    async def email_exists_get(self, email: str, api_options: APIOptions) -> EmailExistsGetResponse:
-        user = await api_options.recipe_implementation.get_user_by_email(email)
+    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: any) -> EmailExistsGetResponse:
+        user = await api_options.recipe_implementation.get_user_by_email(email, user_context)
         return EmailExistsGetOkResponse(user is not None)
 
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
-                                                 api_options: APIOptions) -> GeneratePasswordResetTokenPostResponse:
+                                                 api_options: APIOptions, user_context: any) -> GeneratePasswordResetTokenPostResponse:
         email = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
 
-        user = await api_options.recipe_implementation.get_user_by_email(email)
+        user = await api_options.recipe_implementation.get_user_by_email(email, user_context)
 
         if user is None:
             return GeneratePasswordResetTokenPostOkResponse()
 
-        token_result = await api_options.recipe_implementation.create_reset_password_token(user.user_id)
+        token_result = await api_options.recipe_implementation.create_reset_password_token(user.user_id, user_context)
 
         if token_result.is_unknown_user_id_error or token_result.token is None:
             return GeneratePasswordResetTokenPostOkResponse()
 
         token = token_result.token
         password_reset_link = await api_options.config.reset_password_using_token_feature.get_reset_password_url(
-            user) + '?token=' + token + '&rid=' + api_options.recipe_id
+            user, user_context) + '?token=' + token + '&rid=' + api_options.recipe_id
 
         try:
             await api_options.config.reset_password_using_token_feature.create_and_send_custom_email(
-                user, password_reset_link)
+                user, password_reset_link, user_context)
         except Exception:
             pass
 
         return GeneratePasswordResetTokenPostOkResponse()
 
     async def password_reset_post(self, form_fields: List[FormField], token: str,
-                                  api_options: APIOptions) -> PasswordResetPostResponse:
+                                  api_options: APIOptions, user_context: any) -> PasswordResetPostResponse:
         new_password = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
-        result = await api_options.recipe_implementation.reset_password_using_token(token, new_password)
+        result = await api_options.recipe_implementation.reset_password_using_token(token, new_password, user_context)
         if result.is_ok:
             return PasswordResetPostOkResponse()
         return PasswordResetPostInvalidTokenResponse()
 
-    async def sign_in_post(self, form_fields: List[FormField], api_options: APIOptions) -> SignInPostResponse:
+    async def sign_in_post(self, form_fields: List[FormField], api_options: APIOptions, user_context: any) -> SignInPostResponse:
         password = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
         email = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
 
-        result = await api_options.recipe_implementation.sign_in(email, password)
+        result = await api_options.recipe_implementation.sign_in(email, password, user_context)
 
         if result.is_wrong_credentials_error or result.user is None:
             return SignInPostWrongCredentialsErrorResponse()
 
         user = result.user
-        await create_new_session(api_options.request, user.user_id)
-        return SignInPostOkResponse(user)
+        session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
+        return SignInPostOkResponse(user, session)
 
-    async def sign_up_post(self, form_fields: List[FormField], api_options: APIOptions) -> SignUpPostResponse:
+    async def sign_up_post(self, form_fields: List[FormField], api_options: APIOptions, user_context: any) -> SignUpPostResponse:
         password = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
         email = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
 
-        result = await api_options.recipe_implementation.sign_up(email, password)
+        result = await api_options.recipe_implementation.sign_up(email, password, user_context)
 
         if result.is_email_already_exists_error or result.user is None:
             return SignUpPostEmailAlreadyExistsErrorResponse()
 
         user = result.user
-        await create_new_session(api_options.request, user.user_id)
-        return SignUpPostOkResponse(user)
+        session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
+        return SignUpPostOkResponse(user, session)

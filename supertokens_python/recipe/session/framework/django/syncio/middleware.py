@@ -24,7 +24,10 @@ from supertokens_python.recipe.session import SessionRecipe
 
 
 def verify_session(
-        anti_csrf_check: Union[bool, None] = None, session_required: bool = True):
+        anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context=None):
+    if user_context is None:
+        user_context = {}
+
     def session_verify(f):
         @wraps(f)
         def wrapped_function(request, *args, **kwargs):
@@ -35,6 +38,7 @@ def verify_session(
                 session = sync(
                     recipe.verify_session(
                         request,
+                        user_context,
                         anti_csrf_check,
                         session_required))
                 request.set_session(session)

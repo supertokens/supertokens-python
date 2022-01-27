@@ -35,22 +35,22 @@ from supertokens_python.recipe.emailverification.utils import (
 
 def email_verification_create_and_send_custom_email(recipe: ThirdPartyEmailPasswordRecipe,
                                                     create_and_send_custom_email):
-    async def func(user, link):
+    async def func(user, link, user_context):
         user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
         if user_info is None:
             raise Exception('User ID unknown')
-        return await create_and_send_custom_email(user_info, link)
+        return await create_and_send_custom_email(user_info, link, user_context)
 
     return func
 
 
 def email_verification_get_email_verification_url(
         recipe: ThirdPartyEmailPasswordRecipe, get_email_verification_url):
-    async def func(user):
+    async def func(user, user_context):
         user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
         if user_info is None:
             raise Exception('User ID unknown')
-        return await get_email_verification_url(user_info)
+        return await get_email_verification_url(user_info, user_context)
 
     return func
 

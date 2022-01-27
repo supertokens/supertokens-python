@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import TYPE_CHECKING, Callable, Union, Awaitable, Literal
+from typing import TYPE_CHECKING, Callable, Union, Awaitable, Literal, Any
 
 if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface
@@ -33,7 +33,7 @@ async def default_validate_phone_number(value: str):
 
 
 def default_get_link_domain_and_path(app_info: AppInfo):
-    async def get_link_domain_and_path(_: str):
+    async def get_link_domain_and_path(_: str, __):
         return app_info.website_domain.get_as_string_dangerous() + app_info.website_base_path.get_as_string_dangerous() + '/verify'
     return get_link_domain_and_path
 
@@ -45,14 +45,16 @@ async def default_validate_email(value: str):
 
 
 async def default_create_and_send_custom_text_message(
-    params: CreateAndSendCustomEmailParameters
+    params: CreateAndSendCustomTextMessageParameters,
+    _
 ):
     # TODO
     pass
 
 
 async def default_create_and_send_custom_email(
-    param: CreateAndSendCustomTextMessageParameters
+    param: CreateAndSendCustomEmailParameters,
+    _
 ):
     # TODO
     pass
@@ -101,7 +103,7 @@ class ContactConfig(ABC):
 class ContactPhoneOnlyConfig(ContactConfig):
     def __init__(self,
                  create_and_send_custom_text_message: Callable[
-                     [CreateAndSendCustomTextMessageParameters], Awaitable[None]],
+                     [CreateAndSendCustomTextMessageParameters, Any], Awaitable[None]],
                  validate_phone_number: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__('PHONE')
@@ -112,7 +114,7 @@ class ContactPhoneOnlyConfig(ContactConfig):
 class ContactEmailOnlyConfig(ContactConfig):
     def __init__(self,
                  create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomEmailParameters], Awaitable[None]],
+                     [CreateAndSendCustomEmailParameters, Any], Awaitable[None]],
                  validate_email_address: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None
                  ):
         super().__init__('EMAIL')
@@ -123,9 +125,9 @@ class ContactEmailOnlyConfig(ContactConfig):
 class ContactEmailOrPhoneConfig(ContactConfig):
     def __init__(self,
                  create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomEmailParameters], Awaitable[None]],
+                     [CreateAndSendCustomEmailParameters, Any], Awaitable[None]],
                  create_and_send_custom_text_message: Callable[
-                     [CreateAndSendCustomTextMessageParameters], Awaitable[None]],
+                     [CreateAndSendCustomTextMessageParameters, Any], Awaitable[None]],
                  validate_email_address: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None,
                  validate_phone_number: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None,
                  ):
@@ -141,8 +143,8 @@ class PasswordlessConfig:
                  contact_config: ContactConfig,
                  override: OverrideConfig,
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
-                 get_link_domain_and_path: Callable[[str], Awaitable[Union[str, None]]],
-                 get_custom_user_input_code: Union[Callable[[], Awaitable[str]], None] = None
+                 get_link_domain_and_path: Callable[[str, Any], Awaitable[Union[str, None]]],
+                 get_custom_user_input_code: Union[Callable[[Any], Awaitable[str]], None] = None
                  ):
         self.contact_config = contact_config
         self.override = override
@@ -156,8 +158,8 @@ def validate_and_normalise_user_input(
         contact_config: ContactConfig,
         flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
         override: Union[OverrideConfig, None] = None,
-        get_link_domain_and_path: Union[Callable[[str], Awaitable[Union[str, None]]]] = None,
-        get_custom_user_input_code: Union[Callable[[], Awaitable[str]], None] = None):
+        get_link_domain_and_path: Union[Callable[[str, Any], Awaitable[Union[str, None]]]] = None,
+        get_custom_user_input_code: Union[Callable[[Any], Awaitable[str]], None] = None):
 
     if override is None:
         override = OverrideConfig()

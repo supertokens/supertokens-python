@@ -35,7 +35,7 @@ class RecipeImplementation(RecipeInterface):
         self.querier = querier
         self.config = config
 
-    async def create_email_verification_token(self, user_id: str, email: str) -> CreateEmailVerificationTokenResult:
+    async def create_email_verification_token(self, user_id: str, email: str, user_context: any) -> CreateEmailVerificationTokenResult:
         data = {
             'userId': user_id,
             'email': email
@@ -45,7 +45,7 @@ class RecipeImplementation(RecipeInterface):
             return CreateEmailVerificationTokenOkResult(response['token'])
         return CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult()
 
-    async def verify_email_using_token(self, token: str) -> VerifyEmailUsingTokenResult:
+    async def verify_email_using_token(self, token: str, _) -> VerifyEmailUsingTokenResult:
         data = {
             'method': 'token',
             'token': token
@@ -56,7 +56,7 @@ class RecipeImplementation(RecipeInterface):
                 User(response['userId'], response['email']))
         return VerifyEmailUsingTokenInvalidTokenErrorResult()
 
-    async def is_email_verified(self, user_id: str, email: str) -> bool:
+    async def is_email_verified(self, user_id: str, email: str, user_context: any) -> bool:
         params = {
             'userId': user_id,
             'email': email
@@ -64,7 +64,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_get_request(NormalisedURLPath('/recipe/user/email/verify'), params)
         return response['isVerified']
 
-    async def revoke_email_verification_tokens(self, user_id: str, email: str) -> RevokeEmailVerificationTokensResult:
+    async def revoke_email_verification_tokens(self, user_id: str, email: str, user_context: any) -> RevokeEmailVerificationTokensResult:
         data = {
             'userId': user_id,
             'email': email
@@ -72,7 +72,7 @@ class RecipeImplementation(RecipeInterface):
         await self.querier.send_post_request(NormalisedURLPath('/recipe/user/email/verify/token/remove'), data)
         return RevokeEmailVerificationTokensOkResult()
 
-    async def unverify_email(self, user_id: str, email: str) -> UnverifyEmailResult:
+    async def unverify_email(self, user_id: str, email: str, user_context: any) -> UnverifyEmailResult:
         data = {
             'userId': user_id,
             'email': email

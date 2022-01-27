@@ -33,7 +33,7 @@ class RecipeImplementation(RecipeInterface):
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -> CreateJwtResult:
+    async def create_jwt(self, user_context: any, payload: dict = None, validity_seconds: int = None) -> CreateJwtResult:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
@@ -53,7 +53,7 @@ class RecipeImplementation(RecipeInterface):
         else:
             return CreateJwtResultUnsupportedAlgorithm()
 
-    async def get_jwks(self) -> GetJWKSResult:
+    async def get_jwks(self, user_context: any) -> GetJWKSResult:
         response = await self.querier.send_get_request(NormalisedURLPath("/recipe/jwt/jwks"), {})
 
         keys = []

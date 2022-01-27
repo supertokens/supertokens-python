@@ -15,26 +15,36 @@
 from supertokens_python.async_to_sync_wrapper import sync
 
 
-def create_email_verification_token(user_id: str, email: str):
+def create_email_verification_token(user_id: str, email: str, user_context=None):
+    if user_context is None:
+        user_context = {}
     from supertokens_python.recipe.emailverification.asyncio import create_email_verification_token
-    return sync(create_email_verification_token(user_id, email))
+    return sync(create_email_verification_token(user_id, email, user_context))
 
 
-def verify_email_using_token(token: str):
+def verify_email_using_token(token: str, user_context=None):
+    if user_context is None:
+        user_context = {}
     from supertokens_python.recipe.emailverification.asyncio import verify_email_using_token
-    return sync(verify_email_using_token(token))
+    return sync(verify_email_using_token(token, user_context))
 
 
-def is_email_verified(user_id: str, email: str):
+def is_email_verified(user_id: str, email: str, user_context=None):
+    if user_context is None:
+        user_context = {}
     from supertokens_python.recipe.emailverification.asyncio import is_email_verified
-    return sync(is_email_verified(user_id, email))
+    return sync(is_email_verified(user_id, email, user_context))
 
 
-async def unverify_email(user_id: str, email: str):
+async def unverify_email(user_id: str, email: str, user_context=None):
+    if user_context is None:
+        user_context = {}
     from supertokens_python.recipe.emailverification.asyncio import is_email_verified
-    return sync(is_email_verified(user_id, email))
+    return sync(is_email_verified(user_id, email, user_context))
 
 
-async def revoke_email_verification_tokens(user_id: str, email: str):
+async def revoke_email_verification_tokens(user_id: str, email: str, user_context=None):
+    if user_context is None:
+        user_context = {}
     from supertokens_python.recipe.emailverification.asyncio import revoke_email_verification_tokens
-    return sync(revoke_email_verification_tokens(user_id, email))
+    return sync(revoke_email_verification_tokens(user_id, email, user_context))

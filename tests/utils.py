@@ -235,6 +235,25 @@ def sign_up_request(app, email, password):
         })
 
 
+def sign_in_request(app, email, password):
+    return app.post(
+        url="/auth/signin",
+        headers={
+            "Content-Type": "application/json"
+        },
+        json={
+            'formFields':
+                [{
+                    "id": "password",
+                    "value": password
+                },
+                    {
+                        "id": "email",
+                        "value": email
+                }]
+        })
+
+
 def email_verify_token_request(
         app, accessToken, idRefreshTokenFromCookie, antiCsrf, userId):
     return app.post(

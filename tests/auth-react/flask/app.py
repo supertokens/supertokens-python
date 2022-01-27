@@ -59,7 +59,7 @@ latest_url_with_token = None
 code_store = dict()
 
 
-async def save_code(param: typing.Union[CreateAndSendCustomTextMessageParameters, CreateAndSendCustomEmailParameters]):
+async def save_code(param: typing.Union[CreateAndSendCustomTextMessageParameters, CreateAndSendCustomEmailParameters], _):
     codes = code_store.get(param.pre_auth_session_id)
     if codes is None:
         codes = []
@@ -70,7 +70,7 @@ async def save_code(param: typing.Union[CreateAndSendCustomTextMessageParameters
     code_store[param.pre_auth_session_id] = codes
 
 
-async def create_and_send_custom_email(_, url_with_token):
+async def create_and_send_custom_email(_, url_with_token, __):
     global latest_url_with_token
     latest_url_with_token = url_with_token
 

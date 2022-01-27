@@ -173,8 +173,8 @@ class EmailPasswordRecipe(RecipeModule):
 
     # instance functions below...............
 
-    async def get_email_for_user_id(self, user_id: str) -> str:
-        user_info = await self.recipe_implementation.get_user_by_id(user_id)
+    async def get_email_for_user_id(self, user_id: str, user_context: any) -> str:
+        user_info = await self.recipe_implementation.get_user_by_id(user_id, user_context)
         if user_info is None:
             raise Exception('Unknown User ID provided')
         return user_info.email

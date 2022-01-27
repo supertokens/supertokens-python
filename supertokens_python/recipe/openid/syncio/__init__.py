@@ -16,13 +16,13 @@ import supertokens_python.recipe.openid.asyncio as asyncio
 from supertokens_python.async_to_sync_wrapper import sync
 
 
-def create_jwt(payload: dict, validity_seconds: int = None) -> [CreateJwtResult, None]:
-    return sync(asyncio.create_jwt(payload, validity_seconds))
+def create_jwt(payload: dict, validity_seconds: int = None, user_context=None) -> [CreateJwtResult, None]:
+    return sync(asyncio.create_jwt(payload, validity_seconds, user_context))
 
 
-def get_jwks() -> [GetJWKSResult, None]:
-    return sync(asyncio.get_jwks())
+def get_jwks(user_context=None) -> [GetJWKSResult, None]:
+    return sync(asyncio.get_jwks(user_context))
 
 
-async def get_open_id_discovery_configuration() -> [GetOpenIdDiscoveryConfigurationResult, None]:
-    return sync(asyncio.get_open_id_discovery_configuration())
+async def get_open_id_discovery_configuration(user_context=None) -> [GetOpenIdDiscoveryConfigurationResult, None]:
+    return sync(asyncio.get_open_id_discovery_configuration(user_context))
