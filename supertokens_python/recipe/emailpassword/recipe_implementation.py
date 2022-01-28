@@ -84,7 +84,10 @@ class RecipeImplementation(RecipeInterface):
             NormalisedURLPath('/recipe/user/password/reset'), data)
         if 'status' not in response or response['status'] != 'OK':
             return ResetPasswordUsingTokenWrongUserIdErrorResult()
-        return ResetPasswordUsingTokenOkResult()
+        user_id = None
+        if 'userId' in response:
+            user_id = response['userId']
+        return ResetPasswordUsingTokenOkResult(user_id)
 
     async def get_users(self, time_joined_order: Literal['ASC', 'DESC'],
                         limit: Union[int, None] = None, pagination_token: Union[str, None] = None) -> UsersResponse:

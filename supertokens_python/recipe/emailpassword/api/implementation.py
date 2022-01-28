@@ -74,7 +74,7 @@ class APIImplementation(APIInterface):
             lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
         result = await api_options.recipe_implementation.reset_password_using_token(token, new_password)
         if result.is_ok:
-            return PasswordResetPostOkResponse()
+            return PasswordResetPostOkResponse(result.user_id)
         return PasswordResetPostInvalidTokenResponse()
 
     async def sign_in_post(self, form_fields: List[FormField], api_options: APIOptions) -> SignInPostResponse:
