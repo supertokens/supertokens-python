@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.1] - 2022-01-27
 
+### Changed
+- Added userId as an optional property to the response of `recipe/user/password/reset`.
+- Adds ability to give a path for each of the hostnames in the connectionURI: https://github.com/supertokens/supertokens-node/issues/252
+
 ### Fixed
 - Bug fixes in Literal import which caused issues when using the sdk with python version 3.7.
+- Fixes https://github.com/supertokens/supertokens-node/issues/244 - throws an error if a user tries to update email / password of a third party login user.
 
 ## [0.4.0] - 2022-01-09
 

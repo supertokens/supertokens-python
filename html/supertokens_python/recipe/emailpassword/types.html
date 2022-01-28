@@ -127,6 +127,7 @@ class User:
         self.user_id = user_id
         self.email = email
         self.time_joined = time_joined
+        self.third_party_info = None
 
 
 class UsersResponse:
@@ -255,7 +256,8 @@ class NormalisedFormField:
     def __init__(self, user_id: str, email: str, time_joined: int):
         self.user_id = user_id
         self.email = email
-        self.time_joined = time_joined</code></pre>
+        self.time_joined = time_joined
+        self.third_party_info = None</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.types.UsersResponse"><code class="flex name class">
