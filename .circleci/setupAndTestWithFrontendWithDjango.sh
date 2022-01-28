@@ -49,9 +49,9 @@ git clone git@github.com:supertokens/supertokens-website.git
 cd supertokens-website
 git checkout $2
 cd ../project/tests/frontendIntegration/django3x
-uvicorn mysite.asgi:application --port 8080 &
+export PYTHONPATH="${PYTHONPATH}:/root/project" && uvicorn mysite.asgi:application --port 8080 &
 pid=$!
-uvicorn mysite.asgi:application --port 8082 &
+export PYTHONPATH="${PYTHONPATH}:/root/project" && uvicorn mysite.asgi:application --port 8082 &
 pid2=$!
 cd ../../../../supertokens-website/test/server
 npm i -d --quiet --no-progress
