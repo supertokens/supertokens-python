@@ -646,7 +646,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordResult"><code class="flex name class">
 <span>class <span class="ident">CreateResetPasswordResult</span></span>
-<span>(</span><span>status: "Literal[('OK', 'UNKNOWN_USER_ID_ERROR')]", token: Union[str, None])</span>
+<span>(</span><span>status: "Literal['OK', 'UNKNOWN_USER_ID_ERROR']", token: Union[str, None])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -844,7 +844,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.EmailVerifyPostResponse"><code class="flex name class">
 <span>class <span class="ident">EmailVerifyPostResponse</span></span>
-<span>(</span><span>status: "Literal[('OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR')]", user: Union[User, None])</span>
+<span>(</span><span>status: "Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR']", user: Union[User, None])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -942,7 +942,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.GenerateEmailVerifyTokenPostResponse"><code class="flex name class">
 <span>class <span class="ident">GenerateEmailVerifyTokenPostResponse</span></span>
-<span>(</span><span>status: "Literal[('OK', 'EMAIL_ALREADY_VERIFIED_ERROR')]")</span>
+<span>(</span><span>status: "Literal['OK', 'EMAIL_ALREADY_VERIFIED_ERROR']")</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1197,7 +1197,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostResponse"><code class="flex name class">
 <span>class <span class="ident">PasswordResetPostResponse</span></span>
-<span>(</span><span>status: "Literal[('OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR')]", user_id: Union[str, None] = None)</span>
+<span>(</span><span>status: "Literal['OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR']", user_id: Union[str, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1479,7 +1479,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.ResetPasswordUsingTokenResult"><code class="flex name class">
 <span>class <span class="ident">ResetPasswordUsingTokenResult</span></span>
-<span>(</span><span>status: "Literal[('OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR')]", user_id: Union[None, str] = None)</span>
+<span>(</span><span>status: "Literal['OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR']", user_id: Union[None, str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1576,7 +1576,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.SignInPostResponse"><code class="flex name class">
 <span>class <span class="ident">SignInPostResponse</span></span>
-<span>(</span><span>status: "Literal[('OK', 'WRONG_CREDENTIALS_ERROR')]", user: Union[User, None])</span>
+<span>(</span><span>status: "Literal['OK', 'WRONG_CREDENTIALS_ERROR']", user: Union[User, None])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1670,7 +1670,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.SignInResult"><code class="flex name class">
 <span>class <span class="ident">SignInResult</span></span>
-<span>(</span><span>status: "Literal[('OK', 'WRONG_CREDENTIALS_ERROR')]", user: Union[User, None])</span>
+<span>(</span><span>status: "Literal['OK', 'WRONG_CREDENTIALS_ERROR']", user: Union[User, None])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1809,7 +1809,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.SignUpPostResponse"><code class="flex name class">
 <span>class <span class="ident">SignUpPostResponse</span></span>
-<span>(</span><span>status: "Literal[('OK', 'EMAIL_ALREADY_EXISTS_ERROR')]", user: Union[User, None])</span>
+<span>(</span><span>status: "Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR']", user: Union[User, None])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1882,7 +1882,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.SignUpResult"><code class="flex name class">
 <span>class <span class="ident">SignUpResult</span></span>
-<span>(</span><span>status: "Literal[('OK', 'EMAIL_ALREADY_EXISTS_ERROR')]", user: Union[User, None])</span>
+<span>(</span><span>status: "Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR']", user: Union[User, None])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1958,7 +1958,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordResult"><code class="flex name class">
 <span>class <span class="ident">UpdateEmailOrPasswordResult</span></span>
-<span>(</span><span>status: "Literal[('OK', 'UNKNOWN_USER_ID_ERROR', 'EMAIL_ALREADY_EXISTS_ERROR')]")</span>
+<span>(</span><span>status: "Literal['OK', 'UNKNOWN_USER_ID_ERROR', 'EMAIL_ALREADY_EXISTS_ERROR']")</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
