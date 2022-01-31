@@ -6,12 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
--   add workflow to verify if pr title follows conventional commits
-
 ## [0.4.1] - 2022-01-27
 
+### Added
+-   add workflow to verify if pr title follows conventional commits
+
 ### Changed
-- Added userId as an optional property to the response of `recipe/user/password/reset`.
+- Added userId as an optional property to the response of `recipe/user/password/reset` (compatibility with CDI 2.12).
 - Adds ability to give a path for each of the hostnames in the connectionURI: https://github.com/supertokens/supertokens-node/issues/252
 
 ### Fixed
