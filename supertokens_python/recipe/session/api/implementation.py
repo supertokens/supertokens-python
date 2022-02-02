@@ -39,7 +39,7 @@ class APIImplementation(APIInterface):
 
         if session is None:
             raise Exception('Session is undefined. Should not come here.')
-        await session.revoke_session()
+        await session.revoke_session(user_context)
         return SignOutOkayResponse()
 
     async def verify_session(self, api_options: APIOptions, user_context: any, anti_csrf_check: Union[bool, None] = None,

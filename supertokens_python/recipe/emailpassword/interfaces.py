@@ -98,16 +98,16 @@ class CreateResetPasswordWrongUserIdErrorResult(CreateResetPasswordResult):
 
 
 class ResetPasswordUsingTokenResult(ABC):
-    def __init__(self, status: Literal['OK',
-                                       'RESET_PASSWORD_INVALID_TOKEN_ERROR']):
+    def __init__(self, status: Literal['OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR'], user_id: Union[None, str] = None):
         self.status = status
         self.is_ok = False
+        self.user_id = user_id
         self.is_reset_password_invalid_token_error = False
 
 
 class ResetPasswordUsingTokenOkResult(ResetPasswordUsingTokenResult):
-    def __init__(self):
-        super().__init__('OK')
+    def __init__(self, user_id: Union[None, str]):
+        super().__init__('OK', user_id)
         self.is_ok = True
         self.is_reset_password_invalid_token_error = False
 
@@ -329,8 +329,8 @@ class GeneratePasswordResetTokenPostOkResponse(GeneratePasswordResetTokenPostRes
 
 
 class PasswordResetPostResponse(ABC):
-    def __init__(self, status: Literal['OK',
-                                       'RESET_PASSWORD_INVALID_TOKEN_ERROR']):
+    def __init__(self, status: Literal['OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR'], user_id: Union[str, None] = None):
+        self.user_id = user_id
         self.status = status
 
     def to_json(self):
@@ -340,8 +340,8 @@ class PasswordResetPostResponse(ABC):
 
 
 class PasswordResetPostOkResponse(PasswordResetPostResponse):
-    def __init__(self):
-        super().__init__('OK')
+    def __init__(self, user_id: Union[str, None]):
+        super().__init__('OK', user_id)
 
 
 class PasswordResetPostInvalidTokenResponse(PasswordResetPostResponse):

@@ -94,6 +94,12 @@ class SupertokensConfig:
         self.api_key = api_key
 
 
+class Host:
+    def __init__(self, domain: NormalisedURLDomain, base_path: NormalisedURLPath):
+        self.domain = domain
+        self.base_path = base_path
+
+
 class InputAppInfo:
     def __init__(self,
                  app_name: str,
@@ -194,7 +200,7 @@ class Supertokens:
             app_info.website_base_path,
             mode
         )
-        hosts = list(map(lambda h: NormalisedURLDomain(h.strip()),
+        hosts = list(map(lambda h: Host(NormalisedURLDomain(h.strip()), NormalisedURLPath(h.strip())),
                          filter(lambda x: x != &#39;&#39;, supertokens_config.connection_uri.split(&#39;;&#39;))))
         Querier.init(hosts, supertokens_config.api_key)
 
@@ -493,6 +499,22 @@ class Supertokens:
         self.mode = mode</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.supertokens.Host"><code class="flex name class">
+<span>class <span class="ident">Host</span></span>
+<span>(</span><span>domain: NormalisedURLDomain, base_path: NormalisedURLPath)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Host:
+    def __init__(self, domain: NormalisedURLDomain, base_path: NormalisedURLPath):
+        self.domain = domain
+        self.base_path = base_path</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.supertokens.InputAppInfo"><code class="flex name class">
 <span>class <span class="ident">InputAppInfo</span></span>
 <span>(</span><span>app_name: str, api_domain: str, website_domain: str, api_gateway_path: str = '', api_base_path: str = '/auth', website_base_path: str = '/auth')</span>
@@ -551,7 +573,7 @@ class Supertokens:
             app_info.website_base_path,
             mode
         )
-        hosts = list(map(lambda h: NormalisedURLDomain(h.strip()),
+        hosts = list(map(lambda h: Host(NormalisedURLDomain(h.strip()), NormalisedURLPath(h.strip())),
                          filter(lambda x: x != &#39;&#39;, supertokens_config.connection_uri.split(&#39;;&#39;))))
         Querier.init(hosts, supertokens_config.api_key)
 
@@ -1087,6 +1109,9 @@ def reset():
 <ul>
 <li>
 <h4><code><a title="supertokens_python.supertokens.AppInfo" href="#supertokens_python.supertokens.AppInfo">AppInfo</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.supertokens.Host" href="#supertokens_python.supertokens.Host">Host</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.supertokens.InputAppInfo" href="#supertokens_python.supertokens.InputAppInfo">InputAppInfo</a></code></h4>

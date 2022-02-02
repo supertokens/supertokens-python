@@ -12,9 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-
 from abc import ABC
-from typing import TYPE_CHECKING, Callable, Union, Awaitable, Literal, Any
+from typing import TYPE_CHECKING, Callable, Union, Awaitable, Any
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface

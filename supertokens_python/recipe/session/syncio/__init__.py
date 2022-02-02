@@ -63,25 +63,31 @@ def update_session_data(session_handle: str, new_session_data: dict, user_contex
     return sync(async_update_session_data(session_handle, new_session_data, user_context))
 
 
-async def update_access_token_payload(session_handle: str, new_access_token_payload: dict, user_context=None) -> None:
+def update_access_token_payload(session_handle: str, new_access_token_payload: dict, user_context=None) -> None:
     from supertokens_python.recipe.session.asyncio import \
         update_access_token_payload as async_update_access_token_payload
     return sync(async_update_access_token_payload(session_handle, new_access_token_payload, user_context))
 
 
-async def create_jwt(payload: dict, validity_seconds: int = None, user_context=None) -> [CreateJwtResult, None]:
+def create_jwt(payload: dict, validity_seconds: int = None, user_context=None) -> [CreateJwtResult, None]:
     from supertokens_python.recipe.session.asyncio import \
         create_jwt as async_create_jwt
     return sync(async_create_jwt(payload, validity_seconds, user_context))
 
 
-async def get_jwks(user_context=None) -> [GetJWKSResult, None]:
+def get_jwks(user_context=None) -> [GetJWKSResult, None]:
     from supertokens_python.recipe.session.asyncio import \
         get_jwks as async_get_jwks
     return sync(async_get_jwks(user_context))
 
 
-async def get_open_id_discovery_configuration(user_context=None) -> [GetOpenIdDiscoveryConfigurationResult, None]:
+def get_open_id_discovery_configuration(user_context=None) -> [GetOpenIdDiscoveryConfigurationResult, None]:
     from supertokens_python.recipe.session.asyncio import \
         get_open_id_discovery_configuration as async_get_open_id_discovery_configuration
     return sync(async_get_open_id_discovery_configuration(user_context))
+
+
+def regenerate_access_token(access_token: str, new_access_token_payload: Union[dict, None] = None,
+                            user_context: Union[any, None] = None):
+    from supertokens_python.recipe.session.asyncio import regenerate_access_token as async_regenerate_access_token
+    return sync(async_regenerate_access_token(access_token, new_access_token_payload, user_context))

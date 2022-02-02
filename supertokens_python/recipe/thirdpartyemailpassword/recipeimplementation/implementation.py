@@ -21,7 +21,7 @@ from ..types import User, UsersResponse, NextPaginationToken
 from ..utils import extract_pagination_token, combine_pagination_results
 from supertokens_python.recipe.emailpassword.interfaces import UpdateEmailOrPasswordResult, \
     ResetPasswordUsingTokenResult, \
-    CreateResetPasswordResult, SignUpResult, SignInResult
+    CreateResetPasswordResult, SignUpResult, SignInResult, UpdateEmailOrPasswordUnknownUserIdErrorResult
 from ...thirdparty.interfaces import SignInUpResult
 
 if TYPE_CHECKING:
@@ -114,6 +114,11 @@ class RecipeImplementation(RecipeInterface):
 
     async def update_email_or_password(self, user_id: str, user_context: any, email: str = None,
                                        password: str = None) -> UpdateEmailOrPasswordResult:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return UpdateEmailOrPasswordUnknownUserIdErrorResult()
+        if user.third_party_info is not None:
+            raise Exception("Cannot update email or password of a user who signed up using third party login.")
         return await self.ep_update_email_or_password(user_id, user_context, email, password)
 
     @deprecated(reason="This method is deprecated")

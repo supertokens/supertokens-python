@@ -14,11 +14,41 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Union, List, TYPE_CHECKING
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.jwt.interfaces import RecipeInterface as JWTRecipeInterface
     from .utils import SessionConfig
     from .session_class import Session
+
+
+class SessionObj:
+    def __init__(self, handle: str, user_id: str, user_data_in_jwt: any):
+        self.handle = handle
+        self.user_id = user_id
+        self.user_data_in_jwt = user_data_in_jwt
+
+
+class AccessTokenObj:
+    def __init__(self, token: str, expiry: int, created_time: int):
+        self.token = token
+        self.expiry = expiry
+        self.created_time = created_time
+
+
+class RegenerateAccessTokenResult(ABC):
+    def __init__(self, status: Literal['OK'], session: SessionObj, access_token: Union[AccessTokenObj, None]):
+        self.status = status
+        self.session = session
+        self.access_token = access_token
+
+
+class RegenerateAccessTokenOkResult(RegenerateAccessTokenResult):
+    def __init__(self, session: SessionObj, access_token: Union[AccessTokenObj, None]):
+        super().__init__('OK', session, access_token)
 
 
 class RecipeInterface(ABC):
@@ -75,6 +105,13 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def get_refresh_token_lifetime_ms(self, user_context: any) -> int:
+        pass
+
+    @abstractmethod
+    async def regenerate_access_token(self,
+                                      access_token: str,
+                                      user_context: any,
+                                      new_access_token_payload: Union[dict, None] = None) -> RegenerateAccessTokenResult:
         pass
 
 

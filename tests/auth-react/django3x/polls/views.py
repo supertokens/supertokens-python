@@ -37,6 +37,10 @@ if mode == 'asgi':
     from supertokens_python.recipe.session.framework.django.asyncio import verify_session
 else:
     from supertokens_python.recipe.session.framework.django.syncio import verify_session
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 
 class CustomAuth0Provider(Provider):
@@ -130,8 +134,8 @@ def get_website_domain():
     return 'http://localhost:' + get_website_port()
 
 
-def custom_init(contact_method: typing.Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = None,
-                flow_type: typing.Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = None):
+def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = None,
+                flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = None):
     PasswordlessRecipe.reset()
     JWTRecipe.reset()
     EmailVerificationRecipe.reset()

@@ -16,7 +16,7 @@ from .session_class import Session
 from supertokens_python.process_state import ProcessState, AllowedProcessStates
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from typing import TYPE_CHECKING
-from .interfaces import RecipeInterface
+from .interfaces import RecipeInterface, SessionObj, AccessTokenObj, RegenerateAccessTokenOkResult
 from .exceptions import raise_unauthorised_exception, raise_try_refresh_token_exception
 from .cookie_and_header import get_id_refresh_token_from_cookie, get_access_token_from_cookie, get_anti_csrf_header, \
     get_rid_header, get_refresh_token_from_cookie
@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from typing import Union, List
     from .utils import SessionConfig
     from supertokens_python.querier import Querier
+    from .interfaces import RegenerateAccessTokenResult
 
 
 class HandshakeInfo:
@@ -200,3 +201,27 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_refresh_token_lifetime_ms(self, user_context: any) -> int:
         return (await self.get_handshake_info()).refresh_token_validity
+
+    async def regenerate_access_token(self, access_token: str, user_context: any,
+                                      new_access_token_payload: Union[dict, None] = None) -> RegenerateAccessTokenResult:
+        if new_access_token_payload is None:
+            new_access_token_payload = {}
+        response = await self.querier.send_post_request(NormalisedURLPath("/recipe/session/regenerate"), {
+            'accessToken': access_token,
+            'userDataInJWT': new_access_token_payload
+        })
+        if response['status'] == 'UNAUTHORISED':
+            raise_unauthorised_exception(response['message'])
+        access_token = None
+        if 'accessToken' in response:
+            access_token = AccessTokenObj(
+                response['accessToken']['token'],
+                response['accessToken']['expiry'],
+                response['accessToken']['createdTime']
+            )
+        session = SessionObj(
+            response['session']['handle'],
+            response['session']['userId'],
+            response['session']['userDataInJWT']
+        )
+        return RegenerateAccessTokenOkResult(session, access_token)

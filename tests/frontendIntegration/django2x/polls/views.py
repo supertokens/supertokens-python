@@ -16,7 +16,10 @@ import os
 import sys
 from functools import wraps
 import re
-from typing import Literal
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
