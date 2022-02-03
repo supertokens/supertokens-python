@@ -35,7 +35,8 @@ class Middleware:
 
         from flask.wrappers import Response
 
-        @app.before_request
+        # There is an error in the typing provided by flask, so we ignore it for now.
+        @app.before_request  # type: ignore
         def _():
             from supertokens_python import Supertokens
 
@@ -47,11 +48,13 @@ class Middleware:
             request_ = FlaskRequest(request)
             response_ = FlaskResponse(Response())
 
-            sync(st.middleware(request_, response_))
+            # TODO: try and remove ignoring of types below
+            result: FlaskResponse = sync(st.middleware(
+                request_, response_))  # type: ignore
 
-            # TODO: is this if statement needed?
-            # if result is not None:
-            #     return result.response
+            if result is not None:
+                return result.response
+            return None
 
         @app.after_request
         def _(response: Response):
@@ -69,17 +72,20 @@ class Middleware:
         from flask import request
 
         @app.errorhandler(SuperTokensError)
-        def error_handler(error):
+        def _(error: Exception):
             from supertokens_python import Supertokens
             from supertokens_python.framework.flask.flask_request import \
                 FlaskRequest
             from supertokens_python.framework.flask.flask_response import \
                 FlaskResponse
-            from werkzeug import Response
+
+            from flask.wrappers import Response
             st = Supertokens.get_instance()
             response = Response(json.dumps({}),
                                 mimetype='application/json',
                                 status=200)
-            result = sync(st.handle_supertokens_error(
-                FlaskRequest(request), error, FlaskResponse(response)))
+
+            # TODO: try and remove ignoring of types below.
+            result: FlaskResponse = sync(st.handle_supertokens_error(
+                FlaskRequest(request), error, FlaskResponse(response)))  # type: ignore
             return result.response

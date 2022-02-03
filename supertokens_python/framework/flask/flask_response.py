@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
+from typing import Any, Dict, List, Union
 
 from supertokens_python.framework.response import BaseResponse
 from werkzeug.http import dump_cookie
@@ -23,41 +24,58 @@ class FlaskResponse(BaseResponse):
     def __init__(self, response: Response):
         super().__init__({})
         self.response = response
-        self.headers = list()
+        self.headers: List[Any] = list()
         self.response_sent = False
         self.status_set = False
 
-    def set_html_content(self, content):
+    def set_html_content(self, content: str):
         if not self.response_sent:
             self.response.data = content
             self.set_header('Content-Type', 'text/html')
             self.response_sent = True
 
-    def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
-                   domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "lax"):
+    def set_cookie(self, key: str, value: str = "", max_age: Union[int, None] = None, expires: Union[int, None] = None, path: str = "/",
+                   domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = "lax"):
         if self.response is None:
-            self.headers.append(("Set-Cookie",
-                                 dump_cookie(
-                                     key,
-                                     value=value,
-                                     max_age=max_age,
-                                     expires=expires / 1000,
-                                     path=path,
-                                     domain=domain,
-                                     secure=secure,
-                                     httponly=httponly,
-                                     samesite=samesite
-                                 )))
+            cookie: str = ""
+            if expires == None:
+                cookie = dump_cookie(
+                    key,
+                    value=value,
+                    max_age=max_age,
+                    path=path,
+                    domain=domain,
+                    secure=secure,
+                    httponly=httponly,
+                    samesite=samesite
+                )
+            else:
+                cookie = dump_cookie(
+                    key,
+                    value=value,
+                    max_age=max_age,
+                    expires=int(expires / 1000),
+                    path=path,
+                    domain=domain,
+                    secure=secure,
+                    httponly=httponly,
+                    samesite=samesite
+                )
+            self.headers.append(("Set-Cookie", cookie))
         else:
-            self.response.set_cookie(key, value=value, max_age=max_age, expires=expires / 1000,
-                                     path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
+            if expires == None:
+                self.response.set_cookie(key, value=value, max_age=max_age,
+                                         path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
+            else:
+                self.response.set_cookie(key, value=value, max_age=max_age, expires=expires / 1000,
+                                         path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
 
-    def set_header(self, key, value):
+    def set_header(self, key: str, value: str):
         if self.response is None:
             # TODO in the future the headrs must be validated..
-            if not isinstance(value, str):
-                raise TypeError("Value should be unicode.")
-            if u"\n" in value or u"\r" in value:
+            # if not isinstance(value, str):
+            #     raise TypeError("Value should be unicode.")
+            if "\n" in value or "\r" in value:
                 raise ValueError(
                     "Detected newline in header value.  This is "
                     "a potential security problem"
@@ -66,16 +84,15 @@ class FlaskResponse(BaseResponse):
         else:
             self.response.headers.add(key, value)
 
-    def get_header(self, key):
+    def get_header(self, key: str) -> Union[None, str]:
         if self.response is not None:
             return self.response.headers.get(key)
-        else:
-            for value in self.headers:
-                if value[0] == key:
-                    return value[1]
-            return None
+        for value in self.headers:
+            if value[0] == key:
+                return value[1]
+        return None
 
-    def set_status_code(self, status_code):
+    def set_status_code(self, status_code: int):
         if not self.status_set:
             self.response.status_code = status_code
             self.status_set = True
@@ -86,7 +103,7 @@ class FlaskResponse(BaseResponse):
         else:
             return self.response.headers
 
-    def set_json_content(self, content):
+    def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:
             self.set_header('Content-Type', 'application/json; charset=utf-8')
             self.response.data = json.dumps(

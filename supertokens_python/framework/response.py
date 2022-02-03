@@ -33,7 +33,7 @@ class BaseResponse(ABC):
                    domain: Union[str, None] = None,
                    secure: bool = False,
                    httponly: bool = False,
-                   samesite: str = "Lax", ):
+                   samesite: str = "Lax"):
         pass
 
     @abstractmethod
@@ -41,7 +41,7 @@ class BaseResponse(ABC):
         pass
 
     @abstractmethod
-    def get_header(self, key: str):
+    def get_header(self, key: str) -> Union[str, None]:
         pass
 
     @abstractmethod
@@ -53,5 +53,5 @@ class BaseResponse(ABC):
         pass
 
     @abstractmethod
-    def set_html_content(self, content: Dict[str, Any]):
+    def set_html_content(self, content: str):
         pass

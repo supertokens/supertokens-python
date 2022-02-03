@@ -17,5 +17,7 @@ from supertokens_python.framework.types import Framework
 
 
 class FlaskFramework(Framework):
-    def wrap_request(self, unwrapped):
+    from flask.wrappers import Request
+
+    def wrap_request(self, unwrapped: Request):
         return FlaskRequest(unwrapped)

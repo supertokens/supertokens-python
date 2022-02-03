@@ -13,7 +13,7 @@
 # under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any, Dict, Union
 
 from supertokens_python.recipe.session import Session
 
@@ -25,15 +25,15 @@ class BaseRequest(ABC):
         self.request = None
 
     @abstractmethod
-    def get_query_param(self, key: str, default: Union[str, None] = None):
+    def get_query_param(self, key: str, default: Union[str, None] = None) -> Union[str, None]:
         pass
 
     @abstractmethod
-    async def json(self):
+    async def json(self) -> Union[Any, None]:
         pass
 
     @abstractmethod
-    async def form_data(self):
+    async def form_data(self) -> Dict[str, Any]:
         pass
 
     @abstractmethod
@@ -45,15 +45,15 @@ class BaseRequest(ABC):
         pass
 
     @abstractmethod
-    def get_header(self, key: str) -> Any:
+    def get_header(self, key: str) -> Union[None, str]:
         pass
 
     @abstractmethod
-    def url(self):
+    def url(self) -> str:
         pass
 
     @abstractmethod
-    def get_session(self):
+    def get_session(self) -> Union[Session, None]:
         pass
 
     @abstractmethod

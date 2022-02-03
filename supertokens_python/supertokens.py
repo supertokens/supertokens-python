@@ -367,7 +367,7 @@ class Supertokens:
 
         return response
 
-    async def handle_supertokens_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse):
+    async def handle_supertokens_error(self, request: BaseRequest, err: Exception, response: BaseResponse):
         if isinstance(err, GeneralError):
             raise err
 

@@ -10,7 +10,7 @@ with open(path.join(here, "README.md"), mode="r", encoding="utf-8") as f:
 
 extras_require = {
     'dev': ([
-        'pytest==6.2.3',
+        'pytest==6.2.5',
         'autopep8==1.5.6',
         'PyYAML==5.4.1',
         'uvicorn==0.13.4',
@@ -20,7 +20,7 @@ extras_require = {
         'nest-asyncio==1.5.1',
         'Fastapi==0.68.1',
         'django',
-        'Flask==2.0.1',
+        'Flask==2.0.2',
         'python-dotenv',
         'flask_cors',
         'django-cors-headers',
