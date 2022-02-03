@@ -78,7 +78,8 @@ class RecipeImplementationWithJWT(RecipeImplementation):
             jwt_expiry=get_jwt_expiry(access_token_validity_in_seconds),
             user_id=new_session.get_user_id(),
             jwt_property_name=self.config.jwt.property_name_in_access_token_payload,
-            openid_recipe_implementation=self.openid_recipe_implementation
+            openid_recipe_implementation=self.openid_recipe_implementation,
+            user_context=user_context
         )
 
         await new_session.update_access_token_payload(access_token_payload)
@@ -122,7 +123,8 @@ class RecipeImplementationWithJWT(RecipeImplementation):
             jwt_expiry=jwt_expiry,
             user_id=session_information['userId'],
             jwt_property_name=existing_jwt_property_name,
-            openid_recipe_implementation=self.openid_recipe_implementation
+            openid_recipe_implementation=self.openid_recipe_implementation,
+            user_context=user_context
         )
 
         return await RecipeImplementation.update_access_token_payload(self, session_handle,

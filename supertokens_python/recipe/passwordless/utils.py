@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-
 from abc import ABC
 from typing import TYPE_CHECKING, Callable, Union, Awaitable, Any
 try:

@@ -3,12 +3,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 ## [unreleased]
+
+## [0.5.0] - 2022-02-03
+
 ### Breaking Change
 - User context property added for all recipes' apis and functions
 
 ### Added
 - Returns session from all APIs where a session is created
+- Added `regenerate_access_token` as a new recipe function for the session recipe.
 
 ## [0.4.1] - 2022-01-27
 

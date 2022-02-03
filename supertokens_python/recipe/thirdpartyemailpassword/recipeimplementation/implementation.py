@@ -114,7 +114,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def update_email_or_password(self, user_id: str, user_context: any, email: str = None,
                                        password: str = None) -> UpdateEmailOrPasswordResult:
-        user = await self.get_user_by_id(user_id)
+        user = await self.get_user_by_id(user_id, user_context)
         if user is None:
             return UpdateEmailOrPasswordUnknownUserIdErrorResult()
         if user.third_party_info is not None:

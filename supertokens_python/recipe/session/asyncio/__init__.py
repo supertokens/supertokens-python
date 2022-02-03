@@ -62,7 +62,7 @@ async def revoke_session(session_handle: str, user_context=None) -> bool:
 async def revoke_all_sessions_for_user(user_id: str, user_context=None) -> List[str]:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(user_id)
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(user_id, user_context)
 
 
 async def get_all_session_handles_for_user(user_id: str, user_context=None) -> List[str]:
@@ -133,3 +133,11 @@ async def get_open_id_discovery_configuration(user_context=None) -> [GetOpenIdDi
 
     raise 'get_open_id_discovery_configuration cannot be used without enabling the JWT feature. Please set \'enable: ' \
           'True\' for jwt config when initialising the Session recipe'
+
+
+async def regenerate_access_token(access_token: str, new_access_token_payload: Union[dict, None] = None,
+                                  user_context: Union[any, None] = None):
+    if user_context is None:
+        user_context = {}
+    await SessionRecipe.get_instance().recipe_implementation.regenerate_access_token(access_token, user_context,
+                                                                                     new_access_token_payload)

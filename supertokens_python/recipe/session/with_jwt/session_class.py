@@ -32,13 +32,13 @@ from supertokens_python.recipe.session import Session
 def get_session_with_jwt(original_session: Session, openid_recipe_implementation: OpenIdRecipeInterface) -> Session:
     original_update_access_token_payload = original_session.update_access_token_payload
 
-    async def update_access_token_payload(new_access_token_payload) -> None:
+    async def update_access_token_payload(new_access_token_payload, user_context) -> None:
         if new_access_token_payload is None:
             new_access_token_payload = {}
         access_token_payload = original_session.get_access_token_payload()
 
         if ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY not in access_token_payload:
-            return await original_update_access_token_payload(new_access_token_payload)
+            return await original_update_access_token_payload(new_access_token_payload, user_context)
 
         jwt_property_name = access_token_payload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]
 
@@ -67,10 +67,11 @@ def get_session_with_jwt(original_session: Session, openid_recipe_implementation
             jwt_expiry=jwt_expiry,
             user_id=original_session.get_user_id(),
             jwt_property_name=jwt_property_name,
-            openid_recipe_implementation=openid_recipe_implementation
+            openid_recipe_implementation=openid_recipe_implementation,
+            user_context=user_context
         )
 
-        return await original_update_access_token_payload(new_access_token_payload)
+        return await original_update_access_token_payload(new_access_token_payload, user_context)
 
     original_session.update_access_token_payload = update_access_token_payload
     return original_session
