@@ -13,6 +13,7 @@
 # under the License.
 
 import json
+from typing import Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 
@@ -49,7 +50,7 @@ class Middleware:
             response_ = FlaskResponse(Response())
 
             # TODO: try and remove ignoring of types below
-            result: FlaskResponse = sync(st.middleware(
+            result: Union[FlaskResponse, None] = sync(st.middleware(
                 request_, response_))  # type: ignore
 
             if result is not None:

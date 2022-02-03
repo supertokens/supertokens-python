@@ -26,14 +26,14 @@ class BaseResponse(ABC):
 
     @abstractmethod
     def set_cookie(self, key: str,
-                   value: str = "",
-                   max_age: Union[int, None] = None,
-                   expires: Union[int, None] = None,
+                   value: str,
+                   #    max_age: Union[int, None] = None,
+                   expires: int,
                    path: str = "/",
                    domain: Union[str, None] = None,
                    secure: bool = False,
                    httponly: bool = False,
-                   samesite: str = "Lax"):
+                   samesite: str = "lax"):
         pass
 
     @abstractmethod

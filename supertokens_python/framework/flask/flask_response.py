@@ -34,41 +34,23 @@ class FlaskResponse(BaseResponse):
             self.set_header('Content-Type', 'text/html')
             self.response_sent = True
 
-    def set_cookie(self, key: str, value: str = "", max_age: Union[int, None] = None, expires: Union[int, None] = None, path: str = "/",
+    def set_cookie(self, key: str, value: str, expires: int, path: str = "/",
                    domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = "lax"):
         if self.response is None:
-            cookie: str = ""
-            if expires == None:
-                cookie = dump_cookie(
-                    key,
-                    value=value,
-                    max_age=max_age,
-                    path=path,
-                    domain=domain,
-                    secure=secure,
-                    httponly=httponly,
-                    samesite=samesite
-                )
-            else:
-                cookie = dump_cookie(
-                    key,
-                    value=value,
-                    max_age=max_age,
-                    expires=int(expires / 1000),
-                    path=path,
-                    domain=domain,
-                    secure=secure,
-                    httponly=httponly,
-                    samesite=samesite
-                )
+            cookie = dump_cookie(
+                key,
+                value=value,
+                expires=int(expires / 1000),
+                path=path,
+                domain=domain,
+                secure=secure,
+                httponly=httponly,
+                samesite=samesite
+            )
             self.headers.append(("Set-Cookie", cookie))
         else:
-            if expires == None:
-                self.response.set_cookie(key, value=value, max_age=max_age,
-                                         path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
-            else:
-                self.response.set_cookie(key, value=value, max_age=max_age, expires=expires / 1000,
-                                         path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
+            self.response.set_cookie(key, value=value, expires=expires / 1000,
+                                     path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
 
     def set_header(self, key: str, value: str):
         if self.response is None:

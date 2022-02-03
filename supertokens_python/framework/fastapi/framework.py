@@ -17,5 +17,7 @@ from supertokens_python.framework.types import Framework
 
 
 class FastapiFramework(Framework):
-    def wrap_request(self, unwrapped):
+    from fastapi import Request
+
+    def wrap_request(self, unwrapped: Request):
         return FastApiRequest(unwrapped)

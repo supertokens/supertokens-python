@@ -14,7 +14,7 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Union
+from typing import Any, Union
 
 from supertokens_python.framework.request import BaseRequest
 
@@ -30,5 +30,5 @@ class FrameworkEnum(Enum):
 class Framework(ABC):
 
     @abstractmethod
-    def wrap_request(self, unwrapped) -> Union[BaseRequest, None]:
+    def wrap_request(self, unwrapped: Any) -> Union[BaseRequest, None]:
         pass

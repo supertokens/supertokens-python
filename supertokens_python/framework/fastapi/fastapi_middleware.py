@@ -12,19 +12,26 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from typing import Union
+
+from starlette.middleware.base import (BaseHTTPMiddleware,
+                                       RequestResponseEndpoint)
+from supertokens_python.framework import BaseResponse
 
 
 class Middleware(BaseHTTPMiddleware):
+    from fastapi import FastAPI, Request
 
-    def __init__(self, app):
+    def __init__(self, app: FastAPI):
         super().__init__(app)
 
-    async def dispatch(self, request, call_next: RequestResponseEndpoint):
-        from supertokens_python.framework.fastapi.fastapi_request import FastApiRequest
-        from supertokens_python.framework.fastapi.fastapi_response import FastApiResponse
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
         from supertokens_python import Supertokens
         from supertokens_python.exceptions import SuperTokensError
+        from supertokens_python.framework.fastapi.fastapi_request import \
+            FastApiRequest
+        from supertokens_python.framework.fastapi.fastapi_response import \
+            FastApiResponse
         from supertokens_python.recipe.session import Session
         from supertokens_python.supertokens import manage_cookies_post_response
         st = Supertokens.get_instance()
@@ -33,7 +40,7 @@ class Middleware(BaseHTTPMiddleware):
         try:
             custom_request = FastApiRequest(request)
             response = FastApiResponse(Response())
-            result = await st.middleware(custom_request, response)
+            result: Union[BaseResponse, None] = await st.middleware(custom_request, response)
             if result is None:
                 response = await call_next(request)
                 result = FastApiResponse(response)
@@ -41,8 +48,11 @@ class Middleware(BaseHTTPMiddleware):
             if hasattr(request.state, "supertokens") and isinstance(
                     request.state.supertokens, Session):
                 manage_cookies_post_response(request.state.supertokens, result)
-            return result.response
+            if isinstance(result, FastApiResponse):
+                return result.response
         except SuperTokensError as e:
             response = FastApiResponse(Response())
-            result = await st.handle_supertokens_error(FastApiRequest(request), e, response)
-            return result.response
+            result: Union[BaseResponse, None] = await st.handle_supertokens_error(FastApiRequest(request), e, response)
+            if isinstance(result, FastApiResponse):
+                return result.response
+        raise Exception("Should never come here")
