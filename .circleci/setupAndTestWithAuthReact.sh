@@ -54,7 +54,7 @@ cd ./test/server/
 npm i -d --quiet --no-progress
 npm i git+https://github.com:supertokens/supertokens-node.git#$3 --quiet --no-progress
 cd ../../../project/tests/auth-react/fastapi
-uvicorn app:app --host 0.0.0.0 --port 8083 &
+export PYTHONPATH="${PYTHONPATH}:/root/project" && uvicorn app:app --host 0.0.0.0 --port 8083 &
 pid=$!
 cd ../../../../supertokens-auth-react/
 

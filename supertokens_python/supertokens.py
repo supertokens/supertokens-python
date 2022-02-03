@@ -66,6 +66,12 @@ class SupertokensConfig:
         self.api_key = api_key
 
 
+class Host:
+    def __init__(self, domain: NormalisedURLDomain, base_path: NormalisedURLPath):
+        self.domain = domain
+        self.base_path = base_path
+
+
 class InputAppInfo:
     def __init__(self,
                  app_name: str,
@@ -166,7 +172,7 @@ class Supertokens:
             app_info.website_base_path,
             mode
         )
-        hosts = list(map(lambda h: NormalisedURLDomain(h.strip()),
+        hosts = list(map(lambda h: Host(NormalisedURLDomain(h.strip()), NormalisedURLPath(h.strip())),
                          filter(lambda x: x != '', supertokens_config.connection_uri.split(';'))))
         Querier.init(hosts, supertokens_config.api_key)
 

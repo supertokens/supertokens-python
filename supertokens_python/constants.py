@@ -11,8 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-SUPPORTED_CDI_VERSIONS = ['2.9', '2.10', '2.11']
-VERSION = '0.5.0'
+SUPPORTED_CDI_VERSIONS = ['2.9', '2.10', '2.11', '2.12']
+VERSION = '0.4.1'
 TELEMETRY = '/telemetry'
 USER_COUNT = '/users/count'
 USER_DELETE = '/user/remove'

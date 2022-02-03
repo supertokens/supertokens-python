@@ -54,7 +54,11 @@ from .api import (
     handle_refresh_api
 )
 from os import environ
-from typing import List, Union, TYPE_CHECKING, Literal
+from typing import List, Union, TYPE_CHECKING
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 from supertokens_python.framework.response import BaseResponse
 
 if TYPE_CHECKING:

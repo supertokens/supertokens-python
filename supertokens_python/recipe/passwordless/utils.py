@@ -14,7 +14,11 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import TYPE_CHECKING, Callable, Union, Awaitable, Literal, Any
+from typing import TYPE_CHECKING, Callable, Union, Awaitable, Any
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface
@@ -158,7 +162,7 @@ def validate_and_normalise_user_input(
         contact_config: ContactConfig,
         flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
         override: Union[OverrideConfig, None] = None,
-        get_link_domain_and_path: Union[Callable[[str, Any], Awaitable[Union[str, None]]]] = None,
+        get_link_domain_and_path: Union[Callable[[str, Any], Awaitable[Union[str, None]]], None] = None,
         get_custom_user_input_code: Union[Callable[[Any], Awaitable[str]], None] = None):
 
     if override is None:

@@ -126,15 +126,16 @@ class CreateResetPasswordWrongUserIdErrorResult(CreateResetPasswordResult):
 
 class ResetPasswordUsingTokenResult(ABC):
     def __init__(self, status: Literal[&#39;OK&#39;,
-                 &#39;RESET_PASSWORD_INVALID_TOKEN_ERROR&#39;]):
+                 &#39;RESET_PASSWORD_INVALID_TOKEN_ERROR&#39;], user_id: Union[None, str] = None):
         self.status = status
         self.is_ok = False
+        self.user_id = user_id
         self.is_reset_password_invalid_token_error = False
 
 
 class ResetPasswordUsingTokenOkResult(ResetPasswordUsingTokenResult):
-    def __init__(self):
-        super().__init__(&#39;OK&#39;)
+    def __init__(self, user_id: Union[None, str]):
+        super().__init__(&#39;OK&#39;, user_id)
         self.is_ok = True
         self.is_reset_password_invalid_token_error = False
 
@@ -362,7 +363,8 @@ class GeneratePasswordResetTokenPostOkResponse(
 
 class PasswordResetPostResponse(ABC):
     def __init__(self, status: Literal[&#39;OK&#39;,
-                 &#39;RESET_PASSWORD_INVALID_TOKEN_ERROR&#39;]):
+                 &#39;RESET_PASSWORD_INVALID_TOKEN_ERROR&#39;], user_id: Union[str, None] = None):
+        self.user_id = user_id
         self.status = status
 
     def to_json(self):
@@ -372,8 +374,8 @@ class PasswordResetPostResponse(ABC):
 
 
 class PasswordResetPostOkResponse(PasswordResetPostResponse):
-    def __init__(self):
-        super().__init__(&#39;OK&#39;)
+    def __init__(self, user_id: Union[str, None]):
+        super().__init__(&#39;OK&#39;, user_id)
 
 
 class PasswordResetPostInvalidTokenResponse(PasswordResetPostResponse):
@@ -1174,6 +1176,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResponse"><code class="flex name class">
 <span>class <span class="ident">PasswordResetPostOkResponse</span></span>
+<span>(</span><span>user_id: Union[str, None])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1183,8 +1186,8 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class PasswordResetPostOkResponse(PasswordResetPostResponse):
-    def __init__(self):
-        super().__init__(&#39;OK&#39;)</code></pre>
+    def __init__(self, user_id: Union[str, None]):
+        super().__init__(&#39;OK&#39;, user_id)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1194,7 +1197,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostResponse"><code class="flex name class">
 <span>class <span class="ident">PasswordResetPostResponse</span></span>
-<span>(</span><span>status: "Literal['OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR']")</span>
+<span>(</span><span>status: "Literal['OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR']", user_id: Union[str, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1205,7 +1208,8 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class PasswordResetPostResponse(ABC):
     def __init__(self, status: Literal[&#39;OK&#39;,
-                 &#39;RESET_PASSWORD_INVALID_TOKEN_ERROR&#39;]):
+                 &#39;RESET_PASSWORD_INVALID_TOKEN_ERROR&#39;], user_id: Union[str, None] = None):
+        self.user_id = user_id
         self.status = status
 
     def to_json(self):
@@ -1452,6 +1456,7 @@ async def update_email_or_password(self, user_id: str, email: Union[str, None] =
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.ResetPasswordUsingTokenOkResult"><code class="flex name class">
 <span>class <span class="ident">ResetPasswordUsingTokenOkResult</span></span>
+<span>(</span><span>user_id: Union[None, str])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1461,8 +1466,8 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ResetPasswordUsingTokenOkResult(ResetPasswordUsingTokenResult):
-    def __init__(self):
-        super().__init__(&#39;OK&#39;)
+    def __init__(self, user_id: Union[None, str]):
+        super().__init__(&#39;OK&#39;, user_id)
         self.is_ok = True
         self.is_reset_password_invalid_token_error = False</code></pre>
 </details>
@@ -1474,7 +1479,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.ResetPasswordUsingTokenResult"><code class="flex name class">
 <span>class <span class="ident">ResetPasswordUsingTokenResult</span></span>
-<span>(</span><span>status: "Literal['OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR']")</span>
+<span>(</span><span>status: "Literal['OK', 'RESET_PASSWORD_INVALID_TOKEN_ERROR']", user_id: Union[None, str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1485,9 +1490,10 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class ResetPasswordUsingTokenResult(ABC):
     def __init__(self, status: Literal[&#39;OK&#39;,
-                 &#39;RESET_PASSWORD_INVALID_TOKEN_ERROR&#39;]):
+                 &#39;RESET_PASSWORD_INVALID_TOKEN_ERROR&#39;], user_id: Union[None, str] = None):
         self.status = status
         self.is_ok = False
+        self.user_id = user_id
         self.is_reset_password_invalid_token_error = False</code></pre>
 </details>
 <h3>Ancestors</h3>

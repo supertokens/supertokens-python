@@ -43,9 +43,13 @@
 from . import exceptions
 from .supertokens import Supertokens
 from .recipe import session
-from typing import List, Union, Literal, Callable
+from typing import List, Union, Callable
 from .supertokens import SupertokensConfig, InputAppInfo, AppInfo
 from .recipe_module import RecipeModule
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 
 def init(app_info: InputAppInfo,

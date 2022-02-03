@@ -24,6 +24,10 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 from starlette.types import ASGIApp
 from fastapi.requests import Request
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from supertokens_python import init, get_all_cors_headers, SupertokensConfig, InputAppInfo, Supertokens
 from supertokens_python.framework.fastapi import Middleware
@@ -142,8 +146,8 @@ class CustomAuth0Provider(Provider):
         return AccessTokenAPI(self.access_token_api_url, params)
 
 
-def custom_init(contact_method: typing.Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = None,
-                flow_type: typing.Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = None):
+def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = None,
+                flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = None):
     PasswordlessRecipe.reset()
     JWTRecipe.reset()
     EmailVerificationRecipe.reset()

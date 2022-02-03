@@ -3,14 +3,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [0.5.0] - 2022-01-24
-
+## [unreleased]
 ### Breaking Change
 - User context property added for all recipes' apis and functions
 
 ### Added
 - Returns session from all APIs where a session is created
+
+## [0.4.1] - 2022-01-27
+
+### Added
+-   add workflow to verify if pr title follows conventional commits
+
+### Changed
+- Added userId as an optional property to the response of `recipe/user/password/reset` (compatibility with CDI 2.12).
+- Adds ability to give a path for each of the hostnames in the connectionURI: https://github.com/supertokens/supertokens-node/issues/252
+
+### Fixed
+- Bug fixes in Literal import which caused issues when using the sdk with python version 3.7.
+- Fixes https://github.com/supertokens/supertokens-node/issues/244 - throws an error if a user tries to update email / password of a third party login user.
 
 ## [0.4.0] - 2022-01-09
 

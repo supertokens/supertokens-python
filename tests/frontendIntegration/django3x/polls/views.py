@@ -15,7 +15,11 @@ import json
 import os
 import sys
 from functools import wraps
-from typing import Literal, Union
+from typing import Union
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render

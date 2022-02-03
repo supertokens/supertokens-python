@@ -29,7 +29,7 @@ from .constants import (
 from .normalised_url_path import NormalisedURLPath
 
 if TYPE_CHECKING:
-    pass
+    from .supertokens import Host
 from .exceptions import raise_general_exception
 from .utils import (
     is_4xx_error,
@@ -47,7 +47,7 @@ class Querier:
     __last_tried_index: int = 0
     __hosts_alive_for_testing = set()
 
-    def __init__(self, hosts: list, rid_to_core=None):
+    def __init__(self, hosts: list[Host], rid_to_core=None):
         self.__hosts = hosts
         self.__rid_to_core = None
         if rid_to_core is not None:
@@ -110,7 +110,7 @@ class Querier:
         return Querier(Querier.__hosts, rid_to_core)
 
     @staticmethod
-    def init(hosts, api_key=None):
+    def init(hosts: list[Host], api_key=None):
         if not Querier.__init_called:
             Querier.__init_called = True
             Querier.__hosts = hosts
@@ -188,8 +188,9 @@ class Querier:
             raise_general_exception('No SuperTokens core available to query')
 
         try:
-            current_host = self.__hosts[Querier.__last_tried_index].get_as_string_dangerous(
-            )
+            current_host_domain = self.__hosts[Querier.__last_tried_index].domain.get_as_string_dangerous()
+            current_host_base_path = self.__hosts[Querier.__last_tried_index].base_path.get_as_string_dangerous()
+            current_host = current_host_domain + current_host_base_path
             Querier.__last_tried_index += 1
             Querier.__last_tried_index %= len(self.__hosts)
             url = current_host + path.get_as_string_dangerous()

@@ -49,7 +49,7 @@ from ..types import User, UsersResponse, NextPaginationToken
 from ..utils import extract_pagination_token, combine_pagination_results
 from supertokens_python.recipe.emailpassword.interfaces import UpdateEmailOrPasswordResult, \
     ResetPasswordUsingTokenResult, \
-    CreateResetPasswordResult, SignUpResult, SignInResult
+    CreateResetPasswordResult, SignUpResult, SignInResult, UpdateEmailOrPasswordUnknownUserIdErrorResult
 from ...thirdparty.interfaces import SignInUpResult
 
 if TYPE_CHECKING:
@@ -142,6 +142,11 @@ class RecipeImplementation(RecipeInterface):
 
     async def update_email_or_password(self, user_id: str, email: str = None,
                                        password: str = None) -&gt; UpdateEmailOrPasswordResult:
+        user = await self.get_user_by_id(user_id)
+        if user is None:
+            return UpdateEmailOrPasswordUnknownUserIdErrorResult()
+        if user.third_party_info is not None:
+            raise Exception(&#34;Cannot update email or password of a user who signed up using third party login.&#34;)
         return await self.ep_update_email_or_password(user_id, email, password)
 
     @deprecated(reason=&#34;This method is deprecated&#34;)
@@ -278,6 +283,11 @@ inheritance.</p></div>
 
     async def update_email_or_password(self, user_id: str, email: str = None,
                                        password: str = None) -&gt; UpdateEmailOrPasswordResult:
+        user = await self.get_user_by_id(user_id)
+        if user is None:
+            return UpdateEmailOrPasswordUnknownUserIdErrorResult()
+        if user.third_party_info is not None:
+            raise Exception(&#34;Cannot update email or password of a user who signed up using third party login.&#34;)
         return await self.ep_update_email_or_password(user_id, email, password)
 
     @deprecated(reason=&#34;This method is deprecated&#34;)
@@ -518,6 +528,11 @@ async def get_users_oldest_first(self, limit: int = None, next_pagination: str =
 </summary>
 <pre><code class="python">async def update_email_or_password(self, user_id: str, email: str = None,
                                    password: str = None) -&gt; UpdateEmailOrPasswordResult:
+    user = await self.get_user_by_id(user_id)
+    if user is None:
+        return UpdateEmailOrPasswordUnknownUserIdErrorResult()
+    if user.third_party_info is not None:
+        raise Exception(&#34;Cannot update email or password of a user who signed up using third party login.&#34;)
     return await self.ep_update_email_or_password(user_id, email, password)</code></pre>
 </details>
 </dd>

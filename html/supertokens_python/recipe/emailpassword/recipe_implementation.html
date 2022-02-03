@@ -112,7 +112,10 @@ class RecipeImplementation(RecipeInterface):
             NormalisedURLPath(&#39;/recipe/user/password/reset&#39;), data)
         if &#39;status&#39; not in response or response[&#39;status&#39;] != &#39;OK&#39;:
             return ResetPasswordUsingTokenWrongUserIdErrorResult()
-        return ResetPasswordUsingTokenOkResult()
+        user_id = None
+        if &#39;userId&#39; in response:
+            user_id = response[&#39;userId&#39;]
+        return ResetPasswordUsingTokenOkResult(user_id)
 
     async def get_users(self, time_joined_order: Literal[&#39;ASC&#39;, &#39;DESC&#39;],
                         limit: Union[int, None] = None, pagination_token: Union[str, None] = None) -&gt; UsersResponse:
@@ -261,7 +264,10 @@ inheritance.</p></div>
             NormalisedURLPath(&#39;/recipe/user/password/reset&#39;), data)
         if &#39;status&#39; not in response or response[&#39;status&#39;] != &#39;OK&#39;:
             return ResetPasswordUsingTokenWrongUserIdErrorResult()
-        return ResetPasswordUsingTokenOkResult()
+        user_id = None
+        if &#39;userId&#39; in response:
+            user_id = response[&#39;userId&#39;]
+        return ResetPasswordUsingTokenOkResult(user_id)
 
     async def get_users(self, time_joined_order: Literal[&#39;ASC&#39;, &#39;DESC&#39;],
                         limit: Union[int, None] = None, pagination_token: Union[str, None] = None) -&gt; UsersResponse:
@@ -506,7 +512,10 @@ inheritance.</p></div>
         NormalisedURLPath(&#39;/recipe/user/password/reset&#39;), data)
     if &#39;status&#39; not in response or response[&#39;status&#39;] != &#39;OK&#39;:
         return ResetPasswordUsingTokenWrongUserIdErrorResult()
-    return ResetPasswordUsingTokenOkResult()</code></pre>
+    user_id = None
+    if &#39;userId&#39; in response:
+        user_id = response[&#39;userId&#39;]
+    return ResetPasswordUsingTokenOkResult(user_id)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.recipe_implementation.RecipeImplementation.sign_in"><code class="name flex">
