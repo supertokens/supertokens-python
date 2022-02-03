@@ -161,7 +161,7 @@ def validate_and_normalise_user_input(
         contact_config: ContactConfig,
         flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
         override: Union[OverrideConfig, None] = None,
-        get_link_domain_and_path: Union[Callable[[str, Any], Awaitable[Union[str, None]]]] = None,
+        get_link_domain_and_path: Union[Callable[[str, Any], Awaitable[Union[str, None]]], None] = None,
         get_custom_user_input_code: Union[Callable[[Any], Awaitable[str]], None] = None):
 
     if override is None:
