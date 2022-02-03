@@ -42,8 +42,10 @@ class SignInAndUpFeature:
             is_default = provider.is_default
 
             if not is_default:
-                # if this id is not being used by any other provider, we treat this as the is_default
-                other_providers_with_same_id = list(filter(lambda p: p.id == provider_id and provider != p, providers))
+                # if this id is not being used by any other provider, we treat
+                # this as the is_default
+                other_providers_with_same_id = list(
+                    filter(lambda p: p.id == provider_id and provider != p, providers))
                 if len(other_providers_with_same_id) == 0:
                     # we treat this as the isDefault now.
                     is_default = True
@@ -94,7 +96,8 @@ def validate_and_normalise_email_verification_config(
     if config is None:
         config = InputEmailVerificationConfig()
     if config.create_and_send_custom_email is not None:
-        create_and_send_custom_email = email_verification_create_and_send_custom_email(recipe, config.create_and_send_custom_email)
+        create_and_send_custom_email = email_verification_create_and_send_custom_email(
+            recipe, config.create_and_send_custom_email)
     if config.get_email_verification_url is not None:
         get_email_verification_url = email_verification_get_email_verification_url(recipe,
                                                                                    config.get_email_verification_url)
@@ -109,7 +112,8 @@ def validate_and_normalise_email_verification_config(
 
 class InputOverrideConfig:
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-                 apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+                 apis: Union[Callable[[APIInterface],
+                                      APIInterface], None] = None,
                  email_verification_feature: Union[EmailVerificationOverrideConfig, None] = None):
         self.functions = functions
         self.apis = apis
@@ -144,7 +148,8 @@ def validate_and_normalise_user_input(
         recipe,
         email_verification_feature, override)
     return ThirdPartyConfig(sign_in_and_up_feature, email_verification_feature,
-                            OverrideConfig(functions=override.functions, apis=override.apis)
+                            OverrideConfig(
+                                functions=override.functions, apis=override.apis)
                             )
 
 
@@ -158,24 +163,29 @@ def find_right_provider(
         if provider_id != third_party_id:
             continue
 
-        # first if there is only one provider with third_party_id in the providers array
-        other_providers_with_same_id = list(filter(lambda p: p.id == provider_id and provider != p, providers))
+        # first if there is only one provider with third_party_id in the
+        # providers array
+        other_providers_with_same_id = list(
+            filter(lambda p: p.id == provider_id and provider != p, providers))
         if len(other_providers_with_same_id) == 0:
             # then we always return that.
             return provider
 
-        # otherwise, we look for the is_default provider if client_id is missing
+        # otherwise, we look for the is_default provider if client_id is
+        # missing
         if client_id is None and provider.is_default:
             return provider
 
-        # otherwise, we return a provider that matches based on client Id as well.
+        # otherwise, we return a provider that matches based on client Id as
+        # well.
         if provider.client_id == client_id:
             return provider
 
     return None
 
 
-def verify_id_token_from_jwks_endpoint(id_token: str, jwks_uri: str, audience: str, issuers: List[str]):
+def verify_id_token_from_jwks_endpoint(
+        id_token: str, jwks_uri: str, audience: str, issuers: List[str]):
     jwks_client = PyJWKClient(jwks_uri)
     signing_key = jwks_client.get_signing_key_from_jwt(id_token)
 

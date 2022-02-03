@@ -45,7 +45,8 @@ def normalise_session_scope(recipe: SessionRecipe, session_scope: str) -> str:
         if scope.startswith('.'):
             scope = scope[1:]
 
-        if (not scope.startswith('https://')) and (not scope.startswith('http://')):
+        if (not scope.startswith('https://')
+                ) and (not scope.startswith('http://')):
             scope = 'http://' + scope
 
         try:
@@ -101,7 +102,8 @@ def get_top_level_domain_for_same_site_resolution(url: str) -> str:
 
 class InputErrorHandlers:
     def __init__(self,
-                 on_token_theft_detected: Union[Callable[[BaseRequest, str, str], Awaitable[None]], None] = None,
+                 on_token_theft_detected: Union[Callable[[
+                     BaseRequest, str, str], Awaitable[None]], None] = None,
                  on_unauthorised: Union[Callable[[BaseRequest, str, BaseResponse], Awaitable[None]], None] = None):
         self.on_token_theft_detected = on_token_theft_detected
         self.on_unauthorised = on_unauthorised
@@ -163,7 +165,8 @@ async def default_token_theft_detected_callback(_: BaseRequest, session_handle: 
 class InputOverrideConfig:
     def __init__(
         self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        functions: Union[Callable[[RecipeInterface],
+                                  RecipeInterface], None] = None,
         apis: Union[Callable[[APIInterface], APIInterface], None] = None,
         openid_feature: Union[OpenIdInputOverrideConfig, None] = None
     ):
@@ -180,7 +183,8 @@ class OverrideConfig:
 
 
 class JWTConfig:
-    def __init__(self, enable: bool, property_name_in_access_token_payload: Union[str, None] = None, issuer: Union[str, None] = None):
+    def __init__(self, enable: bool, property_name_in_access_token_payload:
+                 Union[str, None] = None, issuer: Union[str, None] = None):
         if property_name_in_access_token_payload is None:
             property_name_in_access_token_payload = 'jwt'
         if property_name_in_access_token_payload == ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY:
@@ -223,19 +227,23 @@ def validate_and_normalise_user_input(
     cookie_secure: Union[str, None] = None,
     cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
     session_expired_status_code: Union[str, None] = None,
-    anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+    anti_csrf: Union[Literal["VIA_TOKEN",
+                             "VIA_CUSTOM_HEADER", "NONE"], None] = None,
     error_handlers: Union[InputErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
     jwt: Union[JWTConfig, None] = None
 ):
-    cookie_domain = normalise_session_scope(recipe, cookie_domain) if cookie_domain is not None else None
+    cookie_domain = normalise_session_scope(
+        recipe, cookie_domain) if cookie_domain is not None else None
     top_level_api_domain = get_top_level_domain_for_same_site_resolution(
         app_info.api_domain.get_as_string_dangerous())
     top_level_website_domain = get_top_level_domain_for_same_site_resolution(
         app_info.website_domain.get_as_string_dangerous())
 
-    api_domain_scheme = get_url_scheme(app_info.api_domain.get_as_string_dangerous())
-    website_domain_scheme = get_url_scheme(app_info.website_domain.get_as_string_dangerous())
+    api_domain_scheme = get_url_scheme(
+        app_info.api_domain.get_as_string_dangerous())
+    website_domain_scheme = get_url_scheme(
+        app_info.website_domain.get_as_string_dangerous())
     if cookie_same_site is not None:
         cookie_same_site = normalise_same_site(cookie_same_site)
     elif (top_level_api_domain != top_level_website_domain) or (api_domain_scheme != website_domain_scheme):

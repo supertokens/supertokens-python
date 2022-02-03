@@ -53,15 +53,19 @@ def consume_code(pre_auth_session_id: str,
 
 
 def get_user_by_id(user_id: str, user_context=None) -> Union[User, None]:
-    return sync(asyncio.get_user_by_id(user_id=user_id, user_context=user_context))
+    return sync(asyncio.get_user_by_id(
+        user_id=user_id, user_context=user_context))
 
 
 def get_user_by_email(email: str, user_context=None) -> Union[User, None]:
-    return sync(asyncio.get_user_by_email(email=email, user_context=user_context))
+    return sync(asyncio.get_user_by_email(
+        email=email, user_context=user_context))
 
 
-def get_user_by_phone_number(phone_number: str, user_context=None) -> Union[User, None]:
-    return sync(asyncio.get_user_by_phone_number(phone_number=phone_number, user_context=user_context))
+def get_user_by_phone_number(
+        phone_number: str, user_context=None) -> Union[User, None]:
+    return sync(asyncio.get_user_by_phone_number(
+        phone_number=phone_number, user_context=user_context))
 
 
 def update_user(user_id: str, email: Union[str, None] = None,
@@ -73,33 +77,45 @@ def update_user(user_id: str, email: Union[str, None] = None,
 def revoke_all_codes(email: Union[str, None] = None,
                      phone_number: Union[str, None] = None,
                      user_context=None) -> RevokeAllCodesResult:
-    return sync(asyncio.revoke_all_codes(email=email, phone_number=phone_number, user_context=user_context))
+    return sync(asyncio.revoke_all_codes(
+        email=email, phone_number=phone_number, user_context=user_context))
 
 
 def revoke_code(code_id: str, user_context=None) -> RevokeCodeResult:
-    return sync(asyncio.revoke_code(code_id=code_id, user_context=user_context))
+    return sync(asyncio.revoke_code(
+        code_id=code_id, user_context=user_context))
 
 
 def list_codes_by_email(email: str, user_context=None) -> List[DeviceType]:
-    return sync(asyncio.list_codes_by_email(email=email, user_context=user_context))
+    return sync(asyncio.list_codes_by_email(
+        email=email, user_context=user_context))
 
 
-def list_codes_by_phone_number(phone_number: str, user_context=None) -> List[DeviceType]:
-    return sync(asyncio.list_codes_by_phone_number(phone_number=phone_number, user_context=user_context))
+def list_codes_by_phone_number(
+        phone_number: str, user_context=None) -> List[DeviceType]:
+    return sync(asyncio.list_codes_by_phone_number(
+        phone_number=phone_number, user_context=user_context))
 
 
-def list_codes_by_device_id(device_id: str, user_context=None) -> Union[DeviceType, None]:
-    return sync(asyncio.list_codes_by_device_id(device_id=device_id, user_context=user_context))
+def list_codes_by_device_id(
+        device_id: str, user_context=None) -> Union[DeviceType, None]:
+    return sync(asyncio.list_codes_by_device_id(
+        device_id=device_id, user_context=user_context))
 
 
-def list_codes_by_pre_auth_session_id(pre_auth_session_id: str, user_context=None) -> Union[DeviceType, None]:
+def list_codes_by_pre_auth_session_id(
+        pre_auth_session_id: str, user_context=None) -> Union[DeviceType, None]:
     return sync(asyncio.list_codes_by_pre_auth_session_id(pre_auth_session_id=pre_auth_session_id,
                                                           user_context=user_context))
 
 
-def create_magic_link(email: Union[str, None], phone_number: Union[str, None], user_context=None) -> str:
-    return sync(asyncio.create_magic_link(email=email, phone_number=phone_number, user_context=user_context))
+def create_magic_link(
+        email: Union[str, None], phone_number: Union[str, None], user_context=None) -> str:
+    return sync(asyncio.create_magic_link(
+        email=email, phone_number=phone_number, user_context=user_context))
 
 
-def signinup(email: Union[str, None], phone_number: Union[str, None], user_context=None) -> ConsumeCodeOkResult:
-    return sync(asyncio.signinup(email=email, phone_number=phone_number, user_context=user_context))
+def signinup(email: Union[str, None], phone_number: Union[str,
+             None], user_context=None) -> ConsumeCodeOkResult:
+    return sync(asyncio.signinup(
+        email=email, phone_number=phone_number, user_context=user_context))

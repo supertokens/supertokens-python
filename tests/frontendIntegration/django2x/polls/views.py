@@ -90,7 +90,8 @@ def custom_decorator_for_update_jwt():
                     if value is not None and value.status_code != 200:
                         return value
                     session = request.supertokens
-                    session.sync_update_access_token_payload(json.loads(request.body))
+                    session.sync_update_access_token_payload(
+                        json.loads(request.body))
                     Test.increment_get_session()
                     resp = JsonResponse(session.get_access_token_payload())
                     resp['Cache-Control'] = 'no-cache, private'
@@ -391,7 +392,8 @@ def check_rid(request):
 
 def check_allow_credentials(request):
     if request.method == 'GET':
-        return JsonResponse(json.dumps(request_get_header(request, 'allow-credentials') is not None))
+        return JsonResponse(json.dumps(request_get_header(
+            request, 'allow-credentials') is not None))
     else:
         return send_options_api_response()
 

@@ -19,4 +19,5 @@ class APIImplementation(APIInterface):
     async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context=None) ->\
             OpenIdDiscoveryConfigurationGetResponse:
         response = await api_options.recipe_implementation.get_open_id_discovery_configuration(user_context)
-        return OpenIdDiscoveryConfigurationGetResponse(response.status, response.issuer, response.jwks_uri)
+        return OpenIdDiscoveryConfigurationGetResponse(
+            response.status, response.issuer, response.jwks_uri)

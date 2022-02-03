@@ -78,7 +78,8 @@ def create_reset_password_token(user_id: str, user_context=None):
     return sync(create_reset_password_token(user_id, user_context))
 
 
-def reset_password_using_token(token: str, new_password: str, user_context=None):
+def reset_password_using_token(
+        token: str, new_password: str, user_context=None):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import reset_password_using_token
     return sync(reset_password_using_token(token, new_password))
 
@@ -93,7 +94,8 @@ def sign_up(email: str, password: str, user_context=None):
     return sync(sign_up(email, password))
 
 
-def update_email_or_password(user_id: str, email: str = None, password: str = None, user_context=None):
+def update_email_or_password(
+        user_id: str, email: str = None, password: str = None, user_context=None):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import update_email_or_password
     return sync(update_email_or_password(user_id, email, password))
 

@@ -13,14 +13,14 @@
 # under the License.
 import json
 
-from werkzeug.http import dump_cookie
-
 from supertokens_python.framework.response import BaseResponse
+from werkzeug.http import dump_cookie
 
 
 class FlaskResponse(BaseResponse):
+    from flask.wrappers import Response
 
-    def __init__(self, response=None):
+    def __init__(self, response: Response):
         super().__init__({})
         self.response = response
         self.headers = list()
@@ -49,7 +49,8 @@ class FlaskResponse(BaseResponse):
                                      samesite=samesite
                                  )))
         else:
-            self.response.set_cookie(key, value=value, max_age=max_age, expires=expires / 1000, path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
+            self.response.set_cookie(key, value=value, max_age=max_age, expires=expires / 1000,
+                                     path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
 
     def set_header(self, key, value):
         if self.response is None:

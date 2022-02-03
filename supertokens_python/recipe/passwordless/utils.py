@@ -37,7 +37,8 @@ async def default_validate_phone_number(value: str):
 
 def default_get_link_domain_and_path(app_info: AppInfo):
     async def get_link_domain_and_path(_: str, __):
-        return app_info.website_domain.get_as_string_dangerous() + app_info.website_base_path.get_as_string_dangerous() + '/verify'
+        return app_info.website_domain.get_as_string_dangerous(
+        ) + app_info.website_base_path.get_as_string_dangerous() + '/verify'
     return get_link_domain_and_path
 
 
@@ -99,7 +100,8 @@ class OverrideConfig:
 
 
 class ContactConfig(ABC):
-    def __init__(self, contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']):
+    def __init__(
+            self, contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']):
         self.contact_method = contact_method
 
 
@@ -107,7 +109,8 @@ class ContactPhoneOnlyConfig(ContactConfig):
     def __init__(self,
                  create_and_send_custom_text_message: Callable[
                      [CreateAndSendCustomTextMessageParameters, Any], Awaitable[None]],
-                 validate_phone_number: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None,
+                 validate_phone_number: Union[Callable[[
+                     str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__('PHONE')
         self.validate_phone_number = validate_phone_number
@@ -118,7 +121,8 @@ class ContactEmailOnlyConfig(ContactConfig):
     def __init__(self,
                  create_and_send_custom_email: Callable[
                      [CreateAndSendCustomEmailParameters, Any], Awaitable[None]],
-                 validate_email_address: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None
+                 validate_email_address: Union[Callable[[
+                     str], Awaitable[Union[str, None]]], None] = None
                  ):
         super().__init__('EMAIL')
         self.validate_email_address = validate_email_address
@@ -131,8 +135,10 @@ class ContactEmailOrPhoneConfig(ContactConfig):
                      [CreateAndSendCustomEmailParameters, Any], Awaitable[None]],
                  create_and_send_custom_text_message: Callable[
                      [CreateAndSendCustomTextMessageParameters, Any], Awaitable[None]],
-                 validate_email_address: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None,
-                 validate_phone_number: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None,
+                 validate_email_address: Union[Callable[[
+                     str], Awaitable[Union[str, None]]], None] = None,
+                 validate_phone_number: Union[Callable[[
+                     str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__('EMAIL_OR_PHONE')
         self.validate_email_address = validate_email_address
@@ -147,7 +153,8 @@ class PasswordlessConfig:
                  override: OverrideConfig,
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
                  get_link_domain_and_path: Callable[[str, Any], Awaitable[Union[str, None]]],
-                 get_custom_user_input_code: Union[Callable[[Any], Awaitable[str]], None] = None
+                 get_custom_user_input_code: Union[Callable[[
+                     Any], Awaitable[str]], None] = None
                  ):
         self.contact_config = contact_config
         self.override = override
@@ -161,7 +168,8 @@ def validate_and_normalise_user_input(
         contact_config: ContactConfig,
         flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
         override: Union[OverrideConfig, None] = None,
-        get_link_domain_and_path: Union[Callable[[str, Any], Awaitable[Union[str, None]]], None] = None,
+        get_link_domain_and_path: Union[Callable[[
+            str, Any], Awaitable[Union[str, None]]], None] = None,
         get_custom_user_input_code: Union[Callable[[Any], Awaitable[str]], None] = None):
 
     if override is None:
@@ -194,7 +202,9 @@ def validate_and_normalise_user_input(
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)
     return PasswordlessConfig(
         contact_config=contact_config,
-        override=OverrideConfig(functions=override.functions, apis=override.apis),
+        override=OverrideConfig(
+            functions=override.functions,
+            apis=override.apis),
         flow_type=flow_type,
         get_link_domain_and_path=get_link_domain_and_path,
         get_custom_user_input_code=get_custom_user_input_code

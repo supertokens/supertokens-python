@@ -15,7 +15,8 @@
 from supertokens_python.async_to_sync_wrapper import sync
 
 
-def create_email_verification_token(user_id: str, email: str, user_context=None):
+def create_email_verification_token(
+        user_id: str, email: str, user_context=None):
     if user_context is None:
         user_context = {}
     from supertokens_python.recipe.emailverification.asyncio import create_email_verification_token

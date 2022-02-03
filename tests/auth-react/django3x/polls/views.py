@@ -60,7 +60,8 @@ class CustomAuth0Provider(Provider):
             response = await client.get(url="https://" + self.domain + "/userinfo", headers=headers)
             user_info = response.json()
 
-            return UserInfo(user_info['sub'], UserInfoEmail(user_info['name'], True))
+            return UserInfo(user_info['sub'], UserInfoEmail(
+                user_info['name'], True))
 
     def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
         params = {
@@ -206,7 +207,8 @@ def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = No
             ])
         ),
         thirdpartyemailpassword.init(
-            sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(form_fields),
+            sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(
+                form_fields),
             providers=[
                 Google(
                     client_id=os.environ.get('GOOGLE_CLIENT_ID'),

@@ -30,15 +30,18 @@ async def consume_code(api_implementation: APIInterface, api_options: APIOptions
 
     if 'deviceId' in body or 'userInputCode' in body:
         if 'linkCode' in body:
-            raise_bad_input_exception('Please provide one of (linkCode) or (deviceId+userInputCode) and not both')
+            raise_bad_input_exception(
+                'Please provide one of (linkCode) or (deviceId+userInputCode) and not both')
         if 'deviceId' not in body or 'userInputCode' not in body:
-            raise_bad_input_exception('Please provide both deviceId and userInputCode')
+            raise_bad_input_exception(
+                'Please provide both deviceId and userInputCode')
         device_id = body['deviceId']
         user_input_code = body['userInputCode']
     elif 'linkCode' in body:
         link_code = body['linkCode']
     else:
-        raise_bad_input_exception('Please provide one of (linkCode) or (deviceId+userInputCode) and not both')
+        raise_bad_input_exception(
+            'Please provide one of (linkCode) or (deviceId+userInputCode) and not both')
 
     pre_auth_session_id = body['preAuthSessionId']
     result = await api_implementation.consume_code_post(

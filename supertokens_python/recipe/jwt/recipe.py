@@ -42,9 +42,11 @@ class JWTRecipe(RecipeModule):
     def __init__(self, recipe_id: str, app_info: AppInfo, jwt_validity_seconds: Union[int, None] = None,
                  override: Union[OverrideConfig, None] = None):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(jwt_validity_seconds, override)
+        self.config = validate_and_normalise_user_input(
+            jwt_validity_seconds, override)
 
-        recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id), self.config, app_info)
+        recipe_implementation = RecipeImplementation(
+            Querier.get_instance(recipe_id), self.config, app_info)
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
         api_implementation = APIImplementation()
@@ -57,7 +59,12 @@ class JWTRecipe(RecipeModule):
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
-        options = APIOptions(request, response, self.get_recipe_id(), self.config, self.recipe_implementation)
+        options = APIOptions(
+            request,
+            response,
+            self.get_recipe_id(),
+            self.config,
+            self.recipe_implementation)
 
         return await jwks_get(self.api_implementation, options)
 
@@ -68,14 +75,16 @@ class JWTRecipe(RecipeModule):
         return []
 
     def is_error_from_this_recipe_based_on_instance(self, err):
-        return isinstance(err, SuperTokensError) and isinstance(err, SuperTokensJWTError)
+        return isinstance(err, SuperTokensError) and isinstance(
+            err, SuperTokensJWTError)
 
     @staticmethod
     def init(jwt_validity_seconds: Union[int, None] = None,
              override: Union[OverrideConfig, None] = None):
         def func(app_info: AppInfo):
             if JWTRecipe.__instance is None:
-                JWTRecipe.__instance = JWTRecipe(JWTRecipe.recipe_id, app_info, jwt_validity_seconds, override)
+                JWTRecipe.__instance = JWTRecipe(
+                    JWTRecipe.recipe_id, app_info, jwt_validity_seconds, override)
                 return JWTRecipe.__instance
             else:
                 raise_general_exception('JWT recipe has already been initialised. Please check '

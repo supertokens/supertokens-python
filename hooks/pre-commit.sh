@@ -24,14 +24,14 @@ fi
 make check-lint >/dev/null 2>/dev/null
 formatted=$?
 
-echo "$(tput setaf 3)* Properly formatted?$(tput sgr 0)"
+echo "$(tput setaf 3)* Properly linted?$(tput sgr 0)"
 
 if [[ ${formatted} -eq 0 ]]
 then
    echo "$(tput setaf 2)* Yes$(tput sgr 0)"
 else
    echo "$(tput setaf 1)* No$(tput sgr 0)"
-    echo "$(tput setaf 1)Please run 'make lint' to format the code. Also run 'make check-lint' to fix the lint error that were not fixed$(tput sgr 0)"
+    echo "$(tput setaf 1)Please run 'make check-lint' to fix linting errors. Also run 'make format' to fix the code formatting.$(tput sgr 0)"
     echo ""
 fi
 

@@ -140,7 +140,10 @@ async def test_user_context(driver_config_client: TestClient):
 
     await sign_up("random@gmail.com", "validpass123", {'manualCall': True})
 
-    res = sign_in_request(driver_config_client, "random@gmail.com", "validpass123")
+    res = sign_in_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpass123")
     assert res.status_code == 200
     assert works
     assert signUpContextWorks

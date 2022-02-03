@@ -1,5 +1,6 @@
-from setuptools import setup, find_packages
 from os import path
+
+from setuptools import find_packages, setup
 
 here = path.abspath(path.dirname(__file__))
 
@@ -10,7 +11,6 @@ with open(path.join(here, "README.md"), mode="r", encoding="utf-8") as f:
 extras_require = {
     'dev': ([
         'pytest==6.2.3',
-        'flake8==3.9.0',
         'autopep8==1.5.6',
         'PyYAML==5.4.1',
         'uvicorn==0.13.4',
@@ -25,7 +25,10 @@ extras_require = {
         'flask_cors',
         'django-cors-headers',
         'pdoc3',
-        'tzdata'
+        'tzdata',
+        'pylint',
+        'isort',
+        'pyright'
     ])
 }
 

@@ -27,7 +27,8 @@ from supertokens_python.utils import get_filtered_list
 
 class Github(Provider):
     def __init__(self, client_id: str, client_secret: str, scope: List[str] = None,
-                 authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None,
+                 authorisation_redirect: Dict[str, Union[str, Callable[[
+                     BaseRequest], str]]] = None,
                  is_default: bool = False):
         super().__init__('github', client_id, is_default)
         default_scopes = ["read:user", "user:email"]

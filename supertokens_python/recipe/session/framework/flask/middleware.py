@@ -20,7 +20,8 @@ from supertokens_python.framework.flask.flask_request import FlaskRequest
 from supertokens_python.recipe.session import SessionRecipe
 
 
-def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context=None):
+def verify_session(anti_csrf_check: Union[bool, None] = None,
+                   session_required: bool = True, user_context=None):
     if user_context is None:
         user_context = {}
 

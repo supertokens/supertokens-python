@@ -16,7 +16,8 @@ from __future__ import annotations
 from typing import Union
 
 
-def raise_general_exception(msg, previous=None):
+def raise_general_exception(
+        msg: Union[str, Exception], previous: Union[None, Exception] = None):
     if isinstance(msg, SuperTokensError):
         raise msg
     elif isinstance(msg, Exception):
@@ -24,13 +25,12 @@ def raise_general_exception(msg, previous=None):
     raise GeneralError(msg) from previous
 
 
-def raise_bad_input_exception(msg):
+def raise_bad_input_exception(msg: str):
     raise BadInputError(msg)
 
 
 class SuperTokensError(Exception):
-    def __init__(self, msg: Union[str, Exception]):
-        super().__init__(msg)
+    pass
 
 
 class GeneralError(SuperTokensError):

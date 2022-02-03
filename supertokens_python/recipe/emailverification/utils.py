@@ -50,8 +50,10 @@ class OverrideConfig:
 
 class InputEmailVerificationConfig:
     def __init__(self,
-                 get_email_verification_url: Union[Callable[[User, Any], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[User, str, Any], Awaitable[None]], None] = None
+                 get_email_verification_url: Union[Callable[[
+                     User, Any], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[
+                     User, str, Any], Awaitable[None]], None] = None
                  ):
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
@@ -61,8 +63,10 @@ class ParentRecipeEmailVerificationConfig:
     def __init__(self,
                  get_email_for_user_id: Callable[[str, Any], Awaitable[str]],
                  override: Union[OverrideConfig, None] = None,
-                 get_email_verification_url: Union[Callable[[User, Any], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[User, str, Any], Awaitable[None]], None] = None
+                 get_email_verification_url: Union[Callable[[
+                     User, Any], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[
+                     User, str, Any], Awaitable[None]], None] = None
                  ):
         self.override = override
         self.get_email_verification_url = get_email_verification_url
@@ -83,7 +87,8 @@ class EmailVerificationConfig:
         self.override = override
 
 
-def validate_and_normalise_user_input(app_info: AppInfo, config: ParentRecipeEmailVerificationConfig):
+def validate_and_normalise_user_input(
+        app_info: AppInfo, config: ParentRecipeEmailVerificationConfig):
     get_email_verification_url = config.get_email_verification_url if config.get_email_verification_url is not None \
         else default_get_email_verification_url(app_info)
     create_and_send_custom_email = config.create_and_send_custom_email if config.create_and_send_custom_email is not None \

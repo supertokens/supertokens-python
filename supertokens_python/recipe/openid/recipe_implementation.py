@@ -29,14 +29,16 @@ from .interfaces import GetOpenIdDiscoveryConfigurationResult
 class RecipeImplementation(RecipeInterface):
 
     async def get_open_id_discovery_configuration(self, user_context: any) -> GetOpenIdDiscoveryConfigurationResult:
-        issuer = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.get_as_string_dangerous()
+        issuer = self.config.issuer_domain.get_as_string_dangerous(
+        ) + self.config.issuer_path.get_as_string_dangerous()
 
         jwks_uri = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.append(
             NormalisedURLPath(GET_JWKS_API)).get_as_string_dangerous()
 
         return GetOpenIdDiscoveryConfigurationResult('OK', issuer, jwks_uri)
 
-    def __init__(self, querier: Querier, config: OpenIdConfig, app_info: AppInfo, jwt_recipe_implementation: JWTRecipeInterface):
+    def __init__(self, querier: Querier, config: OpenIdConfig,
+                 app_info: AppInfo, jwt_recipe_implementation: JWTRecipeInterface):
         super().__init__()
         self.querier = querier
         self.config = config
@@ -47,7 +49,8 @@ class RecipeImplementation(RecipeInterface):
         if payload is None:
             payload = {}
 
-        issuer = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.get_as_string_dangerous()
+        issuer = self.config.issuer_domain.get_as_string_dangerous(
+        ) + self.config.issuer_path.get_as_string_dangerous()
         payload = {
             'iss': issuer,
             **payload

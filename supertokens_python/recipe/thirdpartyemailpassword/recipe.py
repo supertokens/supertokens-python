@@ -97,7 +97,8 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             self.email_password_recipe = email_password_recipe
         else:
             self.email_password_recipe = EmailPasswordRecipe(recipe_id, app_info,
-                                                             InputSignUpFeature(form_fields),
+                                                             InputSignUpFeature(
+                                                                 form_fields),
                                                              self.config.reset_password_using_token_feature,
                                                              None,
                                                              EPOverrideConfig(

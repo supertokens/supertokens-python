@@ -79,7 +79,8 @@ def validate_and_normalise_email_verification_config(
 
 class InputOverrideConfig:
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-                 apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+                 apis: Union[Callable[[APIInterface],
+                                      APIInterface], None] = None,
                  email_verification_feature: Union[EmailVerificationOverrideConfig, None] = None):
         self.functions = functions
         self.apis = apis
@@ -126,7 +127,8 @@ def validate_and_normalise_user_input(
     )
     return ThirdPartyEmailPasswordConfig(providers, email_verification_feature, sign_up_feature,
                                          reset_password_using_token_feature,
-                                         OverrideConfig(functions=override.functions, apis=override.apis)
+                                         OverrideConfig(
+                                             functions=override.functions, apis=override.apis)
                                          )
 
 
@@ -140,7 +142,8 @@ def combine_pagination_tokens(third_party_pagination_token: Union[str, None],
         third_party_pagination_token = 'null'
     if email_password_pagination_token is None:
         email_password_pagination_token = 'null'
-    return utf_base64encode(third_party_pagination_token + ';' + email_password_pagination_token)
+    return utf_base64encode(third_party_pagination_token +
+                            ';' + email_password_pagination_token)
 
 
 def extract_pagination_token(

@@ -19,8 +19,9 @@ from supertokens_python.framework.response import BaseResponse
 
 
 class DjangoResponse(BaseResponse):
+    from django.http import HttpResponse
 
-    def __init__(self, response):
+    def __init__(self, response: HttpResponse):
         super().__init__({})
         self.response = response
         self.original = response
@@ -47,15 +48,15 @@ class DjangoResponse(BaseResponse):
             httponly)
         self.response.cookies[key]['samesite'] = samesite
 
-    def set_status_code(self, status_code):
+    def set_status_code(self, status_code: int):
         if not self.status_set:
             self.response.status_code = status_code
             self.status_set = True
 
-    def set_header(self, key, value):
+    def set_header(self, key: str, value: str):
         self.response[key] = value
 
-    def get_header(self, key):
+    def get_header(self, key: str):
         if self.response.has_header(key):
             return self.response[key]
         else:

@@ -99,13 +99,15 @@ class CreateNewCodeForDeviceOkResult(CreateNewCodeForDeviceResult):
         self.is_ok = True
 
 
-class CreateNewCodeForDeviceRestartFlowErrorResult(CreateNewCodeForDeviceResult):
+class CreateNewCodeForDeviceRestartFlowErrorResult(
+        CreateNewCodeForDeviceResult):
     def __init__(self):
         super().__init__('RESTART_FLOW_ERROR')
         self.is_restart_flow_error = True
 
 
-class CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult(CreateNewCodeForDeviceResult):
+class CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult(
+        CreateNewCodeForDeviceResult):
     def __init__(self):
         super().__init__('USER_INPUT_CODE_ALREADY_USED_ERROR')
         self.is_user_input_code_already_used_error = True
@@ -140,7 +142,8 @@ class ConsumeCodeOkResult(ConsumeCodeResult):
 
 
 class ConsumeCodeIncorrectUserInputCodeErrorResult(ConsumeCodeResult):
-    def __init__(self, failed_code_input_attempt_count: int, maximum_code_input_attempts: int):
+    def __init__(self, failed_code_input_attempt_count: int,
+                 maximum_code_input_attempts: int):
         super().__init__('INCORRECT_USER_INPUT_CODE_ERROR',
                          failed_code_input_attempt_count=failed_code_input_attempt_count,
                          maximum_code_input_attempts=maximum_code_input_attempts)
@@ -148,7 +151,8 @@ class ConsumeCodeIncorrectUserInputCodeErrorResult(ConsumeCodeResult):
 
 
 class ConsumeCodeExpiredUserInputCodeErrorResult(ConsumeCodeResult):
-    def __init__(self, failed_code_input_attempt_count: int, maximum_code_input_attempts: int):
+    def __init__(self, failed_code_input_attempt_count: int,
+                 maximum_code_input_attempts: int):
         super().__init__('EXPIRED_USER_INPUT_CODE_ERROR',
                          failed_code_input_attempt_count=failed_code_input_attempt_count,
                          maximum_code_input_attempts=maximum_code_input_attempts)
@@ -162,7 +166,8 @@ class ConsumeCodeRestartFlowErrorResult(ConsumeCodeResult):
 
 
 class UpdateUserResult(ABC):
-    def __init__(self, status: Literal['OK', 'UNKNOWN_USER_ID_ERROR', 'EMAIL_ALREADY_EXISTS_ERROR', 'PHONE_NUMBER_ALREADY_EXISTS_ERROR']):
+    def __init__(self, status: Literal['OK', 'UNKNOWN_USER_ID_ERROR',
+                 'EMAIL_ALREADY_EXISTS_ERROR', 'PHONE_NUMBER_ALREADY_EXISTS_ERROR']):
         self.status = status
 
 
@@ -294,7 +299,8 @@ class CreateCodePostResponse(ABC):
         status: Literal['OK', 'GENERAL_ERROR'],
         device_id: Union[str, None] = None,
         pre_auth_session_id: Union[str, None] = None,
-        flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = None,
+        flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK',
+                           'USER_INPUT_CODE_AND_MAGIC_LINK'] = None,
         message: Union[str, None] = None
     ):
         self.status = status
@@ -440,7 +446,11 @@ class ConsumeCodePostResponse(ABC):
 
 class ConsumeCodePostOkResponse(ConsumeCodePostResponse):
     def __init__(self, created_new_user: bool, user: User, session: Session):
-        super().__init__(status='OK', created_new_user=created_new_user, user=user, session=session)
+        super().__init__(
+            status='OK',
+            created_new_user=created_new_user,
+            user=user,
+            session=session)
         self.is_ok = True
 
     def to_json(self):
@@ -495,7 +505,8 @@ class ConsumeCodePostGeneralErrorResponse(ConsumeCodePostResponse):
         }
 
 
-class ConsumeCodePostIncorrectUserInputCodeErrorResponse(ConsumeCodePostResponse):
+class ConsumeCodePostIncorrectUserInputCodeErrorResponse(
+        ConsumeCodePostResponse):
     def __init__(
             self,
             failed_code_input_attempt_count: int,
@@ -515,7 +526,8 @@ class ConsumeCodePostIncorrectUserInputCodeErrorResponse(ConsumeCodePostResponse
         }
 
 
-class ConsumeCodePostExpiredUserInputCodeErrorResponse(ConsumeCodePostResponse):
+class ConsumeCodePostExpiredUserInputCodeErrorResponse(
+        ConsumeCodePostResponse):
     def __init__(
             self,
             failed_code_input_attempt_count: int,

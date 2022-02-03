@@ -25,7 +25,10 @@ urlpatterns = [
     path('setAntiCsrf', views.set_anti_csrf, name='setAntiCsrf'),
     path('setEnableJWT', views.set_enable_jwt, name='setEnableJWT'),
     path('featureFlags', views.feature_flags, name='featureFlags'),
-    path('reinitialiseBackendConfig', views.reinitialize, name='reinitialiseBackendConfig'),
+    path(
+        'reinitialiseBackendConfig',
+        views.reinitialize,
+        name='reinitialiseBackendConfig'),
     path(
         'refreshCalledTime',
         views.refresh_called_time,

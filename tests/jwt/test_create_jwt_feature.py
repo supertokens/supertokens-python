@@ -109,7 +109,8 @@ async def test_that_returned_JWT_uses_100_years_for_expiry_for_default_config():
     jwt_expiry = json.loads(decoded_jwt_value)['exp']
 
     actual_expiry = jwt_expiry - time_rn
-    difference_in_expiry_durations = abs(actual_expiry - target_expiry_duration)
+    difference_in_expiry_durations = abs(
+        actual_expiry - target_expiry_duration)
 
     assert difference_in_expiry_durations < 5
 
@@ -139,7 +140,8 @@ async def test_that_jwt_validity_is_same_as_validity_set_in_config():
     jwt_expiry = json.loads(decoded_jwt_value)['exp']
 
     actual_expiry = jwt_expiry - time_rn
-    difference_in_expiry_durations = abs(actual_expiry - target_expiry_duration)
+    difference_in_expiry_durations = abs(
+        actual_expiry - target_expiry_duration)
 
     assert difference_in_expiry_durations < 5
 
@@ -169,6 +171,7 @@ async def test_that_jwt_validity_is_same_as_validity_passed_in_createJWT_functio
     jwt_expiry = json.loads(decoded_jwt_value)['exp']
 
     actual_expiry = jwt_expiry - time_rn
-    difference_in_expiry_durations = abs(actual_expiry - target_expiry_duration)
+    difference_in_expiry_durations = abs(
+        actual_expiry - target_expiry_duration)
 
     assert difference_in_expiry_durations < 5

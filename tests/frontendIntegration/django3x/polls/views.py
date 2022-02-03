@@ -216,7 +216,8 @@ def get_app_port():
     return '8080'
 
 
-def config(enable_anti_csrf: bool, enable_jwt: bool, jwt_property_name: Union[str, None]):
+def config(enable_anti_csrf: bool, enable_jwt: bool,
+           jwt_property_name: Union[str, None]):
     anti_csrf: Literal['VIA_TOKEN', 'NONE'] = "NONE"
     if enable_anti_csrf:
         anti_csrf = "VIA_TOKEN"

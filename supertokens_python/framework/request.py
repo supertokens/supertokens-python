@@ -13,8 +13,9 @@
 # under the License.
 
 from abc import ABC, abstractmethod
-
 from typing import Any, Union
+
+from supertokens_python.recipe.session import Session
 
 
 class BaseRequest(ABC):
@@ -24,7 +25,7 @@ class BaseRequest(ABC):
         self.request = None
 
     @abstractmethod
-    def get_query_param(self, key, default=None):
+    def get_query_param(self, key: str, default: Union[str, None] = None):
         pass
 
     @abstractmethod
@@ -56,7 +57,7 @@ class BaseRequest(ABC):
         pass
 
     @abstractmethod
-    def set_session(self, session):
+    def set_session(self, session: Session):
         pass
 
     @abstractmethod

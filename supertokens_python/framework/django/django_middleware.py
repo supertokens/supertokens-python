@@ -14,14 +14,17 @@
 from __future__ import annotations
 
 import asyncio
+
 from asgiref.sync import async_to_sync
 
 
 def middleware(get_response):
     from supertokens_python import Supertokens
     from supertokens_python.exceptions import SuperTokensError
-    from supertokens_python.framework.django.django_request import DjangoRequest
-    from supertokens_python.framework.django.django_response import DjangoResponse
+    from supertokens_python.framework.django.django_request import \
+        DjangoRequest
+    from supertokens_python.framework.django.django_response import \
+        DjangoResponse
     from supertokens_python.recipe.session import Session
     from supertokens_python.supertokens import manage_cookies_post_response
 
@@ -36,7 +39,8 @@ def middleware(get_response):
                 if result is None:
                     result = await get_response(request)
                     result = DjangoResponse(result)
-                if hasattr(request, "supertokens") and isinstance(request.supertokens, Session):
+                if hasattr(request, "supertokens") and isinstance(
+                        request.supertokens, Session):
                     manage_cookies_post_response(request.supertokens, result)
                 return result.response
 
@@ -58,13 +62,15 @@ def middleware(get_response):
                     result = get_response(request)
                     result = DjangoResponse(result)
 
-                if hasattr(request, "supertokens") and isinstance(request.supertokens, Session):
+                if hasattr(request, "supertokens") and isinstance(
+                        request.supertokens, Session):
                     manage_cookies_post_response(request.supertokens, result)
                 return result.response
 
             except SuperTokensError as e:
                 response = DjangoResponse(HttpResponse())
-                result = async_to_sync(st.handle_supertokens_error)(DjangoRequest(request), e, response)
+                result = async_to_sync(st.handle_supertokens_error)(
+                    DjangoRequest(request), e, response)
                 return result.response
 
     return __middleware

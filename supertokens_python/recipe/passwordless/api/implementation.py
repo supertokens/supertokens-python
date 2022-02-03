@@ -38,7 +38,8 @@ class APIImplementation(APIInterface):
         if flow_type == 'MAGIC_LINK' or flow_type == 'USER_INPUT_CODE_AND_MAGIC_LINK':
             code = email if email is not None else phone_number
             magic_link = await api_options.config.get_link_domain_and_path(code, user_context)
-            magic_link += '?rid=' + api_options.recipe_id + '&preAuthSessionId=' + response.pre_auth_session_id + '#' + response.link_code
+            magic_link += '?rid=' + api_options.recipe_id + '&preAuthSessionId=' + \
+                response.pre_auth_session_id + '#' + response.link_code
         if flow_type == 'USER_INPUT_CODE' or flow_type == 'USER_INPUT_CODE_AND_MAGIC_LINK':
             user_input_code = response.user_input_code
 
@@ -63,7 +64,8 @@ class APIImplementation(APIInterface):
                 ), user_context)
         except Exception as e:
             return CreateCodePostGeneralErrorResponse(str(e))
-        return CreateCodePostOkResponse(response.device_id, response.pre_auth_session_id, flow_type)
+        return CreateCodePostOkResponse(
+            response.device_id, response.pre_auth_session_id, flow_type)
 
     async def resend_code_post(self, device_id: str, pre_auth_session_id: str,
                                api_options: APIOptions, user_context: any) -> ResendCodePostResponse:
@@ -89,7 +91,8 @@ class APIImplementation(APIInterface):
             )
             if response.is_user_input_code_already_used_error:
                 if number_of_tries_to_create_new_code >= 3:
-                    return ResendCodePostGeneralErrorResponse('Failed to generate a one time code. Please try again')
+                    return ResendCodePostGeneralErrorResponse(
+                        'Failed to generate a one time code. Please try again')
                 continue
             if response.is_ok:
                 magic_link = None
@@ -98,7 +101,8 @@ class APIImplementation(APIInterface):
                 if flow_type == 'MAGIC_LINK' or flow_type == 'USER_INPUT_CODE_AND_MAGIC_LINK':
                     code = device_info.email if device_info.email is not None else device_info.phone_number
                     magic_link = await api_options.config.get_link_domain_and_path(code, user_context)
-                    magic_link += '?rid=' + api_options.recipe_id + '&preAuthSessionId=' + response.pre_auth_session_id + '#' + response.link_code
+                    magic_link += '?rid=' + api_options.recipe_id + '&preAuthSessionId=' + \
+                        response.pre_auth_session_id + '#' + response.link_code
                 if flow_type == 'USER_INPUT_CODE' or flow_type == 'USER_INPUT_CODE_AND_MAGIC_LINK':
                     user_input_code = response.user_input_code
 

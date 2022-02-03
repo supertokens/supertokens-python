@@ -165,9 +165,12 @@ def test_cookie_login_and_refresh(driver_config_app):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
     test_client = driver_config_app.test_client()
     test_client.set_cookie(
@@ -194,9 +197,12 @@ def test_cookie_login_and_refresh(driver_config_app):
     assert cookies_2['sAccessToken']['httponly']
     assert cookies_2['sRefreshToken']['httponly']
     assert cookies_2['sIdRefreshToken']['httponly']
-    assert cookies_2['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_2['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_2['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_2['sAccessToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_2['sRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_2['sIdRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
 
 def test_login_refresh_no_csrf(driver_config_app):
@@ -237,9 +243,12 @@ def test_login_refresh_no_csrf(driver_config_app):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
     test_client = driver_config_app.test_client()
     test_client.set_cookie(
@@ -299,9 +308,12 @@ def test_login_logout(driver_config_app):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
     test_client = driver_config_app.test_client()
     test_client.set_cookie(
@@ -382,7 +394,8 @@ def test_custom_response(driver_config_app):
     start_st()
 
     test_client = driver_config_app.test_client()
-    response = test_client.get('/auth/signup/email/exists?email=test@example.com')
+    response = test_client.get(
+        '/auth/signup/email/exists?email=test@example.com')
 
     dict_response = json.loads(response.data)
     assert response.status_code == 203

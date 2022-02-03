@@ -26,9 +26,11 @@ from supertokens_python.recipe.openid import InputOverrideConfig as OpenIdInputO
 
 def init(cookie_domain: Union[str, None] = None,
          cookie_secure: Union[str, None] = None,
-         cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
+         cookie_same_site: Union[Literal["lax",
+                                         "none", "strict"], None] = None,
          session_expired_status_code: Union[str, None] = None,
-         anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+         anti_csrf: Union[Literal["VIA_TOKEN",
+                                  "VIA_CUSTOM_HEADER", "NONE"], None] = None,
          error_handlers: Union[InputErrorHandlers, None] = None,
          override: Union[InputOverrideConfig, None] = None,
          jwt: Union[JWTConfig, None] = None):

@@ -54,13 +54,15 @@ class PasswordlessRecipe(RecipeModule):
     def __init__(self, recipe_id: str, app_info: AppInfo, contact_config: ContactConfig,
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
                  override: Union[OverrideConfig, None] = None,
-                 get_link_domain_and_path: Union[Callable[[str], Awaitable[Union[str, None]]]] = None,
+                 get_link_domain_and_path: Union[Callable[[
+                     str], Awaitable[Union[str, None]]]] = None,
                  get_custom_user_input_code: Union[Callable[[], Awaitable[str]], None] = None):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, contact_config, flow_type, override,
                                                         get_link_domain_and_path, get_custom_user_input_code)
 
-        recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
+        recipe_implementation = RecipeImplementation(
+            Querier.get_instance(recipe_id))
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
         api_implementation = APIImplementation()
@@ -88,7 +90,12 @@ class PasswordlessRecipe(RecipeModule):
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
-        options = APIOptions(request, response, self.get_recipe_id(), self.config, self.recipe_implementation)
+        options = APIOptions(
+            request,
+            response,
+            self.get_recipe_id(),
+            self.config,
+            self.recipe_implementation)
         if request_id == CONSUME_CODE_API:
             return await consume_code(self.api_implementation, options)
         elif request_id == CREATE_CODE_API:
@@ -106,13 +113,15 @@ class PasswordlessRecipe(RecipeModule):
         return []
 
     def is_error_from_this_recipe_based_on_instance(self, err):
-        return isinstance(err, SuperTokensError) and isinstance(err, SuperTokensPasswordlessError)
+        return isinstance(err, SuperTokensError) and isinstance(
+            err, SuperTokensPasswordlessError)
 
     @staticmethod
     def init(contact_config: ContactConfig,
              flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
              override: Union[OverrideConfig, None] = None,
-             get_link_domain_and_path: Union[Callable[[str], Awaitable[Union[str, None]]]] = None,
+             get_link_domain_and_path: Union[Callable[[
+                 str], Awaitable[Union[str, None]]]] = None,
              get_custom_user_input_code: Union[Callable[[], Awaitable[str]], None] = None):
         def func(app_info: AppInfo):
             if PasswordlessRecipe.__instance is None:
@@ -166,6 +175,7 @@ class PasswordlessRecipe(RecipeModule):
             user_input_code=code_info.user_input_code
         )
         if consume_code_result.is_ok:
-            return ConsumeCodeOkResult(consume_code_result.created_new_user, consume_code_result.user)
+            return ConsumeCodeOkResult(
+                consume_code_result.created_new_user, consume_code_result.user)
         else:
             raise Exception('Failed to create user. Please retry')

@@ -16,7 +16,8 @@ import supertokens_python.recipe.jwt.asyncio as asyncio
 from supertokens_python.async_to_sync_wrapper import sync
 
 
-def create_jwt(payload: dict, validity_seconds: int = None, user_context=None) -> [CreateJwtResult, None]:
+def create_jwt(payload: dict, validity_seconds: int = None,
+               user_context=None) -> [CreateJwtResult, None]:
     if user_context is None:
         user_context = {}
     return sync(asyncio.create_jwt(payload, validity_seconds, user_context))

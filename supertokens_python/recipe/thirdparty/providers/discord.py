@@ -24,7 +24,8 @@ if TYPE_CHECKING:
 
 class Discord(Provider):
     def __init__(self, client_id: str, client_secret: str, scope: List[str] = None,
-                 authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None,
+                 authorisation_redirect: Dict[str, Union[str, Callable[[
+                     BaseRequest], str]]] = None,
                  is_default: bool = False):
         super().__init__('discord', client_id, is_default)
         default_scopes = ["email", "identify"]

@@ -14,61 +14,33 @@
 
 from __future__ import annotations
 
+from base64 import b64decode, b64encode
 from re import fullmatch
-from typing import Union, List, Callable, TYPE_CHECKING
-
-from jsonschema import validate
-from jsonschema.exceptions import ValidationError
+from time import time
+from typing import TYPE_CHECKING, Callable, List, Union
 
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 
+from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER
+from .exceptions import raise_general_exception
+
 if TYPE_CHECKING:
     pass
-from .constants import RID_KEY_HEADER
-from .exceptions import raise_general_exception, raise_bad_input_exception
-from .constants import ERROR_MESSAGE_KEY
-from time import time
-from base64 import b64encode, b64decode
 
+
+import asyncio
+
+from supertokens_python.async_to_sync_wrapper import check_event_loop
 from supertokens_python.framework.django.framework import DjangoFramework
 from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
-from supertokens_python.async_to_sync_wrapper import check_event_loop
-import asyncio
 
 FRAMEWORKS = {
     'fastapi': FastapiFramework(),
     'flask': FlaskFramework(),
     'django': DjangoFramework(),
 }
-
-
-def validate_framework(config):
-    if config['framework'] not in FRAMEWORKS.keys():
-        raise_bad_input_exception(
-            recipe=None,
-            msg=config['framework'] + ' framework is not supported.')
-
-
-def validate_the_structure_of_user_input(
-        config, input_schema, config_root, recipe):
-    try:
-        validate(config, input_schema)
-    except ValidationError as e:
-        path = '.'.join(list(map(str, e.path)))
-        if not path == '':
-            path = 'for path "' + path + '": '
-
-        error_message = path + e.message
-
-        if 'is a required property' in error_message:
-            error_message = 'input config ' + error_message
-        if 'Additional properties are not allowed' in error_message:
-            error_message += ' Did you mean to set this on the frontend side?'
-        error_message = 'Config schema error in ' + config_root + ': ' + error_message
-
-        raise_general_exception(recipe, error_message)
 
 
 def is_an_ip_address(ip_address: str) -> bool:
@@ -129,7 +101,8 @@ def is_5xx_error(status_code: int) -> bool:
     return status_code // 100 == 5
 
 
-def send_non_200_response(message: str, status_code: int, response: BaseResponse) -> Union[BaseResponse, None]:
+def send_non_200_response(message: str, status_code: int,
+                          response: BaseResponse) -> Union[BaseResponse, None]:
     if status_code < 300:
         raise_general_exception(
             'Calling sendNon200Response with status code < 300')
@@ -140,7 +113,8 @@ def send_non_200_response(message: str, status_code: int, response: BaseResponse
     return response
 
 
-def send_200_response(data_json: dict, response: BaseResponse) -> Union[BaseResponse, None]:
+def send_200_response(
+        data_json: dict, response: BaseResponse) -> Union[BaseResponse, None]:
     response.set_json_content(data_json)
     response.set_status_code(200)
     return response

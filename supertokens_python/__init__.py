@@ -12,12 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from . import exceptions
-from .supertokens import Supertokens
+from typing import Callable, List, Union
+
 from .recipe import session
-from typing import List, Union, Callable
-from .supertokens import SupertokensConfig, InputAppInfo, AppInfo
 from .recipe_module import RecipeModule
+from .supertokens import AppInfo, InputAppInfo, Supertokens, SupertokensConfig
+
 try:
     from typing import Literal
 except ImportError:
@@ -30,7 +30,8 @@ def init(app_info: InputAppInfo,
          recipe_list: List[Callable[[AppInfo], RecipeModule]],
          mode: Union[Literal['asgi', 'wsgi'], None] = None,
          telemetry: Union[bool, None] = None):
-    return Supertokens.init(app_info, framework, supertokens_config, recipe_list, mode, telemetry)
+    return Supertokens.init(app_info, framework,
+                            supertokens_config, recipe_list, mode, telemetry)
 
 
 def get_all_cors_headers():

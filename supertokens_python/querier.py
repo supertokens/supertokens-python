@@ -17,26 +17,18 @@ from json import JSONDecodeError
 from os import environ
 from typing import TYPE_CHECKING
 
-from httpx import AsyncClient, NetworkError, ConnectTimeout
+from httpx import AsyncClient, ConnectTimeout, NetworkError
 
-from .constants import (
-    API_VERSION,
-    API_KEY_HEADER,
-    RID_KEY_HEADER,
-    SUPPORTED_CDI_VERSIONS,
-    API_VERSION_HEADER
-)
+from .constants import (API_KEY_HEADER, API_VERSION, API_VERSION_HEADER,
+                        RID_KEY_HEADER, SUPPORTED_CDI_VERSIONS)
 from .normalised_url_path import NormalisedURLPath
 
 if TYPE_CHECKING:
     from .supertokens import Host
+
 from .exceptions import raise_general_exception
-from .utils import (
-    is_4xx_error,
-    is_5xx_error,
-    find_max_version
-)
 from .process_state import AllowedProcessStates, ProcessState
+from .utils import find_max_version, is_4xx_error, is_5xx_error
 
 
 class Querier:
@@ -58,7 +50,7 @@ class Querier:
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(
-                None, 'calling testing function in non testing env')
+                'calling testing function in non testing env')
         Querier.__init_called = False
 
     @staticmethod
@@ -66,7 +58,7 @@ class Querier:
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(
-                None, 'calling testing function in non testing env')
+                'calling testing function in non testing env')
         return Querier.__hosts_alive_for_testing
 
     async def get_api_version(self):
@@ -93,9 +85,9 @@ class Querier:
             SUPPORTED_CDI_VERSIONS)
 
         if api_version is None:
-            raise_general_exception(None, 'The running SuperTokens core version is not compatible with this FastAPI '
-                                          'SDK. Please visit https://supertokens.io/docs/community/compatibility-table '
-                                          'to find the right versions')
+            raise_general_exception('The running SuperTokens core version is not compatible with this FastAPI '
+                                    'SDK. Please visit https://supertokens.io/docs/community/compatibility-table '
+                                    'to find the right versions')
 
         Querier.__api_version = api_version
         # TODO: server-less
@@ -188,8 +180,10 @@ class Querier:
             raise_general_exception('No SuperTokens core available to query')
 
         try:
-            current_host_domain = self.__hosts[Querier.__last_tried_index].domain.get_as_string_dangerous()
-            current_host_base_path = self.__hosts[Querier.__last_tried_index].base_path.get_as_string_dangerous()
+            current_host_domain = self.__hosts[Querier.__last_tried_index].domain.get_as_string_dangerous(
+            )
+            current_host_base_path = self.__hosts[Querier.__last_tried_index].base_path.get_as_string_dangerous(
+            )
             current_host = current_host_domain + current_host_base_path
             Querier.__last_tried_index += 1
             Querier.__last_tried_index %= len(self.__hosts)

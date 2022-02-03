@@ -120,26 +120,35 @@ class SignUpFeature:
         self.form_fields = form_fields
 
 
-def normalise_sign_up_form_fields(form_fields: List[InputFormField]) -> List[NormalisedFormField]:
+def normalise_sign_up_form_fields(
+        form_fields: List[InputFormField]) -> List[NormalisedFormField]:
     normalised_form_fields = []
     for field in form_fields:
         if field.id == FORM_FIELD_PASSWORD_ID:
             validator = field.validate if field.validate is not None else default_password_validator
-            normalised_form_fields.append(NormalisedFormField(field.id, validator, False))
+            normalised_form_fields.append(
+                NormalisedFormField(
+                    field.id, validator, False))
         elif field.id == FORM_FIELD_EMAIL_ID:
             validator = field.validate if field.validate is not None else default_email_validator
-            normalised_form_fields.append(NormalisedFormField(field.id, validator, False))
+            normalised_form_fields.append(
+                NormalisedFormField(
+                    field.id, validator, False))
         else:
             validator = field.validate if field.validate is not None else default_validator
             optional = field.optional if field.optional is not None else False
-            normalised_form_fields.append(NormalisedFormField(field.id, validator, optional))
-    if len(get_filtered_list(lambda x: x.id == FORM_FIELD_PASSWORD_ID, normalised_form_fields)) == 0:
+            normalised_form_fields.append(
+                NormalisedFormField(
+                    field.id, validator, optional))
+    if len(get_filtered_list(lambda x: x.id ==
+           FORM_FIELD_PASSWORD_ID, normalised_form_fields)) == 0:
         normalised_form_fields.append(
             NormalisedFormField(
                 FORM_FIELD_PASSWORD_ID,
                 default_password_validator,
                 False))
-    if len(get_filtered_list(lambda x: x.id == FORM_FIELD_EMAIL_ID, normalised_form_fields)) == 0:
+    if len(get_filtered_list(lambda x: x.id ==
+           FORM_FIELD_EMAIL_ID, normalised_form_fields)) == 0:
         normalised_form_fields.append(
             NormalisedFormField(
                 FORM_FIELD_EMAIL_ID,
@@ -177,7 +186,8 @@ def validate_and_normalise_sign_in_config(
 
 class InputResetPasswordUsingTokenFeature:
     def __init__(self,
-                 get_reset_password_url: Union[Callable[[User, Any], Awaitable[str]], None] = None,
+                 get_reset_password_url: Union[Callable[[
+                     User, Any], Awaitable[str]], None] = None,
                  create_and_send_custom_email: Union[Callable[[User, str, Any], Awaitable], None] = None):
         self.get_reset_password_url = get_reset_password_url
         self.create_and_send_custom_email = create_and_send_custom_email
@@ -255,7 +265,8 @@ def validate_and_normalise_email_verification_config(
 
 class InputOverrideConfig:
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-                 apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+                 apis: Union[Callable[[APIInterface],
+                                      APIInterface], None] = None,
                  email_verification_feature: Union[EmailVerificationOverrideConfig, None] = None):
         self.functions = functions
         self.apis = apis
@@ -284,7 +295,8 @@ class EmailPasswordConfig:
 
 
 def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: AppInfo,
-                                      sign_up_feature: Union[InputSignUpFeature, None] = None,
+                                      sign_up_feature: Union[InputSignUpFeature,
+                                                             None] = None,
                                       reset_password_using_token_feature: Union[
                                           InputResetPasswordUsingTokenFeature, None] = None,
                                       email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
@@ -302,7 +314,9 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
         sign_up_feature = InputSignUpFeature()
     return EmailPasswordConfig(
         SignUpFeature(sign_up_feature.form_fields),
-        SignInFeature(normalise_sign_in_form_fields(sign_up_feature.form_fields)),
+        SignInFeature(
+            normalise_sign_in_form_fields(
+                sign_up_feature.form_fields)),
         validate_and_normalise_reset_password_using_token_config(
             app_info,
             sign_up_feature,

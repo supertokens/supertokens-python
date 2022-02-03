@@ -12,11 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import sys
-from functools import singledispatch, wraps
 import asyncio
 import inspect
+import sys
 import types
+from functools import singledispatch, wraps
 from typing import Any, Callable, Generator
 
 PY35 = sys.version_info >= (3, 5)

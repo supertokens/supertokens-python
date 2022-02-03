@@ -15,7 +15,8 @@ from typing import Union, List
 
 
 class User:
-    def __init__(self, user_id: str, email: Union[str, None], phone_number: Union[str, None], time_joined: int):
+    def __init__(self, user_id: str,
+                 email: Union[str, None], phone_number: Union[str, None], time_joined: int):
         self.user_id = user_id
         self.email = email
         self.phone_number = phone_number

@@ -48,7 +48,8 @@ class EmailVerificationRecipe(RecipeModule):
     recipe_id = 'emailverification'
     __instance = None
 
-    def __init__(self, recipe_id: str, app_info: AppInfo, config: ParentRecipeEmailVerificationConfig):
+    def __init__(self, recipe_id: str, app_info: AppInfo,
+                 config: ParentRecipeEmailVerificationConfig):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, config)
         recipe_implementation = RecipeImplementation(
@@ -90,7 +91,8 @@ class EmailVerificationRecipe(RecipeModule):
                 {'status': 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'})
             return response
         else:
-            response.set_json_content({'status': 'EMAIL_ALREADY_VERIFIED_ERROR'})
+            response.set_json_content(
+                {'status': 'EMAIL_ALREADY_VERIFIED_ERROR'})
             return response
 
     def get_all_cors_headers(self) -> List[str]:

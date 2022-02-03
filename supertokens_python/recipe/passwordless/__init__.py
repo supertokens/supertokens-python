@@ -27,7 +27,8 @@ from .recipe import PasswordlessRecipe
 def init(contact_config: ContactConfig,
          flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
          override: Union[InputOverrideConfig, None] = None,
-         get_link_domain_and_path: Union[Callable[[str], Awaitable[Union[str, None]]]] = None,
+         get_link_domain_and_path: Union[Callable[[
+             str], Awaitable[Union[str, None]]]] = None,
          get_custom_user_input_code: Union[Callable[[], Awaitable[str]], None] = None):
     return PasswordlessRecipe.init(contact_config,
                                    flow_type,

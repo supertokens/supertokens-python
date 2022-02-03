@@ -45,7 +45,8 @@ class HandshakeInfo:
 
     def get_jwt_signing_public_key_list(self) -> List:
         time_now = get_timestamp_ms()
-        return [key for key in self.raw_jwt_signing_public_key_list if key['expiryTime'] > time_now]
+        return [
+            key for key in self.raw_jwt_signing_public_key_list if key['expiryTime'] > time_now]
 
 
 class RecipeImplementation(RecipeInterface):
@@ -83,7 +84,8 @@ class RecipeImplementation(RecipeInterface):
 
         return self.handshake_info
 
-    def update_jwt_signing_public_key_info(self, key_list: Union[List, None], public_key: str, expiry_time: int):
+    def update_jwt_signing_public_key_info(
+            self, key_list: Union[List, None], public_key: str, expiry_time: int):
         if key_list is None:
             key_list = [{
                 'publicKey': public_key,

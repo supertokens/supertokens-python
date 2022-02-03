@@ -31,7 +31,8 @@ async def handle_authorisation_url_api(api_implementation: APIInterface, api_opt
         raise_bad_input_exception(
             'Please provide the thirdPartyId as a GET param')
 
-    provider: Provider = find_right_provider(api_options.providers, third_party_id, None)
+    provider: Provider = find_right_provider(
+        api_options.providers, third_party_id, None)
     if provider is None:
         raise_bad_input_exception('The third party provider ' + third_party_id + ' seems to be missing from the '
                                                                                  'backend configs.')

@@ -280,7 +280,8 @@ class SupertokensTest(TestCase):
         start_st()
 
         my_middleware = middleware(custom_response_view)
-        request = self.factory.get('/auth/signup/email/exists?email=test@example.com')
+        request = self.factory.get(
+            '/auth/signup/email/exists?email=test@example.com')
         response = await my_middleware(request)
 
         assert response.status_code == 203

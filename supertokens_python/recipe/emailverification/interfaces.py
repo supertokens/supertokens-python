@@ -43,7 +43,8 @@ class CreateEmailVerificationTokenOkResult(CreateEmailVerificationTokenResult):
         self.is_email_already_verified = False
 
 
-class CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult(CreateEmailVerificationTokenResult):
+class CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult(
+        CreateEmailVerificationTokenResult):
     def __init__(self):
         super().__init__('EMAIL_ALREADY_VERIFIED_ERROR', None)
         self.is_ok = False
@@ -66,7 +67,8 @@ class VerifyEmailUsingTokenOkResult(VerifyEmailUsingTokenResult):
         self.is_email_verification_invalid_token_error = False
 
 
-class VerifyEmailUsingTokenInvalidTokenErrorResult(VerifyEmailUsingTokenResult):
+class VerifyEmailUsingTokenInvalidTokenErrorResult(
+        VerifyEmailUsingTokenResult):
     def __init__(self):
         super().__init__('EMAIL_VERIFICATION_INVALID_TOKEN_ERROR', None)
         self.is_ok = False
@@ -79,7 +81,8 @@ class RevokeEmailVerificationTokensResult(ABC):
         self.is_ok = False
 
 
-class RevokeEmailVerificationTokensOkResult(RevokeEmailVerificationTokensResult):
+class RevokeEmailVerificationTokensOkResult(
+        RevokeEmailVerificationTokensResult):
     def __init__(self):
         super().__init__('OK')
         self.is_ok = True
@@ -205,14 +208,16 @@ class GenerateEmailVerifyTokenPostResponse(ABC):
         }
 
 
-class GenerateEmailVerifyTokenPostOkResponse(GenerateEmailVerifyTokenPostResponse):
+class GenerateEmailVerifyTokenPostOkResponse(
+        GenerateEmailVerifyTokenPostResponse):
     def __init__(self):
         super().__init__('OK')
         self.is_ok = True
         self.is_email_already_verified_error = False
 
 
-class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse(GenerateEmailVerifyTokenPostResponse):
+class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse(
+        GenerateEmailVerifyTokenPostResponse):
     def __init__(self):
         super().__init__('EMAIL_ALREADY_VERIFIED_ERROR')
         self.is_ok = False

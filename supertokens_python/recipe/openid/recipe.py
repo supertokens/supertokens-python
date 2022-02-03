@@ -43,11 +43,16 @@ class OpenIdRecipe(RecipeModule):
     def __init__(self, recipe_id: str, app_info: AppInfo, jwt_validity_seconds: Union[int, None] = None,
                  issuer: Union[str, None] = None, override: Union[InputOverrideConfig, None] = None):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(app_info, issuer, override)
+        self.config = validate_and_normalise_user_input(
+            app_info, issuer, override)
         jwt_feature = None
         if override is not None:
             jwt_feature = override.jwt_feature
-        self.jwt_recipe = JWTRecipe(recipe_id, app_info, jwt_validity_seconds, jwt_feature)
+        self.jwt_recipe = JWTRecipe(
+            recipe_id,
+            app_info,
+            jwt_validity_seconds,
+            jwt_feature)
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config, app_info, self.jwt_recipe.recipe_implementation)
@@ -64,7 +69,12 @@ class OpenIdRecipe(RecipeModule):
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
-        options = APIOptions(request, response, self.get_recipe_id(), self.config, self.recipe_implementation)
+        options = APIOptions(
+            request,
+            response,
+            self.get_recipe_id(),
+            self.config,
+            self.recipe_implementation)
 
         if request_id == GET_DISCOVERY_CONFIG_URL:
             return await open_id_discovery_configuration_get(self.api_implementation, options)

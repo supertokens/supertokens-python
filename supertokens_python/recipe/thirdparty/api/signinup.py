@@ -36,20 +36,24 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
             'Please provide the thirdPartyId in request body')
 
     if not isinstance(code, str):
-        raise_bad_input_exception('Please make sure that the code in the request body is a string')
+        raise_bad_input_exception(
+            'Please make sure that the code in the request body is a string')
 
     if code == '' and auth_code_response is None:
-        raise_bad_input_exception('Please provide one of code or authCodeResponse in the request body')
+        raise_bad_input_exception(
+            'Please provide one of code or authCodeResponse in the request body')
 
     if auth_code_response is not None and 'access_token' not in auth_code_response:
-        raise_bad_input_exception('Please provide the access_token inside the authCodeResponse request param')
+        raise_bad_input_exception(
+            'Please provide the access_token inside the authCodeResponse request param')
 
     if 'redirectURI' not in body or not isinstance(body['redirectURI'], str):
         raise_bad_input_exception(
             'Please provide the redirectURI in request body')
 
     third_party_id = body['thirdPartyId']
-    provider: Provider = find_right_provider(api_options.providers, third_party_id, client_id)
+    provider: Provider = find_right_provider(
+        api_options.providers, third_party_id, client_id)
     if provider is None:
         if client_id is None:
             raise_bad_input_exception('The third party provider ' + third_party_id + ' seems to be missing from the '

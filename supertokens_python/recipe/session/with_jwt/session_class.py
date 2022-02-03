@@ -29,7 +29,8 @@ if TYPE_CHECKING:
 from supertokens_python.recipe.session import Session
 
 
-def get_session_with_jwt(original_session: Session, openid_recipe_implementation: OpenIdRecipeInterface) -> Session:
+def get_session_with_jwt(original_session: Session,
+                         openid_recipe_implementation: OpenIdRecipeInterface) -> Session:
     original_update_access_token_payload = original_session.update_access_token_payload
 
     async def update_access_token_payload(new_access_token_payload, user_context) -> None:
@@ -46,7 +47,11 @@ def get_session_with_jwt(original_session: Session, openid_recipe_implementation
         existing_jwt = access_token_payload[jwt_property_name]
 
         current_time_in_seconds = ceil(get_timestamp_ms() / 1000)
-        decoded_payload = decode(jwt=existing_jwt, options={'verify_signature': False, 'verify_exp': False})
+        decoded_payload = decode(
+            jwt=existing_jwt,
+            options={
+                'verify_signature': False,
+                'verify_exp': False})
 
         if decoded_payload is None:
             raise Exception('Error reading JWT from session')

@@ -86,7 +86,8 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
             if payload is None:
                 raise e
 
-            if not isinstance(payload['timeCreated'], int) or not isinstance(payload['expiryTime'], int):
+            if not isinstance(payload['timeCreated'], int) or not isinstance(
+                    payload['expiryTime'], int):
                 raise e
 
             if payload['expiryTime'] < time.time():
@@ -153,7 +154,10 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
     else:
 
         if response['jwtSigningPublicKeyList'] is not None or response['jwtSigningPublicKey'] is not None or response['jwtSigningPublicKeyExpiryTime'] is not None:
-            recipe_implementation.update_jwt_signing_public_key_info(response['jwtSigningPublicKeyList'], response['jwtSigningPublicKey'], response['jwtSigningPublicKeyExpiryTime'])
+            recipe_implementation.update_jwt_signing_public_key_info(
+                response['jwtSigningPublicKeyList'],
+                response['jwtSigningPublicKey'],
+                response['jwtSigningPublicKeyExpiryTime'])
         else:
             await recipe_implementation.get_handshake_info(True)
         raise_try_refresh_token_exception(response['message'])

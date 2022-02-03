@@ -37,12 +37,14 @@ def get_jwt_expiry(access_token_expiry: int):
 
 
 class RecipeImplementationWithJWT(RecipeImplementation):
-    def __init__(self, querier: Querier, config: SessionConfig, openid_recipe_implementation: OpenIdRecipeInterface):
+    def __init__(self, querier: Querier, config: SessionConfig,
+                 openid_recipe_implementation: OpenIdRecipeInterface):
         super().__init__(querier, config)
         self.openid_recipe_implementation = openid_recipe_implementation
 
     async def create_new_session(self, request: any, user_id: str, user_context: any,
-                                 access_token_payload: Union[dict, None] = None,
+                                 access_token_payload: Union[dict,
+                                                             None] = None,
                                  session_data: Union[dict, None] = None) -> Session:
         if access_token_payload is None:
             access_token_payload = {}
@@ -65,7 +67,8 @@ class RecipeImplementationWithJWT(RecipeImplementation):
                                                                    anti_csrf_check, session_required)
         if session_container is None:
             return None
-        return get_session_with_jwt(session_container, self.openid_recipe_implementation)
+        return get_session_with_jwt(
+            session_container, self.openid_recipe_implementation)
 
     async def refresh_session(self, request: any, user_context: any) -> Session:
         access_token_validity_in_seconds = ceil(await self.get_access_token_lifetime_ms(user_context) / 1000)
@@ -83,7 +86,8 @@ class RecipeImplementationWithJWT(RecipeImplementation):
         )
 
         await new_session.update_access_token_payload(access_token_payload)
-        return get_session_with_jwt(new_session, self.openid_recipe_implementation)
+        return get_session_with_jwt(
+            new_session, self.openid_recipe_implementation)
 
     async def update_access_token_payload(self, session_handle: str,
                                           new_access_token_payload: dict, user_context: any) -> None:
@@ -102,7 +106,11 @@ class RecipeImplementationWithJWT(RecipeImplementation):
         existing_jwt = access_token_payload[existing_jwt_property_name]
 
         current_time_in_seconds = ceil(get_timestamp_ms() / 1000)
-        decoded_payload = decode(jwt=existing_jwt, options={'verify_signature': False, 'verify_exp': False})
+        decoded_payload = decode(
+            jwt=existing_jwt,
+            options={
+                'verify_signature': False,
+                'verify_exp': False})
 
         if decoded_payload is None:
             raise Exception('Error reading JWT from session')

@@ -40,10 +40,12 @@ class Session:
         if await self.__recipe_implementation.revoke_session(self.__session_handle, user_context):
             self.remove_cookies = True
 
-    def sync_revoke_session(self, user_context: Union[any, None] = None) -> None:
+    def sync_revoke_session(
+            self, user_context: Union[any, None] = None) -> None:
         sync(self.revoke_session(user_context))
 
-    def sync_get_session_data(self, user_context: Union[any, None] = None) -> dict:
+    def sync_get_session_data(
+            self, user_context: Union[any, None] = None) -> dict:
         return sync(self.get_session_data(user_context))
 
     async def get_session_data(self, user_context: Union[any, None] = None) -> dict:
@@ -52,7 +54,8 @@ class Session:
         session_info = await self.__recipe_implementation.get_session_information(self.__session_handle, user_context)
         return session_info['sessionData']
 
-    def sync_update_session_data(self, new_session_data, user_context: Union[any, None] = None) -> None:
+    def sync_update_session_data(
+            self, new_session_data, user_context: Union[any, None] = None) -> None:
         sync(self.update_session_data(new_session_data, user_context))
 
     async def update_session_data(self, new_session_data, user_context: Union[any, None] = None) -> None:
@@ -60,8 +63,12 @@ class Session:
             user_context = {}
         return await self.__recipe_implementation.update_session_data(self.__session_handle, new_session_data, user_context)
 
-    def sync_update_access_token_payload(self, new_access_token_payload, user_context: Union[any, None] = None) -> None:
-        sync(self.update_access_token_payload(new_access_token_payload, user_context))
+    def sync_update_access_token_payload(
+            self, new_access_token_payload, user_context: Union[any, None] = None) -> None:
+        sync(
+            self.update_access_token_payload(
+                new_access_token_payload,
+                user_context))
 
     async def update_access_token_payload(self, new_access_token_payload, user_context: Union[any, None] = None) -> None:
         if user_context is None:
@@ -79,7 +86,8 @@ class Session:
     def get_user_id(self, user_context: Union[any, None] = None) -> str:
         return self.user_id
 
-    def get_access_token_payload(self, user_context: Union[any, None] = None) -> dict:
+    def get_access_token_payload(
+            self, user_context: Union[any, None] = None) -> dict:
         return self.access_token_payload
 
     def get_handle(self, user_context: Union[any, None] = None) -> str:
@@ -94,7 +102,8 @@ class Session:
         result = await self.__recipe_implementation.get_session_information(self.__session_handle, user_context)
         return result['timeCreated']
 
-    def sync_get_time_created(self, user_context: Union[any, None] = None) -> dict:
+    def sync_get_time_created(
+            self, user_context: Union[any, None] = None) -> dict:
         return sync(self.get_time_created(user_context))
 
     async def get_expiry(self, user_context: Union[any, None] = None):

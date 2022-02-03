@@ -32,7 +32,8 @@ if TYPE_CHECKING:
 class Apple(Provider):
     def __init__(self, client_id: str, client_key_id: str, client_private_key: str, client_team_id: str,
                  scope: List[str] = None,
-                 authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None,
+                 authorisation_redirect: Dict[str, Union[str, Callable[[
+                     BaseRequest], str]]] = None,
                  is_default: bool = False):
         super().__init__('apple', client_id, is_default)
         self.APPLE_PUBLIC_KEY_URL = "https://appleid.apple.com/auth/keys"
@@ -120,7 +121,8 @@ class Apple(Provider):
 
     async def _fetch_apple_public_keys(self) -> List[RSAPublicKey]:
         # Check to see if the public key is unset or is stale before returning
-        if (self.APPLE_LAST_KEY_FETCH + self.APPLE_KEY_CACHE_EXP) < int(time()) or len(self.APPLE_PUBLIC_KEYS) == 0:
+        if (self.APPLE_LAST_KEY_FETCH + self.APPLE_KEY_CACHE_EXP) < int(time()
+                                                                        ) or len(self.APPLE_PUBLIC_KEYS) == 0:
             async with AsyncClient() as client:
                 response = await client.get(self.APPLE_PUBLIC_KEY_URL)
                 key_payload = response.json()

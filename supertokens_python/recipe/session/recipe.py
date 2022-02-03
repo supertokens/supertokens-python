@@ -13,40 +13,40 @@
 # under the License.
 from __future__ import annotations
 
-from .cookie_and_header import (
-    get_cors_allowed_headers,
-)
-from .exceptions import (
-    TokenTheftError,
-    UnauthorisedError,
-    SuperTokensSessionError,
-)
-from .api import (
-    handle_signout_api,
-    handle_refresh_api
-)
 from os import environ
-from typing import List, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Union
+
+from .api import handle_refresh_api, handle_signout_api
+from .cookie_and_header import get_cors_allowed_headers
+from .exceptions import (SuperTokensSessionError, TokenTheftError,
+                         UnauthorisedError)
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
+
 from supertokens_python.framework.response import BaseResponse
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
     from supertokens_python.supertokens import AppInfo
-from .utils import validate_and_normalise_user_input, InputErrorHandlers, InputOverrideConfig, JWTConfig
-from .constants import SESSION_REFRESH, SIGNOUT
+
+from supertokens_python.exceptions import (SuperTokensError,
+                                           raise_general_exception)
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe_module import RecipeModule, APIHandled
-from supertokens_python.exceptions import raise_general_exception, SuperTokensError
-from .recipe_implementation import RecipeImplementation
 from supertokens_python.querier import Querier
-from .api.implementation import APIImplementation
-from .interfaces import APIOptions
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
-from supertokens_python.recipe.session.with_jwt import RecipeImplementationWithJWT
+from supertokens_python.recipe.session.with_jwt import \
+    RecipeImplementationWithJWT
+from supertokens_python.recipe_module import APIHandled, RecipeModule
+
+from .api.implementation import APIImplementation
+from .constants import SESSION_REFRESH, SIGNOUT
+from .interfaces import APIOptions
+from .recipe_implementation import RecipeImplementation
+from .utils import (InputErrorHandlers, InputOverrideConfig, JWTConfig,
+                    validate_and_normalise_user_input)
 
 
 class SessionRecipe(RecipeModule):
@@ -56,9 +56,11 @@ class SessionRecipe(RecipeModule):
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  cookie_domain: Union[str, None] = None,
                  cookie_secure: Union[str, None] = None,
-                 cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
+                 cookie_same_site: Union[Literal["lax",
+                                                 "none", "strict"], None] = None,
                  session_expired_status_code: Union[str, None] = None,
-                 anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+                 anti_csrf: Union[Literal["VIA_TOKEN",
+                                          "VIA_CUSTOM_HEADER", "NONE"], None] = None,
                  error_handlers: Union[InputErrorHandlers, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  jwt: Union[JWTConfig, None] = None):
@@ -81,7 +83,8 @@ class SessionRecipe(RecipeModule):
             recipe_implementation = RecipeImplementationWithJWT(
                 Querier.get_instance(recipe_id), self.config, self.openid_recipe.recipe_implementation)
         else:
-            recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id), self.config)
+            recipe_implementation = RecipeImplementation(
+                Querier.get_instance(recipe_id), self.config)
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else self.config.override.functions(
             recipe_implementation)
         api_implementation = APIImplementation()
@@ -152,9 +155,11 @@ class SessionRecipe(RecipeModule):
     @staticmethod
     def init(cookie_domain: Union[str, None] = None,
              cookie_secure: Union[str, None] = None,
-             cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
+             cookie_same_site: Union[Literal["lax",
+                                             "none", "strict"], None] = None,
              session_expired_status_code: Union[str, None] = None,
-             anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+             anti_csrf: Union[Literal["VIA_TOKEN",
+                                      "VIA_CUSTOM_HEADER", "NONE"], None] = None,
              error_handlers: Union[InputErrorHandlers, None] = None,
              override: Union[InputOverrideConfig, None] = None,
              jwt: Union[JWTConfig, None] = None):

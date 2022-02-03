@@ -79,7 +79,8 @@ init(
                 ), GoogleWorkspaces(
                     is_default=True,
                     client_id=os.environ.get('GOOGLE_WORKSPACES_CLIENT_ID'),
-                    client_secret=os.environ.get('GOOGLE_WORKSPACES_CLIENT_SECRET')
+                    client_secret=os.environ.get(
+                        'GOOGLE_WORKSPACES_CLIENT_SECRET')
                 ), Discord(
                     is_default=True,
                     client_id=os.environ.get('DISCORD_CLIENT_ID'),

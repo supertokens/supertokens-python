@@ -39,7 +39,8 @@ class RecipeImplementation(RecipeInterface):
     def __init__(self, emailpassword_querier: Querier,
                  thirdparty_querier: Union[Querier, None]):
         super().__init__()
-        emailpassword_implementation = EmailPasswordImplementation(emailpassword_querier)
+        emailpassword_implementation = EmailPasswordImplementation(
+            emailpassword_querier)
         self.ep_get_user_by_id = emailpassword_implementation.get_user_by_id
         self.ep_get_user_by_email = emailpassword_implementation.get_user_by_email
         self.ep_create_reset_password_token = emailpassword_implementation.create_reset_password_token
@@ -118,7 +119,8 @@ class RecipeImplementation(RecipeInterface):
         if user is None:
             return UpdateEmailOrPasswordUnknownUserIdErrorResult()
         if user.third_party_info is not None:
-            raise Exception("Cannot update email or password of a user who signed up using third party login.")
+            raise Exception(
+                "Cannot update email or password of a user who signed up using third party login.")
         return await self.ep_update_email_or_password(user_id, user_context, email, password)
 
     @deprecated(reason="This method is deprecated")
@@ -128,7 +130,8 @@ class RecipeImplementation(RecipeInterface):
         next_pagination_tokens = NextPaginationToken('null', 'null')
         if next_pagination is not None:
             next_pagination_tokens = extract_pagination_token(next_pagination)
-        email_password_result_promise = self.ep_get_users_oldest_first(limit, next_pagination_tokens.email_password_pagination_token)
+        email_password_result_promise = self.ep_get_users_oldest_first(
+            limit, next_pagination_tokens.email_password_pagination_token)
         third_party_result = UsersResponse([], None) if self.tp_get_users_oldest_first is None else await self.tp_get_users_oldest_first(
             limit, next_pagination_tokens.third_party_pagination_token)
         email_password_result = await email_password_result_promise
@@ -142,7 +145,8 @@ class RecipeImplementation(RecipeInterface):
         next_pagination_tokens = NextPaginationToken('null', 'null')
         if next_pagination is not None:
             next_pagination_tokens = extract_pagination_token(next_pagination)
-        email_password_result_promise = self.ep_get_users_newest_first(limit, next_pagination_tokens.email_password_pagination_token)
+        email_password_result_promise = self.ep_get_users_newest_first(
+            limit, next_pagination_tokens.email_password_pagination_token)
         third_party_result = UsersResponse([], None) if self.tp_get_users_newest_first is None else await self.tp_get_users_newest_first(
             limit, next_pagination_tokens.third_party_pagination_token)
         email_password_result = await email_password_result_promise

@@ -14,50 +14,43 @@
 
 from __future__ import annotations
 
-from typing import Union, List, TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, List, Union
 
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
 
-from .constants import (
-    TELEMETRY,
-    RID_KEY_HEADER,
-    FDI_KEY_HEADER,
-    TELEMETRY_SUPERTOKENS_API_URL,
-    TELEMETRY_SUPERTOKENS_API_VERSION, USER_COUNT, USERS, USER_DELETE
-)
+from .constants import (FDI_KEY_HEADER, RID_KEY_HEADER, TELEMETRY,
+                        TELEMETRY_SUPERTOKENS_API_URL,
+                        TELEMETRY_SUPERTOKENS_API_VERSION, USER_COUNT,
+                        USER_DELETE, USERS)
 from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
 from .querier import Querier
-from .recipe.session.cookie_and_header import attach_access_token_to_cookie, clear_cookies, \
-    attach_refresh_token_to_cookie, attach_id_refresh_token_to_cookie_and_header, attach_anti_csrf_header, \
-    set_front_token_in_headers
-
-from .types import UsersResponse, User, ThirdPartyInfo
-from .utils import (
-    compare_version,
-    normalise_http_method,
-    get_rid_from_request,
-    send_non_200_response
-)
+from .recipe.session.cookie_and_header import (
+    attach_access_token_to_cookie, attach_anti_csrf_header,
+    attach_id_refresh_token_to_cookie_and_header,
+    attach_refresh_token_to_cookie, clear_cookies, set_front_token_in_headers)
+from .types import ThirdPartyInfo, User, UsersResponse
+from .utils import (compare_version, get_rid_from_request,
+                    normalise_http_method, send_non_200_response)
 
 if TYPE_CHECKING:
     from .recipe_module import RecipeModule
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.recipe.session import Session
-from os import environ
-from httpx import AsyncClient
-from .exceptions import raise_general_exception
-from .exceptions import (
-    SuperTokensError,
-    GeneralError,
-    BadInputError
-)
-from supertokens_python.recipe.session import SessionRecipe
+
 import asyncio
+from os import environ
+
+from httpx import AsyncClient
+
+from supertokens_python.recipe.session import SessionRecipe
+
+from .exceptions import (BadInputError, GeneralError, SuperTokensError,
+                         raise_general_exception)
 
 
 class SupertokensConfig:
@@ -67,7 +60,8 @@ class SupertokensConfig:
 
 
 class Host:
-    def __init__(self, domain: NormalisedURLDomain, base_path: NormalisedURLPath):
+    def __init__(self, domain: NormalisedURLDomain,
+                 base_path: NormalisedURLPath):
         self.domain = domain
         self.base_path = base_path
 
@@ -95,11 +89,15 @@ class AppInfo:
                  api_base_path: str = '/auth', website_base_path: str = '/auth',
                  mode: Union[Literal['asgi', 'wsgi'], None] = None):
         self.app_name = app_name
-        self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(api_gateway_path)
+        self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(
+            api_gateway_path)
         self.api_domain: NormalisedURLDomain = NormalisedURLDomain(api_domain)
-        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(website_domain)
-        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(NormalisedURLPath(api_base_path))
-        self.website_base_path: NormalisedURLPath = NormalisedURLPath(website_base_path)
+        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(
+            website_domain)
+        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(
+            NormalisedURLPath(api_base_path))
+        self.website_base_path: NormalisedURLPath = NormalisedURLPath(
+            website_base_path)
         if mode is not None:
             mode = mode
         elif framework == 'fastapi':
@@ -178,15 +176,18 @@ class Supertokens:
 
         if len(recipe_list) == 0:
             raise_general_exception(
-                None, 'Please provide at least one recipe to the supertokens.init function call')
+                'Please provide at least one recipe to the supertokens.init function call')
 
-        self.recipe_modules: List[RecipeModule] = list(map(lambda func: func(self.app_info), recipe_list))
+        self.recipe_modules: List[RecipeModule] = list(
+            map(lambda func: func(self.app_info), recipe_list))
 
         if telemetry is None:
-            telemetry = ('SUPERTOKENS_ENV' not in environ) or (environ['SUPERTOKENS_ENV'] != 'testing')
+            telemetry = ('SUPERTOKENS_ENV' not in environ) or (
+                environ['SUPERTOKENS_ENV'] != 'testing')
 
         if telemetry:
-            if self.app_info.framework.lower() == 'flask' or self.app_info.framework.lower() == 'django':
+            if self.app_info.framework.lower(
+            ) == 'flask' or self.app_info.framework.lower() == 'django':
                 loop = asyncio.get_event_loop()
                 loop.run_until_complete(self.send_telemetry())
             else:
@@ -223,14 +224,15 @@ class Supertokens:
              mode: Union[Literal['asgi', 'wsgi'], None] = None,
              telemetry: Union[bool, None] = None):
         if Supertokens.__instance is None:
-            Supertokens.__instance = Supertokens(app_info, framework, supertokens_config, recipe_list, mode, telemetry)
+            Supertokens.__instance = Supertokens(
+                app_info, framework, supertokens_config, recipe_list, mode, telemetry)
 
     @staticmethod
     def reset():
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(
-                None, 'calling testing function in non testing env')
+                'calling testing function in non testing env')
         Querier.reset()
         Supertokens.__instance = None
 
@@ -239,7 +241,6 @@ class Supertokens:
         if Supertokens.__instance is not None:
             return Supertokens.__instance
         raise_general_exception(
-            None,
             'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
     def get_all_cors_headers(self) -> List[str]:
@@ -278,7 +279,7 @@ class Supertokens:
             return None
         else:
             raise_general_exception(
-                None, 'Please upgrade the SuperTokens core to >= 3.7.0')
+                'Please upgrade the SuperTokens core to >= 3.7.0')
 
     async def get_users(self, time_joined_order: Literal['ASC', 'DESC'],
                         limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
@@ -322,7 +323,8 @@ class Supertokens:
                     user_obj['thirdParty']['userId'],
                     user_obj['thirdParty']['id']
                 )
-            users.append(User(recipe_id, user_obj['id'], user_obj['email'], user_obj['timeJoined'], third_party))
+            users.append(User(
+                recipe_id, user_obj['id'], user_obj['email'], user_obj['timeJoined'], third_party))
 
         return UsersResponse(users, next_pagination_token)
 
@@ -338,7 +340,8 @@ class Supertokens:
         else:
             request_rid = get_rid_from_request(request)
             if request_rid is not None and request_rid == 'anti-csrf':
-                # see https://github.com/supertokens/supertokens-python/issues/54
+                # see
+                # https://github.com/supertokens/supertokens-python/issues/54
                 request_rid = None
             request_id = None
             matched_recipe = None

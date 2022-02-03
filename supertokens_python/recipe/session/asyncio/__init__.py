@@ -11,12 +11,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union, List
+from typing import List, Union
 
-from supertokens_python.recipe.openid.interfaces import CreateJwtResult, GetJWKSResult, \
-    GetOpenIdDiscoveryConfigurationResult
-from supertokens_python.recipe.session.session_class import Session
+from supertokens_python.recipe.openid.interfaces import (
+    CreateJwtResult, GetJWKSResult, GetOpenIdDiscoveryConfigurationResult)
 from supertokens_python.recipe.session.recipe import SessionRecipe
+from supertokens_python.recipe.session.session_class import Session
 from supertokens_python.utils import FRAMEWORKS
 
 
@@ -129,7 +129,8 @@ async def get_open_id_discovery_configuration(user_context=None) -> [GetOpenIdDi
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
     if openid_recipe is not None:
-        return openid_recipe.recipe_implementation.get_open_id_discovery_configuration(user_context)
+        return openid_recipe.recipe_implementation.get_open_id_discovery_configuration(
+            user_context)
 
     raise 'get_open_id_discovery_configuration cannot be used without enabling the JWT feature. Please set \'enable: ' \
           'True\' for jwt config when initialising the Session recipe'

@@ -31,4 +31,5 @@ from ..emailverification.utils import InputEmailVerificationConfig
 def init(sign_in_and_up_feature: SignInAndUpFeature,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
          override: Union[InputOverrideConfig, None] = None):
-    return ThirdPartyRecipe.init(sign_in_and_up_feature, email_verification_feature, override)
+    return ThirdPartyRecipe.init(
+        sign_in_and_up_feature, email_verification_feature, override)

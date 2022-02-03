@@ -40,14 +40,16 @@ class AccessTokenObj:
 
 
 class RegenerateAccessTokenResult(ABC):
-    def __init__(self, status: Literal['OK'], session: SessionObj, access_token: Union[AccessTokenObj, None]):
+    def __init__(self, status: Literal['OK'], session: SessionObj,
+                 access_token: Union[AccessTokenObj, None]):
         self.status = status
         self.session = session
         self.access_token = access_token
 
 
 class RegenerateAccessTokenOkResult(RegenerateAccessTokenResult):
-    def __init__(self, session: SessionObj, access_token: Union[AccessTokenObj, None]):
+    def __init__(self, session: SessionObj,
+                 access_token: Union[AccessTokenObj, None]):
         super().__init__('OK', session, access_token)
 
 
@@ -57,7 +59,8 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def create_new_session(self, request: any, user_id: str, user_context: any,
-                                 access_token_payload: Union[dict, None] = None,
+                                 access_token_payload: Union[dict,
+                                                             None] = None,
                                  session_data: Union[dict, None] = None) -> Session:
         pass
 

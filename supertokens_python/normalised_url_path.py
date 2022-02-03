@@ -27,16 +27,17 @@ class NormalisedURLPath:
         self.__value = normalise_url_path_or_throw_error(url)
 
     def startswith(self, other: NormalisedURLPath) -> bool:
-        return self.__value.startswith(other.__value)
+        return self.__value.startswith(other.get_as_string_dangerous())
 
     def append(self, other: NormalisedURLPath) -> NormalisedURLPath:
-        return NormalisedURLPath(self.__value + other.__value)
+        return NormalisedURLPath(
+            self.__value + other.get_as_string_dangerous())
 
     def get_as_string_dangerous(self) -> str:
         return self.__value
 
     def equals(self, other: NormalisedURLPath) -> bool:
-        return self.__value == other.__value
+        return self.__value == other.get_as_string_dangerous()
 
     def is_a_recipe_path(self) -> bool:
         return self.__value == '/recipe' or self.__value.startswith('/recipe/')
@@ -46,7 +47,8 @@ def normalise_url_path_or_throw_error(input_str: str) -> str:
     input_str = input_str.strip().lower()
 
     try:
-        if (not input_str.startswith('http://')) and (not input_str.startswith('https://')):
+        if (not input_str.startswith('http://')
+            ) and (not input_str.startswith('https://')):
             raise Exception('converting to proper URL')
         url_obj = urlparse(input_str)
         input_str = url_obj.path
@@ -80,7 +82,7 @@ def normalise_url_path_or_throw_error(input_str: str) -> str:
         return normalise_url_path_or_throw_error(
             'http://example.com' + input_str)
     except Exception:
-        raise_general_exception(None, 'Please provide a valid URL path')
+        raise_general_exception('Please provide a valid URL path')
 
 
 def domain_given(input_str: str) -> bool:
