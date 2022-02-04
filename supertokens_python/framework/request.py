@@ -49,10 +49,6 @@ class BaseRequest(ABC):
         pass
 
     @abstractmethod
-    def url(self) -> str:
-        pass
-
-    @abstractmethod
     def get_session(self) -> Union[Session, None]:
         pass
 

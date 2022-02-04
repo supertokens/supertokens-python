@@ -48,9 +48,6 @@ class FlaskRequest(BaseRequest):
             return self.request.get(key, None)  # type: ignore
         return self.request.headers.get(key)  # type: ignore
 
-    def url(self) -> str:
-        return self.request.url
-
     def get_session(self) -> Union[Session, None]:
         from flask import g
         if hasattr(g, 'supertokens'):

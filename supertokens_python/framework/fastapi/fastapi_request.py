@@ -44,10 +44,6 @@ class FastApiRequest(BaseRequest):
     def get_header(self, key: str) -> Union[str, None]:
         return self.request.headers.get(key, None)
 
-    @property
-    def url(self) -> str:
-        return self.request.url
-
     def get_session(self):
         return self.request.state.supertokens
 

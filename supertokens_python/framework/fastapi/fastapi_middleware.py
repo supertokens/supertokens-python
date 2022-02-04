@@ -55,4 +55,5 @@ class Middleware(BaseHTTPMiddleware):
             result: Union[BaseResponse, None] = await st.handle_supertokens_error(FastApiRequest(request), e, response)
             if isinstance(result, FastApiResponse):
                 return result.response
+
         raise Exception("Should never come here")

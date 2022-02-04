@@ -14,8 +14,9 @@
 
 import json
 from typing import Any, Union
-from supertokens_python.framework.request import BaseRequest
 from urllib.parse import parse_qsl
+
+from supertokens_python.framework.request import BaseRequest
 
 
 class DjangoRequest(BaseRequest):
@@ -44,9 +45,6 @@ class DjangoRequest(BaseRequest):
         key = key.replace('-', '_')
         key = 'HTTP_' + key
         return self.request.META.get(key.upper())
-
-    def url(self):
-        return self.request.get_full_path()
 
     def get_session(self):
         return self.request.supertokens
