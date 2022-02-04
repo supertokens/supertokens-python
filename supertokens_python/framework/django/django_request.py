@@ -11,13 +11,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
 import json
-from typing import Any, Union
+from typing import TYPE_CHECKING, Any, Union
 from urllib.parse import parse_qsl
 
 from supertokens_python.framework.request import BaseRequest
-from supertokens_python.recipe.session import Session
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 class DjangoRequest(BaseRequest):
@@ -50,10 +53,10 @@ class DjangoRequest(BaseRequest):
         key = 'HTTP_' + key
         return self.request.META.get(key.upper())
 
-    def get_session(self) -> Union[Session, None]:
+    def get_session(self) -> Union[SessionContainer, None]:
         return self.request.supertokens  # type: ignore
 
-    def set_session(self, session: Session):
+    def set_session(self, session: SessionContainer):
         self.request.supertokens = session  # type: ignore
 
     def get_path(self) -> str:

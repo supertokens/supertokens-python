@@ -11,11 +11,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Union
 from urllib.parse import parse_qsl
 
 from supertokens_python.framework.request import BaseRequest
-from supertokens_python.recipe.session import Session
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 class FastApiRequest(BaseRequest):
@@ -47,7 +51,7 @@ class FastApiRequest(BaseRequest):
     def get_session(self):
         return self.request.state.supertokens
 
-    def set_session(self, session: Session):
+    def set_session(self, session: SessionContainer):
         self.request.state.supertokens = session
 
     def get_path(self) -> str:

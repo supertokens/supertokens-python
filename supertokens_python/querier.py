@@ -26,6 +26,8 @@ from .normalised_url_path import NormalisedURLPath
 if TYPE_CHECKING:
     from .supertokens import Host
 
+from typing import Union
+
 from .exceptions import raise_general_exception
 from .process_state import AllowedProcessStates, ProcessState
 from .utils import find_max_version, is_4xx_error, is_5xx_error
@@ -94,9 +96,8 @@ class Querier:
         return Querier.__api_version
 
     @staticmethod
-    def get_instance(rid_to_core=None):
+    def get_instance(rid_to_core: Union[str, None] = None):
         if (not Querier.__init_called) or (Querier.__hosts is None):
-            # TODO
             raise Exception(
                 "Please call the supertokens.init function before using SuperTokens")
         return Querier(Querier.__hosts, rid_to_core)

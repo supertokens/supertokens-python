@@ -11,11 +11,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
-from typing import Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.framework.request import BaseRequest
-from supertokens_python.recipe.session import Session
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 class FlaskRequest(BaseRequest):
@@ -48,13 +51,13 @@ class FlaskRequest(BaseRequest):
             return self.request.get(key, None)  # type: ignore
         return self.request.headers.get(key)  # type: ignore
 
-    def get_session(self) -> Union[Session, None]:
+    def get_session(self) -> Union[SessionContainer, None]:
         from flask import g
         if hasattr(g, 'supertokens'):
             return g.supertokens
         return None
 
-    def set_session(self, session: Session):
+    def set_session(self, session: SessionContainer):
         from flask import g
         g.supertokens = session
 

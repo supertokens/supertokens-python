@@ -13,21 +13,26 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from jwt import decode
-
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.session.interfaces import SessionContainer
+from supertokens_python.recipe.session.recipe_implementation import \
+    RecipeImplementation
 from supertokens_python.utils import get_timestamp_ms
+
 from .constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
 from .session_class import get_session_with_jwt
-from supertokens_python.recipe.session.recipe_implementation import RecipeImplementation
 from .utills import add_jwt_to_access_token_payload
-from supertokens_python.recipe.session import Session
+
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.utils import SessionConfig
+
 from math import ceil
-from supertokens_python.recipe.openid.interfaces import RecipeInterface as OpenIdRecipeInterface
+
+from supertokens_python.recipe.openid.interfaces import \
+    RecipeInterface as OpenIdRecipeInterface
 
 EXPIRY_OFFSET_SECONDS = 30
 
@@ -45,7 +50,7 @@ class RecipeImplementationWithJWT(RecipeImplementation):
     async def create_new_session(self, request: any, user_id: str, user_context: any,
                                  access_token_payload: Union[dict,
                                                              None] = None,
-                                 session_data: Union[dict, None] = None) -> Session:
+                                 session_data: Union[dict, None] = None) -> SessionContainer:
         if access_token_payload is None:
             access_token_payload = {}
         access_token_validity_in_seconds = ceil(await self.get_access_token_lifetime_ms(user_context) / 1000)
@@ -62,7 +67,7 @@ class RecipeImplementationWithJWT(RecipeImplementation):
 
     async def get_session(self, request: any, user_context: any,
                           anti_csrf_check: Union[bool, None] = None,
-                          session_required: bool = True) -> Union[Session, None]:
+                          session_required: bool = True) -> Union[SessionContainer, None]:
         session_container = await RecipeImplementation.get_session(self, request, user_context,
                                                                    anti_csrf_check, session_required)
         if session_container is None:
@@ -70,7 +75,7 @@ class RecipeImplementationWithJWT(RecipeImplementation):
         return get_session_with_jwt(
             session_container, self.openid_recipe_implementation)
 
-    async def refresh_session(self, request: any, user_context: any) -> Session:
+    async def refresh_session(self, request: any, user_context: any) -> SessionContainer:
         access_token_validity_in_seconds = ceil(await self.get_access_token_lifetime_ms(user_context) / 1000)
 
         # Refresh session first because this will create a new access token

@@ -12,14 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Union
+
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.recipe.session.interfaces import SessionContainer
 
 if TYPE_CHECKING:
     from .recipe_implementation import RecipeImplementation
 
 
-class Session:
+class Session(SessionContainer):
     def __init__(self, recipe_implementation: RecipeImplementation, access_token, session_handle, user_id,
                  access_token_payload):
         super().__init__()

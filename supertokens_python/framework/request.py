@@ -11,11 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 
-from supertokens_python.recipe.session import Session
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 class BaseRequest(ABC):
@@ -49,11 +51,11 @@ class BaseRequest(ABC):
         pass
 
     @abstractmethod
-    def get_session(self) -> Union[Session, None]:
+    def get_session(self) -> Union[SessionContainer, None]:
         pass
 
     @abstractmethod
-    def set_session(self, session: Session):
+    def set_session(self, session: SessionContainer):
         pass
 
     @abstractmethod

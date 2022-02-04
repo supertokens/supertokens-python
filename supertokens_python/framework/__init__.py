@@ -11,6 +11,5 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from .django import django_middleware  # type: ignore
 from .request import BaseRequest  # type: ignore
 from .response import BaseResponse  # type: ignore

@@ -12,16 +12,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from typing import Union
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
 
-from .session_class import Session
-from .recipe import SessionRecipe
+from supertokens_python.recipe.openid import \
+    InputOverrideConfig as OpenIdInputOverrideConfig
+from supertokens_python.recipe.openid import JWTOverrideConfig
+
 from . import exceptions
+from .recipe import SessionRecipe
+from .session_class import Session
 from .utils import InputErrorHandlers, InputOverrideConfig, JWTConfig
-from supertokens_python.recipe.openid import InputOverrideConfig as OpenIdInputOverrideConfig, JWTOverrideConfig
 
 
 def init(cookie_domain: Union[str, None] = None,

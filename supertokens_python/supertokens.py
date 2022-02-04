@@ -254,7 +254,7 @@ class Supertokens:
 
         return list(headers_set)
 
-    async def get_user_count(self, include_recipe_ids: List[str] = None) -> int:
+    async def get_user_count(self, include_recipe_ids: Union[None, List[str]] = None) -> int:
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
         if include_recipe_ids is not None:
@@ -283,7 +283,7 @@ class Supertokens:
 
     async def get_users(self, time_joined_order: Literal['ASC', 'DESC'],
                         limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
-                        include_recipe_ids: List[str] = None) -> UsersResponse:
+                        include_recipe_ids: Union[None, List[str]] = None) -> UsersResponse:
         querier = Querier.get_instance(None)
         params = {
             'timeJoinedOrder': time_joined_order

@@ -12,17 +12,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Union, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, List, Union
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
-    from supertokens_python.recipe.jwt.interfaces import RecipeInterface as JWTRecipeInterface
-    from .utils import SessionConfig
-    from .session_class import Session
+    from supertokens_python.recipe.jwt.interfaces import \
+        RecipeInterface as JWTRecipeInterface
 
 
 class SessionObj:
@@ -61,16 +62,16 @@ class RecipeInterface(ABC):
     async def create_new_session(self, request: any, user_id: str, user_context: any,
                                  access_token_payload: Union[dict,
                                                              None] = None,
-                                 session_data: Union[dict, None] = None) -> Session:
+                                 session_data: Union[dict, None] = None) -> SessionContainer:
         pass
 
     @abstractmethod
     async def get_session(self, request: any, user_context: any, anti_csrf_check: Union[bool, None] = None,
-                          session_required: bool = True) -> Union[Session, None]:
+                          session_required: bool = True) -> Union[SessionContainer, None]:
         pass
 
     @abstractmethod
-    async def refresh_session(self, request: any, user_context: any) -> Session:
+    async def refresh_session(self, request: any, user_context: any) -> SessionContainer:
         pass
 
     @abstractmethod
@@ -139,9 +140,10 @@ class SignOutOkayResponse(SignOutResponse):
         }
 
 
+# TODO: Change config: Any to config: SessionConfig in the below function.
 class APIOptions:
     def __init__(self, request: BaseRequest, response: Union[BaseResponse, None],
-                 recipe_id: str, config: SessionConfig, recipe_implementation: RecipeInterface,
+                 recipe_id: str, config: Any, recipe_implementation: RecipeInterface,
                  jwt_recipe_implementation: Union[JWTRecipeInterface, None]):
         self.request = request
         self.response = response
@@ -167,5 +169,65 @@ class APIInterface(ABC):
     @abstractmethod
     async def verify_session(self, api_options: APIOptions, user_context: any,
                              anti_csrf_check: Union[bool, None] = None,
-                             session_required: bool = True) -> Union[Session, None]:
+                             session_required: bool = True) -> Union[SessionContainer, None]:
+        pass
+
+
+class SessionContainer(ABC):
+
+    @abstractmethod
+    async def revoke_session(self, user_context: Union[Any, None] = None) -> None:
+        pass
+
+    def sync_revoke_session(
+            self, user_context: Union[any, None] = None) -> None:
+        pass
+
+    def sync_get_session_data(
+            self, user_context: Union[any, None] = None) -> dict:
+        pass
+
+    async def get_session_data(self, user_context: Union[any, None] = None) -> dict:
+        pass
+
+    def sync_update_session_data(
+            self, new_session_data, user_context: Union[any, None] = None) -> None:
+        pass
+
+    async def update_session_data(self, new_session_data, user_context: Union[any, None] = None) -> None:
+        pass
+
+    def sync_update_access_token_payload(
+            self, new_access_token_payload, user_context: Union[any, None] = None) -> None:
+        pass
+
+    async def update_access_token_payload(self, new_access_token_payload, user_context: Union[any, None] = None) -> None:
+        pass
+
+    def get_user_id(self, user_context: Union[any, None] = None) -> str:
+        pass
+
+    def get_access_token_payload(
+            self, user_context: Union[any, None] = None) -> dict:
+        pass
+
+    def get_handle(self, user_context: Union[any, None] = None) -> str:
+        pass
+
+    def get_access_token(self, user_context: Union[any, None] = None) -> str:
+        pass
+
+    async def get_time_created(self, user_context: Union[any, None] = None):
+        pass
+
+    def sync_get_time_created(
+            self, user_context: Union[any, None] = None) -> dict:
+        pass
+
+    async def get_expiry(self, user_context: Union[any, None] = None):
+        if user_context is None:
+            user_context = {}
+        pass
+
+    def sync_get_expiry(self, user_context: Union[any, None] = None) -> dict:
         pass

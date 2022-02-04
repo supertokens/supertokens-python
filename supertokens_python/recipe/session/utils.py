@@ -13,29 +13,34 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union, Awaitable
+from typing import TYPE_CHECKING, Awaitable, Callable, Union
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
-from urllib.parse import urlparse
 
-from tldextract import extract
+from urllib.parse import urlparse
 
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.framework import BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.openid import \
+    InputOverrideConfig as OpenIdInputOverrideConfig
 from supertokens_python.utils import is_an_ip_address, send_non_200_response
+from tldextract import extract
+
 from .constants import SESSION_REFRESH
 from .cookie_and_header import clear_cookies
-from supertokens_python.recipe.openid import InputOverrideConfig as OpenIdInputOverrideConfig
-from .with_jwt.constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE
+from .with_jwt.constants import (ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY,
+                                 JWT_RESERVED_KEY_USE_ERROR_MESSAGE)
 
 if TYPE_CHECKING:
-    from .interfaces import RecipeInterface, APIInterface
     from supertokens_python.framework import BaseRequest
-    from .recipe import SessionRecipe
     from supertokens_python.supertokens import AppInfo
+
+    from .interfaces import APIInterface, RecipeInterface
+    from .recipe import SessionRecipe
 
 
 def normalise_session_scope(recipe: SessionRecipe, session_scope: str) -> str:
