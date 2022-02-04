@@ -16,6 +16,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, List, Union
 
+from .utils import SessionConfig
+
 try:
     from typing import Literal
 except ImportError:
@@ -140,10 +142,9 @@ class SignOutOkayResponse(SignOutResponse):
         }
 
 
-# TODO: Change config: Any to config: SessionConfig in the below function.
 class APIOptions:
     def __init__(self, request: BaseRequest, response: Union[BaseResponse, None],
-                 recipe_id: str, config: Any, recipe_implementation: RecipeInterface,
+                 recipe_id: str, config: SessionConfig, recipe_implementation: RecipeInterface,
                  jwt_recipe_implementation: Union[JWTRecipeInterface, None]):
         self.request = request
         self.response = response
