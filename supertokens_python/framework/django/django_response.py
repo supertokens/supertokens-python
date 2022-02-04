@@ -12,8 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
+from datetime import datetime
 from math import ceil
 from time import time
+from typing import Any, Dict, Union
 
 from supertokens_python.framework.response import BaseResponse
 
@@ -29,23 +31,29 @@ class DjangoResponse(BaseResponse):
         self.response_sent = False
         self.status_set = False
 
-    def set_html_content(self, content):
+    def set_html_content(self, content: str):
         if not self.response_sent:
             self.response.content = content
             self.set_header('Content-Type', 'text/html')
             self.response_sent = True
 
-    def set_cookie(self, key: str, value: str = "", max_age: int = None, expires: int = None, path: str = "/",
-                   domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = "lax"):
+    def set_cookie(self, key: str,
+                   value: str,
+                   expires: int,
+                   path: str = "/",
+                   domain: Union[str, None] = None,
+                   secure: bool = False,
+                   httponly: bool = False,
+                   samesite: str = "lax"):
         self.response.set_cookie(
-            key,
-            value,
-            max_age,
-            ceil((expires - int(time() * 1000)) / 1000),
-            path,
-            domain,
-            secure,
-            httponly)
+            key=key,
+            value=value,
+            expires=datetime.fromtimestamp(
+                ceil((expires - int(time() * 1000)) / 1000)).strftime("%A, %B %d, %Y %I:%M:%S"),
+            path=path,
+            domain=domain,
+            secure=secure,
+            httponly=httponly)
         self.response.cookies[key]['samesite'] = samesite
 
     def set_status_code(self, status_code: int):
@@ -59,10 +67,9 @@ class DjangoResponse(BaseResponse):
     def get_header(self, key: str):
         if self.response.has_header(key):
             return self.response[key]
-        else:
-            return None
+        return None
 
-    def set_json_content(self, content):
+    def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:
             self.set_header('Content-Type', 'application/json; charset=utf-8')
             self.response.content = json.dumps(

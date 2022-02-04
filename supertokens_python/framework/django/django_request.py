@@ -17,18 +17,20 @@ from typing import Any, Union
 from urllib.parse import parse_qsl
 
 from supertokens_python.framework.request import BaseRequest
+from supertokens_python.recipe.session import Session
 
 
 class DjangoRequest(BaseRequest):
+    from django.http import HttpRequest
 
-    def __init__(self, request):
+    def __init__(self, request: HttpRequest):
         super().__init__()
         self.request = request
 
-    def get_query_param(self, key, default=None):
+    def get_query_param(self, key: str, default: Union[str, None] = None) -> Union[str, None]:
         return self.request.GET.get(key, default)
 
-    async def json(self):
+    async def json(self) -> Union[Any, None]:
         try:
             body = json.loads(self.request.body)
             return body
@@ -36,21 +38,23 @@ class DjangoRequest(BaseRequest):
             return {}
 
     def method(self) -> str:
+        if self.request.method is None:
+            raise Exception("Should never come here")
         return self.request.method
 
     def get_cookie(self, key: str) -> Union[str, None]:
         return self.request.COOKIES.get(key)
 
-    def get_header(self, key: str) -> Any:
+    def get_header(self, key: str) -> Union[None, str]:
         key = key.replace('-', '_')
         key = 'HTTP_' + key
         return self.request.META.get(key.upper())
 
-    def get_session(self):
-        return self.request.supertokens
+    def get_session(self) -> Union[Session, None]:
+        return self.request.supertokens  # type: ignore
 
-    def set_session(self, session):
-        self.request.supertokens = session
+    def set_session(self, session: Session):
+        self.request.supertokens = session  # type: ignore
 
     def get_path(self) -> str:
         return self.request.path

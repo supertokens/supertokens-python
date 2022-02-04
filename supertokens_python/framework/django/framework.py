@@ -17,5 +17,7 @@ from supertokens_python.framework.types import Framework
 
 
 class DjangoFramework(Framework):
-    def wrap_request(self, unwrapped):
+    from django.http import HttpRequest
+
+    def wrap_request(self, unwrapped: HttpRequest):
         return DjangoRequest(unwrapped)
