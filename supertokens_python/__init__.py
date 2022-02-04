@@ -14,7 +14,6 @@
 
 from typing import Callable, List, Union
 
-from .recipe import session
 from .recipe_module import RecipeModule
 from .supertokens import AppInfo, InputAppInfo, Supertokens, SupertokensConfig
 
