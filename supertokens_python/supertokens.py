@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, List, Union
+from typing import TYPE_CHECKING, Callable, List, Set, Union
 
 try:
     from typing import Literal
@@ -49,8 +49,7 @@ from httpx import AsyncClient
 
 from supertokens_python.recipe.session import SessionRecipe
 
-from .exceptions import (BadInputError, GeneralError, SuperTokensError,
-                         raise_general_exception)
+from .exceptions import BadInputError, GeneralError, raise_general_exception
 
 
 class SupertokensConfig:
@@ -211,7 +210,7 @@ class Supertokens:
                     'telemetryId': telemetry_id
                 }
             async with AsyncClient() as client:
-                await client.post(url=TELEMETRY_SUPERTOKENS_API_URL, json=data,
+                await client.post(url=TELEMETRY_SUPERTOKENS_API_URL, json=data, # type: ignore
                                   headers={'api-version': TELEMETRY_SUPERTOKENS_API_VERSION})
         except Exception:
             pass
@@ -244,7 +243,7 @@ class Supertokens:
             'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
     def get_all_cors_headers(self) -> List[str]:
-        headers_set = set()
+        headers_set: Set[str] = set()
         headers_set.add(RID_KEY_HEADER)
         headers_set.add(FDI_KEY_HEADER)
         for recipe in self.recipe_modules:
@@ -313,7 +312,7 @@ class Supertokens:
         if 'nextPaginationToken' in response:
             next_pagination_token = response['nextPaginationToken']
         users_list = response['users']
-        users = []
+        users: List[User] = []
         for user in users_list:
             recipe_id = user['recipeId']
             user_obj = user['user']
@@ -361,11 +360,9 @@ class Supertokens:
                         matched_recipe = recipe
                         break
             if request_id is not None and matched_recipe is not None:
-                response = await matched_recipe.handle_api_request(request_id, request, path, method, response)
+                return await matched_recipe.handle_api_request(request_id, request, path, method, response)
             else:
                 return None
-
-        return response
 
     async def handle_supertokens_error(self, request: BaseRequest, err: Exception, response: BaseResponse):
         if isinstance(err, GeneralError):

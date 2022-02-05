@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, TypeGuard, Union
 
 try:
     from typing import Literal
@@ -54,7 +54,7 @@ class RecipeModule(abc.ABC):
 
     @abc.abstractmethod
     def is_error_from_this_recipe_based_on_instance(
-            self, err: Exception) -> bool:
+            self, err: Exception) -> TypeGuard[SuperTokensError]:
         pass
 
     @abc.abstractmethod
