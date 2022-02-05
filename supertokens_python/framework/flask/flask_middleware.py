@@ -36,7 +36,8 @@ class Middleware:
 
         from flask.wrappers import Response
 
-        # There is an error in the typing provided by flask, so we ignore it for now.
+        # There is an error in the typing provided by flask, so we ignore it
+        # for now.
         @app.before_request  # type: ignore
         def _():
             from supertokens_python import Supertokens

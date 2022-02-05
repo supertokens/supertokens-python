@@ -53,7 +53,8 @@ class RecipeModule(abc.ABC):
         return None
 
     @abc.abstractmethod
-    def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
+    def is_error_from_this_recipe_based_on_instance(
+            self, err: Exception) -> bool:
         pass
 
     @abc.abstractmethod

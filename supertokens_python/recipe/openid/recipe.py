@@ -91,7 +91,8 @@ class OpenIdRecipe(RecipeModule):
     def get_all_cors_headers(self):
         return [] + self.jwt_recipe.get_all_cors_headers()
 
-    def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
+    def is_error_from_this_recipe_based_on_instance(
+            self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensOpenIdError)
             or

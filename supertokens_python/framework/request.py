@@ -27,7 +27,8 @@ class BaseRequest(ABC):
         self.request = None
 
     @abstractmethod
-    def get_query_param(self, key: str, default: Union[str, None] = None) -> Union[str, None]:
+    def get_query_param(
+            self, key: str, default: Union[str, None] = None) -> Union[str, None]:
         pass
 
     @abstractmethod

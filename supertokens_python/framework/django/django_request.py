@@ -30,7 +30,8 @@ class DjangoRequest(BaseRequest):
         super().__init__()
         self.request = request
 
-    def get_query_param(self, key: str, default: Union[str, None] = None) -> Union[str, None]:
+    def get_query_param(
+            self, key: str, default: Union[str, None] = None) -> Union[str, None]:
         return self.request.GET.get(key, default)
 
     async def json(self) -> Union[Any, None]:
