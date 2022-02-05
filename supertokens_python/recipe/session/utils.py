@@ -115,37 +115,42 @@ class InputErrorHandlers:
 
 
 class ErrorHandlers:
-    def __init__(self, recipe: SessionRecipe, on_token_theft_detected,
-                 on_try_refresh_token, on_unauthorised):
+    def __init__(self, recipe: SessionRecipe, on_token_theft_detected: Callable[[BaseRequest, str, str], Union[BaseResponse, Awaitable[BaseResponse]]],
+                 on_try_refresh_token: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_unauthorised: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]):
         self.__recipe = recipe
         self.__on_token_theft_detected = on_token_theft_detected
         self.__on_try_refresh_token = on_try_refresh_token
         self.__on_unauthorised = on_unauthorised
 
-    async def on_token_theft_detected(self, request: BaseRequest, session_handle: str, user_id: str):
-        try:
-            response = await self.__on_token_theft_detected(request, session_handle, user_id)
-        except TypeError:
-            response = self.__on_token_theft_detected(
-                request, session_handle, user_id)
+    async def on_token_theft_detected(self, request: BaseRequest, session_handle: str, user_id: str) -> BaseResponse:
+        response: Union[None, BaseResponse] = None
+        temp = self.__on_token_theft_detected(request, session_handle, user_id)
+        if isinstance(temp, Awaitable):
+            response = await temp
+        else:
+            response = temp
         clear_cookies(self.__recipe, response)
         return response
 
     async def on_try_refresh_token(self, request: BaseRequest, message: str, response: BaseResponse):
-        try:
-            response = await self.__on_try_refresh_token(request, message, response)
-        except TypeError:
-            response = await self.__on_try_refresh_token(request, message, response)
-        return response
+        result: Union[None, BaseResponse] = None
+        temp = self.__on_try_refresh_token(request, message, response)
+        if isinstance(temp, Awaitable):
+            result = await temp
+        else:
+            result = temp
+        return result
 
     async def on_unauthorised(self, do_clear_cookies: bool, request: BaseRequest, message: str, response: BaseResponse):
-        try:
-            await self.__on_unauthorised(request, message, response)
-        except TypeError:
-            await self.__on_unauthorised(request, message, response)
+        result: Union[None, BaseResponse] = None
+        temp = self.__on_unauthorised(request, message, response)
+        if isinstance(temp, Awaitable):
+            result = await temp
+        else:
+            result = temp
         if do_clear_cookies:
-            clear_cookies(self.__recipe, response)
-        return response
+            clear_cookies(self.__recipe, result)
+        return result
 
 
 async def default_unauthorised_callback(_: BaseRequest, __: str, response: BaseResponse):
