@@ -197,10 +197,10 @@ class Querier:
                     environ['SUPERTOKENS_ENV'] == 'testing'):
                 Querier.__hosts_alive_for_testing.add(current_host)
 
-            if is_4xx_error(response.status_code) or is_5xx_error(response.status_code): # type: ignore
+            if is_4xx_error(response.status_code) or is_5xx_error(response.status_code):  # type: ignore
                 raise_general_exception('SuperTokens core threw an error for a ' + method + ' request to path: ' + path.get_as_string_dangerous() + ' with status code: ' + str(
-                                            response.status_code) + ' and message: ' + # type: ignore
-                                        response.text)
+                    response.status_code) + ' and message: ' +  # type: ignore
+                    response.text)
 
             try:
                 return response.json()
