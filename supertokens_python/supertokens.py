@@ -53,7 +53,7 @@ from .exceptions import BadInputError, GeneralError, raise_general_exception
 
 
 class SupertokensConfig:
-    def __init__(self, connection_uri: str, api_key: Union[str, None] = None):
+    def __init__(self, connection_uri: str, api_key: Union[str, None] = None):  # We keep this = None here because this is directly used by the user.
         self.connection_uri = connection_uri
         self.api_key = api_key
 
@@ -84,9 +84,9 @@ class InputAppInfo:
 
 class AppInfo:
     def __init__(self, app_name: str, api_domain: str, website_domain: str,
-                 framework: Literal['fastapi', 'flask', 'django'], api_gateway_path: str = '',
-                 api_base_path: str = '/auth', website_base_path: str = '/auth',
-                 mode: Union[Literal['asgi', 'wsgi'], None] = None):
+                 framework: Literal['fastapi', 'flask', 'django'], api_gateway_path: str,
+                 api_base_path: str, website_base_path: str,
+                 mode: Union[Literal['asgi', 'wsgi'], None]):
         self.app_name = app_name
         self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(
             api_gateway_path)
@@ -156,8 +156,8 @@ class Supertokens:
                  framework: Literal['fastapi', 'flask', 'django'],
                  supertokens_config: SupertokensConfig,
                  recipe_list: List[Callable[[AppInfo], RecipeModule]],
-                 mode: Union[Literal['asgi', 'wsgi'], None] = None,
-                 telemetry: Union[bool, None] = None
+                 mode: Union[Literal['asgi', 'wsgi'], None],
+                 telemetry: Union[bool, None]
                  ):
         self.app_info = AppInfo(
             app_info.app_name,
@@ -220,8 +220,8 @@ class Supertokens:
              framework: Literal['fastapi', 'flask', 'django'],
              supertokens_config: SupertokensConfig,
              recipe_list: List[Callable[[AppInfo], RecipeModule]],
-             mode: Union[Literal['asgi', 'wsgi'], None] = None,
-             telemetry: Union[bool, None] = None):
+             mode: Union[Literal['asgi', 'wsgi'], None],
+             telemetry: Union[bool, None]):
         if Supertokens.__instance is None:
             Supertokens.__instance = Supertokens(
                 app_info, framework, supertokens_config, recipe_list, mode, telemetry)
@@ -253,7 +253,7 @@ class Supertokens:
 
         return list(headers_set)
 
-    async def get_user_count(self, include_recipe_ids: Union[None, List[str]] = None) -> int:
+    async def get_user_count(self, include_recipe_ids: Union[None, List[str]]) -> int:
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
         if include_recipe_ids is not None:
@@ -281,8 +281,8 @@ class Supertokens:
                 'Please upgrade the SuperTokens core to >= 3.7.0')
 
     async def get_users(self, time_joined_order: Literal['ASC', 'DESC'],
-                        limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
-                        include_recipe_ids: Union[None, List[str]] = None) -> UsersResponse:
+                        limit: Union[int, None], pagination_token: Union[str, None],
+                        include_recipe_ids: Union[None, List[str]]) -> UsersResponse:
         querier = Querier.get_instance(None)
         params = {
             'timeJoinedOrder': time_joined_order

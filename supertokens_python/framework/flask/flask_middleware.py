@@ -57,7 +57,7 @@ class Middleware:
             if result is not None:
                 if isinstance(result, FlaskResponse):
                     return result.response
-                raise Exception("Shoulld never come here")
+                raise Exception("Should never come here")
             return None
 
         @app.after_request

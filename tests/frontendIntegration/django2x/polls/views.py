@@ -36,7 +36,6 @@ from supertokens_python.recipe.session.syncio import (
 
 module_dir = os.path.dirname(__file__)  # get current directory
 file_path = os.path.join(module_dir, '../templates/index.html')
-print(file_path)
 index_file = open(file_path, "r")
 file_contents = index_file.read()
 index_file.close()
@@ -351,7 +350,6 @@ def set_anti_csrf(request):
 
 def refresh_called_time(request):
     if request.method == 'GET':
-        print(Test.get_refresh_called_count())
         return HttpResponse(str(Test.get_refresh_called_count()))
     else:
         return send_options_api_response()
