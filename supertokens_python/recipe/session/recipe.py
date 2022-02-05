@@ -55,10 +55,10 @@ class SessionRecipe(RecipeModule):
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  cookie_domain: Union[str, None] = None,
-                 cookie_secure: Union[str, None] = None,
+                 cookie_secure: Union[bool, None] = None,
                  cookie_same_site: Union[Literal["lax",
                                                  "none", "strict"], None] = None,
-                 session_expired_status_code: Union[str, None] = None,
+                 session_expired_status_code: Union[int, None] = None,
                  anti_csrf: Union[Literal["VIA_TOKEN",
                                           "VIA_CUSTOM_HEADER", "NONE"], None] = None,
                  error_handlers: Union[InputErrorHandlers, None] = None,
@@ -66,7 +66,7 @@ class SessionRecipe(RecipeModule):
                  jwt: Union[JWTConfig, None] = None):
         super().__init__(recipe_id, app_info)
         self.openid_recipe: Union[None, OpenIdRecipe] = None
-        self.config = validate_and_normalise_user_input(self, app_info, cookie_domain,
+        self.config = validate_and_normalise_user_input(app_info, cookie_domain,
                                                         cookie_secure,
                                                         cookie_same_site,
                                                         session_expired_status_code,
@@ -91,7 +91,7 @@ class SessionRecipe(RecipeModule):
         self.api_implementation = api_implementation if self.config.override.apis is None else self.config.override.apis(
             api_implementation)
 
-    def is_error_from_this_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensSessionError)
             or
@@ -110,8 +110,7 @@ class SessionRecipe(RecipeModule):
 
         return apis_handled
 
-    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
-                                 response: BaseResponse):
+    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse) -> Union[BaseResponse, None]:
         if request_id == SESSION_REFRESH:
             return await handle_refresh_api(self.api_implementation,
                                             APIOptions(
@@ -136,14 +135,12 @@ class SessionRecipe(RecipeModule):
             return await self.openid_recipe.handle_api_request(request_id, request, path, method, response)
         return None
 
-    async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
-        if isinstance(error, UnauthorisedError):
-            return await self.config.error_handlers.on_unauthorised(error.clear_cookies, request, str(error), response)
-        elif isinstance(error, TokenTheftError):
-            return await self.config.error_handlers.on_token_theft_detected(request, error.session_handle,
-                                                                            error.user_id, response)
-        else:
-            return await self.config.error_handlers.on_try_refresh_token(request, str(error), response)
+    async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
+        if isinstance(err, UnauthorisedError):
+            return await self.config.error_handlers.on_unauthorised(self, err.clear_cookies, request, str(err), response)
+        if isinstance(err, TokenTheftError):
+            return await self.config.error_handlers.on_token_theft_detected(self, request, err.session_handle, err.user_id, response)
+        return await self.config.error_handlers.on_try_refresh_token(request, str(err), response)
 
     def get_all_cors_headers(self) -> List[str]:
         cors_headers = get_cors_allowed_headers()
@@ -154,10 +151,10 @@ class SessionRecipe(RecipeModule):
 
     @staticmethod
     def init(cookie_domain: Union[str, None] = None,
-             cookie_secure: Union[str, None] = None,
+             cookie_secure: Union[bool, None] = None,
              cookie_same_site: Union[Literal["lax",
                                              "none", "strict"], None] = None,
-             session_expired_status_code: Union[str, None] = None,
+             session_expired_status_code: Union[int, None] = None,
              anti_csrf: Union[Literal["VIA_TOKEN",
                                       "VIA_CUSTOM_HEADER", "NONE"], None] = None,
              error_handlers: Union[InputErrorHandlers, None] = None,
@@ -177,8 +174,8 @@ class SessionRecipe(RecipeModule):
                 )
                 return SessionRecipe.__instance
             else:
-                raise_general_exception(None,
-                                        'Session recipe has already been initialised. Please check your code for bugs.')
+                raise_general_exception(
+                    'Session recipe has already been initialised. Please check your code for bugs.')
 
         return func
 
@@ -187,7 +184,6 @@ class SessionRecipe(RecipeModule):
         if SessionRecipe.__instance is not None:
             return SessionRecipe.__instance
         raise_general_exception(
-            None,
             'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
     @staticmethod
@@ -195,7 +191,7 @@ class SessionRecipe(RecipeModule):
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(
-                None, 'calling testing function in non testing env')
+                'calling testing function in non testing env')
         SessionRecipe.__instance = None
 
     async def verify_session(self, request: BaseRequest, user_context: any,

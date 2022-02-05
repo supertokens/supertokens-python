@@ -102,7 +102,7 @@ def is_5xx_error(status_code: int) -> bool:
 
 
 def send_non_200_response(message: str, status_code: int,
-                          response: BaseResponse) -> Union[BaseResponse, None]:
+                          response: BaseResponse) -> BaseResponse:
     if status_code < 300:
         raise_general_exception(
             'Calling sendNon200Response with status code < 300')
@@ -114,7 +114,7 @@ def send_non_200_response(message: str, status_code: int,
 
 
 def send_200_response(
-        data_json: dict, response: BaseResponse) -> Union[BaseResponse, None]:
+        data_json: dict, response: BaseResponse) -> BaseResponse:
     response.set_json_content(data_json)
     response.set_status_code(200)
     return response

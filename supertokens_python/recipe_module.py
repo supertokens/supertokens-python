@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Union, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Union
 
 try:
     from typing import Literal
@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from .supertokens import AppInfo
     from .normalised_url_path import NormalisedURLPath
+
 from .exceptions import SuperTokensError
 
 
@@ -52,7 +53,7 @@ class RecipeModule(abc.ABC):
         return None
 
     @abc.abstractmethod
-    def is_error_from_this_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         pass
 
     @abc.abstractmethod
@@ -60,16 +61,15 @@ class RecipeModule(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
-                                 response: BaseResponse):
+    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse) -> Union[BaseResponse, None]:
         pass
 
     @abc.abstractmethod
-    async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse):
+    async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
         pass
 
     @abc.abstractmethod
-    def get_all_cors_headers(self):
+    def get_all_cors_headers(self) -> List[str]:
         pass
 
 
