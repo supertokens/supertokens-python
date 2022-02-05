@@ -322,8 +322,14 @@ class Supertokens:
                     user_obj['thirdParty']['userId'],
                     user_obj['thirdParty']['id']
                 )
+            email = None
+            if 'email' in user_obj:
+                email = user_obj['email']
+            phone_number = None
+            if 'phoneNumber' in user_obj:
+                phone_number = user_obj['phoneNumber']
             users.append(User(
-                recipe_id, user_obj['id'], user_obj['email'], user_obj['timeJoined'], third_party))
+                recipe_id, user_obj['id'], user_obj['timeJoined'], email, phone_number, third_party))
 
         return UsersResponse(users, next_pagination_token)
 

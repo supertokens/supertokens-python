@@ -17,13 +17,16 @@ from __future__ import annotations
 from base64 import b64decode, b64encode
 from re import fullmatch
 from time import time
-from typing import TYPE_CHECKING, Callable, List, Union
+from typing import (TYPE_CHECKING, Any, Callable, Coroutine, Dict, List,
+                    TypeVar, Union)
 
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 
 from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER
 from .exceptions import raise_general_exception
+
+_T = TypeVar("_T")
 
 if TYPE_CHECKING:
     pass
@@ -114,7 +117,7 @@ def send_non_200_response(message: str, status_code: int,
 
 
 def send_200_response(
-        data_json: dict, response: BaseResponse) -> BaseResponse:
+        data_json: Dict[str, Any], response: BaseResponse) -> BaseResponse:
     response.set_json_content(data_json)
     response.set_status_code(200)
     return response
@@ -132,19 +135,19 @@ def utf_base64decode(s: str) -> str:
     return b64decode(s.encode('utf-8')).decode('utf-8')
 
 
-def get_filtered_list(func: Callable, given_list: List) -> List:
+def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -> List[_T]:
     return list(filter(func, given_list))
 
 
 def find_first_occurrence_in_list(
-        condition: Callable, given_list: List) -> Union[any, None]:
+        condition: Callable[[_T], bool], given_list: List[_T]) -> Union[_T, None]:
     for item in given_list:
         if condition(item):
             return item
     return None
 
 
-def execute_in_background(mode, func):
+def execute_in_background(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
     if mode == 'wsgi':
         check_event_loop()
         loop = asyncio.get_event_loop()

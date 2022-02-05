@@ -12,9 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import APIOptions, APIInterface
+
 from .utils import validate_form_fields_or_throw_error
 
 

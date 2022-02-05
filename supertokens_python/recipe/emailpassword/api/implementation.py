@@ -15,22 +15,23 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID
+from supertokens_python.recipe.emailpassword.constants import (
+    FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID)
 from supertokens_python.recipe.emailpassword.interfaces import (
-    APIInterface, EmailExistsGetOkResponse, GeneratePasswordResetTokenPostOkResponse,
-    PasswordResetPostOkResponse, PasswordResetPostInvalidTokenResponse, SignInPostOkResponse,
-    SignInPostWrongCredentialsErrorResponse, SignUpPostOkResponse,
-    SignUpPostEmailAlreadyExistsErrorResponse
-)
+    APIInterface, EmailExistsGetOkResponse,
+    GeneratePasswordResetTokenPostOkResponse,
+    PasswordResetPostInvalidTokenResponse, PasswordResetPostOkResponse,
+    SignInPostOkResponse, SignInPostWrongCredentialsErrorResponse,
+    SignUpPostEmailAlreadyExistsErrorResponse, SignUpPostOkResponse)
 from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.utils import find_first_occurrence_in_list
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import (
-        APIOptions, SignUpPostResponse, SignInPostResponse,
-        PasswordResetPostResponse, GeneratePasswordResetTokenPostResponse, EmailExistsGetResponse
-    )
+        APIOptions, EmailExistsGetResponse,
+        GeneratePasswordResetTokenPostResponse, PasswordResetPostResponse,
+        SignInPostResponse, SignUpPostResponse)
 
 
 class APIImplementation(APIInterface):
@@ -43,9 +44,12 @@ class APIImplementation(APIInterface):
 
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
                                                  api_options: APIOptions, user_context: any) -> GeneratePasswordResetTokenPostResponse:
-        email = find_first_occurrence_in_list(
-            lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
-
+        emailFormField = find_first_occurrence_in_list(
+            lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields)
+        if emailFormField is None:
+            raise Exception("Should never come here")
+        email = emailFormField.value
+        
         user = await api_options.recipe_implementation.get_user_by_email(email, user_context)
 
         if user is None:

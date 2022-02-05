@@ -15,40 +15,37 @@ from __future__ import annotations
 
 from os import environ
 from re import fullmatch
-from typing import List, Union, Callable, Awaitable, TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, Union
 
-from .interfaces import RecipeInterface, APIInterface
-from .types import User, NormalisedFormField, InputFormField
+from .interfaces import APIInterface, RecipeInterface
+from .types import InputFormField, NormalisedFormField, User
 
 if TYPE_CHECKING:
     from .recipe import EmailPasswordRecipe
     from supertokens_python.supertokens import AppInfo
-from .constants import (
-    FORM_FIELD_EMAIL_ID,
-    FORM_FIELD_PASSWORD_ID,
-    RESET_PASSWORD
-)
-from supertokens_python.utils import get_filtered_list
+
 from httpx import AsyncClient
-from supertokens_python.recipe.emailverification.utils import (
-    InputEmailVerificationConfig,
-    ParentRecipeEmailVerificationConfig,
+from supertokens_python.recipe.emailverification.utils import \
+    InputEmailVerificationConfig
+from supertokens_python.recipe.emailverification.utils import \
     OverrideConfig as EmailVerificationOverrideConfig
-)
+from supertokens_python.recipe.emailverification.utils import \
+    ParentRecipeEmailVerificationConfig
+from supertokens_python.utils import get_filtered_list
+
+from .constants import (FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID,
+                        RESET_PASSWORD)
 
 
-async def default_validator(_):
+async def default_validator(_: str) -> Union[str, None]:
     return None
 
 
-async def default_password_validator(value) -> Union[str, None]:
+async def default_password_validator(value: str) -> Union[str, None]:
     # length >= 8 && < 100
     # must have a number and a character
     # as per
     # https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
-    if not isinstance(value, str):
-        return 'Development bug: Please make sure the password field yields a string'
-
     if len(value) < 8:
         return 'Password must contain at least 8 characters, including a number'
 
@@ -64,13 +61,10 @@ async def default_password_validator(value) -> Union[str, None]:
     return None
 
 
-async def default_email_validator(value) -> Union[str, None]:
+async def default_email_validator(value: str) -> Union[str, None]:
     # We check if the email syntax is correct
     # As per https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
     # Regex from https://stackoverflow.com/a/46181/3867175
-    if not isinstance(value, str):
-        return 'Development bug: Please make sure the email field yields a string'
-
     if fullmatch(r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,'
                  r'3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$', value) is None:
         return 'Email is not valid'
@@ -122,7 +116,7 @@ class SignUpFeature:
 
 def normalise_sign_up_form_fields(
         form_fields: List[InputFormField]) -> List[NormalisedFormField]:
-    normalised_form_fields = []
+    normalised_form_fields: List[NormalisedFormField] = []
     for field in form_fields:
         if field.id == FORM_FIELD_PASSWORD_ID:
             validator = field.validate if field.validate is not None else default_password_validator

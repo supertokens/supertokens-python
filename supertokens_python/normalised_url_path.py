@@ -91,13 +91,17 @@ def domain_given(input_str: str) -> bool:
 
     try:
         url = urlparse(input_str)
-        return '.' in url.hostname
+        if url.hostname is None:
+            raise Exception("Should never come here")
+        return url.hostname.find(".") != -1
     except Exception:
         pass
 
     try:
         url = urlparse('http://' + input_str)
-        return '.' in url.hostname
+        if url.hostname is None:
+            raise Exception("Should never come here")
+        return url.hostname.find(".") != -1
     except Exception:
         pass
 

@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Callable, Union, Awaitable, List
+from typing import Awaitable, Callable, List, Union
 
 type_string = {
     'type': 'string'
@@ -116,7 +116,7 @@ class ErrorFormField:
 
 
 class FormField:
-    def __init__(self, id: str, value: any):
+    def __init__(self, id: str, value: str):
         self.id = id
         self.value = value
 

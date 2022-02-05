@@ -15,7 +15,7 @@
 import asyncio
 from typing import Any, Coroutine, TypeVar
 
-T = TypeVar("T")
+_T = TypeVar("_T")
 
 
 def check_event_loop():
@@ -27,6 +27,6 @@ def check_event_loop():
             asyncio.set_event_loop(loop)
 
 
-def sync(co: Coroutine[Any, Any, T]) -> T:
+def sync(co: Coroutine[Any, Any, _T]) -> _T:
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(co)
