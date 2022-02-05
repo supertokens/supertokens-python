@@ -30,7 +30,8 @@
     -   To know which one it is, run find the latest released tag (`git tag`) in the format `vX.Y.Z`, and then find the latest branch (`git branch --all`) whose `X.Y` is greater than the latest released tag.
     -   If no such branch exists, then create one from the latest released branch.
 -   [ ] If have added a new web framework, update the `supertokens_python/utils.py` file to include that in the `FRAMEWORKS` variable
-
+-   [ ] If added a new recipe that has a User type with extra info, then be sure to change the User type in supertokens_python/types.py
+ 
 ## Remaining TODOs for this PR
 
 -   [ ] Item1
