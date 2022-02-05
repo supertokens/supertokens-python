@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, TypeGuard, Union
 
 from .api import handle_refresh_api, handle_signout_api
 from .cookie_and_header import get_cors_allowed_headers
@@ -92,7 +92,7 @@ class SessionRecipe(RecipeModule):
             api_implementation)
 
     def is_error_from_this_recipe_based_on_instance(
-            self, err: Exception) -> bool:
+            self, err: Exception) -> TypeGuard[SuperTokensError]:
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensSessionError)
             or
