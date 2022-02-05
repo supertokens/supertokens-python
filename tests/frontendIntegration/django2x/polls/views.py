@@ -13,9 +13,10 @@
 # under the License.
 import json
 import os
+import re
 import sys
 from functools import wraps
-import re
+
 try:
     from typing import Literal
 except ImportError:
@@ -24,12 +25,14 @@ except ImportError:
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-
-from supertokens_python import init, Supertokens, SupertokensConfig, InputAppInfo
+from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
+                                init)
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session import SessionRecipe, InputErrorHandlers
-from supertokens_python.recipe.session.framework.django.syncio import verify_session
-from supertokens_python.recipe.session.syncio import revoke_all_sessions_for_user, create_new_session, get_session
+from supertokens_python.recipe.session import InputErrorHandlers, SessionRecipe
+from supertokens_python.recipe.session.framework.django.syncio import \
+    verify_session
+from supertokens_python.recipe.session.syncio import (
+    create_new_session, get_session, revoke_all_sessions_for_user)
 
 module_dir = os.path.dirname(__file__)  # get current directory
 file_path = os.path.join(module_dir, '../templates/index.html')
@@ -191,6 +194,7 @@ class Test:
 async def unauthorised_f(error, req, res):
     res.set_status_code(401)
     res.set_json_content({})
+    return res
 
 
 def apis_override_session(param):
