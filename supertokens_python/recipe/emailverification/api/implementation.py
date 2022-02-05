@@ -44,7 +44,7 @@ class APIImplementation(APIInterface):
         if session is None:
             raise Exception('Session is undefined. Should not come here.')
 
-        user_id = session.get_user_id()
+        user_id = session.get_user_id(user_context)
         email = await api_options.config.get_email_for_user_id(user_id, user_context)
 
         is_verified = await api_options.recipe_implementation.is_email_verified(user_id, email, user_context)
@@ -55,7 +55,7 @@ class APIImplementation(APIInterface):
         if session is None:
             raise Exception('Session is undefined. Should not come here.')
 
-        user_id = session.get_user_id()
+        user_id = session.get_user_id(user_context)
         email = await api_options.config.get_email_for_user_id(user_id, user_context)
 
         token_result = await api_options.recipe_implementation.create_email_verification_token(user_id, email, user_context)

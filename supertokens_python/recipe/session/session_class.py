@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.session.interfaces import SessionContainer
@@ -86,7 +86,7 @@ class Session(SessionContainer):
                 'createdTime': response.access_token.created_time
             }
 
-    def get_user_id(self, user_context: Union[any, None] = None) -> str:
+    def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -> str:
         return self.user_id
 
     def get_access_token_payload(
