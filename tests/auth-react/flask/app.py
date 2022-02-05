@@ -13,29 +13,34 @@
 # under the License.
 import os
 import typing
-from dotenv import load_dotenv
-from flask import Flask, make_response, jsonify, g, request
-from flask_cors import CORS
 
-from supertokens_python import init, get_all_cors_headers, SupertokensConfig, InputAppInfo, Supertokens
+from dotenv import load_dotenv
+from flask_cors import CORS
+from httpx import AsyncClient
+from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
+                                get_all_cors_headers, init)
 from supertokens_python.framework.flask.flask_middleware import Middleware
-from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword, passwordless
-from supertokens_python.recipe.emailpassword.types import InputFormField
-from supertokens_python.recipe.session.framework.flask import verify_session
+from supertokens_python.recipe import (emailpassword, passwordless, session,
+                                       thirdparty, thirdpartyemailpassword)
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
+from supertokens_python.recipe.emailpassword.types import InputFormField
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
-from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.thirdpartyemailpassword import Github, Google, Facebook, ThirdPartyEmailPasswordRecipe
-from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.passwordless import (
-    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig,
-    ContactPhoneOnlyConfig, CreateAndSendCustomTextMessageParameters, PasswordlessRecipe,
-    CreateAndSendCustomEmailParameters
-)
+    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig,
+    CreateAndSendCustomEmailParameters,
+    CreateAndSendCustomTextMessageParameters, PasswordlessRecipe)
+from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session.framework.flask import verify_session
+from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
-from httpx import AsyncClient
+from supertokens_python.recipe.thirdparty.types import (
+    AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
+from supertokens_python.recipe.thirdpartyemailpassword import (
+    Facebook, Github, Google, ThirdPartyEmailPasswordRecipe)
+
+from flask import Flask, g, jsonify, make_response, request
+
 try:
     from typing import Literal
 except ImportError:
@@ -330,7 +335,8 @@ def index(path):
 
 
 @app.errorhandler(Exception)
-def all_exception_handler(_: Exception):
+def all_exception_handler(e: Exception):
+    print(e)
     print('inside exception handler')
     return 'Error', 500
 

@@ -210,7 +210,7 @@ class Supertokens:
                     'telemetryId': telemetry_id
                 }
             async with AsyncClient() as client:
-                await client.post(url=TELEMETRY_SUPERTOKENS_API_URL, json=data, # type: ignore
+                await client.post(url=TELEMETRY_SUPERTOKENS_API_URL, json=data,  # type: ignore
                                   headers={'api-version': TELEMETRY_SUPERTOKENS_API_VERSION})
         except Exception:
             pass

@@ -13,6 +13,11 @@
 # under the License.
 
 from __future__ import annotations
+from supertokens_python.framework.flask.framework import FlaskFramework
+from supertokens_python.framework.fastapi.framework import FastapiFramework
+from supertokens_python.framework.django.framework import DjangoFramework
+from supertokens_python.async_to_sync_wrapper import check_event_loop
+import asyncio
 
 from base64 import b64decode, b64encode
 from re import fullmatch
@@ -31,13 +36,6 @@ _T = TypeVar("_T")
 if TYPE_CHECKING:
     pass
 
-
-import asyncio
-
-from supertokens_python.async_to_sync_wrapper import check_event_loop
-from supertokens_python.framework.django.framework import DjangoFramework
-from supertokens_python.framework.fastapi.framework import FastapiFramework
-from supertokens_python.framework.flask.framework import FlaskFramework
 
 FRAMEWORKS = {
     'fastapi': FastapiFramework(),

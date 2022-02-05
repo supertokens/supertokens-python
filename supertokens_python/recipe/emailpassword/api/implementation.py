@@ -49,7 +49,7 @@ class APIImplementation(APIInterface):
         if emailFormField is None:
             raise Exception("Should never come here")
         email = emailFormField.value
-        
+
         user = await api_options.recipe_implementation.get_user_by_email(email, user_context)
 
         if user is None:

@@ -32,7 +32,7 @@ class NormalisedURLDomain:
 
 
 def normalise_domain_path_or_throw_error(
-        input_str: str, ignore_protocol: bool=False) -> str:
+        input_str: str, ignore_protocol: bool = False) -> str:
     input_str = input_str.strip().lower()
 
     try:

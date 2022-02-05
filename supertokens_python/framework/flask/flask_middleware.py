@@ -16,6 +16,7 @@ import json
 from typing import Union
 
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.framework import BaseResponse
 
 
 class Middleware:
@@ -50,12 +51,13 @@ class Middleware:
             request_ = FlaskRequest(request)
             response_ = FlaskResponse(Response())
 
-            # TODO: try and remove ignoring of types below
-            result: Union[FlaskResponse, None] = sync(st.middleware(
-                request_, response_))  # type: ignore
+            result: Union[BaseResponse, None] = sync(st.middleware(
+                request_, response_))
 
             if result is not None:
-                return result.response
+                if isinstance(result, FlaskResponse):
+                    return result.response
+                raise Exception("Shoulld never come here")
             return None
 
         @app.after_request
@@ -87,7 +89,8 @@ class Middleware:
                                 mimetype='application/json',
                                 status=200)
 
-            # TODO: try and remove ignoring of types below.
-            result: FlaskResponse = sync(st.handle_supertokens_error(
-                FlaskRequest(request), error, FlaskResponse(response)))  # type: ignore
-            return result.response
+            result: BaseResponse = sync(st.handle_supertokens_error(
+                FlaskRequest(request), error, FlaskResponse(response)))
+            if isinstance(result, FlaskResponse):
+                return result.response
+            raise Exception("Shoulld never come here")

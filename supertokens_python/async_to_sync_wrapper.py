@@ -28,5 +28,6 @@ def check_event_loop():
 
 
 def sync(co: Coroutine[Any, Any, _T]) -> _T:
+    check_event_loop()
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(co)

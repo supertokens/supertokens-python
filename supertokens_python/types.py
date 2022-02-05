@@ -19,6 +19,7 @@ class ThirdPartyInfo:
         self.user_id = third_party_user_id
         self.id = third_party_id
 
+
 class User:
     def __init__(self, recipe_id: str, user_id: str, time_joined: int, email: Union[str, None], phone_number: Union[str, None], third_party_info: Union[ThirdPartyInfo, None]):
         self.recipe_id = recipe_id
@@ -27,6 +28,7 @@ class User:
         self.time_joined = time_joined
         self.third_party_info = third_party_info
         self.phone_number = phone_number
+
 
 class UsersResponse:
     def __init__(self, users: List[User],
