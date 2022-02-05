@@ -11,5 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from .email_verify import handle_email_verify_api
-from .generate_email_verify_token import handle_generate_email_verify_token_api
+from .email_verify import handle_email_verify_api  # type: ignore
+from .generate_email_verify_token import \
+    handle_generate_email_verify_token_api  # type: ignore

@@ -11,9 +11,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from . import exceptions  # type: ignore
 from .recipe import EmailVerificationRecipe
-from . import exceptions
-from .utils import ParentRecipeEmailVerificationConfig, OverrideConfig as InputOverrideConfig
+from .utils import OverrideConfig as InputOverrideConfig  # type: ignore
+from .utils import ParentRecipeEmailVerificationConfig
 
 
 def init(config: ParentRecipeEmailVerificationConfig):

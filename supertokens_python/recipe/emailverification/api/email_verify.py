@@ -13,9 +13,9 @@
 # under the License.
 from __future__ import annotations
 
-from supertokens_python.recipe.emailverification.interfaces import APIOptions, APIInterface
-
 from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.recipe.emailverification.interfaces import (
+    APIInterface, APIOptions)
 from supertokens_python.utils import normalise_http_method
 
 
@@ -24,6 +24,9 @@ async def handle_email_verify_api(api_implementation: APIInterface, api_options:
         if api_implementation.disable_email_verify_post:
             return None
         body = await api_options.request.json()
+        if body is None:
+            raise_bad_input_exception(
+                'Please pass JSON input body')
         if 'token' not in body:
             raise_bad_input_exception(
                 'Please provide the email verification token')
