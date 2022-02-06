@@ -39,7 +39,7 @@ def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[User, s
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             return
         try:
-            await AsyncClient().post('https://api.supertokens.io/0/st/auth/email/verify', json={'email': user.email, 'appName': app_info.app_name, 'emailVerifyURL': email_verification_url}, headers={'api-version': '0'}) # type: ignore
+            await AsyncClient().post('https://api.supertokens.io/0/st/auth/email/verify', json={'email': user.email, 'appName': app_info.app_name, 'emailVerifyURL': email_verification_url}, headers={'api-version': '0'})  # type: ignore
         except Exception:
             pass
     return func

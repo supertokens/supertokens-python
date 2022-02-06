@@ -60,6 +60,7 @@ async def revoke_email_verification_tokens(user_id: str, user_context=None):
     return await ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.revoke_email_verification_tokens(
         user_id, email, user_context)
 
+
 async def get_user_by_id(user_id: str, user_context=None):
     if user_context is None:
         user_context = {}

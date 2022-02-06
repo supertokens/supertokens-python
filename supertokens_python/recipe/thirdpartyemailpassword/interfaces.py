@@ -47,7 +47,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def sign_up(self, email: str, password: str, user_context: any) -> SignUpResult:
         pass
-    
+
     @abstractmethod
     async def create_reset_password_token(self, user_id: str, user_context: any) -> CreateResetPasswordResult:
         pass

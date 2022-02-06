@@ -96,7 +96,7 @@ def default_create_and_send_custom_email(
                 'passwordResetURL': password_reset_url_with_token
             }
             async with AsyncClient() as client:
-                await client.post('https://api.supertokens.io/0/st/auth/password/reset', json=data, headers={'api-version': '0'}) # type: ignore
+                await client.post('https://api.supertokens.io/0/st/auth/password/reset', json=data, headers={'api-version': '0'})  # type: ignore
         except Exception:
             pass
 
@@ -202,6 +202,7 @@ class InputEmailVerificationConfig:
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
 
+
 def validate_and_normalise_reset_password_using_token_config(app_info: AppInfo, sign_up_config: InputSignUpFeature,
                                                              config: InputResetPasswordUsingTokenFeature) -> ResetPasswordUsingTokenFeature:
     form_fields_for_password_reset_form = list(map(lambda y: NormalisedFormField(y.id, y.validate, False),
@@ -217,10 +218,11 @@ def validate_and_normalise_reset_password_using_token_config(app_info: AppInfo, 
     return ResetPasswordUsingTokenFeature(form_fields_for_password_reset_form, form_fields_for_generate_token_form,
                                           get_reset_password_url, create_and_send_custom_email)
 
+
 def email_verification_create_and_send_custom_email(
         recipe: EmailPasswordRecipe, create_and_send_custom_email: Callable[[
-                     User, str, Dict[str, Any]], Awaitable[None]]) -> Callable[[
-                     EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]]:
+            User, str, Dict[str, Any]], Awaitable[None]]) -> Callable[[
+                EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]]:
     async def func(user: EmailVerificationUser, link: str, user_context: Dict[str, Any]):
         user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id, user_context)
         if user_info is None:
@@ -232,8 +234,8 @@ def email_verification_create_and_send_custom_email(
 
 def email_verification_get_email_verification_url(
         recipe: EmailPasswordRecipe, get_email_verification_url: Callable[[
-                     User, Any], Awaitable[str]]) -> Callable[[
-                     EmailVerificationUser, Any], Awaitable[str]]:
+            User, Any], Awaitable[str]]) -> Callable[[
+                EmailVerificationUser, Any], Awaitable[str]]:
     async def func(user: EmailVerificationUser, user_context: Dict[str, Any]):
         user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id, user_context)
         if user_info is None:
@@ -251,10 +253,10 @@ def validate_and_normalise_email_verification_config(
         config = InputEmailVerificationConfig()
     if config.create_and_send_custom_email is not None:
         create_and_send_custom_email = email_verification_create_and_send_custom_email(recipe,
-                                        config.create_and_send_custom_email)
+                                                                                       config.create_and_send_custom_email)
     if config.get_email_verification_url is not None:
         get_email_verification_url = email_verification_get_email_verification_url(recipe,
-                                        config.get_email_verification_url)
+                                                                                   config.get_email_verification_url)
     return ParentRecipeEmailVerificationConfig(
         get_email_for_user_id=recipe.get_email_for_user_id,
         create_and_send_custom_email=create_and_send_custom_email,
@@ -319,9 +321,9 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
             reset_password_using_token_feature
         ),
         validate_and_normalise_email_verification_config(
-        recipe,
-        email_verification_feature,
-        override
-    ),
+            recipe,
+            email_verification_feature,
+            override
+        ),
         OverrideConfig(functions=override.functions, apis=override.apis)
     )

@@ -139,7 +139,7 @@ class EmailPasswordRecipe(RecipeModule):
              override: Union[InputOverrideConfig, None] = None):
         def func(app_info: AppInfo):
             if EmailPasswordRecipe.__instance is None:
-                EmailPasswordRecipe.__instance = EmailPasswordRecipe(EmailPasswordRecipe.recipe_id, app_info, sign_up_feature, reset_password_using_token_feature,email_verification_feature, override)
+                EmailPasswordRecipe.__instance = EmailPasswordRecipe(EmailPasswordRecipe.recipe_id, app_info, sign_up_feature, reset_password_using_token_feature, email_verification_feature, override)
                 return EmailPasswordRecipe.__instance
             else:
                 raise Exception(None, 'Emailpassword recipe has already been initialised. Please check your code for bugs.')

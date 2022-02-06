@@ -76,7 +76,7 @@ class APIImplementation(APIInterface):
         if new_password_for_field is None:
             raise Exception("Should never come here")
         new_password = new_password_for_field.value
-        
+
         result = await api_options.recipe_implementation.reset_password_using_token(token, new_password, user_context)
         if result.is_ok:
             return PasswordResetPostOkResponse(result.user_id)
@@ -88,7 +88,7 @@ class APIImplementation(APIInterface):
         if password_form_field is None:
             raise Exception("Should never come here")
         password = password_form_field.value
-        
+
         email_form_field = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields)
         if email_form_field is None:
@@ -110,13 +110,12 @@ class APIImplementation(APIInterface):
         if password_form_field is None:
             raise Exception("Should never come here")
         password = password_form_field.value
-        
+
         email_form_field = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields)
         if email_form_field is None:
             raise Exception("Should never come here")
         email = email_form_field.value
-
 
         result = await api_options.recipe_implementation.sign_up(email, password, user_context)
 
