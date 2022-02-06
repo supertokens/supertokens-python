@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Callable, Union, List, Dict
+from typing import Callable, Dict, List, Union
 
 from supertokens_python.framework.request import BaseRequest
 
@@ -51,7 +51,7 @@ class AccessTokenAPI:
 
 class AuthorisationRedirectAPI:
     def __init__(self, url: str,
-                 params: Dict[str, Union[str, Callable[[BaseRequest], str]]]):
+                 params: Dict[str, Union[Callable[[BaseRequest], str], str]]):
         self.url = url
         self.params = params
 

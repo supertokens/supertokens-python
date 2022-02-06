@@ -98,26 +98,22 @@ class EmailPasswordRecipe(RecipeModule):
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
+        api_options = APIOptions(request, response, self.recipe_id, self.config, self.recipe_implementation, self.email_verification_recipe.recipe_implementation)
         if request_id == SIGNUP:
             return await handle_sign_up_api(self.api_implementation,
-                                            APIOptions(request, response, self.recipe_id, self.config,
-                                                       self.recipe_implementation))
+                                            api_options)
         elif request_id == SIGNIN:
             return await handle_sign_in_api(self.api_implementation,
-                                            APIOptions(request, response, self.recipe_id, self.config,
-                                                       self.recipe_implementation))
+                                            api_options)
         elif request_id == SIGNUP_EMAIL_EXISTS:
             return await handle_email_exists_api(self.api_implementation,
-                                                 APIOptions(request, response, self.recipe_id, self.config,
-                                                            self.recipe_implementation))
+                                                 api_options)
         elif request_id == USER_PASSWORD_RESET_TOKEN:
             return await handle_generate_password_reset_token_api(self.api_implementation,
-                                                                  APIOptions(request, response, self.recipe_id, self.config,
-                                                                             self.recipe_implementation))
+                                                                  api_options)
         elif request_id == USER_PASSWORD_RESET:
             return await handle_password_reset_api(self.api_implementation,
-                                                   APIOptions(request, response, self.recipe_id, self.config,
-                                                              self.recipe_implementation))
+                                                   api_options)
         else:
             return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 

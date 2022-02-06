@@ -13,20 +13,24 @@
 # under the License.
 from __future__ import annotations
 
-from supertokens_python.recipe.thirdparty.api.implementation import get_actual_client_id_from_development_client_id
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
+
+from supertokens_python.recipe.thirdparty.api.implementation import \
+    get_actual_client_id_from_development_client_id
 from supertokens_python.recipe.thirdparty.provider import Provider
-from typing import List, Union, Dict, Callable, TYPE_CHECKING
-from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
-from supertokens_python.recipe.thirdparty.utils import verify_id_token_from_jwks_endpoint
+from supertokens_python.recipe.thirdparty.types import (
+    AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
+from supertokens_python.recipe.thirdparty.utils import \
+    verify_id_token_from_jwks_endpoint
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
 
 
 class GoogleWorkspaces(Provider):
-    def __init__(self, client_id: str, client_secret: str, scope: List[str] = None, domain: str = '*',
-                 authorisation_redirect: Dict[str, Union[str, Callable[[
-                     BaseRequest], str]]] = None,
+    def __init__(self, client_id: str, client_secret: str, scope: Union[None, List[str]] = None, domain: str = '*',
+                 authorisation_redirect: Union[None, Dict[str, Union[str, Callable[[
+                     BaseRequest], str]]]] = None,
                  is_default: bool = False):
         super().__init__('google-workspaces', client_id, is_default)
         default_scopes = ['https://www.googleapis.com/auth/userinfo.email']
@@ -41,7 +45,7 @@ class GoogleWorkspaces(Provider):
         if authorisation_redirect is not None:
             self.authorisation_redirect_params = authorisation_redirect
 
-    async def get_profile_info(self, auth_code_response: any) -> UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any]) -> UserInfo:
         id_token: str = auth_code_response['id_token']
         payload = verify_id_token_from_jwks_endpoint(id_token,
                                                      'https://www.googleapis.com/oauth2/v3/certs',

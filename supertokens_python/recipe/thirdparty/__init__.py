@@ -13,19 +13,16 @@
 # under the License.
 from typing import Union
 
-from .utils import SignInAndUpFeature, InputOverrideConfig
-
+from . import exceptions  # type: ignore
+from .providers import Apple  # type: ignore
+from .providers import Discord  # type: ignore
+from .providers import Facebook  # type: ignore
+from .providers import Github  # type: ignore
+from .providers import Google  # type: ignore
+from .providers import GoogleWorkspaces  # type: ignore
 from .recipe import ThirdPartyRecipe
-from . import exceptions
-from .providers import (
-    Google,
-    Github,
-    Apple,
-    Facebook,
-    Discord,
-    GoogleWorkspaces
-)
-from ..emailverification.utils import InputEmailVerificationConfig
+from .utils import (InputEmailVerificationConfig, InputOverrideConfig,
+                    SignInAndUpFeature)
 
 
 def init(sign_in_and_up_feature: SignInAndUpFeature,

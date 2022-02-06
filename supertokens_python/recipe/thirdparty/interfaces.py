@@ -14,7 +14,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
+
+from ..emailverification.interfaces import \
+    RecipeInterface as EmailVerificationRecipeInterface
 
 try:
     from typing import Literal
@@ -28,7 +31,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.session import Session
     from supertokens_python.supertokens import AppInfo
 
-    from .types import User, UsersResponse
+    from .types import User
     from .utils import ThirdPartyConfig
 
 
@@ -60,28 +63,27 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str, user_context: any) -> Union[User, None]:
+    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_users_by_email(self, email: str, user_context: any) -> List[User]:
+    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -> List[User]:
         pass
 
     @abstractmethod
     async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str,
-                                          user_context: any) -> Union[User, None]:
+                                          user_context: Dict[str, Any]) -> Union[User, None]:
         pass
 
     @abstractmethod
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: any) -> SignInUpResult:
+                         email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
         pass
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: Union[BaseResponse, None], recipe_id: str,
-                 config: ThirdPartyConfig, recipe_implementation: RecipeInterface, providers: List[Provider],
-                 app_info: AppInfo):
+    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
+                 config: ThirdPartyConfig, recipe_implementation: RecipeInterface, providers: List[Provider],app_info: AppInfo, email_verification_recipe_implementation: EmailVerificationRecipeInterface):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -89,11 +91,12 @@ class APIOptions:
         self.providers = providers
         self.recipe_implementation = recipe_implementation
         self.app_info = app_info
+        self.email_verification_recipe_implementation = email_verification_recipe_implementation
 
 
 class SignInUpPostResponse(ABC):
     def __init__(self, status: Literal['OK', 'NO_EMAIL_GIVEN_BY_PROVIDER', 'FIELD_ERROR'], user: Union[User, None] = None,
-                 created_new_user: Union[bool, None] = None, auth_code_response: any = None,
+                 created_new_user: Union[bool, None] = None, auth_code_response: Union[Dict[str, Any], None] = None,
                  error: Union[str, None] = None,
                  session: Union[Session, None] = None):
         self.type = 'thirdparty'
@@ -108,7 +111,7 @@ class SignInUpPostResponse(ABC):
         self.session = session
 
     @abstractmethod
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         pass
 
 
@@ -143,12 +146,14 @@ class PasswordResetResponse(ABC):
 
 class SignInUpPostOkResponse(SignInUpPostResponse):
     def __init__(self, user: User, created_new_user: bool,
-                 auth_code_response: any,
+                 auth_code_response: Dict[str, Any],
                  session: Session):
         super().__init__('OK', user, created_new_user, auth_code_response, session=session)
         self.is_ok = True
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
+        if self.user is None:
+            raise Exception("Should never come here")
         return {
             'status': self.status,
             'user': {
@@ -210,14 +215,16 @@ class APIInterface:
         self.disable_authorisation_url_get = False
         self.disable_apple_redirect_handler_post = False
 
+    @abstractmethod
     async def authorisation_url_get(self, provider: Provider,
-                                    api_options: APIOptions, user_context: any) -> AuthorisationUrlGetResponse:
+                                    api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
         pass
 
-    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None],
-                              auth_code_response: Union[str, None], api_options: APIOptions,
-                              user_context: any) -> SignInUpPostResponse:
+    @abstractmethod
+    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
+                              user_context: Dict[str, Any]) -> SignInUpPostResponse:
         pass
 
-    async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions, user_context: any):
+    @abstractmethod
+    async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions, user_context: Dict[str, Any]):
         pass

@@ -27,14 +27,8 @@ async def create_email_verification_token(user_id: str, user_context=None):
 async def verify_email_using_token(token: str, user_context=None):
     if user_context is None:
         user_context = {}
-    response = ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
+    return ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
         token, user_context)
-
-    if response.is_ok:
-        user_in_this_recipe = await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(response.user.user_id, user_context)
-        return user_in_this_recipe
-
-    return response
 
 
 async def is_email_verified(user_id: str, user_context=None):

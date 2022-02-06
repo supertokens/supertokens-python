@@ -16,6 +16,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
+from ..emailverification.interfaces import \
+    RecipeInterface as EmailVerificationRecipeInterface
+
 try:
     from typing import Literal
 except ImportError:
@@ -194,12 +197,14 @@ class RecipeInterface(ABC):
 
 class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
-                 config: EmailPasswordConfig, recipe_implementation: RecipeInterface):
+                 config: EmailPasswordConfig, recipe_implementation: RecipeInterface,
+                 email_verification_recipe_implementation: EmailVerificationRecipeInterface):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
         self.config = config
         self.recipe_implementation = recipe_implementation
+        self.email_verification_recipe_implementation = email_verification_recipe_implementation
 
 
 class EmailVerifyPostResponse(ABC):

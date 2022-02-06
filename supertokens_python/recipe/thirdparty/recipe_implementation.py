@@ -13,12 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Union
-
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
@@ -27,7 +22,7 @@ if TYPE_CHECKING:
     from .interfaces import SignInUpResult
 
 from .interfaces import RecipeInterface, SignInUpOkResult
-from .types import ThirdPartyInfo, User, UsersResponse
+from .types import ThirdPartyInfo, User
 
 
 class RecipeImplementation(RecipeInterface):
@@ -36,7 +31,7 @@ class RecipeImplementation(RecipeInterface):
         super().__init__()
         self.querier = querier
 
-    async def get_user_by_id(self, user_id: str, user_context: any) -> Union[User, None]:
+    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
         params = {
             'userId': user_id
         }
@@ -53,10 +48,10 @@ class RecipeImplementation(RecipeInterface):
             )
         return None
 
-    async def get_users_by_email(self, email: str, user_context: any) -> List[User]:
+    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -> List[User]:
         response = await self.querier.send_get_request(NormalisedURLPath('/recipe/users/by-email'), {'email': email})
-        users = []
-        users_list = response['users'] if 'users' in response else []
+        users: List[User] = []
+        users_list: List[Dict[str, Any]] = response['users'] if 'users' in response else []
         for user in users_list:
             users.append(
                 User(
@@ -71,7 +66,7 @@ class RecipeImplementation(RecipeInterface):
             )
         return users
 
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: any) -> Union[User, None]:
+    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
         params = {
             'thirdPartyId': third_party_id,
             'thirdPartyUserId': third_party_user_id
@@ -90,7 +85,7 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: any) -> SignInUpResult:
+                         email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
         data = {
             'thirdPartyId': third_party_id,
             'thirdPartyUserId': third_party_user_id,

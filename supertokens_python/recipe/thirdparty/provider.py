@@ -13,11 +13,12 @@
 # under the License.
 
 from __future__ import annotations
+
 import abc
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 if TYPE_CHECKING:
-    from .types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI
+    from .types import AccessTokenAPI, AuthorisationRedirectAPI, UserInfo
 
 
 class Provider(abc.ABC):
@@ -28,7 +29,7 @@ class Provider(abc.ABC):
         self.redirect_uri = None
 
     @abc.abstractmethod
-    async def get_profile_info(self, auth_code_response: any) -> UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any]) -> UserInfo:
         pass
 
     @abc.abstractmethod

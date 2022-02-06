@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed async_to_sync_wrapper.py file to make it simpler
 - Remove default `= None` for functions internal to the package
 
+### Bug fix:
+- If logging in via social login and the email is already verified from the provider's side, it marks the email as verified in SuperTokens core.
+
 ## [0.4.1] - 2022-01-27
 
 ### Added
