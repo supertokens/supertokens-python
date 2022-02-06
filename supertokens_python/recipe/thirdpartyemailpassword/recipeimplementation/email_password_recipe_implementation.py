@@ -12,11 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import Union
 
-from supertokens_python.recipe.emailpassword.interfaces import RecipeInterface, UpdateEmailOrPasswordResult, \
-    SignUpResult, SignInResult, ResetPasswordUsingTokenResult, CreateResetPasswordResult
-from supertokens_python.recipe.emailpassword.types import UsersResponse, User
+from supertokens_python.recipe.emailpassword.interfaces import (
+    CreateResetPasswordResult, RecipeInterface, ResetPasswordUsingTokenResult,
+    SignInResult, SignUpResult, UpdateEmailOrPasswordResult)
+from supertokens_python.recipe.emailpassword.types import User, UsersResponse
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
     RecipeInterface as ThirdPartyEmailPasswordRecipeInterface
 
@@ -56,15 +58,6 @@ class RecipeImplementation(RecipeInterface):
 
     async def sign_up(self, email: str, password: str, user_context: any) -> SignUpResult:
         return await self.recipe_implementation.sign_up(email, password, user_context)
-
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        raise Exception("Should never be called")
-
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        raise Exception("Should never be called")
-
-    async def get_user_count(self) -> int:
-        raise Exception("Should never be called")
 
     async def update_email_or_password(self, user_id: str, user_context: any, email: Union[str, None] = None,
                                        password: Union[str, None] = None) -> UpdateEmailOrPasswordResult:

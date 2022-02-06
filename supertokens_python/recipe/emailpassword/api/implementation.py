@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from supertokens_python.recipe.emailpassword.constants import (
     FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID)
@@ -35,15 +35,12 @@ if TYPE_CHECKING:
 
 
 class APIImplementation(APIInterface):
-    def __init__(self):
-        super().__init__()
-
-    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: any) -> EmailExistsGetResponse:
+    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailExistsGetResponse:
         user = await api_options.recipe_implementation.get_user_by_email(email, user_context)
         return EmailExistsGetOkResponse(user is not None)
 
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
-                                                 api_options: APIOptions, user_context: any) -> GeneratePasswordResetTokenPostResponse:
+                                                 api_options: APIOptions, user_context: Dict[str, Any]) -> GeneratePasswordResetTokenPostResponse:
         emailFormField = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields)
         if emailFormField is None:
@@ -73,19 +70,30 @@ class APIImplementation(APIInterface):
         return GeneratePasswordResetTokenPostOkResponse()
 
     async def password_reset_post(self, form_fields: List[FormField], token: str,
-                                  api_options: APIOptions, user_context: any) -> PasswordResetPostResponse:
-        new_password = find_first_occurrence_in_list(
-            lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
+                                  api_options: APIOptions, user_context: Dict[str, Any]) -> PasswordResetPostResponse:
+        new_password_for_field = find_first_occurrence_in_list(
+            lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields)
+        if new_password_for_field is None:
+            raise Exception("Should never come here")
+        new_password = new_password_for_field.value
+        
         result = await api_options.recipe_implementation.reset_password_using_token(token, new_password, user_context)
         if result.is_ok:
             return PasswordResetPostOkResponse(result.user_id)
         return PasswordResetPostInvalidTokenResponse()
 
-    async def sign_in_post(self, form_fields: List[FormField], api_options: APIOptions, user_context: any) -> SignInPostResponse:
-        password = find_first_occurrence_in_list(
-            lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
-        email = find_first_occurrence_in_list(
-            lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
+    async def sign_in_post(self, form_fields: List[FormField], api_options: APIOptions, user_context: Dict[str, Any]) -> SignInPostResponse:
+        password_form_field = find_first_occurrence_in_list(
+            lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields)
+        if password_form_field is None:
+            raise Exception("Should never come here")
+        password = password_form_field.value
+        
+        email_form_field = find_first_occurrence_in_list(
+            lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields)
+        if email_form_field is None:
+            raise Exception("Should never come here")
+        email = email_form_field.value
 
         result = await api_options.recipe_implementation.sign_in(email, password, user_context)
 
@@ -96,11 +104,19 @@ class APIImplementation(APIInterface):
         session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
         return SignInPostOkResponse(user, session)
 
-    async def sign_up_post(self, form_fields: List[FormField], api_options: APIOptions, user_context: any) -> SignUpPostResponse:
-        password = find_first_occurrence_in_list(
-            lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields).value
-        email = find_first_occurrence_in_list(
-            lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields).value
+    async def sign_up_post(self, form_fields: List[FormField], api_options: APIOptions, user_context: Dict[str, Any]) -> SignUpPostResponse:
+        password_form_field = find_first_occurrence_in_list(
+            lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields)
+        if password_form_field is None:
+            raise Exception("Should never come here")
+        password = password_form_field.value
+        
+        email_form_field = find_first_occurrence_in_list(
+            lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields)
+        if email_form_field is None:
+            raise Exception("Should never come here")
+        email = email_form_field.value
+
 
         result = await api_options.recipe_implementation.sign_up(email, password, user_context)
 
@@ -108,5 +124,5 @@ class APIImplementation(APIInterface):
             return SignUpPostEmailAlreadyExistsErrorResponse()
 
         user = result.user
-        session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
+        session = await create_new_session(api_options.request, user.user_id, user_context)
         return SignUpPostOkResponse(user, session)

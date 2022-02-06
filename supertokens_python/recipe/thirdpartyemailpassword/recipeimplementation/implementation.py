@@ -13,26 +13,30 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union, List
+from typing import TYPE_CHECKING, List, Union
 
-from deprecated.classic import deprecated
+from supertokens_python.recipe.emailpassword.interfaces import (
+    CreateResetPasswordResult, ResetPasswordUsingTokenResult, SignInResult,
+    SignUpResult, UpdateEmailOrPasswordResult,
+    UpdateEmailOrPasswordUnknownUserIdErrorResult)
 
-from ..types import User, UsersResponse, NextPaginationToken
-from ..utils import extract_pagination_token, combine_pagination_results
-from supertokens_python.recipe.emailpassword.interfaces import UpdateEmailOrPasswordResult, \
-    ResetPasswordUsingTokenResult, \
-    CreateResetPasswordResult, SignUpResult, SignInResult, UpdateEmailOrPasswordUnknownUserIdErrorResult
 from ...thirdparty.interfaces import SignInUpResult
+from ..types import NextPaginationToken, User, UsersResponse
+from ..utils import combine_pagination_results, extract_pagination_token
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
-from ..interfaces import (
-    RecipeInterface
-)
-from supertokens_python.recipe.emailpassword.recipe_implementation import RecipeImplementation as EmailPasswordImplementation
-from supertokens_python.recipe.thirdparty.recipe_implementation import RecipeImplementation as ThirdPartyImplementation
-from .email_password_recipe_implementation import RecipeImplementation as DerivedEmailPasswordImplementation
-from .third_party_recipe_implementation import RecipeImplementation as DerivedThirdPartyImplementation
+
+from supertokens_python.recipe.emailpassword.recipe_implementation import \
+    RecipeImplementation as EmailPasswordImplementation
+from supertokens_python.recipe.thirdparty.recipe_implementation import \
+    RecipeImplementation as ThirdPartyImplementation
+
+from ..interfaces import RecipeInterface
+from .email_password_recipe_implementation import \
+    RecipeImplementation as DerivedEmailPasswordImplementation
+from .third_party_recipe_implementation import \
+    RecipeImplementation as DerivedThirdPartyImplementation
 
 
 class RecipeImplementation(RecipeInterface):
@@ -47,18 +51,12 @@ class RecipeImplementation(RecipeInterface):
         self.ep_reset_password_using_token = emailpassword_implementation.reset_password_using_token
         self.ep_sign_in = emailpassword_implementation.sign_in
         self.ep_sign_up = emailpassword_implementation.sign_up
-        self.ep_get_users_oldest_first = emailpassword_implementation.get_users_oldest_first
-        self.ep_get_users_newest_first = emailpassword_implementation.get_users_newest_first
-        self.ep_get_user_count = emailpassword_implementation.get_user_count
         self.ep_update_email_or_password = emailpassword_implementation.update_email_or_password
         emailpassword_implementation = DerivedEmailPasswordImplementation(self)
         self.tp_get_user_by_id = None
         self.tp_get_users_by_email = None
         self.tp_get_user_by_thirdparty_info = None
         self.tp_sign_in_up = None
-        self.tp_get_users_oldest_first = None
-        self.tp_get_users_newest_first = None
-        self.tp_get_user_count = None
         if thirdparty_querier is not None:
             thirdparty_implementation = ThirdPartyImplementation(
                 thirdparty_querier)
@@ -66,9 +64,6 @@ class RecipeImplementation(RecipeInterface):
             self.tp_get_users_by_email = thirdparty_implementation.get_users_by_email
             self.tp_get_user_by_thirdparty_info = thirdparty_implementation.get_user_by_thirdparty_info
             self.tp_sign_in_up = thirdparty_implementation.sign_in_up
-            self.tp_get_users_oldest_first = thirdparty_implementation.get_users_oldest_first
-            self.tp_get_users_newest_first = thirdparty_implementation.get_users_newest_first
-            self.tp_get_user_count = thirdparty_implementation.get_user_count
             thirdparty_implementation = DerivedThirdPartyImplementation(self)
 
     async def get_user_by_id(self, user_id: str, user_context: any) -> Union[User, None]:
@@ -122,39 +117,3 @@ class RecipeImplementation(RecipeInterface):
             raise Exception(
                 "Cannot update email or password of a user who signed up using third party login.")
         return await self.ep_update_email_or_password(user_id, user_context, email, password)
-
-    @deprecated(reason="This method is deprecated")
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        if limit is None:
-            limit = 100
-        next_pagination_tokens = NextPaginationToken('null', 'null')
-        if next_pagination is not None:
-            next_pagination_tokens = extract_pagination_token(next_pagination)
-        email_password_result_promise = self.ep_get_users_oldest_first(
-            limit, next_pagination_tokens.email_password_pagination_token)
-        third_party_result = UsersResponse([], None) if self.tp_get_users_oldest_first is None else await self.tp_get_users_oldest_first(
-            limit, next_pagination_tokens.third_party_pagination_token)
-        email_password_result = await email_password_result_promise
-        return combine_pagination_results(
-            third_party_result, email_password_result, limit, True)
-
-    @deprecated(reason="This method is deprecated")
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        if limit is None:
-            limit = 100
-        next_pagination_tokens = NextPaginationToken('null', 'null')
-        if next_pagination is not None:
-            next_pagination_tokens = extract_pagination_token(next_pagination)
-        email_password_result_promise = self.ep_get_users_newest_first(
-            limit, next_pagination_tokens.email_password_pagination_token)
-        third_party_result = UsersResponse([], None) if self.tp_get_users_newest_first is None else await self.tp_get_users_newest_first(
-            limit, next_pagination_tokens.third_party_pagination_token)
-        email_password_result = await email_password_result_promise
-        return combine_pagination_results(
-            third_party_result, email_password_result, limit, True)
-
-    @deprecated(reason='This method is deprecated')
-    async def get_user_count(self) -> int:
-        emailpassword_count = await self.ep_get_user_count()
-        thirdparty_count = await self.tp_get_user_count() if self.tp_get_user_count is not None else 0
-        return emailpassword_count + thirdparty_count

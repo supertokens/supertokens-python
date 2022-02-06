@@ -14,7 +14,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Union, TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Union
+
 try:
     from typing import Literal
 except ImportError:
@@ -24,10 +25,11 @@ from .provider import Provider
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
-    from .utils import ThirdPartyConfig
-    from .types import User, UsersResponse
-    from supertokens_python.supertokens import AppInfo
     from supertokens_python.recipe.session import Session
+    from supertokens_python.supertokens import AppInfo
+
+    from .types import User, UsersResponse
+    from .utils import ThirdPartyConfig
 
 
 class SignInUpResult(ABC):
@@ -73,18 +75,6 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
                          email_verified: bool, user_context: any) -> SignInUpResult:
-        pass
-
-    @abstractmethod
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        pass
-
-    @abstractmethod
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        pass
-
-    @abstractmethod
-    async def get_user_count(self) -> int:
         pass
 
 

@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union, List
+from typing import TYPE_CHECKING, List, Union
 
 try:
     from typing import Literal
@@ -25,10 +25,9 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
     from .interfaces import SignInUpResult
-from .types import User, UsersResponse, ThirdPartyInfo
-from .interfaces import (
-    RecipeInterface, SignInUpOkResult
-)
+
+from .interfaces import RecipeInterface, SignInUpOkResult
+from .types import ThirdPartyInfo, User, UsersResponse
 
 
 class RecipeImplementation(RecipeInterface):
@@ -113,49 +112,3 @@ class RecipeImplementation(RecipeInterface):
             ),
             response['createdNewUser']
         )
-
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        return await self.get_users('ASC', limit, next_pagination)
-
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        return await self.get_users('DESC', limit, next_pagination)
-
-    async def get_user_count(self) -> int:
-        response = await self.querier.send_get_request(NormalisedURLPath('/recipe/users/count'))
-        return int(response['count'])
-
-    async def get_users(self, time_joined_order: Literal['ASC', 'DESC'],
-                        limit: Union[int, None] = None, pagination_token: Union[str, None] = None) -> UsersResponse:
-        params = {
-            'timeJoinedOrder': time_joined_order
-        }
-        if limit is not None:
-            params = {
-                'limit': limit,
-                **params
-            }
-        if pagination_token is not None:
-            params = {
-                'paginationToken': pagination_token,
-                **params
-            }
-        response = await self.querier.send_get_request(NormalisedURLPath('/recipe/users'), params)
-        next_pagination_token = None
-        if 'nextPaginationToken' in response:
-            next_pagination_token = response['nextPaginationToken']
-        users_list = response['users']
-        users = []
-        for user in users_list:
-            users.append(
-                User(
-                    user['id'],
-                    user['email'],
-                    user['timeJoined'],
-                    ThirdPartyInfo(
-                        user['thirdParty']['userId'],
-                        user['thirdParty']['id']
-                    )
-                )
-            )
-
-        return UsersResponse(users, next_pagination_token)

@@ -11,18 +11,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from deprecated.classic import deprecated
-
 from supertokens_python.async_to_sync_wrapper import sync
 
 
 def create_email_verification_token(user_id: str, user_context=None):
-    from supertokens_python.recipe.thirdparty.asyncio import create_email_verification_token
+    from supertokens_python.recipe.thirdparty.asyncio import \
+        create_email_verification_token
     return sync(create_email_verification_token(user_id, user_context))
 
 
 def verify_email_using_token(token: str, user_context=None):
-    from supertokens_python.recipe.thirdparty.asyncio import verify_email_using_token
+    from supertokens_python.recipe.thirdparty.asyncio import \
+        verify_email_using_token
     return sync(verify_email_using_token(token, user_context))
 
 
@@ -37,26 +37,9 @@ def unverify_email(user_id: str, user_context=None):
 
 
 async def revoke_email_verification_tokens(user_id: str, user_context=None):
-    from supertokens_python.recipe.thirdparty.asyncio import revoke_email_verification_tokens
+    from supertokens_python.recipe.thirdparty.asyncio import \
+        revoke_email_verification_tokens
     return sync(revoke_email_verification_tokens(user_id, user_context))
-
-
-@deprecated(reason="Use supertokens_python.get_user_oldest_first(...) function instead IF using core version >= 3.5")
-def get_users_oldest_first(limit: int = None, next_pagination: str = None):
-    from supertokens_python.recipe.thirdparty.asyncio import get_users_oldest_first
-    return sync(get_users_oldest_first(limit, next_pagination))
-
-
-@deprecated(reason="Use supertokens_python.get_users_newest_first(...) function instead IF using core version >= 3.5")
-def get_users_newest_first(limit: int = None, next_pagination: str = None):
-    from supertokens_python.recipe.thirdparty.asyncio import get_users_newest_first
-    return sync(get_users_newest_first(limit, next_pagination))
-
-
-@deprecated(reason="Use supertokens_python.get_user_count(...) function instead IF using core version >= 3.5")
-def get_user_count():
-    from supertokens_python.recipe.thirdparty.asyncio import get_user_count
-    return sync(get_user_count())
 
 
 def get_user_by_id(user_id: str, user_context=None):
@@ -71,7 +54,8 @@ async def get_users_by_email(email: str, user_context=None):
 
 def get_user_by_third_party_info(
         third_party_id: str, third_party_user_id: str, user_context=None):
-    from supertokens_python.recipe.thirdparty.asyncio import get_user_by_third_party_info
+    from supertokens_python.recipe.thirdparty.asyncio import \
+        get_user_by_third_party_info
     return sync(get_user_by_third_party_info(
         third_party_id, third_party_user_id, user_context))
 

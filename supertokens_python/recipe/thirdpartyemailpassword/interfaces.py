@@ -1,15 +1,21 @@
 from abc import ABC, abstractmethod
-from typing import Union, List
+from typing import List, Union
 
-from supertokens_python.recipe.emailpassword.interfaces import CreateResetPasswordResult, ResetPasswordUsingTokenResult, \
-    UpdateEmailOrPasswordResult, SignInResult, SignUpResult, EmailExistsGetResponse, \
-    GeneratePasswordResetTokenPostResponse, PasswordResetPostResponse, APIOptions as EmailPasswordApiOptions, \
-    SignInPostResponse, SignUpPostResponse
+from supertokens_python.recipe.emailpassword.interfaces import \
+    APIOptions as EmailPasswordApiOptions
+from supertokens_python.recipe.emailpassword.interfaces import (
+    CreateResetPasswordResult, EmailExistsGetResponse,
+    GeneratePasswordResetTokenPostResponse, PasswordResetPostResponse,
+    ResetPasswordUsingTokenResult, SignInPostResponse, SignInResult,
+    SignUpPostResponse, SignUpResult, UpdateEmailOrPasswordResult)
 from supertokens_python.recipe.emailpassword.types import FormField
-from supertokens_python.recipe.thirdparty.interfaces import SignInUpResult, APIOptions as ThirdPartyApiOptions, \
-    AuthorisationUrlGetResponse, SignInUpPostResponse
+from supertokens_python.recipe.thirdparty.interfaces import \
+    APIOptions as ThirdPartyApiOptions
+from supertokens_python.recipe.thirdparty.interfaces import (
+    AuthorisationUrlGetResponse, SignInUpPostResponse, SignInUpResult)
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdpartyemailpassword.types import User, UsersResponse
+from supertokens_python.recipe.thirdpartyemailpassword.types import (
+    User, UsersResponse)
 
 
 class RecipeInterface(ABC):
@@ -41,19 +47,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def sign_up(self, email: str, password: str, user_context: any) -> SignUpResult:
         pass
-
-    @abstractmethod
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        pass
-
-    @abstractmethod
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        pass
-
-    @abstractmethod
-    async def get_user_count(self) -> int:
-        pass
-
+    
     @abstractmethod
     async def create_reset_password_token(self, user_id: str, user_context: any) -> CreateResetPasswordResult:
         pass

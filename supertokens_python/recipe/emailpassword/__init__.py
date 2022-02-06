@@ -13,10 +13,11 @@
 # under the License.
 from typing import Union
 
+from . import exceptions  # type: ignore
 from .recipe import EmailPasswordRecipe
-from . import exceptions
-from .utils import InputSignUpFeature, InputResetPasswordUsingTokenFeature, InputOverrideConfig, InputFormField
-from ..emailverification.utils import InputEmailVerificationConfig
+from .utils import InputFormField  # type: ignore
+from .utils import (InputEmailVerificationConfig, InputOverrideConfig,
+                    InputResetPasswordUsingTokenFeature, InputSignUpFeature)
 
 
 def init(sign_up_feature: Union[InputSignUpFeature, None] = None,

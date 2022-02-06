@@ -12,12 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Union, List
 
-from supertokens_python.recipe.thirdparty.interfaces import RecipeInterface, SignInUpOkResult, SignInUpResult
-from supertokens_python.recipe.thirdpartyemailpassword.types import UsersResponse, User
+from typing import List, Union
+
+from supertokens_python.recipe.thirdparty.interfaces import (RecipeInterface,
+                                                             SignInUpOkResult,
+                                                             SignInUpResult)
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
     RecipeInterface as ThirdPartyEmailPasswordRecipeInterface
+from supertokens_python.recipe.thirdpartyemailpassword.types import (
+    User, UsersResponse)
 
 
 class RecipeImplementation(RecipeInterface):
@@ -60,12 +64,3 @@ class RecipeImplementation(RecipeInterface):
 
         return SignInUpOkResult(
             created_new_user=result.created_new_user, user=result.user)
-
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        raise Exception("Should never come here")
-
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        raise Exception("Should never come here")
-
-    async def get_user_count(self) -> int:
-        raise Exception("Should never come here")

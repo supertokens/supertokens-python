@@ -10,10 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Change
 - User context property added for all recipes' apis and functions
+- Removes deprecated functions in recipe for user pagination and user count
+- Changed email verification input functions' user type in emailpassword to be equal to emailpassword's user and not emailverification user.
 
 ### Added
 - Returns session from all APIs where a session is created
 - Added `regenerate_access_token` as a new recipe function for the session recipe.
+- Strong typings.
+
+### Change
+- Changed async_to_sync_wrapper.py file to make it simpler
+- Remove default `= None` for functions internal to the package
 
 ## [0.4.1] - 2022-01-27
 
