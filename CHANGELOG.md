@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - User context property added for all recipes' apis and functions
 - Removes deprecated functions in recipe for user pagination and user count
 - Changed email verification input functions' user type in emailpassword to be equal to emailpassword's user and not emailverification user.
+- All session recipe's error handler not need to return `BaseResponse`.
 
 ### Added
 - Returns session from all APIs where a session is created
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Bug fix:
 - If logging in via social login and the email is already verified from the provider's side, it marks the email as verified in SuperTokens core.
+- Corrects how override is done in thirdpartyemailpassword recipe and API implementation
 
 ## [0.4.1] - 2022-01-27
 

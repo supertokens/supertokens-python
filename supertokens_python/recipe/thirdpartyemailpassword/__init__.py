@@ -11,31 +11,22 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union, List
+from typing import List, Union
 
-from .utils import InputOverrideConfig
-
+from supertokens_python.recipe.thirdparty import Apple  # type: ignore
+from supertokens_python.recipe.thirdparty import Discord  # type: ignore
+from supertokens_python.recipe.thirdparty import Facebook  # type: ignore
+from supertokens_python.recipe.thirdparty import Github  # type: ignore
+from supertokens_python.recipe.thirdparty import Google  # type: ignore
+from supertokens_python.recipe.thirdparty import \
+    GoogleWorkspaces  # type: ignore
 from supertokens_python.recipe.thirdparty.provider import Provider
 
+from ..emailpassword import (InputResetPasswordUsingTokenFeature,
+                             InputSignUpFeature)
+from . import exceptions  # type: ignore
 from .recipe import ThirdPartyEmailPasswordRecipe
-from . import exceptions
-from supertokens_python.recipe.thirdparty import (
-    Google,
-    Github,
-    Apple,
-    Facebook,
-    Discord,
-    GoogleWorkspaces
-)
-from ..emailpassword import InputResetPasswordUsingTokenFeature, InputSignUpFeature
-from ..emailverification.utils import InputEmailVerificationConfig
-
-Google = Google
-Github = Github
-Apple = Apple
-Facebook = Facebook
-Discord = Discord
-GoogleWorkspaces = GoogleWorkspaces
+from .utils import InputEmailVerificationConfig, InputOverrideConfig
 
 
 def init(sign_up_feature: Union[InputSignUpFeature, None] = None,

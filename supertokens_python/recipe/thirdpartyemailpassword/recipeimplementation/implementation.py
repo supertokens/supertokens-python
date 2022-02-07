@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.recipe.emailpassword.interfaces import (
     CreateResetPasswordResult, ResetPasswordUsingTokenResult, SignInResult,
@@ -21,8 +21,6 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     UpdateEmailOrPasswordUnknownUserIdErrorResult)
 
 from ...thirdparty.interfaces import SignInUpResult
-from ..types import NextPaginationToken, User, UsersResponse
-from ..utils import combine_pagination_results, extract_pagination_token
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -33,6 +31,7 @@ from supertokens_python.recipe.thirdparty.recipe_implementation import \
     RecipeImplementation as ThirdPartyImplementation
 
 from ..interfaces import RecipeInterface
+from ..types import User
 from .email_password_recipe_implementation import \
     RecipeImplementation as DerivedEmailPasswordImplementation
 from .third_party_recipe_implementation import \
@@ -45,6 +44,7 @@ class RecipeImplementation(RecipeInterface):
         super().__init__()
         emailpassword_implementation = EmailPasswordImplementation(
             emailpassword_querier)
+
         self.ep_get_user_by_id = emailpassword_implementation.get_user_by_id
         self.ep_get_user_by_email = emailpassword_implementation.get_user_by_email
         self.ep_create_reset_password_token = emailpassword_implementation.create_reset_password_token
@@ -52,7 +52,17 @@ class RecipeImplementation(RecipeInterface):
         self.ep_sign_in = emailpassword_implementation.sign_in
         self.ep_sign_up = emailpassword_implementation.sign_up
         self.ep_update_email_or_password = emailpassword_implementation.update_email_or_password
-        emailpassword_implementation = DerivedEmailPasswordImplementation(self)
+       
+        derived_ep = DerivedEmailPasswordImplementation(self)
+        emailpassword_implementation.create_reset_password_token = derived_ep.create_reset_password_token
+        emailpassword_implementation.get_user_by_email = derived_ep.get_user_by_email
+        emailpassword_implementation.get_user_by_id = derived_ep.get_user_by_id
+        emailpassword_implementation.reset_password_using_token = derived_ep.reset_password_using_token
+        emailpassword_implementation.sign_in = derived_ep.sign_in
+        emailpassword_implementation.sign_up = derived_ep.sign_up
+        emailpassword_implementation.update_email_or_password = derived_ep.update_email_or_password
+        
+        
         self.tp_get_user_by_id = None
         self.tp_get_users_by_email = None
         self.tp_get_user_by_thirdparty_info = None
@@ -64,56 +74,77 @@ class RecipeImplementation(RecipeInterface):
             self.tp_get_users_by_email = thirdparty_implementation.get_users_by_email
             self.tp_get_user_by_thirdparty_info = thirdparty_implementation.get_user_by_thirdparty_info
             self.tp_sign_in_up = thirdparty_implementation.sign_in_up
-            thirdparty_implementation = DerivedThirdPartyImplementation(self)
+            
+            derived_tp = DerivedThirdPartyImplementation(self)
+            thirdparty_implementation.get_user_by_id = derived_tp.get_user_by_id
+            thirdparty_implementation.get_users_by_email = derived_tp.get_users_by_email
+            thirdparty_implementation.get_user_by_thirdparty_info = derived_tp.get_user_by_thirdparty_info
+            thirdparty_implementation.sign_in_up = derived_tp.sign_in_up
 
-    async def get_user_by_id(self, user_id: str, user_context: any) -> Union[User, None]:
-        user = await self.ep_get_user_by_id(user_id, user_context)
+    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        ep_user = await self.ep_get_user_by_id(user_id, user_context)
 
-        if user is not None:
-            return user
+        if ep_user is not None:
+            return User(user_id=ep_user.user_id, email=ep_user.email, time_joined=ep_user.time_joined, third_party_info=None)
+        
         if self.tp_get_user_by_id is None:
             return None
 
-        return await self.tp_get_user_by_id(user_id)
+        tp_user = await self.tp_get_user_by_id(user_id, user_context)
+        if tp_user is None:
+            return None
+        return User(user_id=tp_user.user_id, email=tp_user.email, time_joined=tp_user.time_joined, third_party_info=tp_user.third_party_info)
 
-    async def get_users_by_email(self, email: str, user_context: any) -> List[User]:
-        user = await self.ep_get_user_by_email(email, user_context)
+    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -> List[User]:
+        result: List[User] = []
+        ep_user = await self.ep_get_user_by_email(email, user_context)
+
+        if ep_user is not None:
+            result.append(User(user_id=ep_user.user_id, email=ep_user.email, time_joined=ep_user.time_joined, third_party_info=None))
 
         if self.tp_get_users_by_email is None:
-            return [user] if user is not None else []
+            return result
 
-        users = await self.tp_get_users_by_email(email, user_context)
+        tp_users = await self.tp_get_users_by_email(email, user_context)
 
-        if user is not None:
-            users.append(user)
+        for tp_user in tp_users:
+            result.append(User(user_id=tp_user.user_id, email=tp_user.email, time_joined=tp_user.time_joined, third_party_info=tp_user.third_party_info))
 
-        return users
+        return result
 
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: any) -> Union[User, None]:
-        return await self.tp_get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
+    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        if self.tp_get_user_by_thirdparty_info is None:
+            return None
+        tp_user = await self.tp_get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
+
+        if tp_user is None:
+            return None
+
+        return User(user_id=tp_user.user_id, email=tp_user.email, time_joined=tp_user.time_joined, third_party_info=tp_user.third_party_info)
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: any) -> SignInUpResult:
+                         email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
+        if self.tp_sign_in_up is None:
+            raise Exception("No thirdparty provider configured")
         return await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
 
-    async def sign_in(self, email: str, password: str, user_context: any) -> SignInResult:
+    async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> SignInResult:
         return await self.ep_sign_in(email, password, user_context)
 
-    async def sign_up(self, email: str, password: str, user_context: any) -> SignUpResult:
+    async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> SignUpResult:
         return await self.ep_sign_up(email, password, user_context)
 
-    async def create_reset_password_token(self, user_id: str, user_context: any) -> CreateResetPasswordResult:
+    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> CreateResetPasswordResult:
         return await self.ep_create_reset_password_token(user_id, user_context)
 
-    async def reset_password_using_token(self, token: str, new_password: str, user_context: any) -> ResetPasswordUsingTokenResult:
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> ResetPasswordUsingTokenResult:
         return await self.ep_reset_password_using_token(token, new_password, user_context)
 
-    async def update_email_or_password(self, user_id: str, user_context: any, email: str = None,
-                                       password: str = None) -> UpdateEmailOrPasswordResult:
+    async def update_email_or_password(self, user_id: str, email: Union[None, str], password: Union[None, str], user_context: Dict[str, Any]) -> UpdateEmailOrPasswordResult:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
             return UpdateEmailOrPasswordUnknownUserIdErrorResult()
         if user.third_party_info is not None:
             raise Exception(
                 "Cannot update email or password of a user who signed up using third party login.")
-        return await self.ep_update_email_or_password(user_id, user_context, email, password)
+        return await self.ep_update_email_or_password(user_id, email, password, user_context)

@@ -11,15 +11,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python import init, SupertokensConfig, InputAppInfo
+from pytest import mark
+from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
-from tests.utils import (
-    reset, setup_st, clean_st, start_st
-)
-from pytest import mark
+
+from tests.utils import clean_st, reset, setup_st, start_st
 
 
 def setup_function(f):

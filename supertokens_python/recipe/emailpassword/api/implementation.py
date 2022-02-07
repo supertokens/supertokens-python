@@ -62,8 +62,7 @@ class APIImplementation(APIInterface):
             user, user_context) + '?token=' + token + '&rid=' + api_options.recipe_id
 
         try:
-            await api_options.config.reset_password_using_token_feature.create_and_send_custom_email(
-                user, password_reset_link, user_context)
+            await api_options.config.reset_password_using_token_feature.create_and_send_custom_email(user, password_reset_link, user_context)
         except Exception:
             pass
 

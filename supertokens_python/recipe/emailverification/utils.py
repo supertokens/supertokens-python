@@ -51,18 +51,6 @@ class OverrideConfig:
         self.functions = functions
         self.apis = apis
 
-
-class InputEmailVerificationConfig:
-    def __init__(self,
-                 get_email_verification_url: Union[Callable[[
-                     User, Any], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[
-                     User, str, Any], Awaitable[None]], None] = None
-                 ):
-        self.get_email_verification_url = get_email_verification_url
-        self.create_and_send_custom_email = create_and_send_custom_email
-
-
 class ParentRecipeEmailVerificationConfig:
     def __init__(self,
                  get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],

@@ -13,12 +13,12 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Union
+from typing import Any, Dict, Union
 
 from supertokens_python.recipe.emailpassword.interfaces import (
     CreateResetPasswordResult, RecipeInterface, ResetPasswordUsingTokenResult,
     SignInResult, SignUpResult, UpdateEmailOrPasswordResult)
-from supertokens_python.recipe.emailpassword.types import User, UsersResponse
+from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
     RecipeInterface as ThirdPartyEmailPasswordRecipeInterface
 
@@ -30,35 +30,35 @@ class RecipeImplementation(RecipeInterface):
         super().__init__()
         self.recipe_implementation = recipe_implementation
 
-    async def get_user_by_id(self, user_id: str, user_context: any) -> Union[User, None]:
+    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
         user = await self.recipe_implementation.get_user_by_id(user_id, user_context)
 
         if user is None or user.third_party_info is not None:
             return None
 
-        return user
+        return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined)
 
-    async def get_user_by_email(self, email: str, user_context: any) -> Union[User, None]:
-        results = await self.recipe_implementation.get_users_by_email(email, user_context)
+    async def get_user_by_email(self, email: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        users = await self.recipe_implementation.get_users_by_email(email, user_context)
 
-        for result in results:
-            if result.third_party_info is None:
-                return result
+        for user in users:
+            if user.third_party_info is None:
+                return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined)
 
         return None
 
-    async def create_reset_password_token(self, user_id: str, user_context: any) -> CreateResetPasswordResult:
+    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> CreateResetPasswordResult:
         return await self.recipe_implementation.create_reset_password_token(user_id, user_context)
 
-    async def reset_password_using_token(self, token: str, new_password: str, user_context: any) -> ResetPasswordUsingTokenResult:
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> ResetPasswordUsingTokenResult:
         return await self.recipe_implementation.reset_password_using_token(token, new_password, user_context)
 
-    async def sign_in(self, email: str, password: str, user_context: any) -> SignInResult:
+    async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> SignInResult:
         return await self.recipe_implementation.sign_in(email, password, user_context)
 
-    async def sign_up(self, email: str, password: str, user_context: any) -> SignUpResult:
+    async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> SignUpResult:
         return await self.recipe_implementation.sign_up(email, password, user_context)
 
-    async def update_email_or_password(self, user_id: str, user_context: any, email: Union[str, None] = None,
-                                       password: Union[str, None] = None) -> UpdateEmailOrPasswordResult:
-        return await self.recipe_implementation.update_email_or_password(user_id, user_context, email, password)
+    async def update_email_or_password(self, user_id: str, email: Union[str, None],
+                                       password: Union[str, None], user_context: Dict[str, Any]) -> UpdateEmailOrPasswordResult:
+        return await self.recipe_implementation.update_email_or_password(user_id, email, password, user_context)
