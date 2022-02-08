@@ -12,14 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Callable, Union
 
 if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface
     from supertokens_python import AppInfo
     from supertokens_python.recipe.jwt import OverrideConfig as JWTOverrideConfig
-from supertokens_python.normalised_url_path import NormalisedURLPath
+
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
+from supertokens_python.normalised_url_path import NormalisedURLPath
 
 
 class InputOverrideConfig:

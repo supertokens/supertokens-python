@@ -13,11 +13,13 @@
 # under the License.
 from typing import List, Union
 
-from supertokens_python.recipe.openid.interfaces import (
-    CreateJwtResult, GetJWKSResult, GetOpenIdDiscoveryConfigurationResult)
+from supertokens_python.recipe.openid.interfaces import \
+    GetOpenIdDiscoveryConfigurationResult
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.recipe.session.session_class import Session
 from supertokens_python.utils import FRAMEWORKS
+
+from ...jwt.interfaces import CreateJwtResult, GetJWKSResult
 
 
 async def create_new_session(request, user_id: str, access_token_payload: Union[dict, None] = None,

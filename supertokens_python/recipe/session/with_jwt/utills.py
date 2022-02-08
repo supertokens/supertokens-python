@@ -12,13 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from typing import Any, Dict
+
 from supertokens_python.recipe.openid.interfaces import RecipeInterface
+
 from .constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
 
 
 async def add_jwt_to_access_token_payload(access_token_payload: dict,
                                           jwt_expiry: int, user_id: str, jwt_property_name: str,
-                                          openid_recipe_implementation: RecipeInterface, user_context: any):
+                                          openid_recipe_implementation: RecipeInterface, user_context: Dict[str, Any]):
     if ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY in access_token_payload:
         # If jwtPropertyName is not undefined it means that the JWT was added
         # to the access token payload already
@@ -30,12 +33,12 @@ async def add_jwt_to_access_token_payload(access_token_payload: dict,
         del access_token_payload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]
 
     # Create the JWT
-    jwt_response = await openid_recipe_implementation.create_jwt(user_context, {
+    jwt_response = await openid_recipe_implementation.create_jwt({
         # We add our claims before the user provided ones so that if they use the same claims
         # then the final payload will use the values they provide
         'sub': user_id,
         **access_token_payload
-    }, jwt_expiry)
+    }, jwt_expiry, user_context)
 
     if jwt_response.status == 'UNSUPPORTED_ALGORITHM_ERROR':
         # Should never come here

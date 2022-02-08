@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 from jwt import decode
 from supertokens_python.querier import Querier
@@ -47,7 +47,7 @@ class RecipeImplementationWithJWT(RecipeImplementation):
         super().__init__(querier, config)
         self.openid_recipe_implementation = openid_recipe_implementation
 
-    async def create_new_session(self, request: any, user_id: str, user_context: any,
+    async def create_new_session(self, request: any, user_id: str, user_context: Dict[str, Any],
                                  access_token_payload: Union[dict,
                                                              None] = None,
                                  session_data: Union[dict, None] = None) -> SessionContainer:
@@ -59,7 +59,8 @@ class RecipeImplementationWithJWT(RecipeImplementation):
             jwt_expiry=get_jwt_expiry(access_token_validity_in_seconds),
             user_id=user_id,
             jwt_property_name=self.config.jwt.property_name_in_access_token_payload,
-            openid_recipe_implementation=self.openid_recipe_implementation
+            openid_recipe_implementation=self.openid_recipe_implementation,
+            user_context=user_context
         )
         session = await RecipeImplementation.create_new_session(
             self, request, user_id, user_context, access_token_payload, session_data)

@@ -12,57 +12,67 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Union, List
+from typing import List, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.recipe.openid.interfaces import CreateJwtResult, GetOpenIdDiscoveryConfigurationResult, \
-    GetJWKSResult
+from supertokens_python.recipe.openid.interfaces import \
+    GetOpenIdDiscoveryConfigurationResult
 from supertokens_python.recipe.session.asyncio import Session
+
+from ...jwt.interfaces import CreateJwtResult, GetJWKSResult
 
 
 def create_new_session(request, user_id: str, access_token_payload: Union[dict, None] = None,
                        session_data: Union[dict, None] = None, user_context=None):
-    from supertokens_python.recipe.session.asyncio import create_new_session as async_create_new_session
+    from supertokens_python.recipe.session.asyncio import \
+        create_new_session as async_create_new_session
     return sync(async_create_new_session(
         request, user_id, access_token_payload, session_data, user_context))
 
 
 def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True,
                 user_context=None) -> Union[Session, None]:
-    from supertokens_python.recipe.session.asyncio import get_session as async_get_session
+    from supertokens_python.recipe.session.asyncio import \
+        get_session as async_get_session
     return sync(async_get_session(request, anti_csrf_check,
                 session_required, user_context))
 
 
 def refresh_session(request, user_context=None) -> Session:
-    from supertokens_python.recipe.session.asyncio import refresh_session as async_refresh_session
+    from supertokens_python.recipe.session.asyncio import \
+        refresh_session as async_refresh_session
     return sync(async_refresh_session(request, user_context))
 
 
 def revoke_session(session_handle: str, user_context=None) -> bool:
-    from supertokens_python.recipe.session.asyncio import revoke_session as async_revoke_session
+    from supertokens_python.recipe.session.asyncio import \
+        revoke_session as async_revoke_session
     return sync(async_revoke_session(session_handle, user_context))
 
 
 def revoke_all_sessions_for_user(user_id: str, user_context=None) -> List[str]:
-    from supertokens_python.recipe.session.asyncio import revoke_all_sessions_for_user as async_revoke_all_sessions_for_user
+    from supertokens_python.recipe.session.asyncio import \
+        revoke_all_sessions_for_user as async_revoke_all_sessions_for_user
     return sync(async_revoke_all_sessions_for_user(user_id, user_context))
 
 
 def revoke_multiple_sessions(
         session_handles: List[str], user_context=None) -> List[str]:
-    from supertokens_python.recipe.session.asyncio import revoke_multiple_sessions as async_revoke_multiple_sessions
+    from supertokens_python.recipe.session.asyncio import \
+        revoke_multiple_sessions as async_revoke_multiple_sessions
     return sync(async_revoke_multiple_sessions(session_handles, user_context))
 
 
 def get_session_information(session_handle: str, user_context=None) -> dict:
-    from supertokens_python.recipe.session.asyncio import get_session_information as async_get_session_information
+    from supertokens_python.recipe.session.asyncio import \
+        get_session_information as async_get_session_information
     return sync(async_get_session_information(session_handle, user_context))
 
 
 def update_session_data(session_handle: str,
                         new_session_data: dict, user_context=None) -> None:
-    from supertokens_python.recipe.session.asyncio import update_session_data as async_update_session_data
+    from supertokens_python.recipe.session.asyncio import \
+        update_session_data as async_update_session_data
     return sync(async_update_session_data(
         session_handle, new_session_data, user_context))
 
@@ -91,12 +101,14 @@ def get_jwks(user_context=None) -> [GetJWKSResult, None]:
 def get_open_id_discovery_configuration(
         user_context=None) -> [GetOpenIdDiscoveryConfigurationResult, None]:
     from supertokens_python.recipe.session.asyncio import \
-        get_open_id_discovery_configuration as async_get_open_id_discovery_configuration
+        get_open_id_discovery_configuration as \
+        async_get_open_id_discovery_configuration
     return sync(async_get_open_id_discovery_configuration(user_context))
 
 
 def regenerate_access_token(access_token: str, new_access_token_payload: Union[dict, None] = None,
                             user_context: Union[any, None] = None):
-    from supertokens_python.recipe.session.asyncio import regenerate_access_token as async_regenerate_access_token
+    from supertokens_python.recipe.session.asyncio import \
+        regenerate_access_token as async_regenerate_access_token
     return sync(async_regenerate_access_token(
         access_token, new_access_token_payload, user_context))

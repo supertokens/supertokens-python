@@ -16,21 +16,26 @@ import os
 import sys
 from functools import wraps
 from typing import Union
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
 
-from flask import Flask, request, make_response, Response, jsonify, render_template, g
 from flask_cors import CORS
-
-from supertokens_python import init, Supertokens, SupertokensConfig, InputAppInfo
+from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
+                                init)
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session import SessionRecipe, InputErrorHandlers, Session
+from supertokens_python.recipe.session import (InputErrorHandlers, Session,
+                                               SessionRecipe)
 from supertokens_python.recipe.session.framework.flask import verify_session
-from supertokens_python.recipe.session.syncio import revoke_all_sessions_for_user, create_new_session
+from supertokens_python.recipe.session.syncio import (
+    create_new_session, revoke_all_sessions_for_user)
+
+from flask import (Flask, Response, g, jsonify, make_response, render_template,
+                   request)
 
 last_set_enable_anti_csrf = True
 last_set_enable_jwt = False
@@ -297,12 +302,12 @@ def update_jwt():
 # @supertokens_middleware()
 def update_jwt_post():
     _session = g.supertokens
-    sync(_session.update_access_token_payload(request.get_json()))
+    _session.sync_update_access_token_payload(request.get_json())
     Test.increment_get_session()
     resp = make_response(_session.get_access_token_payload())
     resp.headers['Cache-Control'] = 'no-cache, private'
     return resp
-
+k
 
 @app.route("/testing", methods=['OPTIONS'])
 def testing_options():

@@ -13,9 +13,8 @@
 # under the License.
 from typing import Union
 
-from .utils import OverrideConfig
-
 from .recipe import JWTRecipe
+from .utils import OverrideConfig
 
 
 def init(jwt_validity_seconds: Union[int, None] = None,

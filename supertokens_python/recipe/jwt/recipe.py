@@ -14,25 +14,28 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, List, TypeGuard, Union
 
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.jwt.api.jwks_get import jwks_get
 from supertokens_python.recipe.jwt.api.implementation import APIImplementation
+from supertokens_python.recipe.jwt.api.jwks_get import jwks_get
 from supertokens_python.recipe.jwt.constants import GET_JWKS_API
-from supertokens_python.recipe.jwt.interfaces import APIOptions
-from supertokens_python.recipe.jwt.recipe_implementation import RecipeImplementation
-from supertokens_python.recipe.jwt.utils import validate_and_normalise_user_input, OverrideConfig
 from supertokens_python.recipe.jwt.exceptions import SuperTokensJWTError
+from supertokens_python.recipe.jwt.interfaces import APIOptions
+from supertokens_python.recipe.jwt.recipe_implementation import \
+    RecipeImplementation
+from supertokens_python.recipe.jwt.utils import (
+    OverrideConfig, validate_and_normalise_user_input)
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
 
-from supertokens_python.exceptions import SuperTokensError, raise_general_exception
+from supertokens_python.exceptions import (SuperTokensError,
+                                           raise_general_exception)
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe_module import RecipeModule, APIHandled
+from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 
 class JWTRecipe(RecipeModule):
@@ -71,10 +74,11 @@ class JWTRecipe(RecipeModule):
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse):
         raise err
 
-    def get_all_cors_headers(self):
+    def get_all_cors_headers(self) -> List[str]:
         return []
 
-    def is_error_from_this_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(
+            self, err: Exception) -> TypeGuard[SuperTokensError]:
         return isinstance(err, SuperTokensError) and isinstance(
             err, SuperTokensJWTError)
 

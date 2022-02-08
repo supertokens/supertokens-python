@@ -12,37 +12,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from abc import ABC, abstractmethod
-from typing import Union, List
+from typing import Any, Dict, Union
+
+from .utils import OpenIdConfig
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
+
 from supertokens_python.framework import BaseRequest, BaseResponse
-from supertokens_python.recipe.jwt.types import JsonWebKey
-
-
-class CreateJwtResult(ABC):
-    def __init__(
-            self, status: Literal['OK', 'UNSUPPORTED_ALGORITHM_ERROR'], jwt: str = None):
-        self.status = status
-        self.jwt = jwt
-
-
-class CreateJwtResultOk(CreateJwtResult):
-    def __init__(self, jwt: str):
-        super().__init__('OK', jwt)
-
-
-class CreateJwtResultUnsupportedAlgorithm(CreateJwtResult):
-    def __init__(self):
-        super().__init__('UNSUPPORTED_ALGORITHM_ERROR')
-
-
-class GetJWKSResult(ABC):
-    def __init__(
-            self, status: Literal['OK'], keys: List[JsonWebKey]):
-        self.status = status
-        self.keys = keys
+from supertokens_python.recipe.jwt.interfaces import (CreateJwtResult,
+                                                      GetJWKSResult)
 
 
 class GetOpenIdDiscoveryConfigurationResult(ABC):
@@ -58,21 +39,21 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, user_context: any, payload: dict = None, validity_seconds: int = None) -> CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds:  Union[int, None], user_context: Dict[str, Any]) -> CreateJwtResult:
         pass
 
     @abstractmethod
-    async def get_jwks(self, user_context: any) -> GetJWKSResult:
+    async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:
         pass
 
     @abstractmethod
-    async def get_open_id_discovery_configuration(self, user_context: any) -> GetOpenIdDiscoveryConfigurationResult:
+    async def get_open_id_discovery_configuration(self, user_context: Dict[str, Any]) -> GetOpenIdDiscoveryConfigurationResult:
         pass
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: Union[BaseResponse, None], recipe_id: str,
-                 config, recipe_implementation: RecipeInterface):
+    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
+                 config: OpenIdConfig, recipe_implementation: RecipeInterface):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -100,6 +81,6 @@ class APIInterface:
         self.disable_open_id_discovery_configuration_get = False
 
     @abstractmethod
-    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: any) ->\
+    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) ->\
             OpenIdDiscoveryConfigurationGetResponse:
         pass

@@ -18,13 +18,9 @@ try:
 except ImportError:
     from typing_extensions import Literal
 
-from supertokens_python.recipe.openid import \
-    InputOverrideConfig as OpenIdInputOverrideConfig
-from supertokens_python.recipe.openid import JWTOverrideConfig
-
-from . import exceptions
+from . import exceptions  # type: ignore
 from .recipe import SessionRecipe
-from .session_class import Session
+from .session_class import Session  # type: ignore
 from .utils import InputErrorHandlers, InputOverrideConfig, JWTConfig
 
 

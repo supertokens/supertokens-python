@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, TypeGuard, Union
 
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.jwt import JWTRecipe
@@ -88,11 +88,11 @@ class OpenIdRecipe(RecipeModule):
             raise err
         return await self.jwt_recipe.handle_error(request, err, response)
 
-    def get_all_cors_headers(self):
-        return [] + self.jwt_recipe.get_all_cors_headers()
+    def get_all_cors_headers(self) -> List[str]:
+        return self.jwt_recipe.get_all_cors_headers()
 
     def is_error_from_this_recipe_based_on_instance(
-            self, err: Exception) -> bool:
+            self, err: Exception) -> TypeGuard[SuperTokensError]:
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensOpenIdError)
             or
