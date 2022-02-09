@@ -11,20 +11,20 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from pytest import fixture, mark
+from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe.emailpassword.asyncio import sign_up
+from supertokens_python.recipe.emailpassword.interfaces import (
+    APIInterface, RecipeInterface)
+from supertokens_python.recipe.session.interfaces import \
+    RecipeInterface as SRecipeInterface
+
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from pytest import fixture
-from pytest import mark
 
-from supertokens_python import init, SupertokensConfig, InputAppInfo
-from supertokens_python.recipe import session, emailpassword
-from supertokens_python.recipe.emailpassword.asyncio import sign_up
-from supertokens_python.recipe.emailpassword.interfaces import APIInterface, RecipeInterface
-from supertokens_python.recipe.session.interfaces import RecipeInterface as SRecipeInterface
-from supertokens_python.framework.fastapi import Middleware
-from .utils import (
-    reset, setup_st, clean_st, start_st, sign_in_request
-)
+from .utils import clean_st, reset, setup_st, sign_in_request, start_st
 
 works = False
 signUpContextWorks = False
@@ -101,12 +101,12 @@ async def test_user_context(driver_config_client: TestClient):
     def functions_override_session(param: SRecipeInterface):
         og_create_new_session = param.create_new_session
 
-        async def create_new_session(request, user_id, context, _, __):
+        async def create_new_session(request, user_id, _, __, context):
             if 'preSignInPOST' in context and \
                     'preSignIn' in context and \
                     'postSignIn' in context:
                 context['preCreateNewSession'] = True
-            response = await og_create_new_session(request, user_id, context, _, __)
+            response = await og_create_new_session(request, user_id, _, __, context)
             if 'preSignInPOST' in context and \
                     'preSignIn' in context and \
                     'postSignIn' in context and \

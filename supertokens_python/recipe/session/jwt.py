@@ -12,19 +12,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from supertokens_python.utils import (
-    utf_base64decode,
-    utf_base64encode
-)
-from json import (
-    loads,
-    dumps
-)
+from base64 import b64decode
+from json import dumps, loads
+from textwrap import wrap
+from typing import Any, Dict
+
+from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature.pkcs1_15 import PKCS115_SigScheme
-from Crypto.Hash import SHA256
-from base64 import b64decode
-from textwrap import wrap
+from supertokens_python.utils import utf_base64decode, utf_base64encode
 
 _key_start = '-----BEGIN PUBLIC KEY-----\n'
 _key_end = '\n-----END PUBLIC KEY-----'
@@ -43,7 +39,7 @@ _allowed_headers = [utf_base64encode(dumps({
 }, separators=(',', ':'), sort_keys=True))]
 
 
-def get_payload(jwt, signing_public_key):
+def get_payload(jwt: str, signing_public_key: str):
     splitted_input = jwt.split(".")
     if len(splitted_input) != 3:
         raise Exception("invalid jwt")
@@ -69,7 +65,7 @@ def get_payload(jwt, signing_public_key):
     return loads(utf_base64decode(payload))
 
 
-def get_payload_without_verifying(jwt: str) -> dict:
+def get_payload_without_verifying(jwt: str) -> Dict[str, Any]:
     splitted_input = jwt.split(".")
     if len(splitted_input) != 3:
         raise Exception("invalid jwt")

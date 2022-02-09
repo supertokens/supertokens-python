@@ -12,8 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from functools import wraps
-from typing import Union
-
+from typing import Any, Dict, Union
 
 from supertokens_python import Supertokens
 from supertokens_python.async_to_sync_wrapper import sync
@@ -23,32 +22,32 @@ from supertokens_python.framework.django.django_response import DjangoResponse
 from supertokens_python.recipe.session import SessionRecipe
 
 
-def verify_session(
-        anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context=None):
+def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]]=None):
     if user_context is None:
         user_context = {}
 
-    def session_verify(f):
+    def session_verify(f: Any):
+        from django.http import HttpRequest
+
         @wraps(f)
-        def wrapped_function(request, *args, **kwargs):
+        def wrapped_function(request: HttpRequest, *args: Any, **kwargs: Any):
             from django.http import JsonResponse
             try:
-                request = DjangoRequest(request)
+                baseRequest = DjangoRequest(request)
                 recipe = SessionRecipe.get_instance()
-                session = sync(
-                    recipe.verify_session(
-                        request,
-                        user_context,
-                        anti_csrf_check,
-                        session_required))
-                request.set_session(session)
-                return f(request.request, *args, **kwargs)
+                session = sync(recipe.verify_session(baseRequest, anti_csrf_check, session_required, user_context))
+                if session is None:
+                    if session_required:
+                        raise Exception("Should never come here")
+                else:
+                    baseRequest.set_session(session)
+                return f(baseRequest.request, *args, **kwargs)
             except SuperTokensError as e:
                 response = DjangoResponse(JsonResponse({}))
-                result = sync(
-                    Supertokens.get_instance().handle_supertokens_error(
-                        DjangoRequest(request), e, response))
-                return result.response
+                result = sync(Supertokens.get_instance().handle_supertokens_error(DjangoRequest(request), e, response))
+                if isinstance(result, DjangoResponse):
+                    return result.response
+                raise Exception("Should never come here")
 
         return wrapped_function
 

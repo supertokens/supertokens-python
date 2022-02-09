@@ -13,6 +13,8 @@
 # under the License.
 from __future__ import annotations
 
+from typing import Union
+
 from supertokens_python.exceptions import SuperTokensError
 
 
@@ -20,15 +22,13 @@ def raise_token_theft_exception(user_id: str, session_handle: str):
     raise TokenTheftError(user_id, session_handle)
 
 
-def raise_try_refresh_token_exception(msg: str):
-    if isinstance(msg, SuperTokensError):
-        raise msg
-    raise TryRefreshTokenError(msg) from None
+def raise_try_refresh_token_exception(ex: Union[str, Exception]):
+    if isinstance(ex, SuperTokensError):
+        raise ex
+    raise TryRefreshTokenError(ex) from None
 
 
 def raise_unauthorised_exception(msg: str, clear_cookies: bool = True):
-    if isinstance(msg, SuperTokensError):
-        raise msg
     raise UnauthorisedError(msg, clear_cookies) from None
 
 

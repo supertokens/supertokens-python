@@ -36,7 +36,6 @@ from supertokens_python.recipe.session.framework.django.asyncio import \
 
 module_dir = os.path.dirname(__file__)  # get current directory
 file_path = os.path.join(module_dir, '../templates/index.html')
-print(file_path)
 index_file = open(file_path, "r")
 file_contents = index_file.read()
 index_file.close()
@@ -198,15 +197,14 @@ def apis_override_session(param):
 def functions_override_session(param):
     original_create_new_session = param.create_new_session
 
-    async def create_new_session_custom(request: any, user_id: str, user_context: any, access_token_payload: Union[dict, None] = None,
-                                        session_data: Union[dict, None] = None) -> Session:
+    async def create_new_session_custom(request: any, user_id: str, access_token_payload: Union[dict, None], session_data: Union[dict, None], user_context: any) -> Session:
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {
             **access_token_payload,
             'customClaim': 'customValue'
         }
-        return await original_create_new_session(request, user_id, user_context, access_token_payload, session_data)
+        return await original_create_new_session(request, user_id, access_token_payload, session_data, user_context)
     param.create_new_session = create_new_session_custom
 
     return param

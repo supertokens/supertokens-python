@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removes deprecated functions in recipe for user pagination and user count
 - Changed email verification input functions' user type in emailpassword to be equal to emailpassword's user and not emailverification user.
 - All session recipe's error handler not need to return `BaseResponse`.
+- Session's recipe `get_session_information` returns a `SessionInformationResult` class object instead of a `dict` for easier consumption.
 
 ### Added
 - Returns session from all APIs where a session is created

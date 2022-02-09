@@ -129,15 +129,15 @@ def apis_override_session(param):
 def functions_override_session(param):
     original_create_new_session = param.create_new_session
 
-    async def create_new_session_custom(_request, user_id, user_context: any, access_token_payload: Union[dict, None] = None,
-                                        session_data: Union[dict, None] = None) -> Session:
+    async def create_new_session_custom(_request, user_id, access_token_payload: Union[dict, None],
+                                        session_data: Union[dict, None], user_context: any) -> Session:
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {
             **access_token_payload,
             'customClaim': 'customValue'
         }
-        return await original_create_new_session(_request, user_id, user_context, access_token_payload, session_data)
+        return await original_create_new_session(_request, user_id, access_token_payload, session_data, user_context)
     param.create_new_session = create_new_session_custom
 
     return param
@@ -268,13 +268,6 @@ def options():
 def get_info():
     Test.increment_get_session()
     session = g.supertokens
-    print(session.sync_get_session_data())
-    print({
-        'sessionHandle': session.get_handle(),
-        'userId': session.get_user_id(),
-        'jwtPayload': session.get_access_token_payload(),
-        'sessionData': session.sync_get_session_data()
-    })
     resp = make_response(session.get_user_id())
     resp.headers['Cache-Control'] = 'no-cache, private'
     return resp
@@ -307,7 +300,7 @@ def update_jwt_post():
     resp = make_response(_session.get_access_token_payload())
     resp.headers['Cache-Control'] = 'no-cache, private'
     return resp
-k
+
 
 @app.route("/testing", methods=['OPTIONS'])
 def testing_options():

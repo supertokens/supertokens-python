@@ -16,6 +16,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, List, Set, Union
 
+from supertokens_python.recipe.session.interfaces import SessionContainer
+
 try:
     from typing import Literal
 except ImportError:
@@ -107,7 +109,7 @@ class AppInfo:
         self.mode = mode
 
 
-def manage_cookies_post_response(session: Session, response: BaseResponse):
+def manage_cookies_post_response(session: SessionContainer, response: BaseResponse):
     recipe = SessionRecipe.get_instance()
     if session['remove_cookies']:
         clear_cookies(recipe, response)
@@ -121,7 +123,6 @@ def manage_cookies_post_response(session: Session, response: BaseResponse):
                 access_token['expiry']
             )
             set_front_token_in_headers(
-                recipe,
                 response,
                 session['user_id'],
                 access_token['expiry'],
@@ -145,7 +146,7 @@ def manage_cookies_post_response(session: Session, response: BaseResponse):
             )
         anti_csrf_token = session['new_anti_csrf_token']
         if anti_csrf_token is not None:
-            attach_anti_csrf_header(recipe, response, anti_csrf_token)
+            attach_anti_csrf_header(response, anti_csrf_token)
 
 
 class Supertokens:

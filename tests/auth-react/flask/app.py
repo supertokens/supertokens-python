@@ -336,7 +336,6 @@ def index(path):
 
 @app.errorhandler(Exception)
 def all_exception_handler(e: Exception):
-    print('inside exception handler')
     return 'Error', 500
 
 

@@ -13,18 +13,18 @@
 # under the License.
 
 from __future__ import annotations
-from supertokens_python.framework.flask.framework import FlaskFramework
-from supertokens_python.framework.fastapi.framework import FastapiFramework
-from supertokens_python.framework.django.framework import DjangoFramework
-from supertokens_python.async_to_sync_wrapper import check_event_loop
-import asyncio
 
+import asyncio
 from base64 import b64decode, b64encode
 from re import fullmatch
 from time import time
 from typing import (TYPE_CHECKING, Any, Callable, Coroutine, Dict, List,
                     TypeVar, Union)
 
+from supertokens_python.async_to_sync_wrapper import check_event_loop
+from supertokens_python.framework.django.framework import DjangoFramework
+from supertokens_python.framework.fastapi.framework import FastapiFramework
+from supertokens_python.framework.flask.framework import FlaskFramework
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
 

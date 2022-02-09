@@ -12,43 +12,48 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
-
 import typing
+
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends
-from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.datastructures import Headers
 from starlette.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 from starlette.types import ASGIApp
+
+from fastapi import Depends, FastAPI
 from fastapi.requests import Request
+from fastapi.responses import JSONResponse, PlainTextResponse
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
 
-from supertokens_python import init, get_all_cors_headers, SupertokensConfig, InputAppInfo, Supertokens
+from httpx import AsyncClient
+from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
+                                get_all_cors_headers, init)
 from supertokens_python.framework.fastapi import Middleware
-from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword, passwordless
-from supertokens_python.recipe.emailpassword.types import InputFormField
-from supertokens_python.recipe.thirdpartyemailpassword import ThirdPartyEmailPasswordRecipe
+from supertokens_python.recipe import (emailpassword, passwordless, session,
+                                       thirdparty, thirdpartyemailpassword)
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
+from supertokens_python.recipe.emailpassword.types import InputFormField
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
+from supertokens_python.recipe.passwordless import (
+    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig,
+    CreateAndSendCustomEmailParameters,
+    CreateAndSendCustomTextMessageParameters, PasswordlessRecipe)
 from supertokens_python.recipe.session import Session, SessionRecipe
 from supertokens_python.recipe.session.framework.fastapi import verify_session
-from supertokens_python.recipe.thirdparty import Github, Google, Facebook, ThirdPartyRecipe
-from supertokens_python.recipe.passwordless import (
-    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig,
-    ContactPhoneOnlyConfig, CreateAndSendCustomTextMessageParameters, PasswordlessRecipe,
-    CreateAndSendCustomEmailParameters
-)
-
+from supertokens_python.recipe.thirdparty import (Facebook, Github, Google,
+                                                  ThirdPartyRecipe)
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
-from httpx import AsyncClient
+from supertokens_python.recipe.thirdparty.types import (
+    AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
+from supertokens_python.recipe.thirdpartyemailpassword import \
+    ThirdPartyEmailPasswordRecipe
 
 load_dotenv()
 
@@ -258,7 +263,6 @@ custom_init()
 
 @app.exception_handler(Exception)
 async def exception_handler(a, b):
-    print(a, b)
     return JSONResponse(status_code=500, content={})
 
 

@@ -175,7 +175,7 @@ async def default_try_refresh_token_callback(_: BaseRequest, __: str, response: 
 
 async def default_token_theft_detected_callback(_: BaseRequest, session_handle: str, __: str, response: BaseResponse) -> BaseResponse:
     from .recipe import SessionRecipe
-    await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle)
+    await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle, {})
     return send_non_200_response('token theft detected', SessionRecipe.get_instance(
     ).config.session_expired_status_code, response)
 

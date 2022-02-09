@@ -49,7 +49,7 @@ class FastApiRequest(BaseRequest):
     def get_header(self, key: str) -> Union[str, None]:
         return self.request.headers.get(key, None)
 
-    def get_session(self):
+    def get_session(self) -> Union[SessionContainer, None]:
         return self.request.state.supertokens
 
     def set_session(self, session: SessionContainer):

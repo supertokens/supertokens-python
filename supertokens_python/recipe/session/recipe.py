@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, TypeGuard, Union
+from typing import TYPE_CHECKING, Any, Dict, List, TypeGuard, Union
 
 from .api import handle_refresh_api, handle_signout_api
 from .cookie_and_header import get_cors_allowed_headers
@@ -38,12 +38,12 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 from supertokens_python.recipe.session.with_jwt import \
-    RecipeImplementationWithJWT
+    get_recipe_implementation_with_jwt
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api.implementation import APIImplementation
 from .constants import SESSION_REFRESH, SIGNOUT
-from .interfaces import APIOptions
+from .interfaces import APIInterface, APIOptions, RecipeInterface
 from .recipe_implementation import RecipeImplementation
 from .utils import (InputErrorHandlers, InputOverrideConfig, JWTConfig,
                     validate_and_normalise_user_input)
@@ -80,15 +80,16 @@ class SessionRecipe(RecipeModule):
                 openid_feature_override = override.openid_feature
             self.openid_recipe = OpenIdRecipe(recipe_id, app_info, None, self.config.jwt.issuer,
                                               openid_feature_override)
-            recipe_implementation = RecipeImplementationWithJWT(
-                Querier.get_instance(recipe_id), self.config, self.openid_recipe.recipe_implementation)
+            recipe_implementation = RecipeImplementation(
+                Querier.get_instance(recipe_id), self.config)
+            recipe_implementation = get_recipe_implementation_with_jwt(recipe_implementation, self.config, self.openid_recipe.recipe_implementation)
         else:
             recipe_implementation = RecipeImplementation(
                 Querier.get_instance(recipe_id), self.config)
-        self.recipe_implementation = recipe_implementation if self.config.override.functions is None else self.config.override.functions(
+        self.recipe_implementation: RecipeInterface = recipe_implementation if self.config.override.functions is None else self.config.override.functions(
             recipe_implementation)
         api_implementation = APIImplementation()
-        self.api_implementation = api_implementation if self.config.override.apis is None else self.config.override.apis(
+        self.api_implementation: APIInterface = api_implementation if self.config.override.apis is None else self.config.override.apis(
             api_implementation)
 
     def is_error_from_this_recipe_based_on_instance(
@@ -195,9 +196,9 @@ class SessionRecipe(RecipeModule):
                 'calling testing function in non testing env')
         SessionRecipe.__instance = None
 
-    async def verify_session(self, request: BaseRequest, user_context: any,
-                             anti_csrf_check: Union[bool, None] = None,
-                             session_required: bool = True):
+    async def verify_session(self, request: BaseRequest,
+                             anti_csrf_check: Union[bool, None],
+                             session_required: bool, user_context: Dict[str, Any]):
         return await self.api_implementation.verify_session(
             APIOptions(
                 request,
@@ -207,4 +208,4 @@ class SessionRecipe(RecipeModule):
                 self.recipe_implementation,
                 self.openid_recipe.jwt_recipe.recipe_implementation if self.openid_recipe is not None else None
             ), anti_csrf_check,
-            session_required)
+            session_required, user_context)

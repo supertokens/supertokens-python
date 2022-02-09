@@ -14,7 +14,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
+
+from supertokens_python.async_to_sync_wrapper import sync
 
 from .utils import SessionConfig
 
@@ -29,7 +31,7 @@ if TYPE_CHECKING:
 
 
 class SessionObj:
-    def __init__(self, handle: str, user_id: str, user_data_in_jwt: any):
+    def __init__(self, handle: str, user_id: str, user_data_in_jwt: Dict[str, Any]):
         self.handle = handle
         self.user_id = user_id
         self.user_data_in_jwt = user_data_in_jwt
@@ -56,68 +58,76 @@ class RegenerateAccessTokenOkResult(RegenerateAccessTokenResult):
         super().__init__('OK', session, access_token)
 
 
+class SessionInformationResult(ABC):
+    def __init__(self, status: Literal['OK'], session_handle: str, user_id: str, session_data: Dict[str, Any], expiry: int, access_token_payload: Dict[str, Any], time_created: int):
+        self.status = status
+        self.session_handle = session_handle
+        self.user_id = user_id
+        self.session_data = session_data
+        self.expiry = expiry
+        self.access_token_payload = access_token_payload
+        self.time_created = time_created
+
 class RecipeInterface(ABC):
     def __init__(self):
         pass
 
     @abstractmethod
-    async def create_new_session(self, request: any, user_id: str, user_context: any,
-                                 access_token_payload: Union[dict,
-                                                             None] = None,
-                                 session_data: Union[dict, None] = None) -> SessionContainer:
+    async def create_new_session(self, request: Any, user_id: str,
+                                 access_token_payload: Union[None, Dict[str, Any]],
+                                 session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) -> SessionContainer:
         pass
 
     @abstractmethod
-    async def get_session(self, request: any, user_context: any, anti_csrf_check: Union[bool, None] = None,
-                          session_required: bool = True) -> Union[SessionContainer, None]:
+    async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
+                          session_required: bool, user_context: Dict[str, Any]) -> Union[SessionContainer, None]:
         pass
 
     @abstractmethod
-    async def refresh_session(self, request: any, user_context: any) -> SessionContainer:
+    async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -> SessionContainer:
         pass
 
     @abstractmethod
-    async def revoke_session(self, session_handle: str, user_context: any) -> bool:
+    async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -> bool:
         pass
 
     @abstractmethod
-    async def revoke_all_sessions_for_user(self, user_id: str, user_context: any) -> List[str]:
+    async def revoke_all_sessions_for_user(self, user_id: str, user_context: Dict[str, Any]) -> List[str]:
         pass
 
     @abstractmethod
-    async def get_all_session_handles_for_user(self, user_id: str, user_context: any) -> List[str]:
+    async def get_all_session_handles_for_user(self, user_id: str, user_context: Dict[str, Any]) -> List[str]:
         pass
 
     @abstractmethod
-    async def revoke_multiple_sessions(self, session_handles: List[str], user_context: any) -> List[str]:
+    async def revoke_multiple_sessions(self, session_handles: List[str], user_context: Dict[str, Any]) -> List[str]:
         pass
 
     @abstractmethod
-    async def get_session_information(self, session_handle: str, user_context: any) -> dict:
+    async def get_session_information(self, session_handle: str, user_context: Dict[str, Any]) -> SessionInformationResult:
         pass
 
     @abstractmethod
-    async def update_session_data(self, session_handle: str, new_session_data: dict, user_context: any) -> None:
+    async def update_session_data(self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) -> None:
         pass
 
     @abstractmethod
     async def update_access_token_payload(self, session_handle: str,
-                                          new_access_token_payload: dict, user_context: any) -> None:
+                                          new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) -> None:
         pass
 
     @abstractmethod
-    async def get_access_token_lifetime_ms(self, user_context: any) -> int:
+    async def get_access_token_lifetime_ms(self, user_context: Dict[str, Any]) -> int:
         pass
 
     @abstractmethod
-    async def get_refresh_token_lifetime_ms(self, user_context: any) -> int:
+    async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -> int:
         pass
 
     @abstractmethod
     async def regenerate_access_token(self,
                                       access_token: str,
-                                      user_context: any,
-                                      new_access_token_payload: Union[dict, None] = None) -> RegenerateAccessTokenResult:
+                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -> RegenerateAccessTokenResult:
         pass
 
 
@@ -126,7 +136,7 @@ class SignOutResponse:
         pass
 
     @abstractmethod
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         pass
 
 
@@ -134,16 +144,15 @@ class SignOutOkayResponse(SignOutResponse):
     def __init__(self):
         self.status = 'OK'
         super().__init__()
-        pass
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         return {
             'status': self.status
         }
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: Union[BaseResponse, None],
+    def __init__(self, request: BaseRequest, response: Union[None, BaseResponse],
                  recipe_id: str, config: SessionConfig, recipe_implementation: RecipeInterface,
                  jwt_recipe_implementation: Union[JWTRecipeInterface, None]):
         self.request = request
@@ -151,7 +160,7 @@ class APIOptions:
         self.recipe_id = recipe_id
         self.config = config
         self.recipe_implementation = recipe_implementation
-        self.jwt_recipe_implementation = jwt_recipe_implementation
+        self._recipe_implementation = jwt_recipe_implementation
 
 
 class APIInterface(ABC):
@@ -160,75 +169,97 @@ class APIInterface(ABC):
         self.disable_signout_post = False
 
     @abstractmethod
-    async def refresh_post(self, api_options: APIOptions, user_context: any):
+    async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> None:
         pass
 
     @abstractmethod
-    async def signout_post(self, api_options: APIOptions, user_context: any) -> SignOutResponse:
+    async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> SignOutResponse:
         pass
 
     @abstractmethod
-    async def verify_session(self, api_options: APIOptions, user_context: any,
-                             anti_csrf_check: Union[bool, None] = None,
-                             session_required: bool = True) -> Union[SessionContainer, None]:
+    async def verify_session(self, api_options: APIOptions,
+                             anti_csrf_check: Union[bool, None],
+                             session_required: bool, user_context: Dict[str, Any]) -> Union[SessionContainer, None]:
         pass
 
 
 class SessionContainer(ABC):
+    def __init__(self, recipe_implementation: RecipeInterface, access_token: str, session_handle: str, user_id: str,access_token_payload: Dict[str, Any]):
+        self.recipe_implementation = recipe_implementation
+        self.access_token = access_token
+        self.session_handle = session_handle
+        self.access_token_payload = access_token_payload
+        self.user_id = user_id
+        self.new_access_token_info = None
+        self.new_refresh_token_info = None
+        self.new_id_refresh_token_info = None
+        self.new_anti_csrf_token = None
+        self.remove_cookies = False
 
     @abstractmethod
     async def revoke_session(self, user_context: Union[Any, None] = None) -> None:
         pass
 
-    def sync_revoke_session(
-            self, user_context: Union[any, None] = None) -> None:
+    @abstractmethod
+    async def get_session_data(self, user_context: Union[Dict[str, Any], None] = None) -> Dict[str, Any]:
         pass
+
+    @abstractmethod
+    async def update_session_data(self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -> None:
+        pass
+
+    @abstractmethod
+    async def update_access_token_payload(self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -> None:
+        pass
+
+    @abstractmethod
+    def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -> str:
+        pass
+
+    @abstractmethod
+    def get_access_token_payload(
+            self, user_context: Union[Dict[str, Any], None] = None) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    def get_handle(self, user_context: Union[Dict[str, Any], None] = None) -> str:
+        pass
+
+    @abstractmethod
+    def get_access_token(self, user_context: Union[Dict[str, Any], None] = None) -> str:
+        pass
+
+    @abstractmethod
+    async def get_time_created(self, user_context: Union[Dict[str, Any], None] = None) -> int:
+        pass
+
+    @abstractmethod
+    async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -> int:
+        pass
+
+    def sync_get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -> int:
+        return sync(self.get_expiry(user_context))
+
+    def sync_revoke_session(
+            self, user_context: Union[Dict[str, Any], None] = None) -> None:
+        return sync(self.revoke_session(user_context=user_context))
 
     def sync_get_session_data(
-            self, user_context: Union[any, None] = None) -> dict:
-        pass
-
-    async def get_session_data(self, user_context: Union[any, None] = None) -> dict:
-        pass
-
-    def sync_update_session_data(
-            self, new_session_data, user_context: Union[any, None] = None) -> None:
-        pass
-
-    async def update_session_data(self, new_session_data, user_context: Union[any, None] = None) -> None:
-        pass
+            self, user_context: Union[Dict[str, Any], None] = None) -> Dict[str, Any]:
+        return sync(self.get_session_data(user_context))
+    
+    def sync_get_time_created(
+            self, user_context: Union[Dict[str, Any], None] = None) -> int:
+        return sync(self.get_time_created(user_context))
 
     def sync_update_access_token_payload(
-            self, new_access_token_payload, user_context: Union[any, None] = None) -> None:
-        pass
+            self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -> None:
+        return sync(self.update_access_token_payload(new_access_token_payload, user_context))
 
-    async def update_access_token_payload(self, new_access_token_payload, user_context: Union[any, None] = None) -> None:
-        pass
-
-    def get_user_id(self, user_context: Union[any, None] = None) -> str:
-        pass
-
-    def get_access_token_payload(
-            self, user_context: Union[any, None] = None) -> dict:
-        pass
-
-    def get_handle(self, user_context: Union[any, None] = None) -> str:
-        pass
-
-    def get_access_token(self, user_context: Union[any, None] = None) -> str:
-        pass
-
-    async def get_time_created(self, user_context: Union[any, None] = None):
-        pass
-
-    def sync_get_time_created(
-            self, user_context: Union[any, None] = None) -> dict:
-        pass
-
-    async def get_expiry(self, user_context: Union[any, None] = None):
-        if user_context is None:
-            user_context = {}
-        pass
-
-    def sync_get_expiry(self, user_context: Union[any, None] = None) -> dict:
-        pass
+    def sync_update_session_data(
+            self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -> None:
+        return sync(self.update_session_data(new_session_data, user_context))
+    
+    # This is there so that we can do session["..."] to access some of the members of this class
+    def __getitem__(self, item: str):
+        return getattr(self, item)

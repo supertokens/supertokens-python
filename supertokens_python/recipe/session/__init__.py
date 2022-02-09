@@ -25,10 +25,10 @@ from .utils import InputErrorHandlers, InputOverrideConfig, JWTConfig
 
 
 def init(cookie_domain: Union[str, None] = None,
-         cookie_secure: Union[str, None] = None,
+         cookie_secure: Union[bool, None] = None,
          cookie_same_site: Union[Literal["lax",
                                          "none", "strict"], None] = None,
-         session_expired_status_code: Union[str, None] = None,
+         session_expired_status_code: Union[int, None] = None,
          anti_csrf: Union[Literal["VIA_TOKEN",
                                   "VIA_CUSTOM_HEADER", "NONE"], None] = None,
          error_handlers: Union[InputErrorHandlers, None] = None,

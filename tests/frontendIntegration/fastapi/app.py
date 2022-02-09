@@ -15,25 +15,27 @@ import json
 import os
 import sys
 from typing import Union
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
 
 import uvicorn
+from starlette.exceptions import ExceptionMiddleware
+from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
-
+from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
+                                get_all_cors_headers, init)
 from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.recipe import session
 from supertokens_python.recipe.session import InputErrorHandlers
+from supertokens_python.recipe.session.asyncio import (
+    Session, SessionRecipe, create_new_session, revoke_all_sessions_for_user)
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 
-from supertokens_python import init, get_all_cors_headers, Supertokens, SupertokensConfig, InputAppInfo
-from supertokens_python.recipe import session
-from supertokens_python.recipe.session.asyncio import Session, revoke_all_sessions_for_user, create_new_session, SessionRecipe
-from fastapi import FastAPI, Depends
-from starlette.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
-from starlette.exceptions import ExceptionMiddleware
+from fastapi import Depends, FastAPI
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
@@ -96,15 +98,14 @@ def apis_override_session(param):
 def functions_override_session(param):
     original_create_new_session = param.create_new_session
 
-    async def create_new_session_custom(request: any, user_id: str, user_context: any, access_token_payload: Union[dict, None] = None,
-                                        session_data: Union[dict, None] = None) -> Session:
+    async def create_new_session_custom(request: any, user_id: str, access_token_payload: Union[dict, None],session_data: Union[dict, None], user_context: any) -> Session:
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {
             **access_token_payload,
             'customClaim': 'customValue'
         }
-        return await original_create_new_session(request, user_id, user_context, access_token_payload, session_data)
+        return await original_create_new_session(request, user_id, access_token_payload, session_data, user_context)
     param.create_new_session = create_new_session_custom
 
     return param
