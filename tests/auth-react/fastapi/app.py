@@ -45,7 +45,7 @@ from supertokens_python.recipe.passwordless import (
     ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig,
     CreateAndSendCustomEmailParameters,
     CreateAndSendCustomTextMessageParameters, PasswordlessRecipe)
-from supertokens_python.recipe.session import Session, SessionRecipe
+from supertokens_python.recipe.session import SessionContainer, SessionRecipe
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.thirdparty import (Facebook, Github, Google,
                                                   ThirdPartyRecipe)
@@ -263,6 +263,7 @@ custom_init()
 
 @app.exception_handler(Exception)
 async def exception_handler(a, b):
+    print(a, b)
     return JSONResponse(status_code=500, content={})
 
 
@@ -310,7 +311,7 @@ def ping():
 
 
 @app.get('/sessionInfo')
-async def get_session_info(session_: Session = Depends(verify_session())):
+async def get_session_info(session_: SessionContainer = Depends(verify_session())):
     return JSONResponse({
         'sessionHandle': session_.get_handle(),
         'userId': session_.get_user_id(),
