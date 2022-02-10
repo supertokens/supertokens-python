@@ -28,7 +28,7 @@ from .provider import Provider
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
-    from supertokens_python.recipe.session import Session
+    from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.supertokens import AppInfo
 
     from .types import User
@@ -98,7 +98,7 @@ class SignInUpPostResponse(ABC):
     def __init__(self, status: Literal['OK', 'NO_EMAIL_GIVEN_BY_PROVIDER', 'FIELD_ERROR'], user: Union[User, None] = None,
                  created_new_user: Union[bool, None] = None, auth_code_response: Union[Dict[str, Any], None] = None,
                  error: Union[str, None] = None,
-                 session: Union[Session, None] = None):
+                 session: Union[SessionContainer, None] = None):
         self.type = 'thirdparty'
         self.status = status
         self.is_ok = False
@@ -147,7 +147,7 @@ class PasswordResetResponse(ABC):
 class SignInUpPostOkResponse(SignInUpPostResponse):
     def __init__(self, user: User, created_new_user: bool,
                  auth_code_response: Dict[str, Any],
-                 session: Session):
+                 session: SessionContainer):
         super().__init__('OK', user, created_new_user, auth_code_response, session=session)
         self.is_ok = True
 

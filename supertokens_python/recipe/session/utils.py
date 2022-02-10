@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Awaitable, Callable, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Union
 
 try:
     from typing import Literal
@@ -101,7 +101,7 @@ def get_top_level_domain_for_same_site_resolution(url: str) -> str:
 
     if hostname.startswith('localhost') or is_an_ip_address(hostname):
         return 'localhost'
-    parsed_url = extract(hostname)
+    parsed_url: Any = extract(hostname)
     if parsed_url.domain == '':  # type: ignore
         raise Exception(
             'Please make sure that the apiDomain and websiteDomain have correct values')

@@ -26,7 +26,7 @@ except ImportError:
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
-    from supertokens_python.recipe.session import Session
+    from supertokens_python.recipe.session import SessionContainer
 
     from .types import FormField, User
     from .utils import EmailPasswordConfig
@@ -357,7 +357,7 @@ class SignInPostResponse(ABC):
     def __init__(
             self, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'],
             user: Union[User, None] = None,
-            session: Union[Session, None] = None):
+            session: Union[SessionContainer, None] = None):
         self.type = 'emailpassword'
         self.is_ok = False
         self.is_wrong_credentials_error = False
@@ -382,7 +382,7 @@ class SignInPostResponse(ABC):
 
 
 class SignInPostOkResponse(SignInPostResponse):
-    def __init__(self, user: User, session: Session):
+    def __init__(self, user: User, session: SessionContainer):
         super().__init__('OK', user, session)
         self.is_ok = True
 
@@ -397,7 +397,7 @@ class SignUpPostResponse(ABC):
     def __init__(
             self, status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR'],
             user: Union[User, None] = None,
-            session: Union[Session, None] = None):
+            session: Union[SessionContainer, None] = None):
         self.type = 'emailpassword'
         self.is_ok = False
         self.is_email_already_exists_error = False
@@ -422,7 +422,7 @@ class SignUpPostResponse(ABC):
 
 
 class SignUpPostOkResponse(SignUpPostResponse):
-    def __init__(self, user: User, session: Session):
+    def __init__(self, user: User, session: SessionContainer):
         super().__init__('OK', user, session)
         self.is_ok = True
 

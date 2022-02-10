@@ -14,37 +14,37 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, TYPE_CHECKING, Union, Callable, Awaitable
+from typing import (TYPE_CHECKING, Any, Awaitable, Callable, Dict, List,
+                    TypeGuard, Union)
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
 
 from supertokens_python.querier import Querier
-from .api import (
-    consume_code,
-    create_code,
-    resend_code,
-    email_exists,
-    phone_number_exists
-)
+
+from .api import (consume_code, create_code, email_exists, phone_number_exists,
+                  resend_code)
 from .api.implementation import APIImplementation
-from .constants import CREATE_CODE_API, RESEND_CODE_API, CONSUME_CODE_API, DOES_EMAIL_EXIST_API, \
-    DOES_PHONE_NUMBER_EXIST_API
-from .interfaces import APIOptions
-from .recipe_implementation import RecipeImplementation
-from .utils import validate_and_normalise_user_input, OverrideConfig, ContactConfig
+from .constants import (CONSUME_CODE_API, CREATE_CODE_API,
+                        DOES_EMAIL_EXIST_API, DOES_PHONE_NUMBER_EXIST_API,
+                        RESEND_CODE_API)
 from .exceptions import SuperTokensPasswordlessError
-from .interfaces import ConsumeCodeOkResult
+from .interfaces import APIOptions, ConsumeCodeOkResult, RecipeInterface
+from .recipe_implementation import RecipeImplementation
+from .utils import (ContactConfig, OverrideConfig, PhoneOrEmailInput,
+                    validate_and_normalise_user_input)
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
 
-from supertokens_python.exceptions import SuperTokensError, raise_general_exception
+from supertokens_python.exceptions import (SuperTokensError,
+                                           raise_general_exception)
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe_module import RecipeModule, APIHandled
+from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 
 class PasswordlessRecipe(RecipeModule):
@@ -55,15 +55,15 @@ class PasswordlessRecipe(RecipeModule):
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
                  override: Union[OverrideConfig, None] = None,
                  get_link_domain_and_path: Union[Callable[[
-                     str], Awaitable[Union[str, None]]]] = None,
-                 get_custom_user_input_code: Union[Callable[[], Awaitable[str]], None] = None):
+                     PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
+                 get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, contact_config, flow_type, override,
                                                         get_link_domain_and_path, get_custom_user_input_code)
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id))
-        self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
+        self.recipe_implementation: RecipeInterface = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
         api_implementation = APIImplementation()
         self.api_implementation = api_implementation if self.config.override.apis is None else \
@@ -109,10 +109,11 @@ class PasswordlessRecipe(RecipeModule):
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse):
         raise err
 
-    def get_all_cors_headers(self):
+    def get_all_cors_headers(self) -> List[str]:
         return []
 
-    def is_error_from_this_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(
+            self, err: Exception) -> TypeGuard[SuperTokensError]:
         return isinstance(err, SuperTokensError) and isinstance(
             err, SuperTokensPasswordlessError)
 
@@ -121,8 +122,8 @@ class PasswordlessRecipe(RecipeModule):
              flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
              override: Union[OverrideConfig, None] = None,
              get_link_domain_and_path: Union[Callable[[
-                 str], Awaitable[Union[str, None]]]] = None,
-             get_custom_user_input_code: Union[Callable[[], Awaitable[str]], None] = None):
+                 PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
+             get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None):
         def func(app_info: AppInfo):
             if PasswordlessRecipe.__instance is None:
                 PasswordlessRecipe.__instance = PasswordlessRecipe(
@@ -152,29 +153,31 @@ class PasswordlessRecipe(RecipeModule):
                 'calling testing function in non testing env')
         PasswordlessRecipe.__instance = None
 
-    async def create_magic_link(self, email: Union[str, None], phone_number: Union[str, None], user_context=None) -> str:
+    async def create_magic_link(self, email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> str:
         user_input_code = None
         if self.config.get_custom_user_input_code is not None:
-            user_input_code = await self.config.get_custom_user_input_code()
+            user_input_code = await self.config.get_custom_user_input_code(user_context)
 
         code_info = await self.recipe_implementation.create_code(
             email=email, phone_number=phone_number, user_input_code=user_input_code, user_context=user_context)
-        magic_link = await self.config.get_link_domain_and_path(email if email is not None else phone_number,
-                                                                user_context)
+        magic_link = await self.config.get_link_domain_and_path(PhoneOrEmailInput(phone_number, email),user_context) 
         magic_link += '?rid=' + self.get_recipe_id() + '&preAuthSessionId=' + code_info.pre_auth_session_id + '#' + \
             code_info.link_code
         return magic_link
 
-    async def signinup(self, email: Union[str, None], phone_number: Union[str, None], user_context=None) -> ConsumeCodeOkResult:
+    async def signinup(self, email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> ConsumeCodeOkResult:
         code_info = await self.recipe_implementation.create_code(
-            email=email, phone_number=phone_number, user_context=user_context)
+            email=email, phone_number=phone_number, user_context=user_context, user_input_code=None)
         consume_code_result = await self.recipe_implementation.consume_code(
             link_code=code_info.link_code,
             pre_auth_session_id=code_info.pre_auth_session_id,
             device_id=code_info.device_id,
-            user_input_code=code_info.user_input_code
+            user_input_code=code_info.user_input_code,
+            user_context=user_context
         )
         if consume_code_result.is_ok:
+            if consume_code_result.created_new_user is None or consume_code_result.user is None:
+                raise Exception("Should never come here")
             return ConsumeCodeOkResult(
                 consume_code_result.created_new_user, consume_code_result.user)
         else:

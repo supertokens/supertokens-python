@@ -11,8 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
 from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.recipe.passwordless.interfaces import (APIInterface,
+                                                               APIOptions)
 
 
 async def consume_code(api_implementation: APIInterface, api_options: APIOptions):
@@ -20,6 +21,9 @@ async def consume_code(api_implementation: APIInterface, api_options: APIOptions
         return None
 
     body = await api_options.request.json()
+
+    if body is None:
+        raise_bad_input_exception("Please provide a JSON body")
 
     user_input_code = None
     device_id = None

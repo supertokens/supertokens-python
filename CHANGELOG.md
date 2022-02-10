@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed email verification input functions' user type in emailpassword to be equal to emailpassword's user and not emailverification user.
 - All session recipe's error handler not need to return `BaseResponse`.
 - Session's recipe `get_session_information` returns a `SessionInformationResult` class object instead of a `dict` for easier consumption.
+- `get_link_domain_and_path` config in passwordless recipe now takes a class type input as opposed to a string input as the first param
+- Renamed `Session` to `SessionContainer` in session
 
 ### Added
 - Returns session from all APIs where a session is created

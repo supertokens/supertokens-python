@@ -12,7 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
+from supertokens_python.recipe.passwordless.interfaces import (APIInterface,
+                                                               APIOptions)
 
 
 async def phone_number_exists(api_implementation: APIInterface, api_options: APIOptions):
@@ -20,7 +21,7 @@ async def phone_number_exists(api_implementation: APIInterface, api_options: API
         return None
 
     phone_number = api_options.request.get_query_param('phoneNumber')
-    if phone_number is None or not isinstance(phone_number, str):
+    if phone_number is None:
         raise_bad_input_exception(
             'Please provide the phoneNumber as a GET param')
 

@@ -12,8 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from abc import ABC
-from typing import TYPE_CHECKING, Callable, Union, Awaitable, Any
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
+
 try:
     from typing import Literal
 except ImportError:
@@ -22,13 +24,15 @@ except ImportError:
 if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface
     from supertokens_python import AppInfo
-from phonenumbers import parse, is_valid_number
+
 from re import fullmatch
+
+from phonenumbers import is_valid_number, parse  # type: ignore
 
 
 async def default_validate_phone_number(value: str):
     try:
-        parsed_phone_number = parse(value, None)
+        parsed_phone_number: Any = parse(value, None)
         if not is_valid_number(parsed_phone_number):
             return 'Phone number is invalid'
     except Exception:
@@ -36,7 +40,7 @@ async def default_validate_phone_number(value: str):
 
 
 def default_get_link_domain_and_path(app_info: AppInfo):
-    async def get_link_domain_and_path(_: str, __):
+    async def get_link_domain_and_path(_: PhoneOrEmailInput, __: Dict[str, Any]) -> str:
         return app_info.website_domain.get_as_string_dangerous(
         ) + app_info.website_base_path.get_as_string_dangerous() + '/verify'
     return get_link_domain_and_path
@@ -49,17 +53,17 @@ async def default_validate_email(value: str):
 
 
 async def default_create_and_send_custom_text_message(
-    params: CreateAndSendCustomTextMessageParameters,
-    _
-):
+    _: CreateAndSendCustomTextMessageParameters,
+    __: Dict[str, Any]
+) -> None:
     # TODO
     pass
 
 
 async def default_create_and_send_custom_email(
-    param: CreateAndSendCustomEmailParameters,
-    _
-):
+    _: CreateAndSendCustomEmailParameters,
+    __: Dict[str, Any]
+) -> None:
     # TODO
     pass
 
@@ -108,57 +112,86 @@ class ContactConfig(ABC):
 class ContactPhoneOnlyConfig(ContactConfig):
     def __init__(self,
                  create_and_send_custom_text_message: Callable[
-                     [CreateAndSendCustomTextMessageParameters, Any], Awaitable[None]],
+                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]],
                  validate_phone_number: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__('PHONE')
-        self.validate_phone_number = validate_phone_number
-        self.create_and_send_custom_text_message = create_and_send_custom_text_message
+        if create_and_send_custom_text_message is None:
+            self.create_and_send_custom_text_message = default_create_and_send_custom_text_message
+        else:
+            self.create_and_send_custom_text_message = create_and_send_custom_text_message
+        if validate_phone_number is None:
+            self.validate_phone_number = default_validate_phone_number
+        else:
+            self.validate_phone_number = validate_phone_number
 
 
 class ContactEmailOnlyConfig(ContactConfig):
     def __init__(self,
                  create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomEmailParameters, Any], Awaitable[None]],
+                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]],
                  validate_email_address: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None
                  ):
         super().__init__('EMAIL')
-        self.validate_email_address = validate_email_address
-        self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email is None:
+            self.create_and_send_custom_email = default_create_and_send_custom_email
+        else:
+            self.create_and_send_custom_email = create_and_send_custom_email
+        if validate_email_address is None:
+            self.validate_email_address = default_validate_email
+        else:
+            self.validate_email_address = validate_email_address
 
 
 class ContactEmailOrPhoneConfig(ContactConfig):
     def __init__(self,
                  create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomEmailParameters, Any], Awaitable[None]],
+                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]],
                  create_and_send_custom_text_message: Callable[
-                     [CreateAndSendCustomTextMessageParameters, Any], Awaitable[None]],
+                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]],
                  validate_email_address: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  validate_phone_number: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__('EMAIL_OR_PHONE')
-        self.validate_email_address = validate_email_address
-        self.create_and_send_custom_email = create_and_send_custom_email
-        self.validate_phone_number = validate_phone_number
-        self.create_and_send_custom_text_message = create_and_send_custom_text_message
+        if create_and_send_custom_email is None:
+            self.create_and_send_custom_email = default_create_and_send_custom_email
+        else:
+            self.create_and_send_custom_email = create_and_send_custom_email
+        if validate_email_address is None:
+            self.validate_email_address = default_validate_email
+        else:
+            self.validate_email_address = validate_email_address
+        if create_and_send_custom_text_message is None:
+            self.create_and_send_custom_text_message = default_create_and_send_custom_text_message
+        else:
+            self.create_and_send_custom_text_message = create_and_send_custom_text_message
+        if validate_phone_number is None:
+            self.validate_phone_number = default_validate_phone_number
+        else:
+            self.validate_phone_number = validate_phone_number
 
+
+class PhoneOrEmailInput:
+    def __init__(self, phone_number: Union[str, None], email: Union[str, None]):
+        self.phone_number = phone_number
+        self.email = email
 
 class PasswordlessConfig:
     def __init__(self,
                  contact_config: ContactConfig,
                  override: OverrideConfig,
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
-                 get_link_domain_and_path: Callable[[str, Any], Awaitable[Union[str, None]]],
+                 get_link_domain_and_path: Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]],
                  get_custom_user_input_code: Union[Callable[[
-                     Any], Awaitable[str]], None] = None
+                     Dict[str, Any]], Awaitable[str]], None] = None
                  ):
         self.contact_config = contact_config
         self.override = override
-        self.flow_type = flow_type
+        self.flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = flow_type
         self.get_custom_user_input_code = get_custom_user_input_code
         self.get_link_domain_and_path = get_link_domain_and_path
 
@@ -169,34 +202,14 @@ def validate_and_normalise_user_input(
         flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
         override: Union[OverrideConfig, None] = None,
         get_link_domain_and_path: Union[Callable[[
-            str, Any], Awaitable[Union[str, None]]], None] = None,
-        get_custom_user_input_code: Union[Callable[[Any], Awaitable[str]], None] = None):
+            PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
+        get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None):
 
     if override is None:
         override = OverrideConfig()
 
     if get_link_domain_and_path is None:
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)
-
-    if isinstance(contact_config, ContactEmailOnlyConfig):
-        if contact_config.create_and_send_custom_email is None:
-            contact_config.create_and_send_custom_email = default_create_and_send_custom_email
-        if contact_config.validate_email_address is None:
-            contact_config.validate_email_address = default_validate_email
-    elif isinstance(contact_config, ContactPhoneOnlyConfig):
-        if contact_config.create_and_send_custom_text_message is None:
-            contact_config.create_and_send_custom_text_message = default_create_and_send_custom_text_message
-        if contact_config.validate_phone_number is None:
-            contact_config.validate_phone_number = default_validate_phone_number
-    else:
-        if contact_config.create_and_send_custom_text_message is None:
-            contact_config.create_and_send_custom_text_message = default_create_and_send_custom_text_message
-        if contact_config.validate_phone_number is None:
-            contact_config.validate_phone_number = default_validate_phone_number
-        if contact_config.create_and_send_custom_email is None:
-            contact_config.create_and_send_custom_email = default_create_and_send_custom_email
-        if contact_config.validate_email_address is None:
-            contact_config.validate_email_address = default_validate_email
 
     if get_link_domain_and_path is not None:
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)

@@ -25,9 +25,9 @@ from supertokens_python.recipe.session.with_jwt.utills import \
 from supertokens_python.utils import get_timestamp_ms
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.openid.interfaces import RecipeInterface as OpenIdRecipeInterface
-
-from supertokens_python.recipe.session.interfaces import SessionContainer
+    from supertokens_python.recipe.openid.interfaces import \
+        RecipeInterface as OpenIdRecipeInterface
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 def get_session_with_jwt(original_session: SessionContainer,

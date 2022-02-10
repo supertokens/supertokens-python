@@ -32,7 +32,7 @@ class Middleware(BaseHTTPMiddleware):
             FastApiRequest
         from supertokens_python.framework.fastapi.fastapi_response import \
             FastApiResponse
-        from supertokens_python.recipe.session import Session
+        from supertokens_python.recipe.session import SessionContainer
         from supertokens_python.supertokens import manage_cookies_post_response
         st = Supertokens.get_instance()
         from fastapi.responses import Response
@@ -46,7 +46,7 @@ class Middleware(BaseHTTPMiddleware):
                 result = FastApiResponse(response)
 
             if hasattr(request.state, "supertokens") and isinstance(
-                    request.state.supertokens, Session):
+                    request.state.supertokens, SessionContainer):
                 manage_cookies_post_response(request.state.supertokens, result)
             if isinstance(result, FastApiResponse):
                 return result.response

@@ -14,9 +14,12 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from asgiref.sync import async_to_sync
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session import SessionContainer
 
 
 def middleware(get_response: Any):
@@ -26,7 +29,6 @@ def middleware(get_response: Any):
         DjangoRequest
     from supertokens_python.framework.django.django_response import \
         DjangoResponse
-    from supertokens_python.recipe.session import Session
     from supertokens_python.supertokens import manage_cookies_post_response
 
     from django.http import HttpRequest
@@ -43,7 +45,7 @@ def middleware(get_response: Any):
                     result = await get_response(request)
                     result = DjangoResponse(result)
                 if hasattr(request, "supertokens") and isinstance(
-                        request.supertokens, Session):  # type: ignore
+                        request.supertokens, SessionContainer):  # type: ignore
                     manage_cookies_post_response(
                         request.supertokens, result)  # type: ignore
                 if isinstance(result, DjangoResponse):
@@ -70,7 +72,7 @@ def middleware(get_response: Any):
                     result = DjangoResponse(get_response(request))
 
                 if hasattr(request, "supertokens") and isinstance(
-                        request.supertokens, Session):  # type: ignore
+                        request.supertokens, SessionContainer):  # type: ignore
                     manage_cookies_post_response(
                         request.supertokens, result)  # type: ignore
                 return result.response

@@ -16,8 +16,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, List, Set, Union
 
-from supertokens_python.recipe.session.interfaces import SessionContainer
-
 try:
     from typing import Literal
 except ImportError:
@@ -42,7 +40,7 @@ if TYPE_CHECKING:
     from .recipe_module import RecipeModule
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
-    from supertokens_python.recipe.session import Session
+    from supertokens_python.recipe.session import SessionContainer
 
 import asyncio
 from os import environ

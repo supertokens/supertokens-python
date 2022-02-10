@@ -14,7 +14,6 @@
 import json
 from datetime import datetime
 from math import ceil
-from time import time
 from typing import Any, Dict, Union
 
 from supertokens_python.framework.response import BaseResponse

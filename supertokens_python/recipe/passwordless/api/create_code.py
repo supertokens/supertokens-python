@@ -13,12 +13,13 @@
 # under the License.
 from typing import Union
 
+import phonenumbers  # type: ignore
+from phonenumbers import format_number, parse  # type: ignore
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions, CreateCodePostGeneralErrorResponse
-from supertokens_python.recipe.passwordless.utils import ContactPhoneOnlyConfig, ContactEmailOnlyConfig, \
-    ContactEmailOrPhoneConfig
-from phonenumbers import parse, format_number
-import phonenumbers
+from supertokens_python.recipe.passwordless.interfaces import (
+    APIInterface, APIOptions, CreateCodePostGeneralErrorResponse)
+from supertokens_python.recipe.passwordless.utils import (
+    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)
 
 
 async def create_code(api_implementation: APIInterface, api_options: APIOptions):
@@ -26,6 +27,9 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
         return None
 
     body = await api_options.request.json()
+
+    if body is None:
+        raise_bad_input_exception("Please provide a JSON body")
 
     email: Union[str, None] = None
     phone_number: Union[str, None] = None
@@ -52,10 +56,7 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
 
     if email is not None and (
         isinstance(api_options.config.contact_config, ContactEmailOnlyConfig)
-        or
-        isinstance(
-            api_options.config.contact_config,
-            ContactEmailOrPhoneConfig)
+        or isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig)
     ):
         email = email.strip()
         validation_error = await api_options.config.contact_config.validate_email_address(email)
@@ -77,10 +78,10 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
                 CreateCodePostGeneralErrorResponse(validation_error).to_json())
             return api_options.response
         try:
-            validated_phone_number = parse(phone_number, None)
-            phone_number = format_number(
-                validated_phone_number,
-                phonenumbers.PhoneNumberFormat.E164)
+            phone_number_formatted: str = format_number(
+                parse(phone_number, None),
+                phonenumbers.PhoneNumberFormat.E164) # type: ignore
+            phone_number = phone_number_formatted
         except Exception:
             phone_number = phone_number.strip()
     result = await api_implementation.create_code_post(

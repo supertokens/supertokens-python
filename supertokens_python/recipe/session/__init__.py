@@ -19,8 +19,8 @@ except ImportError:
     from typing_extensions import Literal
 
 from . import exceptions  # type: ignore
+from .interfaces import SessionContainer  # type: ignore
 from .recipe import SessionRecipe
-from .session_class import Session  # type: ignore
 from .utils import InputErrorHandlers, InputOverrideConfig, JWTConfig
 
 

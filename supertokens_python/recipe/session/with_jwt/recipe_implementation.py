@@ -16,8 +16,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Union
 
 from jwt import decode
-from supertokens_python.recipe.session.interfaces import (RecipeInterface,
-                                                          SessionContainer)
 from supertokens_python.utils import get_timestamp_ms
 
 from .constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
@@ -26,6 +24,8 @@ from .utills import add_jwt_to_access_token_payload
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.utils import SessionConfig
+    from supertokens_python.recipe.session.interfaces import (RecipeInterface,
+                                                          SessionContainer)
 
 from math import ceil
 
