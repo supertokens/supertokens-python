@@ -28,7 +28,8 @@ extras_require = {
         'tzdata',
         'pylint',
         'isort',
-        'pyright'
+        'pyright',
+        'django-stubs'
     ])
 }
 
