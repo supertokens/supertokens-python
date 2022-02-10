@@ -304,7 +304,7 @@ class CreateCodePostResponse(ABC):
         device_id: Union[str, None] = None,
         pre_auth_session_id: Union[str, None] = None,
         flow_type: Union[None, Literal['USER_INPUT_CODE', 'MAGIC_LINK',
-                           'USER_INPUT_CODE_AND_MAGIC_LINK']] = None,
+                                       'USER_INPUT_CODE_AND_MAGIC_LINK']] = None,
         message: Union[str, None] = None
     ):
         self.status = status

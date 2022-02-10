@@ -29,7 +29,7 @@ def create_new_session(request: Any, user_id: str, access_token_payload: Union[D
         request, user_id, access_token_payload, session_data, user_context))
 
 
-def get_session(request: Any, anti_csrf_check: Union[bool, None] = None, session_required: bool = True,user_context: Union[None, Dict[str, Any]] = None) -> Union[SessionContainer, None]:
+def get_session(request: Any, anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None) -> Union[SessionContainer, None]:
     from supertokens_python.recipe.session.asyncio import \
         get_session as async_get_session
     return sync(async_get_session(request, anti_csrf_check,

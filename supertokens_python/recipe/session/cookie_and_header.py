@@ -40,7 +40,7 @@ from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.utils import get_header, utf_base64encode
 
 
-def set_front_token_in_headers(response: BaseResponse, user_id: str, expires_at: int, jwt_payload: Union[None, Dict[str, Any]]=None):
+def set_front_token_in_headers(response: BaseResponse, user_id: str, expires_at: int, jwt_payload: Union[None, Dict[str, Any]] = None):
     if jwt_payload is None:
         jwt_payload = {}
     token_info = {

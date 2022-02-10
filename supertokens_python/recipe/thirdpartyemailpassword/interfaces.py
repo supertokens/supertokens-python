@@ -79,7 +79,7 @@ class APIInterface(ABC):
         pass
 
     @abstractmethod
-    async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None],auth_code_response: Union[Dict[str, Any], None],
+    async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
                                          api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> SignInUpPostResponse:
         pass
 

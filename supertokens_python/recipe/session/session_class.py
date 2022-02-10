@@ -35,7 +35,6 @@ class Session(SessionContainer):
             user_context = {}
         return await self.recipe_implementation.update_session_data(self.session_handle, new_session_data, user_context)
 
-
     async def update_access_token_payload(self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -> None:
         if user_context is None:
             user_context = {}

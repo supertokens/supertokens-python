@@ -56,4 +56,4 @@ class APIImplementation(APIInterface):
         if incoming_path.equals(refresh_token_path) and method == 'post':
             return await api_options.recipe_implementation.refresh_session(api_options.request, user_context)
         else:
-            return await api_options.recipe_implementation.get_session(api_options.request,anti_csrf_check, session_required, user_context)
+            return await api_options.recipe_implementation.get_session(api_options.request, anti_csrf_check, session_required, user_context)

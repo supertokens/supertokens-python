@@ -17,7 +17,7 @@ from typing import Any, Dict, Union
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 
 
-async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]]=None):
+async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     email = await ThirdPartyRecipe.get_instance().get_email_for_user_id(user_id, user_context)
@@ -25,14 +25,14 @@ async def create_email_verification_token(user_id: str, user_context: Union[None
         user_id, email, user_context)
 
 
-async def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any]]=None):
+async def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
         token, user_context)
 
 
-async def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]]=None):
+async def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     email = await ThirdPartyRecipe.get_instance().get_email_for_user_id(user_id, user_context)
@@ -40,7 +40,7 @@ async def is_email_verified(user_id: str, user_context: Union[None, Dict[str, An
         user_id, email, user_context)
 
 
-async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]]=None):
+async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     email = await ThirdPartyRecipe.get_instance().get_email_for_user_id(user_id, user_context)
@@ -48,7 +48,7 @@ async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]]
         user_id, email, user_context)
 
 
-async def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]]=None):
+async def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     email = await ThirdPartyRecipe.get_instance().get_email_for_user_id(user_id, user_context)
@@ -56,19 +56,19 @@ async def revoke_email_verification_tokens(user_id: str, user_context: Union[Non
         user_id, email, user_context)
 
 
-async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]]=None):
+async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_by_id(user_id, user_context)
 
 
-async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]]=None):
+async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.get_users_by_email(email, user_context)
 
 
-async def get_user_by_third_party_info(third_party_id: str, third_party_user_id: str, user_context: Union[None, Dict[str, Any]]=None):
+async def get_user_by_third_party_info(third_party_id: str, third_party_user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(third_party_id,
@@ -76,7 +76,7 @@ async def get_user_by_third_party_info(third_party_id: str, third_party_user_id:
                                                                                                    user_context)
 
 
-async def sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Union[None, Dict[str, Any]]=None):
+async def sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.sign_in_up(third_party_id, third_party_user_id,

@@ -29,10 +29,10 @@ async def create_new_session(request: Any, user_id: str, access_token_payload: U
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.create_new_session(request, user_id,access_token_payload,session_data, user_context)
+    return await SessionRecipe.get_instance().recipe_implementation.create_new_session(request, user_id, access_token_payload, session_data, user_context)
 
 
-async def get_session(request: Any, anti_csrf_check: Union[bool, None] = None, session_required: bool = True,user_context: Union[None, Dict[str, Any]] = None) -> Union[SessionContainer, None]:
+async def get_session(request: Any, anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None) -> Union[SessionContainer, None]:
     if user_context is None:
         user_context = {}
     if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
@@ -83,13 +83,13 @@ async def get_session_information(session_handle: str, user_context: Union[None,
 async def update_session_data(session_handle: str, new_session_data: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -> None:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.update_session_data(session_handle,new_session_data,user_context)
+    return await SessionRecipe.get_instance().recipe_implementation.update_session_data(session_handle, new_session_data, user_context)
 
 
 async def update_access_token_payload(session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -> None:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(session_handle,new_access_token_payload,user_context)
+    return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(session_handle, new_access_token_payload, user_context)
 
 
 async def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -> CreateJwtResult:

@@ -52,7 +52,7 @@ class RecipeImplementation(RecipeInterface):
         self.ep_sign_in = emailpassword_implementation.sign_in
         self.ep_sign_up = emailpassword_implementation.sign_up
         self.ep_update_email_or_password = emailpassword_implementation.update_email_or_password
-       
+
         derived_ep = DerivedEmailPasswordImplementation(self)
         emailpassword_implementation.create_reset_password_token = derived_ep.create_reset_password_token
         emailpassword_implementation.get_user_by_email = derived_ep.get_user_by_email
@@ -61,8 +61,7 @@ class RecipeImplementation(RecipeInterface):
         emailpassword_implementation.sign_in = derived_ep.sign_in
         emailpassword_implementation.sign_up = derived_ep.sign_up
         emailpassword_implementation.update_email_or_password = derived_ep.update_email_or_password
-        
-        
+
         self.tp_get_user_by_id = None
         self.tp_get_users_by_email = None
         self.tp_get_user_by_thirdparty_info = None
@@ -74,7 +73,7 @@ class RecipeImplementation(RecipeInterface):
             self.tp_get_users_by_email = thirdparty_implementation.get_users_by_email
             self.tp_get_user_by_thirdparty_info = thirdparty_implementation.get_user_by_thirdparty_info
             self.tp_sign_in_up = thirdparty_implementation.sign_in_up
-            
+
             derived_tp = DerivedThirdPartyImplementation(self)
             thirdparty_implementation.get_user_by_id = derived_tp.get_user_by_id
             thirdparty_implementation.get_users_by_email = derived_tp.get_users_by_email
@@ -86,7 +85,7 @@ class RecipeImplementation(RecipeInterface):
 
         if ep_user is not None:
             return User(user_id=ep_user.user_id, email=ep_user.email, time_joined=ep_user.time_joined, third_party_info=None)
-        
+
         if self.tp_get_user_by_id is None:
             return None
 

@@ -42,6 +42,7 @@ class InputEmailVerificationConfig:
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
 
+
 def email_verification_create_and_send_custom_email(
         recipe: ThirdPartyEmailPasswordRecipe, create_and_send_custom_email: Callable[[
             User, str, Dict[str, Any]], Awaitable[None]]) -> Callable[[
@@ -66,6 +67,7 @@ def email_verification_get_email_verification_url(
         return await get_email_verification_url(user_info, user_context)
 
     return func
+
 
 def validate_and_normalise_email_verification_config(
         recipe: ThirdPartyEmailPasswordRecipe, config: Union[InputEmailVerificationConfig, None],

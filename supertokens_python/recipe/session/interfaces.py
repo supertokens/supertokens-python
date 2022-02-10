@@ -68,6 +68,7 @@ class SessionInformationResult(ABC):
         self.access_token_payload = access_token_payload
         self.time_created = time_created
 
+
 class RecipeInterface(ABC):
     def __init__(self):
         pass
@@ -184,7 +185,7 @@ class APIInterface(ABC):
 
 
 class SessionContainer(ABC):
-    def __init__(self, recipe_implementation: RecipeInterface, access_token: str, session_handle: str, user_id: str,access_token_payload: Dict[str, Any]):
+    def __init__(self, recipe_implementation: RecipeInterface, access_token: str, session_handle: str, user_id: str, access_token_payload: Dict[str, Any]):
         self.recipe_implementation = recipe_implementation
         self.access_token = access_token
         self.session_handle = session_handle
@@ -247,7 +248,7 @@ class SessionContainer(ABC):
     def sync_get_session_data(
             self, user_context: Union[Dict[str, Any], None] = None) -> Dict[str, Any]:
         return sync(self.get_session_data(user_context))
-    
+
     def sync_get_time_created(
             self, user_context: Union[Dict[str, Any], None] = None) -> int:
         return sync(self.get_time_created(user_context))
@@ -259,7 +260,7 @@ class SessionContainer(ABC):
     def sync_update_session_data(
             self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -> None:
         return sync(self.update_session_data(new_session_data, user_context))
-    
+
     # This is there so that we can do session["..."] to access some of the members of this class
     def __getitem__(self, item: str):
         return getattr(self, item)

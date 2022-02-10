@@ -23,7 +23,7 @@ async def resend_code(api_implementation: APIInterface, api_options: APIOptions)
 
     if body is None:
         raise_bad_input_exception("Please provide a JSON body")
-        
+
     if 'preAuthSessionId' not in body:
         raise_bad_input_exception('Please provide preAuthSessionId')
 

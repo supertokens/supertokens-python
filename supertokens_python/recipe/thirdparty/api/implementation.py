@@ -87,7 +87,7 @@ class APIImplementation(APIInterface):
 
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
                               user_context: Dict[str, Any]) -> SignInUpPostResponse:
-        
+
         redirect_uri_from_provider = provider.get_redirect_uri()
         if is_using_oauth_development_client_id(provider.client_id):
             redirect_uri = DEV_OAUTH_REDIRECT_URL
@@ -109,7 +109,7 @@ class APIImplementation(APIInterface):
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }
                 async with AsyncClient() as client:
-                    access_token_response = await client.post(access_token_api_info.url, data=access_token_api_info.params, headers=headers) # type: ignore
+                    access_token_response = await client.post(access_token_api_info.url, data=access_token_api_info.params, headers=headers)  # type: ignore
                     access_token_response = access_token_response.json()
             else:
                 access_token_response = auth_code_response
@@ -127,7 +127,7 @@ class APIImplementation(APIInterface):
             return SignInUpPostNoEmailGivenByProviderResponse()
 
         signinup_response = await api_options.recipe_implementation.sign_in_up(provider.id, user_info.user_id, email, email_verified, user_context)
-        
+
         if signinup_response.is_field_error:
             if signinup_response.error is None:
                 raise Exception("Should never come here")

@@ -22,7 +22,7 @@ from supertokens_python.framework.django.django_response import DjangoResponse
 from supertokens_python.recipe.session import SessionRecipe
 
 
-def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]]=None):
+def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
 

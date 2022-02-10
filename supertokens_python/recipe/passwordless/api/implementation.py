@@ -181,7 +181,7 @@ class APIImplementation(APIInterface):
         elif response.is_restart_flow_error:
             return ConsumeCodePostRestartFlowErrorResponse()
         if response.user is None or response.created_new_user is None:
-                raise Exception("Should never come here")
+            raise Exception("Should never come here")
         user = response.user
         session = await create_new_session(api_options.request, user.user_id, {}, {}, user_context)
         return ConsumeCodePostOkResponse(

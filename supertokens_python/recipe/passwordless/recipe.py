@@ -160,7 +160,7 @@ class PasswordlessRecipe(RecipeModule):
 
         code_info = await self.recipe_implementation.create_code(
             email=email, phone_number=phone_number, user_input_code=user_input_code, user_context=user_context)
-        magic_link = await self.config.get_link_domain_and_path(PhoneOrEmailInput(phone_number, email),user_context) 
+        magic_link = await self.config.get_link_domain_and_path(PhoneOrEmailInput(phone_number, email), user_context)
         magic_link += '?rid=' + self.get_recipe_id() + '&preAuthSessionId=' + code_info.pre_auth_session_id + '#' + \
             code_info.link_code
         return magic_link

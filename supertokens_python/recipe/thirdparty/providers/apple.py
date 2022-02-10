@@ -70,7 +70,7 @@ class Apple(Provider):
             'kid': self.client_key_id
         }
         return encode(payload, sub(
-            r'\\n', '\n', self.client_private_key), algorithm='ES256', headers=headers) # type: ignore
+            r'\\n', '\n', self.client_private_key), algorithm='ES256', headers=headers)  # type: ignore
 
     async def get_profile_info(self, auth_code_response: Dict[str, Any]) -> UserInfo:
         # - Verify the JWS E256 signature using the server’s public key
@@ -126,12 +126,12 @@ class Apple(Provider):
     async def _fetch_apple_public_keys(self) -> List[RSAPublicKey]:
         # Check to see if the public key is unset or is stale before returning
         if (self.apple_last_fetch + self.APPLE_KEY_CACHE_EXP) < int(time()
-                                                                        ) or len(self.APPLE_PUBLIC_KEYS) == 0:
+                                                                    ) or len(self.APPLE_PUBLIC_KEYS) == 0:
             async with AsyncClient() as client:
                 response = await client.get(self.APPLE_PUBLIC_KEY_URL)
                 key_payload = response.json()
                 for key in key_payload["keys"]:
-                    self.APPLE_PUBLIC_KEYS.append(RSAAlgorithm.from_jwk(key)) # type: ignore
+                    self.APPLE_PUBLIC_KEYS.append(RSAAlgorithm.from_jwk(key))  # type: ignore
                 self.apple_last_fetch = int(time())
 
         return self.APPLE_PUBLIC_KEYS

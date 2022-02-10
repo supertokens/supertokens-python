@@ -25,7 +25,7 @@ def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Un
     return sync(asyncio.create_jwt(payload, validity_seconds, user_context))
 
 
-def get_jwks(user_context: Union[Dict[str, Any], None]=None) -> GetJWKSResult:
+def get_jwks(user_context: Union[Dict[str, Any], None] = None) -> GetJWKSResult:
     return sync(asyncio.get_jwks(user_context))
 
 

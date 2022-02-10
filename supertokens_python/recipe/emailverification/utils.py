@@ -51,6 +51,7 @@ class OverrideConfig:
         self.functions = functions
         self.apis = apis
 
+
 class ParentRecipeEmailVerificationConfig:
     def __init__(self,
                  get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],

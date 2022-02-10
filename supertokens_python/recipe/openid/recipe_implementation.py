@@ -49,7 +49,7 @@ class RecipeImplementation(RecipeInterface):
         self.app_info = app_info
         self.jwt_recipe_implementation = jwt_recipe_implementation
 
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds:  Union[int, None], user_context: Dict[str, Any]) -> CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> CreateJwtResult:
         issuer = self.config.issuer_domain.get_as_string_dangerous(
         ) + self.config.issuer_path.get_as_string_dangerous()
         payload = {

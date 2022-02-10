@@ -80,7 +80,7 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
         try:
             phone_number_formatted: str = format_number(
                 parse(phone_number, None),
-                phonenumbers.PhoneNumberFormat.E164) # type: ignore
+                phonenumbers.PhoneNumberFormat.E164)  # type: ignore
             phone_number = phone_number_formatted
         except Exception:
             phone_number = phone_number.strip()

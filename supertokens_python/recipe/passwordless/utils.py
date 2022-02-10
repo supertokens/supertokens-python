@@ -180,6 +180,7 @@ class PhoneOrEmailInput:
         self.phone_number = phone_number
         self.email = email
 
+
 class PasswordlessConfig:
     def __init__(self,
                  contact_config: ContactConfig,

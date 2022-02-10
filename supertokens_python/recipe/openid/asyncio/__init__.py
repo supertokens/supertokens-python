@@ -29,7 +29,7 @@ async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_secon
     return await OpenIdRecipe.get_instance().recipe_implementation.create_jwt(payload, validity_seconds, user_context)
 
 
-async def get_jwks(user_context: Union[Dict[str, Any], None]=None) -> GetJWKSResult:
+async def get_jwks(user_context: Union[Dict[str, Any], None] = None) -> GetJWKSResult:
     if user_context is None:
         user_context = {}
     return await OpenIdRecipe.get_instance().recipe_implementation.get_jwks(user_context)

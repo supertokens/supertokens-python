@@ -81,6 +81,7 @@ class InputEmailVerificationConfig:
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
 
+
 def email_verification_create_and_send_custom_email(
         recipe: ThirdPartyRecipe, create_and_send_custom_email: Callable[[
             User, str, Dict[str, Any]], Awaitable[None]]) -> Callable[[
@@ -205,9 +206,9 @@ def verify_id_token_from_jwks_endpoint(
     jwks_client = PyJWKClient(jwks_uri)
     signing_key = jwks_client.get_signing_key_from_jwt(id_token)
 
-    data: Dict[str, Any] = decode( # type: ignore
+    data: Dict[str, Any] = decode(  # type: ignore
         id_token,
-        signing_key.key, # type: ignore
+        signing_key.key,  # type: ignore
         algorithms=["RS256"],
         audience=audience,
         options={"verify_exp": False})

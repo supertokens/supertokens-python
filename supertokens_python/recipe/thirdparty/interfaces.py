@@ -83,7 +83,7 @@ class RecipeInterface(ABC):
 
 class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
-                 config: ThirdPartyConfig, recipe_implementation: RecipeInterface, providers: List[Provider],app_info: AppInfo, email_verification_recipe_implementation: EmailVerificationRecipeInterface):
+                 config: ThirdPartyConfig, recipe_implementation: RecipeInterface, providers: List[Provider], app_info: AppInfo, email_verification_recipe_implementation: EmailVerificationRecipeInterface):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
