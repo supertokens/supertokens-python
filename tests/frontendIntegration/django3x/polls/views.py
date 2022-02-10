@@ -27,8 +27,8 @@ from django.shortcuts import render
 from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
                                 init)
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session import (InputErrorHandlers, Session,
-                                               SessionRecipe)
+from supertokens_python.recipe.session import (InputErrorHandlers,
+                                               SessionContainer, SessionRecipe)
 from supertokens_python.recipe.session.asyncio import (
     create_new_session, get_session, revoke_all_sessions_for_user)
 from supertokens_python.recipe.session.framework.django.asyncio import \
@@ -197,7 +197,7 @@ def apis_override_session(param):
 def functions_override_session(param):
     original_create_new_session = param.create_new_session
 
-    async def create_new_session_custom(request: any, user_id: str, access_token_payload: Union[dict, None], session_data: Union[dict, None], user_context: any) -> Session:
+    async def create_new_session_custom(request: any, user_id: str, access_token_payload: Union[dict, None], session_data: Union[dict, None], user_context: any) -> SessionContainer:
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {

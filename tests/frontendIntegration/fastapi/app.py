@@ -31,7 +31,8 @@ from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import InputErrorHandlers
 from supertokens_python.recipe.session.asyncio import (
-    Session, SessionRecipe, create_new_session, revoke_all_sessions_for_user)
+    SessionContainer, SessionRecipe, create_new_session,
+    revoke_all_sessions_for_user)
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 
 from fastapi import Depends, FastAPI
@@ -98,7 +99,7 @@ def apis_override_session(param):
 def functions_override_session(param):
     original_create_new_session = param.create_new_session
 
-    async def create_new_session_custom(request: any, user_id: str, access_token_payload: Union[dict, None], session_data: Union[dict, None], user_context: any) -> Session:
+    async def create_new_session_custom(request: any, user_id: str, access_token_payload: Union[dict, None], session_data: Union[dict, None], user_context: any) -> SessionContainer:
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {
@@ -235,7 +236,7 @@ def options():
 
 
 @app.get('/')
-async def get_info(r_session: Session = Depends(verify_session())):
+async def get_info(r_session: SessionContainer = Depends(verify_session())):
     Test.increment_get_session()
     return PlainTextResponse(content=r_session.get_user_id(), headers={
         'Cache-Control': 'no-cache, private'
@@ -248,7 +249,7 @@ def update_options():
 
 
 @app.get('/update-jwt')
-async def update_jwt(sess: Session = Depends(verify_session())):
+async def update_jwt(sess: SessionContainer = Depends(verify_session())):
     Test.increment_get_session()
     return JSONResponse(content=sess.get_access_token_payload(), headers={
         'Cache-Control': 'no-cache, private'
@@ -256,7 +257,7 @@ async def update_jwt(sess: Session = Depends(verify_session())):
 
 
 @app.post('/update-jwt')
-async def update_jwt_post(request: Request, _session: Session = Depends(verify_session())):
+async def update_jwt_post(request: Request, _session: SessionContainer = Depends(verify_session())):
     await _session.update_access_token_payload(await request.json())
     Test.increment_get_session()
     return JSONResponse(content=_session.get_access_token_payload(), headers={
@@ -307,7 +308,7 @@ def logout_options():
 
 
 @app.post('/logout')
-async def logout(_session: Session = Depends(verify_session())):
+async def logout(_session: SessionContainer = Depends(verify_session())):
     await _session.revoke_session()
     return PlainTextResponse(content='success')
 
@@ -318,7 +319,7 @@ def revoke_all_options():
 
 
 @app.post('/revokeAll')
-async def revoke_all(_session: Session = Depends(verify_session())):
+async def revoke_all(_session: SessionContainer = Depends(verify_session())):
     await revoke_all_sessions_for_user(_session.get_user_id())
     return PlainTextResponse(content='success')
 
