@@ -133,8 +133,11 @@ class APIImplementation(APIInterface):
                 raise Exception("Should never come here")
             return SignInUpPostFieldErrorResponse(signinup_response.error)
 
+        if signinup_response.user is None:
+            raise Exception("Should never come here")
+
         if email_verified:
-            token_response = await api_options.email_verification_recipe_implementation.create_email_verification_token(user_id=user_info.user_id, email=email, user_context=user_context)
+            token_response = await api_options.email_verification_recipe_implementation.create_email_verification_token(user_id=signinup_response.user.user_id, email=signinup_response.user.email, user_context=user_context)
 
             if token_response.is_ok:
                 if token_response.token is None:
