@@ -11,7 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable, Union
 
 from . import exceptions  # type: ignore
 from .providers import Apple  # type: ignore
@@ -24,9 +26,13 @@ from .recipe import ThirdPartyRecipe
 from .utils import (InputEmailVerificationConfig, InputOverrideConfig,
                     SignInAndUpFeature)
 
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
 
 def init(sign_in_and_up_feature: SignInAndUpFeature,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[InputOverrideConfig, None] = None):
+         override: Union[InputOverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
     return ThirdPartyRecipe.init(
         sign_in_and_up_feature, email_verification_feature, override)

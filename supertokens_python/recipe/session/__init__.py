@@ -11,12 +11,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable, Union
 
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
+
+if TYPE_CHECKING:
+    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import AppInfo
 
 from . import exceptions  # type: ignore
 from .interfaces import SessionContainer  # type: ignore
@@ -33,7 +39,7 @@ def init(cookie_domain: Union[str, None] = None,
                                   "VIA_CUSTOM_HEADER", "NONE"], None] = None,
          error_handlers: Union[InputErrorHandlers, None] = None,
          override: Union[InputOverrideConfig, None] = None,
-         jwt: Union[JWTConfig, None] = None):
+         jwt: Union[JWTConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
     return SessionRecipe.init(cookie_domain,
                               cookie_secure,
                               cookie_same_site,

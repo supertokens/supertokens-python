@@ -11,36 +11,46 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import json
 import os
-from django.http import HttpResponse, JsonResponse
+
 from django.conf import settings
-from supertokens_python.recipe.passwordless import (
-    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig,
-    ContactPhoneOnlyConfig, CreateAndSendCustomEmailParameters, PasswordlessRecipe,
-    CreateAndSendCustomTextMessageParameters
-)
-import typing
-from supertokens_python import init, SupertokensConfig, InputAppInfo, Supertokens
-from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword, passwordless
-from supertokens_python.recipe.emailpassword import EmailPasswordRecipe, InputFormField
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from httpx import AsyncClient
+from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
+                                init)
+from supertokens_python.recipe import (emailpassword, passwordless, session,
+                                       thirdparty, thirdpartyemailpassword)
+from supertokens_python.recipe.emailpassword import (EmailPasswordRecipe,
+                                                     InputFormField)
+from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
-from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.thirdpartyemailpassword import Github, Google, Facebook, ThirdPartyEmailPasswordRecipe
+from supertokens_python.recipe.passwordless import (
+    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig,
+    CreateAndSendCustomEmailParameters,
+    CreateAndSendCustomTextMessageParameters, PasswordlessRecipe)
+from supertokens_python.recipe.session import SessionContainer, SessionRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
-import json
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
-from httpx import AsyncClient
+from supertokens_python.recipe.thirdparty.types import (
+    AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
+from supertokens_python.recipe.thirdpartyemailpassword import (
+    Facebook, Github, Google, ThirdPartyEmailPasswordRecipe)
+
 mode = os.environ.get('APP_MODE', 'asgi')
 if mode == 'asgi':
-    from supertokens_python.recipe.session.framework.django.asyncio import verify_session
+    from supertokens_python.recipe.session.framework.django.asyncio import \
+        verify_session
 else:
-    from supertokens_python.recipe.session.framework.django.syncio import verify_session
+    from supertokens_python.recipe.session.framework.django.syncio import \
+        verify_session
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
+
+from typing import Any, Dict, List, Union
 
 
 class CustomAuth0Provider(Provider):
@@ -51,7 +61,7 @@ class CustomAuth0Provider(Provider):
         self.authorisation_redirect_url = "https://" + self.domain + "/authorize"
         self.access_token_api_url = "https://" + self.domain + "/oauth/token"
 
-    async def get_profile_info(self, auth_code_response: any) -> UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any]) -> UserInfo:
         access_token: str = auth_code_response['access_token']
         headers = {
             'Authorization': 'Bearer ' + access_token,
@@ -64,7 +74,7 @@ class CustomAuth0Provider(Provider):
                 user_info['name'], True))
 
     def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
-        params = {
+        params: Dict[str, Any] = {
             'scope': 'openid profile',
             'response_type': 'code',
             'client_id': self.client_id,
@@ -84,9 +94,25 @@ class CustomAuth0Provider(Provider):
         return AccessTokenAPI(self.access_token_api_url, params)
 
 
-async def save_code(param: typing.Union[CreateAndSendCustomEmailParameters, CreateAndSendCustomTextMessageParameters], _):
-    code_store = getattr(settings, "CODE_STORE", None)
-    codes = []
+async def save_code_text(param: CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
+    code_store: Union[None, Dict[str, List[Dict[str, Any]]]] = getattr(settings, "CODE_STORE", None)
+    codes: Union[None, List[Dict[str, Any]]] = []
+    if code_store is not None:
+        codes = code_store.get(param.pre_auth_session_id)
+    else:
+        code_store = dict()
+    if codes is None:
+        codes = []
+    codes.append({
+        'urlWithLinkCode': param.url_with_link_code,
+        'userInputCode': param.user_input_code
+    })
+    code_store[param.pre_auth_session_id] = codes
+    setattr(settings, "CODE_STORE", code_store)
+
+async def save_code_email(param: CreateAndSendCustomEmailParameters, _: Dict[str, Any]):
+    code_store: Union[None, Dict[str, List[Dict[str, Any]]]] = getattr(settings, "CODE_STORE", None)
+    codes: Union[None, List[Dict[str, Any]]] = []
     if code_store is not None:
         codes = code_store.get(param.pre_auth_session_id)
     else:
@@ -103,11 +129,11 @@ async def save_code(param: typing.Union[CreateAndSendCustomEmailParameters, Crea
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 
-async def create_and_send_custom_email(_, url_with_token, __):
+async def create_and_send_custom_email(_: User, url_with_token: str, __: Dict[str, Any]) -> None:
     setattr(settings, "LATEST_URL_WITH_TOKEN", url_with_token)
 
 
-async def validate_age(value):
+async def validate_age(value: Any):
     try:
         if int(value) < 18:
             return "You must be over 18 to register"
@@ -135,8 +161,8 @@ def get_website_domain():
     return 'http://localhost:' + get_website_port()
 
 
-def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = None,
-                flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = None):
+def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']] = None,
+                flow_type: Union[None, Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']] = None):
     PasswordlessRecipe.reset()
     JWTRecipe.reset()
     EmailVerificationRecipe.reset()
@@ -150,29 +176,29 @@ def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = No
         if contact_method == 'PHONE':
             passwordless_init = passwordless.init(
                 contact_config=ContactPhoneOnlyConfig(
-                    create_and_send_custom_text_message=save_code
+                    create_and_send_custom_text_message=save_code_text
                 ),
                 flow_type=flow_type
             )
         elif contact_method == 'EMAIL':
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOnlyConfig(
-                    create_and_send_custom_email=save_code
+                    create_and_send_custom_email=save_code_email
                 ),
                 flow_type=flow_type
             )
         else:
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOrPhoneConfig(
-                    create_and_send_custom_email=save_code,
-                    create_and_send_custom_text_message=save_code
+                    create_and_send_custom_email=save_code_email,
+                    create_and_send_custom_text_message=save_code_text
                 ),
                 flow_type=flow_type
             )
     else:
         passwordless_init = passwordless.init(
             contact_config=ContactPhoneOnlyConfig(
-                create_and_send_custom_text_message=save_code
+                create_and_send_custom_text_message=save_code_text
             ),
             flow_type='USER_INPUT_CODE_AND_MAGIC_LINK'
         )
@@ -191,18 +217,18 @@ def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = No
         thirdparty.init(
             sign_in_and_up_feature=thirdparty.SignInAndUpFeature([
                 Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'), # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
                 ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'), # type: ignore
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET') # type: ignore
                 ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'),
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'), # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET') # type: ignore
                 ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'),
-                    domain=os.environ.get('AUTH0_DOMAIN'),
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')
+                    client_id=os.environ.get('AUTH0_CLIENT_ID'), # type: ignore
+                    domain=os.environ.get('AUTH0_DOMAIN'), # type: ignore
+                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET') # type: ignore
                 )
             ])
         ),
@@ -211,18 +237,18 @@ def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = No
                 form_fields),
             providers=[
                 Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'), # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
                 ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'), # type: ignore
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET') # type: ignore
                 ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'),
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'), # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET') # type: ignore
                 ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'),
-                    domain=os.environ.get('AUTH0_DOMAIN'),
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')
+                    client_id=os.environ.get('AUTH0_CLIENT_ID'), # type: ignore
+                    domain=os.environ.get('AUTH0_DOMAIN'), # type: ignore
+                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET') # type: ignore
                 )
             ]
         ),
@@ -236,7 +262,7 @@ def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = No
             website_domain=get_website_domain()
         ),
         framework='django',
-        mode=os.environ.get('APP_MODE', 'asgi'),
+        mode=os.environ.get('APP_MODE', 'asgi'), # type: ignore
         recipe_list=recipe_list,
         telemetry=False
     )
@@ -244,8 +270,8 @@ def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = No
 
 if mode == 'asgi':
     @verify_session()
-    async def session_info(request):
-        session_ = request.supertokens
+    async def session_info(request: HttpRequest):
+        session_: SessionContainer = request.supertokens # type: ignore
         return JsonResponse({
             'sessionHandle': session_.get_handle(),
             'userId': session_.get_user_id(),
@@ -254,8 +280,8 @@ if mode == 'asgi':
         })
 else:
     @verify_session()
-    def session_info(request):
-        session_ = request.supertokens
+    def session_info(request: HttpRequest):
+        session_: SessionContainer = request.supertokens # type: ignore
         return JsonResponse({
             'sessionHandle': session_.get_handle(),
             'userId': session_.get_user_id(),
@@ -264,18 +290,18 @@ else:
         })
 
 
-def ping(request):
+def ping(request: HttpRequest):
     return HttpResponse('success')
 
 
-def token(request):
+def token(request: HttpRequest):
     latest_url_with_token = getattr(settings, "LATEST_URL_WITH_TOKEN", None)
     return JsonResponse({
         'latestURLWithToken': latest_url_with_token
     })
 
 
-def test_get_device(request):
+def test_get_device(request: HttpRequest):
     pre_auth_session_id = request.GET.get('preAuthSessionId', None)
     if pre_auth_session_id is None:
         return HttpResponse('')
@@ -291,7 +317,7 @@ def test_get_device(request):
     })
 
 
-def test_set_flow(request):
+def test_set_flow(request: HttpRequest):
     body = json.loads(request.body)
     contact_method = body['contactMethod']
     flow_type = body['flowType']
@@ -299,12 +325,12 @@ def test_set_flow(request):
     return HttpResponse('')
 
 
-def before_each(request):
+def before_each(request: HttpRequest):
     setattr(settings, "CODE_STORE", dict())
     return HttpResponse('')
 
 
-def test_feature_flags(request):
+def test_feature_flags(request: HttpRequest):
     return JsonResponse({
         'available': ['passwordless']
     })

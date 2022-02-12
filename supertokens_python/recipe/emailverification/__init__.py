@@ -11,11 +11,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable
+
 from . import exceptions  # type: ignore
 from .recipe import EmailVerificationRecipe
 from .utils import OverrideConfig as InputOverrideConfig  # type: ignore
 from .utils import ParentRecipeEmailVerificationConfig
 
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
 
-def init(config: ParentRecipeEmailVerificationConfig):
+    from ...recipe_module import RecipeModule
+
+def init(config: ParentRecipeEmailVerificationConfig) -> Callable[[AppInfo], RecipeModule]:
     return EmailVerificationRecipe.init(config)

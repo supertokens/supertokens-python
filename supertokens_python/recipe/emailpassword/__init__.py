@@ -11,7 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable, Union
 
 from . import exceptions  # type: ignore
 from .recipe import EmailPasswordRecipe
@@ -19,12 +21,16 @@ from .utils import InputFormField  # type: ignore
 from .utils import (InputEmailVerificationConfig, InputOverrideConfig,
                     InputResetPasswordUsingTokenFeature, InputSignUpFeature)
 
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
 
 def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
          reset_password_using_token_feature: Union[
              InputResetPasswordUsingTokenFeature, None] = None,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[InputOverrideConfig, None] = None):
+         override: Union[InputOverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
     return EmailPasswordRecipe.init(
         sign_up_feature,
         reset_password_using_token_feature,
