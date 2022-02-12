@@ -14,22 +14,23 @@
 import os
 import typing
 
-import uvicorn
+import uvicorn  # type: ignore
 from dotenv import load_dotenv
+from fastapi import Depends, FastAPI
+from fastapi.requests import Request
+from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.datastructures import Headers
 from starlette.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 from starlette.types import ASGIApp
 
-from fastapi import Depends, FastAPI
-from fastapi.requests import Request
-from fastapi.responses import JSONResponse, PlainTextResponse
-
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
+
+from typing import Any, Dict, List, Union
 
 from httpx import AsyncClient
 from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
@@ -38,7 +39,7 @@ from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.recipe import (emailpassword, passwordless, session,
                                        thirdparty, thirdpartyemailpassword)
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
-from supertokens_python.recipe.emailpassword.types import InputFormField
+from supertokens_python.recipe.emailpassword.types import InputFormField, User
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
 from supertokens_python.recipe.passwordless import (
@@ -61,10 +62,10 @@ app = FastAPI(debug=True)
 app.add_middleware(Middleware)
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
-code_store = dict()
+code_store: Dict[str, List[Dict[str, Any]]] = {}
 
 
-async def save_code(param: typing.Union[CreateAndSendCustomEmailParameters, CreateAndSendCustomTextMessageParameters], _):
+async def save_code_email(param: CreateAndSendCustomEmailParameters, _: Dict[str, Any]):
     codes = code_store.get(param.pre_auth_session_id)
     if codes is None:
         codes = []
@@ -74,6 +75,15 @@ async def save_code(param: typing.Union[CreateAndSendCustomEmailParameters, Crea
     })
     code_store[param.pre_auth_session_id] = codes
 
+async def save_code_text(param: CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
+    codes = code_store.get(param.pre_auth_session_id)
+    if codes is None:
+        codes = []
+    codes.append({
+        'urlWithLinkCode': param.url_with_link_code,
+        'userInputCode': param.user_input_code
+    })
+    code_store[param.pre_auth_session_id] = codes
 
 def get_api_port():
     return '8083'
@@ -90,12 +100,12 @@ def get_website_domain():
 latest_url_with_token = None
 
 
-async def create_and_send_custom_email(_, url_with_token, __):
+async def create_and_send_custom_email(_: User, url_with_token: str, __: Dict[str, Any]) -> None:
     global latest_url_with_token
     latest_url_with_token = url_with_token
 
 
-async def validate_age(value):
+async def validate_age(value: Any):
     try:
         if int(value) < 18:
             return "You must be over 18 to register"
@@ -119,7 +129,7 @@ class CustomAuth0Provider(Provider):
         self.authorisation_redirect_url = "https://" + self.domain + "/authorize"
         self.access_token_api_url = "https://" + self.domain + "/oauth/token"
 
-    async def get_profile_info(self, auth_code_response: any) -> UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any]) -> UserInfo:
         access_token: str = auth_code_response['access_token']
         headers = {
             'Authorization': 'Bearer ' + access_token,
@@ -132,7 +142,7 @@ class CustomAuth0Provider(Provider):
                 user_info['name'], True))
 
     def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
-        params = {
+        params: Dict[str, Any] = {
             'scope': 'openid profile',
             'response_type': 'code',
             'client_id': self.client_id,
@@ -152,8 +162,8 @@ class CustomAuth0Provider(Provider):
         return AccessTokenAPI(self.access_token_api_url, params)
 
 
-def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = None,
-                flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = None):
+def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']] = None,
+                flow_type: Union[None, Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']] = None):
     PasswordlessRecipe.reset()
     JWTRecipe.reset()
     EmailVerificationRecipe.reset()
@@ -167,29 +177,29 @@ def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = No
         if contact_method == 'PHONE':
             passwordless_init = passwordless.init(
                 contact_config=ContactPhoneOnlyConfig(
-                    create_and_send_custom_text_message=save_code
+                    create_and_send_custom_text_message=save_code_text
                 ),
                 flow_type=flow_type
             )
         elif contact_method == 'EMAIL':
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOnlyConfig(
-                    create_and_send_custom_email=save_code
+                    create_and_send_custom_email=save_code_email
                 ),
                 flow_type=flow_type
             )
         else:
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOrPhoneConfig(
-                    create_and_send_custom_email=save_code,
-                    create_and_send_custom_text_message=save_code
+                    create_and_send_custom_email=save_code_email,
+                    create_and_send_custom_text_message=save_code_text
                 ),
                 flow_type=flow_type
             )
     else:
         passwordless_init = passwordless.init(
             contact_config=ContactPhoneOnlyConfig(
-                create_and_send_custom_text_message=save_code
+                create_and_send_custom_text_message=save_code_text
             ),
             flow_type='USER_INPUT_CODE_AND_MAGIC_LINK'
         )
@@ -208,18 +218,18 @@ def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = No
         thirdparty.init(
             sign_in_and_up_feature=thirdparty.SignInAndUpFeature([
                 Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'), # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
                 ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'), # type: ignore
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET') # type: ignore
                 ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'),
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'), # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET') # type: ignore
                 ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'),
-                    domain=os.environ.get('AUTH0_DOMAIN'),
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')
+                    client_id=os.environ.get('AUTH0_CLIENT_ID'), # type: ignore
+                    domain=os.environ.get('AUTH0_DOMAIN'), # type: ignore
+                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET') # type: ignore
                 )
             ])
         ),
@@ -228,18 +238,18 @@ def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = No
                 form_fields),
             providers=[
                 Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'), # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
                 ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'), # type: ignore
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET') # type: ignore
                 ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'),
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'), # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET') # type: ignore
                 ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'),
-                    domain=os.environ.get('AUTH0_DOMAIN'),
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')
+                    client_id=os.environ.get('AUTH0_CLIENT_ID'), # type: ignore
+                    domain=os.environ.get('AUTH0_DOMAIN'), # type: ignore
+                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET') # type: ignore
                 )
             ]
         ),
@@ -261,9 +271,9 @@ def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = No
 custom_init()
 
 
-@app.exception_handler(Exception)
-async def exception_handler(a, b):
-    print(a, b)
+@app.exception_handler(Exception) # type: ignore
+async def exception_handler(a, b): # type: ignore
+    print(a, b) # type: ignore
     return JSONResponse(status_code=500, content={})
 
 
@@ -328,8 +338,8 @@ async def get_token():
     })
 
 
-@app.exception_handler(405)
-def f_405(_, e):
+@app.exception_handler(405) # type: ignore
+def f_405(_, e): # type: ignore
     return PlainTextResponse('', status_code=404)
 
 
@@ -344,16 +354,15 @@ class CustomCORSMiddleware(CORSMiddleware):
         allow_methods: typing.Sequence[str] = ("GET",),
         allow_headers: typing.Sequence[str] = (),
         allow_credentials: bool = False,
-        allow_origin_regex: str = None,
+        allow_origin_regex: Union[None, str] = None,
         expose_headers: typing.Sequence[str] = (),
         max_age: int = 600,
     ) -> None:
-        super().__init__(app_, allow_origins, allow_methods, allow_headers, allow_credentials, allow_origin_regex,
-                         expose_headers, max_age)
+        super().__init__(app_, allow_origins, allow_methods, allow_headers, allow_credentials, allow_origin_regex, expose_headers, max_age) # type: ignore
 
     def preflight_response(self, request_headers: Headers) -> Response:
         result = super().preflight_response(request_headers)
-        if result.status_code == 200:
+        if result.status_code == 200: # type: ignore
             result.headers.__delitem__('content-type')
             result.headers.__delitem__('content-length')
             return Response(status_code=204, headers=dict(result.headers))
@@ -363,7 +372,7 @@ class CustomCORSMiddleware(CORSMiddleware):
 # cors middleware added like this due to issue with add_middleware
 # ref: https://github.com/tiangolo/fastapi/issues/1663
 
-app = CustomCORSMiddleware(
+app = CustomCORSMiddleware( # type: ignore
     app_=app,
     allow_origins=[
         get_website_domain()
@@ -374,4 +383,4 @@ app = CustomCORSMiddleware(
 )
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=get_api_port())
+    uvicorn.run(app, host="0.0.0.0", port=get_api_port()) # type: ignore
