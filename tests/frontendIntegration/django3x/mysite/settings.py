@@ -48,8 +48,9 @@ CORS_ALLOW_METHODS = [
     "POST",
     "PUT",
 ]
+from typing import List
 
-CORS_ALLOW_HEADERS = list(default_headers) + [
+CORS_ALLOW_HEADERS: List[str] = list(default_headers) + [ # type: ignore
     "Content-Type",
     "rid",
     "fdi-version",

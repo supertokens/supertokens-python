@@ -5,7 +5,7 @@
 # actions, and settings.
 
 
-def print_hi(name):
+def print_hi(_):
     pass
 
 

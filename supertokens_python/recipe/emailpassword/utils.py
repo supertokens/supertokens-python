@@ -195,9 +195,9 @@ class ResetPasswordUsingTokenFeature:
 class InputEmailVerificationConfig:
     def __init__(self,
                  get_email_verification_url: Union[Callable[[
-                     User, Any], Awaitable[str]], None] = None,
+                     User, Dict[str, Any]], Awaitable[str]], None] = None,
                  create_and_send_custom_email: Union[Callable[[
-                     User, str, Any], Awaitable[None]], None] = None
+                     User, str, Dict[str, Any]], Awaitable[None]], None] = None
                  ):
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email

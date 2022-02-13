@@ -30,13 +30,13 @@ works = False
 signUpContextWorks = False
 
 
-def setup_function(f):
+def setup_function(f): # type: ignore
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f):
+def teardown_function(f): # type: ignore
     reset()
     clean_st()
 
@@ -48,6 +48,11 @@ async def driver_config_client():
 
     return TestClient(app)
 
+from typing import Any, Dict, List, Union
+
+from supertokens_python.recipe.emailpassword.interfaces import APIOptions
+from supertokens_python.recipe.emailpassword.types import FormField
+
 
 @mark.asyncio
 async def test_user_context(driver_config_client: TestClient):
@@ -57,16 +62,18 @@ async def test_user_context(driver_config_client: TestClient):
     def apis_override_email_password(param: APIInterface):
         og_sign_in_post = param.sign_in_post
 
-        async def sign_in_post(form_fields, api_options, context):
-            context = {
+        async def sign_in_post(form_fields: List[FormField],
+                           api_options: APIOptions,
+                           user_context: Dict[str, Any]):
+            user_context = {
                 'preSignInPOST': True
             }
-            response = await og_sign_in_post(form_fields, api_options, context)
-            if 'preSignInPOST' in context and \
-                    'preSignIn' in context and \
-                    'preCreateNewSession' in context and \
-                    'postCreateNewSession' in context and \
-                    'postSignIn' in context:
+            response = await og_sign_in_post(form_fields, api_options, user_context)
+            if 'preSignInPOST' in user_context and \
+                    'preSignIn' in user_context and \
+                    'preCreateNewSession' in user_context and \
+                    'postCreateNewSession' in user_context and \
+                    'postSignIn' in user_context:
                 global works
                 works = True
             return response
@@ -78,20 +85,20 @@ async def test_user_context(driver_config_client: TestClient):
         og_sign_in = param.sign_in
         og_sign_up = param.sign_up
 
-        async def sign_up_(email, password, context):
-            if 'manualCall' in context:
+        async def sign_up_(email: str, password: str, user_context: Dict[str, Any]):
+            if 'manualCall' in user_context:
                 global signUpContextWorks
                 signUpContextWorks = True
-            response = await og_sign_up(email, password, context)
+            response = await og_sign_up(email, password, user_context)
             return response
 
-        async def sign_in(email, password, context):
-            if 'preSignInPOST' in context:
-                context['preSignIn'] = True
-            response = await og_sign_in(email, password, context)
-            if 'preSignInPOST' in context and \
-                    'preSignIn' in context:
-                context['postSignIn'] = True
+        async def sign_in(email: str, password: str, user_context: Dict[str, Any]):
+            if 'preSignInPOST' in user_context:
+                user_context['preSignIn'] = True
+            response = await og_sign_in(email, password, user_context)
+            if 'preSignInPOST' in user_context and \
+                    'preSignIn' in user_context:
+                user_context['postSignIn'] = True
             return response
 
         param.sign_in = sign_in
@@ -101,17 +108,19 @@ async def test_user_context(driver_config_client: TestClient):
     def functions_override_session(param: SRecipeInterface):
         og_create_new_session = param.create_new_session
 
-        async def create_new_session(request, user_id, _, __, context):
-            if 'preSignInPOST' in context and \
-                    'preSignIn' in context and \
-                    'postSignIn' in context:
-                context['preCreateNewSession'] = True
-            response = await og_create_new_session(request, user_id, _, __, context)
-            if 'preSignInPOST' in context and \
-                    'preSignIn' in context and \
-                    'postSignIn' in context and \
-                    'preCreateNewSession' in context:
-                context['postCreateNewSession'] = True
+        async def create_new_session(request: Any, user_id: str,
+                                 access_token_payload: Union[None, Dict[str, Any]],
+                                 session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]):
+            if 'preSignInPOST' in user_context and \
+                    'preSignIn' in user_context and \
+                    'postSignIn' in user_context:
+                user_context['preCreateNewSession'] = True
+            response = await og_create_new_session(request, user_id, access_token_payload, session_data, user_context)
+            if 'preSignInPOST' in user_context and \
+                    'preSignIn' in user_context and \
+                    'postSignIn' in user_context and \
+                    'preCreateNewSession' in user_context:
+                user_context['postCreateNewSession'] = True
             return response
 
         param.create_new_session = create_new_session

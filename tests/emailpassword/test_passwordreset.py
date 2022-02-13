@@ -173,8 +173,8 @@ async def test_that_generated_password_link_is_correct(driver_config_client: Tes
 
     assert response_1.status_code == 200
     assert reset_url == "http://supertokens.io/auth/reset-password"
-    assert token_info is not None and "token=" in token_info
-    assert rid_info is not None and "rid=emailpassword" in rid_info
+    assert token_info is not None and "token=" in token_info # type: ignore
+    assert rid_info is not None and "rid=emailpassword" in rid_info # type: ignore
 
 
 @mark.asyncio

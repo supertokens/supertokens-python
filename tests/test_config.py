@@ -21,13 +21,13 @@ from supertokens_python.recipe.session import SessionRecipe
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
-def setup_function(f):
+def setup_function(f): # type: ignore
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f):
+def teardown_function(f): # type: ignore
     reset()
     clean_st()
 
@@ -254,7 +254,7 @@ async def test_same_site_values():
             ),
             framework='fastapi',
             recipe_list=[session.init(
-                cookie_same_site='random'
+                cookie_same_site='random' # type: ignore
             )]
         )
         test_passed = False
@@ -276,7 +276,7 @@ async def test_same_site_values():
             ),
             framework='fastapi',
             recipe_list=[session.init(
-                cookie_same_site=' '
+                cookie_same_site=' ' # type: ignore
             )]
         )
         test_passed = False
@@ -561,7 +561,7 @@ def testing_super_recipe_tests():
             self.o_get_user()
 
     class DerivedEP(EP):
-        def __init__(self, tpep):
+        def __init__(self, tpep: TPEP):
             super().__init__()
             self.tpep = tpep
 
@@ -571,7 +571,7 @@ def testing_super_recipe_tests():
         def get_user(self):
             self.tpep.get_users()
 
-    def override(tpep):
+    def override(tpep: TPEP):
         o_sign_up = tpep.sign_up
         o_get_users = tpep.get_users
 
@@ -582,7 +582,7 @@ def testing_super_recipe_tests():
             nonlocal m
             m = 5
             o_get_users()
-            if m == 1:
+            if m == 1:  # type: ignore
                 m = 2
 
         tpep.sign_up = sign_up
