@@ -16,46 +16,62 @@ import json
 
 from _pytest.fixtures import fixture
 from flask import Flask, jsonify, make_response, request
-from supertokens_python.recipe import emailpassword
-from supertokens_python.recipe.emailpassword.interfaces import APIOptions
-
-from supertokens_python import init, SupertokensConfig, InputAppInfo
+from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.flask import Middleware
-from supertokens_python.recipe import session
+from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe.emailpassword.interfaces import APIOptions
 from supertokens_python.recipe.session.framework.flask import verify_session
-from supertokens_python.recipe.session.syncio import create_new_session, refresh_session, get_session, revoke_session
+from supertokens_python.recipe.session.syncio import (create_new_session,
+                                                      get_session,
+                                                      refresh_session,
+                                                      revoke_session)
 from tests.Flask.utils import extract_all_cookies
-from tests.utils import set_key_value_in_config, TEST_COOKIE_SAME_SITE_CONFIG_KEY, TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, \
-    TEST_ACCESS_TOKEN_MAX_AGE_VALUE, TEST_ACCESS_TOKEN_PATH_CONFIG_KEY, TEST_ACCESS_TOKEN_PATH_VALUE, \
-    TEST_COOKIE_DOMAIN_CONFIG_KEY, TEST_COOKIE_DOMAIN_VALUE, TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY, \
-    TEST_REFRESH_TOKEN_MAX_AGE_VALUE, TEST_REFRESH_TOKEN_PATH_CONFIG_KEY, TEST_REFRESH_TOKEN_PATH_KEY_VALUE, \
-    TEST_COOKIE_SECURE_CONFIG_KEY, TEST_DRIVER_CONFIG_COOKIE_DOMAIN, \
-    TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH, TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH, TEST_DRIVER_CONFIG_COOKIE_SAME_SITE, \
-    start_st, reset, clean_st, setup_st
+from tests.utils import (TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
+                         TEST_ACCESS_TOKEN_MAX_AGE_VALUE,
+                         TEST_ACCESS_TOKEN_PATH_CONFIG_KEY,
+                         TEST_ACCESS_TOKEN_PATH_VALUE,
+                         TEST_COOKIE_DOMAIN_CONFIG_KEY,
+                         TEST_COOKIE_DOMAIN_VALUE,
+                         TEST_COOKIE_SAME_SITE_CONFIG_KEY,
+                         TEST_COOKIE_SECURE_CONFIG_KEY,
+                         TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH,
+                         TEST_DRIVER_CONFIG_COOKIE_DOMAIN,
+                         TEST_DRIVER_CONFIG_COOKIE_SAME_SITE,
+                         TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH,
+                         TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY,
+                         TEST_REFRESH_TOKEN_MAX_AGE_VALUE,
+                         TEST_REFRESH_TOKEN_PATH_CONFIG_KEY,
+                         TEST_REFRESH_TOKEN_PATH_KEY_VALUE, clean_st, reset,
+                         set_key_value_in_config, setup_st, start_st)
 
 
-def setup_function(f):
+def setup_function(f): # type: ignore
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f):
+def teardown_function(f): # type: ignore
     reset()
     clean_st()
+
+from typing import Any, Dict, Union
+
+from supertokens_python.recipe.emailpassword.interfaces import APIInterface
+from supertokens_python.recipe.session import SessionContainer
 
 
 @fixture(scope='function')
 def driver_config_app():
-    def override_email_password_apis(original_implementation):
+    def override_email_password_apis(original_implementation: APIInterface):
 
         original_func = original_implementation.email_exists_get
 
-        async def email_exists_get(email: str, api_options: APIOptions, _):
+        async def email_exists_get(email: str, api_options: APIOptions, user_context: Dict[str, Any]):
             response_dict = {'custom': True}
             api_options.response.set_status_code(203)
             api_options.response.set_json_content(response_dict)
-            return await original_func(email, api_options, _)
+            return await original_func(email, api_options, user_context)
 
         original_implementation.email_exists_get = email_exists_get
         return original_implementation
@@ -84,50 +100,54 @@ def driver_config_app():
         )]
     )
 
-    @app.route('/test')
-    def t():
+    @app.route('/test') # type: ignore
+    def t(): # type: ignore
         return jsonify({})
 
-    @app.route('/login')
-    def login():
+    @app.route('/login') # type: ignore
+    def login(): # type: ignore
         user_id = 'userId'
         create_new_session(request, user_id, {}, {})
 
         return jsonify({'userId': user_id, 'session': 'ssss'})
 
-    @app.route('/refresh', methods=['POST'])
-    def custom_refresh():
+    @app.route('/refresh', methods=['POST']) # type: ignore
+    def custom_refresh(): # type: ignore
         response = make_response(jsonify({}))
         refresh_session(request)
         return response
 
-    @app.route('/info', methods=['GET', 'OPTIONS'])
-    def custom_info():
-        if request.method == 'OPTIONS':
+    @app.route('/info', methods=['GET', 'OPTIONS']) # type: ignore
+    def custom_info(): # type: ignore
+        if request.method == 'OPTIONS': # type: ignore
             return jsonify({'method': 'option'})
         response = make_response(jsonify({}))
         get_session(request, True)
         return response
 
-    @app.route('/handle', methods=['GET', 'OPTIONS'])
-    def custom_handle_api():
-        if request.method == 'OPTIONS':
+    @app.route('/handle', methods=['GET', 'OPTIONS']) # type: ignore
+    def custom_handle_api(): # type: ignore
+        if request.method == 'OPTIONS': # type: ignore
             return jsonify({'method': 'option'})
-        session = get_session(request, True)
-        return jsonify({'s': session['user_id']})
+        session: Union[None, SessionContainer] = get_session(request, True)
+        if session is None:
+            raise Exception("Should never come here")
+        return jsonify({'s': session.get_user_id()})
 
-    @app.route('/logout', methods=['POST'])
+    @app.route('/logout', methods=['POST']) # type: ignore
     @verify_session(session_required=False)
-    def custom_logout():
+    def custom_logout(): # type: ignore
         response = make_response(jsonify({}))
-        supertokens_session = get_session(request, False)
-        revoke_session(supertokens_session['user_id'])
+        session: Union[None, SessionContainer] = get_session(request, True)
+        if session is None:
+            raise Exception("Should never come here")
+        revoke_session(session.get_user_id())
         return response
 
     return app
 
 
-def test_cookie_login_and_refresh(driver_config_app):
+def test_cookie_login_and_refresh(driver_config_app: Any): 
     start_st()
 
     set_key_value_in_config(
@@ -150,7 +170,7 @@ def test_cookie_login_and_refresh(driver_config_app):
         TEST_REFRESH_TOKEN_PATH_KEY_VALUE)
     set_key_value_in_config(
         TEST_COOKIE_SECURE_CONFIG_KEY,
-        False)
+        "false")
 
     response_1 = driver_config_app.test_client().get('/login')
     cookies_1 = extract_all_cookies(response_1)
@@ -205,7 +225,7 @@ def test_cookie_login_and_refresh(driver_config_app):
     ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
 
-def test_login_refresh_no_csrf(driver_config_app):
+def test_login_refresh_no_csrf(driver_config_app: Any):
     start_st()
 
     set_key_value_in_config(
@@ -228,7 +248,7 @@ def test_login_refresh_no_csrf(driver_config_app):
         TEST_REFRESH_TOKEN_PATH_KEY_VALUE)
     set_key_value_in_config(
         TEST_COOKIE_SECURE_CONFIG_KEY,
-        False)
+        "false")
 
     response_1 = driver_config_app.test_client().get('/login')
     cookies_1 = extract_all_cookies(response_1)
@@ -270,7 +290,7 @@ def test_login_refresh_no_csrf(driver_config_app):
     assert result.status_code == 401
 
 
-def test_login_logout(driver_config_app):
+def test_login_logout(driver_config_app: Any):
     start_st()
 
     set_key_value_in_config(
@@ -293,7 +313,7 @@ def test_login_logout(driver_config_app):
         TEST_REFRESH_TOKEN_PATH_KEY_VALUE)
     set_key_value_in_config(
         TEST_COOKIE_SECURE_CONFIG_KEY,
-        False)
+        "false")
 
     response_1 = driver_config_app.test_client().get('/login')
     cookies_1 = extract_all_cookies(response_1)
@@ -343,7 +363,7 @@ def test_login_logout(driver_config_app):
     assert response_3.status_code == 200
 
 
-def test_login_handle(driver_config_app):
+def test_login_handle(driver_config_app: Any):
     start_st()
 
     set_key_value_in_config(
@@ -366,7 +386,7 @@ def test_login_handle(driver_config_app):
         TEST_REFRESH_TOKEN_PATH_KEY_VALUE)
     set_key_value_in_config(
         TEST_COOKIE_SECURE_CONFIG_KEY,
-        False)
+        "false")
 
     response_1 = driver_config_app.test_client().get('/login')
     cookies_1 = extract_all_cookies(response_1)
@@ -390,7 +410,7 @@ def test_login_handle(driver_config_app):
     assert "s" in response_dict
 
 
-def test_custom_response(driver_config_app):
+def test_custom_response(driver_config_app: Any):
     start_st()
 
     test_client = driver_config_app.test_client()
