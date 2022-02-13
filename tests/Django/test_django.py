@@ -13,21 +13,21 @@
 # under the License.
 
 import json
+from typing import Any, Dict
 
-from django.http import JsonResponse
-from django.test import TestCase, RequestFactory
-
-from supertokens_python import init, SupertokensConfig, InputAppInfo
-from supertokens_python.recipe import session
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.test import RequestFactory, TestCase
+from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.django import middleware
-from supertokens_python.recipe import emailpassword
+from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe.session.asyncio import (create_new_session,
+                                                       get_session,
+                                                       refresh_session)
+from tests.utils import clean_st, reset, setup_st, start_st
 
-from supertokens_python.recipe.session.asyncio import create_new_session, refresh_session, get_session
-from tests.utils import start_st, reset, clean_st, setup_st
 
-
-def get_cookies(response) -> dict:
-    cookies = dict()
+def get_cookies(response: HttpResponse) -> Dict[str, Any]:
+    cookies: Dict[str, Any] = dict()
     for key, morsel in response.cookies.items():
         cookies[key] = {
             'value': morsel.value,
@@ -45,28 +45,38 @@ def get_cookies(response) -> dict:
     return cookies
 
 
-async def create_new_session_view(request):
+async def create_new_session_view(request: HttpRequest):
     await create_new_session(request, 'user_id')
     return JsonResponse({'foo': 'bar'})
 
 
-async def refresh_view(request):
+async def refresh_view(request: HttpRequest):
     await refresh_session(request)
     return JsonResponse({'foo': 'bar'})
 
 
-async def custom_response_view(request):
+async def custom_response_view(request: HttpRequest):
     pass
 
+from typing import Union
 
-async def logout_view(request):
-    session = await get_session(request, True)
+from supertokens_python.recipe.emailpassword.interfaces import (APIInterface,
+                                                                APIOptions)
+from supertokens_python.recipe.session import SessionContainer
+
+
+async def logout_view(request: HttpRequest):
+    session: Union[None, SessionContainer] = await get_session(request, True)
+    if session is None:
+        raise Exception("Should never come here")
     await session.revoke_session()
     return JsonResponse({'foo': 'bar'})
 
 
-async def handle_view(request):
-    session = await get_session(request, True)
+async def handle_view(request: HttpRequest):
+    session: Union[None, SessionContainer] = await get_session(request, True)
+    if session is None:
+        raise Exception("Should never come here")
     return JsonResponse({'s': session.get_handle()})
 
 
@@ -166,7 +176,7 @@ class SupertokensTest(TestCase):
         request.META['HTTP_ANTI_CSRF'] = response.headers['anti-csrf']
         response = await my_middleware(request)
         logout_cookies = get_cookies(response)
-        assert response.headers.get('anti-csrf') is None
+        assert response.headers.get('anti-csrf') is None # type: ignore
         assert logout_cookies['sAccessToken']['value'] == ''
         assert logout_cookies['sRefreshToken']['value'] == ''
         assert logout_cookies['sIdRefreshToken']['value'] == ''
@@ -247,15 +257,15 @@ class SupertokensTest(TestCase):
         assert response.status_code == 401
 
     async def test_custom_response(self):
-        def override_email_password_apis(original_implementation):
+        def override_email_password_apis(original_implementation: APIInterface):
 
             original_func = original_implementation.email_exists_get
 
-            async def email_exists_get(email: str, api_options, _):
+            async def email_exists_get(email: str, api_options: APIOptions, user_context: Dict[str, Any]):
                 response_dict = {'custom': True}
                 api_options.response.set_status_code(203)
                 api_options.response.set_json_content(response_dict)
-                return await original_func(email, api_options, _)
+                return await original_func(email, api_options, user_context)
 
             original_implementation.email_exists_get = email_exists_get
             return original_implementation

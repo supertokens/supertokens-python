@@ -13,24 +13,25 @@
 # under the License.
 from datetime import datetime, timezone
 from http.cookies import SimpleCookie
-from os import environ, scandir, kill, remove
+from os import environ, kill, remove, scandir
 from shutil import rmtree
 from signal import SIGTERM
-from subprocess import run, DEVNULL
+from subprocess import DEVNULL, run
 from time import sleep
 
 from requests.models import Response
-
+from supertokens_python import Supertokens
+from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
 from supertokens_python.recipe.session import SessionRecipe
-from yaml import dump, load, FullLoader
-
-from supertokens_python import Supertokens
-from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
-from supertokens_python.recipe.thirdpartyemailpassword import ThirdPartyEmailPasswordRecipe
+from supertokens_python.recipe.thirdpartyemailpassword import \
+    ThirdPartyEmailPasswordRecipe
+from yaml import FullLoader, dump, load
+
+from fastapi.testclient import TestClient
 
 INSTALLATION_PATH = environ['SUPERTOKENS_PATH']
 SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + '/.started'
@@ -78,7 +79,7 @@ ACCESS_CONTROL_EXPOSE_HEADER_ANTI_CSRF_DISABLE = 'id-refresh-token'
 TEST_ID_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
 
-def set_key_value_in_config(key, value):
+def set_key_value_in_config(key: str, value: str):
     f = open(CONFIG_YAML_FILE_PATH, 'r')
     data = load(f, Loader=FullLoader)
     f.close()
@@ -88,7 +89,7 @@ def set_key_value_in_config(key, value):
     f.close()
 
 
-def drop_key(key):
+def drop_key(key: str):
     f = open(CONFIG_YAML_FILE_PATH, 'r')
     data = load(f, Loader=FullLoader)
     f.close()
@@ -98,9 +99,9 @@ def drop_key(key):
     f.close()
 
 
-def __stop_st(retry=50):
+def __stop_st(retry: int = 50):
     process_ids = __get_list_of_process_ids()
-    for pid in process_ids:
+    for pid in process_ids: 
         kill(int(pid), SIGTERM)
     process_ids = __get_list_of_process_ids()
     if len(process_ids) != 0:
@@ -111,7 +112,7 @@ def __stop_st(retry=50):
     sleep(1)
 
 
-def start_st(host='localhost', port='3567'):
+def start_st(host: str = 'localhost', port: str = '3567'):
     pid_after = pid_before = __get_list_of_process_ids()
     run('cd ' + INSTALLATION_PATH + ' && java -Djava.security.egd=file:/dev/urandom -classpath '
                                     '"./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host='
@@ -151,9 +152,11 @@ def clean_st():
     except FileNotFoundError:
         pass
 
+from typing import List
 
-def __get_list_of_process_ids():
-    process_ids = []
+
+def __get_list_of_process_ids() -> List[str]:
+    process_ids: List[str] = []
     try:
         processes = scandir(SUPERTOKENS_PROCESS_DIR)
         for process in processes:
@@ -177,20 +180,22 @@ def reset():
     JWTRecipe.reset()
 
 
-def get_cookie_from_response(response, cookie_name):
+def get_cookie_from_response(response: Response, cookie_name: str):
     cookies = extract_all_cookies(response)
     if cookie_name in cookies:
         return cookies[cookie_name]
     return None
 
+from typing import Any, Dict
 
-def extract_all_cookies(response: Response):
+
+def extract_all_cookies(response: Response) -> Dict[str, Any]:
     if response.headers.get('set-cookie') is None:
         return {}
-    cookie_headers = SimpleCookie(
+    cookie_headers = SimpleCookie( # type: ignore
         response.headers.get('set-cookie'))
-    cookies = dict()
-    for key, morsel in cookie_headers.items():
+    cookies: Dict[str, Any] = dict()
+    for key, morsel in cookie_headers.items(): # type: ignore
         cookies[key] = {
             'value': morsel.value,
             'name': key
@@ -207,16 +212,16 @@ def extract_all_cookies(response: Response):
     return cookies
 
 
-def get_unix_timestamp(expiry):
+def get_unix_timestamp(expiry: str):
     return int(datetime.strptime(
         expiry, '%a, %d %b %Y %H:%M:%S GMT').replace(tzinfo=timezone.utc).timestamp())
 
 
-def verify_within_5_second_diff(n1, n2):
+def verify_within_5_second_diff(n1: int, n2: int):
     return -5 <= (n1 - n2) <= 5
 
 
-def sign_up_request(app, email, password):
+def sign_up_request(app: TestClient, email: str, password: str):
     return app.post(
         url="/auth/signup",
         headers={
@@ -235,7 +240,7 @@ def sign_up_request(app, email, password):
         })
 
 
-def sign_in_request(app, email, password):
+def sign_in_request(app: TestClient, email: str, password: str):
     return app.post(
         url="/auth/signin",
         headers={
@@ -255,7 +260,7 @@ def sign_in_request(app, email, password):
 
 
 def email_verify_token_request(
-        app, accessToken, idRefreshTokenFromCookie, antiCsrf, userId):
+        app: TestClient, accessToken: str, idRefreshTokenFromCookie: str, antiCsrf: str, userId: str):
     return app.post(
         url="/auth/user/email/verify/token",
         headers={

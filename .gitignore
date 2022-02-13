@@ -13,5 +13,4 @@ env/
 bin/
 lib/
 pyvenv.cfg
-questions.txt
 sqlite.db
