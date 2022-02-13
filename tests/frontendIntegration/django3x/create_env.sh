@@ -3,9 +3,9 @@
 pip install virtualenv
 
 #Create a virtualenv
-virtualenv django2x_example
+virtualenv django3x_example
 # shellcheck disable=SC2164
-source django2x_example/bin/activate
+source django3x_example/bin/activate
 
 touch requirements.txt
 echo "django==2.2.23" >> requirements.txt

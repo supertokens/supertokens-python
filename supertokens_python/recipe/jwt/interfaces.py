@@ -12,18 +12,31 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from abc import ABC, abstractmethod
-from typing import Union, List
+from typing import Any, Dict, List, Union
+
+from .utils import JWTConfig
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
+
 from supertokens_python.framework import BaseRequest, BaseResponse
-from supertokens_python.recipe.jwt.types import JsonWebKey
+
+
+class JsonWebKey:
+    def __init__(self, kty: str, kid: str, n: str, e: str, alg: str, use: str):
+        self.kty = kty
+        self.kid = kid
+        self.n = n
+        self.e = e
+        self.alg = alg
+        self.use = use
 
 
 class CreateJwtResult(ABC):
     def __init__(
-            self, status: Literal['OK', 'UNSUPPORTED_ALGORITHM_ERROR'], jwt: str = None):
+            self, status: Literal['OK', 'UNSUPPORTED_ALGORITHM_ERROR'], jwt: Union[None, str] = None):
         self.status = status
         self.jwt = jwt
 
@@ -50,17 +63,17 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, user_context: any, payload: dict = None, validity_seconds: int = None) -> CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> CreateJwtResult:
         pass
 
     @abstractmethod
-    async def get_jwks(self, user_context: any) -> GetJWKSResult:
+    async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:
         pass
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: Union[BaseResponse, None], recipe_id: str,
-                 config, recipe_implementation: RecipeInterface):
+    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
+                 config: JWTConfig, recipe_implementation: RecipeInterface):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -74,8 +87,8 @@ class JWKSGetResponse:
         self.status = status
         self.keys = keys
 
-    def to_json(self):
-        keys = []
+    def to_json(self) -> Dict[str, Any]:
+        keys: List[Dict[str, Any]] = []
         for key in self.keys:
             keys.append({
                 'kty': key.kty,
@@ -97,5 +110,5 @@ class APIInterface:
         self.disable_jwks_get = False
 
     @abstractmethod
-    async def jwks_get(self, api_options: APIOptions, user_context: any) -> JWKSGetResponse:
+    async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> JWKSGetResponse:
         pass

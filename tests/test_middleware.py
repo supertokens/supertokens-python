@@ -12,26 +12,23 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from pytest import fixture, mark
+from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.recipe import emailpassword, session
+
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from pytest import fixture
-from pytest import mark
-
-from supertokens_python import init, SupertokensConfig, InputAppInfo
-from supertokens_python.recipe import session, emailpassword
-from supertokens_python.framework.fastapi import Middleware
-from tests.utils import (
-    reset, setup_st, clean_st, start_st
-)
+from tests.utils import clean_st, reset, setup_st, start_st
 
 
-def setup_function(f):
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f):
+def teardown_function(_):
     reset()
     clean_st()
 

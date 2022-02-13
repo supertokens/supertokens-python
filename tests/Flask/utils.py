@@ -13,14 +13,19 @@
 # under the License.
 
 
-def extract_all_cookies(response):
+from typing import Any, Dict
+
+from fastapi import Response
+
+
+def extract_all_cookies(response: Response) -> Dict[str, Any]:
     cookie_headers = response.headers.getlist('Set-Cookie')
-    cookies = dict()
+    cookies: Dict[str, Any] = {}
     for header in cookie_headers:
         attributes = header.split(';')
         cookie = {}
         is_name = True
-        name = None
+        name: str = ""
         for attr in attributes:
             split = attr.split('=')
             if is_name:

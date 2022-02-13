@@ -14,12 +14,14 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, TypeGuard, Union
 
-from supertokens_python.recipe.emailverification.exceptions import EmailVerificationInvalidTokenError
+from supertokens_python.exceptions import (SuperTokensError,
+                                           raise_general_exception)
+from supertokens_python.recipe.emailverification.exceptions import \
+    EmailVerificationInvalidTokenError
+from supertokens_python.recipe_module import APIHandled, RecipeModule
 
-from supertokens_python.exceptions import raise_general_exception, SuperTokensError
-from supertokens_python.recipe_module import RecipeModule, APIHandled
 from .api.implementation import APIImplementation
 from .interfaces import APIOptions
 from .recipe_implementation import RecipeImplementation
@@ -28,27 +30,24 @@ if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
+
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from .utils import validate_and_normalise_user_input, ParentRecipeEmailVerificationConfig
-from .api import (
-    handle_generate_email_verify_token_api,
-    handle_email_verify_api
-)
-from .constants import (
-    USER_EMAIL_VERIFY,
-    USER_EMAIL_VERIFY_TOKEN
-)
-from .exceptions import (
-    SuperTokensEmailVerificationError
-)
 from supertokens_python.querier import Querier
+
+from .api import (handle_email_verify_api,
+                  handle_generate_email_verify_token_api)
+from .constants import USER_EMAIL_VERIFY, USER_EMAIL_VERIFY_TOKEN
+from .exceptions import SuperTokensEmailVerificationError
+from .utils import (ParentRecipeEmailVerificationConfig,
+                    validate_and_normalise_user_input)
 
 
 class EmailVerificationRecipe(RecipeModule):
     recipe_id = 'emailverification'
     __instance = None
 
-    def __init__(self, recipe_id: str, app_info: AppInfo, config: ParentRecipeEmailVerificationConfig):
+    def __init__(self, recipe_id: str, app_info: AppInfo,
+                 config: ParentRecipeEmailVerificationConfig):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, config)
         recipe_implementation = RecipeImplementation(
@@ -59,7 +58,8 @@ class EmailVerificationRecipe(RecipeModule):
         self.api_implementation = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
 
-    def is_error_from_this_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(
+            self, err: Exception) -> TypeGuard[SuperTokensError]:
         return isinstance(err, SuperTokensError) and isinstance(
             err, SuperTokensEmailVerificationError)
 
@@ -73,25 +73,23 @@ class EmailVerificationRecipe(RecipeModule):
                        self.api_implementation.disable_is_email_verified_get)
         ]
 
-    async def handle_api_request(self, request_id: str, request: BaseRequest, _: NormalisedURLPath, __: str,
-                                 response: BaseResponse):
+    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse) -> Union[BaseResponse, None]:
         if request_id == USER_EMAIL_VERIFY_TOKEN:
             return await handle_generate_email_verify_token_api(self.api_implementation,
                                                                 APIOptions(request, response, self.recipe_id, self.config,
                                                                            self.recipe_implementation))
-        else:
-            return await handle_email_verify_api(self.api_implementation,
-                                                 APIOptions(request, response, self.recipe_id, self.config,
-                                                            self.recipe_implementation))
+        return await handle_email_verify_api(self.api_implementation,
+                                             APIOptions(request, response, self.recipe_id, self.config,
+                                                        self.recipe_implementation))
 
-    async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
-        if isinstance(error, EmailVerificationInvalidTokenError):
+    async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
+        if isinstance(err, EmailVerificationInvalidTokenError):
             response.set_json_content(
                 {'status': 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'})
             return response
-        else:
-            response.set_json_content({'status': 'EMAIL_ALREADY_VERIFIED_ERROR'})
-            return response
+        response.set_json_content(
+            {'status': 'EMAIL_ALREADY_VERIFIED_ERROR'})
+        return response
 
     def get_all_cors_headers(self) -> List[str]:
         return []
@@ -100,12 +98,9 @@ class EmailVerificationRecipe(RecipeModule):
     def init(config: ParentRecipeEmailVerificationConfig):
         def func(app_info: AppInfo):
             if EmailVerificationRecipe.__instance is None:
-                EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id,
-                                                                             app_info, config)
+                EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id, app_info, config)
                 return EmailVerificationRecipe.__instance
-            else:
-                raise_general_exception('Emailverification recipe has already been initialised. Please check '
-                                        'your code for bugs.')
+            raise_general_exception('Emailverification recipe has already been initialised. Please check your code for bugs.')
 
         return func
 

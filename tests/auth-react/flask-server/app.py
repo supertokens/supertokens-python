@@ -12,30 +12,34 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
-import typing
-from dotenv import load_dotenv
-from flask import Flask, make_response, jsonify, g, request
-from flask_cors import CORS
+from typing import Any, Dict, List, Union
 
-from supertokens_python import init, get_all_cors_headers, SupertokensConfig, InputAppInfo, Supertokens
+from dotenv import load_dotenv
+from flask import Flask, g, jsonify, make_response, request
+from flask_cors import CORS
+from httpx import AsyncClient
+from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
+                                get_all_cors_headers, init)
 from supertokens_python.framework.flask.flask_middleware import Middleware
-from supertokens_python.recipe import session, thirdpartyemailpassword, thirdparty, emailpassword, passwordless
-from supertokens_python.recipe.emailpassword.types import InputFormField
-from supertokens_python.recipe.session.framework.flask import verify_session
+from supertokens_python.recipe import (emailpassword, passwordless, session,
+                                       thirdparty, thirdpartyemailpassword)
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
+from supertokens_python.recipe.emailpassword.types import InputFormField, User
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
-from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.thirdpartyemailpassword import Github, Google, Facebook, ThirdPartyEmailPasswordRecipe
-from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.passwordless import (
-    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig,
-    ContactPhoneOnlyConfig, CreateAndSendCustomTextMessageParameters, PasswordlessRecipe,
-    CreateAndSendCustomEmailParameters
-)
+    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig,
+    CreateAndSendCustomEmailParameters,
+    CreateAndSendCustomTextMessageParameters, PasswordlessRecipe)
+from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session.framework.flask import verify_session
+from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
-from httpx import AsyncClient
+from supertokens_python.recipe.thirdparty.types import (
+    AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
+from supertokens_python.recipe.thirdpartyemailpassword import (
+    Facebook, Github, Google, ThirdPartyEmailPasswordRecipe)
+
 try:
     from typing import Literal
 except ImportError:
@@ -60,10 +64,10 @@ os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 latest_url_with_token = None
 
-code_store = dict()
+code_store: Dict[str, List[Dict[str, Any]]] = {}
 
 
-async def save_code(param: typing.Union[CreateAndSendCustomTextMessageParameters, CreateAndSendCustomEmailParameters], _):
+async def save_code_email(param: CreateAndSendCustomEmailParameters, _: Dict[str, Any]):
     codes = code_store.get(param.pre_auth_session_id)
     if codes is None:
         codes = []
@@ -74,12 +78,23 @@ async def save_code(param: typing.Union[CreateAndSendCustomTextMessageParameters
     code_store[param.pre_auth_session_id] = codes
 
 
-async def create_and_send_custom_email(_, url_with_token, __):
+async def save_code_text(param: CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
+    codes = code_store.get(param.pre_auth_session_id)
+    if codes is None:
+        codes = []
+    codes.append({
+        'urlWithLinkCode': param.url_with_link_code,
+        'userInputCode': param.user_input_code
+    })
+    code_store[param.pre_auth_session_id] = codes
+
+
+async def create_and_send_custom_email(_: User, url_with_token: str, __: Dict[str, Any]) -> None:
     global latest_url_with_token
     latest_url_with_token = url_with_token
 
 
-async def validate_age(value):
+async def validate_age(value: Any):
     try:
         if int(value) < 18:
             return "You must be over 18 to register"
@@ -103,7 +118,7 @@ class CustomAuth0Provider(Provider):
         self.authorisation_redirect_url = "https://" + self.domain + "/authorize"
         self.access_token_api_url = "https://" + self.domain + "/oauth/token"
 
-    async def get_profile_info(self, auth_code_response: any) -> UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any]) -> UserInfo:
         access_token: str = auth_code_response['access_token']
         headers = {
             'Authorization': 'Bearer ' + access_token,
@@ -112,10 +127,11 @@ class CustomAuth0Provider(Provider):
             response = await client.get(url="https://" + self.domain + "/userinfo", headers=headers)
             user_info = response.json()
 
-            return UserInfo(user_info['sub'], UserInfoEmail(user_info['name'], True))
+            return UserInfo(user_info['sub'], UserInfoEmail(
+                user_info['name'], True))
 
     def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
-        params = {
+        params: Dict[str, Any] = {
             'scope': 'openid profile',
             'response_type': 'code',
             'client_id': self.client_id,
@@ -135,8 +151,8 @@ class CustomAuth0Provider(Provider):
         return AccessTokenAPI(self.access_token_api_url, params)
 
 
-def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = None,
-                flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = None):
+def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']] = None,
+                flow_type: Union[None, Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']] = None):
     PasswordlessRecipe.reset()
     JWTRecipe.reset()
     EmailVerificationRecipe.reset()
@@ -150,29 +166,29 @@ def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = No
         if contact_method == 'PHONE':
             passwordless_init = passwordless.init(
                 contact_config=ContactPhoneOnlyConfig(
-                    create_and_send_custom_text_message=save_code
+                    create_and_send_custom_text_message=save_code_text
                 ),
                 flow_type=flow_type
             )
         elif contact_method == 'EMAIL':
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOnlyConfig(
-                    create_and_send_custom_email=save_code
+                    create_and_send_custom_email=save_code_email
                 ),
                 flow_type=flow_type
             )
         else:
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOrPhoneConfig(
-                    create_and_send_custom_email=save_code,
-                    create_and_send_custom_text_message=save_code
+                    create_and_send_custom_email=save_code_email,
+                    create_and_send_custom_text_message=save_code_text
                 ),
                 flow_type=flow_type
             )
     else:
         passwordless_init = passwordless.init(
             contact_config=ContactPhoneOnlyConfig(
-                create_and_send_custom_text_message=save_code
+                create_and_send_custom_text_message=save_code_text
             ),
             flow_type='USER_INPUT_CODE_AND_MAGIC_LINK'
         )
@@ -189,39 +205,40 @@ def custom_init(contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE'] = No
             )
         ),
         thirdparty.init(
-            sign_in_and_up_feature=thirdparty.SignInAndUpFeature([
+            sign_in_and_up_feature=thirdparty.SignInAndUpFeature([  # type: ignore
                 Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
                 ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
                 ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'),
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
                 ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'),
-                    domain=os.environ.get('AUTH0_DOMAIN'),
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')
+                    client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
+                    domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
+                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
                 )
             ])
         ),
         thirdpartyemailpassword.init(
-            sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(form_fields),
+            sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(
+                form_fields),
             providers=[
                 Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
                 ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
                 ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'),
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
                 ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'),
-                    domain=os.environ.get('AUTH0_DOMAIN'),
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')
+                    client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
+                    domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
+                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
                 )
             ]
         ),
@@ -261,12 +278,12 @@ CORS(
 )
 
 
-@app.route('/ping', methods=['GET'])
+@app.route('/ping', methods=['GET'])  # type: ignore
 def ping():
     return 'success'
 
 
-@app.route('/sessionInfo', methods=['GET'])
+@app.route('/sessionInfo', methods=['GET'])  # type: ignore
 @verify_session()
 def get_session_info():
     session_ = g.supertokens
@@ -278,7 +295,7 @@ def get_session_info():
     })
 
 
-@app.route('/token', methods=['GET'])
+@app.route('/token', methods=['GET'])  # type: ignore
 def get_token():
     global latest_url_with_token
     return jsonify({
@@ -286,23 +303,25 @@ def get_token():
     })
 
 
-@app.route("/beforeeach", methods=["POST"])
+@app.route("/beforeeach", methods=["POST"])  # type: ignore
 def before_each():
     global code_store
     code_store = dict()
     return ''
 
 
-@app.route('/test/setFlow', methods=["POST"])
+@app.route('/test/setFlow', methods=["POST"])  # type: ignore
 async def test_set_flow():
-    body = request.get_json()
+    body: Union[Any, None] = request.get_json()
+    if body is None:
+        raise Exception("Should never come here")
     contact_method = body['contactMethod']
     flow_type = body['flowType']
     custom_init(contact_method=contact_method, flow_type=flow_type)
     return ''
 
 
-@app.get("/test/getDevice")
+@app.get("/test/getDevice")  # type: ignore
 def test_get_device():
     global code_store
     pre_auth_session_id = request.args.get('preAuthSessionId')
@@ -315,21 +334,20 @@ def test_get_device():
     })
 
 
-@app.get("/test/featureFlags")
+@app.get("/test/featureFlags")  # type: ignore
 def test_feature_flags():
     available = ['passwordless']
     return jsonify({'available': available})
 
 
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
-def index(path):
+@app.route("/", defaults={"path": ""})  # type: ignore
+@app.route("/<path:path>")  # type: ignore
+def index(_: str):
     return ''
 
 
-@app.errorhandler(Exception)
-def all_exception_handler(_: Exception):
-    print('inside exception handler')
+@app.errorhandler(Exception)  # type: ignore
+def all_exception_handler(e: Exception):
     return 'Error', 500
 
 

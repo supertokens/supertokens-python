@@ -10,10 +10,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Change
 - User context property added for all recipes' apis and functions
+- Removes deprecated functions in recipe for user pagination and user count
+- Changed email verification input functions' user type in emailpassword to be equal to emailpassword's user and not emailverification user.
+- All session recipe's error handler not need to return `BaseResponse`.
+- Session's recipe `get_session_information` returns a `SessionInformationResult` class object instead of a `dict` for easier consumption.
+- `get_link_domain_and_path` config in passwordless recipe now takes a class type input as opposed to a string input as the first param
+- Renamed `Session` to `SessionContainer` in session
 
 ### Added
 - Returns session from all APIs where a session is created
 - Added `regenerate_access_token` as a new recipe function for the session recipe.
+- Strong typings.
+
+### Change
+- Changed async_to_sync_wrapper.py file to make it simpler
+- Remove default `= None` for functions internal to the package
+
+### Bug fix:
+- If logging in via social login and the email is already verified from the provider's side, it marks the email as verified in SuperTokens core.
+- Corrects how override is done in thirdpartyemailpassword recipe and API implementation
 
 ## [0.4.1] - 2022-01-27
 

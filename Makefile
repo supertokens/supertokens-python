@@ -6,11 +6,11 @@ help:
 	@echo " \x1b[33;1mdev-install: \x1b[0minstall all packages required for development"
 	@echo "        \x1b[33;1mhelp: \x1b[0mprints this"
 
-lint:
+format:
 	autopep8 -r -i -a supertokens_python tests examples
 
 check-lint:
-	flake8 supertokens_python tests examples
+	pyright supertokens_python tests examples && pylint supertokens_python tests examples
 
 set-up-hooks:
 	cp hooks/pre-commit.sh .git/hooks/pre-commit

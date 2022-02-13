@@ -12,10 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Callable, Union
 
 if TYPE_CHECKING:
-    from .interfaces import RecipeInterface, APIInterface
+    from .interfaces import APIInterface, RecipeInterface
 
 
 class OverrideConfig:

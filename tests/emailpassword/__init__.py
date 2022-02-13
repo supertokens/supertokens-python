@@ -1,2 +1,3 @@
-import nest_asyncio
-nest_asyncio.apply()
+import nest_asyncio  # type: ignore
+
+nest_asyncio.apply()  # type: ignore

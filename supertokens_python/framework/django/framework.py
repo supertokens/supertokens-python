@@ -13,13 +13,11 @@
 # under the License.
 
 from supertokens_python.framework.django.django_request import DjangoRequest
-from supertokens_python.framework.django.django_response import DjangoResponse
 from supertokens_python.framework.types import Framework
 
 
 class DjangoFramework(Framework):
-    def wrap_request(self, unwrapped):
-        return DjangoRequest(unwrapped)
+    from django.http import HttpRequest
 
-    def wrap_response(self, unwrapped):
-        return DjangoResponse(unwrapped)
+    def wrap_request(self, unwrapped: HttpRequest):
+        return DjangoRequest(unwrapped)

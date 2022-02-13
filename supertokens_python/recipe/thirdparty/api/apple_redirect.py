@@ -12,10 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
+    from supertokens_python.recipe.thirdparty.interfaces import (APIInterface,
+                                                                 APIOptions)
 
 
 async def handle_apple_redirect_api(api_implementation: APIInterface, api_options: APIOptions):

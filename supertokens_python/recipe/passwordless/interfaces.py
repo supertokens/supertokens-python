@@ -12,15 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from abc import ABC, abstractmethod
-from typing import Union, List
-from .types import User, DeviceType
+from typing import Any, Dict, List, Union
+
+from .types import DeviceType, User
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
-from .utils import PasswordlessConfig
+
 from supertokens_python.framework import BaseRequest, BaseResponse
-from supertokens_python.recipe.session import Session
+from supertokens_python.recipe.session import SessionContainer
+
+from .utils import PasswordlessConfig
 
 
 class CreateCodeResult(ABC):
@@ -99,13 +103,15 @@ class CreateNewCodeForDeviceOkResult(CreateNewCodeForDeviceResult):
         self.is_ok = True
 
 
-class CreateNewCodeForDeviceRestartFlowErrorResult(CreateNewCodeForDeviceResult):
+class CreateNewCodeForDeviceRestartFlowErrorResult(
+        CreateNewCodeForDeviceResult):
     def __init__(self):
         super().__init__('RESTART_FLOW_ERROR')
         self.is_restart_flow_error = True
 
 
-class CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult(CreateNewCodeForDeviceResult):
+class CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult(
+        CreateNewCodeForDeviceResult):
     def __init__(self):
         super().__init__('USER_INPUT_CODE_ALREADY_USED_ERROR')
         self.is_user_input_code_already_used_error = True
@@ -140,7 +146,8 @@ class ConsumeCodeOkResult(ConsumeCodeResult):
 
 
 class ConsumeCodeIncorrectUserInputCodeErrorResult(ConsumeCodeResult):
-    def __init__(self, failed_code_input_attempt_count: int, maximum_code_input_attempts: int):
+    def __init__(self, failed_code_input_attempt_count: int,
+                 maximum_code_input_attempts: int):
         super().__init__('INCORRECT_USER_INPUT_CODE_ERROR',
                          failed_code_input_attempt_count=failed_code_input_attempt_count,
                          maximum_code_input_attempts=maximum_code_input_attempts)
@@ -148,7 +155,8 @@ class ConsumeCodeIncorrectUserInputCodeErrorResult(ConsumeCodeResult):
 
 
 class ConsumeCodeExpiredUserInputCodeErrorResult(ConsumeCodeResult):
-    def __init__(self, failed_code_input_attempt_count: int, maximum_code_input_attempts: int):
+    def __init__(self, failed_code_input_attempt_count: int,
+                 maximum_code_input_attempts: int):
         super().__init__('EXPIRED_USER_INPUT_CODE_ERROR',
                          failed_code_input_attempt_count=failed_code_input_attempt_count,
                          maximum_code_input_attempts=maximum_code_input_attempts)
@@ -162,7 +170,8 @@ class ConsumeCodeRestartFlowErrorResult(ConsumeCodeResult):
 
 
 class UpdateUserResult(ABC):
-    def __init__(self, status: Literal['OK', 'UNKNOWN_USER_ID_ERROR', 'EMAIL_ALREADY_EXISTS_ERROR', 'PHONE_NUMBER_ALREADY_EXISTS_ERROR']):
+    def __init__(self, status: Literal['OK', 'UNKNOWN_USER_ID_ERROR',
+                 'EMAIL_ALREADY_EXISTS_ERROR', 'PHONE_NUMBER_ALREADY_EXISTS_ERROR']):
         self.status = status
 
 
@@ -212,74 +221,74 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def create_code(self,
-                          user_context: any,
-                          email: Union[None, str] = None,
-                          phone_number: Union[None, str] = None,
-                          user_input_code: Union[None, str] = None) -> CreateCodeResult:
+                          email: Union[None, str],
+                          phone_number: Union[None, str],
+                          user_input_code: Union[None, str],
+                          user_context: Dict[str, Any]) -> CreateCodeResult:
         pass
 
     @abstractmethod
     async def create_new_code_for_device(self,
-                                         user_context: any,
                                          device_id: str,
-                                         user_input_code: Union[str, None] = None) -> CreateNewCodeForDeviceResult:
+                                         user_input_code: Union[str, None],
+                                         user_context: Dict[str, Any]) -> CreateNewCodeForDeviceResult:
         pass
 
     @abstractmethod
     async def consume_code(self,
                            pre_auth_session_id: str,
-                           user_context: any,
-                           user_input_code: Union[str, None] = None,
-                           device_id: Union[str, None] = None,
-                           link_code: Union[str, None] = None) -> ConsumeCodeResult:
+                           user_input_code: Union[str, None],
+                           device_id: Union[str, None],
+                           link_code: Union[str, None],
+                           user_context: Dict[str, Any]) -> ConsumeCodeResult:
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str, user_context: any) -> Union[User, None]:
+    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_user_by_email(self, email: str, user_context: any) -> Union[User, None]:
+    async def get_user_by_email(self, email: str, user_context: Dict[str, Any]) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_user_by_phone_number(self, phone_number: str, user_context: any) -> Union[User, None]:
+    async def get_user_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def update_user(self, user_id: str, user_context: any,
-                          email: Union[str, None] = None, phone_number: Union[str, None] = None) -> UpdateUserResult:
+    async def update_user(self, user_id: str,
+                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
         pass
 
     @abstractmethod
-    async def revoke_all_codes(self, user_context: any,
-                               email: Union[str, None] = None, phone_number: Union[str, None] = None) -> RevokeAllCodesResult:
+    async def revoke_all_codes(self,
+                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
         pass
 
     @abstractmethod
-    async def revoke_code(self, code_id: str, user_context: any) -> RevokeCodeResult:
+    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeResult:
         pass
 
     @abstractmethod
-    async def list_codes_by_email(self, email: str, user_context: any) -> List[DeviceType]:
+    async def list_codes_by_email(self, email: str, user_context: Dict[str, Any]) -> List[DeviceType]:
         pass
 
     @abstractmethod
-    async def list_codes_by_phone_number(self, phone_number: str, user_context: any) -> List[DeviceType]:
+    async def list_codes_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -> List[DeviceType]:
         pass
 
     @abstractmethod
-    async def list_codes_by_device_id(self, device_id: str, user_context: any) -> Union[DeviceType, None]:
+    async def list_codes_by_device_id(self, device_id: str, user_context: Dict[str, Any]) -> Union[DeviceType, None]:
         pass
 
     @abstractmethod
     async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str,
-                                                user_context: any) -> Union[DeviceType, None]:
+                                                user_context: Dict[str, Any]) -> Union[DeviceType, None]:
         pass
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: Union[BaseResponse, None], recipe_id: str,
+    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: PasswordlessConfig, recipe_implementation: RecipeInterface):
         self.request = request
         self.response = response
@@ -294,7 +303,8 @@ class CreateCodePostResponse(ABC):
         status: Literal['OK', 'GENERAL_ERROR'],
         device_id: Union[str, None] = None,
         pre_auth_session_id: Union[str, None] = None,
-        flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = None,
+        flow_type: Union[None, Literal['USER_INPUT_CODE', 'MAGIC_LINK',
+                                       'USER_INPUT_CODE_AND_MAGIC_LINK']] = None,
         message: Union[str, None] = None
     ):
         self.status = status
@@ -306,7 +316,7 @@ class CreateCodePostResponse(ABC):
         self.is_general_error = False
 
     @abstractmethod
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         pass
 
 
@@ -363,7 +373,7 @@ class ResendCodePostResponse(ABC):
         self.is_restart_flow_error = False
 
     @abstractmethod
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         pass
 
 
@@ -415,7 +425,7 @@ class ConsumeCodePostResponse(ABC):
         ],
         created_new_user: Union[bool, None] = None,
         user: Union[User, None] = None,
-        session: Union[Session, None] = None,
+        session: Union[SessionContainer, None] = None,
         message: Union[str, None] = None,
         failed_code_input_attempt_count: Union[int, None] = None,
         maximum_code_input_attempts: Union[int, None] = None
@@ -434,16 +444,22 @@ class ConsumeCodePostResponse(ABC):
         self.is_expired_user_input_code_error = False
 
     @abstractmethod
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         pass
 
 
 class ConsumeCodePostOkResponse(ConsumeCodePostResponse):
-    def __init__(self, created_new_user: bool, user: User, session: Session):
-        super().__init__(status='OK', created_new_user=created_new_user, user=user, session=session)
+    def __init__(self, created_new_user: bool, user: User, session: SessionContainer):
+        super().__init__(
+            status='OK',
+            created_new_user=created_new_user,
+            user=user,
+            session=session)
         self.is_ok = True
 
     def to_json(self):
+        if self.user is None:
+            raise Exception("Should never come here")
         user = {
             'id': self.user.user_id,
             'time_joined': self.user.time_joined
@@ -495,7 +511,8 @@ class ConsumeCodePostGeneralErrorResponse(ConsumeCodePostResponse):
         }
 
 
-class ConsumeCodePostIncorrectUserInputCodeErrorResponse(ConsumeCodePostResponse):
+class ConsumeCodePostIncorrectUserInputCodeErrorResponse(
+        ConsumeCodePostResponse):
     def __init__(
             self,
             failed_code_input_attempt_count: int,
@@ -515,7 +532,8 @@ class ConsumeCodePostIncorrectUserInputCodeErrorResponse(ConsumeCodePostResponse
         }
 
 
-class ConsumeCodePostExpiredUserInputCodeErrorResponse(ConsumeCodePostResponse):
+class ConsumeCodePostExpiredUserInputCodeErrorResponse(
+        ConsumeCodePostResponse):
     def __init__(
             self,
             failed_code_input_attempt_count: int,
@@ -590,7 +608,7 @@ class APIInterface:
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: APIOptions,
-                               user_context: any) -> CreateCodePostResponse:
+                               user_context: Dict[str, Any]) -> CreateCodePostResponse:
         pass
 
     @abstractmethod
@@ -598,7 +616,7 @@ class APIInterface:
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: APIOptions,
-                               user_context: any) -> ResendCodePostResponse:
+                               user_context: Dict[str, Any]) -> ResendCodePostResponse:
         pass
 
     @abstractmethod
@@ -608,19 +626,19 @@ class APIInterface:
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
                                 api_options: APIOptions,
-                                user_context: any) -> ConsumeCodePostResponse:
+                                user_context: Dict[str, Any]) -> ConsumeCodePostResponse:
         pass
 
     @abstractmethod
     async def email_exists_get(self,
                                email: str,
                                api_options: APIOptions,
-                               user_context: any) -> EmailExistsGetResponse:
+                               user_context: Dict[str, Any]) -> EmailExistsGetResponse:
         pass
 
     @abstractmethod
     async def phone_number_exists_get(self,
                                       phone_number: str,
                                       api_options: APIOptions,
-                                      user_context: any) -> PhoneNumberExistsGetResponse:
+                                      user_context: Dict[str, Any]) -> PhoneNumberExistsGetResponse:
         pass

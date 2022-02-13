@@ -14,61 +14,34 @@
 
 from __future__ import annotations
 
+import asyncio
+from base64 import b64decode, b64encode
 from re import fullmatch
-from typing import Union, List, Callable, TYPE_CHECKING
-
-from jsonschema import validate
-from jsonschema.exceptions import ValidationError
-
-from supertokens_python.framework.request import BaseRequest
-from supertokens_python.framework.response import BaseResponse
-
-if TYPE_CHECKING:
-    pass
-from .constants import RID_KEY_HEADER
-from .exceptions import raise_general_exception, raise_bad_input_exception
-from .constants import ERROR_MESSAGE_KEY
 from time import time
-from base64 import b64encode, b64decode
+from typing import (TYPE_CHECKING, Any, Callable, Coroutine, Dict, List,
+                    TypeVar, Union)
 
+from supertokens_python.async_to_sync_wrapper import check_event_loop
 from supertokens_python.framework.django.framework import DjangoFramework
 from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
-from supertokens_python.async_to_sync_wrapper import check_event_loop
-import asyncio
+from supertokens_python.framework.request import BaseRequest
+from supertokens_python.framework.response import BaseResponse
+
+from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER
+from .exceptions import raise_general_exception
+
+_T = TypeVar("_T")
+
+if TYPE_CHECKING:
+    pass
+
 
 FRAMEWORKS = {
     'fastapi': FastapiFramework(),
     'flask': FlaskFramework(),
     'django': DjangoFramework(),
 }
-
-
-def validate_framework(config):
-    if config['framework'] not in FRAMEWORKS.keys():
-        raise_bad_input_exception(
-            recipe=None,
-            msg=config['framework'] + ' framework is not supported.')
-
-
-def validate_the_structure_of_user_input(
-        config, input_schema, config_root, recipe):
-    try:
-        validate(config, input_schema)
-    except ValidationError as e:
-        path = '.'.join(list(map(str, e.path)))
-        if not path == '':
-            path = 'for path "' + path + '": '
-
-        error_message = path + e.message
-
-        if 'is a required property' in error_message:
-            error_message = 'input config ' + error_message
-        if 'Additional properties are not allowed' in error_message:
-            error_message += ' Did you mean to set this on the frontend side?'
-        error_message = 'Config schema error in ' + config_root + ': ' + error_message
-
-        raise_general_exception(recipe, error_message)
 
 
 def is_an_ip_address(ip_address: str) -> bool:
@@ -112,7 +85,7 @@ def compare_version(v1: str, v2: str) -> str:
     for i in range(max_loop):
         if int(v1_split[i]) > int(v2_split[i]):
             return v1
-        elif int(v2_split[i]) > int(v1_split[i]):
+        if int(v2_split[i]) > int(v1_split[i]):
             return v2
 
     if len(v1_split) > len(v2_split):
@@ -129,7 +102,8 @@ def is_5xx_error(status_code: int) -> bool:
     return status_code // 100 == 5
 
 
-def send_non_200_response(message: str, status_code: int, response: BaseResponse) -> Union[BaseResponse, None]:
+def send_non_200_response(message: str, status_code: int,
+                          response: BaseResponse) -> BaseResponse:
     if status_code < 300:
         raise_general_exception(
             'Calling sendNon200Response with status code < 300')
@@ -140,7 +114,8 @@ def send_non_200_response(message: str, status_code: int, response: BaseResponse
     return response
 
 
-def send_200_response(data_json: dict, response: BaseResponse) -> Union[BaseResponse, None]:
+def send_200_response(
+        data_json: Dict[str, Any], response: BaseResponse) -> BaseResponse:
     response.set_json_content(data_json)
     response.set_status_code(200)
     return response
@@ -158,19 +133,19 @@ def utf_base64decode(s: str) -> str:
     return b64decode(s.encode('utf-8')).decode('utf-8')
 
 
-def get_filtered_list(func: Callable, given_list: List) -> List:
+def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -> List[_T]:
     return list(filter(func, given_list))
 
 
 def find_first_occurrence_in_list(
-        condition: Callable, given_list: List) -> Union[any, None]:
+        condition: Callable[[_T], bool], given_list: List[_T]) -> Union[_T, None]:
     for item in given_list:
         if condition(item):
             return item
     return None
 
 
-def execute_in_background(mode, func):
+def execute_in_background(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
     if mode == 'wsgi':
         check_event_loop()
         loop = asyncio.get_event_loop()

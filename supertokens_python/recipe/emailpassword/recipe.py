@@ -14,12 +14,13 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, List, TypeGuard, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe_module import RecipeModule, APIHandled
+from supertokens_python.recipe_module import APIHandled, RecipeModule
+
 from .api.implementation import APIImplementation
-from .exceptions import SuperTokensEmailPasswordError, FieldError
+from .exceptions import FieldError, SuperTokensEmailPasswordError
 from .interfaces import APIOptions
 from .recipe_implementation import RecipeImplementation
 
@@ -27,27 +28,21 @@ if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
-from supertokens_python.exceptions import raise_general_exception, SuperTokensError
-from supertokens_python.recipe.emailverification import EmailVerificationRecipe
-from .utils import validate_and_normalise_user_input, InputSignUpFeature, InputResetPasswordUsingTokenFeature, \
-    InputOverrideConfig
-from .api import (
-    handle_sign_up_api,
-    handle_sign_in_api,
-    handle_email_exists_api,
-    handle_password_reset_api,
-    handle_generate_password_reset_token_api
-)
-from .constants import (
-    SIGNIN,
-    SIGNUP,
-    USER_PASSWORD_RESET_TOKEN,
-    USER_PASSWORD_RESET,
-    SIGNUP_EMAIL_EXISTS
-)
 
+from supertokens_python.exceptions import (SuperTokensError,
+                                           raise_general_exception)
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.emailverification.utils import InputEmailVerificationConfig
+from supertokens_python.recipe.emailverification import EmailVerificationRecipe
+
+from .api import (handle_email_exists_api,
+                  handle_generate_password_reset_token_api,
+                  handle_password_reset_api, handle_sign_in_api,
+                  handle_sign_up_api)
+from .constants import (SIGNIN, SIGNUP, SIGNUP_EMAIL_EXISTS,
+                        USER_PASSWORD_RESET, USER_PASSWORD_RESET_TOKEN)
+from .utils import (InputEmailVerificationConfig, InputOverrideConfig,
+                    InputResetPasswordUsingTokenFeature, InputSignUpFeature,
+                    validate_and_normalise_user_input)
 
 
 class EmailPasswordRecipe(RecipeModule):
@@ -77,7 +72,8 @@ class EmailPasswordRecipe(RecipeModule):
         self.api_implementation = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
 
-    def is_error_from_this_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(
+            self, err: Exception) -> TypeGuard[SuperTokensError]:
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensEmailPasswordError)
             or
@@ -102,39 +98,34 @@ class EmailPasswordRecipe(RecipeModule):
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
+        api_options = APIOptions(request, response, self.recipe_id, self.config, self.recipe_implementation, self.email_verification_recipe.recipe_implementation)
         if request_id == SIGNUP:
             return await handle_sign_up_api(self.api_implementation,
-                                            APIOptions(request, response, self.recipe_id, self.config,
-                                                       self.recipe_implementation))
-        elif request_id == SIGNIN:
+                                            api_options)
+        if request_id == SIGNIN:
             return await handle_sign_in_api(self.api_implementation,
-                                            APIOptions(request, response, self.recipe_id, self.config,
-                                                       self.recipe_implementation))
-        elif request_id == SIGNUP_EMAIL_EXISTS:
+                                            api_options)
+        if request_id == SIGNUP_EMAIL_EXISTS:
             return await handle_email_exists_api(self.api_implementation,
-                                                 APIOptions(request, response, self.recipe_id, self.config,
-                                                            self.recipe_implementation))
-        elif request_id == USER_PASSWORD_RESET_TOKEN:
+                                                 api_options)
+        if request_id == USER_PASSWORD_RESET_TOKEN:
             return await handle_generate_password_reset_token_api(self.api_implementation,
-                                                                  APIOptions(request, response, self.recipe_id, self.config,
-                                                                             self.recipe_implementation))
-        elif request_id == USER_PASSWORD_RESET:
+                                                                  api_options)
+        if request_id == USER_PASSWORD_RESET:
             return await handle_password_reset_api(self.api_implementation,
-                                                   APIOptions(request, response, self.recipe_id, self.config,
-                                                              self.recipe_implementation))
-        else:
-            return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
+                                                   api_options)
+        return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
-    async def handle_error(self, request: BaseRequest, error: SuperTokensError, response: BaseResponse):
-        if isinstance(error, SuperTokensEmailPasswordError):
-            if isinstance(error, FieldError):
+    async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
+        if isinstance(err, SuperTokensEmailPasswordError):
+            if isinstance(err, FieldError):
                 response.set_json_content(
-                    {'status': 'FIELD_ERROR', 'formFields': error.get_json_form_fields()})
+                    {'status': 'FIELD_ERROR', 'formFields': err.get_json_form_fields()})
                 return response
-        return await self.email_verification_recipe.handle_error(request, error, response)
+        return await self.email_verification_recipe.handle_error(request, err, response)
 
     def get_all_cors_headers(self) -> List[str]:
-        return [] + self.email_verification_recipe.get_all_cors_headers()
+        return self.email_verification_recipe.get_all_cors_headers()
 
     @staticmethod
     def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
@@ -143,15 +134,9 @@ class EmailPasswordRecipe(RecipeModule):
              override: Union[InputOverrideConfig, None] = None):
         def func(app_info: AppInfo):
             if EmailPasswordRecipe.__instance is None:
-                EmailPasswordRecipe.__instance = EmailPasswordRecipe(EmailPasswordRecipe.recipe_id, app_info,
-                                                                     sign_up_feature,
-                                                                     reset_password_using_token_feature,
-                                                                     email_verification_feature,
-                                                                     override)
+                EmailPasswordRecipe.__instance = EmailPasswordRecipe(EmailPasswordRecipe.recipe_id, app_info, sign_up_feature, reset_password_using_token_feature, email_verification_feature, override)
                 return EmailPasswordRecipe.__instance
-            else:
-                raise Exception(None, 'Emailpassword recipe has already been initialised. Please check your '
-                                      'code for bugs.')
+            raise Exception(None, 'Emailpassword recipe has already been initialised. Please check your code for bugs.')
 
         return func
 
@@ -160,7 +145,6 @@ class EmailPasswordRecipe(RecipeModule):
         if EmailPasswordRecipe.__instance is not None:
             return EmailPasswordRecipe.__instance
         raise_general_exception(
-            None,
             'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
     @staticmethod
@@ -168,12 +152,12 @@ class EmailPasswordRecipe(RecipeModule):
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(
-                None, 'calling testing function in non testing env')
+                'calling testing function in non testing env')
         EmailPasswordRecipe.__instance = None
 
     # instance functions below...............
 
-    async def get_email_for_user_id(self, user_id: str, user_context: any) -> str:
+    async def get_email_for_user_id(self, user_id: str, user_context: Dict[str, Any]) -> str:
         user_info = await self.recipe_implementation.get_user_by_id(user_id, user_context)
         if user_info is None:
             raise Exception('Unknown User ID provided')

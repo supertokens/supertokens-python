@@ -12,26 +12,26 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from supertokens_python.recipe.session.recipe_implementation import \
+    RecipeImplementation
 from pytest import mark
-
-from supertokens_python import init, SupertokensConfig, InputAppInfo
-from supertokens_python.process_state import ProcessState, AllowedProcessStates
+from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.process_state import AllowedProcessStates, ProcessState
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.session.session_functions import create_new_session, get_session, refresh_session, \
-    revoke_session
-from tests.utils import (
-    reset, setup_st, clean_st, start_st
-)
+from supertokens_python.recipe.session.session_functions import (
+    create_new_session, get_session, refresh_session, revoke_session)
+
+from tests.utils import clean_st, reset, setup_st, start_st
 
 
-def setup_function(f):
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f):
+def teardown_function(_):
     reset()
     clean_st()
 
@@ -53,6 +53,8 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     start_st()
 
     s = SessionRecipe.get_instance()
+    if not isinstance(s.recipe_implementation, RecipeImplementation):
+        raise Exception("Should never come here")
 
     response = await create_new_session(s.recipe_implementation, "", {}, {})
 

@@ -11,32 +11,35 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from supertokens_python.recipe.emailpassword.types import FormField
+from supertokens_python.recipe.emailpassword.interfaces import APIOptions
+from typing import Any, Dict, List, Union
+from pytest import fixture, mark
+from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe.emailpassword.asyncio import sign_up
+from supertokens_python.recipe.emailpassword.interfaces import (
+    APIInterface, RecipeInterface)
+from supertokens_python.recipe.session.interfaces import \
+    RecipeInterface as SRecipeInterface
+
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from pytest import fixture
-from pytest import mark
 
-from supertokens_python import init, SupertokensConfig, InputAppInfo
-from supertokens_python.recipe import session, emailpassword
-from supertokens_python.recipe.emailpassword.asyncio import sign_up
-from supertokens_python.recipe.emailpassword.interfaces import APIInterface, RecipeInterface
-from supertokens_python.recipe.session.interfaces import RecipeInterface as SRecipeInterface
-from supertokens_python.framework.fastapi import Middleware
-from .utils import (
-    reset, setup_st, clean_st, start_st, sign_in_request
-)
+from .utils import clean_st, reset, setup_st, sign_in_request, start_st
 
 works = False
 signUpContextWorks = False
 
 
-def setup_function(f):
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f):
+def teardown_function(_):
     reset()
     clean_st()
 
@@ -57,16 +60,18 @@ async def test_user_context(driver_config_client: TestClient):
     def apis_override_email_password(param: APIInterface):
         og_sign_in_post = param.sign_in_post
 
-        async def sign_in_post(form_fields, api_options, context):
-            context = {
+        async def sign_in_post(form_fields: List[FormField],
+                               api_options: APIOptions,
+                               user_context: Dict[str, Any]):
+            user_context = {
                 'preSignInPOST': True
             }
-            response = await og_sign_in_post(form_fields, api_options, context)
-            if 'preSignInPOST' in context and \
-                    'preSignIn' in context and \
-                    'preCreateNewSession' in context and \
-                    'postCreateNewSession' in context and \
-                    'postSignIn' in context:
+            response = await og_sign_in_post(form_fields, api_options, user_context)
+            if 'preSignInPOST' in user_context and \
+                    'preSignIn' in user_context and \
+                    'preCreateNewSession' in user_context and \
+                    'postCreateNewSession' in user_context and \
+                    'postSignIn' in user_context:
                 global works
                 works = True
             return response
@@ -78,20 +83,20 @@ async def test_user_context(driver_config_client: TestClient):
         og_sign_in = param.sign_in
         og_sign_up = param.sign_up
 
-        async def sign_up_(email, password, context):
-            if 'manualCall' in context:
+        async def sign_up_(email: str, password: str, user_context: Dict[str, Any]):
+            if 'manualCall' in user_context:
                 global signUpContextWorks
                 signUpContextWorks = True
-            response = await og_sign_up(email, password, context)
+            response = await og_sign_up(email, password, user_context)
             return response
 
-        async def sign_in(email, password, context):
-            if 'preSignInPOST' in context:
-                context['preSignIn'] = True
-            response = await og_sign_in(email, password, context)
-            if 'preSignInPOST' in context and \
-                    'preSignIn' in context:
-                context['postSignIn'] = True
+        async def sign_in(email: str, password: str, user_context: Dict[str, Any]):
+            if 'preSignInPOST' in user_context:
+                user_context['preSignIn'] = True
+            response = await og_sign_in(email, password, user_context)
+            if 'preSignInPOST' in user_context and \
+                    'preSignIn' in user_context:
+                user_context['postSignIn'] = True
             return response
 
         param.sign_in = sign_in
@@ -101,17 +106,19 @@ async def test_user_context(driver_config_client: TestClient):
     def functions_override_session(param: SRecipeInterface):
         og_create_new_session = param.create_new_session
 
-        async def create_new_session(request, user_id, context, _, __):
-            if 'preSignInPOST' in context and \
-                    'preSignIn' in context and \
-                    'postSignIn' in context:
-                context['preCreateNewSession'] = True
-            response = await og_create_new_session(request, user_id, context, _, __)
-            if 'preSignInPOST' in context and \
-                    'preSignIn' in context and \
-                    'postSignIn' in context and \
-                    'preCreateNewSession' in context:
-                context['postCreateNewSession'] = True
+        async def create_new_session(request: Any, user_id: str,
+                                     access_token_payload: Union[None, Dict[str, Any]],
+                                     session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]):
+            if 'preSignInPOST' in user_context and \
+                    'preSignIn' in user_context and \
+                    'postSignIn' in user_context:
+                user_context['preCreateNewSession'] = True
+            response = await og_create_new_session(request, user_id, access_token_payload, session_data, user_context)
+            if 'preSignInPOST' in user_context and \
+                    'preSignIn' in user_context and \
+                    'postSignIn' in user_context and \
+                    'preCreateNewSession' in user_context:
+                user_context['postCreateNewSession'] = True
             return response
 
         param.create_new_session = create_new_session
@@ -140,7 +147,10 @@ async def test_user_context(driver_config_client: TestClient):
 
     await sign_up("random@gmail.com", "validpass123", {'manualCall': True})
 
-    res = sign_in_request(driver_config_client, "random@gmail.com", "validpass123")
+    res = sign_in_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpass123")
     assert res.status_code == 200
     assert works
     assert signUpContextWorks

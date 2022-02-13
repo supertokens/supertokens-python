@@ -11,21 +11,27 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
-from typing import Any, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
+
 from supertokens_python.framework.request import BaseRequest
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 class FlaskRequest(BaseRequest):
+    from flask.wrappers import Request
 
-    def __init__(self, req):
+    def __init__(self, req: Request):
         super().__init__()
         self.request = req
 
-    def get_query_param(self, key, default=None):
+    def get_query_param(self, key: str, default: Union[str, None] = None):
         return self.request.args.get(key, default)
 
-    async def json(self):
+    async def json(self) -> Union[Any, None]:
         try:
             return self.request.get_json()
         except Exception:
@@ -33,34 +39,33 @@ class FlaskRequest(BaseRequest):
 
     def method(self) -> str:
         if isinstance(self.request, dict):
-            return self.request['REQUEST_METHOD']
-        return self.request.method
+            temp: str = self.request['REQUEST_METHOD']
+            return temp
+        return self.request.method  # type: ignore
 
     def get_cookie(self, key: str) -> Union[str, None]:
         return self.request.cookies.get(key, None)
 
-    def get_header(self, key: str) -> Any:
+    def get_header(self, key: str) -> Union[None, str]:
         if isinstance(self.request, dict):
-            return self.request.get(key, None)
-        return self.request.headers.get(key)
+            return self.request.get(key, None)  # type: ignore
+        return self.request.headers.get(key)  # type: ignore
 
-    def url(self):
-        return self.request.url
-
-    def get_session(self):
+    def get_session(self) -> Union[SessionContainer, None]:
         from flask import g
         if hasattr(g, 'supertokens'):
             return g.supertokens
         return None
 
-    def set_session(self, session):
+    def set_session(self, session: SessionContainer):
         from flask import g
         g.supertokens = session
 
     def get_path(self) -> str:
         if isinstance(self.request, dict):
-            return self.request['PATH_INFO']
+            temp: str = self.request['PATH_INFO']
+            return temp
         return self.request.base_url
 
-    async def form_data(self):
+    async def form_data(self) -> Dict[str, Any]:
         return self.request.form.to_dict()

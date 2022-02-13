@@ -1,7 +1,7 @@
-import uvicorn
+import uvicorn  # type: ignore
 
 if __name__ == "__main__":
-    uvicorn.run(
+    uvicorn.run(  # type: ignore
         "asgi:application",
         host="localhost.org",
         port=8080,

@@ -11,11 +11,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union, List
+from typing import List, Union
 
 
 class User:
-    def __init__(self, user_id: str, email: Union[str, None], phone_number: Union[str, None], time_joined: int):
+    def __init__(self, user_id: str,
+                 email: Union[str, None], phone_number: Union[str, None], time_joined: int):
         self.user_id = user_id
         self.email = email
         self.phone_number = phone_number

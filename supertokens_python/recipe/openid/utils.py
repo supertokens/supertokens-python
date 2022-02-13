@@ -12,19 +12,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Callable, Union
 
 if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface
     from supertokens_python import AppInfo
     from supertokens_python.recipe.jwt import OverrideConfig as JWTOverrideConfig
-from supertokens_python.normalised_url_path import NormalisedURLPath
+
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
+from supertokens_python.normalised_url_path import NormalisedURLPath
 
 
 class InputOverrideConfig:
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-                 apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+                 apis: Union[Callable[[APIInterface],
+                                      APIInterface], None] = None,
                  jwt_feature: Union[JWTOverrideConfig, None] = None):
         self.functions = functions
         self.apis = apis
@@ -39,7 +42,8 @@ class OverrideConfig:
 
 
 class OpenIdConfig:
-    def __init__(self, override: OverrideConfig, issuer_domain: NormalisedURLDomain, issuer_path: NormalisedURLPath):
+    def __init__(self, override: OverrideConfig,
+                 issuer_domain: NormalisedURLDomain, issuer_path: NormalisedURLPath):
         self.override = override
         self.issuer_domain = issuer_domain
         self.issuer_path = issuer_path
@@ -57,9 +61,11 @@ def validate_and_normalise_user_input(
         issuer_path = NormalisedURLPath(issuer)
 
     if not issuer_path.equals(app_info.api_base_path):
-        raise Exception('The path of the issuer URL must be equal to the apiBasePath. The default value is /auth')
+        raise Exception(
+            'The path of the issuer URL must be equal to the apiBasePath. The default value is /auth')
 
     if override is None:
         override = InputOverrideConfig()
 
-    return OpenIdConfig(OverrideConfig(functions=override.functions, apis=override.apis), issuer_domain, issuer_path)
+    return OpenIdConfig(OverrideConfig(
+        functions=override.functions, apis=override.apis), issuer_domain, issuer_path)

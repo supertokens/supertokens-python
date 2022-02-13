@@ -11,13 +11,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
 
-from .utils import OverrideConfig
+from typing import TYPE_CHECKING, Callable, Union
 
 from .recipe import JWTRecipe
+from .utils import OverrideConfig
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
 
 
 def init(jwt_validity_seconds: Union[int, None] = None,
-         override: Union[OverrideConfig, None] = None):
+         override: Union[OverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
     return JWTRecipe.init(jwt_validity_seconds, override)

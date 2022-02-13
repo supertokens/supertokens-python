@@ -13,44 +13,45 @@
 # under the License.
 
 from abc import ABC, abstractmethod
+from typing import Any, Dict, Union
 
 
 class BaseResponse(ABC):
 
     @abstractmethod
-    def __init__(self, content: dict, status_code: int = 200):
+    def __init__(self, content: Dict[str, Any], status_code: int = 200):
         self.content = content
         self.status_code = status_code
         self.wrapper_used = True
 
     @abstractmethod
     def set_cookie(self, key: str,
-                   value: str = "",
-                   max_age: int = None,
-                   expires: int = None,
+                   value: str,
+                   #    max_age: Union[int, None] = None,
+                   expires: int,
                    path: str = "/",
-                   domain: str = None,
+                   domain: Union[str, None] = None,
                    secure: bool = False,
                    httponly: bool = False,
-                   samesite: str = "Lax", ):
+                   samesite: str = "lax"):
         pass
 
     @abstractmethod
-    def set_header(self, key, value):
+    def set_header(self, key: str, value: str):
         pass
 
     @abstractmethod
-    def get_header(self, key):
+    def get_header(self, key: str) -> Union[str, None]:
         pass
 
     @abstractmethod
-    def set_status_code(self, status_code):
+    def set_status_code(self, status_code: int):
         pass
 
     @abstractmethod
-    def set_json_content(self, content):
+    def set_json_content(self, content: Dict[str, Any]):
         pass
 
     @abstractmethod
-    def set_html_content(self, content):
+    def set_html_content(self, content: str):
         pass

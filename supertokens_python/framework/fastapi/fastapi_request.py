@@ -11,22 +11,30 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Union
+from urllib.parse import parse_qsl
 
 from supertokens_python.framework.request import BaseRequest
-from urllib.parse import parse_qsl
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 class FastApiRequest(BaseRequest):
 
-    def __init__(self, request):
+    from fastapi import Request
+
+    def __init__(self, request: Request):
         super().__init__()
         self.request = request
 
-    def get_query_param(self, key, default=None):
+    def get_query_param(
+            self, key: str, default: Union[str, None] = None) -> Union[str, None]:
         return self.request.query_params.get(key, default)
 
-    async def json(self):
+    async def json(self) -> Union[Any, None]:
         try:
             return await self.request.json()
         except Exception:
@@ -41,14 +49,10 @@ class FastApiRequest(BaseRequest):
     def get_header(self, key: str) -> Union[str, None]:
         return self.request.headers.get(key, None)
 
-    @property
-    def url(self):
-        return self.request.url
-
-    def get_session(self):
+    def get_session(self) -> Union[SessionContainer, None]:
         return self.request.state.supertokens
 
-    def set_session(self, session):
+    def set_session(self, session: SessionContainer):
         self.request.state.supertokens = session
 
     def get_path(self) -> str:

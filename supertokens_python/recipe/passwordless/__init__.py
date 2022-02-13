@@ -11,24 +11,37 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union, Callable, Awaitable
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
 
-from .utils import ContactConfig, OverrideConfig as InputOverrideConfig, ContactPhoneOnlyConfig, \
-    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, CreateAndSendCustomTextMessageParameters, \
-    CreateAndSendCustomEmailParameters
-
 from .recipe import PasswordlessRecipe
+from .utils import ContactEmailOrPhoneConfig  # type: ignore
+from .utils import ContactPhoneOnlyConfig  # type: ignore
+from .utils import CreateAndSendCustomEmailParameters  # type: ignore
+from .utils import CreateAndSendCustomTextMessageParameters  # type: ignore
+from .utils import PhoneOrEmailInput  # type: ignore
+from .utils import ContactConfig, ContactEmailOnlyConfig  # type: ignore
+from .utils import OverrideConfig as InputOverrideConfig
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
 
 
 def init(contact_config: ContactConfig,
          flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
          override: Union[InputOverrideConfig, None] = None,
-         get_link_domain_and_path: Union[Callable[[str], Awaitable[Union[str, None]]]] = None,
-         get_custom_user_input_code: Union[Callable[[], Awaitable[str]], None] = None):
+         get_link_domain_and_path: Union[Callable[[
+             PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
+         get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None) -> Callable[[AppInfo], RecipeModule]:
     return PasswordlessRecipe.init(contact_config,
                                    flow_type,
                                    override,

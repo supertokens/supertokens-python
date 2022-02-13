@@ -11,12 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from deprecated.classic import deprecated
+
+from typing import Any, Dict, Union
 
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 
 
-async def create_email_verification_token(user_id: str, user_context=None):
+async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     email = await ThirdPartyRecipe.get_instance().get_email_for_user_id(user_id, user_context)
@@ -24,20 +25,14 @@ async def create_email_verification_token(user_id: str, user_context=None):
         user_id, email, user_context)
 
 
-async def verify_email_using_token(token: str, user_context=None):
+async def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
-    response = await ThirdPartyRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
+    return await ThirdPartyRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
         token, user_context)
 
-    if response.is_ok:
-        user_in_this_recipe = await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_by_id(response.user.user_id)
-        return user_in_this_recipe
 
-    return response
-
-
-async def is_email_verified(user_id: str, user_context=None):
+async def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     email = await ThirdPartyRecipe.get_instance().get_email_for_user_id(user_id, user_context)
@@ -45,7 +40,7 @@ async def is_email_verified(user_id: str, user_context=None):
         user_id, email, user_context)
 
 
-async def unverify_email(user_id: str, user_context=None):
+async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     email = await ThirdPartyRecipe.get_instance().get_email_for_user_id(user_id, user_context)
@@ -53,7 +48,7 @@ async def unverify_email(user_id: str, user_context=None):
         user_id, email, user_context)
 
 
-async def revoke_email_verification_tokens(user_id: str, user_context=None):
+async def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     email = await ThirdPartyRecipe.get_instance().get_email_for_user_id(user_id, user_context)
@@ -61,34 +56,19 @@ async def revoke_email_verification_tokens(user_id: str, user_context=None):
         user_id, email, user_context)
 
 
-@deprecated(reason="Use supertokens_python.get_user_oldest_first(...) function instead IF using core version >= 3.5")
-async def get_users_oldest_first(limit: int = None, next_pagination: str = None):
-    return await ThirdPartyRecipe.get_instance().recipe_implementation.get_users_oldest_first(limit, next_pagination)
-
-
-@deprecated(reason="Use supertokens_python.get_users_newest_first(...) function instead IF using core version >= 3.5")
-async def get_users_newest_first(limit: int = None, next_pagination: str = None):
-    return await ThirdPartyRecipe.get_instance().recipe_implementation.get_users_newest_first(limit, next_pagination)
-
-
-@deprecated(reason="Use supertokens_python.get_user_count(...) function instead IF using core version >= 3.5")
-async def get_user_count():
-    return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_count()
-
-
-async def get_user_by_id(user_id: str, user_context=None):
+async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_by_id(user_id, user_context)
 
 
-async def get_users_by_email(email: str, user_context=None):
+async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.get_users_by_email(email, user_context)
 
 
-async def get_user_by_third_party_info(third_party_id: str, third_party_user_id: str, user_context=None):
+async def get_user_by_third_party_info(third_party_id: str, third_party_user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(third_party_id,
@@ -96,7 +76,7 @@ async def get_user_by_third_party_info(third_party_id: str, third_party_user_id:
                                                                                                    user_context)
 
 
-async def sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context=None):
+async def sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.sign_in_up(third_party_id, third_party_user_id,

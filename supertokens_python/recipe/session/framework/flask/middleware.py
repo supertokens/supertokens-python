@@ -12,31 +12,34 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from functools import wraps
-from typing import Union
-
+from typing import Any, Dict, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework.flask.flask_request import FlaskRequest
 from supertokens_python.recipe.session import SessionRecipe
 
 
-def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context=None):
+def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
 
-    def session_verify(f):
+    def session_verify(f: Any):
         @wraps(f)
-        def wrapped_function(*args, **kwargs):
-            from flask import request, make_response
-            request = FlaskRequest(request)
+        def wrapped_function(*args: Any, **kwargs: Any):
+            from flask import make_response, request
+            baseRequest = FlaskRequest(request)
             recipe = SessionRecipe.get_instance()
             session = sync(
                 recipe.verify_session(
-                    request,
-                    user_context,
+                    baseRequest,
                     anti_csrf_check,
-                    session_required))
-            request.set_session(session)
+                    session_required,
+                    user_context))
+            if session is None:
+                if session_required:
+                    raise Exception("Should never come here")
+            else:
+                baseRequest.set_session(session)
             response = make_response(f(*args, **kwargs))
             return response
         return wrapped_function

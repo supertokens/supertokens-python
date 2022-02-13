@@ -1,2 +1,0 @@
-django==2.2.23
-django-cors-headers==3.4.0

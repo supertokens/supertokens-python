@@ -14,4 +14,5 @@
 
 from __future__ import annotations
 
-from .recipe_implementation import RecipeImplementationWithJWT
+from .recipe_implementation import \
+    get_recipe_implementation_with_jwt  # type: ignore

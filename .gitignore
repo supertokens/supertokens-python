@@ -13,4 +13,4 @@ env/
 bin/
 lib/
 pyvenv.cfg
-.vscode
+sqlite.db
