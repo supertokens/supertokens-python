@@ -1,0 +1,4 @@
+fastapi==0.68.1
+uvicorn==0.16.0
+python-dotenv==0.19.2
+git+https://github.com/supertokens/supertokens-python.git@master#egg=supertokens_python
