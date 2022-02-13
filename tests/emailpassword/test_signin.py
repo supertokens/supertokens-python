@@ -31,13 +31,13 @@ from tests.utils import (clean_st, extract_all_cookies, reset, setup_st,
                          sign_up_request, start_st)
 
 
-def setup_function(f): # type: ignore
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f): # type: ignore
+def teardown_function(_):
     reset()
     clean_st()
 
@@ -420,10 +420,10 @@ async def test_that_a_successful_signin_yields_a_session(driver_config_client: T
 
     cookies = extract_all_cookies(response_1)
 
-    assert (cookies["sAccessToken"] is not None)
-    assert (cookies['sRefreshToken'] is not None)
+    assert cookies["sAccessToken"] is not None
+    assert cookies['sRefreshToken'] is not None
     assert response_2.headers.get('anti-csrf') is not None
-    assert (cookies["sIdRefreshToken"] is not None)
+    assert cookies["sIdRefreshToken"] is not None
 
 
 @mark.asyncio

@@ -162,7 +162,7 @@ def normalise_sign_in_form_fields(
     return list(map(
         lambda y: NormalisedFormField(
             y.id, y.validate if y.id == FORM_FIELD_EMAIL_ID else default_validator, False),
-        get_filtered_list(lambda x: x.id == FORM_FIELD_PASSWORD_ID or x.id == FORM_FIELD_EMAIL_ID, form_fields)))
+        get_filtered_list(lambda x: x.id in (FORM_FIELD_PASSWORD_ID, FORM_FIELD_EMAIL_ID), form_fields)))
 
 
 def validate_and_normalise_sign_in_config(

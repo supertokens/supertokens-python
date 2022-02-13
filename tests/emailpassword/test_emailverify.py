@@ -38,13 +38,13 @@ from tests.utils import (TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, clean_st,
                          sign_up_request, start_st)
 
 
-def setup_function(f): # type: ignore
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f): # type: ignore
+def teardown_function(_):
     reset()
     clean_st()
 
@@ -329,7 +329,7 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
 async def test_the_email_verify_api_with_valid_input(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(user: User, email_verification_url_token: str, _: Dict[str, Any]):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -399,7 +399,7 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
 async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(user: User, email_verification_url_token: str, _: Dict[str, Any]):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -469,7 +469,7 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_co
 async def test_the_email_verify_api_with_token_of_not_type_string(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(user: User, email_verification_url_token: str, _: Dict[str, Any]):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -544,7 +544,7 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(user: User, email_verification_url_token: str, _: Dict[str, Any]):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -642,7 +642,7 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
 async def test_the_email_verify_with_valid_input_using_the_get_method(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(user: User, email_verification_url_token: str, _: Dict[str, Any]):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -745,7 +745,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(user: User, email_verification_url_token: str, _: Dict[str, Any]):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -837,7 +837,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(user: User, email_verification_url_token: str, _: Dict[str, Any]):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -942,7 +942,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version == "2.9" or version == "2.10" or version == "2.11" or version == "2.12"
+    assert version in ('2.9', '2.10', '2.11', '2.12')
 
     response_1 = sign_up_request(
         driver_config_client,
@@ -980,7 +980,7 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version == "2.9" or version == "2.10" or version == "2.11" or version == "2.12"
+    assert version in ('2.9', '2.10', '2.11', '2.12')
 
     response_1 = sign_up_request(
         driver_config_client,
@@ -996,7 +996,7 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
         raise Exception("Should never come here")
     await verify_email_using_token(verify_token.token)
 
-    assert (await is_email_verified(user_id))
+    assert await is_email_verified(user_id)
 
     await unverify_email(user_id)
 

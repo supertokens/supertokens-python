@@ -123,7 +123,7 @@ class SessionRecipe(RecipeModule):
                                                 self.recipe_implementation,
                                                 self.openid_recipe.jwt_recipe.recipe_implementation if self.openid_recipe is not None else None
                                             ))
-        elif request_id == SIGNOUT:
+        if request_id == SIGNOUT:
             return await handle_signout_api(self.api_implementation,
                                             APIOptions(
                                                 request,
@@ -133,7 +133,7 @@ class SessionRecipe(RecipeModule):
                                                 self.recipe_implementation,
                                                 self.openid_recipe.jwt_recipe.recipe_implementation if self.openid_recipe is not None else None
                                             ))
-        elif self.openid_recipe is not None:
+        if self.openid_recipe is not None:
             return await self.openid_recipe.handle_api_request(request_id, request, path, method, response)
         return None
 
@@ -175,8 +175,7 @@ class SessionRecipe(RecipeModule):
                     jwt
                 )
                 return SessionRecipe.__instance
-            else:
-                raise_general_exception(
+            raise_general_exception(
                     'Session recipe has already been initialised. Please check your code for bugs.')
 
         return func

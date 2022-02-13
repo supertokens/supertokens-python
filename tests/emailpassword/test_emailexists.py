@@ -27,13 +27,13 @@ from supertokens_python.recipe.session.asyncio import (create_new_session,
 from tests.utils import clean_st, reset, setup_st, sign_up_request, start_st
 
 
-def setup_function(f): # type: ignore
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f): # type: ignore
+def teardown_function(_):
     reset()
     clean_st()
 

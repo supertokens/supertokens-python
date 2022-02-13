@@ -91,7 +91,7 @@ class RecipeImplementation(RecipeInterface):
         result = await self.querier.send_post_request(NormalisedURLPath('/recipe/signinup/code'), data)
         if result['status'] == 'RESTART_FLOW_ERROR':
             return CreateNewCodeForDeviceRestartFlowErrorResult()
-        elif result['status'] == 'USER_INPUT_CODE_ALREADY_USED_ERROR':
+        if result['status'] == 'USER_INPUT_CODE_ALREADY_USED_ERROR':
             return CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult()
         return CreateNewCodeForDeviceOkResult(
             pre_auth_session_id=result['preAuthSessionId'],
@@ -136,9 +136,9 @@ class RecipeImplementation(RecipeInterface):
                         phone_number=phone_number,
                         time_joined=result['user']['timeJoined'])
             return ConsumeCodeOkResult(result['createdNewUser'], user)
-        elif result['status'] == 'RESTART_FLOW_ERROR':
+        if result['status'] == 'RESTART_FLOW_ERROR':
             return ConsumeCodeRestartFlowErrorResult()
-        elif result['status'] == 'INCORRECT_USER_INPUT_CODE_ERROR':
+        if result['status'] == 'INCORRECT_USER_INPUT_CODE_ERROR':
             return ConsumeCodeIncorrectUserInputCodeErrorResult(
                 failed_code_input_attempt_count=result['failedCodeInputAttemptCount'],
                 maximum_code_input_attempts=result['maximumCodeInputAttempts']
@@ -220,9 +220,9 @@ class RecipeImplementation(RecipeInterface):
         result = await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
         if result['status'] == 'OK':
             return UpdateUserOkResult()
-        elif result['status'] == 'UNKNOWN_USER_ID_ERROR':
+        if result['status'] == 'UNKNOWN_USER_ID_ERROR':
             return UpdateUserUnknownUserIdErrorResult()
-        elif result['status'] == 'EMAIL_ALREADY_EXISTS_ERROR':
+        if result['status'] == 'EMAIL_ALREADY_EXISTS_ERROR':
             return UpdateUserEmailAlreadyExistsErrorResult()
         return UpdateUserPhoneNumberAlreadyExistsErrorResult()
 

@@ -56,31 +56,30 @@ def middleware(get_response: Any):
 
             raise Exception("Should never come here")
         return __asyncMiddleware
-    else:
-        def __syncMiddleware(request: HttpRequest):
-            st = Supertokens.get_instance()
-            custom_request = DjangoRequest(request)
-            from django.http import HttpResponse
+    def __syncMiddleware(request: HttpRequest):
+        st = Supertokens.get_instance()
+        custom_request = DjangoRequest(request)
+        from django.http import HttpResponse
+        response = DjangoResponse(HttpResponse())
+        try:
+            result: Union[DjangoResponse, None] = async_to_sync(
+                st.middleware)(custom_request, response)
+
+            if result is None:
+                result = DjangoResponse(get_response(request))
+
+            if hasattr(request, "supertokens") and isinstance(
+                    request.supertokens, SessionContainer):  # type: ignore
+                manage_cookies_post_response(
+                    request.supertokens, result)  # type: ignore
+            return result.response
+
+        except SuperTokensError as e:
             response = DjangoResponse(HttpResponse())
-            try:
-                result: Union[DjangoResponse, None] = async_to_sync(
-                    st.middleware)(custom_request, response)
-
-                if result is None:
-                    result = DjangoResponse(get_response(request))
-
-                if hasattr(request, "supertokens") and isinstance(
-                        request.supertokens, SessionContainer):  # type: ignore
-                    manage_cookies_post_response(
-                        request.supertokens, result)  # type: ignore
+            result: Union[DjangoResponse, None] = async_to_sync(st.handle_supertokens_error)(
+                DjangoRequest(request), e, response)
+            if result is not None:
                 return result.response
+        raise Exception("Should never come here")
 
-            except SuperTokensError as e:
-                response = DjangoResponse(HttpResponse())
-                result: Union[DjangoResponse, None] = async_to_sync(st.handle_supertokens_error)(
-                    DjangoRequest(request), e, response)
-                if result is not None:
-                    return result.response
-            raise Exception("Should never come here")
-
-        return __syncMiddleware
+    return __syncMiddleware

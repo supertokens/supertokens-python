@@ -47,9 +47,8 @@ from os import environ
 
 from httpx import AsyncClient
 
-from supertokens_python.recipe.session import SessionRecipe
-
 from .exceptions import BadInputError, GeneralError, raise_general_exception
+from .recipe.session import SessionRecipe
 
 
 class SupertokensConfig:
@@ -98,7 +97,7 @@ class AppInfo:
         self.website_base_path: NormalisedURLPath = NormalisedURLPath(
             website_base_path)
         if mode is not None:
-            mode = mode
+            self.mode = mode
         elif framework == 'fastapi':
             mode = 'asgi'
         else:
@@ -252,7 +251,7 @@ class Supertokens:
 
         return list(headers_set)
 
-    async def get_user_count(self, include_recipe_ids: Union[None, List[str]]) -> int:
+    async def get_user_count(self, include_recipe_ids: Union[None, List[str]]) -> int: # pylint: disable=no-self-use
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
         if include_recipe_ids is not None:
@@ -264,7 +263,7 @@ class Supertokens:
 
         return int(response['count'])
 
-    async def delete_user(self, user_id: str) -> None:
+    async def delete_user(self, user_id: str) -> None: # pylint: disable=no-self-use
         querier = Querier.get_instance(None)
 
         cdi_version = await querier.get_api_version()
@@ -275,11 +274,10 @@ class Supertokens:
             })
 
             return None
-        else:
-            raise_general_exception(
+        raise_general_exception(
                 'Please upgrade the SuperTokens core to >= 3.7.0')
 
-    async def get_users(self, time_joined_order: Literal['ASC', 'DESC'],
+    async def get_users(self, time_joined_order: Literal['ASC', 'DESC'], # pylint: disable=no-self-use
                         limit: Union[int, None], pagination_token: Union[str, None],
                         include_recipe_ids: Union[None, List[str]]) -> UsersResponse:
         querier = Querier.get_instance(None)
@@ -332,7 +330,7 @@ class Supertokens:
 
         return UsersResponse(users, next_pagination_token)
 
-    async def middleware(self, request: BaseRequest, response: BaseResponse) -> Union[BaseResponse, None]:
+    async def middleware(self, request: BaseRequest, response: BaseResponse) -> Union[BaseResponse, None]: # pylint: disable=no-self-use
         path = Supertokens.get_instance().app_info.api_gateway_path.append(
             NormalisedURLPath(
                 request.get_path()))
@@ -341,33 +339,31 @@ class Supertokens:
         if not path.startswith(
                 Supertokens.get_instance().app_info.api_base_path):
             return None
+        request_rid = get_rid_from_request(request)
+        if request_rid is not None and request_rid == 'anti-csrf':
+            # see
+            # https://github.com/supertokens/supertokens-python/issues/54
+            request_rid = None
+        request_id = None
+        matched_recipe = None
+        if request_rid is not None:
+            for recipe in Supertokens.get_instance().recipe_modules:
+                if recipe.get_recipe_id() == request_rid:
+                    matched_recipe = recipe
+                    break
+            if matched_recipe is not None:
+                request_id = matched_recipe.return_api_id_if_can_handle_request(
+                    path, method)
         else:
-            request_rid = get_rid_from_request(request)
-            if request_rid is not None and request_rid == 'anti-csrf':
-                # see
-                # https://github.com/supertokens/supertokens-python/issues/54
-                request_rid = None
-            request_id = None
-            matched_recipe = None
-            if request_rid is not None:
-                for recipe in Supertokens.get_instance().recipe_modules:
-                    if recipe.get_recipe_id() == request_rid:
-                        matched_recipe = recipe
-                        break
-                if matched_recipe is not None:
-                    request_id = matched_recipe.return_api_id_if_can_handle_request(
-                        path, method)
-            else:
-                for recipe in Supertokens.get_instance().recipe_modules:
-                    request_id = recipe.return_api_id_if_can_handle_request(
-                        path, method)
-                    if request_id is not None:
-                        matched_recipe = recipe
-                        break
-            if request_id is not None and matched_recipe is not None:
-                return await matched_recipe.handle_api_request(request_id, request, path, method, response)
-            else:
-                return None
+            for recipe in Supertokens.get_instance().recipe_modules:
+                request_id = recipe.return_api_id_if_can_handle_request(
+                    path, method)
+                if request_id is not None:
+                    matched_recipe = recipe
+                    break
+        if request_id is not None and matched_recipe is not None:
+            return await matched_recipe.handle_api_request(request_id, request, path, method, response)
+        return None
 
     async def handle_supertokens_error(self, request: BaseRequest, err: Exception, response: BaseResponse):
         if isinstance(err, GeneralError):

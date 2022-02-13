@@ -22,8 +22,8 @@ frameworks = ["fastapi", "flask", "django"]
 
 
 class FrameworkEnum(Enum):
-    FASTAPI = 1,
-    FLASK = 2,
+    FASTAPI = 1
+    FLASK = 2
     DJANGO = 3
 
 

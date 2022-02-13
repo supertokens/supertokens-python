@@ -9,7 +9,6 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.datastructures import Headers
 from starlette.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import Response
 from starlette.types import ASGIApp
 from supertokens_python import (InputAppInfo, SupertokensConfig,
                                 get_all_cors_headers, init)

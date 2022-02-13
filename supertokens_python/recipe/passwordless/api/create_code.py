@@ -55,8 +55,7 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
         phone_number = body['phoneNumber']
 
     if email is not None and (
-        isinstance(api_options.config.contact_config, ContactEmailOnlyConfig)
-        or isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig)
+        isinstance(api_options.config.contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig))
     ):
         email = email.strip()
         validation_error = await api_options.config.contact_config.validate_email_address(email)
@@ -66,11 +65,7 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
             return api_options.response
 
     if phone_number is not None and (
-        isinstance(api_options.config.contact_config, ContactPhoneOnlyConfig)
-        or
-        isinstance(
-            api_options.config.contact_config,
-            ContactEmailOrPhoneConfig)
+        isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig))
     ):
         validation_error = await api_options.config.contact_config.validate_phone_number(phone_number)
         if validation_error is not None:

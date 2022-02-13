@@ -45,11 +45,11 @@ class APIImplementation(APIInterface):
         magic_link = None
         user_input_code = None
         flow_type = api_options.config.flow_type
-        if flow_type == 'MAGIC_LINK' or flow_type == 'USER_INPUT_CODE_AND_MAGIC_LINK':
+        if flow_type in ('MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'):
             magic_link = await api_options.config.get_link_domain_and_path(PhoneOrEmailInput(phone_number=phone_number, email=email), user_context)
             magic_link += '?rid=' + api_options.recipe_id + '&preAuthSessionId=' + \
                 response.pre_auth_session_id + '#' + response.link_code
-        if flow_type == 'USER_INPUT_CODE' or flow_type == 'USER_INPUT_CODE_AND_MAGIC_LINK':
+        if flow_type in ('USER_INPUT_CODE', 'USER_INPUT_CODE_AND_MAGIC_LINK'):
             user_input_code = response.user_input_code
 
         try:
@@ -64,8 +64,7 @@ class APIImplementation(APIInterface):
                     code_life_time=response.code_life_time,
                     pre_auth_session_id=response.pre_auth_session_id
                 ), user_context)
-            elif isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig) or \
-                    isinstance(api_options.config.contact_config, ContactPhoneOnlyConfig):
+            elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
                 if phone_number is None:
                     raise Exception("Should never come here")
                 await api_options.config.contact_config.create_and_send_custom_text_message(CreateAndSendCustomTextMessageParameters(
@@ -113,13 +112,13 @@ class APIImplementation(APIInterface):
                 magic_link = None
                 user_input_code = None
                 flow_type = api_options.config.flow_type
-                if flow_type == 'MAGIC_LINK' or flow_type == 'USER_INPUT_CODE_AND_MAGIC_LINK':
+                if flow_type in ('MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'):
                     if response.link_code is None or response.pre_auth_session_id is None:
                         raise Exception("Should never come here")
                     magic_link = await api_options.config.get_link_domain_and_path(PhoneOrEmailInput(device_info.phone_number, device_info.email), user_context)
                     magic_link += '?rid=' + api_options.recipe_id + '&preAuthSessionId=' + \
                         response.pre_auth_session_id + '#' + response.link_code
-                if flow_type == 'USER_INPUT_CODE' or flow_type == 'USER_INPUT_CODE_AND_MAGIC_LINK':
+                if flow_type in ('USER_INPUT_CODE', 'USER_INPUT_CODE_AND_MAGIC_LINK'):
                     user_input_code = response.user_input_code
 
                 try:
@@ -135,8 +134,7 @@ class APIImplementation(APIInterface):
                             code_life_time=response.code_life_time,
                             pre_auth_session_id=response.pre_auth_session_id
                         ), user_context)
-                    elif isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig) or \
-                            isinstance(api_options.config.contact_config, ContactPhoneOnlyConfig):
+                    elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
                         if device_info.phone_number is None or response.code_life_time is None or response.pre_auth_session_id is None:
                             raise Exception("Should never come here")
                         await api_options.config.contact_config.create_and_send_custom_text_message(CreateAndSendCustomTextMessageParameters(
@@ -171,14 +169,14 @@ class APIImplementation(APIInterface):
                 failed_code_input_attempt_count=response.failed_code_input_attempt_count,
                 maximum_code_input_attempts=response.maximum_code_input_attempts
             )
-        elif response.is_incorrect_user_input_code_error:
+        if response.is_incorrect_user_input_code_error:
             if response.failed_code_input_attempt_count is None or response.maximum_code_input_attempts is None:
                 raise Exception("Should never come here")
             return ConsumeCodePostIncorrectUserInputCodeErrorResponse(
                 failed_code_input_attempt_count=response.failed_code_input_attempt_count,
                 maximum_code_input_attempts=response.maximum_code_input_attempts
             )
-        elif response.is_restart_flow_error:
+        if response.is_restart_flow_error:
             return ConsumeCodePostRestartFlowErrorResponse()
         if response.user is None or response.created_new_user is None:
             raise Exception("Should never come here")

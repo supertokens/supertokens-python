@@ -74,8 +74,8 @@ class APIImplementation(APIInterface):
         if is_using_oauth_development_client_id(provider.client_id):
             params['actual_redirect_uri'] = authorisation_url_info.url
 
-            for k, _ in params.items():
-                if params[k] == provider.client_id:
+            for k, v in params.items():
+                if v == provider.client_id:
                     params[k] = get_actual_client_id_from_development_client_id(
                         provider.client_id)
             auth_url = DEV_OAUTH_AUTHORIZATION_URL
@@ -85,8 +85,7 @@ class APIImplementation(APIInterface):
         url = auth_url + '?' + query_string
         return AuthorisationUrlGetOkResponse(url)
 
-    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
-                              user_context: Dict[str, Any]) -> SignInUpPostResponse:
+    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions, user_context: Dict[str, Any]) -> SignInUpPostResponse:
 
         redirect_uri_from_provider = provider.get_redirect_uri()
         if is_using_oauth_development_client_id(provider.client_id):

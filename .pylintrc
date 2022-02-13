@@ -101,7 +101,21 @@ disable=raw-checker-failed,
         fixme,
         assigning-non-slot,
         redefined-outer-name,
-        too-many-function-args
+        too-many-function-args,
+        inconsistent-return-statements,
+        too-many-locals,
+        ungrouped-imports,
+        cell-var-from-loop,
+        too-many-branches,
+        too-many-boolean-expressions,
+        raise-missing-from,
+        too-many-statements,
+        unspecified-encoding,
+        consider-using-with,
+        subprocess-run-check,
+        global-statement,
+        too-many-lines,
+        duplicate-code
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

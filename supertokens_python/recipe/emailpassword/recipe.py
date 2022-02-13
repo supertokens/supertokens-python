@@ -102,20 +102,19 @@ class EmailPasswordRecipe(RecipeModule):
         if request_id == SIGNUP:
             return await handle_sign_up_api(self.api_implementation,
                                             api_options)
-        elif request_id == SIGNIN:
+        if request_id == SIGNIN:
             return await handle_sign_in_api(self.api_implementation,
                                             api_options)
-        elif request_id == SIGNUP_EMAIL_EXISTS:
+        if request_id == SIGNUP_EMAIL_EXISTS:
             return await handle_email_exists_api(self.api_implementation,
                                                  api_options)
-        elif request_id == USER_PASSWORD_RESET_TOKEN:
+        if request_id == USER_PASSWORD_RESET_TOKEN:
             return await handle_generate_password_reset_token_api(self.api_implementation,
                                                                   api_options)
-        elif request_id == USER_PASSWORD_RESET:
+        if request_id == USER_PASSWORD_RESET:
             return await handle_password_reset_api(self.api_implementation,
                                                    api_options)
-        else:
-            return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
+        return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
         if isinstance(err, SuperTokensEmailPasswordError):
@@ -137,8 +136,7 @@ class EmailPasswordRecipe(RecipeModule):
             if EmailPasswordRecipe.__instance is None:
                 EmailPasswordRecipe.__instance = EmailPasswordRecipe(EmailPasswordRecipe.recipe_id, app_info, sign_up_feature, reset_password_using_token_feature, email_verification_feature, override)
                 return EmailPasswordRecipe.__instance
-            else:
-                raise Exception(None, 'Emailpassword recipe has already been initialised. Please check your code for bugs.')
+            raise Exception(None, 'Emailpassword recipe has already been initialised. Please check your code for bugs.')
 
         return func
 

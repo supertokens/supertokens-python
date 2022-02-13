@@ -20,7 +20,7 @@ from fastapi import Response
 
 def extract_all_cookies(response: Response) -> Dict[str, Any]:
     cookie_headers = response.headers.getlist('Set-Cookie')
-    cookies: Dict[str, Any] = dict()
+    cookies: Dict[str, Any] = {}
     for header in cookie_headers:
         attributes = header.split(';')
         cookie = {}

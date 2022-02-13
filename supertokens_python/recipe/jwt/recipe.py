@@ -90,8 +90,7 @@ class JWTRecipe(RecipeModule):
                 JWTRecipe.__instance = JWTRecipe(
                     JWTRecipe.recipe_id, app_info, jwt_validity_seconds, override)
                 return JWTRecipe.__instance
-            else:
-                raise_general_exception('JWT recipe has already been initialised. Please check '
+            raise_general_exception('JWT recipe has already been initialised. Please check '
                                         'your code for bugs.')
 
         return func

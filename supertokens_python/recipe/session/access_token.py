@@ -33,7 +33,7 @@ def sanitize_string(s: Any) -> Union[str, None]:
 
 def sanitize_number(n: Any) -> Union[Union[int, float], None]:
     _type = type(n)
-    if _type == int or _type == float:
+    if _type == int or _type == float: # pylint: disable=consider-using-in
         return n
 
     return None

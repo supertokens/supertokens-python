@@ -24,7 +24,7 @@ class FlaskResponse(BaseResponse):
     def __init__(self, response: Response):
         super().__init__({})
         self.response = response
-        self.headers: List[Any] = list()
+        self.headers: List[Any] = []
         self.response_sent = False
         self.status_set = False
 
@@ -82,8 +82,7 @@ class FlaskResponse(BaseResponse):
     def get_headers(self):
         if self.response is None:
             return self.headers
-        else:
-            return self.response.headers
+        return self.response.headers
 
     def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:

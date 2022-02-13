@@ -41,12 +41,11 @@ def get_interface_impl(
                 return SignInUpPostOkResponse(
                     result.user, result.created_new_user, result.auth_code_response, result.session)
 
-            elif result.is_no_email_given_by_provider:
+            if result.is_no_email_given_by_provider:
                 return SignInUpPostNoEmailGivenByProviderResponse()
-            else:
-                if result.error is None:
-                    raise Exception("Should never come here")
-                return SignInUpPostFieldErrorResponse(result.error)
+            if result.error is None:
+                raise Exception("Should never come here")
+            return SignInUpPostFieldErrorResponse(result.error)
 
         implementation.sign_in_up_post = sign_in_up_post
 

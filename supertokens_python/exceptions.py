@@ -20,7 +20,7 @@ def raise_general_exception(
         msg: Union[str, Exception], previous: Union[None, Exception] = None):
     if isinstance(msg, SuperTokensError):
         raise msg
-    elif isinstance(msg, Exception):
+    if isinstance(msg, Exception):
         raise GeneralError(msg) from None
     raise GeneralError(msg) from previous
 

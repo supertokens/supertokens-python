@@ -101,7 +101,7 @@ def drop_key(key: str):
 
 def __stop_st(retry: int = 50):
     process_ids = __get_list_of_process_ids()
-    for pid in process_ids: 
+    for pid in process_ids:
         kill(int(pid), SIGTERM)
     process_ids = __get_list_of_process_ids()
     if len(process_ids) != 0:
@@ -194,14 +194,14 @@ def extract_all_cookies(response: Response) -> Dict[str, Any]:
         return {}
     cookie_headers = SimpleCookie( # type: ignore
         response.headers.get('set-cookie'))
-    cookies: Dict[str, Any] = dict()
+    cookies: Dict[str, Any] = {}
     for key, morsel in cookie_headers.items(): # type: ignore
         cookies[key] = {
             'value': morsel.value,
             'name': key
         }
         for k, v in morsel.items():
-            if (k == 'secure' or k == 'httponly') and v == '':
+            if (k in ('secure', 'httponly')) and v == '':
                 cookies[key][k] = None
             elif k == 'samesite':
                 if len(v) > 0 and v[-1] == ',':

@@ -31,13 +31,13 @@ from tests.utils import (TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH,
                          extract_all_cookies, reset, setup_st, start_st)
 
 
-def setup_function(f): # type: ignore
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f): # type: ignore
+def teardown_function(_):
     reset()
     clean_st()
 
@@ -300,7 +300,7 @@ async def test_login_info(driver_config_client: TestClient):
         }
     )
     cookies_2 = extract_all_cookies(response_2)
-    assert cookies_2 == {}
+    assert not cookies_2
 
 
 @mark.asyncio

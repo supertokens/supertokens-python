@@ -24,13 +24,13 @@ from supertokens_python.utils import utf_base64decode
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
-def setup_function(f): # type: ignore
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f): # type: ignore
+def teardown_function(_):
     reset()
     clean_st()
 

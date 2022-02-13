@@ -174,11 +174,10 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         if self.email_password_recipe.return_api_id_if_can_handle_request(
                 path, method) is not None:
             return await self.email_password_recipe.handle_api_request(request_id, request, path, method, response)
-        elif self.third_party_recipe is not None and self.third_party_recipe.return_api_id_if_can_handle_request(path,
+        if self.third_party_recipe is not None and self.third_party_recipe.return_api_id_if_can_handle_request(path,
                                                                                                                  method) is not None:
             return await self.third_party_recipe.handle_api_request(request_id, request, path, method, response)
-        else:
-            return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
+        return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
         if self.email_password_recipe.is_error_from_this_recipe_based_on_instance(
@@ -189,8 +188,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                 err):
             return await self.third_party_recipe.handle_error(
                 request, err, response)
-        else:
-            return await self.email_verification_recipe.handle_error(
+        return await self.email_verification_recipe.handle_error(
                 request, err, response)
 
     def get_all_cors_headers(self) -> List[str]:
@@ -215,8 +213,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                     override,
                     providers)
                 return ThirdPartyEmailPasswordRecipe.__instance
-            else:
-                raise Exception(None, 'ThirdPartyEmailPassword recipe has already been initialised. Please check your code for bugs.')
+            raise Exception(None, 'ThirdPartyEmailPassword recipe has already been initialised. Please check your code for bugs.')
 
         return func
 

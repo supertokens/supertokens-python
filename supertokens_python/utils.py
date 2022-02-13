@@ -85,7 +85,7 @@ def compare_version(v1: str, v2: str) -> str:
     for i in range(max_loop):
         if int(v1_split[i]) > int(v2_split[i]):
             return v1
-        elif int(v2_split[i]) > int(v1_split[i]):
+        if int(v2_split[i]) > int(v1_split[i]):
             return v2
 
     if len(v1_split) > len(v2_split):

@@ -112,9 +112,7 @@ class OpenIdRecipe(RecipeModule):
                     issuer,
                     override)
                 return OpenIdRecipe.__instance
-            else:
-                raise_general_exception('OpenId recipe has already been initialised. Please check '
-                                        'your code for bugs.')
+            raise_general_exception('OpenId recipe has already been initialised. Please check your code for bugs.')
 
         return func
 

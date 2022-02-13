@@ -13,6 +13,7 @@
 # under the License.
 
 import json
+from inspect import isawaitable
 from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -27,14 +28,14 @@ from tests.utils import clean_st, reset, setup_st, start_st
 
 
 def get_cookies(response: HttpResponse) -> Dict[str, Any]:
-    cookies: Dict[str, Any] = dict()
+    cookies: Dict[str, Any] = {}
     for key, morsel in response.cookies.items():
         cookies[key] = {
             'value': morsel.value,
             'name': key
         }
         for k, v in morsel.items():
-            if (k == 'secure' or k == 'httponly') and v == '':
+            if (k in ('secure', 'httponly')) and v == '':
                 cookies[key][k] = None
             elif k == 'samesite':
                 if len(v) > 0 and v[-1] == ',':
@@ -55,7 +56,7 @@ async def refresh_view(request: HttpRequest):
     return JsonResponse({'foo': 'bar'})
 
 
-async def custom_response_view(request: HttpRequest):
+async def custom_response_view(_: HttpRequest):
     pass
 
 from typing import Union
@@ -113,7 +114,10 @@ class SupertokensTest(TestCase):
 
         my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
-        response = await my_middleware(request)
+        temp =  my_middleware(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
 
         my_middleware = middleware(refresh_view)
         request = self.factory.get('/refresh', {'user_id': 'user_id'})
@@ -126,7 +130,10 @@ class SupertokensTest(TestCase):
         request.COOKIES["sRefreshToken"] = cookies['sRefreshToken']['value']
         request.COOKIES["sIdRefreshToken"] = cookies['sIdRefreshToken']['value']
         request.META['HTTP_ANTI_CSRF'] = response.headers['anti-csrf']
-        response = await my_middleware(request)
+        temp =  my_middleware(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
         refreshed_cookies = get_cookies(response)
 
         assert refreshed_cookies['sAccessToken']['value'] != cookies['sAccessToken']['value']
@@ -161,7 +168,10 @@ class SupertokensTest(TestCase):
 
         my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
-        response = await my_middleware(request)
+        temp =  my_middleware(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
         cookies = get_cookies(response)
 
         assert len(cookies['sAccessToken']['value']) > 0
@@ -174,7 +184,10 @@ class SupertokensTest(TestCase):
         request.COOKIES["sAccessToken"] = cookies['sAccessToken']['value']
         request.COOKIES["sIdRefreshToken"] = cookies['sIdRefreshToken']['value']
         request.META['HTTP_ANTI_CSRF'] = response.headers['anti-csrf']
-        response = await my_middleware(request)
+        temp =  my_middleware(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
         logout_cookies = get_cookies(response)
         assert response.headers.get('anti-csrf') is None # type: ignore
         assert logout_cookies['sAccessToken']['value'] == ''
@@ -202,7 +215,10 @@ class SupertokensTest(TestCase):
 
         my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
-        response = await my_middleware(request)
+        temp =  my_middleware(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
         cookies = get_cookies(response)
 
         assert len(cookies['sAccessToken']['value']) > 0
@@ -215,11 +231,14 @@ class SupertokensTest(TestCase):
         request.COOKIES["sAccessToken"] = cookies['sAccessToken']['value']
         request.COOKIES["sIdRefreshToken"] = cookies['sIdRefreshToken']['value']
         request.META['HTTP_ANTI_CSRF'] = response.headers['anti-csrf']
-        response = await my_middleware(request)
+        temp =  my_middleware(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
         assert "s" in json.loads(response.content)
         handle_cookies = get_cookies(response)
 
-        assert handle_cookies == {}
+        assert not handle_cookies
 
     async def test_login_refresh_error_handler(self):
         init(
@@ -242,7 +261,10 @@ class SupertokensTest(TestCase):
 
         my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
-        response = await my_middleware(request)
+        temp =  my_middleware(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
 
         my_middleware = middleware(refresh_view)
         request = self.factory.get('/refresh', {'user_id': 'user_id'})
@@ -252,7 +274,10 @@ class SupertokensTest(TestCase):
         assert len(cookies['sIdRefreshToken']['value']) > 0
         assert len(cookies['sRefreshToken']['value']) > 0
 
-        response = await my_middleware(request)
+        temp =  my_middleware(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
         # not authorized because no access refresh token
         assert response.status_code == 401
 
@@ -292,7 +317,10 @@ class SupertokensTest(TestCase):
         my_middleware = middleware(custom_response_view)
         request = self.factory.get(
             '/auth/signup/email/exists?email=test@example.com')
-        response = await my_middleware(request)
+        temp =  my_middleware(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
 
         assert response.status_code == 203
         dict_response = json.loads(response.content)

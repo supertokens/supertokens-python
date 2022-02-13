@@ -88,20 +88,19 @@ class ThirdPartyRecipe(RecipeModule):
         if request_id == SIGNINUP:
             return await handle_sign_in_up_api(self.api_implementation,
                                                api_options)
-        elif request_id == AUTHORISATIONURL:
+        if request_id == AUTHORISATIONURL:
             return await handle_authorisation_url_api(self.api_implementation,
                                                       api_options)
-        elif request_id == APPLE_REDIRECT_HANDLER:
+        if request_id == APPLE_REDIRECT_HANDLER:
             return await handle_apple_redirect_api(self.api_implementation,
                                                    api_options)
-        else:
-            return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
+
+        return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
         if isinstance(err, SuperTokensThirdPartyError):
             raise err
-        else:
-            return await self.email_verification_recipe.handle_error(
+        return await self.email_verification_recipe.handle_error(
                 request, err, response)
 
     def get_all_cors_headers(self) -> List[str]:
@@ -116,8 +115,7 @@ class ThirdPartyRecipe(RecipeModule):
                 ThirdPartyRecipe.__instance = ThirdPartyRecipe(
                     ThirdPartyRecipe.recipe_id, app_info, sign_in_and_up_feature, email_verification_feature, override)
                 return ThirdPartyRecipe.__instance
-            else:
-                raise_general_exception('ThirdParty recipe has already been initialised. Please check your code for bugs.')
+            raise_general_exception('ThirdParty recipe has already been initialised. Please check your code for bugs.')
 
         return func
 

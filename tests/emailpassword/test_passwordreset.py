@@ -27,13 +27,13 @@ from supertokens_python.recipe.session.asyncio import (create_new_session,
 from tests.utils import clean_st, reset, setup_st, sign_up_request, start_st
 
 
-def setup_function(f): # type: ignore
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f): # type: ignore
+def teardown_function(_):
     reset()
     clean_st()
 
@@ -129,7 +129,7 @@ async def test_that_generated_password_link_is_correct(driver_config_client: Tes
     token_info: Union[None, str] = None
     rid_info: Union[None, str] = None
 
-    async def custom_f(user: User, password_reset_url_with_token: str, _: Dict[str, Any]):
+    async def custom_f(_: User, password_reset_url_with_token: str, __: Dict[str, Any]):
         nonlocal reset_url, token_info, rid_info
         reset_url = password_reset_url_with_token.split("?")[0]
         token_info = password_reset_url_with_token.split("?")[1].split("&")[0]
@@ -173,8 +173,8 @@ async def test_that_generated_password_link_is_correct(driver_config_client: Tes
 
     assert response_1.status_code == 200
     assert reset_url == "http://supertokens.io/auth/reset-password"
-    assert token_info is not None and "token=" in token_info # type: ignore
-    assert rid_info is not None and "rid=emailpassword" in rid_info # type: ignore
+    assert token_info is not None and "token=" in token_info # type: ignore pylint: disable=unsupported-membership-test
+    assert rid_info is not None and "rid=emailpassword" in rid_info # type: ignore pylint: disable=unsupported-membership-test
 
 
 @mark.asyncio
@@ -258,7 +258,7 @@ async def test_token_missing_from_input(driver_config_client: TestClient):
 async def test_valid_token_input_and_passoword_has_changed(driver_config_client: TestClient):
     token_info = None
 
-    async def custom_f(user: User, password_reset_url_with_token: str, _: Dict[str, Any]):
+    async def custom_f(_: User, password_reset_url_with_token: str, __: Dict[str, Any]):
         nonlocal token_info
         token_info = password_reset_url_with_token.split("?")[1].split("&")[
             0].split("=")[1]

@@ -45,13 +45,13 @@ from tests.utils import (TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
                          set_key_value_in_config, setup_st, start_st)
 
 
-def setup_function(f): # type: ignore
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f): # type: ignore
+def teardown_function(_):
     reset()
     clean_st()
 
@@ -147,7 +147,7 @@ def driver_config_app():
     return app
 
 
-def test_cookie_login_and_refresh(driver_config_app: Any): 
+def test_cookie_login_and_refresh(driver_config_app: Any):
     start_st()
 
     set_key_value_in_config(
@@ -352,7 +352,7 @@ def test_login_logout(driver_config_app: Any):
                                   )
 
     cookies_2 = extract_all_cookies(response_2)
-    assert cookies_2 == {}
+    assert not cookies_2
 
     response_3 = test_client.post('/logout',
                                   headers={

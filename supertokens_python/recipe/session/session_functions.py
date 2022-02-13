@@ -152,18 +152,16 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
         response.pop('jwtSigningPublicKeyExpiryTime', None)
         response.pop('jwtSigningPublicKeyList', None)
         return response
-    elif response['status'] == 'UNAUTHORISED':
+    if response['status'] == 'UNAUTHORISED':
         raise_unauthorised_exception(response['message'])
+    if response['jwtSigningPublicKeyList'] is not None or response['jwtSigningPublicKey'] is not None or response['jwtSigningPublicKeyExpiryTime'] is not None:
+        recipe_implementation.update_jwt_signing_public_key_info(
+            response['jwtSigningPublicKeyList'],
+            response['jwtSigningPublicKey'],
+            response['jwtSigningPublicKeyExpiryTime'])
     else:
-
-        if response['jwtSigningPublicKeyList'] is not None or response['jwtSigningPublicKey'] is not None or response['jwtSigningPublicKeyExpiryTime'] is not None:
-            recipe_implementation.update_jwt_signing_public_key_info(
-                response['jwtSigningPublicKeyList'],
-                response['jwtSigningPublicKey'],
-                response['jwtSigningPublicKeyExpiryTime'])
-        else:
-            await recipe_implementation.get_handshake_info(True)
-        raise_try_refresh_token_exception(response['message'])
+        await recipe_implementation.get_handshake_info(True)
+    raise_try_refresh_token_exception(response['message'])
 
 
 async def refresh_session(recipe_implementation: RecipeImplementation, refresh_token: str,
@@ -185,13 +183,12 @@ async def refresh_session(recipe_implementation: RecipeImplementation, refresh_t
     if response['status'] == 'OK':
         response.pop('status', None)
         return response
-    elif response['status'] == 'UNAUTHORISED':
+    if response['status'] == 'UNAUTHORISED':
         raise_unauthorised_exception(response['message'])
-    else:
-        raise_token_theft_exception(
-            response['session']['userId'],
-            response['session']['handle']
-        )
+    raise_token_theft_exception(
+        response['session']['userId'],
+        response['session']['handle']
+    )
 
 
 async def revoke_all_sessions_for_user(recipe_implementation: RecipeImplementation, user_id: str) -> List[str]:
@@ -247,5 +244,4 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
     })
     if response['status'] == 'OK':
         return SessionInformationResult('OK', response['sessionHandle'], response['userId'], response['userDataInDatabase'], response['expiry'], response['userDataInJWT'], response['timeCreated'])
-    else:
-        raise_unauthorised_exception(response['message'])
+    raise_unauthorised_exception(response['message'])

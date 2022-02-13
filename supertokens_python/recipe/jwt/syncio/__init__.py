@@ -13,8 +13,8 @@
 # under the License.
 from typing import Any, Dict, Union
 
-import supertokens_python.recipe.jwt.asyncio as asyncio
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.recipe.jwt import asyncio
 from supertokens_python.recipe.jwt.interfaces import (CreateJwtResult,
                                                       GetJWKSResult)
 

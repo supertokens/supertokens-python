@@ -21,20 +21,20 @@ from supertokens_python.recipe.session import SessionRecipe
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
-def setup_function(f): # type: ignore
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f): # type: ignore
+def teardown_function(_):
     reset()
     clean_st()
 
 
 def testing_URL_path_normalisation():
 
-    def normalise_url_path_or_throw_error(input: str):
+    def normalise_url_path_or_throw_error(input: str): # pylint: disable=redefined-builtin
         return NormalisedURLPath(input).get_as_string_dangerous()
 
     assert normalise_url_path_or_throw_error(
@@ -118,7 +118,7 @@ def testing_URL_path_normalisation():
 
 def testing_URL_domain_normalisation():
 
-    def normalise_url_domain_or_throw_error(input: str):
+    def normalise_url_domain_or_throw_error(input: str): # pylint: disable=redefined-builtin
         return NormalisedURLDomain(input).get_as_string_dangerous()
 
     assert normalise_url_domain_or_throw_error(
@@ -503,7 +503,7 @@ def testing_override_test():
         def __init__(self):
             pass
 
-        def some_other_func(self):
+        def some_other_func(self): # pylint: disable=no-self-use
             nonlocal m
             m = 1
 
@@ -511,8 +511,6 @@ def testing_override_test():
             self.some_other_func()
 
     class A(OI):
-        def __init__(self):
-            super().__init__()
 
         def some_other_func(self):
             nonlocal m
@@ -541,7 +539,7 @@ def testing_super_recipe_tests():
         def sign_up(self):
             self.get_user()
 
-        def get_user(self):
+        def get_user(self): # pylint: disable=no-self-use
             nonlocal m
             m = 1
 

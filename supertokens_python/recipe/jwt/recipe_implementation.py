@@ -52,8 +52,7 @@ class RecipeImplementation(RecipeInterface):
 
         if response['status'] == 'OK':
             return CreateJwtResultOk(response['jwt'])
-        else:
-            return CreateJwtResultUnsupportedAlgorithm()
+        return CreateJwtResultUnsupportedAlgorithm()
 
     async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:
         response = await self.querier.send_get_request(NormalisedURLPath("/recipe/jwt/jwks"), {})

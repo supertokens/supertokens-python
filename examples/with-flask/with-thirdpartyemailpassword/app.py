@@ -112,7 +112,7 @@ def get_session_info():
 
 @app.route("/", defaults={"path": ""}) # type: ignore
 @app.route("/<path:path>") # type: ignore
-def index(path: str):
+def index(_: str):
     return ''
 
 

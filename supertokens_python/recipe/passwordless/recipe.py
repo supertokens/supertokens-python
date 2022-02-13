@@ -98,11 +98,11 @@ class PasswordlessRecipe(RecipeModule):
             self.recipe_implementation)
         if request_id == CONSUME_CODE_API:
             return await consume_code(self.api_implementation, options)
-        elif request_id == CREATE_CODE_API:
+        if request_id == CREATE_CODE_API:
             return await create_code(self.api_implementation, options)
-        elif request_id == DOES_EMAIL_EXIST_API:
+        if request_id == DOES_EMAIL_EXIST_API:
             return await email_exists(self.api_implementation, options)
-        elif request_id == DOES_PHONE_NUMBER_EXIST_API:
+        if request_id == DOES_PHONE_NUMBER_EXIST_API:
             return await phone_number_exists(self.api_implementation, options)
         return await resend_code(self.api_implementation, options)
 
@@ -132,8 +132,7 @@ class PasswordlessRecipe(RecipeModule):
                     contact_config, flow_type, override,
                     get_link_domain_and_path, get_custom_user_input_code)
                 return PasswordlessRecipe.__instance
-            else:
-                raise_general_exception('Passwordless recipe has already been initialised. Please check '
+            raise_general_exception('Passwordless recipe has already been initialised. Please check '
                                         'your code for bugs.')
 
         return func
@@ -180,5 +179,4 @@ class PasswordlessRecipe(RecipeModule):
                 raise Exception("Should never come here")
             return ConsumeCodeOkResult(
                 consume_code_result.created_new_user, consume_code_result.user)
-        else:
-            raise Exception('Failed to create user. Please retry')
+        raise Exception('Failed to create user. Please retry')

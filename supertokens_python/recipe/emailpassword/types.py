@@ -30,19 +30,19 @@ class UsersResponse:
 
 
 class ErrorFormField:
-    def __init__(self, id: str, error: str):
+    def __init__(self, id: str, error: str): # pylint: disable=redefined-builtin
         self.id = id
         self.error = error
 
 
 class FormField:
-    def __init__(self, id: str, value: str):
+    def __init__(self, id: str, value: str): # pylint: disable=redefined-builtin
         self.id = id
         self.value = value
 
 
 class InputFormField:
-    def __init__(self, id: str, validate: Union[Callable[[
+    def __init__(self, id: str, validate: Union[Callable[[ # pylint: disable=redefined-builtin
                  str], Awaitable[Union[str, None]]], None] = None, optional: Union[bool, None] = None):
         self.id = id
         self.validate = validate
@@ -50,7 +50,7 @@ class InputFormField:
 
 
 class NormalisedFormField:
-    def __init__(self, id: str, validate: Callable[[
+    def __init__(self, id: str, validate: Callable[[ # pylint: disable=redefined-builtin
                  str], Awaitable[Union[str, None]]], optional: bool):
         self.id = id
         self.validate = validate
