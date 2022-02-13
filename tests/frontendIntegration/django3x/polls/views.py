@@ -22,10 +22,13 @@ try:
 except ImportError:
     from typing_extensions import Literal
 
-from django.http import HttpResponse, JsonResponse
+from typing import Any
+
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
                                 init)
+from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import (InputErrorHandlers,
                                                SessionContainer, SessionRecipe)
@@ -46,16 +49,16 @@ last_set_enable_anti_csrf = True
 last_set_enable_jwt = False
 
 
-def custom_decorator_for_test():
-    def session_verify_custom_test(f):
-        @wraps(f)
-        async def wrapped_function(request, *args, **kwargs):
+def custom_decorator_for_test(): # type: ignore
+    def session_verify_custom_test(f): # type: ignore
+        @wraps(f) # type: ignore
+        async def wrapped_function(request: HttpRequest, *args: Any, **kwargs: Any):
             Test.increment_attempted_refresh()
             try:
-                value = await f(request, *args, **kwargs)
+                value: HttpResponse = await f(request, *args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
-                if request.headers.get("rid") is None:
+                if request.headers.get("rid") is None: # type: ignore
                     return HttpResponse(content='refresh failed')
                 Test.increment_refresh()
                 return HttpResponse(content='refresh success')
@@ -64,28 +67,28 @@ def custom_decorator_for_test():
 
         return wrapped_function
 
-    return session_verify_custom_test
+    return session_verify_custom_test # type: ignore
 
 
-def custom_decorator_for_update_jwt():
-    def session_verify_custom_test(f):
-        @wraps(f)
-        async def wrapped_function(request, *args, **kwargs):
+def custom_decorator_for_update_jwt(): # type: ignore
+    def session_verify_custom_test(f): # type: ignore
+        @wraps(f) # type: ignore
+        async def wrapped_function(request: HttpRequest, *args, **kwargs): # type: ignore
             if request.method == 'GET':
                 Test.increment_get_session()
-                value = await f(request, *args, **kwargs)
+                value: HttpResponse = await f(request, *args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
-                session = request.supertokens
+                session: SessionContainer = request.supertokens # type: ignore
                 resp = JsonResponse(session.get_access_token_payload())
                 resp['Cache-Control'] = 'no-cache, private'
                 return resp
             else:
                 if request.method == 'POST':
-                    value = await f(request, *args, **kwargs)
+                    value: HttpResponse = await f(request, *args, **kwargs)
                     if value is not None and value.status_code != 200:
                         return value
-                    session = request.supertokens
+                    session: SessionContainer = request.supertokens # type: ignore
                     await session.update_access_token_payload(json.loads(request.body))
                     Test.increment_get_session()
                     resp = JsonResponse(session.get_access_token_payload())
@@ -93,48 +96,48 @@ def custom_decorator_for_update_jwt():
                     return resp
             return send_options_api_response()
 
-        return wrapped_function
+        return wrapped_function # type: ignore
 
-    return session_verify_custom_test
+    return session_verify_custom_test # type: ignore
 
 
-def custom_decorator_for_get_info():
-    def session_verify_custom_test(f):
-        @wraps(f)
-        async def wrapped_function(request, *args, **kwargs):
+def custom_decorator_for_get_info(): # type: ignore
+    def session_verify_custom_test(f): # type: ignore
+        @wraps(f) # type: ignore
+        async def wrapped_function(request: HttpRequest, *args, **kwargs): # type: ignore
             if request.method == 'GET':
-                value = await f(request, *args, **kwargs)
+                value: HttpResponse = await f(request, *args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
                 Test.increment_get_session()
-                session = request.supertokens
+                session: SessionContainer = request.supertokens # type: ignore
                 resp = HttpResponse(session.get_user_id())
                 resp['Cache-Control'] = 'no-cache, private'
                 return resp
             else:
                 return send_options_api_response()
 
-        return wrapped_function
+        return wrapped_function # type: ignore
 
-    return session_verify_custom_test
+    return session_verify_custom_test # type: ignore
 
 
-def custom_decorator_for_logout():
-    def session_verify_custom_test(f):
-        @wraps(f)
-        async def wrapped_function(request, *args, **kwargs):
+def custom_decorator_for_logout(): # type: ignore
+    def session_verify_custom_test(f): # type: ignore
+        @wraps(f) # type: ignore
+        async def wrapped_function(request: HttpRequest, *args, **kwargs): # type: ignore
             if request.method == 'POST':
-                value = await f(request, *args, **kwargs)
+                value: HttpResponse = await f(request, *args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
-                session = request.supertokens
+                session: SessionContainer = request.supertokens # type: ignore
                 await session.revoke_session()
                 return HttpResponse('success')
             return send_options_api_response()
 
-        return wrapped_function
+        return wrapped_function # type: ignore
 
-    return session_verify_custom_test
+    return session_verify_custom_test # type: ignore
 
 
 def try_refresh_token(_):
@@ -183,21 +186,27 @@ class Test:
         return Test.no_of_times_refresh_attempted_during_test
 
 
-async def unauthorised_f(error, req, res):
+async def unauthorised_f(req: BaseRequest, message: str, res: BaseResponse):
     res.set_status_code(401)
     res.set_json_content({})
     return res
 
 
-def apis_override_session(param):
+from typing import Dict
+
+from supertokens_python.recipe.session.interfaces import (APIInterface,
+                                                          RecipeInterface)
+
+
+def apis_override_session(param: APIInterface):
     param.disable_refresh_post = True
     return param
 
 
-def functions_override_session(param):
+def functions_override_session(param: RecipeInterface):
     original_create_new_session = param.create_new_session
 
-    async def create_new_session_custom(request: any, user_id: str, access_token_payload: Union[dict, None], session_data: Union[dict, None], user_context: any) -> SessionContainer:
+    async def create_new_session_custom(request: BaseRequest, user_id: str, access_token_payload: Union[Dict[str, Any], None], session_data: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -> SessionContainer:
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {
@@ -273,7 +282,7 @@ def config(enable_anti_csrf: bool, enable_jwt: bool,
 config(True, False, None)
 
 
-async def send_file(request):
+async def send_file(request: HttpRequest):
     return render(request, file_path)
 
 
@@ -281,7 +290,7 @@ async def send_options_api_response():
     return HttpResponse('')
 
 
-async def login(request):
+async def login(request: HttpRequest):
     if request.method == 'POST':
         user_id = json.loads(request.body)['userId']
 
@@ -291,7 +300,7 @@ async def login(request):
         return send_options_api_response()
 
 
-async def before_each(request):
+async def before_each(request: HttpRequest):
     if request.method == 'POST':
         Test.reset()
         return HttpResponse('')
@@ -299,14 +308,14 @@ async def before_each(request):
         return send_options_api_response()
 
 
-async def test_config(request):
+async def test_config(request: HttpRequest):
     if request.method == 'POST':
         return HttpResponse('')
     else:
         return send_options_api_response()
 
 
-async def multiple_interceptors(request):
+async def multiple_interceptors(request: HttpRequest):
     if request.method == 'POST':
         result_bool = 'success' if 'interceptorheader2' in request.headers \
                                    and 'interceptorheader1' in request.headers else 'failure'
@@ -317,17 +326,17 @@ async def multiple_interceptors(request):
 
 @custom_decorator_for_get_info()
 @verify_session()
-async def get_info(request):
+async def get_info(request: HttpRequest):
     return HttpResponse('')
 
 
 @custom_decorator_for_update_jwt()
 @verify_session()
-async def update_jwt(request):
+async def update_jwt(request: HttpRequest):
     return HttpResponse('')
 
 
-async def testing(request):
+async def testing(request: HttpRequest):
     if request.method in ['GET', 'PUT', 'POST', 'DELETE']:
         if 'testing' in request.headers:
             resp = HttpResponse('success')
@@ -341,21 +350,23 @@ async def testing(request):
 
 @custom_decorator_for_logout()
 @verify_session()
-async def logout(request):
+async def logout(request: HttpRequest):
     return HttpResponse('')
 
 
 @verify_session()
-async def revoke_all(request):
+async def revoke_all(request: HttpRequest):
     if request.method:
-        session = await get_session(request)
+        session: Union[None, SessionContainer] = await get_session(request)
+        if session is None:
+            raise Exception("Should never come here")
         await revoke_all_sessions_for_user(session.get_user_id())
         return HttpResponse('success')
     else:
         return send_options_api_response()
 
 
-async def refresh_attempted_time(request):
+async def refresh_attempted_time(request: HttpRequest):
     if request.method == 'GET':
         return HttpResponse(Test.get_refresh_attempted_count())
     else:
@@ -364,11 +375,11 @@ async def refresh_attempted_time(request):
 
 @custom_decorator_for_test()
 @verify_session()
-async def refresh(request):
+async def refresh(request: HttpRequest):
     return HttpResponse(content='refresh success')
 
 
-def set_anti_csrf(request):
+def set_anti_csrf(request: HttpRequest):
     global last_set_enable_anti_csrf
     data = json.loads(request.body)
     if "enableAntiCsrf" not in data:
@@ -384,7 +395,7 @@ def set_anti_csrf(request):
     return HttpResponse('success')
 
 
-def set_enable_jwt(request):
+def set_enable_jwt(request: HttpRequest):
     global last_set_enable_jwt
     global last_set_enable_anti_csrf
     data = json.loads(request.body)
@@ -401,20 +412,19 @@ def set_enable_jwt(request):
     return HttpResponse('success')
 
 
-def feature_flags(request):
+def feature_flags(request: HttpRequest):
     global last_set_enable_jwt
     return JsonResponse({
         'sessionJwt': last_set_enable_jwt
     })
 
 
-async def reinitialize(request):
+async def reinitialize(request: HttpRequest):
     global last_set_enable_jwt
     global last_set_enable_anti_csrf
     data = json.loads(request.body)
-    if "jwtPropertyName" not in data:
-        jwt_property_name = True
-    else:
+    jwt_property_name: Union[str, None] = None
+    if "jwtPropertyName" in data:
         jwt_property_name = data["jwtPropertyName"]
 
     Supertokens.reset()
@@ -423,58 +433,58 @@ async def reinitialize(request):
     return HttpResponse('')
 
 
-async def refresh_called_time(request):
+async def refresh_called_time(request: HttpRequest):
     if request.method == 'GET':
         return HttpResponse(Test.get_refresh_called_count())
     else:
         return send_options_api_response()
 
 
-async def get_session_called_time(request):
+async def get_session_called_time(request: HttpRequest):
     if request.method == 'GET':
         return HttpResponse(str(Test.get_session_called_count()))
     else:
         return send_options_api_response()
 
 
-async def ping(request):
+async def ping(request: HttpRequest):
     if request.method == 'GET':
         return HttpResponse('success')
     else:
         return send_options_api_response()
 
 
-async def test_header(request):
+async def test_header(request: HttpRequest):
     if request.method == 'GET':
-        success_info = request.headers.get('st-custom-header')
+        success_info = request.headers.get('st-custom-header') # type: ignore
         return JsonResponse({'success': success_info})
     else:
         return send_options_api_response()
 
 
-async def check_device_info(request):
+async def check_device_info(request: HttpRequest):
     if request.method == 'GET':
-        sdk_name = request.headers.get('supertokens-sdk-name')
-        sdk_version = request.headers.get('supertokens-sdk-version')
+        sdk_name = request.headers.get('supertokens-sdk-name') # type: ignore
+        sdk_version = request.headers.get('supertokens-sdk-version') # type: ignore
         return HttpResponse('true' if sdk_name == 'website' and isinstance(
             sdk_version, str) else 'false')
     else:
         return send_options_api_response()
 
 
-async def check_rid(request):
-    rid = request.headers.get('rid')
+async def check_rid(request: HttpRequest):
+    rid = request.headers.get('rid') # type: ignore
     return HttpResponse('fail' if rid is None else 'success')
 
 
-async def check_allow_credentials(request):
+async def check_allow_credentials(request: HttpRequest):
     if request.method == 'GET':
         return JsonResponse(json.dumps('allow-credentials' in request.headers))
     else:
         return send_options_api_response()
 
 
-async def test_error(request):
+async def test_error(request: HttpRequest):
     if request.method == 'OPTIONS':
         return send_options_api_response()
     return HttpResponse('test error message', status=500)
