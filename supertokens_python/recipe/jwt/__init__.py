@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
     from ...recipe_module import RecipeModule
 
+
 def init(jwt_validity_seconds: Union[int, None] = None,
          override: Union[OverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
     return JWTRecipe.init(jwt_validity_seconds, override)

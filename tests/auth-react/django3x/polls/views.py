@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Any, Dict, List, Union
 import json
 import os
 
@@ -49,8 +50,6 @@ try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
-
-from typing import Any, Dict, List, Union
 
 
 class CustomAuth0Provider(Provider):
@@ -109,6 +108,7 @@ async def save_code_text(param: CreateAndSendCustomTextMessageParameters, _: Dic
     })
     code_store[param.pre_auth_session_id] = codes
     setattr(settings, "CODE_STORE", code_store)
+
 
 async def save_code_email(param: CreateAndSendCustomEmailParameters, _: Dict[str, Any]):
     code_store: Union[None, Dict[str, List[Dict[str, Any]]]] = getattr(settings, "CODE_STORE", None)
@@ -217,18 +217,18 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
         thirdparty.init(
             sign_in_and_up_feature=thirdparty.SignInAndUpFeature([
                 Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
                 ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
                 ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
                 ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'), # type: ignore
-                    domain=os.environ.get('AUTH0_DOMAIN'), # type: ignore
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
+                    domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
+                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
                 )
             ])
         ),
@@ -237,18 +237,18 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
                 form_fields),
             providers=[
                 Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
                 ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
                 ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
                 ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'), # type: ignore
-                    domain=os.environ.get('AUTH0_DOMAIN'), # type: ignore
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
+                    domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
+                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
                 )
             ]
         ),
@@ -262,7 +262,7 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
             website_domain=get_website_domain()
         ),
         framework='django',
-        mode=os.environ.get('APP_MODE', 'asgi'), # type: ignore
+        mode=os.environ.get('APP_MODE', 'asgi'),  # type: ignore
         recipe_list=recipe_list,
         telemetry=False
     )
@@ -271,7 +271,7 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
 if mode == 'asgi':
     @verify_session()
     async def session_info(request: HttpRequest):
-        session_: SessionContainer = request.supertokens # type: ignore
+        session_: SessionContainer = request.supertokens  # type: ignore
         return JsonResponse({
             'sessionHandle': session_.get_handle(),
             'userId': session_.get_user_id(),
@@ -281,7 +281,7 @@ if mode == 'asgi':
 else:
     @verify_session()
     def session_info(request: HttpRequest):
-        session_: SessionContainer = request.supertokens # type: ignore
+        session_: SessionContainer = request.supertokens  # type: ignore
         return JsonResponse({
             'sessionHandle': session_.get_handle(),
             'userId': session_.get_user_id(),

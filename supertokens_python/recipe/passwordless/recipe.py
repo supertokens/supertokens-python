@@ -133,7 +133,7 @@ class PasswordlessRecipe(RecipeModule):
                     get_link_domain_and_path, get_custom_user_input_code)
                 return PasswordlessRecipe.__instance
             raise_general_exception('Passwordless recipe has already been initialised. Please check '
-                                        'your code for bugs.')
+                                    'your code for bugs.')
 
         return func
 

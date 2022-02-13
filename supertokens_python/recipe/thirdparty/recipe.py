@@ -101,7 +101,7 @@ class ThirdPartyRecipe(RecipeModule):
         if isinstance(err, SuperTokensThirdPartyError):
             raise err
         return await self.email_verification_recipe.handle_error(
-                request, err, response)
+            request, err, response)
 
     def get_all_cors_headers(self) -> List[str]:
         return self.email_verification_recipe.get_all_cors_headers()

@@ -12,6 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.emailpassword.interfaces import (APIInterface,
+                                                                APIOptions)
+from typing import Union
 import json
 from inspect import isawaitable
 from typing import Any, Dict
@@ -58,12 +62,6 @@ async def refresh_view(request: HttpRequest):
 
 async def custom_response_view(_: HttpRequest):
     pass
-
-from typing import Union
-
-from supertokens_python.recipe.emailpassword.interfaces import (APIInterface,
-                                                                APIOptions)
-from supertokens_python.recipe.session import SessionContainer
 
 
 async def logout_view(request: HttpRequest):
@@ -114,7 +112,7 @@ class SupertokensTest(TestCase):
 
         my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
-        temp =  my_middleware(request)
+        temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
         response = await temp
@@ -130,7 +128,7 @@ class SupertokensTest(TestCase):
         request.COOKIES["sRefreshToken"] = cookies['sRefreshToken']['value']
         request.COOKIES["sIdRefreshToken"] = cookies['sIdRefreshToken']['value']
         request.META['HTTP_ANTI_CSRF'] = response.headers['anti-csrf']
-        temp =  my_middleware(request)
+        temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
         response = await temp
@@ -168,7 +166,7 @@ class SupertokensTest(TestCase):
 
         my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
-        temp =  my_middleware(request)
+        temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
         response = await temp
@@ -184,12 +182,12 @@ class SupertokensTest(TestCase):
         request.COOKIES["sAccessToken"] = cookies['sAccessToken']['value']
         request.COOKIES["sIdRefreshToken"] = cookies['sIdRefreshToken']['value']
         request.META['HTTP_ANTI_CSRF'] = response.headers['anti-csrf']
-        temp =  my_middleware(request)
+        temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
         response = await temp
         logout_cookies = get_cookies(response)
-        assert response.headers.get('anti-csrf') is None # type: ignore
+        assert response.headers.get('anti-csrf') is None  # type: ignore
         assert logout_cookies['sAccessToken']['value'] == ''
         assert logout_cookies['sRefreshToken']['value'] == ''
         assert logout_cookies['sIdRefreshToken']['value'] == ''
@@ -215,7 +213,7 @@ class SupertokensTest(TestCase):
 
         my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
-        temp =  my_middleware(request)
+        temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
         response = await temp
@@ -231,7 +229,7 @@ class SupertokensTest(TestCase):
         request.COOKIES["sAccessToken"] = cookies['sAccessToken']['value']
         request.COOKIES["sIdRefreshToken"] = cookies['sIdRefreshToken']['value']
         request.META['HTTP_ANTI_CSRF'] = response.headers['anti-csrf']
-        temp =  my_middleware(request)
+        temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
         response = await temp
@@ -261,7 +259,7 @@ class SupertokensTest(TestCase):
 
         my_middleware = middleware(create_new_session_view)
         request = self.factory.get('/login', {'user_id': 'user_id'})
-        temp =  my_middleware(request)
+        temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
         response = await temp
@@ -274,7 +272,7 @@ class SupertokensTest(TestCase):
         assert len(cookies['sIdRefreshToken']['value']) > 0
         assert len(cookies['sRefreshToken']['value']) > 0
 
-        temp =  my_middleware(request)
+        temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
         response = await temp
@@ -317,7 +315,7 @@ class SupertokensTest(TestCase):
         my_middleware = middleware(custom_response_view)
         request = self.factory.get(
             '/auth/signup/email/exists?email=test@example.com')
-        temp =  my_middleware(request)
+        temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
         response = await temp

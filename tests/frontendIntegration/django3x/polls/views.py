@@ -11,6 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from supertokens_python.recipe.session.interfaces import (APIInterface,
+                                                          RecipeInterface)
+from typing import Dict
 import json
 import os
 import sys
@@ -49,16 +52,16 @@ last_set_enable_anti_csrf = True
 last_set_enable_jwt = False
 
 
-def custom_decorator_for_test(): # type: ignore
-    def session_verify_custom_test(f): # type: ignore
-        @wraps(f) # type: ignore
+def custom_decorator_for_test():  # type: ignore
+    def session_verify_custom_test(f):  # type: ignore
+        @wraps(f)  # type: ignore
         async def wrapped_function(request: HttpRequest, *args: Any, **kwargs: Any):
             Test.increment_attempted_refresh()
             try:
                 value: HttpResponse = await f(request, *args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
-                if request.headers.get("rid") is None: # type: ignore
+                if request.headers.get("rid") is None:  # type: ignore
                     return HttpResponse(content='refresh failed')
                 Test.increment_refresh()
                 return HttpResponse(content='refresh success')
@@ -67,19 +70,19 @@ def custom_decorator_for_test(): # type: ignore
 
         return wrapped_function
 
-    return session_verify_custom_test # type: ignore
+    return session_verify_custom_test  # type: ignore
 
 
-def custom_decorator_for_update_jwt(): # type: ignore
-    def session_verify_custom_test(f): # type: ignore
-        @wraps(f) # type: ignore
-        async def wrapped_function(request: HttpRequest, *args, **kwargs): # type: ignore
+def custom_decorator_for_update_jwt():  # type: ignore
+    def session_verify_custom_test(f):  # type: ignore
+        @wraps(f)  # type: ignore
+        async def wrapped_function(request: HttpRequest, *args, **kwargs):  # type: ignore
             if request.method == 'GET':
                 Test.increment_get_session()
                 value: HttpResponse = await f(request, *args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
-                session: SessionContainer = request.supertokens # type: ignore
+                session: SessionContainer = request.supertokens  # type: ignore
                 resp = JsonResponse(session.get_access_token_payload())
                 resp['Cache-Control'] = 'no-cache, private'
                 return resp
@@ -88,7 +91,7 @@ def custom_decorator_for_update_jwt(): # type: ignore
                     value: HttpResponse = await f(request, *args, **kwargs)
                     if value is not None and value.status_code != 200:
                         return value
-                    session: SessionContainer = request.supertokens # type: ignore
+                    session: SessionContainer = request.supertokens  # type: ignore
                     await session.update_access_token_payload(json.loads(request.body))
                     Test.increment_get_session()
                     resp = JsonResponse(session.get_access_token_payload())
@@ -96,48 +99,48 @@ def custom_decorator_for_update_jwt(): # type: ignore
                     return resp
             return send_options_api_response()
 
-        return wrapped_function # type: ignore
+        return wrapped_function  # type: ignore
 
-    return session_verify_custom_test # type: ignore
+    return session_verify_custom_test  # type: ignore
 
 
-def custom_decorator_for_get_info(): # type: ignore
-    def session_verify_custom_test(f): # type: ignore
-        @wraps(f) # type: ignore
-        async def wrapped_function(request: HttpRequest, *args, **kwargs): # type: ignore
+def custom_decorator_for_get_info():  # type: ignore
+    def session_verify_custom_test(f):  # type: ignore
+        @wraps(f)  # type: ignore
+        async def wrapped_function(request: HttpRequest, *args, **kwargs):  # type: ignore
             if request.method == 'GET':
                 value: HttpResponse = await f(request, *args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
                 Test.increment_get_session()
-                session: SessionContainer = request.supertokens # type: ignore
+                session: SessionContainer = request.supertokens  # type: ignore
                 resp = HttpResponse(session.get_user_id())
                 resp['Cache-Control'] = 'no-cache, private'
                 return resp
             else:
                 return send_options_api_response()
 
-        return wrapped_function # type: ignore
+        return wrapped_function  # type: ignore
 
-    return session_verify_custom_test # type: ignore
+    return session_verify_custom_test  # type: ignore
 
 
-def custom_decorator_for_logout(): # type: ignore
-    def session_verify_custom_test(f): # type: ignore
-        @wraps(f) # type: ignore
-        async def wrapped_function(request: HttpRequest, *args, **kwargs): # type: ignore
+def custom_decorator_for_logout():  # type: ignore
+    def session_verify_custom_test(f):  # type: ignore
+        @wraps(f)  # type: ignore
+        async def wrapped_function(request: HttpRequest, *args, **kwargs):  # type: ignore
             if request.method == 'POST':
                 value: HttpResponse = await f(request, *args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
-                session: SessionContainer = request.supertokens # type: ignore
+                session: SessionContainer = request.supertokens  # type: ignore
                 await session.revoke_session()
                 return HttpResponse('success')
             return send_options_api_response()
 
-        return wrapped_function # type: ignore
+        return wrapped_function  # type: ignore
 
-    return session_verify_custom_test # type: ignore
+    return session_verify_custom_test  # type: ignore
 
 
 def try_refresh_token(_):
@@ -190,12 +193,6 @@ async def unauthorised_f(req: BaseRequest, message: str, res: BaseResponse):
     res.set_status_code(401)
     res.set_json_content({})
     return res
-
-
-from typing import Dict
-
-from supertokens_python.recipe.session.interfaces import (APIInterface,
-                                                          RecipeInterface)
 
 
 def apis_override_session(param: APIInterface):
@@ -456,7 +453,7 @@ async def ping(request: HttpRequest):
 
 async def test_header(request: HttpRequest):
     if request.method == 'GET':
-        success_info = request.headers.get('st-custom-header') # type: ignore
+        success_info = request.headers.get('st-custom-header')  # type: ignore
         return JsonResponse({'success': success_info})
     else:
         return send_options_api_response()
@@ -464,8 +461,8 @@ async def test_header(request: HttpRequest):
 
 async def check_device_info(request: HttpRequest):
     if request.method == 'GET':
-        sdk_name = request.headers.get('supertokens-sdk-name') # type: ignore
-        sdk_version = request.headers.get('supertokens-sdk-version') # type: ignore
+        sdk_name = request.headers.get('supertokens-sdk-name')  # type: ignore
+        sdk_version = request.headers.get('supertokens-sdk-version')  # type: ignore
         return HttpResponse('true' if sdk_name == 'website' and isinstance(
             sdk_version, str) else 'false')
     else:
@@ -473,7 +470,7 @@ async def check_device_info(request: HttpRequest):
 
 
 async def check_rid(request: HttpRequest):
-    rid = request.headers.get('rid') # type: ignore
+    rid = request.headers.get('rid')  # type: ignore
     return HttpResponse('fail' if rid is None else 'success')
 
 

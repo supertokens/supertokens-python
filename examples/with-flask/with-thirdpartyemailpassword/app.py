@@ -50,37 +50,37 @@ init(
             providers=[
                 Google(
                     is_default=True,
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
                 ), Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID_MOBILE'), # type: ignore
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID_MOBILE'),  # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
                 ), Github(
                     is_default=True,
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
                 ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID_MOBILE'), # type: ignore
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET_MOBILE') # type: ignore
+                    client_id=os.environ.get('GITHUB_CLIENT_ID_MOBILE'),  # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET_MOBILE')  # type: ignore
                 ), Apple(
                     is_default=True,
-                    client_id=os.environ.get('APPLE_CLIENT_ID'), # type: ignore
-                    client_key_id=os.environ.get('APPLE_KEY_ID'), # type: ignore
-                    client_team_id=os.environ.get('APPLE_TEAM_ID'), # type: ignore
-                    client_private_key=os.environ.get('APPLE_PRIVATE_KEY') # type: ignore
+                    client_id=os.environ.get('APPLE_CLIENT_ID'),  # type: ignore
+                    client_key_id=os.environ.get('APPLE_KEY_ID'),  # type: ignore
+                    client_team_id=os.environ.get('APPLE_TEAM_ID'),  # type: ignore
+                    client_private_key=os.environ.get('APPLE_PRIVATE_KEY')  # type: ignore
                 ), Apple(
-                    client_id=os.environ.get('APPLE_CLIENT_ID_MOBILE'), # type: ignore
-                    client_key_id=os.environ.get('APPLE_KEY_ID'), # type: ignore
-                    client_team_id=os.environ.get('APPLE_TEAM_ID'), # type: ignore
-                    client_private_key=os.environ.get('APPLE_PRIVATE_KEY') # type: ignore
+                    client_id=os.environ.get('APPLE_CLIENT_ID_MOBILE'),  # type: ignore
+                    client_key_id=os.environ.get('APPLE_KEY_ID'),  # type: ignore
+                    client_team_id=os.environ.get('APPLE_TEAM_ID'),  # type: ignore
+                    client_private_key=os.environ.get('APPLE_PRIVATE_KEY')  # type: ignore
                 ), GoogleWorkspaces(
                     is_default=True,
-                    client_id=os.environ.get('GOOGLE_WORKSPACES_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GOOGLE_WORKSPACES_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GOOGLE_WORKSPACES_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GOOGLE_WORKSPACES_CLIENT_SECRET')  # type: ignore
                 ), Discord(
                     is_default=True,
-                    client_id=os.environ.get('DISCORD_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('DISCORD_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('DISCORD_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('DISCORD_CLIENT_SECRET')  # type: ignore
                 )
             ]
         )
@@ -99,7 +99,7 @@ CORS(
 )
 
 
-@app.route('/sessioninfo', methods=['GET']) # type: ignore
+@app.route('/sessioninfo', methods=['GET'])  # type: ignore
 @verify_session()
 def get_session_info():
     session_ = g.supertokens
@@ -110,8 +110,8 @@ def get_session_info():
     })
 
 
-@app.route("/", defaults={"path": ""}) # type: ignore
-@app.route("/<path:path>") # type: ignore
+@app.route("/", defaults={"path": ""})  # type: ignore
+@app.route("/<path:path>")  # type: ignore
 def index(_: str):
     return ''
 

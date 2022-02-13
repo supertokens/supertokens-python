@@ -26,6 +26,7 @@ if TYPE_CHECKING:
 
     from ...recipe_module import RecipeModule
 
+
 def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
          reset_password_using_token_feature: Union[
              InputResetPasswordUsingTokenFeature, None] = None,

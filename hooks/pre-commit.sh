@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # checks if locally staged changes are
-# formatted properly. Ignores non-staged
+# linted / typechecked properly. Ignores non-staged
 # changes.
 # Intended as git pre-commit hook
 
@@ -22,18 +22,34 @@ then
 fi
 
 make check-lint >/dev/null 2>/dev/null
-formatted=$?
+linted=$?
 
 echo "$(tput setaf 3)* Properly linted?$(tput sgr 0)"
+
+if [[ ${linted} -eq 0 ]]
+then
+    echo "$(tput setaf 2)* Yes$(tput sgr 0)"
+else
+    echo "$(tput setaf 1)* No$(tput sgr 0)"
+    echo "$(tput setaf 1)Please run 'make check-lint' to fix linting and type errors.$(tput sgr 0)"
+    echo ""
+fi
+
+
+make format >/dev/null 2>/dev/null
+formatted=$?
+
+echo "$(tput setaf 3)* Properly formatted?$(tput sgr 0)"
 
 if [[ ${formatted} -eq 0 ]]
 then
    echo "$(tput setaf 2)* Yes$(tput sgr 0)"
 else
-   echo "$(tput setaf 1)* No$(tput sgr 0)"
-    echo "$(tput setaf 1)Please run 'make check-lint' to fix linting errors. Also run 'make format' to fix the code formatting.$(tput sgr 0)"
+    echo "$(tput setaf 1)* No$(tput sgr 0)"
+    echo "$(tput setaf 1)Please run 'make format' to fix code formatting.$(tput sgr 0)"
     echo ""
 fi
+
 
 if [[ ${no_of_files_to_stash} -ne 0 ]]
 then
@@ -46,13 +62,13 @@ then
    git stash drop >/dev/null 2>/dev/null
 fi
 
-if [[ ${formatted} -eq 0 ]]
+if [[ ${linted} -eq 0 ]] && [[ ${formatted} -eq 0 ]]
 then
    echo "$(tput setaf 2)... done. Proceeding with commit.$(tput sgr 0)"
    echo ""
 else
    echo "$(tput setaf 1)... done.$(tput sgr 0)"
-   echo "$(tput setaf 1)CANCELLING commit due to NON-FORMATTED CODE.$(tput sgr 0)"
+   echo "$(tput setaf 1)CANCELLING commit due to NON-LINTED/NON-FORMATTED CODE.$(tput sgr 0)"
    echo ""
    exit 1
 fi

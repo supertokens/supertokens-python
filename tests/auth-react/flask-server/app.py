@@ -77,6 +77,7 @@ async def save_code_email(param: CreateAndSendCustomEmailParameters, _: Dict[str
     })
     code_store[param.pre_auth_session_id] = codes
 
+
 async def save_code_text(param: CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
     codes = code_store.get(param.pre_auth_session_id)
     if codes is None:
@@ -204,20 +205,20 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
             )
         ),
         thirdparty.init(
-            sign_in_and_up_feature=thirdparty.SignInAndUpFeature([ # type: ignore
+            sign_in_and_up_feature=thirdparty.SignInAndUpFeature([  # type: ignore
                 Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
                 ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
                 ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
                 ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'), # type: ignore
-                    domain=os.environ.get('AUTH0_DOMAIN'), # type: ignore
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
+                    domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
+                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
                 )
             ])
         ),
@@ -226,18 +227,18 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
                 form_fields),
             providers=[
                 Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
                 ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
                 ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
                 ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'), # type: ignore
-                    domain=os.environ.get('AUTH0_DOMAIN'), # type: ignore
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
+                    domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
+                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
                 )
             ]
         ),
@@ -277,12 +278,12 @@ CORS(
 )
 
 
-@app.route('/ping', methods=['GET']) # type: ignore
+@app.route('/ping', methods=['GET'])  # type: ignore
 def ping():
     return 'success'
 
 
-@app.route('/sessionInfo', methods=['GET']) # type: ignore
+@app.route('/sessionInfo', methods=['GET'])  # type: ignore
 @verify_session()
 def get_session_info():
     session_ = g.supertokens
@@ -294,7 +295,7 @@ def get_session_info():
     })
 
 
-@app.route('/token', methods=['GET']) # type: ignore
+@app.route('/token', methods=['GET'])  # type: ignore
 def get_token():
     global latest_url_with_token
     return jsonify({
@@ -302,14 +303,14 @@ def get_token():
     })
 
 
-@app.route("/beforeeach", methods=["POST"]) # type: ignore
+@app.route("/beforeeach", methods=["POST"])  # type: ignore
 def before_each():
     global code_store
     code_store = dict()
     return ''
 
 
-@app.route('/test/setFlow', methods=["POST"]) # type: ignore
+@app.route('/test/setFlow', methods=["POST"])  # type: ignore
 async def test_set_flow():
     body: Union[Any, None] = request.get_json()
     if body is None:
@@ -320,7 +321,7 @@ async def test_set_flow():
     return ''
 
 
-@app.get("/test/getDevice") # type: ignore
+@app.get("/test/getDevice")  # type: ignore
 def test_get_device():
     global code_store
     pre_auth_session_id = request.args.get('preAuthSessionId')
@@ -333,19 +334,19 @@ def test_get_device():
     })
 
 
-@app.get("/test/featureFlags") # type: ignore
+@app.get("/test/featureFlags")  # type: ignore
 def test_feature_flags():
     available = ['passwordless']
     return jsonify({'available': available})
 
 
-@app.route("/", defaults={"path": ""}) # type: ignore
-@app.route("/<path:path>") # type: ignore
+@app.route("/", defaults={"path": ""})  # type: ignore
+@app.route("/<path:path>")  # type: ignore
 def index(_: str):
     return ''
 
 
-@app.errorhandler(Exception) # type: ignore
+@app.errorhandler(Exception)  # type: ignore
 def all_exception_handler(e: Exception):
     return 'Error', 500
 

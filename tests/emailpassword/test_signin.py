@@ -11,6 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Union
+from supertokens_python.recipe.session import SessionContainer
 import json
 
 from fastapi import FastAPI
@@ -41,10 +43,6 @@ def teardown_function(_):
     reset()
     clean_st()
 
-from typing import Union
-
-from supertokens_python.recipe.session import SessionContainer
-
 
 @fixture(scope='function')
 async def driver_config_client():
@@ -52,43 +50,43 @@ async def driver_config_client():
     app.add_middleware(Middleware)
 
     @app.get('/login')
-    async def login(request: Request): # type: ignore
+    async def login(request: Request):  # type: ignore
         user_id = 'userId'
         await create_new_session(request, user_id, {}, {})
         return {'userId': user_id}
 
     @app.post('/refresh')
-    async def custom_refresh(request: Request): # type: ignore
+    async def custom_refresh(request: Request):  # type: ignore
         await refresh_session(request)
-        return {} # type: ignore
+        return {}  # type: ignore
 
     @app.get('/info')
-    async def info_get(request: Request): # type: ignore
+    async def info_get(request: Request):  # type: ignore
         await get_session(request, True)
-        return {} # type: ignore
+        return {}  # type: ignore
 
     @app.get('/custom/info')
-    def custom_info(_): # type: ignore
-        return {} # type: ignore
+    def custom_info(_):  # type: ignore
+        return {}  # type: ignore
 
     @app.options('/custom/handle')
-    def custom_handle_options(_): # type: ignore
+    def custom_handle_options(_):  # type: ignore
         return {'method': 'option'}
 
     @app.get('/handle')
-    async def handle_get(request: Request): # type: ignore
+    async def handle_get(request: Request):  # type: ignore
         session: Union[None, SessionContainer] = await get_session(request, True)
         if session is None:
             raise Exception("Should never come here")
         return {'s': session.get_handle()}
 
     @app.post('/logout')
-    async def custom_logout(request: Request): # type: ignore
+    async def custom_logout(request: Request):  # type: ignore
         session: Union[None, SessionContainer] = await get_session(request, True)
         if session is None:
             raise Exception("Should never come here")
         await session.revoke_session()
-        return {} # type: ignore
+        return {}  # type: ignore
 
     return TestClient(app)
 

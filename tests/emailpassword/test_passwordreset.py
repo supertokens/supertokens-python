@@ -11,6 +11,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Union
+from supertokens_python.recipe.emailpassword.types import User
+from typing import Any, Dict
+from supertokens_python.recipe.session import SessionContainer
 import asyncio
 import json
 
@@ -37,10 +41,6 @@ def teardown_function(_):
     reset()
     clean_st()
 
-from typing import Union
-
-from supertokens_python.recipe.session import SessionContainer
-
 
 @fixture(scope='function')
 async def driver_config_client():
@@ -48,43 +48,43 @@ async def driver_config_client():
     app.add_middleware(Middleware)
 
     @app.get('/login')
-    async def login(request: Request): # type: ignore
+    async def login(request: Request):  # type: ignore
         user_id = 'userId'
         await create_new_session(request, user_id, {}, {})
         return {'userId': user_id}
 
     @app.post('/refresh')
-    async def custom_refresh(request: Request): # type: ignore
+    async def custom_refresh(request: Request):  # type: ignore
         await refresh_session(request)
-        return {} # type: ignore
+        return {}  # type: ignore
 
     @app.get('/info')
-    async def info_get(request: Request): # type: ignore
+    async def info_get(request: Request):  # type: ignore
         await get_session(request, True)
-        return {} # type: ignore
+        return {}  # type: ignore
 
     @app.get('/custom/info')
-    def custom_info(_): # type: ignore
-        return {} # type: ignore
+    def custom_info(_):  # type: ignore
+        return {}  # type: ignore
 
     @app.options('/custom/handle')
-    def custom_handle_options(_): # type: ignore
+    def custom_handle_options(_):  # type: ignore
         return {'method': 'option'}
 
     @app.get('/handle')
-    async def handle_get(request: Request): # type: ignore
+    async def handle_get(request: Request):  # type: ignore
         session: Union[None, SessionContainer] = await get_session(request, True)
         if session is None:
             raise Exception("Should never come here")
         return {'s': session.get_handle()}
 
     @app.post('/logout')
-    async def custom_logout(request: Request): # type: ignore
+    async def custom_logout(request: Request):  # type: ignore
         session: Union[None, SessionContainer] = await get_session(request, True)
         if session is None:
             raise Exception("Should never come here")
         await session.revoke_session()
-        return {} # type: ignore
+        return {}  # type: ignore
 
     return TestClient(app)
 
@@ -117,10 +117,6 @@ async def test_email_validation_checks_in_generate_token_API(driver_config_clien
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "FIELD_ERROR"
-
-from typing import Any, Dict
-
-from supertokens_python.recipe.emailpassword.types import User
 
 
 @mark.asyncio
@@ -173,8 +169,8 @@ async def test_that_generated_password_link_is_correct(driver_config_client: Tes
 
     assert response_1.status_code == 200
     assert reset_url == "http://supertokens.io/auth/reset-password"
-    assert token_info is not None and "token=" in token_info # type: ignore pylint: disable=unsupported-membership-test
-    assert rid_info is not None and "rid=emailpassword" in rid_info # type: ignore pylint: disable=unsupported-membership-test
+    assert token_info is not None and "token=" in token_info  # type: ignore pylint: disable=unsupported-membership-test
+    assert rid_info is not None and "rid=emailpassword" in rid_info  # type: ignore pylint: disable=unsupported-membership-test
 
 
 @mark.asyncio

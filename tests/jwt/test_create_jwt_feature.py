@@ -75,7 +75,7 @@ async def test_that_sending_a_invalid_json_throws_an_error():
     jwt_value = None
     is_exception = False
     try:
-        await create_jwt("not a json", 0) # type: ignore
+        await create_jwt("not a json", 0)  # type: ignore
     except Exception:
         is_exception = True
 

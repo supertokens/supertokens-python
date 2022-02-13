@@ -176,7 +176,7 @@ class SessionRecipe(RecipeModule):
                 )
                 return SessionRecipe.__instance
             raise_general_exception(
-                    'Session recipe has already been initialised. Please check your code for bugs.')
+                'Session recipe has already been initialised. Please check your code for bugs.')
 
         return func
 

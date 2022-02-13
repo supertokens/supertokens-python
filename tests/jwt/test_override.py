@@ -14,6 +14,8 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 
+from supertokens_python.recipe.jwt.interfaces import APIOptions
+from typing import Any, Dict, List, Union
 from _pytest.fixtures import fixture
 from fastapi import FastAPI
 from pytest import mark
@@ -45,14 +47,12 @@ async def driver_config_client():
     app.add_middleware(Middleware)
 
     @app.post('/jwtcreate')
-    async def jwt_create(request: Request): # type: ignore
+    async def jwt_create(request: Request):  # type: ignore
         payload = (await request.json())['payload']
         response = await create_jwt(payload, 1000)
         return response
 
     return TestClient(app)
-
-from typing import Any, Dict, List, Union
 
 
 @mark.asyncio
@@ -128,8 +128,6 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
 
     assert response is not None
     assert response.json()['keys'] == jwt_keys
-
-from supertokens_python.recipe.jwt.interfaces import APIOptions
 
 
 @mark.asyncio

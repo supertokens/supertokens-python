@@ -175,7 +175,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                 path, method) is not None:
             return await self.email_password_recipe.handle_api_request(request_id, request, path, method, response)
         if self.third_party_recipe is not None and self.third_party_recipe.return_api_id_if_can_handle_request(path,
-                                                                                                                 method) is not None:
+                                                                                                               method) is not None:
             return await self.third_party_recipe.handle_api_request(request_id, request, path, method, response)
         return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
@@ -189,7 +189,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             return await self.third_party_recipe.handle_error(
                 request, err, response)
         return await self.email_verification_recipe.handle_error(
-                request, err, response)
+            request, err, response)
 
     def get_all_cors_headers(self) -> List[str]:
         cors_headers = self.email_password_recipe.get_all_cors_headers(

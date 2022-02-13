@@ -56,6 +56,7 @@ def middleware(get_response: Any):
 
             raise Exception("Should never come here")
         return __asyncMiddleware
+
     def __syncMiddleware(request: HttpRequest):
         st = Supertokens.get_instance()
         custom_request = DjangoRequest(request)

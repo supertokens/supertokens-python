@@ -251,7 +251,7 @@ class Supertokens:
 
         return list(headers_set)
 
-    async def get_user_count(self, include_recipe_ids: Union[None, List[str]]) -> int: # pylint: disable=no-self-use
+    async def get_user_count(self, include_recipe_ids: Union[None, List[str]]) -> int:  # pylint: disable=no-self-use
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
         if include_recipe_ids is not None:
@@ -263,7 +263,7 @@ class Supertokens:
 
         return int(response['count'])
 
-    async def delete_user(self, user_id: str) -> None: # pylint: disable=no-self-use
+    async def delete_user(self, user_id: str) -> None:  # pylint: disable=no-self-use
         querier = Querier.get_instance(None)
 
         cdi_version = await querier.get_api_version()
@@ -275,9 +275,9 @@ class Supertokens:
 
             return None
         raise_general_exception(
-                'Please upgrade the SuperTokens core to >= 3.7.0')
+            'Please upgrade the SuperTokens core to >= 3.7.0')
 
-    async def get_users(self, time_joined_order: Literal['ASC', 'DESC'], # pylint: disable=no-self-use
+    async def get_users(self, time_joined_order: Literal['ASC', 'DESC'],  # pylint: disable=no-self-use
                         limit: Union[int, None], pagination_token: Union[str, None],
                         include_recipe_ids: Union[None, List[str]]) -> UsersResponse:
         querier = Querier.get_instance(None)
@@ -330,7 +330,7 @@ class Supertokens:
 
         return UsersResponse(users, next_pagination_token)
 
-    async def middleware(self, request: BaseRequest, response: BaseResponse) -> Union[BaseResponse, None]: # pylint: disable=no-self-use
+    async def middleware(self, request: BaseRequest, response: BaseResponse) -> Union[BaseResponse, None]:  # pylint: disable=no-self-use
         path = Supertokens.get_instance().app_info.api_gateway_path.append(
             NormalisedURLPath(
                 request.get_path()))

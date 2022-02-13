@@ -31,6 +31,7 @@ if TYPE_CHECKING:
 
     from ...recipe_module import RecipeModule
 
+
 def init(sign_in_and_up_feature: SignInAndUpFeature,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
          override: Union[InputOverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:

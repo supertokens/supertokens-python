@@ -12,6 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from typing import Any, Dict, Union
+from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.emailpassword.interfaces import APIInterface
 import json
 
 from _pytest.fixtures import fixture
@@ -55,11 +58,6 @@ def teardown_function(_):
     reset()
     clean_st()
 
-from typing import Any, Dict, Union
-
-from supertokens_python.recipe.emailpassword.interfaces import APIInterface
-from supertokens_python.recipe.session import SessionContainer
-
 
 @fixture(scope='function')
 def driver_config_app():
@@ -100,43 +98,43 @@ def driver_config_app():
         )]
     )
 
-    @app.route('/test') # type: ignore
-    def t(): # type: ignore
+    @app.route('/test')  # type: ignore
+    def t():  # type: ignore
         return jsonify({})
 
-    @app.route('/login') # type: ignore
-    def login(): # type: ignore
+    @app.route('/login')  # type: ignore
+    def login():  # type: ignore
         user_id = 'userId'
         create_new_session(request, user_id, {}, {})
 
         return jsonify({'userId': user_id, 'session': 'ssss'})
 
-    @app.route('/refresh', methods=['POST']) # type: ignore
-    def custom_refresh(): # type: ignore
+    @app.route('/refresh', methods=['POST'])  # type: ignore
+    def custom_refresh():  # type: ignore
         response = make_response(jsonify({}))
         refresh_session(request)
         return response
 
-    @app.route('/info', methods=['GET', 'OPTIONS']) # type: ignore
-    def custom_info(): # type: ignore
-        if request.method == 'OPTIONS': # type: ignore
+    @app.route('/info', methods=['GET', 'OPTIONS'])  # type: ignore
+    def custom_info():  # type: ignore
+        if request.method == 'OPTIONS':  # type: ignore
             return jsonify({'method': 'option'})
         response = make_response(jsonify({}))
         get_session(request, True)
         return response
 
-    @app.route('/handle', methods=['GET', 'OPTIONS']) # type: ignore
-    def custom_handle_api(): # type: ignore
-        if request.method == 'OPTIONS': # type: ignore
+    @app.route('/handle', methods=['GET', 'OPTIONS'])  # type: ignore
+    def custom_handle_api():  # type: ignore
+        if request.method == 'OPTIONS':  # type: ignore
             return jsonify({'method': 'option'})
         session: Union[None, SessionContainer] = get_session(request, True)
         if session is None:
             raise Exception("Should never come here")
         return jsonify({'s': session.get_user_id()})
 
-    @app.route('/logout', methods=['POST']) # type: ignore
+    @app.route('/logout', methods=['POST'])  # type: ignore
     @verify_session(session_required=False)
-    def custom_logout(): # type: ignore
+    def custom_logout():  # type: ignore
         response = make_response(jsonify({}))
         session: Union[None, SessionContainer] = get_session(request, True)
         if session is None:

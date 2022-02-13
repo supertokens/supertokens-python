@@ -79,8 +79,8 @@ class EmailVerificationRecipe(RecipeModule):
                                                                 APIOptions(request, response, self.recipe_id, self.config,
                                                                            self.recipe_implementation))
         return await handle_email_verify_api(self.api_implementation,
-                                                 APIOptions(request, response, self.recipe_id, self.config,
-                                                            self.recipe_implementation))
+                                             APIOptions(request, response, self.recipe_id, self.config,
+                                                        self.recipe_implementation))
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
         if isinstance(err, EmailVerificationInvalidTokenError):
@@ -88,7 +88,7 @@ class EmailVerificationRecipe(RecipeModule):
                 {'status': 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'})
             return response
         response.set_json_content(
-                {'status': 'EMAIL_ALREADY_VERIFIED_ERROR'})
+            {'status': 'EMAIL_ALREADY_VERIFIED_ERROR'})
         return response
 
     def get_all_cors_headers(self) -> List[str]:
@@ -98,7 +98,7 @@ class EmailVerificationRecipe(RecipeModule):
     def init(config: ParentRecipeEmailVerificationConfig):
         def func(app_info: AppInfo):
             if EmailVerificationRecipe.__instance is None:
-                EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id,app_info, config)
+                EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id, app_info, config)
                 return EmailVerificationRecipe.__instance
             raise_general_exception('Emailverification recipe has already been initialised. Please check your code for bugs.')
 

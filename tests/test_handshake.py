@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from supertokens_python.recipe.session.recipe_implementation import \
+    RecipeImplementation
 from pytest import mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
@@ -30,9 +32,6 @@ def setup_function(_):
 def teardown_function(_):
     reset()
     clean_st()
-
-from supertokens_python.recipe.session.recipe_implementation import \
-    RecipeImplementation
 
 
 @mark.asyncio

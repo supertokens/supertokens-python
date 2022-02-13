@@ -44,7 +44,7 @@ async def driver_config_client():
     app.add_middleware(Middleware)
 
     @app.get('/login')
-    async def login(request: Request): # type: ignore
+    async def login(request: Request):  # type: ignore
         user_id = 'userId'
         await create_new_session(request, user_id, {}, {})
         return {'userId': user_id}

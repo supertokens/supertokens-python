@@ -75,6 +75,7 @@ async def save_code_email(param: CreateAndSendCustomEmailParameters, _: Dict[str
     })
     code_store[param.pre_auth_session_id] = codes
 
+
 async def save_code_text(param: CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
     codes = code_store.get(param.pre_auth_session_id)
     if codes is None:
@@ -84,6 +85,7 @@ async def save_code_text(param: CreateAndSendCustomTextMessageParameters, _: Dic
         'userInputCode': param.user_input_code
     })
     code_store[param.pre_auth_session_id] = codes
+
 
 def get_api_port():
     return '8083'
@@ -218,18 +220,18 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
         thirdparty.init(
             sign_in_and_up_feature=thirdparty.SignInAndUpFeature([
                 Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
                 ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
                 ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
                 ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'), # type: ignore
-                    domain=os.environ.get('AUTH0_DOMAIN'), # type: ignore
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
+                    domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
+                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
                 )
             ])
         ),
@@ -238,18 +240,18 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
                 form_fields),
             providers=[
                 Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
                 ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
                 ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'), # type: ignore
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
                 ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'), # type: ignore
-                    domain=os.environ.get('AUTH0_DOMAIN'), # type: ignore
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET') # type: ignore
+                    client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
+                    domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
+                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
                 )
             ]
         ),
@@ -271,9 +273,9 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
 custom_init()
 
 
-@app.exception_handler(Exception) # type: ignore
-async def exception_handler(a, b): # type: ignore
-    print(a, b) # type: ignore
+@app.exception_handler(Exception)  # type: ignore
+async def exception_handler(a, b):  # type: ignore
+    print(a, b)  # type: ignore
     return JSONResponse(status_code=500, content={})
 
 
@@ -338,8 +340,8 @@ async def get_token():
     })
 
 
-@app.exception_handler(405) # type: ignore
-def f_405(_, e): # type: ignore
+@app.exception_handler(405)  # type: ignore
+def f_405(_, e):  # type: ignore
     return PlainTextResponse('', status_code=404)
 
 
@@ -358,11 +360,11 @@ class CustomCORSMiddleware(CORSMiddleware):
         expose_headers: typing.Sequence[str] = (),
         max_age: int = 600,
     ) -> None:
-        super().__init__(app_, allow_origins, allow_methods, allow_headers, allow_credentials, allow_origin_regex, expose_headers, max_age) # type: ignore
+        super().__init__(app_, allow_origins, allow_methods, allow_headers, allow_credentials, allow_origin_regex, expose_headers, max_age)  # type: ignore
 
     def preflight_response(self, request_headers: Headers) -> Response:
         result = super().preflight_response(request_headers)
-        if result.status_code == 200: # type: ignore
+        if result.status_code == 200:  # type: ignore
             result.headers.__delitem__('content-type')
             result.headers.__delitem__('content-length')
             return Response(status_code=204, headers=dict(result.headers))
@@ -372,7 +374,7 @@ class CustomCORSMiddleware(CORSMiddleware):
 # cors middleware added like this due to issue with add_middleware
 # ref: https://github.com/tiangolo/fastapi/issues/1663
 
-app = CustomCORSMiddleware( # type: ignore
+app = CustomCORSMiddleware(  # type: ignore
     app_=app,
     allow_origins=[
         get_website_domain()
@@ -383,4 +385,4 @@ app = CustomCORSMiddleware( # type: ignore
 )
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=get_api_port()) # type: ignore
+    uvicorn.run(app, host="0.0.0.0", port=get_api_port())  # type: ignore

@@ -10,6 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
+from typing import List
+from supertokens_python.recipe.emailpassword.types import User
+from typing import Any, Dict
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -46,15 +49,11 @@ DEBUG = True
 
 LATEST_URL_WITH_TOKEN = None
 
-from typing import Any, Dict
-
-from supertokens_python.recipe.emailpassword.types import User
-
 
 async def create_and_send_custom_email(_: User, url_with_token: str, context: Dict[str, Any]):
     global LATEST_URL_WITH_TOKEN
     setattr(settings, "LATEST_URL_WITH_TOKEN", url_with_token)
-    LATEST_URL_WITH_TOKEN = url_with_token # type: ignore
+    LATEST_URL_WITH_TOKEN = url_with_token  # type: ignore
 
 
 async def validate_age(value: Any):
@@ -125,14 +124,13 @@ class CustomAuth0Provider(Provider):
         }
         return AccessTokenAPI(self.access_token_api_url, params)
 
-from typing import List
 
 CODE_STORE: Dict[str, List[Dict[str, Any]]] = {}
 
 
 async def save_code_email(param: CreateAndSendCustomEmailParameters, _: Dict[str, Any]):
     global CODE_STORE
-    codes: List[Dict[str, Any]] = getattr(settings, "CODE_STORE", None) # type: ignore
+    codes: List[Dict[str, Any]] = getattr(settings, "CODE_STORE", None)  # type: ignore
     if codes is None:
         codes = []
     codes.append({
@@ -142,9 +140,10 @@ async def save_code_email(param: CreateAndSendCustomEmailParameters, _: Dict[str
     CODE_STORE[param.pre_auth_session_id] = codes
     setattr(settings, "CODE_STORE", CODE_STORE)
 
+
 async def save_code_text(param: CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
     global CODE_STORE
-    codes: List[Dict[str, Any]] = getattr(settings, "CODE_STORE", None) # type: ignore
+    codes: List[Dict[str, Any]] = getattr(settings, "CODE_STORE", None)  # type: ignore
     if codes is None:
         codes = []
     codes.append({
@@ -167,40 +166,40 @@ recipe_list = [
         )
     ),
     thirdparty.init(
-        sign_in_and_up_feature=thirdparty.SignInAndUpFeature([ # type: ignore
+        sign_in_and_up_feature=thirdparty.SignInAndUpFeature([  # type: ignore
             Google(
-                client_id=os.environ.get('GOOGLE_CLIENT_ID'), # type: ignore
-                client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
+                client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+                client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
             ), Facebook(
-                client_id=os.environ.get('FACEBOOK_CLIENT_ID'), # type: ignore
-                client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET') # type: ignore
+                client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
+                client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
             ), Github(
-                client_id=os.environ.get('GITHUB_CLIENT_ID'), # type: ignore
-                client_secret=os.environ.get('GITHUB_CLIENT_SECRET') # type: ignore
+                client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+                client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
             ), CustomAuth0Provider(
-                client_id=os.environ.get('AUTH0_CLIENT_ID'), # type: ignore
-                domain=os.environ.get('AUTH0_DOMAIN'), # type: ignore
-                client_secret=os.environ.get('AUTH0_CLIENT_SECRET') # type: ignore
+                client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
+                domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
+                client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
             )
         ])
     ),
     thirdpartyemailpassword.init(
         sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(
             form_fields),
-        providers=[ # type: ignore
+        providers=[  # type: ignore
             Google(
-                client_id=os.environ.get('GOOGLE_CLIENT_ID'), # type: ignore
-                client_secret=os.environ.get('GOOGLE_CLIENT_SECRET') # type: ignore
+                client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+                client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
             ), Facebook(
-                client_id=os.environ.get('FACEBOOK_CLIENT_ID'), # type: ignore
-                client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET') # type: ignore
+                client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
+                client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
             ), Github(
-                client_id=os.environ.get('GITHUB_CLIENT_ID'), # type: ignore
-                client_secret=os.environ.get('GITHUB_CLIENT_SECRET') # type: ignore
+                client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+                client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
             ), CustomAuth0Provider(
-                client_id=os.environ.get('AUTH0_CLIENT_ID'), # type: ignore
-                domain=os.environ.get('AUTH0_DOMAIN'), # type: ignore
-                client_secret=os.environ.get('AUTH0_CLIENT_SECRET') # type: ignore
+                client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
+                domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
+                client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
             )
         ]
     ),
@@ -219,7 +218,7 @@ init(
         website_domain=get_website_domain()
     ),
     framework='django',
-    mode=os.environ.get('APP_MODE', 'asgi'), # type: ignore
+    mode=os.environ.get('APP_MODE', 'asgi'),  # type: ignore
     recipe_list=recipe_list,
     telemetry=False
 )
@@ -248,7 +247,7 @@ CORS_ALLOW_METHODS = [
     "PUT",
 ]
 
-CORS_ALLOW_HEADERS: List[str] = list(default_headers) + [ # type: ignore
+CORS_ALLOW_HEADERS: List[str] = list(default_headers) + [  # type: ignore
     "Content-Type"
 ] + get_all_cors_headers()
 

@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 
     from ...recipe_module import RecipeModule
 
+
 def init(contact_config: ContactConfig,
          flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
          override: Union[InputOverrideConfig, None] = None,

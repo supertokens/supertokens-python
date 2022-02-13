@@ -34,7 +34,7 @@ def teardown_function(_):
 
 def testing_URL_path_normalisation():
 
-    def normalise_url_path_or_throw_error(input: str): # pylint: disable=redefined-builtin
+    def normalise_url_path_or_throw_error(input: str):  # pylint: disable=redefined-builtin
         return NormalisedURLPath(input).get_as_string_dangerous()
 
     assert normalise_url_path_or_throw_error(
@@ -118,7 +118,7 @@ def testing_URL_path_normalisation():
 
 def testing_URL_domain_normalisation():
 
-    def normalise_url_domain_or_throw_error(input: str): # pylint: disable=redefined-builtin
+    def normalise_url_domain_or_throw_error(input: str):  # pylint: disable=redefined-builtin
         return NormalisedURLDomain(input).get_as_string_dangerous()
 
     assert normalise_url_domain_or_throw_error(
@@ -254,7 +254,7 @@ async def test_same_site_values():
             ),
             framework='fastapi',
             recipe_list=[session.init(
-                cookie_same_site='random' # type: ignore
+                cookie_same_site='random'  # type: ignore
             )]
         )
         test_passed = False
@@ -276,7 +276,7 @@ async def test_same_site_values():
             ),
             framework='fastapi',
             recipe_list=[session.init(
-                cookie_same_site=' ' # type: ignore
+                cookie_same_site=' '  # type: ignore
             )]
         )
         test_passed = False
@@ -503,7 +503,7 @@ def testing_override_test():
         def __init__(self):
             pass
 
-        def some_other_func(self): # pylint: disable=no-self-use
+        def some_other_func(self):  # pylint: disable=no-self-use
             nonlocal m
             m = 1
 
@@ -539,7 +539,7 @@ def testing_super_recipe_tests():
         def sign_up(self):
             self.get_user()
 
-        def get_user(self): # pylint: disable=no-self-use
+        def get_user(self):  # pylint: disable=no-self-use
             nonlocal m
             m = 1
 

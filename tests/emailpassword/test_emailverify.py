@@ -11,6 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Union
+from supertokens_python.recipe.emailverification.types import User as EVUser
+from supertokens_python.recipe.emailpassword.types import User
+from typing import Any, Dict
+from supertokens_python.recipe.session import SessionContainer
 import asyncio
 import json
 
@@ -48,10 +53,6 @@ def teardown_function(_):
     reset()
     clean_st()
 
-from typing import Union
-
-from supertokens_python.recipe.session import SessionContainer
-
 
 @fixture(scope='function')
 async def driver_config_client():
@@ -59,31 +60,31 @@ async def driver_config_client():
     app.add_middleware(Middleware)
 
     @app.get('/login')
-    async def login(request: Request): # type: ignore
+    async def login(request: Request):  # type: ignore
         user_id = 'userId'
         await create_new_session(request, user_id, {}, {})
         return {'userId': user_id}
 
     @app.post('/refresh')
-    async def custom_refresh(request: Request): # type: ignore
+    async def custom_refresh(request: Request):  # type: ignore
         await refresh_session(request)
-        return {} # type: ignore
+        return {}  # type: ignore
 
     @app.get('/info')
-    async def info_get(request: Request): # type: ignore
+    async def info_get(request: Request):  # type: ignore
         await get_session(request, True)
-        return {} # type: ignore
+        return {}  # type: ignore
 
     @app.get('/custom/info')
-    def custom_info(_): # type: ignore
-        return {} # type: ignore
+    def custom_info(_):  # type: ignore
+        return {}  # type: ignore
 
     @app.options('/custom/handle')
-    def custom_handle_options(_): # type: ignore
+    def custom_handle_options(_):  # type: ignore
         return {'method': 'option'}
 
     @app.get('/handle')
-    async def handle_get(request: Request): # type: ignore
+    async def handle_get(request: Request):  # type: ignore
         session: Union[SessionContainer, None] = await get_session(request, True)
         if session is None:
             raise Exception("Should never come here")
@@ -95,7 +96,7 @@ async def driver_config_client():
         if session is None:
             raise Exception("Should never come here")
         await session.revoke_session()
-        return {} # type: ignore
+        return {}  # type: ignore
 
     return TestClient(app)
 
@@ -265,10 +266,6 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
     assert response_4.status_code == 200
     assert dict_response['status'] == 'OK'
 
-from typing import Any, Dict
-
-from supertokens_python.recipe.emailpassword.types import User
-
 
 @mark.asyncio
 async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called(driver_config_client: TestClient):
@@ -312,7 +309,7 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'), # type: ignore
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -320,8 +317,8 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
     assert dict_response['status'] == 'OK'
     if user_info is None:
         raise Exception("Should never come here")
-    assert user_info.user_id == user_id # type: ignore
-    assert user_info.email == "test@gmail.com" # type: ignore
+    assert user_info.user_id == user_id  # type: ignore
+    assert user_info.email == "test@gmail.com"  # type: ignore
     assert email_token is not None
 
 
@@ -366,7 +363,7 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'), # type: ignore
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -436,7 +433,7 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_co
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'), # type: ignore
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -506,7 +503,7 @@ async def test_the_email_verify_api_with_token_of_not_type_string(driver_config_
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'), # type: ignore
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -534,8 +531,6 @@ async def test_the_email_verify_api_with_token_of_not_type_string(driver_config_
     dict_response = json.loads(response_3.text)
     assert response_3.status_code == 400
     assert dict_response['message'] == 'The email verification token must be a string'
-
-from supertokens_python.recipe.emailverification.types import User as EVUser
 
 
 @mark.asyncio
@@ -602,7 +597,7 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'), # type: ignore
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -634,8 +629,8 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     await asyncio.sleep(1)
     if user_info_from_callback is None:
         raise Exception("Should never come here")
-    assert user_info_from_callback.user_id == user_id # type: ignore
-    assert user_info_from_callback.email == "test@gmail.com" # type: ignore
+    assert user_info_from_callback.user_id == user_id  # type: ignore
+    assert user_info_from_callback.email == "test@gmail.com"  # type: ignore
 
 
 @mark.asyncio
@@ -679,7 +674,7 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(driver_con
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'), # type: ignore
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -803,7 +798,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'), # type: ignore
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -828,8 +823,8 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
 
     if user_info_from_callback is None:
         raise Exception("Should never come here")
-    assert user_info_from_callback.user_id == user_id # type: ignore
-    assert user_info_from_callback.email == "test@gmail.com" # type: ignore
+    assert user_info_from_callback.user_id == user_id  # type: ignore
+    assert user_info_from_callback.email == "test@gmail.com"  # type: ignore
 
 
 @mark.asyncio
@@ -895,7 +890,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'), # type: ignore
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -920,8 +915,8 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
 
     if user_info_from_callback is None:
         raise Exception("Should never come here")
-    assert user_info_from_callback.user_id == user_id # type: ignore
-    assert user_info_from_callback.email == "test@gmail.com" # type: ignore
+    assert user_info_from_callback.user_id == user_id  # type: ignore
+    assert user_info_from_callback.email == "test@gmail.com"  # type: ignore
 
 
 @mark.asyncio

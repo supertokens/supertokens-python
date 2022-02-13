@@ -11,6 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Any, Dict
+from typing import List
 from datetime import datetime, timezone
 from http.cookies import SimpleCookie
 from os import environ, kill, remove, scandir
@@ -152,8 +154,6 @@ def clean_st():
     except FileNotFoundError:
         pass
 
-from typing import List
-
 
 def __get_list_of_process_ids() -> List[str]:
     process_ids: List[str] = []
@@ -186,16 +186,14 @@ def get_cookie_from_response(response: Response, cookie_name: str):
         return cookies[cookie_name]
     return None
 
-from typing import Any, Dict
-
 
 def extract_all_cookies(response: Response) -> Dict[str, Any]:
     if response.headers.get('set-cookie') is None:
         return {}
-    cookie_headers = SimpleCookie( # type: ignore
+    cookie_headers = SimpleCookie(  # type: ignore
         response.headers.get('set-cookie'))
     cookies: Dict[str, Any] = {}
-    for key, morsel in cookie_headers.items(): # type: ignore
+    for key, morsel in cookie_headers.items():  # type: ignore
         cookies[key] = {
             'value': morsel.value,
             'name': key

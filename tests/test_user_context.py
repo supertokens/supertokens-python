@@ -11,6 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from supertokens_python.recipe.emailpassword.types import FormField
+from supertokens_python.recipe.emailpassword.interfaces import APIOptions
+from typing import Any, Dict, List, Union
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import Middleware
@@ -48,11 +51,6 @@ async def driver_config_client():
 
     return TestClient(app)
 
-from typing import Any, Dict, List, Union
-
-from supertokens_python.recipe.emailpassword.interfaces import APIOptions
-from supertokens_python.recipe.emailpassword.types import FormField
-
 
 @mark.asyncio
 async def test_user_context(driver_config_client: TestClient):
@@ -63,8 +61,8 @@ async def test_user_context(driver_config_client: TestClient):
         og_sign_in_post = param.sign_in_post
 
         async def sign_in_post(form_fields: List[FormField],
-                           api_options: APIOptions,
-                           user_context: Dict[str, Any]):
+                               api_options: APIOptions,
+                               user_context: Dict[str, Any]):
             user_context = {
                 'preSignInPOST': True
             }
@@ -109,8 +107,8 @@ async def test_user_context(driver_config_client: TestClient):
         og_create_new_session = param.create_new_session
 
         async def create_new_session(request: Any, user_id: str,
-                                 access_token_payload: Union[None, Dict[str, Any]],
-                                 session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]):
+                                     access_token_payload: Union[None, Dict[str, Any]],
+                                     session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]):
             if 'preSignInPOST' in user_context and \
                     'preSignIn' in user_context and \
                     'postSignIn' in user_context:
