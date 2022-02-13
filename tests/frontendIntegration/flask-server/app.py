@@ -22,10 +22,11 @@ try:
 except ImportError:
     from typing_extensions import Literal
 
+from flask import Flask, g, jsonify, make_response, render_template, request
+from flask.wrappers import Response
 from flask_cors import CORS
 from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
                                 init)
-from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import (InputErrorHandlers,
@@ -33,9 +34,6 @@ from supertokens_python.recipe.session import (InputErrorHandlers,
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.syncio import (
     create_new_session, revoke_all_sessions_for_user)
-
-from flask import (Flask, Response, g, jsonify, make_response, render_template,
-                   request)
 
 last_set_enable_anti_csrf = True
 last_set_enable_jwt = False
@@ -50,25 +48,25 @@ CORS(app, supports_credentials=True)
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 
-def custom_decorator_for_test():
-    def session_verify_custom_test(f):
-        @wraps(f)
-        def wrapped_function(*args, **kwargs):
+def custom_decorator_for_test(): # type: ignore
+    def session_verify_custom_test(f): # type: ignore
+        @wraps(f) # type: ignore
+        def wrapped_function(*args, **kwargs): # type: ignore
             Test.increment_attempted_refresh()
             try:
-                value = f(*args, **kwargs)
+                value: Response = f(*args, **kwargs)
                 if value is not None and value.status_code != 200:
                     return value
-                if request.headers.get("rid") is None:
+                if request.headers.get("rid") is None: # type: ignore
                     return 'refresh failed'
                 Test.increment_refresh()
                 return 'refresh success'
             except Exception as e:
                 raise e
 
-        return wrapped_function
+        return wrapped_function # type: ignore
 
-    return session_verify_custom_test
+    return session_verify_custom_test # type: ignore
 
 
 def try_refresh_token(_):
@@ -115,22 +113,30 @@ class Test:
         return Test.no_of_times_refresh_attempted_during_test
 
 
-async def unauthorised_f(error, req, res):
+from supertokens_python.framework import BaseRequest, BaseResponse
+
+
+async def unauthorised_f(req: BaseRequest, msg: str, res: BaseResponse):
     res.set_status_code(401)
     res.set_json_content({})
     return res
 
+from supertokens_python.recipe.session.interfaces import (APIInterface,
+                                                          RecipeInterface)
 
-def apis_override_session(param):
+
+def apis_override_session(param: APIInterface):
     param.disable_refresh_post = True
     return param
 
+from typing import Any, Dict
 
-def functions_override_session(param):
+
+def functions_override_session(param: RecipeInterface):
     original_create_new_session = param.create_new_session
 
-    async def create_new_session_custom(_request, user_id, access_token_payload: Union[dict, None],
-                                        session_data: Union[dict, None], user_context: any) -> SessionContainer:
+    async def create_new_session_custom(_request: BaseRequest, user_id: str, access_token_payload: Union[Dict[str, Any], None],
+                                        session_data: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -> SessionContainer:
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {
@@ -204,7 +210,7 @@ def config(enable_anti_csrf: bool, enable_jwt: bool,
 config(True, False, None)
 
 
-@app.route('/index.html', methods=['GET'])
+@app.route('/index.html', methods=['GET']) # type: ignore
 def send_file():
     return render_template('index.html')
 
@@ -213,57 +219,56 @@ def send_options_api_response():
     return ''
 
 
-@app.route("/login", methods=['OPTIONS'])
+@app.route("/login", methods=['OPTIONS']) # type: ignore
 def login_options():
     return send_options_api_response()
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['POST']) # type: ignore
 def login():
-    user_id = request.get_json()['userId']
+    user_id: str = request.get_json()['userId'] # type: ignore
     _session = create_new_session(request, user_id)
     return _session.get_user_id()
 
 
-@app.route("/beforeeach", methods=['OPTIONS'])
+@app.route("/beforeeach", methods=['OPTIONS']) # type: ignore
 def before_each_options():
     return send_options_api_response()
 
 
-@app.route('/beforeeach', methods=['POST'])
+@app.route('/beforeeach', methods=['POST']) # type: ignore
 def before_each():
     Test.reset()
     return ''
 
 
-@app.route("/testUserConfig", methods=['OPTIONS'])
+@app.route("/testUserConfig", methods=['OPTIONS']) # type: ignore
 def test_user_config_options():
     return send_options_api_response()
 
 
-@app.route('/testUserConfig', methods=['POST'])
+@app.route('/testUserConfig', methods=['POST']) # type: ignore
 def test_config():
     return ''
 
 
-@app.route("/multipleInterceptors", methods=['OPTIONS'])
+@app.route("/multipleInterceptors", methods=['OPTIONS']) # type: ignore
 def multiple_interceptors_options():
     return send_options_api_response()
 
 
-@app.route('/multipleInterceptors', methods=['POST'])
+@app.route('/multipleInterceptors', methods=['POST']) # type: ignore
 def multiple_interceptors():
-    result_bool = 'success' if 'interceptorheader2' in request.headers \
-                               and 'interceptorheader1' in request.headers else 'failure'
+    result_bool = 'success' if 'interceptorheader2' in request.headers and 'interceptorheader1' in request.headers else 'failure' # type: ignore
     return str(result_bool)
 
 
-@app.route("/", methods=['OPTIONS'])
+@app.route("/", methods=['OPTIONS']) # type: ignore
 def options():
     return send_options_api_response()
 
 
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET']) # type: ignore
 @verify_session()
 def get_info():
     Test.increment_get_session()
@@ -273,12 +278,12 @@ def get_info():
     return resp
 
 
-@app.route("/update-jwt", methods=['OPTIONS'])
+@app.route("/update-jwt", methods=['OPTIONS']) # type: ignore
 def update_options():
     return send_options_api_response()
 
 
-@app.route('/update-jwt', methods=['GET'])
+@app.route('/update-jwt', methods=['GET']) # type: ignore
 @verify_session()
 # @supertokens_middleware(True)
 def update_jwt():
@@ -290,7 +295,7 @@ def update_jwt():
     return resp
 
 
-@app.route('/update-jwt', methods=['POST'])
+@app.route('/update-jwt', methods=['POST']) # type: ignore
 @verify_session()
 # @supertokens_middleware()
 def update_jwt_post():
@@ -302,53 +307,53 @@ def update_jwt_post():
     return resp
 
 
-@app.route("/testing", methods=['OPTIONS'])
+@app.route("/testing", methods=['OPTIONS']) # type: ignore
 def testing_options():
     return send_options_api_response()
 
 
-@app.route('/testing', methods=['GET'])
+@app.route('/testing', methods=['GET']) # type: ignore
 def testing():
-    if 'testing' in request.headers:
+    if 'testing' in request.headers: # type: ignore
         resp = make_response('success')
-        resp.headers['testing'] = request.headers['testing']
+        resp.headers['testing'] = request.headers['testing'] # type: ignore
         return resp
     return "success"
 
 
-@app.route('/testing', methods=['PUT'])
+@app.route('/testing', methods=['PUT']) # type: ignore
 def testing_put():
-    if 'testing' in request.headers:
+    if 'testing' in request.headers: # type: ignore
         resp = make_response('success')
-        resp.headers['testing'] = request.headers['testing']
+        resp.headers['testing'] = request.headers['testing'] # type: ignore
         return resp
     return "success"
 
 
-@app.route('/testing', methods=['POST'])
+@app.route('/testing', methods=['POST']) # type: ignore
 def testing_post():
-    if 'testing' in request.headers:
+    if 'testing' in request.headers: # type: ignore
         resp = make_response('success')
-        resp.headers['testing'] = request.headers['testing']
+        resp.headers['testing'] = request.headers['testing'] # type: ignore
         return resp
     return "success"
 
 
-@app.route('/testing', methods=['DELETE'])
+@app.route('/testing', methods=['DELETE']) # type: ignore
 def testing_delete():
-    if 'testing' in request.headers:
+    if 'testing' in request.headers: # type: ignore
         resp = make_response('success')
-        resp.headers['testing'] = request.headers['testing']
+        resp.headers['testing'] = request.headers['testing'] # type: ignore
         return resp
     return 'success'
 
 
-@app.route("/logout", methods=['OPTIONS'])
+@app.route("/logout", methods=['OPTIONS']) # type: ignore
 def logout_options():
     return send_options_api_response()
 
 
-@app.route('/logout', methods=['POST'])
+@app.route('/logout', methods=['POST']) # type: ignore
 @verify_session()
 def logout():
     _session = g.supertokens
@@ -357,12 +362,12 @@ def logout():
     return 'success'
 
 
-@app.route("/revokeAll", methods=['OPTIONS'])
+@app.route("/revokeAll", methods=['OPTIONS']) # type: ignore
 def revoke_all_options():
     return send_options_api_response()
 
 
-@app.route('/revokeAll', methods=['POST'])
+@app.route('/revokeAll', methods=['POST']) # type: ignore
 @verify_session()
 async def revoke_all():
     session_ = g.supertokens
@@ -370,27 +375,27 @@ async def revoke_all():
     return 'success'
 
 
-@app.route("/refresh", methods=['OPTIONS'])
+@app.route("/refresh", methods=['OPTIONS']) # type: ignore
 def refresh_options():
     return send_options_api_response()
 
 
-@app.route("/refreshAttemptedTime", methods=['GET'])
+@app.route("/refreshAttemptedTime", methods=['GET']) # type: ignore
 def refresh_attempted_time():
     return str(Test.get_refresh_attempted_count())
 
 
-@app.route('/auth/session/refresh', methods=['POST'])
+@app.route('/auth/session/refresh', methods=['POST']) # type: ignore
 @custom_decorator_for_test()
 @verify_session()
 def refresh():
     return ''
 
 
-@app.route('/setAntiCsrf', methods=['POST'])
+@app.route('/setAntiCsrf', methods=['POST']) # type: ignore
 def set_anti_csrf():
     global last_set_enable_anti_csrf
-    json = request.get_json(silent=True)
+    json: Dict[str, Any] = request.get_json(silent=True) # type: ignore
     if "enableAntiCsrf" not in json:
         enable_csrf = True
     else:
@@ -404,11 +409,11 @@ def set_anti_csrf():
     return 'success', 200
 
 
-@app.route('/setEnableJWT', methods=['POST'])
+@app.route('/setEnableJWT', methods=['POST']) # type: ignore
 def set_enable_jwt():
     global last_set_enable_jwt
     global last_set_enable_anti_csrf
-    json = request.get_json(silent=True)
+    json: Dict[str, Any] = request.get_json(silent=True) # type: ignore
     if "enableJWT" not in json:
         enable_jwt = False
     else:
@@ -422,68 +427,68 @@ def set_enable_jwt():
     return 'success', 200
 
 
-@app.route("/refreshCalledTime", methods=['OPTIONS'])
+@app.route("/refreshCalledTime", methods=['OPTIONS']) # type: ignore
 def refresh_called_time_options():
     return send_options_api_response()
 
 
-@app.route("/refreshCalledTime", methods=['GET'])
+@app.route("/refreshCalledTime", methods=['GET']) # type: ignore
 def refresh_called_time():
     return str(Test.get_refresh_called_count())
 
 
-@app.route("/getSessionCalledTime", methods=['OPTIONS'])
+@app.route("/getSessionCalledTime", methods=['OPTIONS']) # type: ignore
 def get_session_called_time_options():
     return send_options_api_response()
 
 
-@app.route("/getSessionCalledTime", methods=['GET'])
+@app.route("/getSessionCalledTime", methods=['GET']) # type: ignore
 def get_session_called_time():
     return str(Test.get_session_called_count())
 
 
-@app.route("/ping", methods=['OPTIONS'])
+@app.route("/ping", methods=['OPTIONS']) # type: ignore
 def ping_options():
     return send_options_api_response()
 
 
-@app.route('/ping', methods=['GET'])
+@app.route('/ping', methods=['GET']) # type: ignore
 def ping():
     return 'success'
 
 
-@app.route("/testHeader", methods=['OPTIONS'])
+@app.route("/testHeader", methods=['OPTIONS']) # type: ignore
 def test_header_options():
     return send_options_api_response()
 
 
-@app.route('/testHeader', methods=['GET'])
-def test_header():
-    success_info = request.headers.get('st-custom-header')
-    return {'success': success_info}
+@app.route('/testHeader', methods=['GET']) # type: ignore
+def test_header(): # type: ignore
+    success_info = request.headers.get('st-custom-header') # type: ignore
+    return {'success': success_info} # type: ignore
 
 
-@app.route("/checkDeviceInfo", methods=['OPTIONS'])
+@app.route("/checkDeviceInfo", methods=['OPTIONS']) # type: ignore
 def check_device_info_options():
     return send_options_api_response()
 
 
-@app.route('/checkDeviceInfo', methods=['GET'])
+@app.route('/checkDeviceInfo', methods=['GET']) # type: ignore
 def check_device_info():
-    sdk_name = request.headers.get('supertokens-sdk-name')
-    sdk_version = request.headers.get('supertokens-sdk-version')
+    sdk_name = request.headers.get('supertokens-sdk-name') # type: ignore
+    sdk_version = request.headers.get('supertokens-sdk-version') # type: ignore
     return 'true' if sdk_name == 'website' and isinstance(
         sdk_version, str) else 'false'
 
 
-@app.route('/check-rid', methods=['GET'])
+@app.route('/check-rid', methods=['GET']) # type: ignore
 def check_rid():
-    rid = request.headers.get('rid')
+    rid = request.headers.get('rid') # type: ignore
 
     return 'fail' if rid is None else 'success'
 
 
-@app.route('/featureFlags', methods=['GET'])
+@app.route('/featureFlags', methods=['GET']) # type: ignore
 def feature_flags():
     global last_set_enable_jwt
 
@@ -492,14 +497,13 @@ def feature_flags():
     })
 
 
-@app.route('/reinitialiseBackendConfig', methods=['POST'])
+@app.route('/reinitialiseBackendConfig', methods=['POST']) # type: ignore
 def reinitialize():
     global last_set_enable_jwt
     global last_set_enable_anti_csrf
-    json = request.get_json(silent=True)
-    if "jwtPropertyName" not in json:
-        jwt_property_name = False
-    else:
+    jwt_property_name: Union[str, None] = None
+    json: Dict[str, Any] = request.get_json(silent=True) # type: ignore
+    if "jwtPropertyName" in json:
         jwt_property_name = json["jwtPropertyName"]
 
     Supertokens.reset()
@@ -508,19 +512,19 @@ def reinitialize():
     return '', 200
 
 
-@app.route("/checkAllowCredentials", methods=['OPTIONS'])
+@app.route("/checkAllowCredentials", methods=['OPTIONS']) # type: ignore
 def check_allow_credentials_options():
     return send_options_api_response()
 
 
-@app.route('/checkAllowCredentials', methods=['GET'])
+@app.route('/checkAllowCredentials', methods=['GET']) # type: ignore
 def check_allow_credentials():
-    return jsonify(json.dumps('allow-credentials' in request.headers))
+    return jsonify(json.dumps('allow-credentials' in request.headers)) # type: ignore
 
 
-@app.route('/testError', methods=['GET', 'OPTIONS'])
+@app.route('/testError', methods=['GET', 'OPTIONS']) # type: ignore
 def test_error():
-    if request.method == 'OPTIONS':
+    if request.method == 'OPTIONS': # type: ignore
         return send_options_api_response()
     return Response('test error message', status=500)
 

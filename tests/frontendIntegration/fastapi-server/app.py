@@ -21,7 +21,9 @@ try:
 except ImportError:
     from typing_extensions import Literal
 
-import uvicorn
+import uvicorn  # type: ignore
+from fastapi import Depends, FastAPI
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from starlette.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
@@ -34,9 +36,6 @@ from supertokens_python.recipe.session.asyncio import (
     SessionContainer, SessionRecipe, create_new_session,
     revoke_all_sessions_for_user)
 from supertokens_python.recipe.session.framework.fastapi import verify_session
-
-from fastapi import Depends, FastAPI
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
@@ -85,28 +84,39 @@ class Test:
         return Test.no_of_times_refresh_attempted_during_test
 
 
-async def unauthorised_f(_, __, res):
+from supertokens_python.framework import BaseRequest, BaseResponse
+
+
+async def unauthorised_f(req: BaseRequest, msg: str, res: BaseResponse):
     res.set_status_code(401)
     res.set_json_content({})
     return res
 
 
-def apis_override_session(param):
+from supertokens_python.recipe.session.interfaces import (APIInterface,
+                                                          RecipeInterface)
+
+
+def apis_override_session(param: APIInterface):
     param.disable_refresh_post = True
     return param
 
 
-def functions_override_session(param):
+from typing import Any, Dict
+
+
+def functions_override_session(param: RecipeInterface):
     original_create_new_session = param.create_new_session
 
-    async def create_new_session_custom(request: any, user_id: str, access_token_payload: Union[dict, None], session_data: Union[dict, None], user_context: any) -> SessionContainer:
+    async def create_new_session_custom(_request: BaseRequest, user_id: str, access_token_payload: Union[Dict[str, Any], None],
+                                        session_data: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -> SessionContainer:
         if access_token_payload is None:
             access_token_payload = {}
         access_token_payload = {
             **access_token_payload,
             'customClaim': 'customValue'
         }
-        return await original_create_new_session(request, user_id, access_token_payload, session_data, user_context)
+        return await original_create_new_session(_request, user_id, access_token_payload, session_data, user_context)
     param.create_new_session = create_new_session_custom
 
     return param
@@ -483,15 +493,15 @@ def check_allow_credentials(request: Request):
         'allow-credentials' in request.headers), 200)
 
 
-@app.route('/testError', methods=['GET', 'OPTIONS'])
+@app.route('/testError', methods=['GET', 'OPTIONS']) # type: ignore
 def test_error(request: Request):
     if request.method == 'OPTIONS':
         return send_options_api_response()
     return PlainTextResponse('test error message', 500)
 
 
-@app.exception_handler(405)
-def f_405(_, e):
+@app.exception_handler(405) # type: ignore
+def f_405(_, __: Exception):
     return PlainTextResponse('', status_code=404)
 
 
@@ -510,4 +520,4 @@ app = CORSMiddleware(
 )
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    uvicorn.run(app, host="0.0.0.0", port=8080) # type: ignore

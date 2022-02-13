@@ -48,7 +48,7 @@ cd ../
 git clone git@github.com:supertokens/supertokens-website.git
 cd supertokens-website
 git checkout $2
-cd ../project/tests/frontendIntegration/flask
+cd ../project/tests/frontendIntegration/flask-server
 export PYTHONPATH="${PYTHONPATH}:/root/project" && python3 app.py --port 8080 &
 pid=$!
 export PYTHONPATH="${PYTHONPATH}:/root/project" && python3 app.py --port 8082 &
