@@ -118,7 +118,7 @@ class CustomAuth0Provider(Provider):
         self.authorisation_redirect_url = "https://" + self.domain + "/authorize"
         self.access_token_api_url = "https://" + self.domain + "/oauth/token"
 
-    async def get_profile_info(self, auth_code_response: Dict[str, Any]) -> UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
         access_token: str = auth_code_response['access_token']
         headers = {
             'Authorization': 'Bearer ' + access_token,
@@ -130,7 +130,7 @@ class CustomAuth0Provider(Provider):
             return UserInfo(user_info['sub'], UserInfoEmail(
                 user_info['name'], True))
 
-    def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
         params: Dict[str, Any] = {
             'scope': 'openid profile',
             'response_type': 'code',
@@ -140,7 +140,7 @@ class CustomAuth0Provider(Provider):
             self.authorisation_redirect_url, params)
 
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
+            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
         params = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,
@@ -149,6 +149,9 @@ class CustomAuth0Provider(Provider):
             'redirect_uri': redirect_uri
         }
         return AccessTokenAPI(self.access_token_api_url, params)
+    
+    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+        return None
 
 
 def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']] = None,

@@ -10,10 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
-from typing import List
-from supertokens_python.recipe.emailpassword.types import User
-from typing import Any, Dict
 import os
+from typing import Any, Dict, List, Union
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from corsheaders.defaults import default_headers
@@ -24,7 +22,7 @@ from supertokens_python import (InputAppInfo, SupertokensConfig,
                                 get_all_cors_headers, init)
 from supertokens_python.recipe import (emailpassword, passwordless, session,
                                        thirdparty, thirdpartyemailpassword)
-from supertokens_python.recipe.emailpassword.types import InputFormField
+from supertokens_python.recipe.emailpassword.types import InputFormField, User
 from supertokens_python.recipe.passwordless import (
     ContactPhoneOnlyConfig, CreateAndSendCustomEmailParameters,
     CreateAndSendCustomTextMessageParameters)
@@ -92,7 +90,7 @@ class CustomAuth0Provider(Provider):
         self.authorisation_redirect_url = "https://" + self.domain + "/authorize"
         self.access_token_api_url = "https://" + self.domain + "/oauth/token"
 
-    async def get_profile_info(self, auth_code_response: Dict[str, Any]) -> UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
         access_token: str = auth_code_response['access_token']
         headers = {
             'Authorization': 'Bearer ' + access_token,
@@ -104,7 +102,7 @@ class CustomAuth0Provider(Provider):
             return UserInfo(user_info['sub'], UserInfoEmail(
                 user_info['name'], True))
 
-    def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
         params: Dict[str, Any] = {
             'scope': 'openid profile',
             'response_type': 'code',
@@ -114,7 +112,7 @@ class CustomAuth0Provider(Provider):
             self.authorisation_redirect_url, params)
 
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
+            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
         params = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,
@@ -123,6 +121,9 @@ class CustomAuth0Provider(Provider):
             'redirect_uri': redirect_uri
         }
         return AccessTokenAPI(self.access_token_api_url, params)
+
+    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+        return None
 
 
 CODE_STORE: Dict[str, List[Dict[str, Any]]] = {}

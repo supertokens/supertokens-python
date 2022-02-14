@@ -53,14 +53,14 @@ def get_actual_client_id_from_development_client_id(client_id: str):
 
 class APIImplementation(APIInterface):
     async def authorisation_url_get(self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
-        authorisation_url_info = provider.get_authorisation_redirect_api_info()
+        authorisation_url_info = provider.get_authorisation_redirect_api_info(user_context)
 
         params: Dict[str, str] = {}
         for key, value in authorisation_url_info.params.items():
             params[key] = value if not callable(
                 value) else value(api_options.request)
 
-        redirect_uri = provider.get_redirect_uri()
+        redirect_uri = provider.get_redirect_uri(user_context)
         if redirect_uri is not None and not is_using_oauth_development_client_id(provider.client_id):
             # the backend wants to set the redirectURI - so we set that here.
             # we add the not development keys because the oauth provider will
@@ -87,7 +87,7 @@ class APIImplementation(APIInterface):
 
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions, user_context: Dict[str, Any]) -> SignInUpPostResponse:
 
-        redirect_uri_from_provider = provider.get_redirect_uri()
+        redirect_uri_from_provider = provider.get_redirect_uri(user_context)
         if is_using_oauth_development_client_id(provider.client_id):
             redirect_uri = DEV_OAUTH_REDIRECT_URL
         elif redirect_uri_from_provider is not None:
@@ -97,7 +97,7 @@ class APIImplementation(APIInterface):
         try:
             if auth_code_response is None:
                 access_token_api_info = provider.get_access_token_api_info(
-                    redirect_uri, code)
+                    redirect_uri, code, user_context)
                 if is_using_oauth_development_client_id(provider.client_id):
                     for k, _ in access_token_api_info.params.items():
                         if access_token_api_info.params[k] == provider.client_id:
@@ -117,7 +117,7 @@ class APIImplementation(APIInterface):
 
         user_info: UserInfo
         try:
-            user_info = await provider.get_profile_info(access_token_response)
+            user_info = await provider.get_profile_info(access_token_response, user_context)
         except Exception as e:
             return SignInUpPostFieldErrorResponse(str(e))
         email = user_info.email.id if user_info.email is not None else None

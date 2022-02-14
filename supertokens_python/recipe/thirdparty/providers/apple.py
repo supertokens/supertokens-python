@@ -72,7 +72,7 @@ class Apple(Provider):
         return encode(payload, sub(
             r'\\n', '\n', self.client_private_key), algorithm='ES256', headers=headers)  # type: ignore
 
-    async def get_profile_info(self, auth_code_response: Dict[str, Any]) -> UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
         # - Verify the JWS E256 signature using the server’s public key
         # - Verify the nonce for the authentication
         # - Verify that the iss field contains https://appleid.apple.com
@@ -94,7 +94,7 @@ class Apple(Provider):
         is_email_verified = payload['email_verified'] if 'email_verified' in payload else False
         return UserInfo(user_id, UserInfoEmail(email, is_email_verified))
 
-    def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
         params = {
             'scope': ' '.join(self.scopes),
             'response_type': 'code',
@@ -106,7 +106,7 @@ class Apple(Provider):
             self.authorisation_redirect_url, params)
 
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
+            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
         params = {
             'client_id': self.client_id,
             'client_secret': self.__get_client_secret(),
@@ -116,12 +116,12 @@ class Apple(Provider):
         }
         return AccessTokenAPI(self.access_token_api_url, params)
 
-    def get_redirect_uri(self) -> Union[None, str]:
+    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
         app_info = Supertokens.get_instance().app_info
-        self.redirect_uri = app_info.api_domain.get_as_string_dangerous()
-        self.redirect_uri += app_info.api_base_path.get_as_string_dangerous()
-        self.redirect_uri += APPLE_REDIRECT_HANDLER
-        return self.redirect_uri
+        redirect_uri = app_info.api_domain.get_as_string_dangerous()
+        redirect_uri += app_info.api_base_path.get_as_string_dangerous()
+        redirect_uri += APPLE_REDIRECT_HANDLER
+        return redirect_uri
 
     async def _fetch_apple_public_keys(self) -> List[RSAPublicKey]:
         # Check to see if the public key is unset or is stale before returning
