@@ -46,7 +46,7 @@ then
    echo "$(tput setaf 2)* Yes$(tput sgr 0)"
 else
     echo "$(tput setaf 1)* No$(tput sgr 0)"
-    echo "$(tput setaf 1)Please run 'make format' to fix code formatting.$(tput sgr 0)"
+    echo "$(tput setaf 1)The files have been formatted. Please review, git add and commit once again.$(tput sgr 0)"
     echo ""
 fi
 
