@@ -36,7 +36,7 @@ else
 fi
 
 
-make format >/dev/null 2>/dev/null
+make format-check >/dev/null 2>/dev/null
 formatted=$?
 
 echo "$(tput setaf 3)* Properly formatted?$(tput sgr 0)"
