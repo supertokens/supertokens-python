@@ -9,9 +9,6 @@ help:
 format:
 	autopep8 -r -i -a supertokens_python tests examples
 
-format-check:
-	autopep8 -r -a supertokens_python tests examples
-
 check-lint:
 	pyright supertokens_python tests examples && pylint supertokens_python tests examples
 

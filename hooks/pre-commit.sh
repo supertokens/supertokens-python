@@ -36,8 +36,8 @@ else
 fi
 
 
-make format-check >/dev/null 2>/dev/null
-formatted=$?
+make format >/dev/null 2>/dev/null
+formatted=`git ls-files . --exclude-standard --others -m | wc -l`
 
 echo "$(tput setaf 3)* Properly formatted?$(tput sgr 0)"
 
