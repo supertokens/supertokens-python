@@ -62,7 +62,6 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/supertokens/supertokens-python",
     packages=find_packages(exclude=exclude_list),
-    package_data = {'supertokens_python': ['py.typed']},
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
@@ -92,6 +91,5 @@ setup(
         'phonenumbers==8.12'
     ],
     python_requires='>=3.7',
-    include_package_data=True,
     extras_require=extras_require
 )
