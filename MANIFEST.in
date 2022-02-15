@@ -1,1 +1,2 @@
 include supertokens_python/py.typed
+include supertokens_python/**/*.py
