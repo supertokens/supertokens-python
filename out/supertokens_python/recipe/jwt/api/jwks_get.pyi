@@ -1,0 +1,3 @@
+from supertokens_python.recipe.jwt.interfaces import APIInterface as APIInterface, APIOptions as APIOptions
+
+async def jwks_get(api_implementation: APIInterface, api_options: APIOptions): ...

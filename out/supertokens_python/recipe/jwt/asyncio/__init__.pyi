@@ -1,0 +1,6 @@
+from supertokens_python.recipe.jwt.interfaces import CreateJwtResult as CreateJwtResult, GetJWKSResult as GetJWKSResult
+from supertokens_python.recipe.jwt.recipe import JWTRecipe as JWTRecipe
+from typing import Any, Dict, Union
+
+async def create_jwt(payload: Union[None, Dict[str, Any]] = ..., validity_seconds: Union[None, int] = ..., user_context: Union[Dict[str, Any], None] = ...) -> CreateJwtResult: ...
+async def get_jwks(user_context: Union[Dict[str, Any], None] = ...) -> GetJWKSResult: ...

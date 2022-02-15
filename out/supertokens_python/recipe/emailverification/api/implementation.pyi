@@ -1,0 +1,9 @@
+from supertokens_python.recipe.emailverification.interfaces import APIInterface as APIInterface, APIOptions as APIOptions, EmailVerifyPostInvalidTokenErrorResponse as EmailVerifyPostInvalidTokenErrorResponse, EmailVerifyPostOkResponse as EmailVerifyPostOkResponse, EmailVerifyPostResponse as EmailVerifyPostResponse, GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse as GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse, GenerateEmailVerifyTokenPostOkResponse as GenerateEmailVerifyTokenPostOkResponse, GenerateEmailVerifyTokenPostResponse as GenerateEmailVerifyTokenPostResponse, IsEmailVerifiedGetOkResponse as IsEmailVerifiedGetOkResponse, IsEmailVerifiedGetResponse as IsEmailVerifiedGetResponse
+from supertokens_python.recipe.emailverification.types import User as User
+from supertokens_python.recipe.session.asyncio import get_session as get_session
+from typing import Any, Dict
+
+class APIImplementation(APIInterface):
+    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailVerifyPostResponse: ...
+    async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> IsEmailVerifiedGetResponse: ...
+    async def generate_email_verify_token_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> GenerateEmailVerifyTokenPostResponse: ...

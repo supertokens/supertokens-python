@@ -1,0 +1,1 @@
+GET_JWKS_API: str

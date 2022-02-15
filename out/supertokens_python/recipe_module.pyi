@@ -1,0 +1,33 @@
+import abc
+from .exceptions import SuperTokensError as SuperTokensError
+from .framework.response import BaseResponse as BaseResponse
+from .normalised_url_path import NormalisedURLPath as NormalisedURLPath
+from .supertokens import AppInfo as AppInfo
+from supertokens_python.framework.request import BaseRequest as BaseRequest
+from typing import Any, List, TypeGuard, Union
+from typing_extensions import Literal
+
+class RecipeModule(abc.ABC, metaclass=abc.ABCMeta):
+    recipe_id: Any
+    app_info: Any
+    def __init__(self, recipe_id: str, app_info: AppInfo) -> None: ...
+    def get_recipe_id(self): ...
+    def get_app_info(self): ...
+    def return_api_id_if_can_handle_request(self, path: NormalisedURLPath, method: str) -> Union[str, None]: ...
+    @abc.abstractmethod
+    def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> TypeGuard[SuperTokensError]: ...
+    @abc.abstractmethod
+    def get_apis_handled(self) -> List[APIHandled]: ...
+    @abc.abstractmethod
+    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse) -> Union[BaseResponse, None]: ...
+    @abc.abstractmethod
+    async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse: ...
+    @abc.abstractmethod
+    def get_all_cors_headers(self) -> List[str]: ...
+
+class APIHandled:
+    path_without_api_base_path: Any
+    method: Any
+    request_id: Any
+    disabled: Any
+    def __init__(self, path_without_api_base_path: NormalisedURLPath, method: Literal['post', 'get', 'delete', 'put', 'options', 'trace'], request_id: str, disabled: bool) -> None: ...

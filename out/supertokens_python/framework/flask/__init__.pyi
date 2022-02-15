@@ -1,0 +1,1 @@
+from supertokens_python.framework.flask.flask_middleware import Middleware as Middleware

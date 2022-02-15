@@ -1,0 +1,3 @@
+from supertokens_python.recipe.session.interfaces import APIInterface as APIInterface, APIOptions as APIOptions
+
+async def handle_signout_api(api_implementation: APIInterface, api_options: APIOptions): ...

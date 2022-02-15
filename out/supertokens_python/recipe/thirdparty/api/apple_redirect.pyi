@@ -1,0 +1,3 @@
+from supertokens_python.recipe.thirdparty.interfaces import APIInterface as APIInterface, APIOptions as APIOptions
+
+async def handle_apple_redirect_api(api_implementation: APIInterface, api_options: APIOptions): ...

@@ -33,21 +33,6 @@ extras_require = {
     ])
 }
 
-exclude_list = [
-    "tests",
-    "examples",
-    "hooks",
-    ".gitignore",
-    ".git",
-    "addDevTag",
-    "addReleaseTag",
-    "frontendDriverInterfaceSupported.json",
-    "coreDriverInterfaceSupported.json",
-    ".github",
-    ".circleci",
-    "html"
-]
-
 setup(
     name="supertokens_python",
     version="0.5.0",
@@ -58,7 +43,8 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/supertokens/supertokens-fastapi",
-    packages=find_packages(exclude=exclude_list),
+    packages=find_packages("supertokens_python"),
+    package_data={"supertokens_python": ["out/**/*.pyi"]},
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
