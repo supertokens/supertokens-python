@@ -27,7 +27,11 @@ if TYPE_CHECKING:
 from . import exceptions  # type: ignore
 from .interfaces import SessionContainer  # type: ignore
 from .recipe import SessionRecipe
-from .utils import InputErrorHandlers, InputOverrideConfig, JWTConfig
+from . import utils
+
+InputErrorHandlers = utils.InputErrorHandlers
+InputOverrideConfig = utils.InputOverrideConfig
+JWTConfig = utils.JWTConfig
 
 
 def init(cookie_domain: Union[str, None] = None,

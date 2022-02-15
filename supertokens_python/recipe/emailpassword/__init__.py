@@ -15,11 +15,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Union
 
-from . import exceptions  # type: ignore
+from . import exceptions as ex
+from . import utils
 from .recipe import EmailPasswordRecipe
-from .utils import InputFormField  # type: ignore
-from .utils import (InputEmailVerificationConfig, InputOverrideConfig,
-                    InputResetPasswordUsingTokenFeature, InputSignUpFeature)
+
+exceptions = ex
+InputOverrideConfig = utils.InputOverrideConfig
+InputResetPasswordUsingTokenFeature = utils.InputResetPasswordUsingTokenFeature
+InputEmailVerificationConfig = utils.InputEmailVerificationConfig
+InputSignUpFeature = utils.InputSignUpFeature
+InputFormField = utils.InputFormField
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
@@ -27,11 +32,11 @@ if TYPE_CHECKING:
     from ...recipe_module import RecipeModule
 
 
-def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
+def init(sign_up_feature: Union[utils.InputSignUpFeature, None] = None,
          reset_password_using_token_feature: Union[
-             InputResetPasswordUsingTokenFeature, None] = None,
-         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[InputOverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
+             utils.InputResetPasswordUsingTokenFeature, None] = None,
+         email_verification_feature: Union[utils.InputEmailVerificationConfig, None] = None,
+         override: Union[utils.InputOverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
     return EmailPasswordRecipe.init(
         sign_up_feature,
         reset_password_using_token_feature,

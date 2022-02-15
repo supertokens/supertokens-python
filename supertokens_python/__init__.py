@@ -14,8 +14,13 @@
 
 from typing import Callable, List, Union
 
+from . import supertokens
 from .recipe_module import RecipeModule
-from .supertokens import AppInfo, InputAppInfo, Supertokens, SupertokensConfig
+
+InputAppInfo = supertokens.InputAppInfo
+Supertokens = supertokens.Supertokens
+SupertokensConfig = supertokens.SupertokensConfig
+AppInfo = supertokens.AppInfo
 
 try:
     from typing import Literal
@@ -26,7 +31,7 @@ except ImportError:
 def init(app_info: InputAppInfo,
          framework: Literal['fastapi', 'flask', 'django'],
          supertokens_config: SupertokensConfig,
-         recipe_list: List[Callable[[AppInfo], RecipeModule]],
+         recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
          mode: Union[Literal['asgi', 'wsgi'], None] = None,
          telemetry: Union[bool, None] = None):
     return Supertokens.init(app_info, framework,
@@ -34,4 +39,4 @@ def init(app_info: InputAppInfo,
 
 
 def get_all_cors_headers():
-    return Supertokens.get_instance().get_all_cors_headers()
+    return supertokens.Supertokens.get_instance().get_all_cors_headers()
