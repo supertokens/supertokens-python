@@ -1,1 +1,0 @@
-from supertokens_python.framework.fastapi.fastapi_middleware import Middleware as Middleware

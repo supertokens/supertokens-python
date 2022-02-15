@@ -1,1 +1,0 @@
-from supertokens_python.framework.django.django_middleware import middleware as middleware

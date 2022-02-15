@@ -1,5 +1,0 @@
-from supertokens_python.recipe.thirdparty.interfaces import APIInterface as APIInterface, APIOptions as APIOptions, SignInUpPostFieldErrorResponse as SignInUpPostFieldErrorResponse, SignInUpPostNoEmailGivenByProviderResponse as SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostOkResponse as SignInUpPostOkResponse
-from supertokens_python.recipe.thirdparty.provider import Provider as Provider
-from supertokens_python.recipe.thirdpartyemailpassword.interfaces import APIInterface as ThirdPartyEmailPasswordAPIInterface
-
-def get_interface_impl(api_implementation: ThirdPartyEmailPasswordAPIInterface) -> APIInterface: ...

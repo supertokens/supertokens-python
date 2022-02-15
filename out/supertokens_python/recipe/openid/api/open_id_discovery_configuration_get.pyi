@@ -1,3 +1,0 @@
-from supertokens_python.recipe.openid.interfaces import APIInterface as APIInterface, APIOptions as APIOptions
-
-async def open_id_discovery_configuration_get(api_implementation: APIInterface, api_options: APIOptions): ...

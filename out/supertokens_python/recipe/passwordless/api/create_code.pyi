@@ -1,5 +1,0 @@
-from supertokens_python.exceptions import raise_bad_input_exception as raise_bad_input_exception
-from supertokens_python.recipe.passwordless.interfaces import APIInterface as APIInterface, APIOptions as APIOptions, CreateCodePostGeneralErrorResponse as CreateCodePostGeneralErrorResponse
-from supertokens_python.recipe.passwordless.utils import ContactEmailOnlyConfig as ContactEmailOnlyConfig, ContactEmailOrPhoneConfig as ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig as ContactPhoneOnlyConfig
-
-async def create_code(api_implementation: APIInterface, api_options: APIOptions): ...

@@ -1,3 +1,0 @@
-from typing import Any
-
-def middleware(get_response: Any): ...

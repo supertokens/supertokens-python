@@ -1,7 +1,0 @@
-from supertokens_python.recipe.openid.interfaces import RecipeInterface as OpenIdRecipeInterface
-from supertokens_python.recipe.session.interfaces import SessionContainer as SessionContainer
-from supertokens_python.recipe.session.with_jwt.constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY as ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
-from supertokens_python.recipe.session.with_jwt.utills import add_jwt_to_access_token_payload as add_jwt_to_access_token_payload
-from supertokens_python.utils import get_timestamp_ms as get_timestamp_ms
-
-def get_session_with_jwt(original_session: SessionContainer, openid_recipe_implementation: OpenIdRecipeInterface) -> SessionContainer: ...

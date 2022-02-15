@@ -1,3 +1,0 @@
-from supertokens_python.recipe.emailverification.interfaces import APIInterface as APIInterface, APIOptions as APIOptions
-
-async def handle_generate_email_verify_token_api(api_implementation: APIInterface, api_options: APIOptions): ...
