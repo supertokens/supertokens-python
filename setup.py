@@ -47,7 +47,6 @@ exclude_list = [
     ".circleci",
     "html",
     "pyrightconfig.json",
-    "pyproject.toml",
     "Makefile",
     ".pylintrc"
 ]
