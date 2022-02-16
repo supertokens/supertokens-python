@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
+from xmlrpc.client import boolean
 
 from ..emailverification.interfaces import \
     RecipeInterface as EmailVerificationRecipeInterface
@@ -60,8 +61,8 @@ class SignInResult(ABC):
             self, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'], user: Union[User, None]):
         self.status = status
         self.is_ok = False
-        self.is_wrong_credentials_error = False
-        self.user = user
+        self.is_wrong_credentials_error: boolean = False
+        self.user: Union[User, None] = user
 
 
 class SignInOkResult(SignInResult):
@@ -199,12 +200,12 @@ class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: EmailPasswordConfig, recipe_implementation: RecipeInterface,
                  email_verification_recipe_implementation: EmailVerificationRecipeInterface):
-        self.request = request
-        self.response = response
-        self.recipe_id = recipe_id
-        self.config = config
-        self.recipe_implementation = recipe_implementation
-        self.email_verification_recipe_implementation = email_verification_recipe_implementation
+        self.request: BaseRequest = request
+        self.response: BaseResponse = response
+        self.recipe_id: str = recipe_id
+        self.config: EmailPasswordConfig = config
+        self.recipe_implementation: RecipeInterface = recipe_implementation
+        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = email_verification_recipe_implementation
 
 
 class EmailVerifyPostResponse(ABC):

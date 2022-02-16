@@ -16,10 +16,10 @@ from typing import Awaitable, Callable, List, Union
 
 class User:
     def __init__(self, user_id: str, email: str, time_joined: int):
-        self.user_id = user_id
-        self.email = email
-        self.time_joined = time_joined
-        self.third_party_info = None
+        self.user_id: str = user_id
+        self.email: str = email
+        self.time_joined: int = time_joined
+        self.third_party_info: None = None
 
 
 class UsersResponse:
@@ -37,8 +37,8 @@ class ErrorFormField:
 
 class FormField:
     def __init__(self, id: str, value: str):  # pylint: disable=redefined-builtin
-        self.id = id
-        self.value = value
+        self.id: str = id
+        self.value: str = value
 
 
 class InputFormField:

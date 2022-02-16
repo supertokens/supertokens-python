@@ -15,10 +15,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
-from . import exceptions  # type: ignore
+from . import exceptions as ex
 from .recipe import EmailVerificationRecipe
-from .utils import OverrideConfig as InputOverrideConfig  # type: ignore
-from .utils import ParentRecipeEmailVerificationConfig
+from . import utils
+InputOverrideConfig = utils.OverrideConfig
+ParentRecipeEmailVerificationConfig = utils.ParentRecipeEmailVerificationConfig
+exception = ex
+
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
