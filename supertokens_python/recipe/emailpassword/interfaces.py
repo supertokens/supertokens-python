@@ -59,7 +59,7 @@ class SignUpEmailAlreadyExistsErrorResult(SignUpResult):
 class SignInResult(ABC):
     def __init__(
             self, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'], user: Union[User, None]):
-        self.status = status
+        self.status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'] = status
         self.is_ok = False
         self.is_wrong_credentials_error: boolean = False
         self.user: Union[User, None] = user

@@ -24,14 +24,16 @@ if TYPE_CHECKING:
     from ...recipe_module import RecipeModule
     from supertokens_python.supertokens import AppInfo
 
-from . import exceptions  # type: ignore
-from .interfaces import SessionContainer  # type: ignore
+from . import exceptions as ex
 from .recipe import SessionRecipe
 from . import utils
+from . import interfaces
 
 InputErrorHandlers = utils.InputErrorHandlers
 InputOverrideConfig = utils.InputOverrideConfig
 JWTConfig = utils.JWTConfig
+SessionContainer = interfaces.SessionContainer
+exceptions = ex
 
 
 def init(cookie_domain: Union[str, None] = None,

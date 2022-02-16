@@ -14,6 +14,8 @@
 from typing import Any, Dict, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
+from ..types import User
+from ..interfaces import SignInResult
 
 
 def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -47,7 +49,7 @@ async def update_email_or_password(user_id: str, email: Union[str, None] = None,
         user_id, email, password, user_context))
 
 
-def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[None, User]:
     from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
     return sync(get_user_by_id(user_id, user_context))
 
@@ -71,7 +73,7 @@ def reset_password_using_token(
     return sync(reset_password_using_token(token, new_password, user_context))
 
 
-def sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+def sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None) -> SignInResult:
     from supertokens_python.recipe.emailpassword.asyncio import sign_in
     return sync(sign_in(email, password, user_context))
 
