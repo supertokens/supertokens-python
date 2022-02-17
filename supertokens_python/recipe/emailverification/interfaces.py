@@ -139,10 +139,10 @@ class APIOptions:
 class EmailVerifyPostResponse(ABC):
     def __init__(
             self, status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'], user: Union[User, None]):
-        self.status = status
-        self.is_ok = False
-        self.is_email_verification_invalid_token_error = False
-        self.user = user
+        self.status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'] = status
+        self.is_ok: bool = False
+        self.is_email_verification_invalid_token_error: bool = False
+        self.user: Union[User, None] = user
 
     def to_json(self) -> Dict[str, Any]:
         return {

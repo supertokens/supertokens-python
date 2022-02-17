@@ -15,6 +15,8 @@ from typing import Any, Dict, Union
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 
+from ..types import User
+
 
 async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
@@ -60,7 +62,7 @@ async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]]
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id, user_context)
 
 
-async def get_user_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None):
+async def get_user_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[User, None]:
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_email(email, user_context)
