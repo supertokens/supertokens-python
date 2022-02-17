@@ -335,8 +335,9 @@ class GeneratePasswordResetTokenPostOkResponse(
 class PasswordResetPostResponse(ABC):
     def __init__(self, status: Literal['OK',
                  'RESET_PASSWORD_INVALID_TOKEN_ERROR'], user_id: Union[str, None] = None):
-        self.user_id = user_id
-        self.status = status
+        self.user_id: Union[str, None] = user_id
+        self.status: Literal['OK',
+                             'RESET_PASSWORD_INVALID_TOKEN_ERROR'] = status
 
     def to_json(self) -> Dict[str, Any]:
         return {
