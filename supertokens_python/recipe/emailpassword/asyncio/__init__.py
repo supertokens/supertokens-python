@@ -56,7 +56,7 @@ async def update_email_or_password(user_id: str, email: Union[str, None] = None,
     return await EmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id, email, password, user_context)
 
 
-async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[None, User]:
     if user_context is None:
         user_context = {}
     return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id, user_context)

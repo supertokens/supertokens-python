@@ -54,7 +54,7 @@ def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = Non
     return sync(get_user_by_id(user_id, user_context))
 
 
-def get_user_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None):
+def get_user_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[None, User]:
     from supertokens_python.recipe.emailpassword.asyncio import \
         get_user_by_email
     return sync(get_user_by_email(email, user_context))
