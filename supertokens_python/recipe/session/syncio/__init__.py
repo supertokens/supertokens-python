@@ -54,6 +54,13 @@ def revoke_all_sessions_for_user(user_id: str, user_context: Union[None, Dict[st
     return sync(async_revoke_all_sessions_for_user(user_id, user_context))
 
 
+def get_all_session_handles_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> List[str]:
+    from supertokens_python.recipe.session.asyncio import \
+        get_all_session_handles_for_user as \
+        async_get_all_session_handles_for_user
+    return sync(async_get_all_session_handles_for_user(user_id, user_context))
+
+
 def revoke_multiple_sessions(session_handles: List[str], user_context: Union[None, Dict[str, Any]] = None) -> List[str]:
     from supertokens_python.recipe.session.asyncio import \
         revoke_multiple_sessions as async_revoke_multiple_sessions
