@@ -273,7 +273,7 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
 
 if mode == 'asgi':
     @verify_session()
-    async def session_info(request: HttpRequest):
+    async def _(request: HttpRequest):
         session_: SessionContainer = request.supertokens  # type: ignore
         return JsonResponse({
             'sessionHandle': session_.get_handle(),
@@ -283,7 +283,7 @@ if mode == 'asgi':
         })
 else:
     @verify_session()
-    def session_info(request: HttpRequest):
+    def __(request: HttpRequest):
         session_: SessionContainer = request.supertokens  # type: ignore
         return JsonResponse({
             'sessionHandle': session_.get_handle(),
