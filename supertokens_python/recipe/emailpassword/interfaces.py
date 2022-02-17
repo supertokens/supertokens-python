@@ -400,11 +400,11 @@ class SignUpPostResponse(ABC):
             user: Union[User, None] = None,
             session: Union[SessionContainer, None] = None):
         self.type = 'emailpassword'
-        self.is_ok = False
-        self.is_email_already_exists_error = False
-        self.status = status
-        self.user = user
-        self.session = session
+        self.is_ok: bool = False
+        self.is_email_already_exists_error: bool = False
+        self.status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR'] = status
+        self.user: Union[User, None] = user
+        self.session: Union[SessionContainer, None] = session
 
     def to_json(self) -> Dict[str, Any]:
         response = {
