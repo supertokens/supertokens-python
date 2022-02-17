@@ -60,13 +60,13 @@ class RegenerateAccessTokenOkResult(RegenerateAccessTokenResult):
 
 class SessionInformationResult(ABC):
     def __init__(self, status: Literal['OK'], session_handle: str, user_id: str, session_data: Dict[str, Any], expiry: int, access_token_payload: Dict[str, Any], time_created: int):
-        self.status = status
-        self.session_handle = session_handle
-        self.user_id = user_id
-        self.session_data = session_data
-        self.expiry = expiry
-        self.access_token_payload = access_token_payload
-        self.time_created = time_created
+        self.status: Literal['OK'] = status
+        self.session_handle: str = session_handle
+        self.user_id: str = user_id
+        self.session_data: Dict[str, Any] = session_data
+        self.expiry: int = expiry
+        self.access_token_payload: Dict[str, Any] = access_token_payload
+        self.time_created: int = time_created
 
 
 class RecipeInterface(ABC):
