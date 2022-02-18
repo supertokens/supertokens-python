@@ -38,5 +38,5 @@ def init(app_info: InputAppInfo,
                             supertokens_config, recipe_list, mode, telemetry)
 
 
-def get_all_cors_headers():
+def get_all_cors_headers() -> List[str]:
     return supertokens.Supertokens.get_instance().get_all_cors_headers()
