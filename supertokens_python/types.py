@@ -33,5 +33,5 @@ class User:
 class UsersResponse:
     def __init__(self, users: List[User],
                  next_pagination_token: Union[str, None]):
-        self.users = users
-        self.next_pagination_token = next_pagination_token
+        self.users: List[User] = users
+        self.next_pagination_token: Union[str, None] = next_pagination_token
