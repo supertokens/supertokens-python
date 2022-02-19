@@ -12,7 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, List
+from ..types import User
 
 from supertokens_python.recipe.thirdpartyemailpassword.recipe import \
     ThirdPartyEmailPasswordRecipe
@@ -106,7 +107,7 @@ async def update_email_or_password(user_id: str, email: Union[None, str] = None,
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id, email, password, user_context)
 
 
-async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None):
+async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -> List[User]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_by_email(email, user_context)
