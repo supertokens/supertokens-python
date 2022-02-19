@@ -105,10 +105,11 @@ class CreateResetPasswordWrongUserIdErrorResult(CreateResetPasswordResult):
 class ResetPasswordUsingTokenResult(ABC):
     def __init__(self, status: Literal['OK',
                  'RESET_PASSWORD_INVALID_TOKEN_ERROR'], user_id: Union[None, str] = None):
-        self.status = status
-        self.is_ok = False
-        self.user_id = user_id
-        self.is_reset_password_invalid_token_error = False
+        self.status: Literal['OK',
+                             'RESET_PASSWORD_INVALID_TOKEN_ERROR'] = status
+        self.is_ok: bool = False
+        self.user_id: Union[None, str] = user_id
+        self.is_reset_password_invalid_token_error: bool = False
 
 
 class ResetPasswordUsingTokenOkResult(ResetPasswordUsingTokenResult):
