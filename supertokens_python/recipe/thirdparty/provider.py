@@ -23,9 +23,9 @@ if TYPE_CHECKING:
 
 class Provider(abc.ABC):
     def __init__(self, provider_id: str, client_id: str, is_default: bool):
-        self.id = provider_id
-        self.client_id = client_id
-        self.is_default = is_default
+        self.id: str = provider_id
+        self.client_id: str = client_id
+        self.is_default: bool = is_default
 
     @abc.abstractmethod
     async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:

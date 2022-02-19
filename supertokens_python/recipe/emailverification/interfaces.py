@@ -31,10 +31,10 @@ if TYPE_CHECKING:
 class CreateEmailVerificationTokenResult(ABC):
     def __init__(
             self, status: Literal['OK', 'EMAIL_ALREADY_VERIFIED_ERROR'], token: Union[str, None]):
-        self.status = status
-        self.is_ok = False
-        self.is_email_already_verified = False
-        self.token = token
+        self.status: Literal['OK', 'EMAIL_ALREADY_VERIFIED_ERROR'] = status
+        self.is_ok: bool = False
+        self.is_email_already_verified: bool = False
+        self.token: Union[str, None] = token
 
 
 class CreateEmailVerificationTokenOkResult(CreateEmailVerificationTokenResult):

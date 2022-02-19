@@ -25,22 +25,22 @@ class ThirdPartyInfo:
 class User:
     def __init__(self, user_id: str, email: str, time_joined: int,
                  third_party_info: ThirdPartyInfo):
-        self.user_id = user_id
-        self.email = email
-        self.time_joined = time_joined
-        self.third_party_info = third_party_info
+        self.user_id: str = user_id
+        self.email: str = email
+        self.time_joined: int = time_joined
+        self.third_party_info: ThirdPartyInfo = third_party_info
 
 
 class UserInfoEmail:
     def __init__(self, email: str, email_verified: bool):
-        self.id = email
-        self.is_verified = email_verified
+        self.id: str = email
+        self.is_verified: bool = email_verified
 
 
 class UserInfo:
     def __init__(self, user_id: str, email: Union[UserInfoEmail, None] = None):
-        self.user_id = user_id
-        self.email = email
+        self.user_id: str = user_id
+        self.email: Union[UserInfoEmail, None] = email
 
 
 class AccessTokenAPI:

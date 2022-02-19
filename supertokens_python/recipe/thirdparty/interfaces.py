@@ -38,12 +38,12 @@ if TYPE_CHECKING:
 class SignInUpResult(ABC):
     def __init__(self, status: Literal['OK', 'FIELD_ERROR'], user: Union[User, None] = None,
                  created_new_user: Union[bool, None] = None, error: Union[str, None] = None):
-        self.status = status
-        self.is_ok = False
-        self.is_field_error = False
-        self.user = user
-        self.created_new_user = created_new_user
-        self.error = error
+        self.status: Literal['OK', 'FIELD_ERROR'] = status
+        self.is_ok: bool = False
+        self.is_field_error: bool = False
+        self.user: Union[User, None] = user
+        self.created_new_user: Union[bool, None] = created_new_user
+        self.error: Union[str, None] = error
 
 
 class SignInUpOkResult(SignInUpResult):
@@ -84,14 +84,14 @@ class RecipeInterface(ABC):
 class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: ThirdPartyConfig, recipe_implementation: RecipeInterface, providers: List[Provider], app_info: AppInfo, email_verification_recipe_implementation: EmailVerificationRecipeInterface):
-        self.request = request
-        self.response = response
-        self.recipe_id = recipe_id
-        self.config = config
-        self.providers = providers
-        self.recipe_implementation = recipe_implementation
-        self.app_info = app_info
-        self.email_verification_recipe_implementation = email_verification_recipe_implementation
+        self.request: BaseRequest = request
+        self.response: BaseResponse = response
+        self.recipe_id: str = recipe_id
+        self.config: ThirdPartyConfig = config
+        self.providers: List[Provider] = providers
+        self.recipe_implementation: RecipeInterface = recipe_implementation
+        self.app_info: AppInfo = app_info
+        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = email_verification_recipe_implementation
 
 
 class SignInUpPostResponse(ABC):
