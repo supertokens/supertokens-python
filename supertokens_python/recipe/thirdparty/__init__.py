@@ -15,16 +15,21 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Union
 
-from . import exceptions  # type: ignore
-from .providers import Apple  # type: ignore
-from .providers import Discord  # type: ignore
-from .providers import Facebook  # type: ignore
-from .providers import Github  # type: ignore
-from .providers import Google  # type: ignore
-from .providers import GoogleWorkspaces  # type: ignore
+from . import exceptions as ex
+from . import providers
 from .recipe import ThirdPartyRecipe
-from .utils import (InputEmailVerificationConfig, InputOverrideConfig,
-                    SignInAndUpFeature)
+
+from . import utils
+InputEmailVerificationConfig = utils.InputEmailVerificationConfig
+InputOverrideConfig = utils.InputOverrideConfig
+SignInAndUpFeature = utils.SignInAndUpFeature
+Apple = providers.Apple
+Discord = providers.Discord
+Facebook = providers.Facebook
+Github = providers.Github
+Google = providers.Google
+GoogleWorkspaces = providers.GoogleWorkspaces
+exceptions = ex
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
