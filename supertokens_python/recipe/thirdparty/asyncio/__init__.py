@@ -12,9 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
+
+from ..types import User
 
 
 async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -56,13 +58,13 @@ async def revoke_email_verification_tokens(user_id: str, user_context: Union[Non
         user_id, email, user_context)
 
 
-async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[User, None]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.get_user_by_id(user_id, user_context)
 
 
-async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None):
+async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -> List[User]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.get_users_by_email(email, user_context)
