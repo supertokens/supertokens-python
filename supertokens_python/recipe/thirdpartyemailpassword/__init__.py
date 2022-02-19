@@ -15,20 +15,24 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, List, Union
 
-from supertokens_python.recipe.thirdparty import Apple  # type: ignore
-from supertokens_python.recipe.thirdparty import Discord  # type: ignore
-from supertokens_python.recipe.thirdparty import Facebook  # type: ignore
-from supertokens_python.recipe.thirdparty import Github  # type: ignore
-from supertokens_python.recipe.thirdparty import Google  # type: ignore
-from supertokens_python.recipe.thirdparty import \
-    GoogleWorkspaces  # type: ignore
 from supertokens_python.recipe.thirdparty.provider import Provider
 
-from ..emailpassword import (InputResetPasswordUsingTokenFeature,
-                             InputSignUpFeature)
-from . import exceptions  # type: ignore
+from .. import emailpassword, thirdparty
+from . import exceptions as ex
+from . import utils
 from .recipe import ThirdPartyEmailPasswordRecipe
-from .utils import InputEmailVerificationConfig, InputOverrideConfig
+
+InputEmailVerificationConfig = utils.InputEmailVerificationConfig
+InputOverrideConfig = utils.InputOverrideConfig
+exceptions = ex
+InputResetPasswordUsingTokenFeature = emailpassword.InputResetPasswordUsingTokenFeature
+InputSignUpFeature = emailpassword.InputSignUpFeature
+Apple = thirdparty.Apple
+Discord = thirdparty.Discord
+Facebook = thirdparty.Facebook
+Github = thirdparty.Github
+Google = thirdparty.Google
+GoogleWorkspaces = thirdparty.GoogleWorkspaces
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
