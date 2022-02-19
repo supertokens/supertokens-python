@@ -100,15 +100,15 @@ class SignInUpPostResponse(ABC):
                  error: Union[str, None] = None,
                  session: Union[SessionContainer, None] = None):
         self.type = 'thirdparty'
-        self.status = status
-        self.is_ok = False
-        self.is_no_email_given_by_provider = False
-        self.is_field_error = False
-        self.user = user
-        self.created_new_user = created_new_user
-        self.error = error
-        self.auth_code_response = auth_code_response
-        self.session = session
+        self.status: Literal['OK', 'NO_EMAIL_GIVEN_BY_PROVIDER', 'FIELD_ERROR'] = status
+        self.is_ok: bool = False
+        self.is_no_email_given_by_provider: bool = False
+        self.is_field_error: bool = False
+        self.user: Union[User, None] = user
+        self.created_new_user: Union[bool, None] = created_new_user
+        self.error: Union[str, None] = error
+        self.auth_code_response: Union[Dict[str, Any], None] = auth_code_response
+        self.session: Union[SessionContainer, None] = session
 
     @abstractmethod
     def to_json(self) -> Dict[str, Any]:
