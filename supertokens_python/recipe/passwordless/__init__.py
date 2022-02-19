@@ -22,18 +22,21 @@ except ImportError:
     from typing_extensions import Literal
 
 from .recipe import PasswordlessRecipe
-from .utils import ContactEmailOrPhoneConfig  # type: ignore
-from .utils import ContactPhoneOnlyConfig  # type: ignore
-from .utils import CreateAndSendCustomEmailParameters  # type: ignore
-from .utils import CreateAndSendCustomTextMessageParameters  # type: ignore
-from .utils import PhoneOrEmailInput  # type: ignore
-from .utils import ContactConfig, ContactEmailOnlyConfig  # type: ignore
-from .utils import OverrideConfig as InputOverrideConfig
+from . import utils
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
     from ...recipe_module import RecipeModule
+
+InputOverrideConfig = utils.OverrideConfig
+ContactEmailOnlyConfig = utils.ContactEmailOnlyConfig
+ContactConfig = utils.ContactConfig
+PhoneOrEmailInput = utils.PhoneOrEmailInput
+CreateAndSendCustomTextMessageParameters = utils.CreateAndSendCustomTextMessageParameters
+CreateAndSendCustomEmailParameters = utils.CreateAndSendCustomEmailParameters
+ContactPhoneOnlyConfig = utils.ContactPhoneOnlyConfig
+ContactEmailOrPhoneConfig = utils.ContactEmailOrPhoneConfig
 
 
 def init(contact_config: ContactConfig,
