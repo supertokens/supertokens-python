@@ -430,18 +430,24 @@ class ConsumeCodePostResponse(ABC):
         failed_code_input_attempt_count: Union[int, None] = None,
         maximum_code_input_attempts: Union[int, None] = None
     ):
-        self.status = status
-        self.session = session
-        self.created_new_user = created_new_user
-        self.user = user
-        self.failed_code_input_attempt_count = failed_code_input_attempt_count
-        self.maximum_code_input_attempts = maximum_code_input_attempts
-        self.message = message
-        self.is_ok = False
-        self.is_general_error = False
-        self.is_restart_flow_error = False
-        self.is_incorrect_user_input_code_error = False
-        self.is_expired_user_input_code_error = False
+        self.status: Literal[
+            'OK',
+            'GENERAL_ERROR',
+            'RESTART_FLOW_ERROR',
+            'INCORRECT_USER_INPUT_CODE_ERROR',
+            'EXPIRED_USER_INPUT_CODE_ERROR'
+        ] = status
+        self.session: Union[SessionContainer, None] = session
+        self.created_new_user: Union[bool, None] = created_new_user
+        self.user: Union[User, None] = user
+        self.failed_code_input_attempt_count: Union[int, None] = failed_code_input_attempt_count
+        self.maximum_code_input_attempts: Union[int, None] = maximum_code_input_attempts
+        self.message: Union[str, None] = message
+        self.is_ok: bool = False
+        self.is_general_error: bool = False
+        self.is_restart_flow_error: bool = False
+        self.is_incorrect_user_input_code_error: bool = False
+        self.is_expired_user_input_code_error: bool = False
 
     @abstractmethod
     def to_json(self) -> Dict[str, Any]:

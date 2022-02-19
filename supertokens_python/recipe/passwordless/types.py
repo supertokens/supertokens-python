@@ -17,10 +17,10 @@ from typing import List, Union
 class User:
     def __init__(self, user_id: str,
                  email: Union[str, None], phone_number: Union[str, None], time_joined: int):
-        self.user_id = user_id
-        self.email = email
-        self.phone_number = phone_number
-        self.time_joined = time_joined
+        self.user_id: str = user_id
+        self.email: Union[str, None] = email
+        self.phone_number: Union[str, None] = phone_number
+        self.time_joined: int = time_joined
 
 
 class DeviceCode:
