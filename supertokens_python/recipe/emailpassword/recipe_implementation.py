@@ -13,29 +13,27 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
-
-from .interfaces import (
-    RecipeInterface, SignInOkResult, SignInWrongCredentialsErrorResult, SignUpOkResult,
-    SignUpEmailAlreadyExistsErrorResult, UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
-    CreateResetPasswordWrongUserIdErrorResult, ResetPasswordUsingTokenOkResult,
-    ResetPasswordUsingTokenWrongUserIdErrorResult, UpdateEmailOrPasswordOkResult,
-    UpdateEmailOrPasswordUnknownUserIdErrorResult, CreateResetPasswordOkResult
-)
-from .types import User, UsersResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
+
+from .interfaces import (CreateResetPasswordOkResult,
+                         CreateResetPasswordWrongUserIdErrorResult,
+                         RecipeInterface, ResetPasswordUsingTokenOkResult,
+                         ResetPasswordUsingTokenWrongUserIdErrorResult,
+                         SignInOkResult, SignInWrongCredentialsErrorResult,
+                         SignUpEmailAlreadyExistsErrorResult, SignUpOkResult,
+                         UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
+                         UpdateEmailOrPasswordOkResult,
+                         UpdateEmailOrPasswordUnknownUserIdErrorResult)
+from .types import User
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
-    from .interfaces import (
-        UpdateEmailOrPasswordResult, SignUpResult, SignInResult, ResetPasswordUsingTokenResult,
-        CreateResetPasswordResult
-    )
+
+    from .interfaces import (CreateResetPasswordResult,
+                             ResetPasswordUsingTokenResult, SignInResult,
+                             SignUpResult, UpdateEmailOrPasswordResult)
 
 
 class RecipeImplementation(RecipeInterface):
@@ -43,7 +41,7 @@ class RecipeImplementation(RecipeInterface):
         super().__init__()
         self.querier = querier
 
-    async def get_user_by_id(self, user_id: str) -> Union[User, None]:
+    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
         params = {
             'userId': user_id
         }
@@ -53,7 +51,7 @@ class RecipeImplementation(RecipeInterface):
                         ['email'], response['user']['timeJoined'])
         return None
 
-    async def get_user_by_email(self, email: str) -> Union[User, None]:
+    async def get_user_by_email(self, email: str, user_context: Dict[str, Any]) -> Union[User, None]:
         params = {
             'email': email
         }
@@ -63,7 +61,7 @@ class RecipeImplementation(RecipeInterface):
                         ['email'], response['user']['timeJoined'])
         return None
 
-    async def create_reset_password_token(self, user_id: str) -> CreateResetPasswordResult:
+    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> CreateResetPasswordResult:
         data = {
             'userId': user_id
         }
@@ -74,7 +72,7 @@ class RecipeImplementation(RecipeInterface):
             return CreateResetPasswordOkResult(response['token'])
         return CreateResetPasswordWrongUserIdErrorResult()
 
-    async def reset_password_using_token(self, token: str, new_password: str) -> ResetPasswordUsingTokenResult:
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> ResetPasswordUsingTokenResult:
         data = {
             'method': 'token',
             'token': token,
@@ -89,33 +87,7 @@ class RecipeImplementation(RecipeInterface):
             user_id = response['userId']
         return ResetPasswordUsingTokenOkResult(user_id)
 
-    async def get_users(self, time_joined_order: Literal['ASC', 'DESC'],
-                        limit: Union[int, None] = None, pagination_token: Union[str, None] = None) -> UsersResponse:
-        params = {
-            'timeJoinedOrder': time_joined_order
-        }
-        if limit is not None:
-            params = {
-                'limit': limit,
-                **params
-            }
-        if pagination_token is not None:
-            params = {
-                'paginationToken': pagination_token,
-                **params
-            }
-        response = await self.querier.send_get_request(NormalisedURLPath('/recipe/users'), params)
-        next_pagination_token = None
-        if 'nextPaginationToken' in response:
-            next_pagination_token = response['nextPaginationToken']
-        users_list = response['users']
-        users = []
-        for user in users_list:
-            users.append(User(user['id'], user['email'], user['timeJoined']))
-
-        return UsersResponse(users, next_pagination_token)
-
-    async def sign_in(self, email: str, password: str) -> SignInResult:
+    async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> SignInResult:
         data = {
             'password': password,
             'email': email
@@ -126,7 +98,7 @@ class RecipeImplementation(RecipeInterface):
                 User(response['user']['id'], response['user']['email'], response['user']['timeJoined']))
         return SignInWrongCredentialsErrorResult()
 
-    async def sign_up(self, email: str, password: str) -> SignUpResult:
+    async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> SignUpResult:
         data = {
             'password': password,
             'email': email
@@ -137,18 +109,8 @@ class RecipeImplementation(RecipeInterface):
                 User(response['user']['id'], response['user']['email'], response['user']['timeJoined']))
         return SignUpEmailAlreadyExistsErrorResult()
 
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        return await self.get_users('ASC', limit, next_pagination)
-
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        return await self.get_users('DESC', limit, next_pagination)
-
-    async def get_user_count(self) -> int:
-        response = await self.querier.send_get_request(NormalisedURLPath('/recipe/users/count'))
-        return int(response['count'])
-
-    async def update_email_or_password(self, user_id: str, email: Union[str, None] = None,
-                                       password: Union[str, None] = None) -> UpdateEmailOrPasswordResult:
+    async def update_email_or_password(self, user_id: str, email: Union[str, None],
+                                       password: Union[str, None], user_context: Dict[str, Any]) -> UpdateEmailOrPasswordResult:
         data = {
             'userId': user_id
         }

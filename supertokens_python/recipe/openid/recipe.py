@@ -14,26 +14,29 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, List, TypeGuard, Union
 
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.jwt import JWTRecipe
-from .api.open_id_discovery_configuration_get import open_id_discovery_configuration_get
+
 from .api.implementation import APIImplementation
+from .api.open_id_discovery_configuration_get import \
+    open_id_discovery_configuration_get
 from .constants import GET_DISCOVERY_CONFIG_URL
+from .exceptions import SuperTokensOpenIdError
 from .interfaces import APIOptions
 from .recipe_implementation import RecipeImplementation
-from .utils import validate_and_normalise_user_input, InputOverrideConfig
-from .exceptions import SuperTokensOpenIdError
+from .utils import InputOverrideConfig, validate_and_normalise_user_input
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
 
-from supertokens_python.exceptions import SuperTokensError, raise_general_exception
+from supertokens_python.exceptions import (SuperTokensError,
+                                           raise_general_exception)
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe_module import RecipeModule, APIHandled
+from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 
 class OpenIdRecipe(RecipeModule):
@@ -43,11 +46,16 @@ class OpenIdRecipe(RecipeModule):
     def __init__(self, recipe_id: str, app_info: AppInfo, jwt_validity_seconds: Union[int, None] = None,
                  issuer: Union[str, None] = None, override: Union[InputOverrideConfig, None] = None):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(app_info, issuer, override)
+        self.config = validate_and_normalise_user_input(
+            app_info, issuer, override)
         jwt_feature = None
         if override is not None:
             jwt_feature = override.jwt_feature
-        self.jwt_recipe = JWTRecipe(recipe_id, app_info, jwt_validity_seconds, jwt_feature)
+        self.jwt_recipe = JWTRecipe(
+            recipe_id,
+            app_info,
+            jwt_validity_seconds,
+            jwt_feature)
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config, app_info, self.jwt_recipe.recipe_implementation)
@@ -64,7 +72,12 @@ class OpenIdRecipe(RecipeModule):
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
-        options = APIOptions(request, response, self.get_recipe_id(), self.config, self.recipe_implementation)
+        options = APIOptions(
+            request,
+            response,
+            self.get_recipe_id(),
+            self.config,
+            self.recipe_implementation)
 
         if request_id == GET_DISCOVERY_CONFIG_URL:
             return await open_id_discovery_configuration_get(self.api_implementation, options)
@@ -75,10 +88,11 @@ class OpenIdRecipe(RecipeModule):
             raise err
         return await self.jwt_recipe.handle_error(request, err, response)
 
-    def get_all_cors_headers(self):
-        return [] + self.jwt_recipe.get_all_cors_headers()
+    def get_all_cors_headers(self) -> List[str]:
+        return self.jwt_recipe.get_all_cors_headers()
 
-    def is_error_from_this_recipe_based_on_instance(self, err):
+    def is_error_from_this_recipe_based_on_instance(
+            self, err: Exception) -> TypeGuard[SuperTokensError]:
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensOpenIdError)
             or
@@ -98,9 +112,7 @@ class OpenIdRecipe(RecipeModule):
                     issuer,
                     override)
                 return OpenIdRecipe.__instance
-            else:
-                raise_general_exception('OpenId recipe has already been initialised. Please check '
-                                        'your code for bugs.')
+            raise_general_exception('OpenId recipe has already been initialised. Please check your code for bugs.')
 
         return func
 

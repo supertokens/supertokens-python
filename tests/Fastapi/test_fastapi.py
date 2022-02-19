@@ -11,37 +11,39 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Union
+from supertokens_python.recipe.emailpassword.interfaces import \
+    APIInterface as EPAPIInterface
+from typing import Any, Dict
+from supertokens_python.recipe.session.interfaces import APIInterface
+from supertokens_python.recipe.session import SessionContainer
 import json
 
 from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.testclient import TestClient
-from pytest import fixture
-from pytest import mark
-
-from supertokens_python import init, SupertokensConfig, InputAppInfo
-from supertokens_python.recipe import session
-from supertokens_python.recipe import emailpassword
-from supertokens_python.recipe.emailpassword.interfaces import APIOptions
+from pytest import fixture, mark
+from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe.emailpassword.interfaces import APIOptions
+from supertokens_python.recipe.session.asyncio import (create_new_session,
+                                                       get_session,
+                                                       refresh_session)
+from tests.utils import (TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH,
+                         TEST_DRIVER_CONFIG_COOKIE_DOMAIN,
+                         TEST_DRIVER_CONFIG_COOKIE_SAME_SITE,
+                         TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH, clean_st,
+                         extract_all_cookies, reset, setup_st, start_st)
 
-from supertokens_python.recipe.session.asyncio import create_new_session, refresh_session, get_session
-from tests.utils import (
-    reset, setup_st, clean_st, start_st, extract_all_cookies,
-    TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH,
-    TEST_DRIVER_CONFIG_COOKIE_DOMAIN,
-    TEST_DRIVER_CONFIG_COOKIE_SAME_SITE,
-    TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
-)
 
-
-def setup_function(f):
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f):
+def teardown_function(_):
     reset()
     clean_st()
 
@@ -52,44 +54,48 @@ async def driver_config_client():
     app.add_middleware(Middleware)
 
     @app.get('/login')
-    async def login(request: Request):
+    async def login(request: Request):  # type: ignore
         user_id = 'userId'
         await create_new_session(request, user_id, {}, {})
         return {'userId': user_id}
 
     @app.post('/refresh')
-    async def custom_refresh(request: Request):
+    async def custom_refresh(request: Request):  # type: ignore
         await refresh_session(request)
-        return {}
+        return {}  # type: ignore
 
     @app.get('/info')
-    async def info_get(request: Request):
+    async def info_get(request: Request):  # type: ignore
         await get_session(request, True)
-        return {}
+        return {}  # type: ignore
 
     @app.get('/custom/info')
-    def custom_info(_):
-        return {}
+    def custom_info(_):  # type: ignore
+        return {}  # type: ignore
 
     @app.options('/custom/handle')
-    def custom_handle_options(_):
+    def custom_handle_options(_):  # type: ignore
         return {'method': 'option'}
 
     @app.get('/handle')
-    async def handle_get(request: Request):
-        session = await get_session(request, True)
+    async def handle_get(request: Request):  # type: ignore
+        session: Union[None, SessionContainer] = await get_session(request, True)
+        if session is None:
+            raise Exception("Should never come here")
         return {'s': session.get_handle()}
 
     @app.post('/logout')
-    async def custom_logout(request: Request):
-        session = await get_session(request, True)
+    async def custom_logout(request: Request):  # type: ignore
+        session: Union[None, SessionContainer] = await get_session(request, True)
+        if session is None:
+            raise Exception("Should never come here")
         await session.revoke_session()
-        return {}
+        return {}  # type: ignore
 
     return TestClient(app)
 
 
-def apis_override_session(param):
+def apis_override_session(param: APIInterface):
     param.disable_refresh_post = True
     return param
 
@@ -128,9 +134,12 @@ async def test_login_refresh(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
     response_3 = driver_config_client.post(
         url='/refresh',
@@ -156,9 +165,12 @@ async def test_login_refresh(driver_config_client: TestClient):
     assert cookies_3['sAccessToken']['httponly']
     assert cookies_3['sRefreshToken']['httponly']
     assert cookies_3['sIdRefreshToken']['httponly']
-    assert cookies_3['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_3['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_3['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_3['sAccessToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_3['sRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_3['sIdRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
 
 
 @mark.asyncio
@@ -192,9 +204,12 @@ async def test_login_logout(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sAccessToken']['secure'] is None
     assert cookies_1['sRefreshToken']['secure'] is None
     assert cookies_1['sIdRefreshToken']['secure'] is None
@@ -221,9 +236,12 @@ async def test_login_logout(driver_config_client: TestClient):
     assert cookies_2['sAccessToken']['httponly']
     assert cookies_2['sRefreshToken']['httponly']
     assert cookies_2['sIdRefreshToken']['httponly']
-    assert cookies_2['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_2['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_2['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_2['sAccessToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_2['sRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_2['sIdRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_2['sAccessToken']['secure'] is None
     assert cookies_2['sRefreshToken']['secure'] is None
     assert cookies_2['sIdRefreshToken']['secure'] is None
@@ -260,9 +278,12 @@ async def test_login_info(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sAccessToken']['secure'] is None
     assert cookies_1['sRefreshToken']['secure'] is None
     assert cookies_1['sIdRefreshToken']['secure'] is None
@@ -278,7 +299,7 @@ async def test_login_info(driver_config_client: TestClient):
         }
     )
     cookies_2 = extract_all_cookies(response_2)
-    assert cookies_2 == {}
+    assert not cookies_2
 
 
 @mark.asyncio
@@ -312,9 +333,12 @@ async def test_login_handle(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sAccessToken']['secure'] is None
     assert cookies_1['sRefreshToken']['secure'] is None
     assert cookies_1['sIdRefreshToken']['secure'] is None
@@ -364,9 +388,12 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
     assert cookies_1['sAccessToken']['httponly']
     assert cookies_1['sRefreshToken']['httponly']
     assert cookies_1['sIdRefreshToken']['httponly']
-    assert cookies_1['sAccessToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    assert cookies_1['sIdRefreshToken']['samesite'].lower() == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sAccessToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
+    assert cookies_1['sIdRefreshToken']['samesite'].lower(
+    ) == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     assert cookies_1['sAccessToken']['secure'] is None
     assert cookies_1['sRefreshToken']['secure'] is None
     assert cookies_1['sIdRefreshToken']['secure'] is None
@@ -385,15 +412,15 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
 
 @mark.asyncio
 async def test_custom_response(driver_config_client: TestClient):
-    def override_email_password_apis(original_implementation):
+    def override_email_password_apis(original_implementation: EPAPIInterface):
 
         original_func = original_implementation.email_exists_get
 
-        async def email_exists_get(email: str, api_options: APIOptions):
+        async def email_exists_get(email: str, api_options: APIOptions, user_context: Dict[str, Any]):
             response_dict = {'custom': True}
             api_options.response.set_status_code(203)
             api_options.response.set_json_content(response_dict)
-            return await original_func(email, api_options)
+            return await original_func(email, api_options, user_context)
 
         original_implementation.email_exists_get = email_exists_get
         return original_implementation

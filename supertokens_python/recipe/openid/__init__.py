@@ -11,15 +11,20 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
 
-from .utils import InputOverrideConfig
+from typing import TYPE_CHECKING, Callable, Union
 
 from .recipe import OpenIdRecipe
-from supertokens_python.recipe.jwt import OverrideConfig as JWTOverrideConfig
+from .utils import InputOverrideConfig
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
 
 
 def init(jwt_validity_seconds: Union[int, None] = None,
          issuer: Union[str, None] = None,
-         override: Union[InputOverrideConfig, None] = None):
+         override: Union[InputOverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
     return OpenIdRecipe.init(jwt_validity_seconds, issuer, override)

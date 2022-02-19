@@ -12,15 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session.interfaces import APIInterface, APIOptions
+    from supertokens_python.recipe.session.interfaces import (APIInterface,
+                                                              APIOptions)
 
 
 async def handle_signout_api(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_signout_post or api_implementation.signout_post is None:
         return None
-    response = await api_implementation.signout_post(api_options)
+    response = await api_implementation.signout_post(api_options, {})
+    if api_options.response is None:
+        raise Exception("Should never come here")
     api_options.response.set_json_content(response.to_json())
     return api_options.response

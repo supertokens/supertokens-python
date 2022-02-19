@@ -11,8 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
 from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.recipe.passwordless.interfaces import (APIInterface,
+                                                               APIOptions)
 
 
 async def consume_code(api_implementation: APIInterface, api_options: APIOptions):
@@ -20,6 +21,9 @@ async def consume_code(api_implementation: APIInterface, api_options: APIOptions
         return None
 
     body = await api_options.request.json()
+
+    if body is None:
+        raise_bad_input_exception("Please provide a JSON body")
 
     user_input_code = None
     device_id = None
@@ -30,19 +34,22 @@ async def consume_code(api_implementation: APIInterface, api_options: APIOptions
 
     if 'deviceId' in body or 'userInputCode' in body:
         if 'linkCode' in body:
-            raise_bad_input_exception('Please provide one of (linkCode) or (deviceId+userInputCode) and not both')
+            raise_bad_input_exception(
+                'Please provide one of (linkCode) or (deviceId+userInputCode) and not both')
         if 'deviceId' not in body or 'userInputCode' not in body:
-            raise_bad_input_exception('Please provide both deviceId and userInputCode')
+            raise_bad_input_exception(
+                'Please provide both deviceId and userInputCode')
         device_id = body['deviceId']
         user_input_code = body['userInputCode']
     elif 'linkCode' in body:
         link_code = body['linkCode']
     else:
-        raise_bad_input_exception('Please provide one of (linkCode) or (deviceId+userInputCode) and not both')
+        raise_bad_input_exception(
+            'Please provide one of (linkCode) or (deviceId+userInputCode) and not both')
 
     pre_auth_session_id = body['preAuthSessionId']
     result = await api_implementation.consume_code_post(
-        pre_auth_session_id, user_input_code, device_id, link_code, api_options)
+        pre_auth_session_id, user_input_code, device_id, link_code, api_options, {})
     api_options.response.set_json_content(result.to_json())
 
     return api_options.response

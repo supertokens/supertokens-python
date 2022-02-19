@@ -11,5 +11,5 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from .refresh import handle_refresh_api
-from .signout import handle_signout_api
+from .refresh import handle_refresh_api  # type: ignore
+from .signout import handle_signout_api  # type: ignore

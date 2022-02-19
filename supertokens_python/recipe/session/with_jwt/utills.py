@@ -12,15 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from typing import Any, Dict
+
 from supertokens_python.recipe.openid.interfaces import RecipeInterface
+
 from .constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
 
 
-async def add_jwt_to_access_token_payload(access_token_payload: dict,
+async def add_jwt_to_access_token_payload(access_token_payload: Dict[str, Any],
                                           jwt_expiry: int, user_id: str, jwt_property_name: str,
-                                          openid_recipe_implementation: RecipeInterface):
+                                          openid_recipe_implementation: RecipeInterface, user_context: Dict[str, Any]):
     if ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY in access_token_payload:
-        # If jwtPropertyName is not undefined it means that the JWT was added to the access token payload already
+        # If jwtPropertyName is not undefined it means that the JWT was added
+        # to the access token payload already
         existing_jwt_property_name = access_token_payload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]
 
         # Delete the old JWT and the old property name
@@ -34,7 +38,7 @@ async def add_jwt_to_access_token_payload(access_token_payload: dict,
         # then the final payload will use the values they provide
         'sub': user_id,
         **access_token_payload
-    }, jwt_expiry)
+    }, jwt_expiry, user_context)
 
     if jwt_response.status == 'UNSUPPORTED_ALGORITHM_ERROR':
         # Should never come here
@@ -54,7 +58,8 @@ async def add_jwt_to_access_token_payload(access_token_payload: dict,
     # This is because even though the jwt itself would be created with unique property names, the _jwtPName value
     # would always be overwritten by the override that runs last and when retrieving the jwt using that key name
     # it cannot be guaranteed that the right JWT is returned. This case is considered to be a rare requirement
-    # and we assume that users will not need multiple JWT representations of their access token payload.
+    # and we assume that users will not need multiple JWT representations of
+    # their access token payload.
     access_token_payload[jwt_property_name] = jwt_response.jwt
     access_token_payload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY] = jwt_property_name
 

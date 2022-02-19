@@ -12,15 +12,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from supertokens_python.recipe.thirdparty.provider import Provider
-from typing import List
-from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
+
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
+
 from httpx import AsyncClient
+from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.types import (
+    AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
+
+if TYPE_CHECKING:
+    from supertokens_python.framework.request import BaseRequest
 
 
 class Facebook(Provider):
     def __init__(self, client_id: str, client_secret: str,
-                 scope: List[str] = None, is_default: bool = False):
+                 scope: Union[None, List[str]] = None, is_default: bool = False):
         super().__init__('facebook', client_id, is_default)
         default_scopes = ['email']
 
@@ -31,7 +37,7 @@ class Facebook(Provider):
         self.access_token_api_url = 'https://graph.facebook.com/v9.0/oauth/access_token'
         self.authorisation_redirect_url = 'https://www.facebook.com/v9.0/dialog/oauth'
 
-    async def get_profile_info(self, auth_code_response: any) -> UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
         access_token: str = auth_code_response['access_token']
 
         params = {
@@ -47,8 +53,8 @@ class Facebook(Provider):
                 return UserInfo(user_id)
             return UserInfo(user_id, UserInfoEmail(user_info['email'], True))
 
-    def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
-        params = {
+    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
+        params: Dict[str, Union[Callable[[BaseRequest], str], str]] = {
             'scope': ' '.join(self.scopes),
             'response_type': 'code',
             'client_id': self.client_id
@@ -57,7 +63,7 @@ class Facebook(Provider):
             self.authorisation_redirect_url, params)
 
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
+            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
         params = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,
@@ -65,3 +71,6 @@ class Facebook(Provider):
             'redirect_uri': redirect_uri
         }
         return AccessTokenAPI(self.access_token_api_url, params)
+
+    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+        return None

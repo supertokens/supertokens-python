@@ -11,15 +11,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import django
+from typing import Any
 import os
+
+import django
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", __file__)
 SECRET_KEY = 'this_is_a_random_string'
 
 django.setup()
 
 
-REST_FRAMEWORK = {
+REST_FRAMEWORK: Any = {
     'DEFAULT_AUTHENTICATION_CLASSES': [],
     'DEFAULT_PERMISSION_CLASSES': [],
     'UNAUTHENTICATED_USER': None,

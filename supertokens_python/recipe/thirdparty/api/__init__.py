@@ -11,6 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from .signinup import handle_sign_in_up_api
-from .authorisation_url import handle_authorisation_url_api
-from .apple_redirect import handle_apple_redirect_api
+from .apple_redirect import handle_apple_redirect_api  # type: ignore
+from .authorisation_url import handle_authorisation_url_api  # type: ignore
+from .signinup import handle_sign_in_up_api  # type: ignore

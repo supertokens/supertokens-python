@@ -11,82 +11,64 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from __future__ import annotations
-from typing import TYPE_CHECKING
-from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.normalised_url_path import NormalisedURLPath
+from typing import Any, Dict, Union
 
-if TYPE_CHECKING:
-    from .recipe_implementation import RecipeImplementation
-
-from . import session_functions
-from .exceptions import raise_unauthorised_exception
+from .interfaces import SessionContainer
 
 
-class Session:
-    def __init__(self, recipe_implementation: RecipeImplementation, access_token, session_handle, user_id,
-                 access_token_payload):
-        super().__init__()
-        self.__recipe_implementation = recipe_implementation
-        self.__access_token = access_token
-        self.__session_handle = session_handle
-        self.access_token_payload = access_token_payload
-        self.user_id = user_id
-        self.new_access_token_info = None
-        self.new_refresh_token_info = None
-        self.new_id_refresh_token_info = None
-        self.new_anti_csrf_token = None
-        self.remove_cookies = False
+class Session(SessionContainer):
 
-    async def revoke_session(self) -> None:
-        if await session_functions.revoke_session(self.__recipe_implementation, self.__session_handle):
+    async def revoke_session(self, user_context: Union[Any, None] = None) -> None:
+        if user_context is None:
+            user_context = {}
+        if await self.recipe_implementation.revoke_session(self.session_handle, user_context):
             self.remove_cookies = True
 
-    def sync_revoke_session(self) -> None:
-        sync(self.revoke_session())
+    async def get_session_data(self, user_context: Union[Dict[str, Any], None] = None) -> Dict[str, Any]:
+        if user_context is None:
+            user_context = {}
+        session_info = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
+        return session_info.session_data
 
-    def sync_get_session_data(self) -> dict:
-        return sync(self.get_session_data())
+    async def update_session_data(self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -> None:
+        if user_context is None:
+            user_context = {}
+        return await self.recipe_implementation.update_session_data(self.session_handle, new_session_data, user_context)
 
-    async def get_session_data(self) -> dict:
-        session_info = await session_functions.get_session_information(self.__recipe_implementation,
-                                                                       self.__session_handle)
-        return session_info['sessionData']
+    async def update_access_token_payload(self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -> None:
+        if user_context is None:
+            user_context = {}
+        response = await self.recipe_implementation.regenerate_access_token(self.access_token, new_access_token_payload, user_context)
+        self.access_token_payload = response.session.user_data_in_jwt
+        if response.access_token is not None:
+            self.access_token = response.access_token.token
+            self.new_access_token_info = {
+                'token': response.access_token.token,
+                'expiry': response.access_token.expiry,
+                'createdTime': response.access_token.created_time
+            }
 
-    def sync_update_session_data(self, new_session_data) -> None:
-        sync(self.update_session_data(new_session_data))
-
-    async def update_session_data(self, new_session_data) -> None:
-        return await session_functions.update_session_data(self.__recipe_implementation, self.__session_handle,
-                                                           new_session_data)
-
-    def sync_update_access_token_payload(self, new_access_token_payload) -> None:
-        sync(self.update_access_token_payload(new_access_token_payload))
-
-    async def update_access_token_payload(self, new_access_token_payload) -> None:
-        result = await self.__recipe_implementation.querier.send_post_request(NormalisedURLPath('/recipe/session'
-                                                                                                '/regenerate'), {
-            'accessToken': self.__access_token,
-            'userDataInJWT': new_access_token_payload
-        })
-        if result['status'] == 'UNAUTHORISED':
-            raise_unauthorised_exception('Session has probably been revoked while updating access token payload')
-        self.access_token_payload = result['session']['userDataInJWT']
-        if 'accessToken' in result and result['accessToken'] is not None:
-            self.__access_token = result['accessToken']['token']
-            self.new_access_token_info = result['accessToken']
-
-    def get_user_id(self) -> str:
+    def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -> str:
         return self.user_id
 
-    def get_access_token_payload(self) -> dict:
+    def get_access_token_payload(
+            self, user_context: Union[Dict[str, Any], None] = None) -> Dict[str, Any]:
         return self.access_token_payload
 
-    def get_handle(self) -> str:
-        return self.__session_handle
+    def get_handle(self, user_context: Union[Dict[str, Any], None] = None) -> str:
+        return self.session_handle
 
-    def get_access_token(self) -> str:
-        return self.__access_token
+    def get_access_token(self, user_context: Union[Dict[str, Any], None] = None) -> str:
+        return self.access_token
 
-    def __getitem__(self, item):
-        return getattr(self, item)
+    async def get_time_created(self, user_context: Union[Dict[str, Any], None] = None) -> int:
+        if user_context is None:
+            user_context = {}
+        result = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
+        return result.time_created
+
+    async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -> int:
+        if user_context is None:
+            user_context = {}
+        result = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
+        return result.expiry

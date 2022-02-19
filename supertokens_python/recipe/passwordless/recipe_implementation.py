@@ -13,21 +13,29 @@
 # under the License.
 from __future__ import annotations
 
-from supertokens_python.querier import Querier
-from typing import TYPE_CHECKING, Union, List
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from .types import DeviceType, User, DeviceCode
+from supertokens_python.querier import Querier
+
+from .types import DeviceCode, DeviceType, User
 
 if TYPE_CHECKING:
     from .interfaces import CreateCodeResult, RevokeCodeResult, RevokeAllCodesResult, UpdateUserResult, \
         ConsumeCodeResult, CreateNewCodeForDeviceResult
-from .interfaces import RecipeInterface, CreateNewCodeForDeviceOkResult, \
-    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult, CreateNewCodeForDeviceRestartFlowErrorResult, \
-    CreateCodeOkResult, ConsumeCodeOkResult, ConsumeCodeRestartFlowErrorResult, \
-    ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, \
-    UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, \
-    UpdateUserPhoneNumberAlreadyExistsErrorResult, RevokeAllCodesOkResult, RevokeCodeOkResult
+
 from supertokens_python.normalised_url_path import NormalisedURLPath
+
+from .interfaces import (
+    ConsumeCodeExpiredUserInputCodeErrorResult,
+    ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
+    ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
+    CreateNewCodeForDeviceOkResult,
+    CreateNewCodeForDeviceRestartFlowErrorResult,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult, RecipeInterface,
+    RevokeAllCodesOkResult, RevokeCodeOkResult,
+    UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
+    UpdateUserPhoneNumberAlreadyExistsErrorResult,
+    UpdateUserUnknownUserIdErrorResult)
 
 
 class RecipeImplementation(RecipeInterface):
@@ -36,9 +44,12 @@ class RecipeImplementation(RecipeInterface):
         super().__init__()
         self.querier = querier
 
-    async def create_code(self, email: Union[None, str] = None, phone_number: Union[None, str] = None,
-                          user_input_code: Union[None, str] = None) -> CreateCodeResult:
-        data = {}
+    async def create_code(self,
+                          email: Union[None, str],
+                          phone_number: Union[None, str],
+                          user_input_code: Union[None, str],
+                          user_context: Dict[str, Any]) -> CreateCodeResult:
+        data: Dict[str, Any] = {}
         if user_input_code is not None:
             data = {
                 **data,
@@ -65,8 +76,10 @@ class RecipeImplementation(RecipeInterface):
             code_life_time=result['codeLifetime'],
         )
 
-    async def create_new_code_for_device(self, device_id: str,
-                                         user_input_code: Union[str, None] = None) -> CreateNewCodeForDeviceResult:
+    async def create_new_code_for_device(self,
+                                         device_id: str,
+                                         user_input_code: Union[str, None],
+                                         user_context: Dict[str, Any]) -> CreateNewCodeForDeviceResult:
         data = {
             'deviceId': device_id
         }
@@ -78,7 +91,7 @@ class RecipeImplementation(RecipeInterface):
         result = await self.querier.send_post_request(NormalisedURLPath('/recipe/signinup/code'), data)
         if result['status'] == 'RESTART_FLOW_ERROR':
             return CreateNewCodeForDeviceRestartFlowErrorResult()
-        elif result['status'] == 'USER_INPUT_CODE_ALREADY_USED_ERROR':
+        if result['status'] == 'USER_INPUT_CODE_ALREADY_USED_ERROR':
             return CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult()
         return CreateNewCodeForDeviceOkResult(
             pre_auth_session_id=result['preAuthSessionId'],
@@ -90,8 +103,12 @@ class RecipeImplementation(RecipeInterface):
             time_created=result['timeCreated']
         )
 
-    async def consume_code(self, pre_auth_session_id: str, user_input_code: Union[str, None] = None,
-                           device_id: Union[str, None] = None, link_code: Union[str, None] = None) -> ConsumeCodeResult:
+    async def consume_code(self,
+                           pre_auth_session_id: str,
+                           user_input_code: Union[str, None],
+                           device_id: Union[str, None],
+                           link_code: Union[str, None],
+                           user_context: Dict[str, Any]) -> ConsumeCodeResult:
         data = {
             'preAuthSessionId': pre_auth_session_id
         }
@@ -119,9 +136,9 @@ class RecipeImplementation(RecipeInterface):
                         phone_number=phone_number,
                         time_joined=result['user']['timeJoined'])
             return ConsumeCodeOkResult(result['createdNewUser'], user)
-        elif result['status'] == 'RESTART_FLOW_ERROR':
+        if result['status'] == 'RESTART_FLOW_ERROR':
             return ConsumeCodeRestartFlowErrorResult()
-        elif result['status'] == 'INCORRECT_USER_INPUT_CODE_ERROR':
+        if result['status'] == 'INCORRECT_USER_INPUT_CODE_ERROR':
             return ConsumeCodeIncorrectUserInputCodeErrorResult(
                 failed_code_input_attempt_count=result['failedCodeInputAttemptCount'],
                 maximum_code_input_attempts=result['maximumCodeInputAttempts']
@@ -131,7 +148,7 @@ class RecipeImplementation(RecipeInterface):
             maximum_code_input_attempts=result['maximumCodeInputAttempts']
         )
 
-    async def get_user_by_id(self, user_id: str) -> Union[User, None]:
+    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
         param = {
             'userId': user_id
         }
@@ -149,44 +166,44 @@ class RecipeImplementation(RecipeInterface):
                         time_joined=result['user']['timeJoined'])
         return None
 
-    async def get_user_by_email(self, email: str) -> Union[User, None]:
+    async def get_user_by_email(self, email: str, user_context: Dict[str, Any]) -> Union[User, None]:
         param = {
             'email': email
         }
         result = await self.querier.send_get_request(NormalisedURLPath('/recipe/user'), param)
         if result['status'] == 'OK':
-            email = None
-            phone_number = None
+            email_resp = None
+            phone_number_resp = None
             if 'email' in result['user']:
-                email = result['user']['email']
+                email_resp = result['user']['email']
             if 'phoneNumber' in result['user']:
-                phone_number = result['user']['phoneNumber']
+                phone_number_resp = result['user']['phoneNumber']
             return User(user_id=result['user']['id'],
-                        email=email,
-                        phone_number=phone_number,
+                        email=email_resp,
+                        phone_number=phone_number_resp,
                         time_joined=result['user']['timeJoined'])
         return None
 
-    async def get_user_by_phone_number(self, phone_number: str) -> Union[User, None]:
+    async def get_user_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -> Union[User, None]:
         param = {
             'phoneNumber': phone_number
         }
         result = await self.querier.send_get_request(NormalisedURLPath('/recipe/user'), param)
         if result['status'] == 'OK':
-            email = None
-            phone_number = None
+            email_resp = None
+            phone_number_resp = None
             if 'email' in result['user']:
-                email = result['user']['email']
+                email_resp = result['user']['email']
             if 'phoneNumber' in result['user']:
-                phone_number = result['user']['phoneNumber']
+                phone_number_resp = result['user']['phoneNumber']
             return User(user_id=result['user']['id'],
-                        email=email,
-                        phone_number=phone_number,
+                        email=email_resp,
+                        phone_number=phone_number_resp,
                         time_joined=result['user']['timeJoined'])
         return None
 
-    async def update_user(self, user_id: str, email: Union[str, None] = None,
-                          phone_number: Union[str, None] = None) -> UpdateUserResult:
+    async def update_user(self, user_id: str,
+                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
         data = {
             'userId': user_id
         }
@@ -203,15 +220,15 @@ class RecipeImplementation(RecipeInterface):
         result = await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
         if result['status'] == 'OK':
             return UpdateUserOkResult()
-        elif result['status'] == 'UNKNOWN_USER_ID_ERROR':
+        if result['status'] == 'UNKNOWN_USER_ID_ERROR':
             return UpdateUserUnknownUserIdErrorResult()
-        elif result['status'] == 'EMAIL_ALREADY_EXISTS_ERROR':
+        if result['status'] == 'EMAIL_ALREADY_EXISTS_ERROR':
             return UpdateUserEmailAlreadyExistsErrorResult()
         return UpdateUserPhoneNumberAlreadyExistsErrorResult()
 
-    async def revoke_all_codes(self, email: Union[str, None] = None,
-                               phone_number: Union[str, None] = None) -> RevokeAllCodesResult:
-        data = {}
+    async def revoke_all_codes(self,
+                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
+        data: Dict[str, Any] = {}
         if email is not None:
             data = {
                 **data,
@@ -225,22 +242,22 @@ class RecipeImplementation(RecipeInterface):
         await self.querier.send_post_request(NormalisedURLPath('/recipe/signinup/codes/remove'), data)
         return RevokeAllCodesOkResult()
 
-    async def revoke_code(self, code_id: str) -> RevokeCodeResult:
+    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeResult:
         data = {
             'codeId': code_id
         }
         await self.querier.send_post_request(NormalisedURLPath('/recipe/signinup/code/remove'), data)
         return RevokeCodeOkResult()
 
-    async def list_codes_by_email(self, email: str) -> List[DeviceType]:
+    async def list_codes_by_email(self, email: str, user_context: Dict[str, Any]) -> List[DeviceType]:
         param = {
             'email': email
         }
         result = await self.querier.send_get_request(NormalisedURLPath('/recipe/signinup/codes'), param)
-        devices = []
+        devices: List[DeviceType] = []
         if 'devices' in result:
             for device in result['devices']:
-                codes = []
+                codes: List[DeviceCode] = []
                 if 'code' in device:
                     for code in device:
                         codes.append(DeviceCode(
@@ -248,30 +265,30 @@ class RecipeImplementation(RecipeInterface):
                             time_created=code['timeCreated'],
                             code_life_time=code['codeLifetime']
                         ))
-                email = None
-                phone_number = None
+                email_resp = None
+                phone_number_resp = None
                 if 'email' in device:
-                    email = device['email']
+                    email_resp = device['email']
                 if 'phoneNumber' in device:
-                    phone_number = device['phoneNumber']
+                    phone_number_resp = device['phoneNumber']
                 devices.append(DeviceType(
                     pre_auth_session_id=device['preAuthSessionId'],
                     failed_code_input_attempt_count=device['failedCodeInputAttemptCount'],
                     codes=codes,
-                    email=email,
-                    phone_number=phone_number
+                    email=email_resp,
+                    phone_number=phone_number_resp
                 ))
         return devices
 
-    async def list_codes_by_phone_number(self, phone_number: str) -> List[DeviceType]:
+    async def list_codes_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -> List[DeviceType]:
         param = {
             'phoneNumber': phone_number
         }
         result = await self.querier.send_get_request(NormalisedURLPath('/recipe/signinup/codes'), param)
-        devices = []
+        devices: List[DeviceType] = []
         if 'devices' in result:
             for device in result['devices']:
-                codes = []
+                codes: List[DeviceCode] = []
                 if 'code' in device:
                     for code in device:
                         codes.append(DeviceCode(
@@ -279,28 +296,28 @@ class RecipeImplementation(RecipeInterface):
                             time_created=code['timeCreated'],
                             code_life_time=code['codeLifetime']
                         ))
-                email = None
-                phone_number = None
+                email_resp = None
+                phone_number_resp = None
                 if 'email' in device:
-                    email = device['email']
+                    email_resp = device['email']
                 if 'phoneNumber' in device:
-                    phone_number = device['phoneNumber']
+                    phone_number_resp = device['phoneNumber']
                 devices.append(DeviceType(
                     pre_auth_session_id=device['preAuthSessionId'],
                     failed_code_input_attempt_count=device['failedCodeInputAttemptCount'],
                     codes=codes,
-                    email=email,
-                    phone_number=phone_number
+                    email=email_resp,
+                    phone_number=phone_number_resp
                 ))
         return devices
 
-    async def list_codes_by_device_id(self, device_id: str) -> Union[DeviceType, None]:
+    async def list_codes_by_device_id(self, device_id: str, user_context: Dict[str, Any]) -> Union[DeviceType, None]:
         param = {
             'deviceId': device_id
         }
         result = await self.querier.send_get_request(NormalisedURLPath('/recipe/signinup/codes'), param)
         if 'devices' in result and len(result['devices']) == 1:
-            codes = []
+            codes: List[DeviceCode] = []
             if 'code' in result['devices'][0]:
                 for code in result['devices'][0]:
                     codes.append(DeviceCode(
@@ -323,13 +340,14 @@ class RecipeImplementation(RecipeInterface):
             )
         return None
 
-    async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str) -> Union[DeviceType, None]:
+    async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str,
+                                                user_context: Dict[str, Any]) -> Union[DeviceType, None]:
         param = {
             'preAuthSessionId': pre_auth_session_id
         }
         result = await self.querier.send_get_request(NormalisedURLPath('/recipe/signinup/codes'), param)
         if 'devices' in result and len(result['devices']) == 1:
-            codes = []
+            codes: List[DeviceCode] = []
             if 'code' in result['devices'][0]:
                 for code in result['devices'][0]:
                     codes.append(DeviceCode(

@@ -11,24 +11,34 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
 
-from .utils import SignInAndUpFeature, InputOverrideConfig
+from typing import TYPE_CHECKING, Callable, Union
 
+from . import exceptions as ex
+from . import providers
 from .recipe import ThirdPartyRecipe
-from . import exceptions
-from .providers import (
-    Google,
-    Github,
-    Apple,
-    Facebook,
-    Discord,
-    GoogleWorkspaces
-)
-from ..emailverification.utils import InputEmailVerificationConfig
+
+from . import utils
+InputEmailVerificationConfig = utils.InputEmailVerificationConfig
+InputOverrideConfig = utils.InputOverrideConfig
+SignInAndUpFeature = utils.SignInAndUpFeature
+Apple = providers.Apple
+Discord = providers.Discord
+Facebook = providers.Facebook
+Github = providers.Github
+Google = providers.Google
+GoogleWorkspaces = providers.GoogleWorkspaces
+exceptions = ex
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
 
 
 def init(sign_in_and_up_feature: SignInAndUpFeature,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[InputOverrideConfig, None] = None):
-    return ThirdPartyRecipe.init(sign_in_and_up_feature, email_verification_feature, override)
+         override: Union[InputOverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
+    return ThirdPartyRecipe.init(
+        sign_in_and_up_feature, email_verification_feature, override)

@@ -11,63 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
-
-type_string = {
-    'type': 'string'
-}
-
-type_boolean = {
-    'type': 'boolean'
-}
-
-INPUT_SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'supertokens': {
-            'type': 'object',
-            'properties': {
-                'connection_uri': type_string,
-                'api_key': type_string
-            },
-            'required': ['connection_uri'],
-            'additionalProperties': False
-        },
-        'app_info': {
-            'type': 'object',
-            'properties': {
-                'app_name': type_string,
-                'website_domain': type_string,
-                'api_domain': type_string,
-                'api_base_path': type_string,
-                'website_base_path': type_string,
-                'api_gateway_path': type_string
-            },
-            'required': ['app_name', 'website_domain', 'api_domain'],
-            'additionalProperties': False
-        },
-        'framework': {
-            'type': 'string'
-        },
-        'mode': {
-            'type': 'string',
-            'enum': ['asgi', 'wsgi']
-        },
-        'recipe_list': {
-            'type': 'array'
-        },
-        'telemetry': type_boolean
-    },
-    'required': ['supertokens', 'app_info', 'recipe_list', 'framework'],
-    'additional_properties': False
-}
-
-
-class UsersResponse:
-    def __init__(self, users,
-                 next_pagination_token: Union[str, None]):
-        self.users = users
-        self.next_pagination_token = next_pagination_token
+from typing import List, Union
 
 
 class ThirdPartyInfo:
@@ -77,10 +21,17 @@ class ThirdPartyInfo:
 
 
 class User:
-    def __init__(self, recipe_id: str, user_id: str, email: str, time_joined: int,
-                 third_party_info: Union[ThirdPartyInfo, None] = None):
+    def __init__(self, recipe_id: str, user_id: str, time_joined: int, email: Union[str, None], phone_number: Union[str, None], third_party_info: Union[ThirdPartyInfo, None]):
         self.recipe_id = recipe_id
         self.user_id = user_id
         self.email = email
         self.time_joined = time_joined
         self.third_party_info = third_party_info
+        self.phone_number = phone_number
+
+
+class UsersResponse:
+    def __init__(self, users: List[User],
+                 next_pagination_token: Union[str, None]):
+        self.users: List[User] = users
+        self.next_pagination_token: Union[str, None] = next_pagination_token

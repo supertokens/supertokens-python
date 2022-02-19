@@ -11,18 +11,23 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python.recipe.openid.interfaces import CreateJwtResult, GetJWKSResult, GetOpenIdDiscoveryConfigurationResult
-import supertokens_python.recipe.openid.asyncio as asyncio
+from typing import Any, Dict, Union
+
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.recipe.openid import asyncio
+from supertokens_python.recipe.openid.interfaces import \
+    GetOpenIdDiscoveryConfigurationResult
+
+from ...jwt.interfaces import CreateJwtResult, GetJWKSResult
 
 
-def create_jwt(payload: dict, validity_seconds: int = None) -> [CreateJwtResult, None]:
-    return sync(asyncio.create_jwt(payload, validity_seconds))
+def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -> CreateJwtResult:
+    return sync(asyncio.create_jwt(payload, validity_seconds, user_context))
 
 
-def get_jwks() -> [GetJWKSResult, None]:
-    return sync(asyncio.get_jwks())
+def get_jwks(user_context: Union[Dict[str, Any], None] = None) -> GetJWKSResult:
+    return sync(asyncio.get_jwks(user_context))
 
 
-async def get_open_id_discovery_configuration() -> [GetOpenIdDiscoveryConfigurationResult, None]:
-    return sync(asyncio.get_open_id_discovery_configuration())
+async def get_open_id_discovery_configuration(user_context: Union[Dict[str, Any], None] = None) -> GetOpenIdDiscoveryConfigurationResult:
+    return sync(asyncio.get_open_id_discovery_configuration(user_context))

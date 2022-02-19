@@ -12,13 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from .jwt import get_payload
+
+from typing import Any, Union
+
 from supertokens_python.utils import get_timestamp_ms
+
 from .exceptions import raise_try_refresh_token_exception
-from typing import Union
+from .jwt import get_payload
 
 
-def sanitize_string(s: any) -> Union[str, None]:
+def sanitize_string(s: Any) -> Union[str, None]:
     if s == "":
         return s
 
@@ -28,9 +31,9 @@ def sanitize_string(s: any) -> Union[str, None]:
     return s.strip()
 
 
-def sanitize_number(n: any) -> Union[Union[int, float], None]:
+def sanitize_number(n: Any) -> Union[Union[int, float], None]:
     _type = type(n)
-    if _type == int or _type == float:
+    if _type == int or _type == float:  # pylint: disable=consider-using-in
         return n
 
     return None

@@ -12,21 +12,24 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from .interfaces import (
-    RecipeInterface, UnverifyEmailResult, RevokeEmailVerificationTokensResult,
-    VerifyEmailUsingTokenResult, CreateEmailVerificationTokenResult,
-    UnverifyEmailOkResult, CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult,
-    CreateEmailVerificationTokenOkResult, VerifyEmailUsingTokenInvalidTokenErrorResult,
-    VerifyEmailUsingTokenOkResult, RevokeEmailVerificationTokensOkResult
-)
-from typing import TYPE_CHECKING
 
-from .types import User
+from typing import TYPE_CHECKING, Any, Dict
+
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
+from .interfaces import (
+    CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult,
+    CreateEmailVerificationTokenOkResult, CreateEmailVerificationTokenResult,
+    RecipeInterface, RevokeEmailVerificationTokensOkResult,
+    RevokeEmailVerificationTokensResult, UnverifyEmailOkResult,
+    UnverifyEmailResult, VerifyEmailUsingTokenInvalidTokenErrorResult,
+    VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenResult)
+from .types import User
+
 if TYPE_CHECKING:
-    from .utils import EmailVerificationConfig
     from supertokens_python.querier import Querier
+
+    from .utils import EmailVerificationConfig
 
 
 class RecipeImplementation(RecipeInterface):
@@ -35,7 +38,7 @@ class RecipeImplementation(RecipeInterface):
         self.querier = querier
         self.config = config
 
-    async def create_email_verification_token(self, user_id: str, email: str) -> CreateEmailVerificationTokenResult:
+    async def create_email_verification_token(self, user_id: str, email: str, user_context: Dict[str, Any]) -> CreateEmailVerificationTokenResult:
         data = {
             'userId': user_id,
             'email': email
@@ -45,7 +48,7 @@ class RecipeImplementation(RecipeInterface):
             return CreateEmailVerificationTokenOkResult(response['token'])
         return CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult()
 
-    async def verify_email_using_token(self, token: str) -> VerifyEmailUsingTokenResult:
+    async def verify_email_using_token(self, token: str, user_context: Dict[str, Any]) -> VerifyEmailUsingTokenResult:
         data = {
             'method': 'token',
             'token': token
@@ -56,7 +59,7 @@ class RecipeImplementation(RecipeInterface):
                 User(response['userId'], response['email']))
         return VerifyEmailUsingTokenInvalidTokenErrorResult()
 
-    async def is_email_verified(self, user_id: str, email: str) -> bool:
+    async def is_email_verified(self, user_id: str, email: str, user_context: Dict[str, Any]) -> bool:
         params = {
             'userId': user_id,
             'email': email
@@ -64,7 +67,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_get_request(NormalisedURLPath('/recipe/user/email/verify'), params)
         return response['isVerified']
 
-    async def revoke_email_verification_tokens(self, user_id: str, email: str) -> RevokeEmailVerificationTokensResult:
+    async def revoke_email_verification_tokens(self, user_id: str, email: str, user_context: Dict[str, Any]) -> RevokeEmailVerificationTokensResult:
         data = {
             'userId': user_id,
             'email': email
@@ -72,7 +75,7 @@ class RecipeImplementation(RecipeInterface):
         await self.querier.send_post_request(NormalisedURLPath('/recipe/user/email/verify/token/remove'), data)
         return RevokeEmailVerificationTokensOkResult()
 
-    async def unverify_email(self, user_id: str, email: str) -> UnverifyEmailResult:
+    async def unverify_email(self, user_id: str, email: str, user_context: Dict[str, Any]) -> UnverifyEmailResult:
         data = {
             'userId': user_id,
             'email': email

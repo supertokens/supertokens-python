@@ -11,27 +11,26 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import List, Union
+
 from supertokens_python import Supertokens
 from supertokens_python.async_to_sync_wrapper import sync
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
-from typing import Union, List
 from supertokens_python.types import UsersResponse
 
 
 def get_users_oldest_first(limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
-                           include_recipe_ids: List[str] = None) -> UsersResponse:
-    return sync(Supertokens.get_instance().get_users('ASC', limit, pagination_token, include_recipe_ids))
+                           include_recipe_ids: Union[None, List[str]] = None) -> UsersResponse:
+    return sync(Supertokens.get_instance().get_users(
+        'ASC', limit, pagination_token, include_recipe_ids))
 
 
 def get_users_newest_first(limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
-                           include_recipe_ids: List[str] = None) -> UsersResponse:
-    return sync(Supertokens.get_instance().get_users('DESC', limit, pagination_token, include_recipe_ids))
+                           include_recipe_ids: Union[None, List[str]] = None) -> UsersResponse:
+    return sync(Supertokens.get_instance().get_users(
+        'DESC', limit, pagination_token, include_recipe_ids))
 
 
-def get_user_count(include_recipe_ids: List[str] = None) -> int:
+def get_user_count(include_recipe_ids: Union[None, List[str]] = None) -> int:
     return sync(Supertokens.get_instance().get_user_count(include_recipe_ids))
 
 

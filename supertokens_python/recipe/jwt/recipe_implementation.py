@@ -13,16 +13,21 @@
 # under the License.
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any, Dict, List, Union
+
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
-from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from .utils import JWTConfig
     from .interfaces import CreateJwtResult
     from supertokens_python.supertokens import AppInfo
-from .types import JsonWebKey
-from supertokens_python.recipe.jwt.interfaces import RecipeInterface, GetJWKSResult,\
-    CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm
+
+from supertokens_python.recipe.jwt.interfaces import (
+    CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult,
+    RecipeInterface)
+
+from .interfaces import JsonWebKey
 
 
 class RecipeImplementation(RecipeInterface):
@@ -33,12 +38,9 @@ class RecipeImplementation(RecipeInterface):
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -> CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> CreateJwtResult:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
-
-        if payload is None:
-            payload = {}
 
         data = {
             'payload': payload,
@@ -50,13 +52,12 @@ class RecipeImplementation(RecipeInterface):
 
         if response['status'] == 'OK':
             return CreateJwtResultOk(response['jwt'])
-        else:
-            return CreateJwtResultUnsupportedAlgorithm()
+        return CreateJwtResultUnsupportedAlgorithm()
 
-    async def get_jwks(self) -> GetJWKSResult:
+    async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:
         response = await self.querier.send_get_request(NormalisedURLPath("/recipe/jwt/jwks"), {})
 
-        keys = []
+        keys: List[JsonWebKey] = []
         for key in response['keys']:
             keys.append(JsonWebKey(
                 key['kty'],

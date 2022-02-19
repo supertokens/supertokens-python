@@ -1,5 +1,6 @@
-from setuptools import setup, find_packages
 from os import path
+
+from setuptools import find_packages, setup
 
 here = path.abspath(path.dirname(__file__))
 
@@ -9,8 +10,7 @@ with open(path.join(here, "README.md"), mode="r", encoding="utf-8") as f:
 
 extras_require = {
     'dev': ([
-        'pytest==6.2.3',
-        'flake8==3.9.0',
+        'pytest==6.2.5',
         'autopep8==1.5.6',
         'PyYAML==5.4.1',
         'uvicorn==0.13.4',
@@ -20,12 +20,16 @@ extras_require = {
         'nest-asyncio==1.5.1',
         'Fastapi==0.68.1',
         'django',
-        'Flask==2.0.1',
+        'Flask==2.0.2',
         'python-dotenv',
         'flask_cors',
         'django-cors-headers',
         'pdoc3',
-        'tzdata'
+        'tzdata',
+        'pylint',
+        'isort',
+        'pyright',
+        'django-stubs'
     ])
 }
 
@@ -41,24 +45,31 @@ exclude_list = [
     "coreDriverInterfaceSupported.json",
     ".github",
     ".circleci",
-    "html"
+    "html",
+    "pyrightconfig.json",
+    "Makefile",
+    ".pylintrc"
 ]
 
 setup(
     name="supertokens_python",
-    version="0.4.1",
+    version="0.5.0",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.io",
-    description="SuperTokens session management solution for Fastapi",
+    description="SuperTokens session management solution for Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/supertokens/supertokens-fastapi",
+    url="https://github.com/supertokens/supertokens-python",
     packages=find_packages(exclude=exclude_list),
+    package_data = {'supertokens_python': ['py.typed']},
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Intended Audience :: Developers",
         "Topic :: Internet :: WWW/HTTP :: Session",
         "License :: OSI Approved :: Apache Software License",
@@ -81,5 +92,6 @@ setup(
         'phonenumbers==8.12'
     ],
     python_requires='>=3.7',
+    include_package_data=True,
     extras_require=extras_require
 )

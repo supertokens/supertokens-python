@@ -11,10 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Dict, Union
 
-from typing import Any, Union
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 class BaseRequest(ABC):
@@ -24,15 +27,16 @@ class BaseRequest(ABC):
         self.request = None
 
     @abstractmethod
-    def get_query_param(self, key, default=None):
+    def get_query_param(
+            self, key: str, default: Union[str, None] = None) -> Union[str, None]:
         pass
 
     @abstractmethod
-    async def json(self):
+    async def json(self) -> Union[Any, None]:
         pass
 
     @abstractmethod
-    async def form_data(self):
+    async def form_data(self) -> Dict[str, Any]:
         pass
 
     @abstractmethod
@@ -44,19 +48,15 @@ class BaseRequest(ABC):
         pass
 
     @abstractmethod
-    def get_header(self, key: str) -> Any:
+    def get_header(self, key: str) -> Union[None, str]:
         pass
 
     @abstractmethod
-    def url(self):
+    def get_session(self) -> Union[SessionContainer, None]:
         pass
 
     @abstractmethod
-    def get_session(self):
-        pass
-
-    @abstractmethod
-    def set_session(self, session):
+    def set_session(self, session: SessionContainer):
         pass
 
     @abstractmethod

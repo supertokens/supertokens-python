@@ -11,38 +11,45 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Union
+from supertokens_python.recipe.emailverification.types import User as EVUser
+from supertokens_python.recipe.emailpassword.types import User
+from typing import Any, Dict
+from supertokens_python.recipe.session import SessionContainer
 import asyncio
 import json
 
 from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.testclient import TestClient
-from pytest import fixture
-from pytest import mark
-
-from supertokens_python import init, SupertokensConfig, InputAppInfo
-from supertokens_python.recipe import session, emailpassword
-from supertokens_python.recipe.emailpassword.asyncio import revoke_email_verification_token, verify_email_using_token, \
-    create_email_verification_token, is_email_verified, unverify_email
-from supertokens_python.recipe.emailverification.interfaces import APIInterface, APIOptions
+from pytest import fixture, mark
+from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.exceptions import BadInputError
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.session.asyncio import create_new_session, refresh_session, get_session
-from tests.utils import (
-    reset, setup_st, clean_st, start_st, sign_up_request, extract_all_cookies, email_verify_token_request,
-    set_key_value_in_config, TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY
-)
+from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe.emailpassword.asyncio import (
+    create_email_verification_token, is_email_verified,
+    revoke_email_verification_token, unverify_email, verify_email_using_token)
+from supertokens_python.recipe.emailverification.interfaces import (
+    APIInterface, APIOptions)
 from supertokens_python.recipe.emailverification.utils import OverrideConfig
+from supertokens_python.recipe.session.asyncio import (create_new_session,
+                                                       get_session,
+                                                       refresh_session)
+from tests.utils import (TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, clean_st,
+                         email_verify_token_request, extract_all_cookies,
+                         reset, set_key_value_in_config, setup_st,
+                         sign_up_request, start_st)
 
 
-def setup_function(f):
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f):
+def teardown_function(_):
     reset()
     clean_st()
 
@@ -53,39 +60,43 @@ async def driver_config_client():
     app.add_middleware(Middleware)
 
     @app.get('/login')
-    async def login(request: Request):
+    async def login(request: Request):  # type: ignore
         user_id = 'userId'
         await create_new_session(request, user_id, {}, {})
         return {'userId': user_id}
 
     @app.post('/refresh')
-    async def custom_refresh(request: Request):
+    async def custom_refresh(request: Request):  # type: ignore
         await refresh_session(request)
-        return {}
+        return {}  # type: ignore
 
     @app.get('/info')
-    async def info_get(request: Request):
+    async def info_get(request: Request):  # type: ignore
         await get_session(request, True)
-        return {}
+        return {}  # type: ignore
 
     @app.get('/custom/info')
-    def custom_info(_):
-        return {}
+    def custom_info(_):  # type: ignore
+        return {}  # type: ignore
 
     @app.options('/custom/handle')
-    def custom_handle_options(_):
+    def custom_handle_options(_):  # type: ignore
         return {'method': 'option'}
 
     @app.get('/handle')
-    async def handle_get(request: Request):
-        session = await get_session(request, True)
+    async def handle_get(request: Request):  # type: ignore
+        session: Union[SessionContainer, None] = await get_session(request, True)
+        if session is None:
+            raise Exception("Should never come here")
         return {'s': session.get_handle()}
 
     @app.post('/logout')
-    async def custom_logout(request: Request):
-        session = await get_session(request, True)
+    async def custom_logout(request: Request):  # type: ignore
+        session: Union[SessionContainer, None] = await get_session(request, True)
+        if session is None:
+            raise Exception("Should never come here")
         await session.revoke_session()
-        return {}
+        return {}  # type: ignore
 
     return TestClient(app)
 
@@ -120,8 +131,7 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(driver
     cookies = extract_all_cookies(response_1)
 
     response = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                          cookies['sIdRefreshToken']['value'], response_1.headers.get(
-                                              'anti-csrf'),
+                                          cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                           user_id)
     dict_response = json.loads(response.text)
     assert dict_response["status"] == "OK"
@@ -157,11 +167,12 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
     cookies = extract_all_cookies(response_1)
 
     verify_token = await create_email_verification_token(user_id)
+    if verify_token.token is None:
+        raise Exception("Should never come here")
     await verify_email_using_token(verify_token.token)
 
     response = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                          cookies['sIdRefreshToken']['value'], response_1.headers.get(
-                                              'anti-csrf'),
+                                          cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                           user_id)
     dict_response = json.loads(response.text)
     assert dict_response["status"] == "EMAIL_ALREADY_VERIFIED_ERROR"
@@ -194,8 +205,7 @@ async def test_the_generate_token_api_with_valid_input_no_session_and_check_outp
 async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_try_refresh_token_is_returned(
         driver_config_client: TestClient):
     set_key_value_in_config(
-        TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
-        2)
+        TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, "2")
 
     init(
         supertokens_config=SupertokensConfig('http://localhost:3567'),
@@ -226,8 +236,7 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
     await asyncio.sleep(5)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
-                                                'anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     dict_response = json.loads(response_2.text)
 
@@ -249,8 +258,7 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
 
     cookies1 = extract_all_cookies(response_3)
     response_4 = email_verify_token_request(driver_config_client, cookies1['sAccessToken']['value'],
-                                            cookies1['sIdRefreshToken']['value'], response_3.headers.get(
-                                                'anti-csrf'),
+                                            cookies1['sIdRefreshToken']['value'], response_3.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
 
     dict_response = json.loads(response_4.text)
@@ -261,10 +269,10 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
 
 @mark.asyncio
 async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called(driver_config_client: TestClient):
-    user_info = None
+    user_info: Union[None, User] = None
     email_token = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(user: User, email_verification_url_token: str, _: Dict[str, Any]):
         nonlocal user_info, email_token
         user_info = user
         email_token = email_verification_url_token
@@ -296,21 +304,21 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
-    user_id = dict_response["user"]["id"]
+    user_id: str = dict_response["user"]["id"]
 
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
-                                                'anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
     dict_response = json.loads(response_2.text)
     assert dict_response['status'] == 'OK'
-
-    assert user_info.user_id == user_id
-    assert user_info.email == "test@gmail.com"
+    if user_info is None:
+        raise Exception("Should never come here")
+    assert user_info.user_id == user_id  # type: ignore
+    assert user_info.email == "test@gmail.com"  # type: ignore
     assert email_token is not None
 
 
@@ -318,7 +326,7 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
 async def test_the_email_verify_api_with_valid_input(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -355,8 +363,7 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
-                                                'anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -389,7 +396,7 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
 async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -426,8 +433,7 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_co
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
-                                                'anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -460,7 +466,7 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_co
 async def test_the_email_verify_api_with_token_of_not_type_string(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -497,8 +503,7 @@ async def test_the_email_verify_api_with_token_of_not_type_string(driver_config_
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
-                                                'anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -532,9 +537,9 @@ async def test_the_email_verify_api_with_token_of_not_type_string(driver_config_
 async def test_that_the_handle_post_email_verification_callback_is_called_on_successful_verification_if_given(
         driver_config_client: TestClient):
     token = None
-    user_info_from_callback = None
+    user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -542,10 +547,10 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
 
-        async def email_verify_post(token: str, api_options: APIOptions):
+        async def email_verify_post(token: str, api_options: APIOptions, user_context: Dict[str, Any]):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options)
+            response = await temp(token, api_options, user_context)
 
             if response.status == "OK":
                 user_info_from_callback = response.user
@@ -592,8 +597,7 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
-                                                'anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -623,16 +627,17 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     assert dict_response['status'] == 'OK'
 
     await asyncio.sleep(1)
-
-    assert user_info_from_callback.user_id == user_id
-    assert user_info_from_callback.email == "test@gmail.com"
+    if user_info_from_callback is None:
+        raise Exception("Should never come here")
+    assert user_info_from_callback.user_id == user_id  # type: ignore
+    assert user_info_from_callback.email == "test@gmail.com"  # type: ignore
 
 
 @mark.asyncio
 async def test_the_email_verify_with_valid_input_using_the_get_method(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -669,8 +674,7 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(driver_con
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
-                                                'anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -734,9 +738,9 @@ async def test_the_email_verify_with_no_session_using_the_get_method(driver_conf
 @mark.asyncio
 async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_config_client: TestClient):
     token = None
-    user_info_from_callback = None
+    user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -744,10 +748,10 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
 
-        async def email_verify_post(token: str, api_options: APIOptions):
+        async def email_verify_post(token: str, api_options: APIOptions, user_context: Dict[str, Any]):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options)
+            response = await temp(token, api_options, user_context)
 
             if response.status == "OK":
                 user_info_from_callback = response.user
@@ -794,8 +798,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
-                                                'anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -818,16 +821,18 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
 
     await asyncio.sleep(1)
 
-    assert user_info_from_callback.user_id == user_id
-    assert user_info_from_callback.email == "test@gmail.com"
+    if user_info_from_callback is None:
+        raise Exception("Should never come here")
+    assert user_info_from_callback.user_id == user_id  # type: ignore
+    assert user_info_from_callback.email == "test@gmail.com"  # type: ignore
 
 
 @mark.asyncio
 async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_error(driver_config_client: TestClient):
     token = None
-    user_info_from_callback = None
+    user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(user, email_verification_url_token):
+    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
             "?token=")[1].split("&ride")[0]
@@ -835,10 +840,10 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
 
-        async def email_verify_post(token: str, api_options: APIOptions):
+        async def email_verify_post(token: str, api_options: APIOptions, user_context: Dict[str, Any]):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options)
+            response = await temp(token, api_options, user_context)
 
             if response.status == "OK":
                 user_info_from_callback = response.user
@@ -885,8 +890,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     cookies = extract_all_cookies(response_1)
 
     response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get(
-                                                'anti-csrf'),
+                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
                                             user_id)
     await asyncio.sleep(2)
 
@@ -909,8 +913,10 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
 
     await asyncio.sleep(1)
 
-    assert user_info_from_callback.user_id == user_id
-    assert user_info_from_callback.email == "test@gmail.com"
+    if user_info_from_callback is None:
+        raise Exception("Should never come here")
+    assert user_info_from_callback.user_id == user_id  # type: ignore
+    assert user_info_from_callback.email == "test@gmail.com"  # type: ignore
 
 
 @mark.asyncio
@@ -931,7 +937,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version == "2.9" or version == "2.10" or version == "2.11" or version == "2.12"
+    assert version in ('2.9', '2.10', '2.11', '2.12')
 
     response_1 = sign_up_request(
         driver_config_client,
@@ -945,6 +951,8 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     verify_token = await create_email_verification_token(user_id)
     await revoke_email_verification_token(user_id)
 
+    if verify_token.token is None:
+        raise Exception("Should never come here")
     response = await verify_email_using_token(verify_token.token)
     assert response.status == "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
 
@@ -967,7 +975,7 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version == "2.9" or version == "2.10" or version == "2.11" or version == "2.12"
+    assert version in ('2.9', '2.10', '2.11', '2.12')
 
     response_1 = sign_up_request(
         driver_config_client,
@@ -979,9 +987,11 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     user_id = dict_response["user"]["id"]
 
     verify_token = await create_email_verification_token(user_id)
+    if verify_token.token is None:
+        raise Exception("Should never come here")
     await verify_email_using_token(verify_token.token)
 
-    assert (await is_email_verified(user_id))
+    assert await is_email_verified(user_id)
 
     await unverify_email(user_id)
 

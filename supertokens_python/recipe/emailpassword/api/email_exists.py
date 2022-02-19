@@ -12,10 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import APIOptions, APIInterface
+
 from supertokens_python.exceptions import raise_bad_input_exception
 
 
@@ -23,10 +25,10 @@ async def handle_email_exists_api(api_implementation: APIInterface, api_options:
     if api_implementation.disable_email_exists_get:
         return None
     email = api_options.request.get_query_param('email')
-    if email is None or not isinstance(email, str):
+    if email is None:
         raise_bad_input_exception('Please provide the email as a GET param')
 
-    response = await api_implementation.email_exists_get(email, api_options)
+    response = await api_implementation.email_exists_get(email, api_options, {})
     api_options.response.set_json_content(response.to_json())
 
     return api_options.response

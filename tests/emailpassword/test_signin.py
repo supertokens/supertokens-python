@@ -11,34 +11,35 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Union
+from supertokens_python.recipe.session import SessionContainer
 import json
 
 from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.testclient import TestClient
-from pytest import fixture
-from pytest import mark
-
-from supertokens_python import init, SupertokensConfig, InputAppInfo
-from supertokens_python.asyncio import get_user_count, delete_user
-from supertokens_python.querier import Querier
-from supertokens_python.recipe import session, emailpassword
-from supertokens_python.recipe.emailpassword.interfaces import APIInterface
+from pytest import fixture, mark
+from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.asyncio import delete_user, get_user_count
 from supertokens_python.framework.fastapi import Middleware
-from supertokens_python.recipe.session.asyncio import create_new_session, refresh_session, get_session
+from supertokens_python.querier import Querier
+from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe.emailpassword.interfaces import APIInterface
+from supertokens_python.recipe.session.asyncio import (create_new_session,
+                                                       get_session,
+                                                       refresh_session)
 from supertokens_python.utils import compare_version
-from tests.utils import (
-    reset, setup_st, clean_st, start_st, sign_up_request, extract_all_cookies
-)
+from tests.utils import (clean_st, extract_all_cookies, reset, setup_st,
+                         sign_up_request, start_st)
 
 
-def setup_function(f):
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f):
+def teardown_function(_):
     reset()
     clean_st()
 
@@ -49,39 +50,43 @@ async def driver_config_client():
     app.add_middleware(Middleware)
 
     @app.get('/login')
-    async def login(request: Request):
+    async def login(request: Request):  # type: ignore
         user_id = 'userId'
         await create_new_session(request, user_id, {}, {})
         return {'userId': user_id}
 
     @app.post('/refresh')
-    async def custom_refresh(request: Request):
+    async def custom_refresh(request: Request):  # type: ignore
         await refresh_session(request)
-        return {}
+        return {}  # type: ignore
 
     @app.get('/info')
-    async def info_get(request: Request):
+    async def info_get(request: Request):  # type: ignore
         await get_session(request, True)
-        return {}
+        return {}  # type: ignore
 
     @app.get('/custom/info')
-    def custom_info(_):
-        return {}
+    def custom_info(_):  # type: ignore
+        return {}  # type: ignore
 
     @app.options('/custom/handle')
-    def custom_handle_options(_):
+    def custom_handle_options(_):  # type: ignore
         return {'method': 'option'}
 
     @app.get('/handle')
-    async def handle_get(request: Request):
-        session = await get_session(request, True)
+    async def handle_get(request: Request):  # type: ignore
+        session: Union[None, SessionContainer] = await get_session(request, True)
+        if session is None:
+            raise Exception("Should never come here")
         return {'s': session.get_handle()}
 
     @app.post('/logout')
-    async def custom_logout(request: Request):
-        session = await get_session(request, True)
+    async def custom_logout(request: Request):  # type: ignore
+        session: Union[None, SessionContainer] = await get_session(request, True)
+        if session is None:
+            raise Exception("Should never come here")
         await session.revoke_session()
-        return {}
+        return {}  # type: ignore
 
     return TestClient(app)
 
@@ -413,10 +418,10 @@ async def test_that_a_successful_signin_yields_a_session(driver_config_client: T
 
     cookies = extract_all_cookies(response_1)
 
-    assert (cookies["sAccessToken"] is not None)
-    assert (cookies['sRefreshToken'] is not None)
+    assert cookies["sAccessToken"] is not None
+    assert cookies['sRefreshToken'] is not None
     assert response_2.headers.get('anti-csrf') is not None
-    assert (cookies["sIdRefreshToken"] is not None)
+    assert cookies["sIdRefreshToken"] is not None
 
 
 @mark.asyncio

@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Callable, Union, List, Dict
+from typing import Callable, Dict, List, Union
 
 from supertokens_python.framework.request import BaseRequest
 
@@ -25,22 +25,22 @@ class ThirdPartyInfo:
 class User:
     def __init__(self, user_id: str, email: str, time_joined: int,
                  third_party_info: ThirdPartyInfo):
-        self.user_id = user_id
-        self.email = email
-        self.time_joined = time_joined
-        self.third_party_info = third_party_info
+        self.user_id: str = user_id
+        self.email: str = email
+        self.time_joined: int = time_joined
+        self.third_party_info: ThirdPartyInfo = third_party_info
 
 
 class UserInfoEmail:
     def __init__(self, email: str, email_verified: bool):
-        self.id = email
-        self.is_verified = email_verified
+        self.id: str = email
+        self.is_verified: bool = email_verified
 
 
 class UserInfo:
     def __init__(self, user_id: str, email: Union[UserInfoEmail, None] = None):
-        self.user_id = user_id
-        self.email = email
+        self.user_id: str = user_id
+        self.email: Union[UserInfoEmail, None] = email
 
 
 class AccessTokenAPI:
@@ -51,7 +51,7 @@ class AccessTokenAPI:
 
 class AuthorisationRedirectAPI:
     def __init__(self, url: str,
-                 params: Dict[str, Union[str, Callable[[BaseRequest], str]]]):
+                 params: Dict[str, Union[Callable[[BaseRequest], str], str]]):
         self.url = url
         self.params = params
 

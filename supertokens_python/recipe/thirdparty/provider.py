@@ -13,32 +13,33 @@
 # under the License.
 
 from __future__ import annotations
+
 import abc
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 if TYPE_CHECKING:
-    from .types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI
+    from .types import AccessTokenAPI, AuthorisationRedirectAPI, UserInfo
 
 
 class Provider(abc.ABC):
     def __init__(self, provider_id: str, client_id: str, is_default: bool):
-        self.id = provider_id
-        self.client_id = client_id
-        self.is_default = is_default
-        self.redirect_uri = None
+        self.id: str = provider_id
+        self.client_id: str = client_id
+        self.is_default: bool = is_default
 
     @abc.abstractmethod
-    async def get_profile_info(self, auth_code_response: any) -> UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
         pass
 
     @abc.abstractmethod
-    def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
         pass
 
     @abc.abstractmethod
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
+            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
         pass
 
-    def get_redirect_uri(self) -> Union[None, str]:
-        return self.redirect_uri
+    @abc.abstractmethod
+    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+        pass

@@ -14,19 +14,25 @@
 from __future__ import annotations
 
 import asyncio
+from typing import Any, Union
+
 from asgiref.sync import async_to_sync
 
 
-def middleware(get_response):
+def middleware(get_response: Any):
     from supertokens_python import Supertokens
     from supertokens_python.exceptions import SuperTokensError
-    from supertokens_python.framework.django.django_request import DjangoRequest
-    from supertokens_python.framework.django.django_response import DjangoResponse
-    from supertokens_python.recipe.session import Session
+    from supertokens_python.framework.django.django_request import \
+        DjangoRequest
+    from supertokens_python.framework.django.django_response import \
+        DjangoResponse
+    from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.supertokens import manage_cookies_post_response
 
+    from django.http import HttpRequest
+
     if asyncio.iscoroutinefunction(get_response):
-        async def __middleware(request):
+        async def __asyncMiddleware(request: HttpRequest):
             st = Supertokens.get_instance()
             custom_request = DjangoRequest(request)
             from django.http import HttpResponse
@@ -36,35 +42,45 @@ def middleware(get_response):
                 if result is None:
                     result = await get_response(request)
                     result = DjangoResponse(result)
-                if hasattr(request, "supertokens") and isinstance(request.supertokens, Session):
-                    manage_cookies_post_response(request.supertokens, result)
-                return result.response
-
+                if hasattr(request, "supertokens") and isinstance(
+                        request.supertokens, SessionContainer):  # type: ignore
+                    manage_cookies_post_response(
+                        request.supertokens, result)  # type: ignore
+                if isinstance(result, DjangoResponse):
+                    return result.response
             except SuperTokensError as e:
                 response = DjangoResponse(HttpResponse())
                 result = await st.handle_supertokens_error(DjangoRequest(request), e, response)
+                if isinstance(result, DjangoResponse):
+                    return result.response
 
-                return result.response
-    else:
-        def __middleware(request):
-            st = Supertokens.get_instance()
-            custom_request = DjangoRequest(request)
-            from django.http import HttpResponse
+            raise Exception("Should never come here")
+        return __asyncMiddleware
+
+    def __syncMiddleware(request: HttpRequest):
+        st = Supertokens.get_instance()
+        custom_request = DjangoRequest(request)
+        from django.http import HttpResponse
+        response = DjangoResponse(HttpResponse())
+        try:
+            result: Union[DjangoResponse, None] = async_to_sync(
+                st.middleware)(custom_request, response)
+
+            if result is None:
+                result = DjangoResponse(get_response(request))
+
+            if hasattr(request, "supertokens") and isinstance(
+                    request.supertokens, SessionContainer):  # type: ignore
+                manage_cookies_post_response(
+                    request.supertokens, result)  # type: ignore
+            return result.response
+
+        except SuperTokensError as e:
             response = DjangoResponse(HttpResponse())
-            try:
-                result = async_to_sync(st.middleware)(custom_request, response)
-
-                if result is None:
-                    result = get_response(request)
-                    result = DjangoResponse(result)
-
-                if hasattr(request, "supertokens") and isinstance(request.supertokens, Session):
-                    manage_cookies_post_response(request.supertokens, result)
+            result: Union[DjangoResponse, None] = async_to_sync(st.handle_supertokens_error)(
+                DjangoRequest(request), e, response)
+            if result is not None:
                 return result.response
+        raise Exception("Should never come here")
 
-            except SuperTokensError as e:
-                response = DjangoResponse(HttpResponse())
-                result = async_to_sync(st.handle_supertokens_error)(DjangoRequest(request), e, response)
-                return result.response
-
-    return __middleware
+    return __syncMiddleware

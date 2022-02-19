@@ -17,23 +17,20 @@ import json
 import time
 
 from pytest import mark
-
-from supertokens_python import init, SupertokensConfig, InputAppInfo
+from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.asyncio import create_jwt
 from supertokens_python.utils import utf_base64decode
-from tests.utils import (
-    reset, setup_st, clean_st, start_st
-)
+from tests.utils import clean_st, reset, setup_st, start_st
 
 
-def setup_function(f):
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f):
+def teardown_function(_):
     reset()
     clean_st()
 
@@ -78,7 +75,7 @@ async def test_that_sending_a_invalid_json_throws_an_error():
     jwt_value = None
     is_exception = False
     try:
-        await create_jwt("not a json", 0)
+        await create_jwt("not a json", 0)  # type: ignore
     except Exception:
         is_exception = True
 
@@ -101,15 +98,18 @@ async def test_that_returned_JWT_uses_100_years_for_expiry_for_default_config():
     start_st()
 
     time_rn = time.time()
-
-    jwt_value = (await create_jwt({})).jwt.split(".")[1]
+    result = await create_jwt({})
+    if result.jwt is None:
+        raise Exception("Should never come here")
+    jwt_value = result.jwt.split(".")[1]
     decoded_jwt_value = utf_base64decode(jwt_value)
 
     target_expiry_duration = 3153600000
     jwt_expiry = json.loads(decoded_jwt_value)['exp']
 
     actual_expiry = jwt_expiry - time_rn
-    difference_in_expiry_durations = abs(actual_expiry - target_expiry_duration)
+    difference_in_expiry_durations = abs(
+        actual_expiry - target_expiry_duration)
 
     assert difference_in_expiry_durations < 5
 
@@ -132,14 +132,18 @@ async def test_that_jwt_validity_is_same_as_validity_set_in_config():
 
     time_rn = time.time()
 
-    jwt_value = (await create_jwt({})).jwt.split(".")[1]
+    result = await create_jwt({})
+    if result.jwt is None:
+        raise Exception("Should never come here")
+    jwt_value = result.jwt.split(".")[1]
     decoded_jwt_value = utf_base64decode(jwt_value)
 
     target_expiry_duration = 1000
     jwt_expiry = json.loads(decoded_jwt_value)['exp']
 
     actual_expiry = jwt_expiry - time_rn
-    difference_in_expiry_durations = abs(actual_expiry - target_expiry_duration)
+    difference_in_expiry_durations = abs(
+        actual_expiry - target_expiry_duration)
 
     assert difference_in_expiry_durations < 5
 
@@ -163,12 +167,16 @@ async def test_that_jwt_validity_is_same_as_validity_passed_in_createJWT_functio
     time_rn = time.time()
     target_expiry_duration = 500
 
-    jwt_value = (await create_jwt({}, target_expiry_duration)).jwt.split(".")[1]
+    result = await create_jwt({}, target_expiry_duration)
+    if result.jwt is None:
+        raise Exception("Should never come here")
+    jwt_value = result.jwt.split(".")[1]
     decoded_jwt_value = utf_base64decode(jwt_value)
 
     jwt_expiry = json.loads(decoded_jwt_value)['exp']
 
     actual_expiry = jwt_expiry - time_rn
-    difference_in_expiry_durations = abs(actual_expiry - target_expiry_duration)
+    difference_in_expiry_durations = abs(
+        actual_expiry - target_expiry_duration)
 
     assert difference_in_expiry_durations < 5

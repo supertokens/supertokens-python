@@ -18,7 +18,7 @@ async def jwks_get(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_jwks_get:
         return None
 
-    result = await api_implementation.jwks_get(api_options)
+    result = await api_implementation.jwks_get(api_options, {})
     api_options.response.set_header("Access-Control-Allow-Origin", "*")
     api_options.response.set_json_content(result.to_json())
 

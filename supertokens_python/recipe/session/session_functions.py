@@ -14,25 +14,28 @@
 from __future__ import annotations
 
 import time
-from typing import Union, TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Any, Dict, List, Union
+
+from supertokens_python.recipe.session.interfaces import \
+    SessionInformationResult
+
 from .access_token import get_info_from_access_token
 from .jwt import get_payload_without_verifying
 
 if TYPE_CHECKING:
     from .recipe_implementation import RecipeImplementation
+
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from .exceptions import (
-    raise_try_refresh_token_exception,
-    raise_unauthorised_exception,
-    raise_token_theft_exception,
-    TryRefreshTokenError
-)
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
+
+from .exceptions import (TryRefreshTokenError, raise_token_theft_exception,
+                         raise_try_refresh_token_exception,
+                         raise_unauthorised_exception)
 
 
 async def create_new_session(recipe_implementation: RecipeImplementation, user_id: str,
-                             access_token_payload: Union[dict, None] = None,
-                             session_data: Union[dict, None] = None):
+                             access_token_payload: Union[None, Dict[str, Any]],
+                             session_data: Union[None, Dict[str, Any]]):
     if session_data is None:
         session_data = {}
     if access_token_payload is None:
@@ -58,7 +61,7 @@ async def create_new_session(recipe_implementation: RecipeImplementation, user_i
 
 async def get_session(recipe_implementation: RecipeImplementation, access_token: str,
                       anti_csrf_token: Union[str, None],
-                      do_anti_csrf_check: bool, contains_custom_header: bool):
+                      do_anti_csrf_check: bool, contains_custom_header: bool) -> Dict[str, Any]:
     handshake_info = await recipe_implementation.get_handshake_info()
     access_token_info = None
     found_a_sign_key_that_is_older_than_the_access_token = False
@@ -86,7 +89,8 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
             if payload is None:
                 raise e
 
-            if not isinstance(payload['timeCreated'], int) or not isinstance(payload['expiryTime'], int):
+            if not isinstance(payload['timeCreated'], int) or not isinstance(
+                    payload['expiryTime'], int):
                 raise e
 
             if payload['expiryTime'] < time.time():
@@ -148,15 +152,16 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
         response.pop('jwtSigningPublicKeyExpiryTime', None)
         response.pop('jwtSigningPublicKeyList', None)
         return response
-    elif response['status'] == 'UNAUTHORISED':
+    if response['status'] == 'UNAUTHORISED':
         raise_unauthorised_exception(response['message'])
+    if response['jwtSigningPublicKeyList'] is not None or response['jwtSigningPublicKey'] is not None or response['jwtSigningPublicKeyExpiryTime'] is not None:
+        recipe_implementation.update_jwt_signing_public_key_info(
+            response['jwtSigningPublicKeyList'],
+            response['jwtSigningPublicKey'],
+            response['jwtSigningPublicKeyExpiryTime'])
     else:
-
-        if response['jwtSigningPublicKeyList'] is not None or response['jwtSigningPublicKey'] is not None or response['jwtSigningPublicKeyExpiryTime'] is not None:
-            recipe_implementation.update_jwt_signing_public_key_info(response['jwtSigningPublicKeyList'], response['jwtSigningPublicKey'], response['jwtSigningPublicKeyExpiryTime'])
-        else:
-            await recipe_implementation.get_handshake_info(True)
-        raise_try_refresh_token_exception(response['message'])
+        await recipe_implementation.get_handshake_info(True)
+    raise_try_refresh_token_exception(response['message'])
 
 
 async def refresh_session(recipe_implementation: RecipeImplementation, refresh_token: str,
@@ -178,13 +183,12 @@ async def refresh_session(recipe_implementation: RecipeImplementation, refresh_t
     if response['status'] == 'OK':
         response.pop('status', None)
         return response
-    elif response['status'] == 'UNAUTHORISED':
+    if response['status'] == 'UNAUTHORISED':
         raise_unauthorised_exception(response['message'])
-    else:
-        raise_token_theft_exception(
-            response['session']['userId'],
-            response['session']['handle']
-        )
+    raise_token_theft_exception(
+        response['session']['userId'],
+        response['session']['handle']
+    )
 
 
 async def revoke_all_sessions_for_user(recipe_implementation: RecipeImplementation, user_id: str) -> List[str]:
@@ -216,7 +220,7 @@ async def revoke_multiple_sessions(recipe_implementation: RecipeImplementation, 
     return response['sessionHandlesRevoked']
 
 
-async def update_session_data(recipe_implementation: RecipeImplementation, session_handle: str, new_session_data: dict):
+async def update_session_data(recipe_implementation: RecipeImplementation, session_handle: str, new_session_data: Dict[str, Any]):
     response = await recipe_implementation.querier.send_put_request(NormalisedURLPath('/recipe/session/data'), {
         'sessionHandle': session_handle,
         'userDataInDatabase': new_session_data
@@ -225,7 +229,7 @@ async def update_session_data(recipe_implementation: RecipeImplementation, sessi
         raise_unauthorised_exception(response['message'])
 
 
-async def update_access_token_payload(recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: dict):
+async def update_access_token_payload(recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: Dict[str, Any]):
     response = await recipe_implementation.querier.send_put_request(NormalisedURLPath('/recipe/jwt/data'), {
         'sessionHandle': session_handle,
         'userDataInJWT': new_access_token_payload
@@ -234,18 +238,10 @@ async def update_access_token_payload(recipe_implementation: RecipeImplementatio
         raise_unauthorised_exception(response['message'])
 
 
-async def get_session_information(recipe_implementation: RecipeImplementation, session_handle: str) -> dict:
+async def get_session_information(recipe_implementation: RecipeImplementation, session_handle: str) -> SessionInformationResult:
     response = await recipe_implementation.querier.send_get_request(NormalisedURLPath('/recipe/session'), {
         'sessionHandle': session_handle
     })
     if response['status'] == 'OK':
-        return {
-            'sessionData': response['userDataInDatabase'],
-            'accessTokenPayload': response['userDataInJWT'],
-            'userId': response['userId'],
-            'expiry': response['expiry'],
-            'timeCreated': response['timeCreated'],
-            'sessionHandle': response['sessionHandle']
-        }
-    else:
-        raise_unauthorised_exception(response['message'])
+        return SessionInformationResult('OK', response['sessionHandle'], response['userId'], response['userDataInDatabase'], response['expiry'], response['userDataInJWT'], response['timeCreated'])
+    raise_unauthorised_exception(response['message'])

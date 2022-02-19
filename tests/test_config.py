@@ -11,60 +11,76 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python import init, SupertokensConfig, InputAppInfo
+from pytest import mark
+from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
-from tests.utils import (
-    reset, setup_st, clean_st, start_st
-)
-from pytest import mark
+
+from tests.utils import clean_st, reset, setup_st, start_st
 
 
-def setup_function(f):
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f):
+def teardown_function(_):
     reset()
     clean_st()
 
 
 def testing_URL_path_normalisation():
 
-    def normalise_url_path_or_throw_error(input: str):
+    def normalise_url_path_or_throw_error(input: str):  # pylint: disable=redefined-builtin
         return NormalisedURLPath(input).get_as_string_dangerous()
 
-    assert normalise_url_path_or_throw_error("exists?email=john.doe%40gmail.com") == "/exists"
-    assert normalise_url_path_or_throw_error("/auth/email/exists?email=john.doe%40gmail.com") == "/auth/email/exists"
+    assert normalise_url_path_or_throw_error(
+        "exists?email=john.doe%40gmail.com") == "/exists"
+    assert normalise_url_path_or_throw_error(
+        "/auth/email/exists?email=john.doe%40gmail.com") == "/auth/email/exists"
     assert normalise_url_path_or_throw_error("exists") == "/exists"
     assert normalise_url_path_or_throw_error("/exists") == "/exists"
-    assert normalise_url_path_or_throw_error("/exists?email=john.doe%40gmail.com") == "/exists"
+    assert normalise_url_path_or_throw_error(
+        "/exists?email=john.doe%40gmail.com") == "/exists"
     assert normalise_url_path_or_throw_error("http://api.example.com") == ""
     assert normalise_url_path_or_throw_error("https://api.example.com") == ""
-    assert normalise_url_path_or_throw_error("http://api.example.com?hello=1") == ""
-    assert normalise_url_path_or_throw_error("http://api.example.com/hello") == "/hello"
+    assert normalise_url_path_or_throw_error(
+        "http://api.example.com?hello=1") == ""
+    assert normalise_url_path_or_throw_error(
+        "http://api.example.com/hello") == "/hello"
     assert normalise_url_path_or_throw_error("http://api.example.com/") == ""
-    assert normalise_url_path_or_throw_error("http://api.example.com:8080") == ""
+    assert normalise_url_path_or_throw_error(
+        "http://api.example.com:8080") == ""
     assert normalise_url_path_or_throw_error("api.example.com/") == ""
     assert normalise_url_path_or_throw_error("api.example.com#random") == ""
     assert normalise_url_path_or_throw_error(".example.com") == ""
-    assert normalise_url_path_or_throw_error("api.example.com/?hello=1&bye=2") == ""
+    assert normalise_url_path_or_throw_error(
+        "api.example.com/?hello=1&bye=2") == ""
 
-    assert normalise_url_path_or_throw_error("http://api.example.com/one/two") == "/one/two"
-    assert normalise_url_path_or_throw_error("http://1.2.3.4/one/two") == "/one/two"
+    assert normalise_url_path_or_throw_error(
+        "http://api.example.com/one/two") == "/one/two"
+    assert normalise_url_path_or_throw_error(
+        "http://1.2.3.4/one/two") == "/one/two"
     assert normalise_url_path_or_throw_error("1.2.3.4/one/two") == "/one/two"
-    assert normalise_url_path_or_throw_error("https://api.example.com/one/two/") == "/one/two"
-    assert normalise_url_path_or_throw_error("http://api.example.com/one/two?hello=1") == "/one/two"
-    assert normalise_url_path_or_throw_error("http://api.example.com/hello/") == "/hello"
-    assert normalise_url_path_or_throw_error("http://api.example.com/one/two/") == "/one/two"
-    assert normalise_url_path_or_throw_error("http://api.example.com/one/two#random2") == "/one/two"
-    assert normalise_url_path_or_throw_error("api.example.com/one/two") == "/one/two"
-    assert normalise_url_path_or_throw_error(".example.com/one/two") == "/one/two"
-    assert normalise_url_path_or_throw_error("api.example.com/one/two?hello=1&bye=2") == "/one/two"
+    assert normalise_url_path_or_throw_error(
+        "https://api.example.com/one/two/") == "/one/two"
+    assert normalise_url_path_or_throw_error(
+        "http://api.example.com/one/two?hello=1") == "/one/two"
+    assert normalise_url_path_or_throw_error(
+        "http://api.example.com/hello/") == "/hello"
+    assert normalise_url_path_or_throw_error(
+        "http://api.example.com/one/two/") == "/one/two"
+    assert normalise_url_path_or_throw_error(
+        "http://api.example.com/one/two#random2") == "/one/two"
+    assert normalise_url_path_or_throw_error(
+        "api.example.com/one/two") == "/one/two"
+    assert normalise_url_path_or_throw_error(
+        ".example.com/one/two") == "/one/two"
+    assert normalise_url_path_or_throw_error(
+        "api.example.com/one/two?hello=1&bye=2") == "/one/two"
 
     assert normalise_url_path_or_throw_error("/one/two") == "/one/two"
     assert normalise_url_path_or_throw_error("one/two") == "/one/two"
@@ -78,53 +94,88 @@ def testing_URL_path_normalisation():
     assert normalise_url_path_or_throw_error("/one/two/#randm,") == "/one/two"
     assert normalise_url_path_or_throw_error("one/two#random") == "/one/two"
 
-    assert normalise_url_path_or_throw_error("localhost:4000/one/two") == "/one/two"
-    assert normalise_url_path_or_throw_error("127.0.0.1:4000/one/two") == "/one/two"
+    assert normalise_url_path_or_throw_error(
+        "localhost:4000/one/two") == "/one/two"
+    assert normalise_url_path_or_throw_error(
+        "127.0.0.1:4000/one/two") == "/one/two"
     assert normalise_url_path_or_throw_error("127.0.0.1/one/two") == "/one/two"
-    assert normalise_url_path_or_throw_error("https://127.0.0.1:80/one/two") == "/one/two"
+    assert normalise_url_path_or_throw_error(
+        "https://127.0.0.1:80/one/two") == "/one/two"
     assert normalise_url_path_or_throw_error("/") == ""
     assert normalise_url_path_or_throw_error("") == ""
 
-    assert normalise_url_path_or_throw_error("/.netlify/functions/api") == "/.netlify/functions/api"
-    assert normalise_url_path_or_throw_error("/netlify/.functions/api") == "/netlify/.functions/api"
-    assert normalise_url_path_or_throw_error("app.example.com/.netlify/functions/api") == "/.netlify/functions/api"
-    assert normalise_url_path_or_throw_error("app.example.com/netlify/.functions/api") == "/netlify/.functions/api"
-    assert normalise_url_path_or_throw_error("/app.example.com") == "/app.example.com"
+    assert normalise_url_path_or_throw_error(
+        "/.netlify/functions/api") == "/.netlify/functions/api"
+    assert normalise_url_path_or_throw_error(
+        "/netlify/.functions/api") == "/netlify/.functions/api"
+    assert normalise_url_path_or_throw_error(
+        "app.example.com/.netlify/functions/api") == "/.netlify/functions/api"
+    assert normalise_url_path_or_throw_error(
+        "app.example.com/netlify/.functions/api") == "/netlify/.functions/api"
+    assert normalise_url_path_or_throw_error(
+        "/app.example.com") == "/app.example.com"
 
 
 def testing_URL_domain_normalisation():
 
-    def normalise_url_domain_or_throw_error(input: str):
+    def normalise_url_domain_or_throw_error(input: str):  # pylint: disable=redefined-builtin
         return NormalisedURLDomain(input).get_as_string_dangerous()
 
-    assert normalise_url_domain_or_throw_error("http://api.example.com") == "http://api.example.com"
-    assert normalise_url_domain_or_throw_error("https://api.example.com") == "https://api.example.com"
-    assert normalise_url_domain_or_throw_error("http://api.example.com?hello=1") == "http://api.example.com"
-    assert normalise_url_domain_or_throw_error("http://api.example.com/hello") == "http://api.example.com"
-    assert normalise_url_domain_or_throw_error("http://api.example.com/") == "http://api.example.com"
-    assert normalise_url_domain_or_throw_error("http://api.example.com#random2") == "http://api.example.com"
-    assert normalise_url_domain_or_throw_error("http://api.example.com:8080") == "http://api.example.com:8080"
-    assert normalise_url_domain_or_throw_error("api.example.com/") == "https://api.example.com"
-    assert normalise_url_domain_or_throw_error("api.example.com") == "https://api.example.com"
-    assert normalise_url_domain_or_throw_error("api.example.com#random") == "https://api.example.com"
-    assert normalise_url_domain_or_throw_error(".example.com") == "https://example.com"
-    assert normalise_url_domain_or_throw_error("api.example.com/?hello=1&bye=2") == "https://api.example.com"
-    assert normalise_url_domain_or_throw_error("localhost") == "http://localhost"
-    assert normalise_url_domain_or_throw_error("https://localhost") == "https://localhost"
+    assert normalise_url_domain_or_throw_error(
+        "http://api.example.com") == "http://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        "https://api.example.com") == "https://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        "http://api.example.com?hello=1") == "http://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        "http://api.example.com/hello") == "http://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        "http://api.example.com/") == "http://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        "http://api.example.com#random2") == "http://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        "http://api.example.com:8080") == "http://api.example.com:8080"
+    assert normalise_url_domain_or_throw_error(
+        "api.example.com/") == "https://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        "api.example.com") == "https://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        "api.example.com#random") == "https://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        ".example.com") == "https://example.com"
+    assert normalise_url_domain_or_throw_error(
+        "api.example.com/?hello=1&bye=2") == "https://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        "localhost") == "http://localhost"
+    assert normalise_url_domain_or_throw_error(
+        "https://localhost") == "https://localhost"
 
-    assert normalise_url_domain_or_throw_error("http://api.example.com/one/two") == "http://api.example.com"
-    assert normalise_url_domain_or_throw_error("http://1.2.3.4/one/two") == "http://1.2.3.4"
-    assert normalise_url_domain_or_throw_error("https://1.2.3.4/one/two") == "https://1.2.3.4"
-    assert normalise_url_domain_or_throw_error("1.2.3.4/one/two") == "http://1.2.3.4"
-    assert normalise_url_domain_or_throw_error("https://api.example.com/one/two/") == "https://api.example.com"
-    assert normalise_url_domain_or_throw_error("http://api.example.com/one/two?hello=1") == "http://api.example.com"
-    assert normalise_url_domain_or_throw_error("http://api.example.com/one/two#random2") == "http://api.example.com"
-    assert normalise_url_domain_or_throw_error("api.example.com/one/two") == "https://api.example.com"
-    assert normalise_url_domain_or_throw_error(".example.com/one/two") == "https://example.com"
-    assert normalise_url_domain_or_throw_error("localhost:4000") == "http://localhost:4000"
-    assert normalise_url_domain_or_throw_error("127.0.0.1:4000") == "http://127.0.0.1:4000"
-    assert normalise_url_domain_or_throw_error("127.0.0.1") == "http://127.0.0.1"
-    assert normalise_url_domain_or_throw_error("https://127.0.0.1:80/") == "https://127.0.0.1:80"
+    assert normalise_url_domain_or_throw_error(
+        "http://api.example.com/one/two") == "http://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        "http://1.2.3.4/one/two") == "http://1.2.3.4"
+    assert normalise_url_domain_or_throw_error(
+        "https://1.2.3.4/one/two") == "https://1.2.3.4"
+    assert normalise_url_domain_or_throw_error(
+        "1.2.3.4/one/two") == "http://1.2.3.4"
+    assert normalise_url_domain_or_throw_error(
+        "https://api.example.com/one/two/") == "https://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        "http://api.example.com/one/two?hello=1") == "http://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        "http://api.example.com/one/two#random2") == "http://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        "api.example.com/one/two") == "https://api.example.com"
+    assert normalise_url_domain_or_throw_error(
+        ".example.com/one/two") == "https://example.com"
+    assert normalise_url_domain_or_throw_error(
+        "localhost:4000") == "http://localhost:4000"
+    assert normalise_url_domain_or_throw_error(
+        "127.0.0.1:4000") == "http://127.0.0.1:4000"
+    assert normalise_url_domain_or_throw_error(
+        "127.0.0.1") == "http://127.0.0.1"
+    assert normalise_url_domain_or_throw_error(
+        "https://127.0.0.1:80/") == "https://127.0.0.1:80"
 
     try:
         normalise_url_domain_or_throw_error("/one/two")
@@ -203,12 +254,13 @@ async def test_same_site_values():
             ),
             framework='fastapi',
             recipe_list=[session.init(
-                cookie_same_site='random'
+                cookie_same_site='random'  # type: ignore
             )]
         )
         test_passed = False
     except Exception as e:
-        assert str(e) == 'cookie same site must be one of "strict", "lax", or "none"'
+        assert str(
+            e) == 'cookie same site must be one of "strict", "lax", or "none"'
 
     assert test_passed
     reset()
@@ -224,12 +276,13 @@ async def test_same_site_values():
             ),
             framework='fastapi',
             recipe_list=[session.init(
-                cookie_same_site=' '
+                cookie_same_site=' '  # type: ignore
             )]
         )
         test_passed = False
     except Exception as e:
-        assert str(e) == 'cookie same site must be one of "strict", "lax", or "none"'
+        assert str(
+            e) == 'cookie same site must be one of "strict", "lax", or "none"'
 
     assert test_passed
     reset()
@@ -450,7 +503,7 @@ def testing_override_test():
         def __init__(self):
             pass
 
-        def some_other_func(self):
+        def some_other_func(self):  # pylint: disable=no-self-use
             nonlocal m
             m = 1
 
@@ -458,8 +511,6 @@ def testing_override_test():
             self.some_other_func()
 
     class A(OI):
-        def __init__(self):
-            super().__init__()
 
         def some_other_func(self):
             nonlocal m
@@ -488,7 +539,7 @@ def testing_super_recipe_tests():
         def sign_up(self):
             self.get_user()
 
-        def get_user(self):
+        def get_user(self):  # pylint: disable=no-self-use
             nonlocal m
             m = 1
 
@@ -508,7 +559,7 @@ def testing_super_recipe_tests():
             self.o_get_user()
 
     class DerivedEP(EP):
-        def __init__(self, tpep):
+        def __init__(self, tpep: TPEP):
             super().__init__()
             self.tpep = tpep
 
@@ -518,7 +569,7 @@ def testing_super_recipe_tests():
         def get_user(self):
             self.tpep.get_users()
 
-    def override(tpep):
+    def override(tpep: TPEP):
         o_sign_up = tpep.sign_up
         o_get_users = tpep.get_users
 
@@ -529,7 +580,7 @@ def testing_super_recipe_tests():
             nonlocal m
             m = 5
             o_get_users()
-            if m == 1:
+            if m == 1:  # type: ignore
                 m = 2
 
         tpep.sign_up = sign_up

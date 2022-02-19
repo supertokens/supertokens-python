@@ -13,17 +13,22 @@
 # under the License.
 from __future__ import annotations
 
-from supertokens_python.recipe.thirdparty.provider import Provider
-from typing import List, Union, Dict, Callable, TYPE_CHECKING
-from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
-from supertokens_python.recipe.thirdparty.api.implementation import get_actual_client_id_from_development_client_id
-from supertokens_python.recipe.thirdparty.constants import APPLE_REDIRECT_HANDLER
-from supertokens_python.supertokens import Supertokens
-from jwt import encode, decode
-from time import time
 from re import sub
+from time import time
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
+
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from httpx import AsyncClient
-from jwt.algorithms import RSAAlgorithm, RSAPublicKey
+from jwt import decode, encode
+from jwt.algorithms import RSAAlgorithm
+from supertokens_python.recipe.thirdparty.api.implementation import \
+    get_actual_client_id_from_development_client_id
+from supertokens_python.recipe.thirdparty.constants import \
+    APPLE_REDIRECT_HANDLER
+from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.types import (
+    AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
+from supertokens_python.supertokens import Supertokens
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -31,14 +36,14 @@ if TYPE_CHECKING:
 
 class Apple(Provider):
     def __init__(self, client_id: str, client_key_id: str, client_private_key: str, client_team_id: str,
-                 scope: List[str] = None,
-                 authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None,
+                 scope: Union[None, List[str]] = None,
+                 authorisation_redirect: Union[None, Dict[str, Union[Callable[[BaseRequest], str], str]]] = None,
                  is_default: bool = False):
         super().__init__('apple', client_id, is_default)
         self.APPLE_PUBLIC_KEY_URL = "https://appleid.apple.com/auth/keys"
-        self.APPLE_PUBLIC_KEYS = []
+        self.APPLE_PUBLIC_KEYS: List[RSAPublicKey] = []
         self.APPLE_KEY_CACHE_EXP = 60 * 60 * 24
-        self.APPLE_LAST_KEY_FETCH = 0
+        self.apple_last_fetch = 0
         default_scopes = ['email']
 
         if scope is None:
@@ -65,16 +70,16 @@ class Apple(Provider):
             'kid': self.client_key_id
         }
         return encode(payload, sub(
-            r'\\n', '\n', self.client_private_key), algorithm='ES256', headers=headers)
+            r'\\n', '\n', self.client_private_key), algorithm='ES256', headers=headers)  # type: ignore
 
-    async def get_profile_info(self, auth_code_response: any) -> UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
         # - Verify the JWS E256 signature using the server’s public key
         # - Verify the nonce for the authentication
         # - Verify that the iss field contains https://appleid.apple.com
         # - Verify that the aud field is the developer’s client_id
         # - Verify that the time is earlier than the exp value of the token
         await self._verify_apple_id_token(auth_code_response['id_token'])
-        payload = decode(
+        payload: Union[None, Dict[str, Any]] = decode(
             jwt=auth_code_response['id_token'], options={
                 'verify_signature': False})
         if payload is None:
@@ -89,7 +94,7 @@ class Apple(Provider):
         is_email_verified = payload['email_verified'] if 'email_verified' in payload else False
         return UserInfo(user_id, UserInfoEmail(email, is_email_verified))
 
-    def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
         params = {
             'scope': ' '.join(self.scopes),
             'response_type': 'code',
@@ -101,7 +106,7 @@ class Apple(Provider):
             self.authorisation_redirect_url, params)
 
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
+            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
         params = {
             'client_id': self.client_id,
             'client_secret': self.__get_client_secret(),
@@ -111,28 +116,29 @@ class Apple(Provider):
         }
         return AccessTokenAPI(self.access_token_api_url, params)
 
-    def get_redirect_uri(self) -> Union[None, str]:
+    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
         app_info = Supertokens.get_instance().app_info
-        self.redirect_uri = app_info.api_domain.get_as_string_dangerous()
-        self.redirect_uri += app_info.api_base_path.get_as_string_dangerous()
-        self.redirect_uri += APPLE_REDIRECT_HANDLER
-        return self.redirect_uri
+        redirect_uri = app_info.api_domain.get_as_string_dangerous()
+        redirect_uri += app_info.api_base_path.get_as_string_dangerous()
+        redirect_uri += APPLE_REDIRECT_HANDLER
+        return redirect_uri
 
     async def _fetch_apple_public_keys(self) -> List[RSAPublicKey]:
         # Check to see if the public key is unset or is stale before returning
-        if (self.APPLE_LAST_KEY_FETCH + self.APPLE_KEY_CACHE_EXP) < int(time()) or len(self.APPLE_PUBLIC_KEYS) == 0:
+        if (self.apple_last_fetch + self.APPLE_KEY_CACHE_EXP) < int(time()
+                                                                    ) or len(self.APPLE_PUBLIC_KEYS) == 0:
             async with AsyncClient() as client:
                 response = await client.get(self.APPLE_PUBLIC_KEY_URL)
                 key_payload = response.json()
                 for key in key_payload["keys"]:
-                    self.APPLE_PUBLIC_KEYS.append(RSAAlgorithm.from_jwk(key))
-                self.APPLE_LAST_KEY_FETCH = int(time())
+                    self.APPLE_PUBLIC_KEYS.append(RSAAlgorithm.from_jwk(key))  # type: ignore
+                self.apple_last_fetch = int(time())
 
         return self.APPLE_PUBLIC_KEYS
 
-    async def _verify_apple_id_token(self, token):
+    async def _verify_apple_id_token(self, token: str) -> None:
         public_keys = await self._fetch_apple_public_keys()
-        err = "Id token verification failed"
+        err = Exception("Id token verification failed")
         for key in public_keys:
             try:
                 decode(jwt=token, key=key,

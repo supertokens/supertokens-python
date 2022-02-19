@@ -11,10 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python.recipe.jwt.interfaces import APIInterface, APIOptions, JWKSGetResponse
+from typing import Any, Dict
+
+from supertokens_python.recipe.jwt.interfaces import (APIInterface, APIOptions,
+                                                      JWKSGetResponse)
 
 
 class APIImplementation(APIInterface):
-    async def jwks_get(self, api_options: APIOptions) -> JWKSGetResponse:
-        response = await api_options.recipe_implementation.get_jwks()
-        return JWKSGetResponse(response.status, response.keys)
+    async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> JWKSGetResponse:
+        response = await api_options.recipe_implementation.get_jwks(user_context)
+        return JWKSGetResponse('OK', response.keys)

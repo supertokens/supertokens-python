@@ -12,13 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict, List
+
 from supertokens_python.exceptions import SuperTokensError
-from typing import List, TYPE_CHECKING
+
 if TYPE_CHECKING:
     from .types import ErrorFormField
 
 
-def raise_form_field_exception(msg, form_fields):
+def raise_form_field_exception(msg: str, form_fields: List[ErrorFormField]):
     raise FieldError(msg, form_fields)
 
 
@@ -31,8 +34,8 @@ class FieldError(SuperTokensEmailPasswordError):
         super().__init__(msg)
         self.form_fields = form_fields
 
-    def get_json_form_fields(self):
-        form_fields = []
+    def get_json_form_fields(self) -> List[Dict[str, Any]]:
+        form_fields: List[Dict[str, Any]] = []
         for form_field in self.form_fields:
             form_fields.append({
                 'id': form_field.id,

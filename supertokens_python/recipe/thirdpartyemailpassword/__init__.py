@@ -11,38 +11,40 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union, List
+from __future__ import annotations
 
-from .utils import InputOverrideConfig
+from typing import TYPE_CHECKING, Callable, List, Union
 
 from supertokens_python.recipe.thirdparty.provider import Provider
 
+from .. import emailpassword, thirdparty
+from . import exceptions as ex
+from . import utils
 from .recipe import ThirdPartyEmailPasswordRecipe
-from . import exceptions
-from supertokens_python.recipe.thirdparty import (
-    Google,
-    Github,
-    Apple,
-    Facebook,
-    Discord,
-    GoogleWorkspaces
-)
-from ..emailpassword import InputResetPasswordUsingTokenFeature, InputSignUpFeature
-from ..emailverification.utils import InputEmailVerificationConfig
 
-Google = Google
-Github = Github
-Apple = Apple
-Facebook = Facebook
-Discord = Discord
-GoogleWorkspaces = GoogleWorkspaces
+InputEmailVerificationConfig = utils.InputEmailVerificationConfig
+InputOverrideConfig = utils.InputOverrideConfig
+exceptions = ex
+InputResetPasswordUsingTokenFeature = emailpassword.InputResetPasswordUsingTokenFeature
+InputSignUpFeature = emailpassword.InputSignUpFeature
+Apple = thirdparty.Apple
+Discord = thirdparty.Discord
+Facebook = thirdparty.Facebook
+Github = thirdparty.Github
+Google = thirdparty.Google
+GoogleWorkspaces = thirdparty.GoogleWorkspaces
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
 
 
 def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
          reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
          override: Union[InputOverrideConfig, None] = None,
-         providers: Union[List[Provider], None] = None):
+         providers: Union[List[Provider], None] = None) -> Callable[[AppInfo], RecipeModule]:
     return ThirdPartyEmailPasswordRecipe.init(sign_up_feature, reset_password_using_token_feature,
                                               email_verification_feature,
                                               override, providers)

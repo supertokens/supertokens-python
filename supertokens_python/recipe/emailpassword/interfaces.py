@@ -14,7 +14,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Union, TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Any, Dict, List, Union
+from xmlrpc.client import boolean
+
+from ..emailverification.interfaces import \
+    RecipeInterface as EmailVerificationRecipeInterface
 
 try:
     from typing import Literal
@@ -23,8 +27,10 @@ except ImportError:
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
+    from supertokens_python.recipe.session import SessionContainer
+
+    from .types import FormField, User
     from .utils import EmailPasswordConfig
-    from .types import User, UsersResponse, FormField
 
 
 class SignUpResult(ABC):
@@ -53,10 +59,10 @@ class SignUpEmailAlreadyExistsErrorResult(SignUpResult):
 class SignInResult(ABC):
     def __init__(
             self, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'], user: Union[User, None]):
-        self.status = status
+        self.status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'] = status
         self.is_ok = False
-        self.is_wrong_credentials_error = False
-        self.user = user
+        self.is_wrong_credentials_error: boolean = False
+        self.user: Union[User, None] = user
 
 
 class SignInOkResult(SignInResult):
@@ -99,10 +105,11 @@ class CreateResetPasswordWrongUserIdErrorResult(CreateResetPasswordResult):
 class ResetPasswordUsingTokenResult(ABC):
     def __init__(self, status: Literal['OK',
                  'RESET_PASSWORD_INVALID_TOKEN_ERROR'], user_id: Union[None, str] = None):
-        self.status = status
-        self.is_ok = False
-        self.user_id = user_id
-        self.is_reset_password_invalid_token_error = False
+        self.status: Literal['OK',
+                             'RESET_PASSWORD_INVALID_TOKEN_ERROR'] = status
+        self.is_ok: bool = False
+        self.user_id: Union[None, str] = user_id
+        self.is_reset_password_invalid_token_error: bool = False
 
 
 class ResetPasswordUsingTokenOkResult(ResetPasswordUsingTokenResult):
@@ -160,55 +167,46 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str) -> Union[User, None]:
+    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_user_by_email(self, email: str) -> Union[User, None]:
+    async def get_user_by_email(self, email: str, user_context: Dict[str, Any]) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def create_reset_password_token(self, user_id: str) -> CreateResetPasswordResult:
+    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> CreateResetPasswordResult:
         pass
 
     @abstractmethod
-    async def reset_password_using_token(self, token: str, new_password: str) -> ResetPasswordUsingTokenResult:
+    async def reset_password_using_token(self, token: str, new_password: str,
+                                         user_context: Dict[str, Any]) -> ResetPasswordUsingTokenResult:
         pass
 
     @abstractmethod
-    async def sign_in(self, email: str, password: str) -> SignInResult:
+    async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> SignInResult:
         pass
 
     @abstractmethod
-    async def sign_up(self, email: str, password: str) -> SignUpResult:
+    async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> SignUpResult:
         pass
 
     @abstractmethod
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        pass
-
-    @abstractmethod
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        pass
-
-    @abstractmethod
-    async def get_user_count(self) -> int:
-        pass
-
-    @abstractmethod
-    async def update_email_or_password(self, user_id: str, email: Union[str, None] = None,
-                                       password: Union[str, None] = None) -> UpdateEmailOrPasswordResult:
+    async def update_email_or_password(self, user_id: str, email: Union[str, None],
+                                       password: Union[str, None], user_context: Dict[str, Any]) -> UpdateEmailOrPasswordResult:
         pass
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: Union[BaseResponse, None], recipe_id: str,
-                 config: EmailPasswordConfig, recipe_implementation: RecipeInterface):
-        self.request = request
-        self.response = response
-        self.recipe_id = recipe_id
-        self.config = config
-        self.recipe_implementation = recipe_implementation
+    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
+                 config: EmailPasswordConfig, recipe_implementation: RecipeInterface,
+                 email_verification_recipe_implementation: EmailVerificationRecipeInterface):
+        self.request: BaseRequest = request
+        self.response: BaseResponse = response
+        self.recipe_id: str = recipe_id
+        self.config: EmailPasswordConfig = config
+        self.recipe_implementation: RecipeInterface = recipe_implementation
+        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = email_verification_recipe_implementation
 
 
 class EmailVerifyPostResponse(ABC):
@@ -219,7 +217,7 @@ class EmailVerifyPostResponse(ABC):
         self.is_email_verification_invalid_token_error = False
         self.user = user
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         return {
             'status': self.status
         }
@@ -231,7 +229,9 @@ class EmailVerifyPostOkResponse(EmailVerifyPostResponse):
         self.is_ok = True
         self.is_email_verification_invalid_token_error = False
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
+        if self.user is None:
+            raise Exception("Should never come here")
         return {
             'status': self.status,
             'user': {
@@ -253,7 +253,7 @@ class IsEmailVerifiedGetResponse(ABC):
         self.status = status
         self.is_ok = False
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         return {
             'status': self.status
         }
@@ -265,7 +265,7 @@ class IsEmailVerifiedGetOkResponse(IsEmailVerifiedGetResponse):
         self.is_verified = is_verified
         self.is_ok = True
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         return {
             'status': self.status,
             'isVerified': self.is_verified
@@ -278,7 +278,7 @@ class GenerateEmailVerifyTokenPostResponse(ABC):
         self.is_ok = False
         self.is_email_already_verified_error = False
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         return {
             'status': self.status
         }
@@ -305,7 +305,7 @@ class EmailExistsGetResponse(ABC):
         self.status = status
         self.exists = exists
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         return {
             'status': self.status,
             'exists': self.exists
@@ -321,7 +321,7 @@ class GeneratePasswordResetTokenPostResponse(ABC):
     def __init__(self, status: Literal['OK']):
         self.status = status
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         return {
             'status': self.status
         }
@@ -336,10 +336,11 @@ class GeneratePasswordResetTokenPostOkResponse(
 class PasswordResetPostResponse(ABC):
     def __init__(self, status: Literal['OK',
                  'RESET_PASSWORD_INVALID_TOKEN_ERROR'], user_id: Union[str, None] = None):
-        self.user_id = user_id
-        self.status = status
+        self.user_id: Union[str, None] = user_id
+        self.status: Literal['OK',
+                             'RESET_PASSWORD_INVALID_TOKEN_ERROR'] = status
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         return {
             'status': self.status
         }
@@ -357,14 +358,17 @@ class PasswordResetPostInvalidTokenResponse(PasswordResetPostResponse):
 
 class SignInPostResponse(ABC):
     def __init__(
-            self, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'], user: Union[User, None]):
+            self, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'],
+            user: Union[User, None] = None,
+            session: Union[SessionContainer, None] = None):
         self.type = 'emailpassword'
-        self.is_ok = False
-        self.is_wrong_credentials_error = False
-        self.status = status
-        self.user = user
+        self.is_ok: bool = False
+        self.is_wrong_credentials_error: bool = False
+        self.status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'] = status
+        self.user: Union[User, None] = user
+        self.session: Union[SessionContainer, None] = session
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         response = {
             'status': self.status
         }
@@ -381,27 +385,30 @@ class SignInPostResponse(ABC):
 
 
 class SignInPostOkResponse(SignInPostResponse):
-    def __init__(self, user: User):
-        super().__init__('OK', user)
+    def __init__(self, user: User, session: SessionContainer):
+        super().__init__('OK', user, session)
         self.is_ok = True
 
 
 class SignInPostWrongCredentialsErrorResponse(SignInPostResponse):
     def __init__(self):
-        super().__init__('WRONG_CREDENTIALS_ERROR', None)
+        super().__init__('WRONG_CREDENTIALS_ERROR')
         self.is_wrong_credentials_error = True
 
 
 class SignUpPostResponse(ABC):
     def __init__(
-            self, status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR'], user: Union[User, None]):
+            self, status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR'],
+            user: Union[User, None] = None,
+            session: Union[SessionContainer, None] = None):
         self.type = 'emailpassword'
-        self.is_ok = False
-        self.is_email_already_exists_error = False
-        self.status = status
-        self.user = user
+        self.is_ok: bool = False
+        self.is_email_already_exists_error: bool = False
+        self.status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR'] = status
+        self.user: Union[User, None] = user
+        self.session: Union[SessionContainer, None] = session
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         response = {
             'status': self.status
         }
@@ -418,14 +425,14 @@ class SignUpPostResponse(ABC):
 
 
 class SignUpPostOkResponse(SignUpPostResponse):
-    def __init__(self, user: User):
-        super().__init__('OK', user)
+    def __init__(self, user: User, session: SessionContainer):
+        super().__init__('OK', user, session)
         self.is_ok = True
 
 
 class SignUpPostEmailAlreadyExistsErrorResponse(SignUpPostResponse):
     def __init__(self):
-        super().__init__('EMAIL_ALREADY_EXISTS_ERROR', None)
+        super().__init__('EMAIL_ALREADY_EXISTS_ERROR')
         self.is_email_already_exists_error = True
 
 
@@ -437,19 +444,29 @@ class APIInterface:
         self.disable_sign_in_post = False
         self.disable_sign_up_post = False
 
-    async def email_exists_get(self, email: str, api_options: APIOptions) -> EmailExistsGetResponse:
+    @abstractmethod
+    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailExistsGetResponse:
         pass
 
+    @abstractmethod
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
-                                                 api_options: APIOptions) -> GeneratePasswordResetTokenPostResponse:
+                                                 api_options: APIOptions,
+                                                 user_context: Dict[str, Any]) -> GeneratePasswordResetTokenPostResponse:
         pass
 
+    @abstractmethod
     async def password_reset_post(self, form_fields: List[FormField], token: str,
-                                  api_options: APIOptions) -> PasswordResetPostResponse:
+                                  api_options: APIOptions, user_context: Dict[str, Any]) -> PasswordResetPostResponse:
         pass
 
-    async def sign_in_post(self, form_fields: List[FormField], api_options: APIOptions) -> SignInPostResponse:
+    @abstractmethod
+    async def sign_in_post(self, form_fields: List[FormField],
+                           api_options: APIOptions,
+                           user_context: Dict[str, Any]) -> SignInPostResponse:
         pass
 
-    async def sign_up_post(self, form_fields: List[FormField], api_options: APIOptions) -> SignUpPostResponse:
+    @abstractmethod
+    async def sign_up_post(self, form_fields: List[FormField],
+                           api_options: APIOptions,
+                           user_context: Dict[str, Any]) -> SignUpPostResponse:
         pass

@@ -11,14 +11,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
 from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.recipe.passwordless.interfaces import (APIInterface,
+                                                               APIOptions)
 
 
 async def resend_code(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_resend_code_post:
         return None
     body = await api_options.request.json()
+
+    if body is None:
+        raise_bad_input_exception("Please provide a JSON body")
 
     if 'preAuthSessionId' not in body:
         raise_bad_input_exception('Please provide preAuthSessionId')
@@ -29,7 +33,7 @@ async def resend_code(api_implementation: APIInterface, api_options: APIOptions)
     pre_auth_session_id = body['preAuthSessionId']
     device_id = body['deviceId']
 
-    result = await api_implementation.resend_code_post(device_id, pre_auth_session_id, api_options)
+    result = await api_implementation.resend_code_post(device_id, pre_auth_session_id, api_options, {})
     api_options.response.set_json_content(result.to_json())
 
     return api_options.response

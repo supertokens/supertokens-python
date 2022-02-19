@@ -11,27 +11,41 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable, Union
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
 
-from .session_class import Session
+if TYPE_CHECKING:
+    from ...recipe_module import RecipeModule
+    from supertokens_python.supertokens import AppInfo
+
+from . import exceptions as ex
 from .recipe import SessionRecipe
-from . import exceptions
-from .utils import InputErrorHandlers, InputOverrideConfig, JWTConfig
-from supertokens_python.recipe.openid import InputOverrideConfig as OpenIdInputOverrideConfig, JWTOverrideConfig
+from . import utils
+from . import interfaces
+
+InputErrorHandlers = utils.InputErrorHandlers
+InputOverrideConfig = utils.InputOverrideConfig
+JWTConfig = utils.JWTConfig
+SessionContainer = interfaces.SessionContainer
+exceptions = ex
 
 
 def init(cookie_domain: Union[str, None] = None,
-         cookie_secure: Union[str, None] = None,
-         cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
-         session_expired_status_code: Union[str, None] = None,
-         anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+         cookie_secure: Union[bool, None] = None,
+         cookie_same_site: Union[Literal["lax",
+                                         "none", "strict"], None] = None,
+         session_expired_status_code: Union[int, None] = None,
+         anti_csrf: Union[Literal["VIA_TOKEN",
+                                  "VIA_CUSTOM_HEADER", "NONE"], None] = None,
          error_handlers: Union[InputErrorHandlers, None] = None,
          override: Union[InputOverrideConfig, None] = None,
-         jwt: Union[JWTConfig, None] = None):
+         jwt: Union[JWTConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
     return SessionRecipe.init(cookie_domain,
                               cookie_secure,
                               cookie_same_site,

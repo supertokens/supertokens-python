@@ -11,17 +11,31 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Any, Dict, Union
+
+from supertokens_python.recipe.openid.interfaces import \
+    GetOpenIdDiscoveryConfigurationResult
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
-from supertokens_python.recipe.openid.interfaces import CreateJwtResult, GetJWKSResult, GetOpenIdDiscoveryConfigurationResult
+
+from ...jwt.interfaces import CreateJwtResult, GetJWKSResult
 
 
-async def create_jwt(payload: dict, validity_seconds: int = None) -> [CreateJwtResult, None]:
-    return await OpenIdRecipe.get_instance().recipe_implementation.create_jwt(payload, validity_seconds)
+async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -> CreateJwtResult:
+    if user_context is None:
+        user_context = {}
+    if payload is None:
+        payload = {}
+
+    return await OpenIdRecipe.get_instance().recipe_implementation.create_jwt(payload, validity_seconds, user_context)
 
 
-async def get_jwks() -> [GetJWKSResult, None]:
-    return await OpenIdRecipe.get_instance().recipe_implementation.get_jwks()
+async def get_jwks(user_context: Union[Dict[str, Any], None] = None) -> GetJWKSResult:
+    if user_context is None:
+        user_context = {}
+    return await OpenIdRecipe.get_instance().recipe_implementation.get_jwks(user_context)
 
 
-async def get_open_id_discovery_configuration() -> [GetOpenIdDiscoveryConfigurationResult, None]:
-    return await OpenIdRecipe.get_instance().recipe_implementation.get_open_id_discovery_configuration()
+async def get_open_id_discovery_configuration(user_context: Union[Dict[str, Any], None] = None) -> GetOpenIdDiscoveryConfigurationResult:
+    if user_context is None:
+        user_context = {}
+    return await OpenIdRecipe.get_instance().recipe_implementation.get_open_id_discovery_configuration(user_context)

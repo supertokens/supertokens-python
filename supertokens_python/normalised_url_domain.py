@@ -32,7 +32,7 @@ class NormalisedURLDomain:
 
 
 def normalise_domain_path_or_throw_error(
-        input_str: str, ignore_protocol=False) -> str:
+        input_str: str, ignore_protocol: bool = False) -> str:
     input_str = input_str.strip().lower()
 
     try:
@@ -42,7 +42,10 @@ def normalise_domain_path_or_throw_error(
         url_obj = urlparse(input_str)
 
         if ignore_protocol:
-            if url_obj.hostname.startswith('localhost') or is_an_ip_address(url_obj.hostname):
+            if url_obj.hostname is None:
+                raise Exception("Should never come here")
+            if url_obj.hostname.startswith(
+                    'localhost') or is_an_ip_address(url_obj.hostname):
                 input_str = 'http://' + url_obj.netloc
             else:
                 input_str = 'https://' + url_obj.netloc

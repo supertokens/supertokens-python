@@ -14,29 +14,29 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 
+from supertokens_python.recipe.jwt.interfaces import APIOptions
+from typing import Any, Dict, List, Union
 from _pytest.fixtures import fixture
 from fastapi import FastAPI
 from pytest import mark
 from starlette.requests import Request
 from starlette.testclient import TestClient
-
-from supertokens_python import init, SupertokensConfig, InputAppInfo
+from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.asyncio import create_jwt
-from supertokens_python.recipe.jwt.interfaces import RecipeInterface, APIInterface
-from tests.utils import (
-    reset, setup_st, clean_st, start_st
-)
+from supertokens_python.recipe.jwt.interfaces import (APIInterface,
+                                                      RecipeInterface)
+from tests.utils import clean_st, reset, setup_st, start_st
 
 
-def setup_function(f):
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f):
+def teardown_function(_):
     reset()
     clean_st()
 
@@ -47,7 +47,7 @@ async def driver_config_client():
     app.add_middleware(Middleware)
 
     @app.post('/jwtcreate')
-    async def jwt_create(request: Request):
+    async def jwt_create(request: Request):  # type: ignore
         payload = (await request.json())['payload']
         response = await create_jwt(payload, 1000)
         return response
@@ -58,13 +58,13 @@ async def driver_config_client():
 @mark.asyncio
 async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_config_client: TestClient):
     created_jwt = None
-    jwt_keys = []
+    jwt_keys: List[Dict[str, Any]] = []
 
     def custom_functions(param: RecipeInterface):
         temp = param.get_jwks
 
-        async def get_jwks():
-            response_ = await temp()
+        async def get_jwks(user_context: Dict[str, Any]):
+            response_ = await temp(user_context)
 
             if response_.status == "OK":
                 nonlocal jwt_keys
@@ -81,8 +81,8 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
 
         temp1 = param.create_jwt
 
-        async def create_jwt_(input1, input2=None):
-            response_ = await temp1(input1, input2)
+        async def create_jwt_(payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]):
+            response_ = await temp1(payload, validity_seconds, user_context)
 
             if response_.status == "OK":
                 nonlocal created_jwt
@@ -137,8 +137,8 @@ async def test_overriding_APIs(driver_config_client: TestClient):
     def custom_api(param: APIInterface):
         temp = param.jwks_get
 
-        async def get_jwks_get(input1):
-            response_ = await temp(input1)
+        async def get_jwks_get(api_options: APIOptions, user_context: Dict[str, Any]):
+            response_ = await temp(api_options, user_context)
             nonlocal jwt_keys
             jwt_keys = response_.to_json()['keys']
             return response_

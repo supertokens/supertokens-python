@@ -13,21 +13,23 @@
 # under the License.
 from __future__ import annotations
 
-from supertokens_python.recipe.thirdparty.provider import Provider
-from typing import List, Union, Dict, Callable, TYPE_CHECKING
-from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
+
 from httpx import AsyncClient
+from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.types import (
+    AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
-
 
 from supertokens_python.utils import get_filtered_list
 
 
 class Github(Provider):
-    def __init__(self, client_id: str, client_secret: str, scope: List[str] = None,
-                 authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None,
+    def __init__(self, client_id: str, client_secret: str, scope: Union[None, List[str]] = None,
+                 authorisation_redirect: Union[None, Dict[str, Union[str, Callable[[
+                     BaseRequest], str]]]] = None,
                  is_default: bool = False):
         super().__init__('github', client_id, is_default)
         default_scopes = ["read:user", "user:email"]
@@ -41,7 +43,7 @@ class Github(Provider):
         if authorisation_redirect is not None:
             self.authorisation_redirect_params = authorisation_redirect
 
-    async def get_profile_info(self, auth_code_response: any) -> UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
         access_token: str = auth_code_response['access_token']
         params = {
             'alt': 'json'
@@ -65,7 +67,7 @@ class Github(Provider):
             email = email_info[0]['email'] if 'email' in email_info[0] else user_info['email']
             return UserInfo(user_id, UserInfoEmail(email, is_email_verified))
 
-    def get_authorisation_redirect_api_info(self) -> AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
         params = {
             'scope': ' '.join(self.scopes),
             'client_id': self.client_id,
@@ -75,7 +77,7 @@ class Github(Provider):
             self.authorisation_redirect_url, params)
 
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str) -> AccessTokenAPI:
+            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
         params = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,
@@ -83,3 +85,6 @@ class Github(Provider):
             'redirect_uri': redirect_uri
         }
         return AccessTokenAPI(self.access_token_api_url, params)
+
+    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+        return None

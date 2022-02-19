@@ -11,19 +11,32 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
 
+from typing import TYPE_CHECKING, Callable, Union
+
+from . import exceptions as ex
+from . import utils
 from .recipe import EmailPasswordRecipe
-from . import exceptions
-from .utils import InputSignUpFeature, InputResetPasswordUsingTokenFeature, InputOverrideConfig, InputFormField
-from ..emailverification.utils import InputEmailVerificationConfig
+
+exceptions = ex
+InputOverrideConfig = utils.InputOverrideConfig
+InputResetPasswordUsingTokenFeature = utils.InputResetPasswordUsingTokenFeature
+InputEmailVerificationConfig = utils.InputEmailVerificationConfig
+InputSignUpFeature = utils.InputSignUpFeature
+InputFormField = utils.InputFormField
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
 
 
-def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
+def init(sign_up_feature: Union[utils.InputSignUpFeature, None] = None,
          reset_password_using_token_feature: Union[
-             InputResetPasswordUsingTokenFeature, None] = None,
-         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[InputOverrideConfig, None] = None):
+             utils.InputResetPasswordUsingTokenFeature, None] = None,
+         email_verification_feature: Union[utils.InputEmailVerificationConfig, None] = None,
+         override: Union[utils.InputOverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
     return EmailPasswordRecipe.init(
         sign_up_feature,
         reset_password_using_token_feature,

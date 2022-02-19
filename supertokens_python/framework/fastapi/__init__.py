@@ -11,4 +11,5 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python.framework.fastapi.fastapi_middleware import Middleware
+from supertokens_python.framework.fastapi import fastapi_middleware
+Middleware = fastapi_middleware.Middleware

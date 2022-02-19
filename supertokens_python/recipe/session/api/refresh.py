@@ -12,16 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
-
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session.interfaces import APIInterface, APIOptions
+    from supertokens_python.recipe.session.interfaces import (APIInterface,
+                                                              APIOptions)
 
 
 async def handle_refresh_api(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_refresh_post or api_implementation.refresh_post is None:
         return None
-    await api_implementation.refresh_post(api_options)
+    await api_implementation.refresh_post(api_options, {})
+    if api_options.response is None:
+        raise Exception("Should never come here")
     api_options.response.set_json_content({})
     return api_options.response

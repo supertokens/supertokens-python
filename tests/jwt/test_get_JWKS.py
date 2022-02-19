@@ -19,24 +19,21 @@ from fastapi import FastAPI
 from pytest import mark
 from starlette.requests import Request
 from starlette.testclient import TestClient
-
-from supertokens_python import init, SupertokensConfig, InputAppInfo
+from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.interfaces import APIInterface
 from supertokens_python.recipe.session.asyncio import create_new_session
-from tests.utils import (
-    reset, setup_st, clean_st, start_st
-)
+from tests.utils import clean_st, reset, setup_st, start_st
 
 
-def setup_function(f):
+def setup_function(_):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(f):
+def teardown_function(_):
     reset()
     clean_st()
 
@@ -47,7 +44,7 @@ async def driver_config_client():
     app.add_middleware(Middleware)
 
     @app.get('/login')
-    async def login(request: Request):
+    async def login(request: Request):  # type: ignore
         user_id = 'userId'
         await create_new_session(request, user_id, {}, {})
         return {'userId': user_id}

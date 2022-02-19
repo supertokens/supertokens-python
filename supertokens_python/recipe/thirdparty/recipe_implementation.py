@@ -13,22 +13,16 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union, List
-
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
     from .interfaces import SignInUpResult
-from .types import User, UsersResponse, ThirdPartyInfo
-from .interfaces import (
-    RecipeInterface, SignInUpOkResult
-)
+
+from .interfaces import RecipeInterface, SignInUpOkResult
+from .types import ThirdPartyInfo, User
 
 
 class RecipeImplementation(RecipeInterface):
@@ -37,7 +31,7 @@ class RecipeImplementation(RecipeInterface):
         super().__init__()
         self.querier = querier
 
-    async def get_user_by_id(self, user_id: str) -> Union[User, None]:
+    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
         params = {
             'userId': user_id
         }
@@ -54,10 +48,10 @@ class RecipeImplementation(RecipeInterface):
             )
         return None
 
-    async def get_users_by_email(self, email: str) -> List[User]:
+    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -> List[User]:
         response = await self.querier.send_get_request(NormalisedURLPath('/recipe/users/by-email'), {'email': email})
-        users = []
-        users_list = response['users'] if 'users' in response else []
+        users: List[User] = []
+        users_list: List[Dict[str, Any]] = response['users'] if 'users' in response else []
         for user in users_list:
             users.append(
                 User(
@@ -72,7 +66,7 @@ class RecipeImplementation(RecipeInterface):
             )
         return users
 
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str) -> Union[User, None]:
+    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
         params = {
             'thirdPartyId': third_party_id,
             'thirdPartyUserId': third_party_user_id
@@ -91,7 +85,7 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool) -> SignInUpResult:
+                         email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
         data = {
             'thirdPartyId': third_party_id,
             'thirdPartyUserId': third_party_user_id,
@@ -113,49 +107,3 @@ class RecipeImplementation(RecipeInterface):
             ),
             response['createdNewUser']
         )
-
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        return await self.get_users('ASC', limit, next_pagination)
-
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -> UsersResponse:
-        return await self.get_users('DESC', limit, next_pagination)
-
-    async def get_user_count(self) -> int:
-        response = await self.querier.send_get_request(NormalisedURLPath('/recipe/users/count'))
-        return int(response['count'])
-
-    async def get_users(self, time_joined_order: Literal['ASC', 'DESC'],
-                        limit: Union[int, None] = None, pagination_token: Union[str, None] = None) -> UsersResponse:
-        params = {
-            'timeJoinedOrder': time_joined_order
-        }
-        if limit is not None:
-            params = {
-                'limit': limit,
-                **params
-            }
-        if pagination_token is not None:
-            params = {
-                'paginationToken': pagination_token,
-                **params
-            }
-        response = await self.querier.send_get_request(NormalisedURLPath('/recipe/users'), params)
-        next_pagination_token = None
-        if 'nextPaginationToken' in response:
-            next_pagination_token = response['nextPaginationToken']
-        users_list = response['users']
-        users = []
-        for user in users_list:
-            users.append(
-                User(
-                    user['id'],
-                    user['email'],
-                    user['timeJoined'],
-                    ThirdPartyInfo(
-                        user['thirdParty']['userId'],
-                        user['thirdParty']['id']
-                    )
-                )
-            )
-
-        return UsersResponse(users, next_pagination_token)

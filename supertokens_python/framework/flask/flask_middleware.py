@@ -13,38 +13,55 @@
 # under the License.
 
 import json
+from typing import Union
+
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.framework import BaseResponse
 
 
 class Middleware:
-    def __init__(self, app):
+    from flask import Flask
+
+    def __init__(self, app: Flask):
         self.app = app
         self.set_before_after_request()
         self.set_error_handler()
 
     def set_before_after_request(self):
         app = self.app
-        from supertokens_python.framework.flask.flask_request import FlaskRequest
-        from supertokens_python.framework.flask.flask_response import FlaskResponse
+        from supertokens_python.framework.flask.flask_request import \
+            FlaskRequest
+        from supertokens_python.framework.flask.flask_response import \
+            FlaskResponse
         from supertokens_python.supertokens import manage_cookies_post_response
 
-        @app.before_request
-        def before_request():
-            from flask import request
+        from flask.wrappers import Response
+
+        # There is an error in the typing provided by flask, so we ignore it
+        # for now.
+        @app.before_request  # type: ignore
+        def _():
             from supertokens_python import Supertokens
-            from flask import Response
+
+            from flask import request
+            from flask.wrappers import Response
 
             st = Supertokens.get_instance()
 
             request_ = FlaskRequest(request)
             response_ = FlaskResponse(Response())
-            result = sync(st.middleware(request_, response_))
+
+            result: Union[BaseResponse, None] = sync(st.middleware(
+                request_, response_))
 
             if result is not None:
-                return result.response
+                if isinstance(result, FlaskResponse):
+                    return result.response
+                raise Exception("Should never come here")
+            return None
 
         @app.after_request
-        def after_request(response):
+        def _(response: Response):
             from flask import g
             response_ = FlaskResponse(response)
             if hasattr(g, 'supertokens'):
@@ -55,17 +72,25 @@ class Middleware:
     def set_error_handler(self):
         app = self.app
         from supertokens_python.exceptions import SuperTokensError
+
         from flask import request
 
         @app.errorhandler(SuperTokensError)
-        def error_handler(error):
-            from werkzeug import Response
+        def _(error: Exception):
             from supertokens_python import Supertokens
-            from supertokens_python.framework.flask.flask_request import FlaskRequest
-            from supertokens_python.framework.flask.flask_response import FlaskResponse
+            from supertokens_python.framework.flask.flask_request import \
+                FlaskRequest
+            from supertokens_python.framework.flask.flask_response import \
+                FlaskResponse
+
+            from flask.wrappers import Response
             st = Supertokens.get_instance()
             response = Response(json.dumps({}),
                                 mimetype='application/json',
                                 status=200)
-            result = sync(st.handle_supertokens_error(FlaskRequest(request), error, FlaskResponse(response)))
-            return result.response
+
+            result: BaseResponse = sync(st.handle_supertokens_error(
+                FlaskRequest(request), error, FlaskResponse(response)))
+            if isinstance(result, FlaskResponse):
+                return result.response
+            raise Exception("Shoulld never come here")

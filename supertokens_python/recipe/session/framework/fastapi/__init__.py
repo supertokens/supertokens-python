@@ -11,5 +11,29 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Any, Callable, Coroutine, Dict, Union
 
-from .middleware import verify_session
+from supertokens_python.framework.fastapi.fastapi_request import FastApiRequest
+from supertokens_python.recipe.session import SessionRecipe
+
+from ...interfaces import SessionContainer
+
+
+def verify_session(
+        anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None) -> Callable[..., Coroutine[Any, Any, Union[SessionContainer, None]]]:
+    if user_context is None:
+        user_context = {}
+    from fastapi import Request
+
+    async def func(request: Request) -> Union[SessionContainer, None]:
+        baseRequest = FastApiRequest(request)
+        recipe = SessionRecipe.get_instance()
+        session = await recipe.verify_session(baseRequest, anti_csrf_check, session_required, user_context)
+        if session is None:
+            if session_required:
+                raise Exception("Should never come here")
+        else:
+            baseRequest.set_session(session)
+        return baseRequest.get_session()
+
+    return func
