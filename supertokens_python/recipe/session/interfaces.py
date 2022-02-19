@@ -26,8 +26,6 @@ except ImportError:
     from typing_extensions import Literal
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
-    from supertokens_python.recipe.jwt.interfaces import \
-        RecipeInterface as JWTRecipeInterface
 
 
 class SessionObj:
@@ -154,14 +152,12 @@ class SignOutOkayResponse(SignOutResponse):
 
 class APIOptions:
     def __init__(self, request: BaseRequest, response: Union[None, BaseResponse],
-                 recipe_id: str, config: SessionConfig, recipe_implementation: RecipeInterface,
-                 jwt_recipe_implementation: Union[JWTRecipeInterface, None]):
-        self.request = request
-        self.response = response
-        self.recipe_id = recipe_id
-        self.config = config
-        self.recipe_implementation = recipe_implementation
-        self._recipe_implementation = jwt_recipe_implementation
+                 recipe_id: str, config: SessionConfig, recipe_implementation: RecipeInterface):
+        self.request: BaseRequest = request
+        self.response: Union[None, BaseResponse] = response
+        self.recipe_id: str = recipe_id
+        self.config: SessionConfig = config
+        self.recipe_implementation: RecipeInterface = recipe_implementation
 
 
 class APIInterface(ABC):

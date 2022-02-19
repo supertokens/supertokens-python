@@ -120,8 +120,7 @@ class SessionRecipe(RecipeModule):
                                                 response,
                                                 self.recipe_id,
                                                 self.config,
-                                                self.recipe_implementation,
-                                                self.openid_recipe.jwt_recipe.recipe_implementation if self.openid_recipe is not None else None
+                                                self.recipe_implementation
                                             ))
         if request_id == SIGNOUT:
             return await handle_signout_api(self.api_implementation,
@@ -130,8 +129,7 @@ class SessionRecipe(RecipeModule):
                                                 response,
                                                 self.recipe_id,
                                                 self.config,
-                                                self.recipe_implementation,
-                                                self.openid_recipe.jwt_recipe.recipe_implementation if self.openid_recipe is not None else None
+                                                self.recipe_implementation
                                             ))
         if self.openid_recipe is not None:
             return await self.openid_recipe.handle_api_request(request_id, request, path, method, response)
@@ -204,7 +202,6 @@ class SessionRecipe(RecipeModule):
                 None,
                 self.recipe_id,
                 self.config,
-                self.recipe_implementation,
-                self.openid_recipe.jwt_recipe.recipe_implementation if self.openid_recipe is not None else None
+                self.recipe_implementation
             ), anti_csrf_check,
             session_required, user_context)
