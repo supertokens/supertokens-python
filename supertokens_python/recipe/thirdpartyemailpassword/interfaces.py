@@ -1,21 +1,23 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 
-from supertokens_python.recipe.emailpassword.interfaces import \
-    APIOptions as EmailPasswordApiOptions
+from supertokens_python.recipe.emailpassword import interfaces as EPInterfaces
 from supertokens_python.recipe.emailpassword.interfaces import (
     CreateResetPasswordResult, EmailExistsGetResponse,
     GeneratePasswordResetTokenPostResponse, PasswordResetPostResponse,
     ResetPasswordUsingTokenResult, SignInPostResponse, SignInResult,
     SignUpPostResponse, SignUpResult, UpdateEmailOrPasswordResult)
 from supertokens_python.recipe.emailpassword.types import FormField
-from supertokens_python.recipe.thirdparty.interfaces import \
-    APIOptions as ThirdPartyApiOptions
+from supertokens_python.recipe.thirdparty import \
+    interfaces as ThirdPartyInterfaces
 from supertokens_python.recipe.thirdparty.interfaces import (
     AuthorisationUrlGetResponse, SignInUpPostResponse, SignInUpResult)
 from supertokens_python.recipe.thirdparty.provider import Provider
 
 from .types import User
+
+ThirdPartyAPIOptions = ThirdPartyInterfaces.APIOptions
+EmailPasswordAPIOptions = EPInterfaces.APIOptions
 
 
 class RecipeInterface(ABC):
@@ -75,39 +77,39 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def authorisation_url_get(self, provider: Provider,
-                                    api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
+                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
         pass
 
     @abstractmethod
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> SignInUpPostResponse:
+                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> SignInUpPostResponse:
         pass
 
     @abstractmethod
     async def emailpassword_sign_in_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> SignInPostResponse:
+                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> SignInPostResponse:
         pass
 
     @abstractmethod
     async def emailpassword_sign_up_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> SignUpPostResponse:
+                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> SignUpPostResponse:
         pass
 
     @abstractmethod
-    async def email_exists_get(self, email: str, api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> EmailExistsGetResponse:
+    async def email_exists_get(self, email: str, api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> EmailExistsGetResponse:
         pass
 
     @abstractmethod
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
-                                                 api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> GeneratePasswordResetTokenPostResponse:
+                                                 api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> GeneratePasswordResetTokenPostResponse:
         pass
 
     @abstractmethod
     async def password_reset_post(self, form_fields: List[FormField], token: str,
-                                  api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> PasswordResetPostResponse:
+                                  api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> PasswordResetPostResponse:
         pass
 
     @abstractmethod
     async def apple_redirect_handler_post(self, code: str, state: str,
-                                          api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]):
+                                          api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]):
         pass
