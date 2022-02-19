@@ -74,9 +74,9 @@ class SignInAndUpFeature:
 class InputEmailVerificationConfig:
     def __init__(self,
                  get_email_verification_url: Union[Callable[[
-                     User, Any], Awaitable[str]], None] = None,
+                     User, Dict[str, Any]], Awaitable[str]], None] = None,
                  create_and_send_custom_email: Union[Callable[[
-                     User, str, Any], Awaitable[None]], None] = None
+                     User, str, Dict[str, Any]], Awaitable[None]], None] = None
                  ):
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
@@ -97,7 +97,7 @@ def email_verification_create_and_send_custom_email(
 
 def email_verification_get_email_verification_url(
         recipe: ThirdPartyRecipe, get_email_verification_url: Callable[[
-            User, Any], Awaitable[str]]) -> Callable[[
+            User, Dict[str, Any]], Awaitable[str]]) -> Callable[[
                 EmailVerificationUser, Any], Awaitable[str]]:
     async def func(user: EmailVerificationUser, user_context: Dict[str, Any]):
         user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id, user_context)
