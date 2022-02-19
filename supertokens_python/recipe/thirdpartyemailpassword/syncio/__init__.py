@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, List
 
 from supertokens_python.async_to_sync_wrapper import sync
 from ..types import User
@@ -97,7 +97,7 @@ def update_email_or_password(
     return sync(update_email_or_password(user_id, email, password, user_context))
 
 
-def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None):
+def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -> List[User]:
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import \
         get_users_by_email
     return sync(get_users_by_email(email, user_context))

@@ -58,7 +58,7 @@ async def revoke_email_verification_tokens(user_id: str, user_context: Union[Non
         user_id, email, user_context)
 
 
-async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[None, User]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id, user_context)
