@@ -64,7 +64,7 @@ class APIImplementation(APIInterface):
         thirdparty_implementation.sign_in_up_post = derived_tp.sign_in_up_post
         thirdparty_implementation.apple_redirect_handler_post = derived_tp.apple_redirect_handler_post
 
-    async def email_exists_get(self, email: str, api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> EmailExistsGetResponse:
+    async def emailpassword_email_exists_get(self, email: str, api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> EmailExistsGetResponse:
         return await self.ep_email_exists_get(email, api_options, user_context)
 
     async def generate_password_reset_token_post(self, form_fields: List[FormField],

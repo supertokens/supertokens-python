@@ -56,7 +56,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
                          email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
-        result = await self.recipe_implementation.sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
+        result = await self.recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
 
         if not result.is_ok:
             return result
