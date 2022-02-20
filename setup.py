@@ -19,17 +19,17 @@ extras_require = {
         'respx==0.16.3',
         'nest-asyncio==1.5.1',
         'Fastapi==0.68.1',
-        'django',
+        'django==4.0.2',
         'Flask==2.0.2',
-        'python-dotenv',
+        'python-dotenv==0.19.2',
         'flask_cors',
-        'django-cors-headers',
-        'pdoc3',
-        'tzdata',
-        'pylint',
-        'isort',
-        'pyright',
-        'django-stubs'
+        'django-cors-headers==3.11.0',
+        'pdoc3==0.10.0',
+        'tzdata==2021.5',
+        'pylint==2.12.2',
+        'isort==5.10.1',
+        'pyright==0.0.13',
+        'django-stubs==1.9.0'
     ])
 }
 
@@ -86,7 +86,7 @@ setup(
         "asgiref==3.4.1",
         "werkzeug==2.0.1",
         'starlette~=0.14.2',
-        'typing_extensions==3.10',
+        'typing_extensions==4.1.1',
         'Deprecated==1.2.13',
         'cryptography==35.0',
         'phonenumbers==8.12'

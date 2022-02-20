@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, TypeGuard, Union
+from typing import TYPE_CHECKING, List, Union
 
 from supertokens_python.exceptions import (SuperTokensError,
                                            raise_general_exception)
@@ -59,7 +59,7 @@ class EmailVerificationRecipe(RecipeModule):
             self.config.override.apis(api_implementation)
 
     def is_error_from_this_recipe_based_on_instance(
-            self, err: Exception) -> TypeGuard[SuperTokensError]:
+            self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and isinstance(
             err, SuperTokensEmailVerificationError)
 

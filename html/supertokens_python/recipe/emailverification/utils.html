@@ -40,30 +40,35 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict
+
 from httpx import AsyncClient
-from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
     from .types import User
     from .interfaces import RecipeInterface, APIInterface
     from typing import Callable, Union, Awaitable
+
 from os import environ
 
 
-def default_get_email_verification_url(app_info: AppInfo):
-    async def func(_: User):
+def default_get_email_verification_url(app_info: AppInfo) -&gt; Callable[[User, Dict[str, Any]], Awaitable[str]]:
+    async def func(_: User, __: Dict[str, Any]):
         return app_info.website_domain.get_as_string_dangerous(
         ) + app_info.website_base_path.get_as_string_dangerous() + &#39;/verify-email&#39;
     return func
 
 
-def default_create_and_send_custom_email(app_info: AppInfo):
-    async def func(user: User, email_verification_url: str):
+def default_create_and_send_custom_email(app_info: AppInfo) -&gt; Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
+    async def func(user: User, email_verification_url: str, _: Dict[str, Any]):
         if (&#39;SUPERTOKENS_ENV&#39; not in environ) or (
                 environ[&#39;SUPERTOKENS_ENV&#39;] != &#39;testing&#39;):
             return
         try:
-            await AsyncClient().post(&#39;https://api.supertokens.io/0/st/auth/email/verify&#39;, json={&#39;email&#39;: user.email, &#39;appName&#39;: app_info.app_name, &#39;emailVerifyURL&#39;: email_verification_url}, headers={&#39;api-version&#39;: &#39;0&#39;})
+            async with AsyncClient() as client:
+                await client.post(&#39;https://api.supertokens.io/0/st/auth/email/verify&#39;, json={&#39;email&#39;: user.email, &#39;appName&#39;: app_info.app_name, &#39;emailVerifyURL&#39;: email_verification_url}, headers={&#39;api-version&#39;: &#39;0&#39;})  # type: ignore
         except Exception:
             pass
     return func
@@ -76,21 +81,14 @@ class OverrideConfig:
         self.apis = apis
 
 
-class InputEmailVerificationConfig:
-    def __init__(self,
-                 get_email_verification_url: Union[Callable[[User], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[User, str], Awaitable[None]], None] = None
-                 ):
-        self.get_email_verification_url = get_email_verification_url
-        self.create_and_send_custom_email = create_and_send_custom_email
-
-
 class ParentRecipeEmailVerificationConfig:
     def __init__(self,
-                 get_email_for_user_id: Callable[[str], Awaitable[str]],
+                 get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
                  override: Union[OverrideConfig, None] = None,
-                 get_email_verification_url: Union[Callable[[User], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[User, str], Awaitable[None]], None] = None
+                 get_email_verification_url: Union[Callable[[
+                     User, Dict[str, Any]], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[
+                     User, str, Dict[str, Any]], Awaitable[None]], None] = None
                  ):
         self.override = override
         self.get_email_verification_url = get_email_verification_url
@@ -101,9 +99,9 @@ class ParentRecipeEmailVerificationConfig:
 class EmailVerificationConfig:
     def __init__(self,
                  override: OverrideConfig,
-                 get_email_verification_url: Callable[[User], Awaitable[str]],
-                 create_and_send_custom_email: Callable[[User, str], Awaitable[None]],
-                 get_email_for_user_id: Callable[[str], Awaitable[str]]
+                 get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
+                 create_and_send_custom_email: Callable[[User, str, Dict[str, Any]], Awaitable[None]],
+                 get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]]
                  ):
         self.get_email_for_user_id = get_email_for_user_id
         self.get_email_verification_url = get_email_verification_url
@@ -111,7 +109,8 @@ class EmailVerificationConfig:
         self.override = override
 
 
-def validate_and_normalise_user_input(app_info: AppInfo, config: ParentRecipeEmailVerificationConfig):
+def validate_and_normalise_user_input(
+        app_info: AppInfo, config: ParentRecipeEmailVerificationConfig):
     get_email_verification_url = config.get_email_verification_url if config.get_email_verification_url is not None \
         else default_get_email_verification_url(app_info)
     create_and_send_custom_email = config.create_and_send_custom_email if config.create_and_send_custom_email is not None \
@@ -135,7 +134,7 @@ def validate_and_normalise_user_input(app_info: AppInfo, config: ParentRecipeEma
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.utils.default_create_and_send_custom_email"><code class="name flex">
-<span>def <span class="ident">default_create_and_send_custom_email</span></span>(<span>app_info: AppInfo)</span>
+<span>def <span class="ident">default_create_and_send_custom_email</span></span>(<span>app_info: AppInfo) ‑> Callable[[User, str, Dict[str, Any]], Awaitable[None]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -143,20 +142,21 @@ def validate_and_normalise_user_input(app_info: AppInfo, config: ParentRecipeEma
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def default_create_and_send_custom_email(app_info: AppInfo):
-    async def func(user: User, email_verification_url: str):
+<pre><code class="python">def default_create_and_send_custom_email(app_info: AppInfo) -&gt; Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
+    async def func(user: User, email_verification_url: str, _: Dict[str, Any]):
         if (&#39;SUPERTOKENS_ENV&#39; not in environ) or (
                 environ[&#39;SUPERTOKENS_ENV&#39;] != &#39;testing&#39;):
             return
         try:
-            await AsyncClient().post(&#39;https://api.supertokens.io/0/st/auth/email/verify&#39;, json={&#39;email&#39;: user.email, &#39;appName&#39;: app_info.app_name, &#39;emailVerifyURL&#39;: email_verification_url}, headers={&#39;api-version&#39;: &#39;0&#39;})
+            async with AsyncClient() as client:
+                await client.post(&#39;https://api.supertokens.io/0/st/auth/email/verify&#39;, json={&#39;email&#39;: user.email, &#39;appName&#39;: app_info.app_name, &#39;emailVerifyURL&#39;: email_verification_url}, headers={&#39;api-version&#39;: &#39;0&#39;})  # type: ignore
         except Exception:
             pass
     return func</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.utils.default_get_email_verification_url"><code class="name flex">
-<span>def <span class="ident">default_get_email_verification_url</span></span>(<span>app_info: AppInfo)</span>
+<span>def <span class="ident">default_get_email_verification_url</span></span>(<span>app_info: AppInfo) ‑> Callable[[User, Dict[str, Any]], Awaitable[str]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -164,8 +164,8 @@ def validate_and_normalise_user_input(app_info: AppInfo, config: ParentRecipeEma
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def default_get_email_verification_url(app_info: AppInfo):
-    async def func(_: User):
+<pre><code class="python">def default_get_email_verification_url(app_info: AppInfo) -&gt; Callable[[User, Dict[str, Any]], Awaitable[str]]:
+    async def func(_: User, __: Dict[str, Any]):
         return app_info.website_domain.get_as_string_dangerous(
         ) + app_info.website_base_path.get_as_string_dangerous() + &#39;/verify-email&#39;
     return func</code></pre>
@@ -180,7 +180,8 @@ def validate_and_normalise_user_input(app_info: AppInfo, config: ParentRecipeEma
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_and_normalise_user_input(app_info: AppInfo, config: ParentRecipeEmailVerificationConfig):
+<pre><code class="python">def validate_and_normalise_user_input(
+        app_info: AppInfo, config: ParentRecipeEmailVerificationConfig):
     get_email_verification_url = config.get_email_verification_url if config.get_email_verification_url is not None \
         else default_get_email_verification_url(app_info)
     create_and_send_custom_email = config.create_and_send_custom_email if config.create_and_send_custom_email is not None \
@@ -203,7 +204,7 @@ def validate_and_normalise_user_input(app_info: AppInfo, config: ParentRecipeEma
 <dl>
 <dt id="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig"><code class="flex name class">
 <span>class <span class="ident">EmailVerificationConfig</span></span>
-<span>(</span><span>override: <a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a>, get_email_verification_url: Callable[[User], Awaitable[str]], create_and_send_custom_email: Callable[[User, str], Awaitable[None]], get_email_for_user_id: Callable[[str], Awaitable[str]])</span>
+<span>(</span><span>override: <a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a>, get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]], create_and_send_custom_email: Callable[[User, str, Dict[str, Any]], Awaitable[None]], get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -214,33 +215,14 @@ def validate_and_normalise_user_input(app_info: AppInfo, config: ParentRecipeEma
 <pre><code class="python">class EmailVerificationConfig:
     def __init__(self,
                  override: OverrideConfig,
-                 get_email_verification_url: Callable[[User], Awaitable[str]],
-                 create_and_send_custom_email: Callable[[User, str], Awaitable[None]],
-                 get_email_for_user_id: Callable[[str], Awaitable[str]]
+                 get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
+                 create_and_send_custom_email: Callable[[User, str, Dict[str, Any]], Awaitable[None]],
+                 get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]]
                  ):
         self.get_email_for_user_id = get_email_for_user_id
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
         self.override = override</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.emailverification.utils.InputEmailVerificationConfig"><code class="flex name class">
-<span>class <span class="ident">InputEmailVerificationConfig</span></span>
-<span>(</span><span>get_email_verification_url: Union[Callable[[User], Awaitable[str]], None] = None, create_and_send_custom_email: Union[Callable[[User, str], Awaitable[None]], None] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class InputEmailVerificationConfig:
-    def __init__(self,
-                 get_email_verification_url: Union[Callable[[User], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[User, str], Awaitable[None]], None] = None
-                 ):
-        self.get_email_verification_url = get_email_verification_url
-        self.create_and_send_custom_email = create_and_send_custom_email</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.utils.OverrideConfig"><code class="flex name class">
@@ -262,7 +244,7 @@ def validate_and_normalise_user_input(app_info: AppInfo, config: ParentRecipeEma
 </dd>
 <dt id="supertokens_python.recipe.emailverification.utils.ParentRecipeEmailVerificationConfig"><code class="flex name class">
 <span>class <span class="ident">ParentRecipeEmailVerificationConfig</span></span>
-<span>(</span><span>get_email_for_user_id: Callable[[str], Awaitable[str]], override: Union[<a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a>, None] = None, get_email_verification_url: Union[Callable[[User], Awaitable[str]], None] = None, create_and_send_custom_email: Union[Callable[[User, str], Awaitable[None]], None] = None)</span>
+<span>(</span><span>get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]], override: Union[<a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a>, None] = None, get_email_verification_url: Union[Callable[[User, Dict[str, Any]], Awaitable[str]], None] = None, create_and_send_custom_email: Union[Callable[[User, str, Dict[str, Any]], Awaitable[None]], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -272,10 +254,12 @@ def validate_and_normalise_user_input(app_info: AppInfo, config: ParentRecipeEma
 </summary>
 <pre><code class="python">class ParentRecipeEmailVerificationConfig:
     def __init__(self,
-                 get_email_for_user_id: Callable[[str], Awaitable[str]],
+                 get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
                  override: Union[OverrideConfig, None] = None,
-                 get_email_verification_url: Union[Callable[[User], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[User, str], Awaitable[None]], None] = None
+                 get_email_verification_url: Union[Callable[[
+                     User, Dict[str, Any]], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[
+                     User, str, Dict[str, Any]], Awaitable[None]], None] = None
                  ):
         self.override = override
         self.get_email_verification_url = get_email_verification_url
@@ -308,9 +292,6 @@ def validate_and_normalise_user_input(app_info: AppInfo, config: ParentRecipeEma
 <ul>
 <li>
 <h4><code><a title="supertokens_python.recipe.emailverification.utils.EmailVerificationConfig" href="#supertokens_python.recipe.emailverification.utils.EmailVerificationConfig">EmailVerificationConfig</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.emailverification.utils.InputEmailVerificationConfig" href="#supertokens_python.recipe.emailverification.utils.InputEmailVerificationConfig">InputEmailVerificationConfig</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.emailverification.utils.OverrideConfig" href="#supertokens_python.recipe.emailverification.utils.OverrideConfig">OverrideConfig</a></code></h4>

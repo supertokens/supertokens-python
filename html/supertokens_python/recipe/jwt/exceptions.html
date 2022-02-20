@@ -40,6 +40,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from supertokens_python.exceptions import SuperTokensError
 
 
@@ -58,7 +59,7 @@ class SuperTokensJWTError(SuperTokensError):
 <dl>
 <dt id="supertokens_python.recipe.jwt.exceptions.SuperTokensJWTError"><code class="flex name class">
 <span>class <span class="ident">SuperTokensJWTError</span></span>
-<span>(</span><span>msg: Union[str, Exception])</span>
+<span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Common base class for all non-exit exceptions.</p></div>

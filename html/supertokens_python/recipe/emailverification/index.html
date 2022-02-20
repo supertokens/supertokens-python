@@ -39,12 +39,25 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable
+
+from . import exceptions as ex
 from .recipe import EmailVerificationRecipe
-from . import exceptions
-from .utils import ParentRecipeEmailVerificationConfig, OverrideConfig as InputOverrideConfig
+from . import utils
+InputOverrideConfig = utils.OverrideConfig
+ParentRecipeEmailVerificationConfig = utils.ParentRecipeEmailVerificationConfig
+exception = ex
 
 
-def init(config: ParentRecipeEmailVerificationConfig):
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
+
+
+def init(config: ParentRecipeEmailVerificationConfig) -&gt; Callable[[AppInfo], RecipeModule]:
     return EmailVerificationRecipe.init(config)</code></pre>
 </details>
 </section>
@@ -99,7 +112,7 @@ def init(config: ParentRecipeEmailVerificationConfig):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>config: <a title="supertokens_python.recipe.emailverification.utils.ParentRecipeEmailVerificationConfig" href="utils.html#supertokens_python.recipe.emailverification.utils.ParentRecipeEmailVerificationConfig">ParentRecipeEmailVerificationConfig</a>)</span>
+<span>def <span class="ident">init</span></span>(<span>config: ParentRecipeEmailVerificationConfig) ‑> Callable[[AppInfo], RecipeModule]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -107,7 +120,7 @@ def init(config: ParentRecipeEmailVerificationConfig):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def init(config: ParentRecipeEmailVerificationConfig):
+<pre><code class="python">def init(config: ParentRecipeEmailVerificationConfig) -&gt; Callable[[AppInfo], RecipeModule]:
     return EmailVerificationRecipe.init(config)</code></pre>
 </details>
 </dd>

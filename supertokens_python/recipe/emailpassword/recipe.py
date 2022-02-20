@@ -14,11 +14,12 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, TypeGuard, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
+from ...exceptions import SuperTokensError
 from .api.implementation import APIImplementation
 from .exceptions import FieldError, SuperTokensEmailPasswordError
 from .interfaces import APIOptions
@@ -73,7 +74,7 @@ class EmailPasswordRecipe(RecipeModule):
             self.config.override.apis(api_implementation)
 
     def is_error_from_this_recipe_based_on_instance(
-            self, err: Exception) -> TypeGuard[SuperTokensError]:
+            self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensEmailPasswordError)
             or

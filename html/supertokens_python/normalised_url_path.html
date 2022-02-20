@@ -55,16 +55,17 @@ class NormalisedURLPath:
         self.__value = normalise_url_path_or_throw_error(url)
 
     def startswith(self, other: NormalisedURLPath) -&gt; bool:
-        return self.__value.startswith(other.__value)
+        return self.__value.startswith(other.get_as_string_dangerous())
 
     def append(self, other: NormalisedURLPath) -&gt; NormalisedURLPath:
-        return NormalisedURLPath(self.__value + other.__value)
+        return NormalisedURLPath(
+            self.__value + other.get_as_string_dangerous())
 
     def get_as_string_dangerous(self) -&gt; str:
         return self.__value
 
     def equals(self, other: NormalisedURLPath) -&gt; bool:
-        return self.__value == other.__value
+        return self.__value == other.get_as_string_dangerous()
 
     def is_a_recipe_path(self) -&gt; bool:
         return self.__value == &#39;/recipe&#39; or self.__value.startswith(&#39;/recipe/&#39;)
@@ -74,7 +75,8 @@ def normalise_url_path_or_throw_error(input_str: str) -&gt; str:
     input_str = input_str.strip().lower()
 
     try:
-        if (not input_str.startswith(&#39;http://&#39;)) and (not input_str.startswith(&#39;https://&#39;)):
+        if (not input_str.startswith(&#39;http://&#39;)
+            ) and (not input_str.startswith(&#39;https://&#39;)):
             raise Exception(&#39;converting to proper URL&#39;)
         url_obj = urlparse(input_str)
         input_str = url_obj.path
@@ -108,7 +110,8 @@ def normalise_url_path_or_throw_error(input_str: str) -&gt; str:
         return normalise_url_path_or_throw_error(
             &#39;http://example.com&#39; + input_str)
     except Exception:
-        raise_general_exception(None, &#39;Please provide a valid URL path&#39;)
+        raise_general_exception(&#39;Please provide a valid URL path&#39;)
+    raise Exception(&#34;Should never come here&#34;)
 
 
 def domain_given(input_str: str) -&gt; bool:
@@ -117,13 +120,17 @@ def domain_given(input_str: str) -&gt; bool:
 
     try:
         url = urlparse(input_str)
-        return &#39;.&#39; in url.hostname
+        if url.hostname is None:
+            raise Exception(&#34;Should never come here&#34;)
+        return url.hostname.find(&#34;.&#34;) != -1
     except Exception:
         pass
 
     try:
         url = urlparse(&#39;http://&#39; + input_str)
-        return &#39;.&#39; in url.hostname
+        if url.hostname is None:
+            raise Exception(&#34;Should never come here&#34;)
+        return url.hostname.find(&#34;.&#34;) != -1
     except Exception:
         pass
 
@@ -152,13 +159,17 @@ def domain_given(input_str: str) -&gt; bool:
 
     try:
         url = urlparse(input_str)
-        return &#39;.&#39; in url.hostname
+        if url.hostname is None:
+            raise Exception(&#34;Should never come here&#34;)
+        return url.hostname.find(&#34;.&#34;) != -1
     except Exception:
         pass
 
     try:
         url = urlparse(&#39;http://&#39; + input_str)
-        return &#39;.&#39; in url.hostname
+        if url.hostname is None:
+            raise Exception(&#34;Should never come here&#34;)
+        return url.hostname.find(&#34;.&#34;) != -1
     except Exception:
         pass
 
@@ -178,7 +189,8 @@ def domain_given(input_str: str) -&gt; bool:
     input_str = input_str.strip().lower()
 
     try:
-        if (not input_str.startswith(&#39;http://&#39;)) and (not input_str.startswith(&#39;https://&#39;)):
+        if (not input_str.startswith(&#39;http://&#39;)
+            ) and (not input_str.startswith(&#39;https://&#39;)):
             raise Exception(&#39;converting to proper URL&#39;)
         url_obj = urlparse(input_str)
         input_str = url_obj.path
@@ -212,7 +224,8 @@ def domain_given(input_str: str) -&gt; bool:
         return normalise_url_path_or_throw_error(
             &#39;http://example.com&#39; + input_str)
     except Exception:
-        raise_general_exception(None, &#39;Please provide a valid URL path&#39;)</code></pre>
+        raise_general_exception(&#39;Please provide a valid URL path&#39;)
+    raise Exception(&#34;Should never come here&#34;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -235,16 +248,17 @@ def domain_given(input_str: str) -&gt; bool:
         self.__value = normalise_url_path_or_throw_error(url)
 
     def startswith(self, other: NormalisedURLPath) -&gt; bool:
-        return self.__value.startswith(other.__value)
+        return self.__value.startswith(other.get_as_string_dangerous())
 
     def append(self, other: NormalisedURLPath) -&gt; NormalisedURLPath:
-        return NormalisedURLPath(self.__value + other.__value)
+        return NormalisedURLPath(
+            self.__value + other.get_as_string_dangerous())
 
     def get_as_string_dangerous(self) -&gt; str:
         return self.__value
 
     def equals(self, other: NormalisedURLPath) -&gt; bool:
-        return self.__value == other.__value
+        return self.__value == other.get_as_string_dangerous()
 
     def is_a_recipe_path(self) -&gt; bool:
         return self.__value == &#39;/recipe&#39; or self.__value.startswith(&#39;/recipe/&#39;)</code></pre>
@@ -261,7 +275,8 @@ def domain_given(input_str: str) -&gt; bool:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def append(self, other: NormalisedURLPath) -&gt; NormalisedURLPath:
-    return NormalisedURLPath(self.__value + other.__value)</code></pre>
+    return NormalisedURLPath(
+        self.__value + other.get_as_string_dangerous())</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.normalised_url_path.NormalisedURLPath.equals"><code class="name flex">
@@ -274,7 +289,7 @@ def domain_given(input_str: str) -&gt; bool:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def equals(self, other: NormalisedURLPath) -&gt; bool:
-    return self.__value == other.__value</code></pre>
+    return self.__value == other.get_as_string_dangerous()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.normalised_url_path.NormalisedURLPath.get_as_string_dangerous"><code class="name flex">
@@ -313,7 +328,7 @@ def domain_given(input_str: str) -&gt; bool:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def startswith(self, other: NormalisedURLPath) -&gt; bool:
-    return self.__value.startswith(other.__value)</code></pre>
+    return self.__value.startswith(other.get_as_string_dangerous())</code></pre>
 </details>
 </dd>
 </dl>

@@ -42,25 +42,28 @@
 from __future__ import annotations
 
 import time
-from typing import Union, TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Any, Dict, List, Union
+
+from supertokens_python.recipe.session.interfaces import \
+    SessionInformationResult
+
 from .access_token import get_info_from_access_token
 from .jwt import get_payload_without_verifying
 
 if TYPE_CHECKING:
     from .recipe_implementation import RecipeImplementation
+
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from .exceptions import (
-    raise_try_refresh_token_exception,
-    raise_unauthorised_exception,
-    raise_token_theft_exception,
-    TryRefreshTokenError
-)
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
+
+from .exceptions import (TryRefreshTokenError, raise_token_theft_exception,
+                         raise_try_refresh_token_exception,
+                         raise_unauthorised_exception)
 
 
 async def create_new_session(recipe_implementation: RecipeImplementation, user_id: str,
-                             access_token_payload: Union[dict, None] = None,
-                             session_data: Union[dict, None] = None):
+                             access_token_payload: Union[None, Dict[str, Any]],
+                             session_data: Union[None, Dict[str, Any]]):
     if session_data is None:
         session_data = {}
     if access_token_payload is None:
@@ -86,7 +89,7 @@ async def create_new_session(recipe_implementation: RecipeImplementation, user_i
 
 async def get_session(recipe_implementation: RecipeImplementation, access_token: str,
                       anti_csrf_token: Union[str, None],
-                      do_anti_csrf_check: bool, contains_custom_header: bool):
+                      do_anti_csrf_check: bool, contains_custom_header: bool) -&gt; Dict[str, Any]:
     handshake_info = await recipe_implementation.get_handshake_info()
     access_token_info = None
     found_a_sign_key_that_is_older_than_the_access_token = False
@@ -114,7 +117,8 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
             if payload is None:
                 raise e
 
-            if not isinstance(payload[&#39;timeCreated&#39;], int) or not isinstance(payload[&#39;expiryTime&#39;], int):
+            if not isinstance(payload[&#39;timeCreated&#39;], int) or not isinstance(
+                    payload[&#39;expiryTime&#39;], int):
                 raise e
 
             if payload[&#39;expiryTime&#39;] &lt; time.time():
@@ -176,15 +180,16 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
         response.pop(&#39;jwtSigningPublicKeyExpiryTime&#39;, None)
         response.pop(&#39;jwtSigningPublicKeyList&#39;, None)
         return response
-    elif response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
+    if response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
         raise_unauthorised_exception(response[&#39;message&#39;])
+    if response[&#39;jwtSigningPublicKeyList&#39;] is not None or response[&#39;jwtSigningPublicKey&#39;] is not None or response[&#39;jwtSigningPublicKeyExpiryTime&#39;] is not None:
+        recipe_implementation.update_jwt_signing_public_key_info(
+            response[&#39;jwtSigningPublicKeyList&#39;],
+            response[&#39;jwtSigningPublicKey&#39;],
+            response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
     else:
-
-        if response[&#39;jwtSigningPublicKeyList&#39;] is not None or response[&#39;jwtSigningPublicKey&#39;] is not None or response[&#39;jwtSigningPublicKeyExpiryTime&#39;] is not None:
-            recipe_implementation.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;], response[&#39;jwtSigningPublicKey&#39;], response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
-        else:
-            await recipe_implementation.get_handshake_info(True)
-        raise_try_refresh_token_exception(response[&#39;message&#39;])
+        await recipe_implementation.get_handshake_info(True)
+    raise_try_refresh_token_exception(response[&#39;message&#39;])
 
 
 async def refresh_session(recipe_implementation: RecipeImplementation, refresh_token: str,
@@ -206,13 +211,12 @@ async def refresh_session(recipe_implementation: RecipeImplementation, refresh_t
     if response[&#39;status&#39;] == &#39;OK&#39;:
         response.pop(&#39;status&#39;, None)
         return response
-    elif response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
+    if response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
         raise_unauthorised_exception(response[&#39;message&#39;])
-    else:
-        raise_token_theft_exception(
-            response[&#39;session&#39;][&#39;userId&#39;],
-            response[&#39;session&#39;][&#39;handle&#39;]
-        )
+    raise_token_theft_exception(
+        response[&#39;session&#39;][&#39;userId&#39;],
+        response[&#39;session&#39;][&#39;handle&#39;]
+    )
 
 
 async def revoke_all_sessions_for_user(recipe_implementation: RecipeImplementation, user_id: str) -&gt; List[str]:
@@ -244,7 +248,7 @@ async def revoke_multiple_sessions(recipe_implementation: RecipeImplementation, 
     return response[&#39;sessionHandlesRevoked&#39;]
 
 
-async def update_session_data(recipe_implementation: RecipeImplementation, session_handle: str, new_session_data: dict):
+async def update_session_data(recipe_implementation: RecipeImplementation, session_handle: str, new_session_data: Dict[str, Any]):
     response = await recipe_implementation.querier.send_put_request(NormalisedURLPath(&#39;/recipe/session/data&#39;), {
         &#39;sessionHandle&#39;: session_handle,
         &#39;userDataInDatabase&#39;: new_session_data
@@ -253,7 +257,7 @@ async def update_session_data(recipe_implementation: RecipeImplementation, sessi
         raise_unauthorised_exception(response[&#39;message&#39;])
 
 
-async def update_access_token_payload(recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: dict):
+async def update_access_token_payload(recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: Dict[str, Any]):
     response = await recipe_implementation.querier.send_put_request(NormalisedURLPath(&#39;/recipe/jwt/data&#39;), {
         &#39;sessionHandle&#39;: session_handle,
         &#39;userDataInJWT&#39;: new_access_token_payload
@@ -262,21 +266,13 @@ async def update_access_token_payload(recipe_implementation: RecipeImplementatio
         raise_unauthorised_exception(response[&#39;message&#39;])
 
 
-async def get_session_information(recipe_implementation: RecipeImplementation, session_handle: str) -&gt; dict:
+async def get_session_information(recipe_implementation: RecipeImplementation, session_handle: str) -&gt; SessionInformationResult:
     response = await recipe_implementation.querier.send_get_request(NormalisedURLPath(&#39;/recipe/session&#39;), {
         &#39;sessionHandle&#39;: session_handle
     })
     if response[&#39;status&#39;] == &#39;OK&#39;:
-        return {
-            &#39;sessionData&#39;: response[&#39;userDataInDatabase&#39;],
-            &#39;accessTokenPayload&#39;: response[&#39;userDataInJWT&#39;],
-            &#39;userId&#39;: response[&#39;userId&#39;],
-            &#39;expiry&#39;: response[&#39;expiry&#39;],
-            &#39;timeCreated&#39;: response[&#39;timeCreated&#39;],
-            &#39;sessionHandle&#39;: response[&#39;sessionHandle&#39;]
-        }
-    else:
-        raise_unauthorised_exception(response[&#39;message&#39;])</code></pre>
+        return SessionInformationResult(&#39;OK&#39;, response[&#39;sessionHandle&#39;], response[&#39;userId&#39;], response[&#39;userDataInDatabase&#39;], response[&#39;expiry&#39;], response[&#39;userDataInJWT&#39;], response[&#39;timeCreated&#39;])
+    raise_unauthorised_exception(response[&#39;message&#39;])</code></pre>
 </details>
 </section>
 <section>
@@ -287,7 +283,7 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.session_functions.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>recipe_implementation: RecipeImplementation, user_id: str, access_token_payload: Union[dict, None] = None, session_data: Union[dict, None] = None)</span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>recipe_implementation: RecipeImplementation, user_id: str, access_token_payload: Union[None, Dict[str, Any]], session_data: Union[None, Dict[str, Any]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -296,8 +292,8 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def create_new_session(recipe_implementation: RecipeImplementation, user_id: str,
-                             access_token_payload: Union[dict, None] = None,
-                             session_data: Union[dict, None] = None):
+                             access_token_payload: Union[None, Dict[str, Any]],
+                             session_data: Union[None, Dict[str, Any]]):
     if session_data is None:
         session_data = {}
     if access_token_payload is None:
@@ -338,7 +334,7 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.get_session"><code class="name flex">
-<span>async def <span class="ident">get_session</span></span>(<span>recipe_implementation: RecipeImplementation, access_token: str, anti_csrf_token: Union[str, None], do_anti_csrf_check: bool, contains_custom_header: bool)</span>
+<span>async def <span class="ident">get_session</span></span>(<span>recipe_implementation: RecipeImplementation, access_token: str, anti_csrf_token: Union[str, None], do_anti_csrf_check: bool, contains_custom_header: bool) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -348,7 +344,7 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 </summary>
 <pre><code class="python">async def get_session(recipe_implementation: RecipeImplementation, access_token: str,
                       anti_csrf_token: Union[str, None],
-                      do_anti_csrf_check: bool, contains_custom_header: bool):
+                      do_anti_csrf_check: bool, contains_custom_header: bool) -&gt; Dict[str, Any]:
     handshake_info = await recipe_implementation.get_handshake_info()
     access_token_info = None
     found_a_sign_key_that_is_older_than_the_access_token = False
@@ -376,7 +372,8 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
             if payload is None:
                 raise e
 
-            if not isinstance(payload[&#39;timeCreated&#39;], int) or not isinstance(payload[&#39;expiryTime&#39;], int):
+            if not isinstance(payload[&#39;timeCreated&#39;], int) or not isinstance(
+                    payload[&#39;expiryTime&#39;], int):
                 raise e
 
             if payload[&#39;expiryTime&#39;] &lt; time.time():
@@ -438,19 +435,20 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
         response.pop(&#39;jwtSigningPublicKeyExpiryTime&#39;, None)
         response.pop(&#39;jwtSigningPublicKeyList&#39;, None)
         return response
-    elif response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
+    if response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
         raise_unauthorised_exception(response[&#39;message&#39;])
+    if response[&#39;jwtSigningPublicKeyList&#39;] is not None or response[&#39;jwtSigningPublicKey&#39;] is not None or response[&#39;jwtSigningPublicKeyExpiryTime&#39;] is not None:
+        recipe_implementation.update_jwt_signing_public_key_info(
+            response[&#39;jwtSigningPublicKeyList&#39;],
+            response[&#39;jwtSigningPublicKey&#39;],
+            response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
     else:
-
-        if response[&#39;jwtSigningPublicKeyList&#39;] is not None or response[&#39;jwtSigningPublicKey&#39;] is not None or response[&#39;jwtSigningPublicKeyExpiryTime&#39;] is not None:
-            recipe_implementation.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;], response[&#39;jwtSigningPublicKey&#39;], response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
-        else:
-            await recipe_implementation.get_handshake_info(True)
-        raise_try_refresh_token_exception(response[&#39;message&#39;])</code></pre>
+        await recipe_implementation.get_handshake_info(True)
+    raise_try_refresh_token_exception(response[&#39;message&#39;])</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.get_session_information"><code class="name flex">
-<span>async def <span class="ident">get_session_information</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str) ‑> dict</span>
+<span>async def <span class="ident">get_session_information</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str) ‑> SessionInformationResult</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -458,21 +456,13 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_session_information(recipe_implementation: RecipeImplementation, session_handle: str) -&gt; dict:
+<pre><code class="python">async def get_session_information(recipe_implementation: RecipeImplementation, session_handle: str) -&gt; SessionInformationResult:
     response = await recipe_implementation.querier.send_get_request(NormalisedURLPath(&#39;/recipe/session&#39;), {
         &#39;sessionHandle&#39;: session_handle
     })
     if response[&#39;status&#39;] == &#39;OK&#39;:
-        return {
-            &#39;sessionData&#39;: response[&#39;userDataInDatabase&#39;],
-            &#39;accessTokenPayload&#39;: response[&#39;userDataInJWT&#39;],
-            &#39;userId&#39;: response[&#39;userId&#39;],
-            &#39;expiry&#39;: response[&#39;expiry&#39;],
-            &#39;timeCreated&#39;: response[&#39;timeCreated&#39;],
-            &#39;sessionHandle&#39;: response[&#39;sessionHandle&#39;]
-        }
-    else:
-        raise_unauthorised_exception(response[&#39;message&#39;])</code></pre>
+        return SessionInformationResult(&#39;OK&#39;, response[&#39;sessionHandle&#39;], response[&#39;userId&#39;], response[&#39;userDataInDatabase&#39;], response[&#39;expiry&#39;], response[&#39;userDataInJWT&#39;], response[&#39;timeCreated&#39;])
+    raise_unauthorised_exception(response[&#39;message&#39;])</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.refresh_session"><code class="name flex">
@@ -503,13 +493,12 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
     if response[&#39;status&#39;] == &#39;OK&#39;:
         response.pop(&#39;status&#39;, None)
         return response
-    elif response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
+    if response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
         raise_unauthorised_exception(response[&#39;message&#39;])
-    else:
-        raise_token_theft_exception(
-            response[&#39;session&#39;][&#39;userId&#39;],
-            response[&#39;session&#39;][&#39;handle&#39;]
-        )</code></pre>
+    raise_token_theft_exception(
+        response[&#39;session&#39;][&#39;userId&#39;],
+        response[&#39;session&#39;][&#39;handle&#39;]
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.revoke_all_sessions_for_user"><code class="name flex">
@@ -562,7 +551,7 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.update_access_token_payload"><code class="name flex">
-<span>async def <span class="ident">update_access_token_payload</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: dict)</span>
+<span>async def <span class="ident">update_access_token_payload</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -570,7 +559,7 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_access_token_payload(recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: dict):
+<pre><code class="python">async def update_access_token_payload(recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: Dict[str, Any]):
     response = await recipe_implementation.querier.send_put_request(NormalisedURLPath(&#39;/recipe/jwt/data&#39;), {
         &#39;sessionHandle&#39;: session_handle,
         &#39;userDataInJWT&#39;: new_access_token_payload
@@ -580,7 +569,7 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_functions.update_session_data"><code class="name flex">
-<span>async def <span class="ident">update_session_data</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str, new_session_data: dict)</span>
+<span>async def <span class="ident">update_session_data</span></span>(<span>recipe_implementation: RecipeImplementation, session_handle: str, new_session_data: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -588,7 +577,7 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_session_data(recipe_implementation: RecipeImplementation, session_handle: str, new_session_data: dict):
+<pre><code class="python">async def update_session_data(recipe_implementation: RecipeImplementation, session_handle: str, new_session_data: Dict[str, Any]):
     response = await recipe_implementation.querier.send_put_request(NormalisedURLPath(&#39;/recipe/session/data&#39;), {
         &#39;sessionHandle&#39;: session_handle,
         &#39;userDataInDatabase&#39;: new_session_data

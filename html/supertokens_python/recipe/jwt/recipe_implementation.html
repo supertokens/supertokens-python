@@ -41,16 +41,21 @@
 # under the License.
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any, Dict, List, Union
+
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
-from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from .utils import JWTConfig
     from .interfaces import CreateJwtResult
     from supertokens_python.supertokens import AppInfo
-from .types import JsonWebKey
-from supertokens_python.recipe.jwt.interfaces import RecipeInterface, GetJWKSResult,\
-    CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm
+
+from supertokens_python.recipe.jwt.interfaces import (
+    CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult,
+    RecipeInterface)
+
+from .interfaces import JsonWebKey
 
 
 class RecipeImplementation(RecipeInterface):
@@ -61,12 +66,9 @@ class RecipeImplementation(RecipeInterface):
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
-
-        if payload is None:
-            payload = {}
 
         data = {
             &#39;payload&#39;: payload,
@@ -78,13 +80,12 @@ class RecipeImplementation(RecipeInterface):
 
         if response[&#39;status&#39;] == &#39;OK&#39;:
             return CreateJwtResultOk(response[&#39;jwt&#39;])
-        else:
-            return CreateJwtResultUnsupportedAlgorithm()
+        return CreateJwtResultUnsupportedAlgorithm()
 
-    async def get_jwks(self) -&gt; GetJWKSResult:
+    async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
         response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/jwt/jwks&#34;), {})
 
-        keys = []
+        keys: List[JsonWebKey] = []
         for key in response[&#39;keys&#39;]:
             keys.append(JsonWebKey(
                 key[&#39;kty&#39;],
@@ -125,12 +126,9 @@ inheritance.</p></div>
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
-
-        if payload is None:
-            payload = {}
 
         data = {
             &#39;payload&#39;: payload,
@@ -142,13 +140,12 @@ inheritance.</p></div>
 
         if response[&#39;status&#39;] == &#39;OK&#39;:
             return CreateJwtResultOk(response[&#39;jwt&#39;])
-        else:
-            return CreateJwtResultUnsupportedAlgorithm()
+        return CreateJwtResultUnsupportedAlgorithm()
 
-    async def get_jwks(self) -&gt; GetJWKSResult:
+    async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
         response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/jwt/jwks&#34;), {})
 
-        keys = []
+        keys: List[JsonWebKey] = []
         for key in response[&#39;keys&#39;]:
             keys.append(JsonWebKey(
                 key[&#39;kty&#39;],
@@ -168,7 +165,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.jwt.recipe_implementation.RecipeImplementation.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: dict = None, validity_seconds: int = None) ‑> CreateJwtResult</span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) ‑> CreateJwtResult</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -176,12 +173,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
+<pre><code class="python">async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
     if validity_seconds is None:
         validity_seconds = self.config.jwt_validity_seconds
-
-    if payload is None:
-        payload = {}
 
     data = {
         &#39;payload&#39;: payload,
@@ -193,12 +187,11 @@ inheritance.</p></div>
 
     if response[&#39;status&#39;] == &#39;OK&#39;:
         return CreateJwtResultOk(response[&#39;jwt&#39;])
-    else:
-        return CreateJwtResultUnsupportedAlgorithm()</code></pre>
+    return CreateJwtResultUnsupportedAlgorithm()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.jwt.recipe_implementation.RecipeImplementation.get_jwks"><code class="name flex">
-<span>async def <span class="ident">get_jwks</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.jwt.interfaces.GetJWKSResult" href="interfaces.html#supertokens_python.recipe.jwt.interfaces.GetJWKSResult">GetJWKSResult</a></span>
+<span>async def <span class="ident">get_jwks</span></span>(<span>self, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.jwt.interfaces.GetJWKSResult" href="interfaces.html#supertokens_python.recipe.jwt.interfaces.GetJWKSResult">GetJWKSResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -206,10 +199,10 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_jwks(self) -&gt; GetJWKSResult:
+<pre><code class="python">async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
     response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/jwt/jwks&#34;), {})
 
-    keys = []
+    keys: List[JsonWebKey] = []
     for key in response[&#39;keys&#39;]:
         keys.append(JsonWebKey(
             key[&#39;kty&#39;],

@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, TypeGuard, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
@@ -69,7 +69,7 @@ class ThirdPartyRecipe(RecipeModule):
             self.config.override.apis(api_implementation)
 
     def is_error_from_this_recipe_based_on_instance(
-            self, err: Exception) -> TypeGuard[SuperTokensError]:
+            self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (isinstance(err, SuperTokensThirdPartyError) or self.email_verification_recipe.is_error_from_this_recipe_based_on_instance(err))
 
     def get_apis_handled(self) -> List[APIHandled]:

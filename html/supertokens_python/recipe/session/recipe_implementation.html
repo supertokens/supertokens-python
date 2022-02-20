@@ -40,39 +40,54 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from .session_class import Session
-from supertokens_python.process_state import ProcessState, AllowedProcessStates
+
+from typing import TYPE_CHECKING, Any, Dict
+
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from typing import TYPE_CHECKING
-from .interfaces import RecipeInterface
-from .exceptions import raise_unauthorised_exception, raise_try_refresh_token_exception
-from .cookie_and_header import get_id_refresh_token_from_cookie, get_access_token_from_cookie, get_anti_csrf_header, \
-    get_rid_header, get_refresh_token_from_cookie
+from supertokens_python.process_state import AllowedProcessStates, ProcessState
+from supertokens_python.utils import (FRAMEWORKS, execute_in_background,
+                                      frontend_has_interceptor,
+                                      get_timestamp_ms, normalise_http_method)
+
 from . import session_functions
-from supertokens_python.utils import execute_in_background, FRAMEWORKS, frontend_has_interceptor, \
-    normalise_http_method, get_timestamp_ms
+from .cookie_and_header import (get_access_token_from_cookie,
+                                get_anti_csrf_header,
+                                get_id_refresh_token_from_cookie,
+                                get_refresh_token_from_cookie, get_rid_header)
+from .exceptions import (raise_try_refresh_token_exception,
+                         raise_unauthorised_exception)
+from .interfaces import (AccessTokenObj, RecipeInterface,
+                         RegenerateAccessTokenOkResult,
+                         SessionInformationResult, SessionObj)
+from .session_class import Session
 
 if TYPE_CHECKING:
-    from typing import Union, List
-    from .utils import SessionConfig
+    from typing import List, Union
+
     from supertokens_python.querier import Querier
+
+    from .interfaces import RegenerateAccessTokenResult
+    from .utils import SessionConfig
+
+from .interfaces import SessionContainer
 
 
 class HandshakeInfo:
 
-    def __init__(self, info):
+    def __init__(self, info: Dict[str, Any]):
         self.access_token_blacklisting_enabled = info[&#39;accessTokenBlacklistingEnabled&#39;]
-        self.raw_jwt_signing_public_key_list = None
+        self.raw_jwt_signing_public_key_list: List[Dict[str, Any]] = []
         self.anti_csrf = info[&#39;antiCsrf&#39;]
         self.access_token_validity = info[&#39;accessTokenValidity&#39;]
         self.refresh_token_validity = info[&#39;refreshTokenValidity&#39;]
 
-    def set_jwt_signing_public_key_list(self, updated_list: List):
+    def set_jwt_signing_public_key_list(self, updated_list: List[Dict[str, Any]]):
         self.raw_jwt_signing_public_key_list = updated_list
 
-    def get_jwt_signing_public_key_list(self) -&gt; List:
+    def get_jwt_signing_public_key_list(self) -&gt; List[Dict[str, Any]]:
         time_now = get_timestamp_ms()
-        return [key for key in self.raw_jwt_signing_public_key_list if key[&#39;expiryTime&#39;] &gt; time_now]
+        return [
+            key for key in self.raw_jwt_signing_public_key_list if key[&#39;expiryTime&#39;] &gt; time_now]
 
 
 class RecipeImplementation(RecipeInterface):
@@ -93,7 +108,7 @@ class RecipeImplementation(RecipeInterface):
         except Exception:
             pass
 
-    async def get_handshake_info(self, force_refetch=False) -&gt; HandshakeInfo:
+    async def get_handshake_info(self, force_refetch: bool = False) -&gt; HandshakeInfo:
         if self.handshake_info is None or len(
                 self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
             ProcessState.get_instance().add_state(
@@ -110,7 +125,8 @@ class RecipeImplementation(RecipeInterface):
 
         return self.handshake_info
 
-    def update_jwt_signing_public_key_info(self, key_list: Union[List, None], public_key: str, expiry_time: int):
+    def update_jwt_signing_public_key_info(
+            self, key_list: Union[List[Dict[str, Any]], None], public_key: str, expiry_time: int):
         if key_list is None:
             key_list = [{
                 &#39;publicKey&#39;: public_key,
@@ -121,8 +137,9 @@ class RecipeImplementation(RecipeInterface):
         if self.handshake_info is not None:
             self.handshake_info.set_jwt_signing_public_key_list(key_list)
 
-    async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
-                                 session_data: Union[dict, None] = None) -&gt; Session:
+    async def create_new_session(self, request: Any, user_id: str,
+                                 access_token_payload: Union[None, Dict[str, Any]],
+                                 session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) -&gt; SessionContainer:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
         session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
@@ -139,8 +156,8 @@ class RecipeImplementation(RecipeInterface):
         request.set_session(new_session)
         return request.get_session()
 
-    async def get_session(self, request: any, anti_csrf_check: Union[bool, None] = None,
-                          session_required: bool = True) -&gt; Union[Session, None]:
+    async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
+                          session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
@@ -150,7 +167,7 @@ class RecipeImplementation(RecipeInterface):
                 return None
             raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the &#39;
                                          &#39;request as cookies?&#39;, False)
-        access_token = get_access_token_from_cookie(request)
+        access_token: Union[str, None] = get_access_token_from_cookie(request)
         if access_token is None:
             if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
                     request.method()) == &#39;get&#39;:
@@ -165,6 +182,8 @@ class RecipeImplementation(RecipeInterface):
         if &#39;accessToken&#39; in new_session:
             access_token = new_session[&#39;accessToken&#39;][&#39;token&#39;]
 
+        if access_token is None:
+            raise Exception(&#34;Should never come here&#34;)
         session = Session(self, access_token, new_session[&#39;session&#39;][&#39;handle&#39;],
                           new_session[&#39;session&#39;][&#39;userId&#39;], new_session[&#39;session&#39;][&#39;userDataInJWT&#39;])
 
@@ -173,7 +192,7 @@ class RecipeImplementation(RecipeInterface):
         request.set_session(session)
         return request.get_session()
 
-    async def refresh_session(self, request: any) -&gt; Session:
+    async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt; SessionContainer:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
@@ -202,32 +221,57 @@ class RecipeImplementation(RecipeInterface):
 
         return request.get_session()
 
-    async def revoke_session(self, session_handle: str) -&gt; bool:
+    async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -&gt; bool:
         return await session_functions.revoke_session(self, session_handle)
 
-    async def revoke_all_sessions_for_user(self, user_id: str) -&gt; List[str]:
+    async def revoke_all_sessions_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
         return await session_functions.revoke_all_sessions_for_user(self, user_id)
 
-    async def get_all_session_handles_for_user(self, user_id: str) -&gt; List[str]:
+    async def get_all_session_handles_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
         return await session_functions.get_all_session_handles_for_user(self, user_id)
 
-    async def revoke_multiple_sessions(self, session_handles: List[str]) -&gt; List[str]:
+    async def revoke_multiple_sessions(self, session_handles: List[str], user_context: Dict[str, Any]) -&gt; List[str]:
         return await session_functions.revoke_multiple_sessions(self, session_handles)
 
-    async def get_session_information(self, session_handle: str) -&gt; dict:
+    async def get_session_information(self, session_handle: str, user_context: Dict[str, Any]) -&gt; SessionInformationResult:
         return await session_functions.get_session_information(self, session_handle)
 
-    async def update_session_data(self, session_handle: str, new_session_data: dict) -&gt; None:
+    async def update_session_data(self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
         await session_functions.update_session_data(self, session_handle, new_session_data)
 
-    async def update_access_token_payload(self, session_handle: str, new_access_token_payload: dict) -&gt; None:
+    async def update_access_token_payload(self, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
         await session_functions.update_access_token_payload(self, session_handle, new_access_token_payload)
 
-    async def get_access_token_lifetime_ms(self) -&gt; int:
+    async def get_access_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt; int:
         return (await self.get_handshake_info()).access_token_validity
 
-    async def get_refresh_token_lifetime_ms(self) -&gt; int:
-        return (await self.get_handshake_info()).refresh_token_validity</code></pre>
+    async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt; int:
+        return (await self.get_handshake_info()).refresh_token_validity
+
+    async def regenerate_access_token(self,
+                                      access_token: str,
+                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenResult:
+        if new_access_token_payload is None:
+            new_access_token_payload = {}
+        response: Dict[str, Any] = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/session/regenerate&#34;), {
+            &#39;accessToken&#39;: access_token,
+            &#39;userDataInJWT&#39;: new_access_token_payload
+        })
+        if response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
+            raise_unauthorised_exception(response[&#39;message&#39;])
+        access_token_obj: Union[None, AccessTokenObj] = None
+        if &#39;accessToken&#39; in response:
+            access_token_obj = AccessTokenObj(
+                response[&#39;accessToken&#39;][&#39;token&#39;],
+                response[&#39;accessToken&#39;][&#39;expiry&#39;],
+                response[&#39;accessToken&#39;][&#39;createdTime&#39;]
+            )
+        session = SessionObj(
+            response[&#39;session&#39;][&#39;handle&#39;],
+            response[&#39;session&#39;][&#39;userId&#39;],
+            response[&#39;session&#39;][&#39;userDataInJWT&#39;]
+        )
+        return RegenerateAccessTokenOkResult(session, access_token_obj)</code></pre>
 </details>
 </section>
 <section>
@@ -241,7 +285,7 @@ class RecipeImplementation(RecipeInterface):
 <dl>
 <dt id="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo"><code class="flex name class">
 <span>class <span class="ident">HandshakeInfo</span></span>
-<span>(</span><span>info)</span>
+<span>(</span><span>info: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -251,24 +295,25 @@ class RecipeImplementation(RecipeInterface):
 </summary>
 <pre><code class="python">class HandshakeInfo:
 
-    def __init__(self, info):
+    def __init__(self, info: Dict[str, Any]):
         self.access_token_blacklisting_enabled = info[&#39;accessTokenBlacklistingEnabled&#39;]
-        self.raw_jwt_signing_public_key_list = None
+        self.raw_jwt_signing_public_key_list: List[Dict[str, Any]] = []
         self.anti_csrf = info[&#39;antiCsrf&#39;]
         self.access_token_validity = info[&#39;accessTokenValidity&#39;]
         self.refresh_token_validity = info[&#39;refreshTokenValidity&#39;]
 
-    def set_jwt_signing_public_key_list(self, updated_list: List):
+    def set_jwt_signing_public_key_list(self, updated_list: List[Dict[str, Any]]):
         self.raw_jwt_signing_public_key_list = updated_list
 
-    def get_jwt_signing_public_key_list(self) -&gt; List:
+    def get_jwt_signing_public_key_list(self) -&gt; List[Dict[str, Any]]:
         time_now = get_timestamp_ms()
-        return [key for key in self.raw_jwt_signing_public_key_list if key[&#39;expiryTime&#39;] &gt; time_now]</code></pre>
+        return [
+            key for key in self.raw_jwt_signing_public_key_list if key[&#39;expiryTime&#39;] &gt; time_now]</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo.get_jwt_signing_public_key_list"><code class="name flex">
-<span>def <span class="ident">get_jwt_signing_public_key_list</span></span>(<span>self) ‑> List</span>
+<span>def <span class="ident">get_jwt_signing_public_key_list</span></span>(<span>self) ‑> List[Dict[str, Any]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -276,13 +321,14 @@ class RecipeImplementation(RecipeInterface):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_jwt_signing_public_key_list(self) -&gt; List:
+<pre><code class="python">def get_jwt_signing_public_key_list(self) -&gt; List[Dict[str, Any]]:
     time_now = get_timestamp_ms()
-    return [key for key in self.raw_jwt_signing_public_key_list if key[&#39;expiryTime&#39;] &gt; time_now]</code></pre>
+    return [
+        key for key in self.raw_jwt_signing_public_key_list if key[&#39;expiryTime&#39;] &gt; time_now]</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo.set_jwt_signing_public_key_list"><code class="name flex">
-<span>def <span class="ident">set_jwt_signing_public_key_list</span></span>(<span>self, updated_list: List)</span>
+<span>def <span class="ident">set_jwt_signing_public_key_list</span></span>(<span>self, updated_list: List[Dict[str, Any]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -290,7 +336,7 @@ class RecipeImplementation(RecipeInterface):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def set_jwt_signing_public_key_list(self, updated_list: List):
+<pre><code class="python">def set_jwt_signing_public_key_list(self, updated_list: List[Dict[str, Any]]):
     self.raw_jwt_signing_public_key_list = updated_list</code></pre>
 </details>
 </dd>
@@ -325,7 +371,7 @@ inheritance.</p></div>
         except Exception:
             pass
 
-    async def get_handshake_info(self, force_refetch=False) -&gt; HandshakeInfo:
+    async def get_handshake_info(self, force_refetch: bool = False) -&gt; HandshakeInfo:
         if self.handshake_info is None or len(
                 self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
             ProcessState.get_instance().add_state(
@@ -342,7 +388,8 @@ inheritance.</p></div>
 
         return self.handshake_info
 
-    def update_jwt_signing_public_key_info(self, key_list: Union[List, None], public_key: str, expiry_time: int):
+    def update_jwt_signing_public_key_info(
+            self, key_list: Union[List[Dict[str, Any]], None], public_key: str, expiry_time: int):
         if key_list is None:
             key_list = [{
                 &#39;publicKey&#39;: public_key,
@@ -353,8 +400,9 @@ inheritance.</p></div>
         if self.handshake_info is not None:
             self.handshake_info.set_jwt_signing_public_key_list(key_list)
 
-    async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
-                                 session_data: Union[dict, None] = None) -&gt; Session:
+    async def create_new_session(self, request: Any, user_id: str,
+                                 access_token_payload: Union[None, Dict[str, Any]],
+                                 session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) -&gt; SessionContainer:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
         session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
@@ -371,8 +419,8 @@ inheritance.</p></div>
         request.set_session(new_session)
         return request.get_session()
 
-    async def get_session(self, request: any, anti_csrf_check: Union[bool, None] = None,
-                          session_required: bool = True) -&gt; Union[Session, None]:
+    async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
+                          session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
@@ -382,7 +430,7 @@ inheritance.</p></div>
                 return None
             raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the &#39;
                                          &#39;request as cookies?&#39;, False)
-        access_token = get_access_token_from_cookie(request)
+        access_token: Union[str, None] = get_access_token_from_cookie(request)
         if access_token is None:
             if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
                     request.method()) == &#39;get&#39;:
@@ -397,6 +445,8 @@ inheritance.</p></div>
         if &#39;accessToken&#39; in new_session:
             access_token = new_session[&#39;accessToken&#39;][&#39;token&#39;]
 
+        if access_token is None:
+            raise Exception(&#34;Should never come here&#34;)
         session = Session(self, access_token, new_session[&#39;session&#39;][&#39;handle&#39;],
                           new_session[&#39;session&#39;][&#39;userId&#39;], new_session[&#39;session&#39;][&#39;userDataInJWT&#39;])
 
@@ -405,7 +455,7 @@ inheritance.</p></div>
         request.set_session(session)
         return request.get_session()
 
-    async def refresh_session(self, request: any) -&gt; Session:
+    async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt; SessionContainer:
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
@@ -434,46 +484,67 @@ inheritance.</p></div>
 
         return request.get_session()
 
-    async def revoke_session(self, session_handle: str) -&gt; bool:
+    async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -&gt; bool:
         return await session_functions.revoke_session(self, session_handle)
 
-    async def revoke_all_sessions_for_user(self, user_id: str) -&gt; List[str]:
+    async def revoke_all_sessions_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
         return await session_functions.revoke_all_sessions_for_user(self, user_id)
 
-    async def get_all_session_handles_for_user(self, user_id: str) -&gt; List[str]:
+    async def get_all_session_handles_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
         return await session_functions.get_all_session_handles_for_user(self, user_id)
 
-    async def revoke_multiple_sessions(self, session_handles: List[str]) -&gt; List[str]:
+    async def revoke_multiple_sessions(self, session_handles: List[str], user_context: Dict[str, Any]) -&gt; List[str]:
         return await session_functions.revoke_multiple_sessions(self, session_handles)
 
-    async def get_session_information(self, session_handle: str) -&gt; dict:
+    async def get_session_information(self, session_handle: str, user_context: Dict[str, Any]) -&gt; SessionInformationResult:
         return await session_functions.get_session_information(self, session_handle)
 
-    async def update_session_data(self, session_handle: str, new_session_data: dict) -&gt; None:
+    async def update_session_data(self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
         await session_functions.update_session_data(self, session_handle, new_session_data)
 
-    async def update_access_token_payload(self, session_handle: str, new_access_token_payload: dict) -&gt; None:
+    async def update_access_token_payload(self, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
         await session_functions.update_access_token_payload(self, session_handle, new_access_token_payload)
 
-    async def get_access_token_lifetime_ms(self) -&gt; int:
+    async def get_access_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt; int:
         return (await self.get_handshake_info()).access_token_validity
 
-    async def get_refresh_token_lifetime_ms(self) -&gt; int:
-        return (await self.get_handshake_info()).refresh_token_validity</code></pre>
+    async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt; int:
+        return (await self.get_handshake_info()).refresh_token_validity
+
+    async def regenerate_access_token(self,
+                                      access_token: str,
+                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenResult:
+        if new_access_token_payload is None:
+            new_access_token_payload = {}
+        response: Dict[str, Any] = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/session/regenerate&#34;), {
+            &#39;accessToken&#39;: access_token,
+            &#39;userDataInJWT&#39;: new_access_token_payload
+        })
+        if response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
+            raise_unauthorised_exception(response[&#39;message&#39;])
+        access_token_obj: Union[None, AccessTokenObj] = None
+        if &#39;accessToken&#39; in response:
+            access_token_obj = AccessTokenObj(
+                response[&#39;accessToken&#39;][&#39;token&#39;],
+                response[&#39;accessToken&#39;][&#39;expiry&#39;],
+                response[&#39;accessToken&#39;][&#39;createdTime&#39;]
+            )
+        session = SessionObj(
+            response[&#39;session&#39;][&#39;handle&#39;],
+            response[&#39;session&#39;][&#39;userId&#39;],
+            response[&#39;session&#39;][&#39;userDataInJWT&#39;]
+        )
+        return RegenerateAccessTokenOkResult(session, access_token_obj)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.session.interfaces.RecipeInterface" href="interfaces.html#supertokens_python.recipe.session.interfaces.RecipeInterface">RecipeInterface</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.session.with_jwt.recipe_implementation.RecipeImplementationWithJWT" href="with_jwt/recipe_implementation.html#supertokens_python.recipe.session.with_jwt.recipe_implementation.RecipeImplementationWithJWT">RecipeImplementationWithJWT</a></li>
-</ul>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>self, request: any, user_id: str, access_token_payload: Union[dict, None] = None, session_data: Union[dict, None] = None) ‑> Session</span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>self, request: Any, user_id: str, access_token_payload: Union[None, Dict[str, Any]], session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) ‑> SessionContainer</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -481,8 +552,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_new_session(self, request: any, user_id: str, access_token_payload: Union[dict, None] = None,
-                             session_data: Union[dict, None] = None) -&gt; Session:
+<pre><code class="python">async def create_new_session(self, request: Any, user_id: str,
+                             access_token_payload: Union[None, Dict[str, Any]],
+                             session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) -&gt; SessionContainer:
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[self.config.framework].wrap_request(request)
     session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
@@ -501,7 +573,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_access_token_lifetime_ms"><code class="name flex">
-<span>async def <span class="ident">get_access_token_lifetime_ms</span></span>(<span>self) ‑> int</span>
+<span>async def <span class="ident">get_access_token_lifetime_ms</span></span>(<span>self, user_context: Dict[str, Any]) ‑> int</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -509,12 +581,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_access_token_lifetime_ms(self) -&gt; int:
+<pre><code class="python">async def get_access_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt; int:
     return (await self.get_handshake_info()).access_token_validity</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_all_session_handles_for_user"><code class="name flex">
-<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>self, user_id: str) ‑> List[str]</span>
+<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -522,12 +594,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_all_session_handles_for_user(self, user_id: str) -&gt; List[str]:
+<pre><code class="python">async def get_all_session_handles_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
     return await session_functions.get_all_session_handles_for_user(self, user_id)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_handshake_info"><code class="name flex">
-<span>async def <span class="ident">get_handshake_info</span></span>(<span>self, force_refetch=False) ‑> <a title="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo" href="#supertokens_python.recipe.session.recipe_implementation.HandshakeInfo">HandshakeInfo</a></span>
+<span>async def <span class="ident">get_handshake_info</span></span>(<span>self, force_refetch: bool = False) ‑> <a title="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo" href="#supertokens_python.recipe.session.recipe_implementation.HandshakeInfo">HandshakeInfo</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -535,7 +607,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_handshake_info(self, force_refetch=False) -&gt; HandshakeInfo:
+<pre><code class="python">async def get_handshake_info(self, force_refetch: bool = False) -&gt; HandshakeInfo:
     if self.handshake_info is None or len(
             self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
         ProcessState.get_instance().add_state(
@@ -554,7 +626,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_refresh_token_lifetime_ms"><code class="name flex">
-<span>async def <span class="ident">get_refresh_token_lifetime_ms</span></span>(<span>self) ‑> int</span>
+<span>async def <span class="ident">get_refresh_token_lifetime_ms</span></span>(<span>self, user_context: Dict[str, Any]) ‑> int</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -562,12 +634,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_refresh_token_lifetime_ms(self) -&gt; int:
+<pre><code class="python">async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt; int:
     return (await self.get_handshake_info()).refresh_token_validity</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_session"><code class="name flex">
-<span>async def <span class="ident">get_session</span></span>(<span>self, request: any, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) ‑> Union[Session, None]</span>
+<span>async def <span class="ident">get_session</span></span>(<span>self, request: Any, anti_csrf_check: Union[bool, None], session_required: bool, user_context: Dict[str, Any]) ‑> Union[SessionContainer, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -575,8 +647,8 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_session(self, request: any, anti_csrf_check: Union[bool, None] = None,
-                      session_required: bool = True) -&gt; Union[Session, None]:
+<pre><code class="python">async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
+                      session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
@@ -586,7 +658,7 @@ inheritance.</p></div>
             return None
         raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the &#39;
                                      &#39;request as cookies?&#39;, False)
-    access_token = get_access_token_from_cookie(request)
+    access_token: Union[str, None] = get_access_token_from_cookie(request)
     if access_token is None:
         if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
                 request.method()) == &#39;get&#39;:
@@ -601,6 +673,8 @@ inheritance.</p></div>
     if &#39;accessToken&#39; in new_session:
         access_token = new_session[&#39;accessToken&#39;][&#39;token&#39;]
 
+    if access_token is None:
+        raise Exception(&#34;Should never come here&#34;)
     session = Session(self, access_token, new_session[&#39;session&#39;][&#39;handle&#39;],
                       new_session[&#39;session&#39;][&#39;userId&#39;], new_session[&#39;session&#39;][&#39;userDataInJWT&#39;])
 
@@ -611,7 +685,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_session_information"><code class="name flex">
-<span>async def <span class="ident">get_session_information</span></span>(<span>self, session_handle: str) ‑> dict</span>
+<span>async def <span class="ident">get_session_information</span></span>(<span>self, session_handle: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionInformationResult" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionInformationResult">SessionInformationResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -619,12 +693,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_session_information(self, session_handle: str) -&gt; dict:
+<pre><code class="python">async def get_session_information(self, session_handle: str, user_context: Dict[str, Any]) -&gt; SessionInformationResult:
     return await session_functions.get_session_information(self, session_handle)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.refresh_session"><code class="name flex">
-<span>async def <span class="ident">refresh_session</span></span>(<span>self, request: any) ‑> <a title="supertokens_python.recipe.session.session_class.Session" href="session_class.html#supertokens_python.recipe.session.session_class.Session">Session</a></span>
+<span>async def <span class="ident">refresh_session</span></span>(<span>self, request: Any, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -632,7 +706,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def refresh_session(self, request: any) -&gt; Session:
+<pre><code class="python">async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt; SessionContainer:
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
@@ -662,8 +736,8 @@ inheritance.</p></div>
     return request.get_session()</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_all_sessions_for_user"><code class="name flex">
-<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>self, user_id: str) ‑> List[str]</span>
+<dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.regenerate_access_token"><code class="name flex">
+<span>async def <span class="ident">regenerate_access_token</span></span>(<span>self, access_token: str, new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) ‑> RegenerateAccessTokenResult</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -671,12 +745,47 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_all_sessions_for_user(self, user_id: str) -&gt; List[str]:
+<pre><code class="python">async def regenerate_access_token(self,
+                                  access_token: str,
+                                  new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenResult:
+    if new_access_token_payload is None:
+        new_access_token_payload = {}
+    response: Dict[str, Any] = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/session/regenerate&#34;), {
+        &#39;accessToken&#39;: access_token,
+        &#39;userDataInJWT&#39;: new_access_token_payload
+    })
+    if response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
+        raise_unauthorised_exception(response[&#39;message&#39;])
+    access_token_obj: Union[None, AccessTokenObj] = None
+    if &#39;accessToken&#39; in response:
+        access_token_obj = AccessTokenObj(
+            response[&#39;accessToken&#39;][&#39;token&#39;],
+            response[&#39;accessToken&#39;][&#39;expiry&#39;],
+            response[&#39;accessToken&#39;][&#39;createdTime&#39;]
+        )
+    session = SessionObj(
+        response[&#39;session&#39;][&#39;handle&#39;],
+        response[&#39;session&#39;][&#39;userId&#39;],
+        response[&#39;session&#39;][&#39;userDataInJWT&#39;]
+    )
+    return RegenerateAccessTokenOkResult(session, access_token_obj)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_all_sessions_for_user"><code class="name flex">
+<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def revoke_all_sessions_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
     return await session_functions.revoke_all_sessions_for_user(self, user_id)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_multiple_sessions"><code class="name flex">
-<span>async def <span class="ident">revoke_multiple_sessions</span></span>(<span>self, session_handles: List[str]) ‑> List[str]</span>
+<span>async def <span class="ident">revoke_multiple_sessions</span></span>(<span>self, session_handles: List[str], user_context: Dict[str, Any]) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -684,12 +793,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_multiple_sessions(self, session_handles: List[str]) -&gt; List[str]:
+<pre><code class="python">async def revoke_multiple_sessions(self, session_handles: List[str], user_context: Dict[str, Any]) -&gt; List[str]:
     return await session_functions.revoke_multiple_sessions(self, session_handles)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_session"><code class="name flex">
-<span>async def <span class="ident">revoke_session</span></span>(<span>self, session_handle: str) ‑> bool</span>
+<span>async def <span class="ident">revoke_session</span></span>(<span>self, session_handle: str, user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -697,12 +806,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_session(self, session_handle: str) -&gt; bool:
+<pre><code class="python">async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -&gt; bool:
     return await session_functions.revoke_session(self, session_handle)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_access_token_payload"><code class="name flex">
-<span>async def <span class="ident">update_access_token_payload</span></span>(<span>self, session_handle: str, new_access_token_payload: dict) ‑> None</span>
+<span>async def <span class="ident">update_access_token_payload</span></span>(<span>self, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -710,12 +819,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_access_token_payload(self, session_handle: str, new_access_token_payload: dict) -&gt; None:
+<pre><code class="python">async def update_access_token_payload(self, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
     await session_functions.update_access_token_payload(self, session_handle, new_access_token_payload)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_jwt_signing_public_key_info"><code class="name flex">
-<span>def <span class="ident">update_jwt_signing_public_key_info</span></span>(<span>self, key_list: Union[List, None], public_key: str, expiry_time: int)</span>
+<span>def <span class="ident">update_jwt_signing_public_key_info</span></span>(<span>self, key_list: Union[List[Dict[str, Any]], None], public_key: str, expiry_time: int)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -723,7 +832,8 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def update_jwt_signing_public_key_info(self, key_list: Union[List, None], public_key: str, expiry_time: int):
+<pre><code class="python">def update_jwt_signing_public_key_info(
+        self, key_list: Union[List[Dict[str, Any]], None], public_key: str, expiry_time: int):
     if key_list is None:
         key_list = [{
             &#39;publicKey&#39;: public_key,
@@ -736,7 +846,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_session_data"><code class="name flex">
-<span>async def <span class="ident">update_session_data</span></span>(<span>self, session_handle: str, new_session_data: dict) ‑> None</span>
+<span>async def <span class="ident">update_session_data</span></span>(<span>self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -744,7 +854,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_session_data(self, session_handle: str, new_session_data: dict) -&gt; None:
+<pre><code class="python">async def update_session_data(self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
     await session_functions.update_session_data(self, session_handle, new_session_data)</code></pre>
 </details>
 </dd>
@@ -784,6 +894,7 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_session" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_session">get_session</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_session_information" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_session_information">get_session_information</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.refresh_session" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.refresh_session">refresh_session</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.regenerate_access_token" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.regenerate_access_token">regenerate_access_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_all_sessions_for_user" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_all_sessions_for_user">revoke_all_sessions_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_multiple_sessions" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_multiple_sessions">revoke_multiple_sessions</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_session" href="#supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.revoke_session">revoke_session</a></code></li>

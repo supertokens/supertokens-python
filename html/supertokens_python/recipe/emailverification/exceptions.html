@@ -40,6 +40,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from supertokens_python.exceptions import SuperTokensError
 
 
@@ -62,7 +63,7 @@ class EmailVerificationInvalidTokenError(SuperTokensEmailVerificationError):
 <dl>
 <dt id="supertokens_python.recipe.emailverification.exceptions.EmailVerificationInvalidTokenError"><code class="flex name class">
 <span>class <span class="ident">EmailVerificationInvalidTokenError</span></span>
-<span>(</span><span>msg: Union[str, Exception])</span>
+<span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
@@ -83,7 +84,7 @@ class EmailVerificationInvalidTokenError(SuperTokensEmailVerificationError):
 </dd>
 <dt id="supertokens_python.recipe.emailverification.exceptions.SuperTokensEmailVerificationError"><code class="flex name class">
 <span>class <span class="ident">SuperTokensEmailVerificationError</span></span>
-<span>(</span><span>msg: Union[str, Exception])</span>
+<span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Common base class for all non-exit exceptions.</p></div>

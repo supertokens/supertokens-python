@@ -39,63 +39,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
-
-type_string = {
-    &#39;type&#39;: &#39;string&#39;
-}
-
-type_boolean = {
-    &#39;type&#39;: &#39;boolean&#39;
-}
-
-INPUT_SCHEMA = {
-    &#39;type&#39;: &#39;object&#39;,
-    &#39;properties&#39;: {
-        &#39;supertokens&#39;: {
-            &#39;type&#39;: &#39;object&#39;,
-            &#39;properties&#39;: {
-                &#39;connection_uri&#39;: type_string,
-                &#39;api_key&#39;: type_string
-            },
-            &#39;required&#39;: [&#39;connection_uri&#39;],
-            &#39;additionalProperties&#39;: False
-        },
-        &#39;app_info&#39;: {
-            &#39;type&#39;: &#39;object&#39;,
-            &#39;properties&#39;: {
-                &#39;app_name&#39;: type_string,
-                &#39;website_domain&#39;: type_string,
-                &#39;api_domain&#39;: type_string,
-                &#39;api_base_path&#39;: type_string,
-                &#39;website_base_path&#39;: type_string,
-                &#39;api_gateway_path&#39;: type_string
-            },
-            &#39;required&#39;: [&#39;app_name&#39;, &#39;website_domain&#39;, &#39;api_domain&#39;],
-            &#39;additionalProperties&#39;: False
-        },
-        &#39;framework&#39;: {
-            &#39;type&#39;: &#39;string&#39;
-        },
-        &#39;mode&#39;: {
-            &#39;type&#39;: &#39;string&#39;,
-            &#39;enum&#39;: [&#39;asgi&#39;, &#39;wsgi&#39;]
-        },
-        &#39;recipe_list&#39;: {
-            &#39;type&#39;: &#39;array&#39;
-        },
-        &#39;telemetry&#39;: type_boolean
-    },
-    &#39;required&#39;: [&#39;supertokens&#39;, &#39;app_info&#39;, &#39;recipe_list&#39;, &#39;framework&#39;],
-    &#39;additional_properties&#39;: False
-}
-
-
-class UsersResponse:
-    def __init__(self, users,
-                 next_pagination_token: Union[str, None]):
-        self.users = users
-        self.next_pagination_token = next_pagination_token
+from typing import List, Union
 
 
 class ThirdPartyInfo:
@@ -105,13 +49,20 @@ class ThirdPartyInfo:
 
 
 class User:
-    def __init__(self, recipe_id: str, user_id: str, email: str, time_joined: int,
-                 third_party_info: Union[ThirdPartyInfo, None] = None):
+    def __init__(self, recipe_id: str, user_id: str, time_joined: int, email: Union[str, None], phone_number: Union[str, None], third_party_info: Union[ThirdPartyInfo, None]):
         self.recipe_id = recipe_id
         self.user_id = user_id
         self.email = email
         self.time_joined = time_joined
-        self.third_party_info = third_party_info</code></pre>
+        self.third_party_info = third_party_info
+        self.phone_number = phone_number
+
+
+class UsersResponse:
+    def __init__(self, users: List[User],
+                 next_pagination_token: Union[str, None]):
+        self.users: List[User] = users
+        self.next_pagination_token: Union[str, None] = next_pagination_token</code></pre>
 </details>
 </section>
 <section>
@@ -141,7 +92,7 @@ class User:
 </dd>
 <dt id="supertokens_python.types.User"><code class="flex name class">
 <span>class <span class="ident">User</span></span>
-<span>(</span><span>recipe_id: str, user_id: str, email: str, time_joined: int, third_party_info: Optional[<a title="supertokens_python.types.ThirdPartyInfo" href="#supertokens_python.types.ThirdPartyInfo">ThirdPartyInfo</a>] = None)</span>
+<span>(</span><span>recipe_id: str, user_id: str, time_joined: int, email: Optional[str], phone_number: Optional[str], third_party_info: Optional[<a title="supertokens_python.types.ThirdPartyInfo" href="#supertokens_python.types.ThirdPartyInfo">ThirdPartyInfo</a>])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -150,18 +101,18 @@ class User:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class User:
-    def __init__(self, recipe_id: str, user_id: str, email: str, time_joined: int,
-                 third_party_info: Union[ThirdPartyInfo, None] = None):
+    def __init__(self, recipe_id: str, user_id: str, time_joined: int, email: Union[str, None], phone_number: Union[str, None], third_party_info: Union[ThirdPartyInfo, None]):
         self.recipe_id = recipe_id
         self.user_id = user_id
         self.email = email
         self.time_joined = time_joined
-        self.third_party_info = third_party_info</code></pre>
+        self.third_party_info = third_party_info
+        self.phone_number = phone_number</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.types.UsersResponse"><code class="flex name class">
 <span>class <span class="ident">UsersResponse</span></span>
-<span>(</span><span>users, next_pagination_token: Optional[str])</span>
+<span>(</span><span>users: List[<a title="supertokens_python.types.User" href="#supertokens_python.types.User">User</a>], next_pagination_token: Optional[str])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -170,10 +121,10 @@ class User:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class UsersResponse:
-    def __init__(self, users,
+    def __init__(self, users: List[User],
                  next_pagination_token: Union[str, None]):
-        self.users = users
-        self.next_pagination_token = next_pagination_token</code></pre>
+        self.users: List[User] = users
+        self.next_pagination_token: Union[str, None] = next_pagination_token</code></pre>
 </details>
 </dd>
 </dl>

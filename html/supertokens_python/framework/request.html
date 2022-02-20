@@ -39,10 +39,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Dict, Union
 
-from typing import Any, Union
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 class BaseRequest(ABC):
@@ -52,15 +55,16 @@ class BaseRequest(ABC):
         self.request = None
 
     @abstractmethod
-    def get_query_param(self, key, default=None):
+    def get_query_param(
+            self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
         pass
 
     @abstractmethod
-    async def json(self):
+    async def json(self) -&gt; Union[Any, None]:
         pass
 
     @abstractmethod
-    async def form_data(self):
+    async def form_data(self) -&gt; Dict[str, Any]:
         pass
 
     @abstractmethod
@@ -72,19 +76,15 @@ class BaseRequest(ABC):
         pass
 
     @abstractmethod
-    def get_header(self, key: str) -&gt; Any:
+    def get_header(self, key: str) -&gt; Union[None, str]:
         pass
 
     @abstractmethod
-    def url(self):
+    def get_session(self) -&gt; Union[SessionContainer, None]:
         pass
 
     @abstractmethod
-    def get_session(self):
-        pass
-
-    @abstractmethod
-    def set_session(self, session):
+    def set_session(self, session: SessionContainer):
         pass
 
     @abstractmethod
@@ -118,15 +118,16 @@ inheritance.</p></div>
         self.request = None
 
     @abstractmethod
-    def get_query_param(self, key, default=None):
+    def get_query_param(
+            self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
         pass
 
     @abstractmethod
-    async def json(self):
+    async def json(self) -&gt; Union[Any, None]:
         pass
 
     @abstractmethod
-    async def form_data(self):
+    async def form_data(self) -&gt; Dict[str, Any]:
         pass
 
     @abstractmethod
@@ -138,19 +139,15 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    def get_header(self, key: str) -&gt; Any:
+    def get_header(self, key: str) -&gt; Union[None, str]:
         pass
 
     @abstractmethod
-    def url(self):
+    def get_session(self) -&gt; Union[SessionContainer, None]:
         pass
 
     @abstractmethod
-    def get_session(self):
-        pass
-
-    @abstractmethod
-    def set_session(self, session):
+    def set_session(self, session: SessionContainer):
         pass
 
     @abstractmethod
@@ -170,7 +167,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.request.BaseRequest.form_data"><code class="name flex">
-<span>async def <span class="ident">form_data</span></span>(<span>self)</span>
+<span>async def <span class="ident">form_data</span></span>(<span>self) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -179,7 +176,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def form_data(self):
+async def form_data(self) -&gt; Dict[str, Any]:
     pass</code></pre>
 </details>
 </dd>
@@ -198,7 +195,7 @@ def get_cookie(self, key: str) -&gt; Union[str, None]:
 </details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.get_header"><code class="name flex">
-<span>def <span class="ident">get_header</span></span>(<span>self, key: str) ‑> Any</span>
+<span>def <span class="ident">get_header</span></span>(<span>self, key: str) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -207,7 +204,7 @@ def get_cookie(self, key: str) -&gt; Union[str, None]:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def get_header(self, key: str) -&gt; Any:
+def get_header(self, key: str) -&gt; Union[None, str]:
     pass</code></pre>
 </details>
 </dd>
@@ -226,7 +223,7 @@ def get_path(self) -&gt; str:
 </details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.get_query_param"><code class="name flex">
-<span>def <span class="ident">get_query_param</span></span>(<span>self, key, default=None)</span>
+<span>def <span class="ident">get_query_param</span></span>(<span>self, key: str, default: Union[str, None] = None) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -235,12 +232,13 @@ def get_path(self) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def get_query_param(self, key, default=None):
+def get_query_param(
+        self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.get_session"><code class="name flex">
-<span>def <span class="ident">get_session</span></span>(<span>self)</span>
+<span>def <span class="ident">get_session</span></span>(<span>self) ‑> Union[SessionContainer, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -249,12 +247,12 @@ def get_query_param(self, key, default=None):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def get_session(self):
+def get_session(self) -&gt; Union[SessionContainer, None]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.json"><code class="name flex">
-<span>async def <span class="ident">json</span></span>(<span>self)</span>
+<span>async def <span class="ident">json</span></span>(<span>self) ‑> Optional[Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -263,7 +261,7 @@ def get_session(self):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def json(self):
+async def json(self) -&gt; Union[Any, None]:
     pass</code></pre>
 </details>
 </dd>
@@ -282,7 +280,7 @@ def method(self) -&gt; str:
 </details>
 </dd>
 <dt id="supertokens_python.framework.request.BaseRequest.set_session"><code class="name flex">
-<span>def <span class="ident">set_session</span></span>(<span>self, session)</span>
+<span>def <span class="ident">set_session</span></span>(<span>self, session: SessionContainer)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -291,21 +289,7 @@ def method(self) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def set_session(self, session):
-    pass</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.framework.request.BaseRequest.url"><code class="name flex">
-<span>def <span class="ident">url</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def url(self):
+def set_session(self, session: SessionContainer):
     pass</code></pre>
 </details>
 </dd>
@@ -339,7 +323,6 @@ def url(self):
 <li><code><a title="supertokens_python.framework.request.BaseRequest.json" href="#supertokens_python.framework.request.BaseRequest.json">json</a></code></li>
 <li><code><a title="supertokens_python.framework.request.BaseRequest.method" href="#supertokens_python.framework.request.BaseRequest.method">method</a></code></li>
 <li><code><a title="supertokens_python.framework.request.BaseRequest.set_session" href="#supertokens_python.framework.request.BaseRequest.set_session">set_session</a></code></li>
-<li><code><a title="supertokens_python.framework.request.BaseRequest.url" href="#supertokens_python.framework.request.BaseRequest.url">url</a></code></li>
 </ul>
 </li>
 </ul>

@@ -41,43 +41,51 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union, Awaitable
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Union
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
-from urllib.parse import urlparse
 
-from tldextract import extract
+from urllib.parse import urlparse
 
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.framework import BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.openid import \
+    InputOverrideConfig as OpenIdInputOverrideConfig
 from supertokens_python.utils import is_an_ip_address, send_non_200_response
+from tldextract import extract  # type: ignore
+
 from .constants import SESSION_REFRESH
 from .cookie_and_header import clear_cookies
-from supertokens_python.recipe.openid import InputOverrideConfig as OpenIdInputOverrideConfig
-from .with_jwt.constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE
+from .with_jwt.constants import (ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY,
+                                 JWT_RESERVED_KEY_USE_ERROR_MESSAGE)
 
 if TYPE_CHECKING:
-    from .interfaces import RecipeInterface, APIInterface
     from supertokens_python.framework import BaseRequest
-    from .recipe import SessionRecipe
     from supertokens_python.supertokens import AppInfo
 
+    from .interfaces import APIInterface, RecipeInterface
+    from .recipe import SessionRecipe
 
-def normalise_session_scope(recipe: SessionRecipe, session_scope: str) -&gt; str:
+
+def normalise_session_scope(session_scope: str) -&gt; str:
     def helper(scope: str) -&gt; str:
         scope = scope.strip()
 
         if scope.startswith(&#39;.&#39;):
             scope = scope[1:]
 
-        if (not scope.startswith(&#39;https://&#39;)) and (not scope.startswith(&#39;http://&#39;)):
+        if (not scope.startswith(&#39;https://&#39;)
+            ) and (not scope.startswith(&#39;http://&#39;)):
             scope = &#39;http://&#39; + scope
 
         try:
             url_obj = urlparse(scope)
+            if url_obj.hostname is None:
+                raise Exception(&#34;Should not come here&#34;)
             scope = url_obj.hostname
 
             if scope.startswith(&#39;.&#39;):
@@ -85,30 +93,29 @@ def normalise_session_scope(recipe: SessionRecipe, session_scope: str) -&gt; str
 
             return scope
         except Exception:
-            raise_general_exception(
-                recipe, &#39;Please provide a valid sessionScope&#39;)
+            raise_general_exception(&#39;Please provide a valid sessionScope&#39;)
 
     no_dot_normalised = helper(session_scope)
     if no_dot_normalised == &#39;localhost&#39; or is_an_ip_address(no_dot_normalised):
         return no_dot_normalised
 
-    if no_dot_normalised.startswith(&#39;.&#39;):
+    if no_dot_normalised[0] == &#39;.&#39;:
         return no_dot_normalised[1:]
 
     return no_dot_normalised
 
 
-def normalise_same_site(same_site: str) -&gt; str:
+def normalise_same_site(same_site: str) -&gt; Literal[&#39;strict&#39;, &#39;lax&#39;, &#39;none&#39;]:
     same_site = same_site.strip()
     same_site = same_site.lower()
     allowed_values = {&#39;strict&#39;, &#39;lax&#39;, &#39;none&#39;}
     if same_site not in allowed_values:
         raise Exception(
             &#39;cookie same site must be one of &#34;strict&#34;, &#34;lax&#34;, or &#34;none&#34;&#39;)
-    return same_site
+    return same_site  # type: ignore
 
 
-def get_url_scheme(url) -&gt; str:
+def get_url_scheme(url: str) -&gt; str:
     url_obj = urlparse(url)
     return url_obj.scheme
 
@@ -117,73 +124,86 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
     url_obj = urlparse(url)
     hostname = url_obj.hostname
 
+    if hostname is None:
+        raise Exception(&#34;Should not come here&#34;)
+
     if hostname.startswith(&#39;localhost&#39;) or is_an_ip_address(hostname):
         return &#39;localhost&#39;
-    parsed_url = extract(hostname)
-    if parsed_url == &#39;&#39;:
+    parsed_url: Any = extract(hostname)
+    if parsed_url.domain == &#39;&#39;:  # type: ignore
         raise Exception(
             &#39;Please make sure that the apiDomain and websiteDomain have correct values&#39;)
 
-    return parsed_url.domain + &#39;.&#39; + parsed_url.suffix
-
-
-class InputErrorHandlers:
-    def __init__(self,
-                 on_token_theft_detected: Union[Callable[[BaseRequest, str, str], Awaitable[None]], None] = None,
-                 on_unauthorised: Union[Callable[[BaseRequest, str, BaseResponse], Awaitable[None]], None] = None):
-        self.on_token_theft_detected = on_token_theft_detected
-        self.on_unauthorised = on_unauthorised
+    return parsed_url.domain + &#39;.&#39; + parsed_url.suffix  # type: ignore
 
 
 class ErrorHandlers:
-    def __init__(self, recipe: SessionRecipe, on_token_theft_detected,
-                 on_try_refresh_token, on_unauthorised):
-        self.__recipe = recipe
+    def __init__(self, on_token_theft_detected: Callable[[BaseRequest, str, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]],
+                 on_try_refresh_token: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_unauthorised: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]):
         self.__on_token_theft_detected = on_token_theft_detected
         self.__on_try_refresh_token = on_try_refresh_token
         self.__on_unauthorised = on_unauthorised
 
-    async def on_token_theft_detected(self, request: BaseRequest, session_handle: str, user_id: str):
-        try:
-            response = await self.__on_token_theft_detected(request, session_handle, user_id)
-        except TypeError:
-            response = self.__on_token_theft_detected(
-                request, session_handle, user_id)
-        clear_cookies(self.__recipe, response)
-        return response
+    async def on_token_theft_detected(self, recipe: SessionRecipe, request: BaseRequest, session_handle: str, user_id: str, response: BaseResponse) -&gt; BaseResponse:
+        result: Union[None, BaseResponse] = None
+        temp = self.__on_token_theft_detected(
+            request, session_handle, user_id, response)
+        if isinstance(temp, Awaitable):
+            result = await temp
+        else:
+            result = temp
+        clear_cookies(recipe, result)
+        return result
 
     async def on_try_refresh_token(self, request: BaseRequest, message: str, response: BaseResponse):
-        try:
-            response = await self.__on_try_refresh_token(request, message, response)
-        except TypeError:
-            response = await self.__on_try_refresh_token(request, message, response)
-        return response
+        result: Union[None, BaseResponse] = None
+        temp = self.__on_try_refresh_token(request, message, response)
+        if isinstance(temp, Awaitable):
+            result = await temp
+        else:
+            result = temp
+        return result
 
-    async def on_unauthorised(self, do_clear_cookies: bool, request: BaseRequest, message: str, response: BaseResponse):
-        try:
-            await self.__on_unauthorised(request, message, response)
-        except TypeError:
-            await self.__on_unauthorised(request, message, response)
+    async def on_unauthorised(self, recipe: SessionRecipe, do_clear_cookies: bool, request: BaseRequest, message: str, response: BaseResponse):
+        result: Union[None, BaseResponse] = None
+        temp = self.__on_unauthorised(request, message, response)
+        if isinstance(temp, Awaitable):
+            result = await temp
+        else:
+            result = temp
         if do_clear_cookies:
-            clear_cookies(self.__recipe, response)
-        return response
+            clear_cookies(recipe, result)
+        return result
 
 
-async def default_unauthorised_callback(_: BaseRequest, __: str, response: BaseResponse):
+class InputErrorHandlers(ErrorHandlers):
+    def __init__(self,
+                 on_token_theft_detected: Union[None, Callable[[
+                     BaseRequest, str, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]] = None,
+                 on_unauthorised: Union[Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], None] = None):
+        if on_token_theft_detected is None:
+            on_token_theft_detected = default_token_theft_detected_callback
+        if on_unauthorised is None:
+            on_unauthorised = default_unauthorised_callback
+        super().__init__(on_token_theft_detected,
+                         default_try_refresh_token_callback, on_unauthorised)
+
+
+async def default_unauthorised_callback(_: BaseRequest, __: str, response: BaseResponse) -&gt; BaseResponse:
     from .recipe import SessionRecipe
     return send_non_200_response(&#39;unauthorised&#39;, SessionRecipe.get_instance(
     ).config.session_expired_status_code, response)
 
 
-async def default_try_refresh_token_callback(_: BaseRequest, __: str, response: BaseResponse):
+async def default_try_refresh_token_callback(_: BaseRequest, __: str, response: BaseResponse) -&gt; BaseResponse:
     from .recipe import SessionRecipe
     return send_non_200_response(&#39;try refresh token&#39;, SessionRecipe.get_instance(
     ).config.session_expired_status_code, response)
 
 
-async def default_token_theft_detected_callback(_: BaseRequest, session_handle: str, __: str, response: BaseResponse):
+async def default_token_theft_detected_callback(_: BaseRequest, session_handle: str, __: str, response: BaseResponse) -&gt; BaseResponse:
     from .recipe import SessionRecipe
-    await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle)
+    await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle, {})
     return send_non_200_response(&#39;token theft detected&#39;, SessionRecipe.get_instance(
     ).config.session_expired_status_code, response)
 
@@ -191,7 +211,8 @@ async def default_token_theft_detected_callback(_: BaseRequest, session_handle: 
 class InputOverrideConfig:
     def __init__(
         self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        functions: Union[Callable[[RecipeInterface],
+                                  RecipeInterface], None] = None,
         apis: Union[Callable[[APIInterface], APIInterface], None] = None,
         openid_feature: Union[OpenIdInputOverrideConfig, None] = None
     ):
@@ -208,7 +229,8 @@ class OverrideConfig:
 
 
 class JWTConfig:
-    def __init__(self, enable: bool, property_name_in_access_token_payload: Union[str, None] = None, issuer: Union[str, None] = None):
+    def __init__(self, enable: bool, property_name_in_access_token_payload:
+                 Union[str, None] = None, issuer: Union[str, None] = None):
         if property_name_in_access_token_payload is None:
             property_name_in_access_token_payload = &#39;jwt&#39;
         if property_name_in_access_token_payload == ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY:
@@ -221,9 +243,9 @@ class JWTConfig:
 class SessionConfig:
     def __init__(self,
                  refresh_token_path: NormalisedURLPath,
-                 cookie_domain: str,
-                 cookie_same_site: str,
-                 cookie_secure: str,
+                 cookie_domain: Union[None, str],
+                 cookie_same_site: Literal[&#39;lax&#39;, &#39;strict&#39;, &#39;none&#39;],
+                 cookie_secure: bool,
                  session_expired_status_code: int,
                  error_handlers: ErrorHandlers,
                  anti_csrf: str,
@@ -245,27 +267,35 @@ class SessionConfig:
         self.jwt = jwt
 
 
-def validate_and_normalise_user_input(
-    recipe: SessionRecipe, app_info: AppInfo,
-    cookie_domain: Union[str, None] = None,
-    cookie_secure: Union[str, None] = None,
-    cookie_same_site: Union[Literal[&#34;lax&#34;, &#34;none&#34;, &#34;strict&#34;], None] = None,
-    session_expired_status_code: Union[str, None] = None,
-    anti_csrf: Union[Literal[&#34;VIA_TOKEN&#34;, &#34;VIA_CUSTOM_HEADER&#34;, &#34;NONE&#34;], None] = None,
-    error_handlers: Union[InputErrorHandlers, None] = None,
-    override: Union[InputOverrideConfig, None] = None,
-    jwt: Union[JWTConfig, None] = None
-):
-    cookie_domain = normalise_session_scope(recipe, cookie_domain) if cookie_domain is not None else None
+def validate_and_normalise_user_input(app_info: AppInfo,
+                                      cookie_domain: Union[str, None] = None,
+                                      cookie_secure: Union[bool, None] = None,
+                                      cookie_same_site: Union[Literal[&#34;lax&#34;,
+                                                                      &#34;none&#34;, &#34;strict&#34;], None] = None,
+                                      session_expired_status_code: Union[int,
+                                                                         None] = None,
+                                      anti_csrf: Union[Literal[&#34;VIA_TOKEN&#34;,
+                                                               &#34;VIA_CUSTOM_HEADER&#34;, &#34;NONE&#34;], None] = None,
+                                      error_handlers: Union[ErrorHandlers,
+                                                            None] = None,
+                                      override: Union[InputOverrideConfig,
+                                                      None] = None,
+                                      jwt: Union[JWTConfig, None] = None
+                                      ):
+    cookie_domain = normalise_session_scope(
+        cookie_domain) if cookie_domain is not None else None
     top_level_api_domain = get_top_level_domain_for_same_site_resolution(
         app_info.api_domain.get_as_string_dangerous())
     top_level_website_domain = get_top_level_domain_for_same_site_resolution(
         app_info.website_domain.get_as_string_dangerous())
 
-    api_domain_scheme = get_url_scheme(app_info.api_domain.get_as_string_dangerous())
-    website_domain_scheme = get_url_scheme(app_info.website_domain.get_as_string_dangerous())
+    api_domain_scheme = get_url_scheme(
+        app_info.api_domain.get_as_string_dangerous())
+    website_domain_scheme = get_url_scheme(
+        app_info.website_domain.get_as_string_dangerous())
     if cookie_same_site is not None:
-        cookie_same_site = normalise_same_site(cookie_same_site)
+        cookie_same_site = normalise_same_site(
+            cookie_same_site)
     elif (top_level_api_domain != top_level_website_domain) or (api_domain_scheme != website_domain_scheme):
         cookie_same_site = &#39;none&#39;
     else:
@@ -278,21 +308,8 @@ def validate_and_normalise_user_input(
     if anti_csrf is None:
         anti_csrf = &#39;VIA_CUSTOM_HEADER&#39; if cookie_same_site == &#39;none&#39; else &#39;NONE&#39;
 
-    on_token_theft_detected = default_token_theft_detected_callback
-    on_try_refresh_token = default_try_refresh_token_callback
-    on_unauthorised = default_unauthorised_callback
     if error_handlers is None:
         error_handlers = InputErrorHandlers()
-    if error_handlers.on_token_theft_detected is not None:
-        on_token_theft_detected = error_handlers.on_token_theft_detected
-    if error_handlers.on_unauthorised is not None:
-        on_unauthorised = error_handlers.on_unauthorised
-    error_handlers = ErrorHandlers(
-        recipe,
-        on_token_theft_detected,
-        on_try_refresh_token,
-        on_unauthorised
-    )
 
     if (cookie_same_site == &#39;none&#39;) and \
             not cookie_secure and \
@@ -330,7 +347,7 @@ def validate_and_normalise_user_input(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.utils.default_token_theft_detected_callback"><code class="name flex">
-<span>async def <span class="ident">default_token_theft_detected_callback</span></span>(<span>_: BaseRequest, session_handle: str, __: str, response: BaseResponse)</span>
+<span>async def <span class="ident">default_token_theft_detected_callback</span></span>(<span>_: BaseRequest, session_handle: str, __: str, response: BaseResponse) ‑> BaseResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -338,15 +355,15 @@ def validate_and_normalise_user_input(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def default_token_theft_detected_callback(_: BaseRequest, session_handle: str, __: str, response: BaseResponse):
+<pre><code class="python">async def default_token_theft_detected_callback(_: BaseRequest, session_handle: str, __: str, response: BaseResponse) -&gt; BaseResponse:
     from .recipe import SessionRecipe
-    await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle)
+    await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle, {})
     return send_non_200_response(&#39;token theft detected&#39;, SessionRecipe.get_instance(
     ).config.session_expired_status_code, response)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.default_try_refresh_token_callback"><code class="name flex">
-<span>async def <span class="ident">default_try_refresh_token_callback</span></span>(<span>_: BaseRequest, __: str, response: BaseResponse)</span>
+<span>async def <span class="ident">default_try_refresh_token_callback</span></span>(<span>_: BaseRequest, __: str, response: BaseResponse) ‑> BaseResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -354,14 +371,14 @@ def validate_and_normalise_user_input(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def default_try_refresh_token_callback(_: BaseRequest, __: str, response: BaseResponse):
+<pre><code class="python">async def default_try_refresh_token_callback(_: BaseRequest, __: str, response: BaseResponse) -&gt; BaseResponse:
     from .recipe import SessionRecipe
     return send_non_200_response(&#39;try refresh token&#39;, SessionRecipe.get_instance(
     ).config.session_expired_status_code, response)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.default_unauthorised_callback"><code class="name flex">
-<span>async def <span class="ident">default_unauthorised_callback</span></span>(<span>_: BaseRequest, __: str, response: BaseResponse)</span>
+<span>async def <span class="ident">default_unauthorised_callback</span></span>(<span>_: BaseRequest, __: str, response: BaseResponse) ‑> BaseResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -369,7 +386,7 @@ def validate_and_normalise_user_input(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def default_unauthorised_callback(_: BaseRequest, __: str, response: BaseResponse):
+<pre><code class="python">async def default_unauthorised_callback(_: BaseRequest, __: str, response: BaseResponse) -&gt; BaseResponse:
     from .recipe import SessionRecipe
     return send_non_200_response(&#39;unauthorised&#39;, SessionRecipe.get_instance(
     ).config.session_expired_status_code, response)</code></pre>
@@ -388,18 +405,21 @@ def validate_and_normalise_user_input(
     url_obj = urlparse(url)
     hostname = url_obj.hostname
 
+    if hostname is None:
+        raise Exception(&#34;Should not come here&#34;)
+
     if hostname.startswith(&#39;localhost&#39;) or is_an_ip_address(hostname):
         return &#39;localhost&#39;
-    parsed_url = extract(hostname)
-    if parsed_url == &#39;&#39;:
+    parsed_url: Any = extract(hostname)
+    if parsed_url.domain == &#39;&#39;:  # type: ignore
         raise Exception(
             &#39;Please make sure that the apiDomain and websiteDomain have correct values&#39;)
 
-    return parsed_url.domain + &#39;.&#39; + parsed_url.suffix</code></pre>
+    return parsed_url.domain + &#39;.&#39; + parsed_url.suffix  # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.get_url_scheme"><code class="name flex">
-<span>def <span class="ident">get_url_scheme</span></span>(<span>url) ‑> str</span>
+<span>def <span class="ident">get_url_scheme</span></span>(<span>url: str) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -407,13 +427,13 @@ def validate_and_normalise_user_input(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_url_scheme(url) -&gt; str:
+<pre><code class="python">def get_url_scheme(url: str) -&gt; str:
     url_obj = urlparse(url)
     return url_obj.scheme</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.normalise_same_site"><code class="name flex">
-<span>def <span class="ident">normalise_same_site</span></span>(<span>same_site: str) ‑> str</span>
+<span>def <span class="ident">normalise_same_site</span></span>(<span>same_site: str) ‑> Literal['strict', 'lax', 'none']</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -421,18 +441,18 @@ def validate_and_normalise_user_input(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def normalise_same_site(same_site: str) -&gt; str:
+<pre><code class="python">def normalise_same_site(same_site: str) -&gt; Literal[&#39;strict&#39;, &#39;lax&#39;, &#39;none&#39;]:
     same_site = same_site.strip()
     same_site = same_site.lower()
     allowed_values = {&#39;strict&#39;, &#39;lax&#39;, &#39;none&#39;}
     if same_site not in allowed_values:
         raise Exception(
             &#39;cookie same site must be one of &#34;strict&#34;, &#34;lax&#34;, or &#34;none&#34;&#39;)
-    return same_site</code></pre>
+    return same_site  # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.normalise_session_scope"><code class="name flex">
-<span>def <span class="ident">normalise_session_scope</span></span>(<span>recipe: SessionRecipe, session_scope: str) ‑> str</span>
+<span>def <span class="ident">normalise_session_scope</span></span>(<span>session_scope: str) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -440,18 +460,21 @@ def validate_and_normalise_user_input(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def normalise_session_scope(recipe: SessionRecipe, session_scope: str) -&gt; str:
+<pre><code class="python">def normalise_session_scope(session_scope: str) -&gt; str:
     def helper(scope: str) -&gt; str:
         scope = scope.strip()
 
         if scope.startswith(&#39;.&#39;):
             scope = scope[1:]
 
-        if (not scope.startswith(&#39;https://&#39;)) and (not scope.startswith(&#39;http://&#39;)):
+        if (not scope.startswith(&#39;https://&#39;)
+            ) and (not scope.startswith(&#39;http://&#39;)):
             scope = &#39;http://&#39; + scope
 
         try:
             url_obj = urlparse(scope)
+            if url_obj.hostname is None:
+                raise Exception(&#34;Should not come here&#34;)
             scope = url_obj.hostname
 
             if scope.startswith(&#39;.&#39;):
@@ -459,21 +482,20 @@ def validate_and_normalise_user_input(
 
             return scope
         except Exception:
-            raise_general_exception(
-                recipe, &#39;Please provide a valid sessionScope&#39;)
+            raise_general_exception(&#39;Please provide a valid sessionScope&#39;)
 
     no_dot_normalised = helper(session_scope)
     if no_dot_normalised == &#39;localhost&#39; or is_an_ip_address(no_dot_normalised):
         return no_dot_normalised
 
-    if no_dot_normalised.startswith(&#39;.&#39;):
+    if no_dot_normalised[0] == &#39;.&#39;:
         return no_dot_normalised[1:]
 
     return no_dot_normalised</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>recipe: SessionRecipe, app_info: AppInfo, cookie_domain: Union[str, None] = None, cookie_secure: Union[str, None] = None, cookie_same_site: "Union[Literal['lax', 'none', 'strict'], None]" = None, session_expired_status_code: Union[str, None] = None, anti_csrf: "Union[Literal['VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE'], None]" = None, error_handlers: Union[<a title="supertokens_python.recipe.session.utils.InputErrorHandlers" href="#supertokens_python.recipe.session.utils.InputErrorHandlers">InputErrorHandlers</a>, None] = None, override: Union[<a title="supertokens_python.recipe.session.utils.InputOverrideConfig" href="#supertokens_python.recipe.session.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None, jwt: Union[<a title="supertokens_python.recipe.session.utils.JWTConfig" href="#supertokens_python.recipe.session.utils.JWTConfig">JWTConfig</a>, None] = None)</span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal['lax', 'none', 'strict'], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal['VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE'], None]" = None, error_handlers: Union[<a title="supertokens_python.recipe.session.utils.ErrorHandlers" href="#supertokens_python.recipe.session.utils.ErrorHandlers">ErrorHandlers</a>, None] = None, override: Union[<a title="supertokens_python.recipe.session.utils.InputOverrideConfig" href="#supertokens_python.recipe.session.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None, jwt: Union[<a title="supertokens_python.recipe.session.utils.JWTConfig" href="#supertokens_python.recipe.session.utils.JWTConfig">JWTConfig</a>, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -481,27 +503,35 @@ def validate_and_normalise_user_input(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_and_normalise_user_input(
-    recipe: SessionRecipe, app_info: AppInfo,
-    cookie_domain: Union[str, None] = None,
-    cookie_secure: Union[str, None] = None,
-    cookie_same_site: Union[Literal[&#34;lax&#34;, &#34;none&#34;, &#34;strict&#34;], None] = None,
-    session_expired_status_code: Union[str, None] = None,
-    anti_csrf: Union[Literal[&#34;VIA_TOKEN&#34;, &#34;VIA_CUSTOM_HEADER&#34;, &#34;NONE&#34;], None] = None,
-    error_handlers: Union[InputErrorHandlers, None] = None,
-    override: Union[InputOverrideConfig, None] = None,
-    jwt: Union[JWTConfig, None] = None
-):
-    cookie_domain = normalise_session_scope(recipe, cookie_domain) if cookie_domain is not None else None
+<pre><code class="python">def validate_and_normalise_user_input(app_info: AppInfo,
+                                      cookie_domain: Union[str, None] = None,
+                                      cookie_secure: Union[bool, None] = None,
+                                      cookie_same_site: Union[Literal[&#34;lax&#34;,
+                                                                      &#34;none&#34;, &#34;strict&#34;], None] = None,
+                                      session_expired_status_code: Union[int,
+                                                                         None] = None,
+                                      anti_csrf: Union[Literal[&#34;VIA_TOKEN&#34;,
+                                                               &#34;VIA_CUSTOM_HEADER&#34;, &#34;NONE&#34;], None] = None,
+                                      error_handlers: Union[ErrorHandlers,
+                                                            None] = None,
+                                      override: Union[InputOverrideConfig,
+                                                      None] = None,
+                                      jwt: Union[JWTConfig, None] = None
+                                      ):
+    cookie_domain = normalise_session_scope(
+        cookie_domain) if cookie_domain is not None else None
     top_level_api_domain = get_top_level_domain_for_same_site_resolution(
         app_info.api_domain.get_as_string_dangerous())
     top_level_website_domain = get_top_level_domain_for_same_site_resolution(
         app_info.website_domain.get_as_string_dangerous())
 
-    api_domain_scheme = get_url_scheme(app_info.api_domain.get_as_string_dangerous())
-    website_domain_scheme = get_url_scheme(app_info.website_domain.get_as_string_dangerous())
+    api_domain_scheme = get_url_scheme(
+        app_info.api_domain.get_as_string_dangerous())
+    website_domain_scheme = get_url_scheme(
+        app_info.website_domain.get_as_string_dangerous())
     if cookie_same_site is not None:
-        cookie_same_site = normalise_same_site(cookie_same_site)
+        cookie_same_site = normalise_same_site(
+            cookie_same_site)
     elif (top_level_api_domain != top_level_website_domain) or (api_domain_scheme != website_domain_scheme):
         cookie_same_site = &#39;none&#39;
     else:
@@ -514,21 +544,8 @@ def validate_and_normalise_user_input(
     if anti_csrf is None:
         anti_csrf = &#39;VIA_CUSTOM_HEADER&#39; if cookie_same_site == &#39;none&#39; else &#39;NONE&#39;
 
-    on_token_theft_detected = default_token_theft_detected_callback
-    on_try_refresh_token = default_try_refresh_token_callback
-    on_unauthorised = default_unauthorised_callback
     if error_handlers is None:
         error_handlers = InputErrorHandlers()
-    if error_handlers.on_token_theft_detected is not None:
-        on_token_theft_detected = error_handlers.on_token_theft_detected
-    if error_handlers.on_unauthorised is not None:
-        on_unauthorised = error_handlers.on_unauthorised
-    error_handlers = ErrorHandlers(
-        recipe,
-        on_token_theft_detected,
-        on_try_refresh_token,
-        on_unauthorised
-    )
 
     if (cookie_same_site == &#39;none&#39;) and \
             not cookie_secure and \
@@ -565,7 +582,7 @@ def validate_and_normalise_user_input(
 <dl>
 <dt id="supertokens_python.recipe.session.utils.ErrorHandlers"><code class="flex name class">
 <span>class <span class="ident">ErrorHandlers</span></span>
-<span>(</span><span>recipe: SessionRecipe, on_token_theft_detected, on_try_refresh_token, on_unauthorised)</span>
+<span>(</span><span>on_token_theft_detected: Callable[[BaseRequest, str, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_try_refresh_token: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_unauthorised: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -574,42 +591,51 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ErrorHandlers:
-    def __init__(self, recipe: SessionRecipe, on_token_theft_detected,
-                 on_try_refresh_token, on_unauthorised):
-        self.__recipe = recipe
+    def __init__(self, on_token_theft_detected: Callable[[BaseRequest, str, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]],
+                 on_try_refresh_token: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_unauthorised: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]):
         self.__on_token_theft_detected = on_token_theft_detected
         self.__on_try_refresh_token = on_try_refresh_token
         self.__on_unauthorised = on_unauthorised
 
-    async def on_token_theft_detected(self, request: BaseRequest, session_handle: str, user_id: str):
-        try:
-            response = await self.__on_token_theft_detected(request, session_handle, user_id)
-        except TypeError:
-            response = self.__on_token_theft_detected(
-                request, session_handle, user_id)
-        clear_cookies(self.__recipe, response)
-        return response
+    async def on_token_theft_detected(self, recipe: SessionRecipe, request: BaseRequest, session_handle: str, user_id: str, response: BaseResponse) -&gt; BaseResponse:
+        result: Union[None, BaseResponse] = None
+        temp = self.__on_token_theft_detected(
+            request, session_handle, user_id, response)
+        if isinstance(temp, Awaitable):
+            result = await temp
+        else:
+            result = temp
+        clear_cookies(recipe, result)
+        return result
 
     async def on_try_refresh_token(self, request: BaseRequest, message: str, response: BaseResponse):
-        try:
-            response = await self.__on_try_refresh_token(request, message, response)
-        except TypeError:
-            response = await self.__on_try_refresh_token(request, message, response)
-        return response
+        result: Union[None, BaseResponse] = None
+        temp = self.__on_try_refresh_token(request, message, response)
+        if isinstance(temp, Awaitable):
+            result = await temp
+        else:
+            result = temp
+        return result
 
-    async def on_unauthorised(self, do_clear_cookies: bool, request: BaseRequest, message: str, response: BaseResponse):
-        try:
-            await self.__on_unauthorised(request, message, response)
-        except TypeError:
-            await self.__on_unauthorised(request, message, response)
+    async def on_unauthorised(self, recipe: SessionRecipe, do_clear_cookies: bool, request: BaseRequest, message: str, response: BaseResponse):
+        result: Union[None, BaseResponse] = None
+        temp = self.__on_unauthorised(request, message, response)
+        if isinstance(temp, Awaitable):
+            result = await temp
+        else:
+            result = temp
         if do_clear_cookies:
-            clear_cookies(self.__recipe, response)
-        return response</code></pre>
+            clear_cookies(recipe, result)
+        return result</code></pre>
 </details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.session.utils.InputErrorHandlers" href="#supertokens_python.recipe.session.utils.InputErrorHandlers">InputErrorHandlers</a></li>
+</ul>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.utils.ErrorHandlers.on_token_theft_detected"><code class="name flex">
-<span>async def <span class="ident">on_token_theft_detected</span></span>(<span>self, request: BaseRequest, session_handle: str, user_id: str)</span>
+<span>async def <span class="ident">on_token_theft_detected</span></span>(<span>self, recipe: SessionRecipe, request: BaseRequest, session_handle: str, user_id: str, response: BaseResponse) ‑> BaseResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -617,14 +643,16 @@ def validate_and_normalise_user_input(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def on_token_theft_detected(self, request: BaseRequest, session_handle: str, user_id: str):
-    try:
-        response = await self.__on_token_theft_detected(request, session_handle, user_id)
-    except TypeError:
-        response = self.__on_token_theft_detected(
-            request, session_handle, user_id)
-    clear_cookies(self.__recipe, response)
-    return response</code></pre>
+<pre><code class="python">async def on_token_theft_detected(self, recipe: SessionRecipe, request: BaseRequest, session_handle: str, user_id: str, response: BaseResponse) -&gt; BaseResponse:
+    result: Union[None, BaseResponse] = None
+    temp = self.__on_token_theft_detected(
+        request, session_handle, user_id, response)
+    if isinstance(temp, Awaitable):
+        result = await temp
+    else:
+        result = temp
+    clear_cookies(recipe, result)
+    return result</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.ErrorHandlers.on_try_refresh_token"><code class="name flex">
@@ -637,15 +665,17 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def on_try_refresh_token(self, request: BaseRequest, message: str, response: BaseResponse):
-    try:
-        response = await self.__on_try_refresh_token(request, message, response)
-    except TypeError:
-        response = await self.__on_try_refresh_token(request, message, response)
-    return response</code></pre>
+    result: Union[None, BaseResponse] = None
+    temp = self.__on_try_refresh_token(request, message, response)
+    if isinstance(temp, Awaitable):
+        result = await temp
+    else:
+        result = temp
+    return result</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.ErrorHandlers.on_unauthorised"><code class="name flex">
-<span>async def <span class="ident">on_unauthorised</span></span>(<span>self, do_clear_cookies: bool, request: BaseRequest, message: str, response: BaseResponse)</span>
+<span>async def <span class="ident">on_unauthorised</span></span>(<span>self, recipe: SessionRecipe, do_clear_cookies: bool, request: BaseRequest, message: str, response: BaseResponse)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -653,21 +683,23 @@ def validate_and_normalise_user_input(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def on_unauthorised(self, do_clear_cookies: bool, request: BaseRequest, message: str, response: BaseResponse):
-    try:
-        await self.__on_unauthorised(request, message, response)
-    except TypeError:
-        await self.__on_unauthorised(request, message, response)
+<pre><code class="python">async def on_unauthorised(self, recipe: SessionRecipe, do_clear_cookies: bool, request: BaseRequest, message: str, response: BaseResponse):
+    result: Union[None, BaseResponse] = None
+    temp = self.__on_unauthorised(request, message, response)
+    if isinstance(temp, Awaitable):
+        result = await temp
+    else:
+        result = temp
     if do_clear_cookies:
-        clear_cookies(self.__recipe, response)
-    return response</code></pre>
+        clear_cookies(recipe, result)
+    return result</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.InputErrorHandlers"><code class="flex name class">
 <span>class <span class="ident">InputErrorHandlers</span></span>
-<span>(</span><span>on_token_theft_detected: Union[Callable[[BaseRequest, str, str], Awaitable[None]], None] = None, on_unauthorised: Union[Callable[[BaseRequest, str, BaseResponse], Awaitable[None]], None] = None)</span>
+<span>(</span><span>on_token_theft_detected: Union[None, Callable[[BaseRequest, str, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]] = None, on_unauthorised: Union[Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -675,13 +707,22 @@ def validate_and_normalise_user_input(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class InputErrorHandlers:
+<pre><code class="python">class InputErrorHandlers(ErrorHandlers):
     def __init__(self,
-                 on_token_theft_detected: Union[Callable[[BaseRequest, str, str], Awaitable[None]], None] = None,
-                 on_unauthorised: Union[Callable[[BaseRequest, str, BaseResponse], Awaitable[None]], None] = None):
-        self.on_token_theft_detected = on_token_theft_detected
-        self.on_unauthorised = on_unauthorised</code></pre>
+                 on_token_theft_detected: Union[None, Callable[[
+                     BaseRequest, str, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]] = None,
+                 on_unauthorised: Union[Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], None] = None):
+        if on_token_theft_detected is None:
+            on_token_theft_detected = default_token_theft_detected_callback
+        if on_unauthorised is None:
+            on_unauthorised = default_unauthorised_callback
+        super().__init__(on_token_theft_detected,
+                         default_try_refresh_token_callback, on_unauthorised)</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.session.utils.ErrorHandlers" href="#supertokens_python.recipe.session.utils.ErrorHandlers">ErrorHandlers</a></li>
+</ul>
 </dd>
 <dt id="supertokens_python.recipe.session.utils.InputOverrideConfig"><code class="flex name class">
 <span>class <span class="ident">InputOverrideConfig</span></span>
@@ -696,7 +737,8 @@ def validate_and_normalise_user_input(
 <pre><code class="python">class InputOverrideConfig:
     def __init__(
         self,
-        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        functions: Union[Callable[[RecipeInterface],
+                                  RecipeInterface], None] = None,
         apis: Union[Callable[[APIInterface], APIInterface], None] = None,
         openid_feature: Union[OpenIdInputOverrideConfig, None] = None
     ):
@@ -716,7 +758,8 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class JWTConfig:
-    def __init__(self, enable: bool, property_name_in_access_token_payload: Union[str, None] = None, issuer: Union[str, None] = None):
+    def __init__(self, enable: bool, property_name_in_access_token_payload:
+                 Union[str, None] = None, issuer: Union[str, None] = None):
         if property_name_in_access_token_payload is None:
             property_name_in_access_token_payload = &#39;jwt&#39;
         if property_name_in_access_token_payload == ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY:
@@ -745,7 +788,7 @@ def validate_and_normalise_user_input(
 </dd>
 <dt id="supertokens_python.recipe.session.utils.SessionConfig"><code class="flex name class">
 <span>class <span class="ident">SessionConfig</span></span>
-<span>(</span><span>refresh_token_path: NormalisedURLPath, cookie_domain: str, cookie_same_site: str, cookie_secure: str, session_expired_status_code: int, error_handlers: <a title="supertokens_python.recipe.session.utils.ErrorHandlers" href="#supertokens_python.recipe.session.utils.ErrorHandlers">ErrorHandlers</a>, anti_csrf: str, override: <a title="supertokens_python.recipe.session.utils.OverrideConfig" href="#supertokens_python.recipe.session.utils.OverrideConfig">OverrideConfig</a>, framework: str, mode: str, jwt: <a title="supertokens_python.recipe.session.utils.JWTConfig" href="#supertokens_python.recipe.session.utils.JWTConfig">JWTConfig</a>)</span>
+<span>(</span><span>refresh_token_path: NormalisedURLPath, cookie_domain: Union[None, str], cookie_same_site: "Literal['lax', 'strict', 'none']", cookie_secure: bool, session_expired_status_code: int, error_handlers: <a title="supertokens_python.recipe.session.utils.ErrorHandlers" href="#supertokens_python.recipe.session.utils.ErrorHandlers">ErrorHandlers</a>, anti_csrf: str, override: <a title="supertokens_python.recipe.session.utils.OverrideConfig" href="#supertokens_python.recipe.session.utils.OverrideConfig">OverrideConfig</a>, framework: str, mode: str, jwt: <a title="supertokens_python.recipe.session.utils.JWTConfig" href="#supertokens_python.recipe.session.utils.JWTConfig">JWTConfig</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -756,9 +799,9 @@ def validate_and_normalise_user_input(
 <pre><code class="python">class SessionConfig:
     def __init__(self,
                  refresh_token_path: NormalisedURLPath,
-                 cookie_domain: str,
-                 cookie_same_site: str,
-                 cookie_secure: str,
+                 cookie_domain: Union[None, str],
+                 cookie_same_site: Literal[&#39;lax&#39;, &#39;strict&#39;, &#39;none&#39;],
+                 cookie_secure: bool,
                  session_expired_status_code: int,
                  error_handlers: ErrorHandlers,
                  anti_csrf: str,

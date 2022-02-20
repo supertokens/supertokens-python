@@ -41,51 +41,65 @@
 # under the License.
 from __future__ import annotations
 
-from typing import List, Callable, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
 from supertokens_python.recipe.thirdparty.provider import Provider
 
-from .interfaces import RecipeInterface, APIInterface
-from .types import (
-    NextPaginationToken
-)
-from ..emailpassword.utils import InputSignUpFeature, InputResetPasswordUsingTokenFeature
+from ..emailpassword.utils import (InputResetPasswordUsingTokenFeature,
+                                   InputSignUpFeature)
+from ..emailverification.types import User as EmailVerificationUser
+from .interfaces import APIInterface, RecipeInterface
+from .types import User
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyEmailPasswordRecipe
-from supertokens_python.utils import utf_base64decode, utf_base64encode
-from supertokens_python.recipe.emailpassword.types import UsersResponse
-from supertokens_python.recipe.emailverification.utils import (
-    InputEmailVerificationConfig, ParentRecipeEmailVerificationConfig,
+
+from supertokens_python.recipe.emailverification.utils import \
     OverrideConfig as EmailVerificationOverrideConfig
-)
+from supertokens_python.recipe.emailverification.utils import \
+    ParentRecipeEmailVerificationConfig
 
 
-def email_verification_create_and_send_custom_email(recipe: ThirdPartyEmailPasswordRecipe,
-                                                    create_and_send_custom_email):
-    async def func(user, link):
-        user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
+class InputEmailVerificationConfig:
+    def __init__(self,
+                 get_email_verification_url: Union[Callable[[
+                     User, Any], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[
+                     User, str, Any], Awaitable[None]], None] = None
+                 ):
+        self.get_email_verification_url = get_email_verification_url
+        self.create_and_send_custom_email = create_and_send_custom_email
+
+
+def email_verification_create_and_send_custom_email(
+        recipe: ThirdPartyEmailPasswordRecipe, create_and_send_custom_email: Callable[[
+            User, str, Dict[str, Any]], Awaitable[None]]) -&gt; Callable[[
+                EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]]:
+    async def func(user: EmailVerificationUser, link: str, user_context: Dict[str, Any]):
+        user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id, user_context)
         if user_info is None:
-            raise Exception(&#39;User ID unknown&#39;)
-        return await create_and_send_custom_email(user_info, link)
+            raise Exception(&#39;Unknown User ID provided&#39;)
+        return await create_and_send_custom_email(user_info, link, user_context)
 
     return func
 
 
 def email_verification_get_email_verification_url(
-        recipe: ThirdPartyEmailPasswordRecipe, get_email_verification_url):
-    async def func(user):
-        user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
+        recipe: ThirdPartyEmailPasswordRecipe, get_email_verification_url: Callable[[
+            User, Any], Awaitable[str]]) -&gt; Callable[[
+                EmailVerificationUser, Any], Awaitable[str]]:
+    async def func(user: EmailVerificationUser, user_context: Dict[str, Any]):
+        user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id, user_context)
         if user_info is None:
-            raise Exception(&#39;User ID unknown&#39;)
-        return await get_email_verification_url(user_info)
+            raise Exception(&#39;Unknown User ID provided&#39;)
+        return await get_email_verification_url(user_info, user_context)
 
     return func
 
 
 def validate_and_normalise_email_verification_config(
         recipe: ThirdPartyEmailPasswordRecipe, config: Union[InputEmailVerificationConfig, None],
-        override: InputOverrideConfig):
+        override: InputOverrideConfig) -&gt; ParentRecipeEmailVerificationConfig:
     create_and_send_custom_email = None
     get_email_verification_url = None
     if config is None:
@@ -107,7 +121,8 @@ def validate_and_normalise_email_verification_config(
 
 class InputOverrideConfig:
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-                 apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+                 apis: Union[Callable[[APIInterface],
+                                      APIInterface], None] = None,
                  email_verification_feature: Union[EmailVerificationOverrideConfig, None] = None):
         self.functions = functions
         self.apis = apis
@@ -127,7 +142,7 @@ class ThirdPartyEmailPasswordConfig:
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
                  sign_up_feature: Union[InputSignUpFeature, None],
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None],
-                 override: Union[OverrideConfig, None]):
+                 override: OverrideConfig):
         self.sign_up_feature = sign_up_feature
         self.email_verification_feature = email_verification_feature
         self.providers = providers
@@ -147,93 +162,7 @@ def validate_and_normalise_user_input(
         providers = []
     if override is None:
         override = InputOverrideConfig()
-    email_verification_feature = validate_and_normalise_email_verification_config(
-        recipe,
-        email_verification_feature,
-        override
-    )
-    return ThirdPartyEmailPasswordConfig(providers, email_verification_feature, sign_up_feature,
-                                         reset_password_using_token_feature,
-                                         OverrideConfig(functions=override.functions, apis=override.apis)
-                                         )
-
-
-def create_new_pagination_token(user_id: str, time_joined: int) -&gt; str:
-    return utf_base64encode(user_id + &#39;;&#39; + str(time_joined))
-
-
-def combine_pagination_tokens(third_party_pagination_token: Union[str, None],
-                              email_password_pagination_token: Union[str, None]):
-    if third_party_pagination_token is None:
-        third_party_pagination_token = &#39;null&#39;
-    if email_password_pagination_token is None:
-        email_password_pagination_token = &#39;null&#39;
-    return utf_base64encode(third_party_pagination_token + &#39;;&#39; + email_password_pagination_token)
-
-
-def extract_pagination_token(
-        next_pagination_token: str) -&gt; NextPaginationToken:
-    extracted_tokens = utf_base64decode(next_pagination_token).split(&#39;;&#39;)
-    if len(extracted_tokens) != 2:
-        raise Exception(&#39;Pagination token is invalid&#39;)
-    return NextPaginationToken(None if extracted_tokens[0] == &#39;null&#39; else extracted_tokens[0],
-                               None if extracted_tokens[1] == &#39;null&#39; else extracted_tokens[1])
-
-
-def combine_pagination_results(third_party_result: UsersResponse, email_password_result: UsersResponse, limit: int,
-                               oldest_first: bool) -&gt; UsersResponse:
-    max_loop = min(
-        limit, len(
-            third_party_result.users), len(
-            email_password_result.users))
-    third_party_result_loop_index = 0
-    email_password_result_loop_index = 0
-    users = []
-    for i in range(max_loop):
-        if (
-                third_party_result_loop_index != len(third_party_result.users)
-                and
-                (
-                    email_password_result_loop_index == len(
-                        email_password_result.users)
-                    or
-                    (
-                        oldest_first and third_party_result.users[third_party_result_loop_index].time_joined &lt;
-                        email_password_result.users[email_password_result_loop_index].time_joined
-                    )
-                    or
-                    (
-                        not oldest_first and third_party_result.users[
-                            third_party_result_loop_index].time_joined &gt;
-                        email_password_result.users[email_password_result_loop_index].time_joined
-                    )
-                )
-        ):
-            users.append(
-                third_party_result.users[third_party_result_loop_index])
-            third_party_result_loop_index += 1
-        else:
-            users.append(
-                email_password_result.users[third_party_result_loop_index])
-            email_password_result_loop_index += 1
-
-    if third_party_result_loop_index == len(third_party_result.users):
-        third_party_pagination_token = third_party_result.next_pagination_token
-    else:
-        third_party_pagination_token = create_new_pagination_token(
-            third_party_result.users[third_party_result_loop_index].user_id,
-            third_party_result.users[third_party_result_loop_index].time_joined
-        )
-    if email_password_result_loop_index == len(email_password_result.users):
-        email_password_pagination_token = email_password_result.next_pagination_token
-    else:
-        email_password_pagination_token = create_new_pagination_token(
-            email_password_result.users[email_password_result_loop_index].user_id,
-            email_password_result.users[email_password_result_loop_index].time_joined
-        )
-    next_pagination_token = combine_pagination_tokens(
-        third_party_pagination_token, email_password_pagination_token)
-    return UsersResponse(users, next_pagination_token)</code></pre>
+    return ThirdPartyEmailPasswordConfig(providers, validate_and_normalise_email_verification_config(recipe, email_verification_feature, override), sign_up_feature, reset_password_using_token_feature, OverrideConfig(functions=override.functions, apis=override.apis))</code></pre>
 </details>
 </section>
 <section>
@@ -243,104 +172,8 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.combine_pagination_results"><code class="name flex">
-<span>def <span class="ident">combine_pagination_results</span></span>(<span>third_party_result: UsersResponse, email_password_result: UsersResponse, limit: int, oldest_first: bool) ‑> <a title="supertokens_python.recipe.emailpassword.types.UsersResponse" href="../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.UsersResponse">UsersResponse</a></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def combine_pagination_results(third_party_result: UsersResponse, email_password_result: UsersResponse, limit: int,
-                               oldest_first: bool) -&gt; UsersResponse:
-    max_loop = min(
-        limit, len(
-            third_party_result.users), len(
-            email_password_result.users))
-    third_party_result_loop_index = 0
-    email_password_result_loop_index = 0
-    users = []
-    for i in range(max_loop):
-        if (
-                third_party_result_loop_index != len(third_party_result.users)
-                and
-                (
-                    email_password_result_loop_index == len(
-                        email_password_result.users)
-                    or
-                    (
-                        oldest_first and third_party_result.users[third_party_result_loop_index].time_joined &lt;
-                        email_password_result.users[email_password_result_loop_index].time_joined
-                    )
-                    or
-                    (
-                        not oldest_first and third_party_result.users[
-                            third_party_result_loop_index].time_joined &gt;
-                        email_password_result.users[email_password_result_loop_index].time_joined
-                    )
-                )
-        ):
-            users.append(
-                third_party_result.users[third_party_result_loop_index])
-            third_party_result_loop_index += 1
-        else:
-            users.append(
-                email_password_result.users[third_party_result_loop_index])
-            email_password_result_loop_index += 1
-
-    if third_party_result_loop_index == len(third_party_result.users):
-        third_party_pagination_token = third_party_result.next_pagination_token
-    else:
-        third_party_pagination_token = create_new_pagination_token(
-            third_party_result.users[third_party_result_loop_index].user_id,
-            third_party_result.users[third_party_result_loop_index].time_joined
-        )
-    if email_password_result_loop_index == len(email_password_result.users):
-        email_password_pagination_token = email_password_result.next_pagination_token
-    else:
-        email_password_pagination_token = create_new_pagination_token(
-            email_password_result.users[email_password_result_loop_index].user_id,
-            email_password_result.users[email_password_result_loop_index].time_joined
-        )
-    next_pagination_token = combine_pagination_tokens(
-        third_party_pagination_token, email_password_pagination_token)
-    return UsersResponse(users, next_pagination_token)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.combine_pagination_tokens"><code class="name flex">
-<span>def <span class="ident">combine_pagination_tokens</span></span>(<span>third_party_pagination_token: Union[str, None], email_password_pagination_token: Union[str, None])</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def combine_pagination_tokens(third_party_pagination_token: Union[str, None],
-                              email_password_pagination_token: Union[str, None]):
-    if third_party_pagination_token is None:
-        third_party_pagination_token = &#39;null&#39;
-    if email_password_pagination_token is None:
-        email_password_pagination_token = &#39;null&#39;
-    return utf_base64encode(third_party_pagination_token + &#39;;&#39; + email_password_pagination_token)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.create_new_pagination_token"><code class="name flex">
-<span>def <span class="ident">create_new_pagination_token</span></span>(<span>user_id: str, time_joined: int) ‑> str</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def create_new_pagination_token(user_id: str, time_joined: int) -&gt; str:
-    return utf_base64encode(user_id + &#39;;&#39; + str(time_joined))</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.email_verification_create_and_send_custom_email"><code class="name flex">
-<span>def <span class="ident">email_verification_create_and_send_custom_email</span></span>(<span>recipe: ThirdPartyEmailPasswordRecipe, create_and_send_custom_email)</span>
+<span>def <span class="ident">email_verification_create_and_send_custom_email</span></span>(<span>recipe: ThirdPartyEmailPasswordRecipe, create_and_send_custom_email: Callable[[User, str, Dict[str, Any]], Awaitable[None]]) ‑> Callable[[EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -348,19 +181,21 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def email_verification_create_and_send_custom_email(recipe: ThirdPartyEmailPasswordRecipe,
-                                                    create_and_send_custom_email):
-    async def func(user, link):
-        user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
+<pre><code class="python">def email_verification_create_and_send_custom_email(
+        recipe: ThirdPartyEmailPasswordRecipe, create_and_send_custom_email: Callable[[
+            User, str, Dict[str, Any]], Awaitable[None]]) -&gt; Callable[[
+                EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]]:
+    async def func(user: EmailVerificationUser, link: str, user_context: Dict[str, Any]):
+        user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id, user_context)
         if user_info is None:
-            raise Exception(&#39;User ID unknown&#39;)
-        return await create_and_send_custom_email(user_info, link)
+            raise Exception(&#39;Unknown User ID provided&#39;)
+        return await create_and_send_custom_email(user_info, link, user_context)
 
     return func</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.email_verification_get_email_verification_url"><code class="name flex">
-<span>def <span class="ident">email_verification_get_email_verification_url</span></span>(<span>recipe: ThirdPartyEmailPasswordRecipe, get_email_verification_url)</span>
+<span>def <span class="ident">email_verification_get_email_verification_url</span></span>(<span>recipe: ThirdPartyEmailPasswordRecipe, get_email_verification_url: Callable[[User, Any], Awaitable[str]]) ‑> Callable[[EmailVerificationUser, Any], Awaitable[str]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -369,36 +204,20 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def email_verification_get_email_verification_url(
-        recipe: ThirdPartyEmailPasswordRecipe, get_email_verification_url):
-    async def func(user):
-        user_info = await recipe.recipe_implementation.get_user_by_id(user.id)
+        recipe: ThirdPartyEmailPasswordRecipe, get_email_verification_url: Callable[[
+            User, Any], Awaitable[str]]) -&gt; Callable[[
+                EmailVerificationUser, Any], Awaitable[str]]:
+    async def func(user: EmailVerificationUser, user_context: Dict[str, Any]):
+        user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id, user_context)
         if user_info is None:
-            raise Exception(&#39;User ID unknown&#39;)
-        return await get_email_verification_url(user_info)
+            raise Exception(&#39;Unknown User ID provided&#39;)
+        return await get_email_verification_url(user_info, user_context)
 
     return func</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.extract_pagination_token"><code class="name flex">
-<span>def <span class="ident">extract_pagination_token</span></span>(<span>next_pagination_token: str) ‑> <a title="supertokens_python.recipe.thirdpartyemailpassword.types.NextPaginationToken" href="types.html#supertokens_python.recipe.thirdpartyemailpassword.types.NextPaginationToken">NextPaginationToken</a></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def extract_pagination_token(
-        next_pagination_token: str) -&gt; NextPaginationToken:
-    extracted_tokens = utf_base64decode(next_pagination_token).split(&#39;;&#39;)
-    if len(extracted_tokens) != 2:
-        raise Exception(&#39;Pagination token is invalid&#39;)
-    return NextPaginationToken(None if extracted_tokens[0] == &#39;null&#39; else extracted_tokens[0],
-                               None if extracted_tokens[1] == &#39;null&#39; else extracted_tokens[1])</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.validate_and_normalise_email_verification_config"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_email_verification_config</span></span>(<span>recipe: ThirdPartyEmailPasswordRecipe, config: Union[InputEmailVerificationConfig, None], override: <a title="supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig">InputOverrideConfig</a>)</span>
+<span>def <span class="ident">validate_and_normalise_email_verification_config</span></span>(<span>recipe: ThirdPartyEmailPasswordRecipe, config: Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.utils.InputEmailVerificationConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.InputEmailVerificationConfig">InputEmailVerificationConfig</a>, None], override: <a title="supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig">InputOverrideConfig</a>) ‑> ParentRecipeEmailVerificationConfig</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -408,7 +227,7 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
 </summary>
 <pre><code class="python">def validate_and_normalise_email_verification_config(
         recipe: ThirdPartyEmailPasswordRecipe, config: Union[InputEmailVerificationConfig, None],
-        override: InputOverrideConfig):
+        override: InputOverrideConfig) -&gt; ParentRecipeEmailVerificationConfig:
     create_and_send_custom_email = None
     get_email_verification_url = None
     if config is None:
@@ -429,7 +248,7 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>recipe: ThirdPartyEmailPasswordRecipe, sign_up_feature: Union[InputSignUpFeature, None] = None, reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, override: Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None, providers: Union[List[Provider], None] = None) ‑> <a title="supertokens_python.recipe.thirdpartyemailpassword.utils.ThirdPartyEmailPasswordConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.ThirdPartyEmailPasswordConfig">ThirdPartyEmailPasswordConfig</a></span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>recipe: ThirdPartyEmailPasswordRecipe, sign_up_feature: Union[InputSignUpFeature, None] = None, reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None, email_verification_feature: Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.utils.InputEmailVerificationConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.InputEmailVerificationConfig">InputEmailVerificationConfig</a>, None] = None, override: Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None, providers: Union[List[Provider], None] = None) ‑> <a title="supertokens_python.recipe.thirdpartyemailpassword.utils.ThirdPartyEmailPasswordConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.ThirdPartyEmailPasswordConfig">ThirdPartyEmailPasswordConfig</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -449,15 +268,7 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
         providers = []
     if override is None:
         override = InputOverrideConfig()
-    email_verification_feature = validate_and_normalise_email_verification_config(
-        recipe,
-        email_verification_feature,
-        override
-    )
-    return ThirdPartyEmailPasswordConfig(providers, email_verification_feature, sign_up_feature,
-                                         reset_password_using_token_feature,
-                                         OverrideConfig(functions=override.functions, apis=override.apis)
-                                         )</code></pre>
+    return ThirdPartyEmailPasswordConfig(providers, validate_and_normalise_email_verification_config(recipe, email_verification_feature, override), sign_up_feature, reset_password_using_token_feature, OverrideConfig(functions=override.functions, apis=override.apis))</code></pre>
 </details>
 </dd>
 </dl>
@@ -465,6 +276,27 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.InputEmailVerificationConfig"><code class="flex name class">
+<span>class <span class="ident">InputEmailVerificationConfig</span></span>
+<span>(</span><span>get_email_verification_url: Union[Callable[[User, Any], Awaitable[str]], None] = None, create_and_send_custom_email: Union[Callable[[User, str, Any], Awaitable[None]], None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class InputEmailVerificationConfig:
+    def __init__(self,
+                 get_email_verification_url: Union[Callable[[
+                     User, Any], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[
+                     User, str, Any], Awaitable[None]], None] = None
+                 ):
+        self.get_email_verification_url = get_email_verification_url
+        self.create_and_send_custom_email = create_and_send_custom_email</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig"><code class="flex name class">
 <span>class <span class="ident">InputOverrideConfig</span></span>
 <span>(</span><span>functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None, email_verification_feature: Union[EmailVerificationOverrideConfig, None] = None)</span>
@@ -477,7 +309,8 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
 </summary>
 <pre><code class="python">class InputOverrideConfig:
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-                 apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+                 apis: Union[Callable[[APIInterface],
+                                      APIInterface], None] = None,
                  email_verification_feature: Union[EmailVerificationOverrideConfig, None] = None):
         self.functions = functions
         self.apis = apis
@@ -503,7 +336,7 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.ThirdPartyEmailPasswordConfig"><code class="flex name class">
 <span>class <span class="ident">ThirdPartyEmailPasswordConfig</span></span>
-<span>(</span><span>providers: List[Provider], email_verification_feature: ParentRecipeEmailVerificationConfig, sign_up_feature: Union[InputSignUpFeature, None], reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None], override: Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.utils.OverrideConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.OverrideConfig">OverrideConfig</a>, None])</span>
+<span>(</span><span>providers: List[Provider], email_verification_feature: ParentRecipeEmailVerificationConfig, sign_up_feature: Union[InputSignUpFeature, None], reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None], override: <a title="supertokens_python.recipe.thirdpartyemailpassword.utils.OverrideConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.OverrideConfig">OverrideConfig</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -517,7 +350,7 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
                  sign_up_feature: Union[InputSignUpFeature, None],
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None],
-                 override: Union[OverrideConfig, None]):
+                 override: OverrideConfig):
         self.sign_up_feature = sign_up_feature
         self.email_verification_feature = email_verification_feature
         self.providers = providers
@@ -541,18 +374,17 @@ def combine_pagination_results(third_party_result: UsersResponse, email_password
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.utils.combine_pagination_results" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.combine_pagination_results">combine_pagination_results</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.utils.combine_pagination_tokens" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.combine_pagination_tokens">combine_pagination_tokens</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.utils.create_new_pagination_token" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.create_new_pagination_token">create_new_pagination_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.utils.email_verification_create_and_send_custom_email" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.email_verification_create_and_send_custom_email">email_verification_create_and_send_custom_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.utils.email_verification_get_email_verification_url" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.email_verification_get_email_verification_url">email_verification_get_email_verification_url</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.utils.extract_pagination_token" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.extract_pagination_token">extract_pagination_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.utils.validate_and_normalise_email_verification_config" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.validate_and_normalise_email_verification_config">validate_and_normalise_email_verification_config</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.utils.validate_and_normalise_user_input" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.validate_and_normalise_user_input">validate_and_normalise_user_input</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdpartyemailpassword.utils.InputEmailVerificationConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.InputEmailVerificationConfig">InputEmailVerificationConfig</a></code></h4>
+</li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig">InputOverrideConfig</a></code></h4>
 </li>

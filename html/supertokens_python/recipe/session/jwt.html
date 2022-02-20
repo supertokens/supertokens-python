@@ -40,19 +40,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from supertokens_python.utils import (
-    utf_base64decode,
-    utf_base64encode
-)
-from json import (
-    loads,
-    dumps
-)
+from base64 import b64decode
+from json import dumps, loads
+from textwrap import wrap
+from typing import Any, Dict
+
+from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature.pkcs1_15 import PKCS115_SigScheme
-from Crypto.Hash import SHA256
-from base64 import b64decode
-from textwrap import wrap
+from supertokens_python.utils import utf_base64decode, utf_base64encode
 
 _key_start = &#39;-----BEGIN PUBLIC KEY-----\n&#39;
 _key_end = &#39;\n-----END PUBLIC KEY-----&#39;
@@ -71,7 +67,7 @@ _allowed_headers = [utf_base64encode(dumps({
 }, separators=(&#39;,&#39;, &#39;:&#39;), sort_keys=True))]
 
 
-def get_payload(jwt, signing_public_key):
+def get_payload(jwt: str, signing_public_key: str):
     splitted_input = jwt.split(&#34;.&#34;)
     if len(splitted_input) != 3:
         raise Exception(&#34;invalid jwt&#34;)
@@ -97,7 +93,7 @@ def get_payload(jwt, signing_public_key):
     return loads(utf_base64decode(payload))
 
 
-def get_payload_without_verifying(jwt: str) -&gt; dict:
+def get_payload_without_verifying(jwt: str) -&gt; Dict[str, Any]:
     splitted_input = jwt.split(&#34;.&#34;)
     if len(splitted_input) != 3:
         raise Exception(&#34;invalid jwt&#34;)
@@ -114,7 +110,7 @@ def get_payload_without_verifying(jwt: str) -&gt; dict:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.jwt.get_payload"><code class="name flex">
-<span>def <span class="ident">get_payload</span></span>(<span>jwt, signing_public_key)</span>
+<span>def <span class="ident">get_payload</span></span>(<span>jwt: str, signing_public_key: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -122,7 +118,7 @@ def get_payload_without_verifying(jwt: str) -&gt; dict:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_payload(jwt, signing_public_key):
+<pre><code class="python">def get_payload(jwt: str, signing_public_key: str):
     splitted_input = jwt.split(&#34;.&#34;)
     if len(splitted_input) != 3:
         raise Exception(&#34;invalid jwt&#34;)
@@ -149,7 +145,7 @@ def get_payload_without_verifying(jwt: str) -&gt; dict:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.jwt.get_payload_without_verifying"><code class="name flex">
-<span>def <span class="ident">get_payload_without_verifying</span></span>(<span>jwt: str) ‑> dict</span>
+<span>def <span class="ident">get_payload_without_verifying</span></span>(<span>jwt: str) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -157,7 +153,7 @@ def get_payload_without_verifying(jwt: str) -&gt; dict:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_payload_without_verifying(jwt: str) -&gt; dict:
+<pre><code class="python">def get_payload_without_verifying(jwt: str) -&gt; Dict[str, Any]:
     splitted_input = jwt.split(&#34;.&#34;)
     if len(splitted_input) != 3:
         raise Exception(&#34;invalid jwt&#34;)

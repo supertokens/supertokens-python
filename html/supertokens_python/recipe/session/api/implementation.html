@@ -40,48 +40,50 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe.session.interfaces import APIInterface, SignOutOkayResponse
+from supertokens_python.recipe.session.interfaces import (APIInterface,
+                                                          SignOutOkayResponse)
 from supertokens_python.utils import normalise_http_method
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import APIOptions, SignOutResponse
-    from supertokens_python.recipe.session import Session
+    from ..interfaces import SessionContainer
+
+from typing import Any, Dict
+
 from supertokens_python.recipe.session.exceptions import UnauthorisedError
 
 
 class APIImplementation(APIInterface):
-    def __init__(self):
-        super().__init__()
 
-    async def refresh_post(self, api_options: APIOptions):
-        await api_options.recipe_implementation.refresh_session(api_options.request)
+    async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; None:
+        await api_options.recipe_implementation.refresh_session(api_options.request, user_context)
 
-    async def signout_post(self, api_options: APIOptions) -&gt; SignOutResponse:
+    async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; SignOutResponse:
         try:
-            session = await api_options.recipe_implementation.get_session(api_options.request)
+            session = await api_options.recipe_implementation.get_session(request=api_options.request, user_context=user_context, anti_csrf_check=None, session_required=True)
         except UnauthorisedError:
             return SignOutOkayResponse()
 
         if session is None:
             raise Exception(&#39;Session is undefined. Should not come here.&#39;)
-        await session.revoke_session()
+        await session.revoke_session(user_context)
         return SignOutOkayResponse()
 
-    async def verify_session(self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None,
-                             session_required: bool = True) -&gt; Union[Session, None]:
+    async def verify_session(self, api_options: APIOptions,
+                             anti_csrf_check: Union[bool, None],
+                             session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
         method = normalise_http_method(api_options.request.method())
-        if method == &#39;options&#39; or method == &#39;trace&#39;:
+        if method in (&#39;options&#39;, &#39;trace&#39;):
             return None
         incoming_path = NormalisedURLPath(api_options.request.get_path())
         refresh_token_path = api_options.config.refresh_token_path
         if incoming_path.equals(refresh_token_path) and method == &#39;post&#39;:
-            return await api_options.recipe_implementation.refresh_session(api_options.request)
-        else:
-            return await api_options.recipe_implementation.get_session(api_options.request, anti_csrf_check,
-                                                                       session_required)</code></pre>
+            return await api_options.recipe_implementation.refresh_session(api_options.request, user_context)
+        return await api_options.recipe_implementation.get_session(api_options.request, anti_csrf_check, session_required, user_context)</code></pre>
 </details>
 </section>
 <section>
@@ -104,35 +106,32 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class APIImplementation(APIInterface):
-    def __init__(self):
-        super().__init__()
 
-    async def refresh_post(self, api_options: APIOptions):
-        await api_options.recipe_implementation.refresh_session(api_options.request)
+    async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; None:
+        await api_options.recipe_implementation.refresh_session(api_options.request, user_context)
 
-    async def signout_post(self, api_options: APIOptions) -&gt; SignOutResponse:
+    async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; SignOutResponse:
         try:
-            session = await api_options.recipe_implementation.get_session(api_options.request)
+            session = await api_options.recipe_implementation.get_session(request=api_options.request, user_context=user_context, anti_csrf_check=None, session_required=True)
         except UnauthorisedError:
             return SignOutOkayResponse()
 
         if session is None:
             raise Exception(&#39;Session is undefined. Should not come here.&#39;)
-        await session.revoke_session()
+        await session.revoke_session(user_context)
         return SignOutOkayResponse()
 
-    async def verify_session(self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None,
-                             session_required: bool = True) -&gt; Union[Session, None]:
+    async def verify_session(self, api_options: APIOptions,
+                             anti_csrf_check: Union[bool, None],
+                             session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
         method = normalise_http_method(api_options.request.method())
-        if method == &#39;options&#39; or method == &#39;trace&#39;:
+        if method in (&#39;options&#39;, &#39;trace&#39;):
             return None
         incoming_path = NormalisedURLPath(api_options.request.get_path())
         refresh_token_path = api_options.config.refresh_token_path
         if incoming_path.equals(refresh_token_path) and method == &#39;post&#39;:
-            return await api_options.recipe_implementation.refresh_session(api_options.request)
-        else:
-            return await api_options.recipe_implementation.get_session(api_options.request, anti_csrf_check,
-                                                                       session_required)</code></pre>
+            return await api_options.recipe_implementation.refresh_session(api_options.request, user_context)
+        return await api_options.recipe_implementation.get_session(api_options.request, anti_csrf_check, session_required, user_context)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -142,7 +141,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.api.implementation.APIImplementation.refresh_post"><code class="name flex">
-<span>async def <span class="ident">refresh_post</span></span>(<span>self, api_options: APIOptions)</span>
+<span>async def <span class="ident">refresh_post</span></span>(<span>self, api_options: APIOptions, user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -150,12 +149,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def refresh_post(self, api_options: APIOptions):
-    await api_options.recipe_implementation.refresh_session(api_options.request)</code></pre>
+<pre><code class="python">async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; None:
+    await api_options.recipe_implementation.refresh_session(api_options.request, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.api.implementation.APIImplementation.signout_post"><code class="name flex">
-<span>async def <span class="ident">signout_post</span></span>(<span>self, api_options: APIOptions) ‑> SignOutResponse</span>
+<span>async def <span class="ident">signout_post</span></span>(<span>self, api_options: APIOptions, user_context: Dict[str, Any]) ‑> SignOutResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -163,20 +162,20 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def signout_post(self, api_options: APIOptions) -&gt; SignOutResponse:
+<pre><code class="python">async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; SignOutResponse:
     try:
-        session = await api_options.recipe_implementation.get_session(api_options.request)
+        session = await api_options.recipe_implementation.get_session(request=api_options.request, user_context=user_context, anti_csrf_check=None, session_required=True)
     except UnauthorisedError:
         return SignOutOkayResponse()
 
     if session is None:
         raise Exception(&#39;Session is undefined. Should not come here.&#39;)
-    await session.revoke_session()
+    await session.revoke_session(user_context)
     return SignOutOkayResponse()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.api.implementation.APIImplementation.verify_session"><code class="name flex">
-<span>async def <span class="ident">verify_session</span></span>(<span>self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) ‑> Union[Session, None]</span>
+<span>async def <span class="ident">verify_session</span></span>(<span>self, api_options: APIOptions, anti_csrf_check: Union[bool, None], session_required: bool, user_context: Dict[str, Any]) ‑> Union[SessionContainer, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -184,18 +183,17 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def verify_session(self, api_options: APIOptions, anti_csrf_check: Union[bool, None] = None,
-                         session_required: bool = True) -&gt; Union[Session, None]:
+<pre><code class="python">async def verify_session(self, api_options: APIOptions,
+                         anti_csrf_check: Union[bool, None],
+                         session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
     method = normalise_http_method(api_options.request.method())
-    if method == &#39;options&#39; or method == &#39;trace&#39;:
+    if method in (&#39;options&#39;, &#39;trace&#39;):
         return None
     incoming_path = NormalisedURLPath(api_options.request.get_path())
     refresh_token_path = api_options.config.refresh_token_path
     if incoming_path.equals(refresh_token_path) and method == &#39;post&#39;:
-        return await api_options.recipe_implementation.refresh_session(api_options.request)
-    else:
-        return await api_options.recipe_implementation.get_session(api_options.request, anti_csrf_check,
-                                                                   session_required)</code></pre>
+        return await api_options.recipe_implementation.refresh_session(api_options.request, user_context)
+    return await api_options.recipe_implementation.get_session(api_options.request, anti_csrf_check, session_required, user_context)</code></pre>
 </details>
 </dd>
 </dl>

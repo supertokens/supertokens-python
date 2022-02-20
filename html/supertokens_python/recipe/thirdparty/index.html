@@ -39,27 +39,37 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
 
-from .utils import SignInAndUpFeature, InputOverrideConfig
+from typing import TYPE_CHECKING, Callable, Union
 
+from . import exceptions as ex
+from . import providers
 from .recipe import ThirdPartyRecipe
-from . import exceptions
-from .providers import (
-    Google,
-    Github,
-    Apple,
-    Facebook,
-    Discord,
-    GoogleWorkspaces
-)
-from ..emailverification.utils import InputEmailVerificationConfig
+
+from . import utils
+InputEmailVerificationConfig = utils.InputEmailVerificationConfig
+InputOverrideConfig = utils.InputOverrideConfig
+SignInAndUpFeature = utils.SignInAndUpFeature
+Apple = providers.Apple
+Discord = providers.Discord
+Facebook = providers.Facebook
+Github = providers.Github
+Google = providers.Google
+GoogleWorkspaces = providers.GoogleWorkspaces
+exceptions = ex
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
 
 
 def init(sign_in_and_up_feature: SignInAndUpFeature,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[InputOverrideConfig, None] = None):
-    return ThirdPartyRecipe.init(sign_in_and_up_feature, email_verification_feature, override)</code></pre>
+         override: Union[InputOverrideConfig, None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
+    return ThirdPartyRecipe.init(
+        sign_in_and_up_feature, email_verification_feature, override)</code></pre>
 </details>
 </section>
 <section>
@@ -121,7 +131,7 @@ def init(sign_in_and_up_feature: SignInAndUpFeature,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>sign_in_and_up_feature: <a title="supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature" href="utils.html#supertokens_python.recipe.thirdparty.utils.SignInAndUpFeature">SignInAndUpFeature</a>, email_verification_feature: Optional[<a title="supertokens_python.recipe.emailverification.utils.InputEmailVerificationConfig" href="../emailverification/utils.html#supertokens_python.recipe.emailverification.utils.InputEmailVerificationConfig">InputEmailVerificationConfig</a>] = None, override: Optional[<a title="supertokens_python.recipe.thirdparty.utils.InputOverrideConfig" href="utils.html#supertokens_python.recipe.thirdparty.utils.InputOverrideConfig">InputOverrideConfig</a>] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>sign_in_and_up_feature: SignInAndUpFeature, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, override: Union[InputOverrideConfig, None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -131,8 +141,9 @@ def init(sign_in_and_up_feature: SignInAndUpFeature,
 </summary>
 <pre><code class="python">def init(sign_in_and_up_feature: SignInAndUpFeature,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[InputOverrideConfig, None] = None):
-    return ThirdPartyRecipe.init(sign_in_and_up_feature, email_verification_feature, override)</code></pre>
+         override: Union[InputOverrideConfig, None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
+    return ThirdPartyRecipe.init(
+        sign_in_and_up_feature, email_verification_feature, override)</code></pre>
 </details>
 </dd>
 </dl>

@@ -41,35 +41,36 @@
 # under the License.
 
 from __future__ import annotations
+
 import abc
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 if TYPE_CHECKING:
-    from .types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI
+    from .types import AccessTokenAPI, AuthorisationRedirectAPI, UserInfo
 
 
 class Provider(abc.ABC):
     def __init__(self, provider_id: str, client_id: str, is_default: bool):
-        self.id = provider_id
-        self.client_id = client_id
-        self.is_default = is_default
-        self.redirect_uri = None
+        self.id: str = provider_id
+        self.client_id: str = client_id
+        self.is_default: bool = is_default
 
     @abc.abstractmethod
-    async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
         pass
 
     @abc.abstractmethod
-    def get_authorisation_redirect_api_info(self) -&gt; AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
         pass
 
     @abc.abstractmethod
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str) -&gt; AccessTokenAPI:
+            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
         pass
 
-    def get_redirect_uri(self) -&gt; Union[None, str]:
-        return self.redirect_uri</code></pre>
+    @abc.abstractmethod
+    def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
+        pass</code></pre>
 </details>
 </section>
 <section>
@@ -94,26 +95,26 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class Provider(abc.ABC):
     def __init__(self, provider_id: str, client_id: str, is_default: bool):
-        self.id = provider_id
-        self.client_id = client_id
-        self.is_default = is_default
-        self.redirect_uri = None
+        self.id: str = provider_id
+        self.client_id: str = client_id
+        self.is_default: bool = is_default
 
     @abc.abstractmethod
-    async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
         pass
 
     @abc.abstractmethod
-    def get_authorisation_redirect_api_info(self) -&gt; AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
         pass
 
     @abc.abstractmethod
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str) -&gt; AccessTokenAPI:
+            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
         pass
 
-    def get_redirect_uri(self) -&gt; Union[None, str]:
-        return self.redirect_uri</code></pre>
+    @abc.abstractmethod
+    def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
+        pass</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -131,7 +132,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_access_token_api_info"><code class="name flex">
-<span>def <span class="ident">get_access_token_api_info</span></span>(<span>self, redirect_uri: str, auth_code_from_request: str) ‑> AccessTokenAPI</span>
+<span>def <span class="ident">get_access_token_api_info</span></span>(<span>self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) ‑> AccessTokenAPI</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -141,12 +142,12 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">@abc.abstractmethod
 def get_access_token_api_info(
-        self, redirect_uri: str, auth_code_from_request: str) -&gt; AccessTokenAPI:
+        self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_authorisation_redirect_api_info"><code class="name flex">
-<span>def <span class="ident">get_authorisation_redirect_api_info</span></span>(<span>self) ‑> AuthorisationRedirectAPI</span>
+<span>def <span class="ident">get_authorisation_redirect_api_info</span></span>(<span>self, user_context: Dict[str, Any]) ‑> AuthorisationRedirectAPI</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -155,12 +156,12 @@ def get_access_token_api_info(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abc.abstractmethod
-def get_authorisation_redirect_api_info(self) -&gt; AuthorisationRedirectAPI:
+def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_profile_info"><code class="name flex">
-<span>async def <span class="ident">get_profile_info</span></span>(<span>self, auth_code_response: any) ‑> UserInfo</span>
+<span>async def <span class="ident">get_profile_info</span></span>(<span>self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) ‑> UserInfo</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -169,12 +170,12 @@ def get_authorisation_redirect_api_info(self) -&gt; AuthorisationRedirectAPI:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abc.abstractmethod
-async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
+async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_redirect_uri"><code class="name flex">
-<span>def <span class="ident">get_redirect_uri</span></span>(<span>self) ‑> Optional[str]</span>
+<span>def <span class="ident">get_redirect_uri</span></span>(<span>self, user_context: Dict[str, Any]) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -182,8 +183,9 @@ async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_redirect_uri(self) -&gt; Union[None, str]:
-    return self.redirect_uri</code></pre>
+<pre><code class="python">@abc.abstractmethod
+def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
+    pass</code></pre>
 </details>
 </dd>
 </dl>

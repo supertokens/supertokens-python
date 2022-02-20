@@ -39,95 +39,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Callable, Union, Awaitable, List
-
-type_string = {
-    &#39;type&#39;: &#39;string&#39;
-}
-
-type_boolean = {
-    &#39;type&#39;: &#39;boolean&#39;
-}
-
-type_number = {
-    &#39;type&#39;: &#39;number&#39;
-}
-
-type_any = {}
-
-SIGN_UP_FEATURE_INPUT_SCHEMA = {
-    &#39;type&#39;: &#39;object&#39;,
-    &#39;properties&#39;: {
-        &#39;form_fields&#39;: {
-            &#39;type&#39;: &#39;array&#39;,
-            &#39;items&#39;: {
-                &#39;type&#39;: &#39;object&#39;,
-                &#39;properties&#39;: {
-                    &#39;id&#39;: type_string,
-                    &#39;validate&#39;: type_any,
-                    &#39;optional&#39;: type_boolean
-                },
-                &#39;required&#39;: [&#39;id&#39;],
-                &#39;additionalProperties&#39;: False
-            }
-        }
-    },
-    &#39;additionalProperties&#39;: False
-}
-
-RESET_PASSWORD_USING_TOKEN_FEATURE_INPUT_SCHEMA = {
-    &#39;type&#39;: &#39;object&#39;,
-    &#39;properties&#39;: {
-        &#39;get_reset_password_url&#39;: type_any,
-        &#39;create_and_send_custom_email&#39;: type_any
-    },
-    &#39;additionalProperties&#39;: False
-}
-
-EMAIL_VERIFICATION_FEATURE_INPUT_SCHEMA = {
-    &#39;type&#39;: &#39;object&#39;,
-    &#39;properties&#39;: {
-        &#39;get_email_verification_url&#39;: type_any,
-        &#39;create_and_send_custom_email&#39;: type_any
-    },
-    &#39;additionalProperties&#39;: False
-}
-
-OVERRIDE_INPUT_SCHEMA = {
-    &#39;type&#39;: &#39;object&#39;,
-    &#39;properties&#39;: {
-        &#39;functions&#39;: type_any,
-        &#39;apis&#39;: type_any,
-        &#39;email_verification_feature&#39;: {
-            &#39;type&#39;: &#39;object&#39;,
-            &#39;properties&#39;: {
-                &#39;functions&#39;: type_any,
-                &#39;apis&#39;: type_any
-            },
-            &#39;additionalProperties&#39;: False
-        }
-    },
-    &#39;additionalProperties&#39;: False
-}
-
-INPUT_SCHEMA = {
-    &#39;type&#39;: &#39;object&#39;,
-    &#39;properties&#39;: {
-        &#39;sign_up_feature&#39;: SIGN_UP_FEATURE_INPUT_SCHEMA,
-        &#39;reset_password_using_token_feature&#39;: RESET_PASSWORD_USING_TOKEN_FEATURE_INPUT_SCHEMA,
-        &#39;email_verification_feature&#39;: EMAIL_VERIFICATION_FEATURE_INPUT_SCHEMA,
-        &#39;override&#39;: OVERRIDE_INPUT_SCHEMA
-    },
-    &#39;additionalProperties&#39;: False
-}
+from typing import Awaitable, Callable, List, Union
 
 
 class User:
     def __init__(self, user_id: str, email: str, time_joined: int):
-        self.user_id = user_id
-        self.email = email
-        self.time_joined = time_joined
-        self.third_party_info = None
+        self.user_id: str = user_id
+        self.email: str = email
+        self.time_joined: int = time_joined
+        self.third_party_info: None = None
 
 
 class UsersResponse:
@@ -138,19 +58,19 @@ class UsersResponse:
 
 
 class ErrorFormField:
-    def __init__(self, id: str, error: str):
+    def __init__(self, id: str, error: str):  # pylint: disable=redefined-builtin
         self.id = id
         self.error = error
 
 
 class FormField:
-    def __init__(self, id: str, value: any):
-        self.id = id
-        self.value = value
+    def __init__(self, id: str, value: str):  # pylint: disable=redefined-builtin
+        self.id: str = id
+        self.value: str = value
 
 
 class InputFormField:
-    def __init__(self, id: str, validate: Union[Callable[[
+    def __init__(self, id: str, validate: Union[Callable[[  # pylint: disable=redefined-builtin
                  str], Awaitable[Union[str, None]]], None] = None, optional: Union[bool, None] = None):
         self.id = id
         self.validate = validate
@@ -158,7 +78,7 @@ class InputFormField:
 
 
 class NormalisedFormField:
-    def __init__(self, id: str, validate: Callable[[
+    def __init__(self, id: str, validate: Callable[[  # pylint: disable=redefined-builtin
                  str], Awaitable[Union[str, None]]], optional: bool):
         self.id = id
         self.validate = validate
@@ -185,14 +105,14 @@ class NormalisedFormField:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ErrorFormField:
-    def __init__(self, id: str, error: str):
+    def __init__(self, id: str, error: str):  # pylint: disable=redefined-builtin
         self.id = id
         self.error = error</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.types.FormField"><code class="flex name class">
 <span>class <span class="ident">FormField</span></span>
-<span>(</span><span>id: str, value: <built-in function any>)</span>
+<span>(</span><span>id: str, value: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -201,9 +121,9 @@ class NormalisedFormField:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class FormField:
-    def __init__(self, id: str, value: any):
-        self.id = id
-        self.value = value</code></pre>
+    def __init__(self, id: str, value: str):  # pylint: disable=redefined-builtin
+        self.id: str = id
+        self.value: str = value</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.types.InputFormField"><code class="flex name class">
@@ -217,7 +137,7 @@ class NormalisedFormField:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class InputFormField:
-    def __init__(self, id: str, validate: Union[Callable[[
+    def __init__(self, id: str, validate: Union[Callable[[  # pylint: disable=redefined-builtin
                  str], Awaitable[Union[str, None]]], None] = None, optional: Union[bool, None] = None):
         self.id = id
         self.validate = validate
@@ -235,7 +155,7 @@ class NormalisedFormField:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class NormalisedFormField:
-    def __init__(self, id: str, validate: Callable[[
+    def __init__(self, id: str, validate: Callable[[  # pylint: disable=redefined-builtin
                  str], Awaitable[Union[str, None]]], optional: bool):
         self.id = id
         self.validate = validate
@@ -254,10 +174,10 @@ class NormalisedFormField:
 </summary>
 <pre><code class="python">class User:
     def __init__(self, user_id: str, email: str, time_joined: int):
-        self.user_id = user_id
-        self.email = email
-        self.time_joined = time_joined
-        self.third_party_info = None</code></pre>
+        self.user_id: str = user_id
+        self.email: str = email
+        self.time_joined: int = time_joined
+        self.third_party_info: None = None</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.types.UsersResponse"><code class="flex name class">

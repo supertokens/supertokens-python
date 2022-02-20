@@ -43,30 +43,34 @@
 from __future__ import annotations
 
 from math import ceil
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 from jwt import decode
-
-from supertokens_python.recipe.session.with_jwt.constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
-from supertokens_python.recipe.session.with_jwt.utills import add_jwt_to_access_token_payload
+from supertokens_python.recipe.session.with_jwt.constants import \
+    ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
+from supertokens_python.recipe.session.with_jwt.utills import \
+    add_jwt_to_access_token_payload
 from supertokens_python.utils import get_timestamp_ms
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.openid.interfaces import RecipeInterface as OpenIdRecipeInterface
+    from supertokens_python.recipe.openid.interfaces import \
+        RecipeInterface as OpenIdRecipeInterface
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
-from supertokens_python.recipe.session import Session
 
-
-def get_session_with_jwt(original_session: Session, openid_recipe_implementation: OpenIdRecipeInterface) -&gt; Session:
+def get_session_with_jwt(original_session: SessionContainer,
+                         openid_recipe_implementation: OpenIdRecipeInterface) -&gt; SessionContainer:
     original_update_access_token_payload = original_session.update_access_token_payload
 
-    async def update_access_token_payload(new_access_token_payload) -&gt; None:
+    async def update_access_token_payload(new_access_token_payload: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
         if new_access_token_payload is None:
             new_access_token_payload = {}
+        if user_context is None:
+            user_context = {}
         access_token_payload = original_session.get_access_token_payload()
 
         if ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY not in access_token_payload:
-            return await original_update_access_token_payload(new_access_token_payload)
+            return await original_update_access_token_payload(new_access_token_payload, user_context)
 
         jwt_property_name = access_token_payload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]
 
@@ -74,7 +78,11 @@ def get_session_with_jwt(original_session: Session, openid_recipe_implementation
         existing_jwt = access_token_payload[jwt_property_name]
 
         current_time_in_seconds = ceil(get_timestamp_ms() / 1000)
-        decoded_payload = decode(jwt=existing_jwt, options={&#39;verify_signature&#39;: False, &#39;verify_exp&#39;: False})
+        decoded_payload: Union[None, Dict[str, Any]] = decode(
+            jwt=existing_jwt,
+            options={
+                &#39;verify_signature&#39;: False,
+                &#39;verify_exp&#39;: False})
 
         if decoded_payload is None:
             raise Exception(&#39;Error reading JWT from session&#39;)
@@ -95,10 +103,11 @@ def get_session_with_jwt(original_session: Session, openid_recipe_implementation
             jwt_expiry=jwt_expiry,
             user_id=original_session.get_user_id(),
             jwt_property_name=jwt_property_name,
-            openid_recipe_implementation=openid_recipe_implementation
+            openid_recipe_implementation=openid_recipe_implementation,
+            user_context=user_context
         )
 
-        return await original_update_access_token_payload(new_access_token_payload)
+        return await original_update_access_token_payload(new_access_token_payload, user_context)
 
     original_session.update_access_token_payload = update_access_token_payload
     return original_session</code></pre>
@@ -112,7 +121,7 @@ def get_session_with_jwt(original_session: Session, openid_recipe_implementation
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.with_jwt.session_class.get_session_with_jwt"><code class="name flex">
-<span>def <span class="ident">get_session_with_jwt</span></span>(<span>original_session: Session, openid_recipe_implementation: OpenIdRecipeInterface) ‑> Session</span>
+<span>def <span class="ident">get_session_with_jwt</span></span>(<span>original_session: SessionContainer, openid_recipe_implementation: OpenIdRecipeInterface) ‑> SessionContainer</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -120,16 +129,19 @@ def get_session_with_jwt(original_session: Session, openid_recipe_implementation
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_session_with_jwt(original_session: Session, openid_recipe_implementation: OpenIdRecipeInterface) -&gt; Session:
+<pre><code class="python">def get_session_with_jwt(original_session: SessionContainer,
+                         openid_recipe_implementation: OpenIdRecipeInterface) -&gt; SessionContainer:
     original_update_access_token_payload = original_session.update_access_token_payload
 
-    async def update_access_token_payload(new_access_token_payload) -&gt; None:
+    async def update_access_token_payload(new_access_token_payload: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
         if new_access_token_payload is None:
             new_access_token_payload = {}
+        if user_context is None:
+            user_context = {}
         access_token_payload = original_session.get_access_token_payload()
 
         if ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY not in access_token_payload:
-            return await original_update_access_token_payload(new_access_token_payload)
+            return await original_update_access_token_payload(new_access_token_payload, user_context)
 
         jwt_property_name = access_token_payload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]
 
@@ -137,7 +149,11 @@ def get_session_with_jwt(original_session: Session, openid_recipe_implementation
         existing_jwt = access_token_payload[jwt_property_name]
 
         current_time_in_seconds = ceil(get_timestamp_ms() / 1000)
-        decoded_payload = decode(jwt=existing_jwt, options={&#39;verify_signature&#39;: False, &#39;verify_exp&#39;: False})
+        decoded_payload: Union[None, Dict[str, Any]] = decode(
+            jwt=existing_jwt,
+            options={
+                &#39;verify_signature&#39;: False,
+                &#39;verify_exp&#39;: False})
 
         if decoded_payload is None:
             raise Exception(&#39;Error reading JWT from session&#39;)
@@ -158,10 +174,11 @@ def get_session_with_jwt(original_session: Session, openid_recipe_implementation
             jwt_expiry=jwt_expiry,
             user_id=original_session.get_user_id(),
             jwt_property_name=jwt_property_name,
-            openid_recipe_implementation=openid_recipe_implementation
+            openid_recipe_implementation=openid_recipe_implementation,
+            user_context=user_context
         )
 
-        return await original_update_access_token_payload(new_access_token_payload)
+        return await original_update_access_token_payload(new_access_token_payload, user_context)
 
     original_session.update_access_token_payload = update_access_token_payload
     return original_session</code></pre>

@@ -40,10 +40,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Union, List
 
-from supertokens_python.recipe.thirdparty.interfaces import RecipeInterface, SignInUpOkResult, SignInUpResult
-from supertokens_python.recipe.thirdpartyemailpassword.types import UsersResponse, User
+from typing import Any, Dict, List, Union
+
+from supertokens_python.recipe.thirdparty.interfaces import (RecipeInterface,
+                                                             SignInUpOkResult,
+                                                             SignInUpResult)
+from supertokens_python.recipe.thirdparty.types import User
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
     RecipeInterface as ThirdPartyEmailPasswordRecipeInterface
 
@@ -55,48 +58,45 @@ class RecipeImplementation(RecipeInterface):
         super().__init__()
         self.recipe_implementation = recipe_implementation
 
-    async def get_user_by_id(self, user_id: str) -&gt; Union[User, None]:
-        user = await self.recipe_implementation.get_user_by_id(user_id)
+    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+        user = await self.recipe_implementation.get_user_by_id(user_id, user_context)
         if user is None or user.third_party_info is None:
             return None
 
-        return user
+        return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
 
-    async def get_users_by_email(self, email: str) -&gt; List[User]:
-        users = await self.recipe_implementation.get_users_by_email(email)
-        users_result = []
+    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
+        users = await self.recipe_implementation.get_users_by_email(email, user_context)
+        users_result: List[User] = []
 
         for user in users:
             if user.third_party_info is not None:
-                users_result.append(user)
+                users_result.append(User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info))
 
         return users_result
 
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str) -&gt; Union[User, None]:
-        user = await self.recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id)
+    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+        user = await self.recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
         if user is None or user.third_party_info is None:
             return None
 
-        return user
+        return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool) -&gt; SignInUpResult:
-        result = await self.recipe_implementation.sign_in_up(third_party_id, third_party_user_id, email, email_verified)
+                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpResult:
+        result = await self.recipe_implementation.sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
 
-        if result.user.third_party_info is None:
+        if not result.is_ok:
+            return result
+
+        if result.user is None:
+            raise Exception(&#34;Should never come here&#34;)
+
+        if result.user.third_party_info is None or result.created_new_user is None:
             raise Exception(&#34;Should never come here&#34;)
 
         return SignInUpOkResult(
-            created_new_user=result.created_new_user, user=result.user)
-
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -&gt; UsersResponse:
-        raise Exception(&#34;Should never come here&#34;)
-
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -&gt; UsersResponse:
-        raise Exception(&#34;Should never come here&#34;)
-
-    async def get_user_count(self) -&gt; int:
-        raise Exception(&#34;Should never come here&#34;)</code></pre>
+            created_new_user=result.created_new_user, user=result.user)</code></pre>
 </details>
 </section>
 <section>
@@ -126,48 +126,45 @@ inheritance.</p></div>
         super().__init__()
         self.recipe_implementation = recipe_implementation
 
-    async def get_user_by_id(self, user_id: str) -&gt; Union[User, None]:
-        user = await self.recipe_implementation.get_user_by_id(user_id)
+    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+        user = await self.recipe_implementation.get_user_by_id(user_id, user_context)
         if user is None or user.third_party_info is None:
             return None
 
-        return user
+        return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
 
-    async def get_users_by_email(self, email: str) -&gt; List[User]:
-        users = await self.recipe_implementation.get_users_by_email(email)
-        users_result = []
+    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
+        users = await self.recipe_implementation.get_users_by_email(email, user_context)
+        users_result: List[User] = []
 
         for user in users:
             if user.third_party_info is not None:
-                users_result.append(user)
+                users_result.append(User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info))
 
         return users_result
 
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str) -&gt; Union[User, None]:
-        user = await self.recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id)
+    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+        user = await self.recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
         if user is None or user.third_party_info is None:
             return None
 
-        return user
+        return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool) -&gt; SignInUpResult:
-        result = await self.recipe_implementation.sign_in_up(third_party_id, third_party_user_id, email, email_verified)
+                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpResult:
+        result = await self.recipe_implementation.sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
 
-        if result.user.third_party_info is None:
+        if not result.is_ok:
+            return result
+
+        if result.user is None:
+            raise Exception(&#34;Should never come here&#34;)
+
+        if result.user.third_party_info is None or result.created_new_user is None:
             raise Exception(&#34;Should never come here&#34;)
 
         return SignInUpOkResult(
-            created_new_user=result.created_new_user, user=result.user)
-
-    async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -&gt; UsersResponse:
-        raise Exception(&#34;Should never come here&#34;)
-
-    async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -&gt; UsersResponse:
-        raise Exception(&#34;Should never come here&#34;)
-
-    async def get_user_count(self) -&gt; int:
-        raise Exception(&#34;Should never come here&#34;)</code></pre>
+            created_new_user=result.created_new_user, user=result.user)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -177,7 +174,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_by_id"><code class="name flex">
-<span>async def <span class="ident">get_user_by_id</span></span>(<span>self, user_id: str) ‑> Optional[<a title="supertokens_python.recipe.thirdpartyemailpassword.types.User" href="../types.html#supertokens_python.recipe.thirdpartyemailpassword.types.User">User</a>]</span>
+<span>async def <span class="ident">get_user_by_id</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.thirdparty.types.User" href="../../thirdparty/types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -185,16 +182,16 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_user_by_id(self, user_id: str) -&gt; Union[User, None]:
-    user = await self.recipe_implementation.get_user_by_id(user_id)
+<pre><code class="python">async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    user = await self.recipe_implementation.get_user_by_id(user_id, user_context)
     if user is None or user.third_party_info is None:
         return None
 
-    return user</code></pre>
+    return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_by_thirdparty_info"><code class="name flex">
-<span>async def <span class="ident">get_user_by_thirdparty_info</span></span>(<span>self, third_party_id: str, third_party_user_id: str) ‑> Optional[<a title="supertokens_python.recipe.thirdpartyemailpassword.types.User" href="../types.html#supertokens_python.recipe.thirdpartyemailpassword.types.User">User</a>]</span>
+<span>async def <span class="ident">get_user_by_thirdparty_info</span></span>(<span>self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.thirdparty.types.User" href="../../thirdparty/types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -202,29 +199,16 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str) -&gt; Union[User, None]:
-    user = await self.recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id)
+<pre><code class="python">async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    user = await self.recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
     if user is None or user.third_party_info is None:
         return None
 
-    return user</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_count"><code class="name flex">
-<span>async def <span class="ident">get_user_count</span></span>(<span>self) ‑> int</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_user_count(self) -&gt; int:
-    raise Exception(&#34;Should never come here&#34;)</code></pre>
+    return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_users_by_email"><code class="name flex">
-<span>async def <span class="ident">get_users_by_email</span></span>(<span>self, email: str) ‑> List[<a title="supertokens_python.recipe.thirdpartyemailpassword.types.User" href="../types.html#supertokens_python.recipe.thirdpartyemailpassword.types.User">User</a>]</span>
+<span>async def <span class="ident">get_users_by_email</span></span>(<span>self, email: str, user_context: Dict[str, Any]) ‑> List[<a title="supertokens_python.recipe.thirdparty.types.User" href="../../thirdparty/types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -232,45 +216,19 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_users_by_email(self, email: str) -&gt; List[User]:
-    users = await self.recipe_implementation.get_users_by_email(email)
-    users_result = []
+<pre><code class="python">async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
+    users = await self.recipe_implementation.get_users_by_email(email, user_context)
+    users_result: List[User] = []
 
     for user in users:
         if user.third_party_info is not None:
-            users_result.append(user)
+            users_result.append(User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info))
 
     return users_result</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_users_newest_first"><code class="name flex">
-<span>async def <span class="ident">get_users_newest_first</span></span>(<span>self, limit: int = None, next_pagination: str = None) ‑> <a title="supertokens_python.recipe.thirdpartyemailpassword.types.UsersResponse" href="../types.html#supertokens_python.recipe.thirdpartyemailpassword.types.UsersResponse">UsersResponse</a></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_users_newest_first(self, limit: int = None, next_pagination: str = None) -&gt; UsersResponse:
-    raise Exception(&#34;Should never come here&#34;)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_users_oldest_first"><code class="name flex">
-<span>async def <span class="ident">get_users_oldest_first</span></span>(<span>self, limit: int = None, next_pagination: str = None) ‑> <a title="supertokens_python.recipe.thirdpartyemailpassword.types.UsersResponse" href="../types.html#supertokens_python.recipe.thirdpartyemailpassword.types.UsersResponse">UsersResponse</a></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def get_users_oldest_first(self, limit: int = None, next_pagination: str = None) -&gt; UsersResponse:
-    raise Exception(&#34;Should never come here&#34;)</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.sign_in_up"><code class="name flex">
-<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpResult">SignInUpResult</a></span>
+<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpResult">SignInUpResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -279,10 +237,16 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                     email_verified: bool) -&gt; SignInUpResult:
-    result = await self.recipe_implementation.sign_in_up(third_party_id, third_party_user_id, email, email_verified)
+                     email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpResult:
+    result = await self.recipe_implementation.sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
 
-    if result.user.third_party_info is None:
+    if not result.is_ok:
+        return result
+
+    if result.user is None:
+        raise Exception(&#34;Should never come here&#34;)
+
+    if result.user.third_party_info is None or result.created_new_user is None:
         raise Exception(&#34;Should never come here&#34;)
 
     return SignInUpOkResult(
@@ -312,10 +276,7 @@ inheritance.</p></div>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_by_id" href="#supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_by_id">get_user_by_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_by_thirdparty_info" href="#supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_by_thirdparty_info">get_user_by_thirdparty_info</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_count" href="#supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_count">get_user_count</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_users_by_email" href="#supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_users_by_email">get_users_by_email</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_users_newest_first" href="#supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_users_newest_first">get_users_newest_first</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_users_oldest_first" href="#supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_users_oldest_first">get_users_oldest_first</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.sign_in_up" href="#supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.sign_in_up">sign_in_up</a></code></li>
 </ul>
 </li>

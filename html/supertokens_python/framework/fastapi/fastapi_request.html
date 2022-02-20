@@ -39,22 +39,30 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Union
+from urllib.parse import parse_qsl
 
 from supertokens_python.framework.request import BaseRequest
-from urllib.parse import parse_qsl
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 class FastApiRequest(BaseRequest):
 
-    def __init__(self, request):
+    from fastapi import Request
+
+    def __init__(self, request: Request):
         super().__init__()
         self.request = request
 
-    def get_query_param(self, key, default=None):
+    def get_query_param(
+            self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
         return self.request.query_params.get(key, default)
 
-    async def json(self):
+    async def json(self) -&gt; Union[Any, None]:
         try:
             return await self.request.json()
         except Exception:
@@ -69,14 +77,10 @@ class FastApiRequest(BaseRequest):
     def get_header(self, key: str) -&gt; Union[str, None]:
         return self.request.headers.get(key, None)
 
-    @property
-    def url(self):
-        return self.request.url
-
-    def get_session(self):
+    def get_session(self) -&gt; Union[SessionContainer, None]:
         return self.request.state.supertokens
 
-    def set_session(self, session):
+    def set_session(self, session: SessionContainer):
         self.request.state.supertokens = session
 
     def get_path(self) -&gt; str:
@@ -97,7 +101,7 @@ class FastApiRequest(BaseRequest):
 <dl>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest"><code class="flex name class">
 <span>class <span class="ident">FastApiRequest</span></span>
-<span>(</span><span>request)</span>
+<span>(</span><span>request: Request)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -108,14 +112,17 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class FastApiRequest(BaseRequest):
 
-    def __init__(self, request):
+    from fastapi import Request
+
+    def __init__(self, request: Request):
         super().__init__()
         self.request = request
 
-    def get_query_param(self, key, default=None):
+    def get_query_param(
+            self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
         return self.request.query_params.get(key, default)
 
-    async def json(self):
+    async def json(self) -&gt; Union[Any, None]:
         try:
             return await self.request.json()
         except Exception:
@@ -130,14 +137,10 @@ inheritance.</p></div>
     def get_header(self, key: str) -&gt; Union[str, None]:
         return self.request.headers.get(key, None)
 
-    @property
-    def url(self):
-        return self.request.url
-
-    def get_session(self):
+    def get_session(self) -&gt; Union[SessionContainer, None]:
         return self.request.state.supertokens
 
-    def set_session(self, session):
+    def set_session(self, session: SessionContainer):
         self.request.state.supertokens = session
 
     def get_path(self) -&gt; str:
@@ -151,19 +154,12 @@ inheritance.</p></div>
 <li><a title="supertokens_python.framework.request.BaseRequest" href="../request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Instance variables</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.url"><code class="name">var <span class="ident">url</span></code></dt>
+<dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.Request"><code class="name">var <span class="ident">Request</span></code></dt>
 <dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def url(self):
-    return self.request.url</code></pre>
-</details>
+<div class="desc"><p>A base class for incoming HTTP connections, that is used to provide
+any functionality that is common to both <code>Request</code> and <code>WebSocket</code>.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -221,7 +217,7 @@ def url(self):
 </details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_query_param"><code class="name flex">
-<span>def <span class="ident">get_query_param</span></span>(<span>self, key, default=None)</span>
+<span>def <span class="ident">get_query_param</span></span>(<span>self, key: str, default: Union[str, None] = None) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -229,12 +225,13 @@ def url(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_query_param(self, key, default=None):
+<pre><code class="python">def get_query_param(
+        self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
     return self.request.query_params.get(key, default)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_session"><code class="name flex">
-<span>def <span class="ident">get_session</span></span>(<span>self)</span>
+<span>def <span class="ident">get_session</span></span>(<span>self) ‑> Union[SessionContainer, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -242,12 +239,12 @@ def url(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_session(self):
+<pre><code class="python">def get_session(self) -&gt; Union[SessionContainer, None]:
     return self.request.state.supertokens</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.json"><code class="name flex">
-<span>async def <span class="ident">json</span></span>(<span>self)</span>
+<span>async def <span class="ident">json</span></span>(<span>self) ‑> Optional[Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -255,7 +252,7 @@ def url(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def json(self):
+<pre><code class="python">async def json(self) -&gt; Union[Any, None]:
     try:
         return await self.request.json()
     except Exception:
@@ -276,7 +273,7 @@ def url(self):
 </details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.set_session"><code class="name flex">
-<span>def <span class="ident">set_session</span></span>(<span>self, session)</span>
+<span>def <span class="ident">set_session</span></span>(<span>self, session: SessionContainer)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -284,7 +281,7 @@ def url(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def set_session(self, session):
+<pre><code class="python">def set_session(self, session: SessionContainer):
     self.request.state.supertokens = session</code></pre>
 </details>
 </dd>
@@ -309,6 +306,7 @@ def url(self):
 <li>
 <h4><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest">FastApiRequest</a></code></h4>
 <ul class="two-column">
+<li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.Request" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.Request">Request</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.form_data" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_cookie" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_header" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_header">get_header</a></code></li>
@@ -318,7 +316,6 @@ def url(self):
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.json" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.json">json</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.method" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.method">method</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.set_session" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.set_session">set_session</a></code></li>
-<li><code><a title="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.url" href="#supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.url">url</a></code></li>
 </ul>
 </li>
 </ul>

@@ -39,97 +39,124 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union, List
+from typing import Any, Dict, List, Union
 
-from supertokens_python.recipe.openid.interfaces import CreateJwtResult, GetJWKSResult, \
+from supertokens_python.recipe.openid.interfaces import \
     GetOpenIdDiscoveryConfigurationResult
-from supertokens_python.recipe.session.session_class import Session
+from supertokens_python.recipe.session.interfaces import (
+    SessionContainer, SessionInformationResult)
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.utils import FRAMEWORKS
 
+from ...jwt.interfaces import CreateJwtResult, GetJWKSResult
 
-async def create_new_session(request, user_id: str, access_token_payload: Union[dict, None] = None,
-                             session_data: Union[dict, None] = None) -&gt; Session:
+
+async def create_new_session(request: Any, user_id: str, access_token_payload: Union[Dict[str, Any], None] = None, session_data: Union[Dict[str, Any], None] = None, user_context: Union[None, Dict[str, Any]] = None) -&gt; SessionContainer:
+    if user_context is None:
+        user_context = {}
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.create_new_session(request, user_id, access_token_payload,
-                                                                                       session_data)
+    return await SessionRecipe.get_instance().recipe_implementation.create_new_session(request, user_id, access_token_payload, session_data, user_context)
 
 
-async def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -&gt; Union[
-        SessionRecipe, None]:
+async def get_session(request: Any, anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[SessionContainer, None]:
+    if user_context is None:
+        user_context = {}
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.get_session(request, anti_csrf_check,
-                                                                                session_required)
+    return await SessionRecipe.get_instance().recipe_implementation.get_session(request, anti_csrf_check, session_required, user_context)
 
 
-async def refresh_session(request) -&gt; Session:
+async def refresh_session(request: Any, user_context: Union[None, Dict[str, Any]] = None) -&gt; SessionContainer:
+    if user_context is None:
+        user_context = {}
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.refresh_session(request)
+    return await SessionRecipe.get_instance().recipe_implementation.refresh_session(request, user_context)
 
 
-async def revoke_session(session_handle: str) -&gt; bool:
-    return await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle)
+async def revoke_session(session_handle: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; bool:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle, user_context)
 
 
-async def revoke_all_sessions_for_user(user_id: str) -&gt; List[str]:
-    return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(user_id)
+async def revoke_all_sessions_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[str]:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(user_id, user_context)
 
 
-async def get_all_session_handles_for_user(user_id: str) -&gt; List[str]:
-    return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(user_id)
+async def get_all_session_handles_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[str]:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(user_id, user_context)
 
 
-async def revoke_multiple_sessions(session_handles: List[str]) -&gt; List[str]:
-    return await SessionRecipe.get_instance().recipe_implementation.revoke_multiple_sessions(session_handles)
+async def revoke_multiple_sessions(session_handles: List[str], user_context: Union[None, Dict[str, Any]] = None) -&gt; List[str]:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_multiple_sessions(session_handles, user_context)
 
 
-async def get_session_information(session_handle: str) -&gt; dict:
-    return await SessionRecipe.get_instance().recipe_implementation.get_session_information(session_handle)
+async def get_session_information(session_handle: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; SessionInformationResult:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.get_session_information(session_handle, user_context)
 
 
-async def update_session_data(session_handle: str, new_session_data: dict) -&gt; None:
-    return await SessionRecipe.get_instance().recipe_implementation.update_session_data(session_handle,
-                                                                                        new_session_data)
+async def update_session_data(session_handle: str, new_session_data: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.update_session_data(session_handle, new_session_data, user_context)
 
 
-async def update_access_token_payload(session_handle: str, new_access_token_payload: dict) -&gt; None:
-    return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(session_handle, new_access_token_payload)
+async def update_access_token_payload(session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(session_handle, new_access_token_payload, user_context)
 
 
-async def create_jwt(payload: dict, validity_seconds: int = None) -&gt; [CreateJwtResult, None]:
+async def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -&gt; CreateJwtResult:
+    if user_context is None:
+        user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
     if openid_recipe is not None:
-        return await openid_recipe.recipe_implementation.create_jwt(payload, validity_seconds)
+        return await openid_recipe.recipe_implementation.create_jwt(payload, validity_seconds, user_context=user_context)
 
-    raise &#39;create_jwt cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config &#39; \
-          &#39;when initialising the Session recipe&#39;
+    raise Exception(&#39;create_jwt cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config when initialising the Session recipe&#39;)
 
 
-async def get_jwks() -&gt; [GetJWKSResult, None]:
+async def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -&gt; GetJWKSResult:
+    if user_context is None:
+        user_context = {}
+    openid_recipe = SessionRecipe.get_instance().openid_recipe
+    if openid_recipe is not None:
+        return await openid_recipe.recipe_implementation.get_jwks(user_context)
+
+    raise Exception(&#39;get_jwks cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config when initialising the Session recipe&#39;)
+
+
+async def get_open_id_discovery_configuration(user_context: Union[None, Dict[str, Any]] = None) -&gt; GetOpenIdDiscoveryConfigurationResult:
+    if user_context is None:
+        user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
     if openid_recipe is not None:
-        return openid_recipe.recipe_implementation.get_jwks()
+        return await openid_recipe.recipe_implementation.get_open_id_discovery_configuration(
+            user_context)
 
-    raise &#39;get_jwks cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config &#39; \
-          &#39;when initialising the Session recipe&#39;
+    raise Exception(&#39;get_open_id_discovery_configuration cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config when initialising the Session recipe&#39;)
 
 
-async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigurationResult, None]:
-    openid_recipe = SessionRecipe.get_instance().openid_recipe
-
-    if openid_recipe is not None:
-        return openid_recipe.recipe_implementation.get_open_id_discovery_configuration()
-
-    raise &#39;get_open_id_discovery_configuration cannot be used without enabling the JWT feature. Please set \&#39;enable: &#39; \
-          &#39;True\&#39; for jwt config when initialising the Session recipe&#39;</code></pre>
+async def regenerate_access_token(access_token: str, new_access_token_payload: Union[Dict[str, Any], None] = None, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    await SessionRecipe.get_instance().recipe_implementation.regenerate_access_token(access_token, new_access_token_payload, user_context)</code></pre>
 </details>
 </section>
 <section>
@@ -140,7 +167,7 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.asyncio.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>payload: dict, validity_seconds: int = None) ‑> [<class '<a title="supertokens_python.recipe.openid.interfaces.CreateJwtResult" href="../../openid/interfaces.html#supertokens_python.recipe.openid.interfaces.CreateJwtResult">CreateJwtResult</a>'>, None]</span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>payload: Dict[str, Any], validity_seconds: Optional[int] = None, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResult">CreateJwtResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -148,18 +175,19 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_jwt(payload: dict, validity_seconds: int = None) -&gt; [CreateJwtResult, None]:
+<pre><code class="python">async def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -&gt; CreateJwtResult:
+    if user_context is None:
+        user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
     if openid_recipe is not None:
-        return await openid_recipe.recipe_implementation.create_jwt(payload, validity_seconds)
+        return await openid_recipe.recipe_implementation.create_jwt(payload, validity_seconds, user_context=user_context)
 
-    raise &#39;create_jwt cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config &#39; \
-          &#39;when initialising the Session recipe&#39;</code></pre>
+    raise Exception(&#39;create_jwt cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config when initialising the Session recipe&#39;)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>request, user_id: str, access_token_payload: Optional[dict] = None, session_data: Optional[dict] = None) ‑> <a title="supertokens_python.recipe.session.session_class.Session" href="../session_class.html#supertokens_python.recipe.session.session_class.Session">Session</a></span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>request: Any, user_id: str, access_token_payload: Optional[None] = None, session_data: Optional[None] = None, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -167,17 +195,17 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_new_session(request, user_id: str, access_token_payload: Union[dict, None] = None,
-                             session_data: Union[dict, None] = None) -&gt; Session:
+<pre><code class="python">async def create_new_session(request: Any, user_id: str, access_token_payload: Union[Dict[str, Any], None] = None, session_data: Union[Dict[str, Any], None] = None, user_context: Union[None, Dict[str, Any]] = None) -&gt; SessionContainer:
+    if user_context is None:
+        user_context = {}
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.create_new_session(request, user_id, access_token_payload,
-                                                                                       session_data)</code></pre>
+    return await SessionRecipe.get_instance().recipe_implementation.create_new_session(request, user_id, access_token_payload, session_data, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_all_session_handles_for_user"><code class="name flex">
-<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>user_id: str) ‑> List[str]</span>
+<span>async def <span class="ident">get_all_session_handles_for_user</span></span>(<span>user_id: str, user_context: Optional[None] = None) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -185,12 +213,14 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_all_session_handles_for_user(user_id: str) -&gt; List[str]:
-    return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(user_id)</code></pre>
+<pre><code class="python">async def get_all_session_handles_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[str]:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(user_id, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_jwks"><code class="name flex">
-<span>async def <span class="ident">get_jwks</span></span>(<span>) ‑> [<class '<a title="supertokens_python.recipe.openid.interfaces.GetJWKSResult" href="../../openid/interfaces.html#supertokens_python.recipe.openid.interfaces.GetJWKSResult">GetJWKSResult</a>'>, None]</span>
+<span>async def <span class="ident">get_jwks</span></span>(<span>user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.jwt.interfaces.GetJWKSResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.GetJWKSResult">GetJWKSResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -198,18 +228,18 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_jwks() -&gt; [GetJWKSResult, None]:
+<pre><code class="python">async def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -&gt; GetJWKSResult:
+    if user_context is None:
+        user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
-
     if openid_recipe is not None:
-        return openid_recipe.recipe_implementation.get_jwks()
+        return await openid_recipe.recipe_implementation.get_jwks(user_context)
 
-    raise &#39;get_jwks cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config &#39; \
-          &#39;when initialising the Session recipe&#39;</code></pre>
+    raise Exception(&#39;get_jwks cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config when initialising the Session recipe&#39;)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_open_id_discovery_configuration"><code class="name flex">
-<span>async def <span class="ident">get_open_id_discovery_configuration</span></span>(<span>) ‑> [<class '<a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="../../openid/interfaces.html#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a>'>, None]</span>
+<span>async def <span class="ident">get_open_id_discovery_configuration</span></span>(<span>user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="../../openid/interfaces.html#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -217,18 +247,20 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigurationResult, None]:
+<pre><code class="python">async def get_open_id_discovery_configuration(user_context: Union[None, Dict[str, Any]] = None) -&gt; GetOpenIdDiscoveryConfigurationResult:
+    if user_context is None:
+        user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
     if openid_recipe is not None:
-        return openid_recipe.recipe_implementation.get_open_id_discovery_configuration()
+        return await openid_recipe.recipe_implementation.get_open_id_discovery_configuration(
+            user_context)
 
-    raise &#39;get_open_id_discovery_configuration cannot be used without enabling the JWT feature. Please set \&#39;enable: &#39; \
-          &#39;True\&#39; for jwt config when initialising the Session recipe&#39;</code></pre>
+    raise Exception(&#39;get_open_id_discovery_configuration cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config when initialising the Session recipe&#39;)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_session"><code class="name flex">
-<span>async def <span class="ident">get_session</span></span>(<span>request, anti_csrf_check: Optional[bool] = None, session_required: bool = True) ‑> Optional[<a title="supertokens_python.recipe.session.recipe.SessionRecipe" href="../recipe.html#supertokens_python.recipe.session.recipe.SessionRecipe">SessionRecipe</a>]</span>
+<span>async def <span class="ident">get_session</span></span>(<span>request: Any, anti_csrf_check: Optional[bool] = None, session_required: bool = True, user_context: Optional[None] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -236,17 +268,17 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_session(request, anti_csrf_check: Union[bool, None] = None, session_required: bool = True) -&gt; Union[
-        SessionRecipe, None]:
+<pre><code class="python">async def get_session(request: Any, anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[SessionContainer, None]:
+    if user_context is None:
+        user_context = {}
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.get_session(request, anti_csrf_check,
-                                                                                session_required)</code></pre>
+    return await SessionRecipe.get_instance().recipe_implementation.get_session(request, anti_csrf_check, session_required, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_session_information"><code class="name flex">
-<span>async def <span class="ident">get_session_information</span></span>(<span>session_handle: str) ‑> dict</span>
+<span>async def <span class="ident">get_session_information</span></span>(<span>session_handle: str, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionInformationResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionInformationResult">SessionInformationResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -254,12 +286,14 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_session_information(session_handle: str) -&gt; dict:
-    return await SessionRecipe.get_instance().recipe_implementation.get_session_information(session_handle)</code></pre>
+<pre><code class="python">async def get_session_information(session_handle: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; SessionInformationResult:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.get_session_information(session_handle, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.refresh_session"><code class="name flex">
-<span>async def <span class="ident">refresh_session</span></span>(<span>request) ‑> <a title="supertokens_python.recipe.session.session_class.Session" href="../session_class.html#supertokens_python.recipe.session.session_class.Session">Session</a></span>
+<span>async def <span class="ident">refresh_session</span></span>(<span>request: Any, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -267,15 +301,32 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def refresh_session(request) -&gt; Session:
+<pre><code class="python">async def refresh_session(request: Any, user_context: Union[None, Dict[str, Any]] = None) -&gt; SessionContainer:
+    if user_context is None:
+        user_context = {}
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[SessionRecipe.get_instance(
         ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.refresh_session(request)</code></pre>
+    return await SessionRecipe.get_instance().recipe_implementation.refresh_session(request, user_context)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.asyncio.regenerate_access_token"><code class="name flex">
+<span>async def <span class="ident">regenerate_access_token</span></span>(<span>access_token: str, new_access_token_payload: Optional[None] = None, user_context: Optional[None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def regenerate_access_token(access_token: str, new_access_token_payload: Union[Dict[str, Any], None] = None, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    await SessionRecipe.get_instance().recipe_implementation.regenerate_access_token(access_token, new_access_token_payload, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.revoke_all_sessions_for_user"><code class="name flex">
-<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>user_id: str) ‑> List[str]</span>
+<span>async def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>user_id: str, user_context: Optional[None] = None) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -283,12 +334,14 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_all_sessions_for_user(user_id: str) -&gt; List[str]:
-    return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(user_id)</code></pre>
+<pre><code class="python">async def revoke_all_sessions_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[str]:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(user_id, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.revoke_multiple_sessions"><code class="name flex">
-<span>async def <span class="ident">revoke_multiple_sessions</span></span>(<span>session_handles: List[str]) ‑> List[str]</span>
+<span>async def <span class="ident">revoke_multiple_sessions</span></span>(<span>session_handles: List[str], user_context: Optional[None] = None) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -296,12 +349,14 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_multiple_sessions(session_handles: List[str]) -&gt; List[str]:
-    return await SessionRecipe.get_instance().recipe_implementation.revoke_multiple_sessions(session_handles)</code></pre>
+<pre><code class="python">async def revoke_multiple_sessions(session_handles: List[str], user_context: Union[None, Dict[str, Any]] = None) -&gt; List[str]:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_multiple_sessions(session_handles, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.revoke_session"><code class="name flex">
-<span>async def <span class="ident">revoke_session</span></span>(<span>session_handle: str) ‑> bool</span>
+<span>async def <span class="ident">revoke_session</span></span>(<span>session_handle: str, user_context: Optional[None] = None) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -309,12 +364,14 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_session(session_handle: str) -&gt; bool:
-    return await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle)</code></pre>
+<pre><code class="python">async def revoke_session(session_handle: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; bool:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.update_access_token_payload"><code class="name flex">
-<span>async def <span class="ident">update_access_token_payload</span></span>(<span>session_handle: str, new_access_token_payload: dict) ‑> None</span>
+<span>async def <span class="ident">update_access_token_payload</span></span>(<span>session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Optional[None] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -322,12 +379,14 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_access_token_payload(session_handle: str, new_access_token_payload: dict) -&gt; None:
-    return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(session_handle, new_access_token_payload)</code></pre>
+<pre><code class="python">async def update_access_token_payload(session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(session_handle, new_access_token_payload, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.update_session_data"><code class="name flex">
-<span>async def <span class="ident">update_session_data</span></span>(<span>session_handle: str, new_session_data: dict) ‑> None</span>
+<span>async def <span class="ident">update_session_data</span></span>(<span>session_handle: str, new_session_data: Dict[str, Any], user_context: Optional[None] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -335,9 +394,10 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_session_data(session_handle: str, new_session_data: dict) -&gt; None:
-    return await SessionRecipe.get_instance().recipe_implementation.update_session_data(session_handle,
-                                                                                        new_session_data)</code></pre>
+<pre><code class="python">async def update_session_data(session_handle: str, new_session_data: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.update_session_data(session_handle, new_session_data, user_context)</code></pre>
 </details>
 </dd>
 </dl>
@@ -366,6 +426,7 @@ async def get_open_id_discovery_configuration() -&gt; [GetOpenIdDiscoveryConfigu
 <li><code><a title="supertokens_python.recipe.session.asyncio.get_session" href="#supertokens_python.recipe.session.asyncio.get_session">get_session</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.asyncio.get_session_information" href="#supertokens_python.recipe.session.asyncio.get_session_information">get_session_information</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.asyncio.refresh_session" href="#supertokens_python.recipe.session.asyncio.refresh_session">refresh_session</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.asyncio.regenerate_access_token" href="#supertokens_python.recipe.session.asyncio.regenerate_access_token">regenerate_access_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.asyncio.revoke_all_sessions_for_user" href="#supertokens_python.recipe.session.asyncio.revoke_all_sessions_for_user">revoke_all_sessions_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.asyncio.revoke_multiple_sessions" href="#supertokens_python.recipe.session.asyncio.revoke_multiple_sessions">revoke_multiple_sessions</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.asyncio.revoke_session" href="#supertokens_python.recipe.session.asyncio.revoke_session">revoke_session</a></code></li>

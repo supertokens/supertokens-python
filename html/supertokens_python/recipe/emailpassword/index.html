@@ -39,19 +39,32 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
 
+from typing import TYPE_CHECKING, Callable, Union
+
+from . import exceptions as ex
+from . import utils
 from .recipe import EmailPasswordRecipe
-from . import exceptions
-from .utils import InputSignUpFeature, InputResetPasswordUsingTokenFeature, InputOverrideConfig, InputFormField
-from ..emailverification.utils import InputEmailVerificationConfig
+
+exceptions = ex
+InputOverrideConfig = utils.InputOverrideConfig
+InputResetPasswordUsingTokenFeature = utils.InputResetPasswordUsingTokenFeature
+InputEmailVerificationConfig = utils.InputEmailVerificationConfig
+InputSignUpFeature = utils.InputSignUpFeature
+InputFormField = utils.InputFormField
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
 
 
-def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
+def init(sign_up_feature: Union[utils.InputSignUpFeature, None] = None,
          reset_password_using_token_feature: Union[
-             InputResetPasswordUsingTokenFeature, None] = None,
-         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[InputOverrideConfig, None] = None):
+             utils.InputResetPasswordUsingTokenFeature, None] = None,
+         email_verification_feature: Union[utils.InputEmailVerificationConfig, None] = None,
+         override: Union[utils.InputOverrideConfig, None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
     return EmailPasswordRecipe.init(
         sign_up_feature,
         reset_password_using_token_feature,
@@ -111,7 +124,7 @@ def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>sign_up_feature: Optional[<a title="supertokens_python.recipe.emailpassword.utils.InputSignUpFeature" href="utils.html#supertokens_python.recipe.emailpassword.utils.InputSignUpFeature">InputSignUpFeature</a>] = None, reset_password_using_token_feature: Optional[<a title="supertokens_python.recipe.emailpassword.utils.InputResetPasswordUsingTokenFeature" href="utils.html#supertokens_python.recipe.emailpassword.utils.InputResetPasswordUsingTokenFeature">InputResetPasswordUsingTokenFeature</a>] = None, email_verification_feature: Optional[<a title="supertokens_python.recipe.emailverification.utils.InputEmailVerificationConfig" href="../emailverification/utils.html#supertokens_python.recipe.emailverification.utils.InputEmailVerificationConfig">InputEmailVerificationConfig</a>] = None, override: Optional[<a title="supertokens_python.recipe.emailpassword.utils.InputOverrideConfig" href="utils.html#supertokens_python.recipe.emailpassword.utils.InputOverrideConfig">InputOverrideConfig</a>] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>sign_up_feature: Union[<a title="supertokens_python.recipe.emailpassword.utils.InputSignUpFeature" href="utils.html#supertokens_python.recipe.emailpassword.utils.InputSignUpFeature">InputSignUpFeature</a>, None] = None, reset_password_using_token_feature: Union[<a title="supertokens_python.recipe.emailpassword.utils.InputResetPasswordUsingTokenFeature" href="utils.html#supertokens_python.recipe.emailpassword.utils.InputResetPasswordUsingTokenFeature">InputResetPasswordUsingTokenFeature</a>, None] = None, email_verification_feature: Union[<a title="supertokens_python.recipe.emailpassword.utils.InputEmailVerificationConfig" href="utils.html#supertokens_python.recipe.emailpassword.utils.InputEmailVerificationConfig">InputEmailVerificationConfig</a>, None] = None, override: Union[<a title="supertokens_python.recipe.emailpassword.utils.InputOverrideConfig" href="utils.html#supertokens_python.recipe.emailpassword.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -119,11 +132,11 @@ def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
+<pre><code class="python">def init(sign_up_feature: Union[utils.InputSignUpFeature, None] = None,
          reset_password_using_token_feature: Union[
-             InputResetPasswordUsingTokenFeature, None] = None,
-         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[InputOverrideConfig, None] = None):
+             utils.InputResetPasswordUsingTokenFeature, None] = None,
+         email_verification_feature: Union[utils.InputEmailVerificationConfig, None] = None,
+         override: Union[utils.InputOverrideConfig, None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
     return EmailPasswordRecipe.init(
         sign_up_feature,
         reset_password_using_token_feature,

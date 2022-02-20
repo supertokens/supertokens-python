@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Session's recipe `get_session_information` returns a `SessionInformationResult` class object instead of a `dict` for easier consumption.
 - `get_link_domain_and_path` config in passwordless recipe now takes a class type input as opposed to a string input as the first param
 - Renamed `Session` to `SessionContainer` in session
+- Upgrades `typing_extensions` to version 4.1.1
 
 ### Added
 - Returns session from all APIs where a session is created

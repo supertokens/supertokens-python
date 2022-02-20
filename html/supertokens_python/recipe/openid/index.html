@@ -39,17 +39,22 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
 
-from .utils import InputOverrideConfig
+from typing import TYPE_CHECKING, Callable, Union
 
 from .recipe import OpenIdRecipe
-from supertokens_python.recipe.jwt import OverrideConfig as JWTOverrideConfig
+from .utils import InputOverrideConfig
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
 
 
 def init(jwt_validity_seconds: Union[int, None] = None,
          issuer: Union[str, None] = None,
-         override: Union[InputOverrideConfig, None] = None):
+         override: Union[InputOverrideConfig, None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
     return OpenIdRecipe.init(jwt_validity_seconds, issuer, override)</code></pre>
 </details>
 </section>
@@ -88,10 +93,6 @@ def init(jwt_validity_seconds: Union[int, None] = None,
 <dd>
 <div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="supertokens_python.recipe.openid.types" href="types.html">supertokens_python.recipe.openid.types</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt><code class="name"><a title="supertokens_python.recipe.openid.utils" href="utils.html">supertokens_python.recipe.openid.utils</a></code></dt>
 <dd>
 <div class="desc"></div>
@@ -104,7 +105,7 @@ def init(jwt_validity_seconds: Union[int, None] = None,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.openid.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>jwt_validity_seconds: Optional[int] = None, issuer: Optional[str] = None, override: Optional[<a title="supertokens_python.recipe.openid.utils.InputOverrideConfig" href="utils.html#supertokens_python.recipe.openid.utils.InputOverrideConfig">InputOverrideConfig</a>] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>jwt_validity_seconds: Union[int, None] = None, issuer: Union[str, None] = None, override: Union[InputOverrideConfig, None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -114,7 +115,7 @@ def init(jwt_validity_seconds: Union[int, None] = None,
 </summary>
 <pre><code class="python">def init(jwt_validity_seconds: Union[int, None] = None,
          issuer: Union[str, None] = None,
-         override: Union[InputOverrideConfig, None] = None):
+         override: Union[InputOverrideConfig, None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
     return OpenIdRecipe.init(jwt_validity_seconds, issuer, override)</code></pre>
 </details>
 </dd>
@@ -144,7 +145,6 @@ def init(jwt_validity_seconds: Union[int, None] = None,
 <li><code><a title="supertokens_python.recipe.openid.recipe" href="recipe.html">supertokens_python.recipe.openid.recipe</a></code></li>
 <li><code><a title="supertokens_python.recipe.openid.recipe_implementation" href="recipe_implementation.html">supertokens_python.recipe.openid.recipe_implementation</a></code></li>
 <li><code><a title="supertokens_python.recipe.openid.syncio" href="syncio/index.html">supertokens_python.recipe.openid.syncio</a></code></li>
-<li><code><a title="supertokens_python.recipe.openid.types" href="types.html">supertokens_python.recipe.openid.types</a></code></li>
 <li><code><a title="supertokens_python.recipe.openid.utils" href="utils.html">supertokens_python.recipe.openid.utils</a></code></li>
 </ul>
 </li>

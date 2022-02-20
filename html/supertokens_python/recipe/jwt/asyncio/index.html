@@ -39,16 +39,26 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Any, Dict, Union
+
+from supertokens_python.recipe.jwt.interfaces import (CreateJwtResult,
+                                                      GetJWKSResult)
 from supertokens_python.recipe.jwt.recipe import JWTRecipe
-from supertokens_python.recipe.jwt.types import CreateJwtResult, GetJWKSResult
 
 
-async def create_jwt(payload: dict, validity_seconds: int = None) -&gt; [CreateJwtResult, None]:
-    return await JWTRecipe.get_instance().recipe_implementation.create_jwt(payload, validity_seconds)
+async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -&gt; CreateJwtResult:
+    if user_context is None:
+        user_context = {}
+    if payload is None:
+        payload = {}
+
+    return await JWTRecipe.get_instance().recipe_implementation.create_jwt(payload, validity_seconds, user_context)
 
 
-async def get_jwks() -&gt; [GetJWKSResult, None]:
-    return await JWTRecipe.get_instance().recipe_implementation.get_jwks()</code></pre>
+async def get_jwks(user_context: Union[Dict[str, Any], None] = None) -&gt; GetJWKSResult:
+    if user_context is None:
+        user_context = {}
+    return await JWTRecipe.get_instance().recipe_implementation.get_jwks(user_context)</code></pre>
 </details>
 </section>
 <section>
@@ -59,7 +69,7 @@ async def get_jwks() -&gt; [GetJWKSResult, None]:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.jwt.asyncio.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>payload: dict, validity_seconds: int = None) ‑> [<class '<a title="supertokens_python.recipe.jwt.types.CreateJwtResult" href="../types.html#supertokens_python.recipe.jwt.types.CreateJwtResult">CreateJwtResult</a>'>, None]</span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>payload: Optional[None] = None, validity_seconds: Optional[int] = None, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResult" href="../interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResult">CreateJwtResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -67,12 +77,17 @@ async def get_jwks() -&gt; [GetJWKSResult, None]:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_jwt(payload: dict, validity_seconds: int = None) -&gt; [CreateJwtResult, None]:
-    return await JWTRecipe.get_instance().recipe_implementation.create_jwt(payload, validity_seconds)</code></pre>
+<pre><code class="python">async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -&gt; CreateJwtResult:
+    if user_context is None:
+        user_context = {}
+    if payload is None:
+        payload = {}
+
+    return await JWTRecipe.get_instance().recipe_implementation.create_jwt(payload, validity_seconds, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.jwt.asyncio.get_jwks"><code class="name flex">
-<span>async def <span class="ident">get_jwks</span></span>(<span>) ‑> [<class '<a title="supertokens_python.recipe.jwt.types.GetJWKSResult" href="../types.html#supertokens_python.recipe.jwt.types.GetJWKSResult">GetJWKSResult</a>'>, None]</span>
+<span>async def <span class="ident">get_jwks</span></span>(<span>user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.jwt.interfaces.GetJWKSResult" href="../interfaces.html#supertokens_python.recipe.jwt.interfaces.GetJWKSResult">GetJWKSResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -80,8 +95,10 @@ async def get_jwks() -&gt; [GetJWKSResult, None]:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_jwks() -&gt; [GetJWKSResult, None]:
-    return await JWTRecipe.get_instance().recipe_implementation.get_jwks()</code></pre>
+<pre><code class="python">async def get_jwks(user_context: Union[Dict[str, Any], None] = None) -&gt; GetJWKSResult:
+    if user_context is None:
+        user_context = {}
+    return await JWTRecipe.get_instance().recipe_implementation.get_jwks(user_context)</code></pre>
 </details>
 </dd>
 </dl>

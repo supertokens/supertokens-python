@@ -39,23 +39,30 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
 import json
-from typing import Any, Union
-from supertokens_python.framework.request import BaseRequest
+from typing import TYPE_CHECKING, Any, Union
 from urllib.parse import parse_qsl
+
+from supertokens_python.framework.request import BaseRequest
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.session.interfaces import SessionContainer
 
 
 class DjangoRequest(BaseRequest):
+    from django.http import HttpRequest
 
-    def __init__(self, request):
+    def __init__(self, request: HttpRequest):
         super().__init__()
         self.request = request
 
-    def get_query_param(self, key, default=None):
+    def get_query_param(
+            self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
         return self.request.GET.get(key, default)
 
-    async def json(self):
+    async def json(self) -&gt; Union[Any, None]:
         try:
             body = json.loads(self.request.body)
             return body
@@ -63,24 +70,23 @@ class DjangoRequest(BaseRequest):
             return {}
 
     def method(self) -&gt; str:
+        if self.request.method is None:
+            raise Exception(&#34;Should never come here&#34;)
         return self.request.method
 
     def get_cookie(self, key: str) -&gt; Union[str, None]:
         return self.request.COOKIES.get(key)
 
-    def get_header(self, key: str) -&gt; Any:
+    def get_header(self, key: str) -&gt; Union[None, str]:
         key = key.replace(&#39;-&#39;, &#39;_&#39;)
         key = &#39;HTTP_&#39; + key
         return self.request.META.get(key.upper())
 
-    def url(self):
-        return self.request.get_full_path()
+    def get_session(self) -&gt; Union[SessionContainer, None]:
+        return self.request.supertokens  # type: ignore
 
-    def get_session(self):
-        return self.request.supertokens
-
-    def set_session(self, session):
-        self.request.supertokens = session
+    def set_session(self, session: SessionContainer):
+        self.request.supertokens = session  # type: ignore
 
     def get_path(self) -&gt; str:
         return self.request.path
@@ -100,7 +106,7 @@ class DjangoRequest(BaseRequest):
 <dl>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest"><code class="flex name class">
 <span>class <span class="ident">DjangoRequest</span></span>
-<span>(</span><span>request)</span>
+<span>(</span><span>request: HttpRequest)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -110,15 +116,17 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class DjangoRequest(BaseRequest):
+    from django.http import HttpRequest
 
-    def __init__(self, request):
+    def __init__(self, request: HttpRequest):
         super().__init__()
         self.request = request
 
-    def get_query_param(self, key, default=None):
+    def get_query_param(
+            self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
         return self.request.GET.get(key, default)
 
-    async def json(self):
+    async def json(self) -&gt; Union[Any, None]:
         try:
             body = json.loads(self.request.body)
             return body
@@ -126,24 +134,23 @@ inheritance.</p></div>
             return {}
 
     def method(self) -&gt; str:
+        if self.request.method is None:
+            raise Exception(&#34;Should never come here&#34;)
         return self.request.method
 
     def get_cookie(self, key: str) -&gt; Union[str, None]:
         return self.request.COOKIES.get(key)
 
-    def get_header(self, key: str) -&gt; Any:
+    def get_header(self, key: str) -&gt; Union[None, str]:
         key = key.replace(&#39;-&#39;, &#39;_&#39;)
         key = &#39;HTTP_&#39; + key
         return self.request.META.get(key.upper())
 
-    def url(self):
-        return self.request.get_full_path()
+    def get_session(self) -&gt; Union[SessionContainer, None]:
+        return self.request.supertokens  # type: ignore
 
-    def get_session(self):
-        return self.request.supertokens
-
-    def set_session(self, session):
-        self.request.supertokens = session
+    def set_session(self, session: SessionContainer):
+        self.request.supertokens = session  # type: ignore
 
     def get_path(self) -&gt; str:
         return self.request.path
@@ -156,6 +163,13 @@ inheritance.</p></div>
 <li><a title="supertokens_python.framework.request.BaseRequest" href="../request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.framework.django.django_request.DjangoRequest.HttpRequest"><code class="name">var <span class="ident">HttpRequest</span></code></dt>
+<dd>
+<div class="desc"><p>A basic HTTP request.</p></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest.form_data"><code class="name flex">
@@ -185,7 +199,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest.get_header"><code class="name flex">
-<span>def <span class="ident">get_header</span></span>(<span>self, key: str) ‑> Any</span>
+<span>def <span class="ident">get_header</span></span>(<span>self, key: str) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -193,7 +207,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_header(self, key: str) -&gt; Any:
+<pre><code class="python">def get_header(self, key: str) -&gt; Union[None, str]:
     key = key.replace(&#39;-&#39;, &#39;_&#39;)
     key = &#39;HTTP_&#39; + key
     return self.request.META.get(key.upper())</code></pre>
@@ -213,7 +227,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest.get_query_param"><code class="name flex">
-<span>def <span class="ident">get_query_param</span></span>(<span>self, key, default=None)</span>
+<span>def <span class="ident">get_query_param</span></span>(<span>self, key: str, default: Union[str, None] = None) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -221,12 +235,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_query_param(self, key, default=None):
+<pre><code class="python">def get_query_param(
+        self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
     return self.request.GET.get(key, default)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest.get_session"><code class="name flex">
-<span>def <span class="ident">get_session</span></span>(<span>self)</span>
+<span>def <span class="ident">get_session</span></span>(<span>self) ‑> Union[SessionContainer, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -234,12 +249,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_session(self):
-    return self.request.supertokens</code></pre>
+<pre><code class="python">def get_session(self) -&gt; Union[SessionContainer, None]:
+    return self.request.supertokens  # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest.json"><code class="name flex">
-<span>async def <span class="ident">json</span></span>(<span>self)</span>
+<span>async def <span class="ident">json</span></span>(<span>self) ‑> Optional[Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -247,7 +262,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def json(self):
+<pre><code class="python">async def json(self) -&gt; Union[Any, None]:
     try:
         body = json.loads(self.request.body)
         return body
@@ -265,11 +280,13 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def method(self) -&gt; str:
+    if self.request.method is None:
+        raise Exception(&#34;Should never come here&#34;)
     return self.request.method</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.django.django_request.DjangoRequest.set_session"><code class="name flex">
-<span>def <span class="ident">set_session</span></span>(<span>self, session)</span>
+<span>def <span class="ident">set_session</span></span>(<span>self, session: SessionContainer)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -277,21 +294,8 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def set_session(self, session):
-    self.request.supertokens = session</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.framework.django.django_request.DjangoRequest.url"><code class="name flex">
-<span>def <span class="ident">url</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def url(self):
-    return self.request.get_full_path()</code></pre>
+<pre><code class="python">def set_session(self, session: SessionContainer):
+    self.request.supertokens = session  # type: ignore</code></pre>
 </details>
 </dd>
 </dl>
@@ -315,6 +319,7 @@ inheritance.</p></div>
 <li>
 <h4><code><a title="supertokens_python.framework.django.django_request.DjangoRequest" href="#supertokens_python.framework.django.django_request.DjangoRequest">DjangoRequest</a></code></h4>
 <ul class="two-column">
+<li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.HttpRequest" href="#supertokens_python.framework.django.django_request.DjangoRequest.HttpRequest">HttpRequest</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.form_data" href="#supertokens_python.framework.django.django_request.DjangoRequest.form_data">form_data</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_cookie" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_cookie">get_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.get_header" href="#supertokens_python.framework.django.django_request.DjangoRequest.get_header">get_header</a></code></li>
@@ -324,7 +329,6 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.json" href="#supertokens_python.framework.django.django_request.DjangoRequest.json">json</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.method" href="#supertokens_python.framework.django.django_request.DjangoRequest.method">method</a></code></li>
 <li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.set_session" href="#supertokens_python.framework.django.django_request.DjangoRequest.set_session">set_session</a></code></li>
-<li><code><a title="supertokens_python.framework.django.django_request.DjangoRequest.url" href="#supertokens_python.framework.django.django_request.DjangoRequest.url">url</a></code></li>
 </ul>
 </li>
 </ul>

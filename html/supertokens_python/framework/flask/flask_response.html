@@ -40,51 +40,52 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
-
-from werkzeug.http import dump_cookie
+from typing import Any, Dict, List, Union
 
 from supertokens_python.framework.response import BaseResponse
+from werkzeug.http import dump_cookie
 
 
 class FlaskResponse(BaseResponse):
+    from flask.wrappers import Response
 
-    def __init__(self, response=None):
+    def __init__(self, response: Response):
         super().__init__({})
         self.response = response
-        self.headers = list()
+        self.headers: List[Any] = []
         self.response_sent = False
         self.status_set = False
 
-    def set_html_content(self, content):
+    def set_html_content(self, content: str):
         if not self.response_sent:
             self.response.data = content
             self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
             self.response_sent = True
 
-    def set_cookie(self, key: str, value: str = &#34;&#34;, max_age: int = None, expires: int = None, path: str = &#34;/&#34;,
-                   domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
+    def set_cookie(self, key: str, value: str, expires: int, path: str = &#34;/&#34;,
+                   domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
         if self.response is None:
-            self.headers.append((&#34;Set-Cookie&#34;,
-                                 dump_cookie(
-                                     key,
-                                     value=value,
-                                     max_age=max_age,
-                                     expires=expires / 1000,
-                                     path=path,
-                                     domain=domain,
-                                     secure=secure,
-                                     httponly=httponly,
-                                     samesite=samesite
-                                 )))
+            cookie = dump_cookie(
+                key,
+                value=value,
+                expires=int(expires / 1000),
+                path=path,
+                domain=domain,
+                secure=secure,
+                httponly=httponly,
+                samesite=samesite
+            )
+            self.headers.append((&#34;Set-Cookie&#34;, cookie))
         else:
-            self.response.set_cookie(key, value=value, max_age=max_age, expires=expires / 1000, path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
+            self.response.set_cookie(key, value=value, expires=expires / 1000,
+                                     path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
 
-    def set_header(self, key, value):
+    def set_header(self, key: str, value: str):
         if self.response is None:
             # TODO in the future the headrs must be validated..
-            if not isinstance(value, str):
-                raise TypeError(&#34;Value should be unicode.&#34;)
-            if u&#34;\n&#34; in value or u&#34;\r&#34; in value:
+            # if not isinstance(value, str):
+            #     raise TypeError(&#34;Value should be unicode.&#34;)
+            if &#34;\n&#34; in value or &#34;\r&#34; in value:
                 raise ValueError(
                     &#34;Detected newline in header value.  This is &#34;
                     &#34;a potential security problem&#34;
@@ -93,16 +94,15 @@ class FlaskResponse(BaseResponse):
         else:
             self.response.headers.add(key, value)
 
-    def get_header(self, key):
+    def get_header(self, key: str) -&gt; Union[None, str]:
         if self.response is not None:
             return self.response.headers.get(key)
-        else:
-            for value in self.headers:
-                if value[0] == key:
-                    return value[1]
-            return None
+        for value in self.headers:
+            if value[0] == key:
+                return value[1]
+        return None
 
-    def set_status_code(self, status_code):
+    def set_status_code(self, status_code: int):
         if not self.status_set:
             self.response.status_code = status_code
             self.status_set = True
@@ -110,10 +110,9 @@ class FlaskResponse(BaseResponse):
     def get_headers(self):
         if self.response is None:
             return self.headers
-        else:
-            return self.response.headers
+        return self.response.headers
 
-    def set_json_content(self, content):
+    def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:
             self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
             self.response.data = json.dumps(
@@ -137,7 +136,7 @@ class FlaskResponse(BaseResponse):
 <dl>
 <dt id="supertokens_python.framework.flask.flask_response.FlaskResponse"><code class="flex name class">
 <span>class <span class="ident">FlaskResponse</span></span>
-<span>(</span><span>response=None)</span>
+<span>(</span><span>response: flask.wrappers.Response)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -147,44 +146,45 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class FlaskResponse(BaseResponse):
+    from flask.wrappers import Response
 
-    def __init__(self, response=None):
+    def __init__(self, response: Response):
         super().__init__({})
         self.response = response
-        self.headers = list()
+        self.headers: List[Any] = []
         self.response_sent = False
         self.status_set = False
 
-    def set_html_content(self, content):
+    def set_html_content(self, content: str):
         if not self.response_sent:
             self.response.data = content
             self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
             self.response_sent = True
 
-    def set_cookie(self, key: str, value: str = &#34;&#34;, max_age: int = None, expires: int = None, path: str = &#34;/&#34;,
-                   domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
+    def set_cookie(self, key: str, value: str, expires: int, path: str = &#34;/&#34;,
+                   domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
         if self.response is None:
-            self.headers.append((&#34;Set-Cookie&#34;,
-                                 dump_cookie(
-                                     key,
-                                     value=value,
-                                     max_age=max_age,
-                                     expires=expires / 1000,
-                                     path=path,
-                                     domain=domain,
-                                     secure=secure,
-                                     httponly=httponly,
-                                     samesite=samesite
-                                 )))
+            cookie = dump_cookie(
+                key,
+                value=value,
+                expires=int(expires / 1000),
+                path=path,
+                domain=domain,
+                secure=secure,
+                httponly=httponly,
+                samesite=samesite
+            )
+            self.headers.append((&#34;Set-Cookie&#34;, cookie))
         else:
-            self.response.set_cookie(key, value=value, max_age=max_age, expires=expires / 1000, path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
+            self.response.set_cookie(key, value=value, expires=expires / 1000,
+                                     path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
 
-    def set_header(self, key, value):
+    def set_header(self, key: str, value: str):
         if self.response is None:
             # TODO in the future the headrs must be validated..
-            if not isinstance(value, str):
-                raise TypeError(&#34;Value should be unicode.&#34;)
-            if u&#34;\n&#34; in value or u&#34;\r&#34; in value:
+            # if not isinstance(value, str):
+            #     raise TypeError(&#34;Value should be unicode.&#34;)
+            if &#34;\n&#34; in value or &#34;\r&#34; in value:
                 raise ValueError(
                     &#34;Detected newline in header value.  This is &#34;
                     &#34;a potential security problem&#34;
@@ -193,16 +193,15 @@ inheritance.</p></div>
         else:
             self.response.headers.add(key, value)
 
-    def get_header(self, key):
+    def get_header(self, key: str) -&gt; Union[None, str]:
         if self.response is not None:
             return self.response.headers.get(key)
-        else:
-            for value in self.headers:
-                if value[0] == key:
-                    return value[1]
-            return None
+        for value in self.headers:
+            if value[0] == key:
+                return value[1]
+        return None
 
-    def set_status_code(self, status_code):
+    def set_status_code(self, status_code: int):
         if not self.status_set:
             self.response.status_code = status_code
             self.status_set = True
@@ -210,10 +209,9 @@ inheritance.</p></div>
     def get_headers(self):
         if self.response is None:
             return self.headers
-        else:
-            return self.response.headers
+        return self.response.headers
 
-    def set_json_content(self, content):
+    def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:
             self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
             self.response.data = json.dumps(
@@ -230,10 +228,33 @@ inheritance.</p></div>
 <li><a title="supertokens_python.framework.response.BaseResponse" href="../response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.Response"><code class="name">var <span class="ident">Response</span></code></dt>
+<dd>
+<div class="desc"><p>The response object that is used by default in Flask.
+Works like the
+response object from Werkzeug but is set to have an HTML mimetype by
+default.
+Quite often you don't have to create this object yourself because
+:meth:<code>~flask.Flask.make_response</code> will take care of that for you.</p>
+<p>If you want to replace the response object used you can subclass this and
+set :attr:<code>~flask.Flask.response_class</code> to your subclass.</p>
+<div class="admonition versionchanged">
+<p class="admonition-title">Changed in version:&ensp;1.0</p>
+<p>JSON support is added to the response, like the request. This is useful
+when testing to get the test client response data as JSON.</p>
+</div>
+<div class="admonition versionchanged">
+<p class="admonition-title">Changed in version:&ensp;1.0</p>
+<p>Added :attr:<code>max_cookie_size</code>.</p>
+</div></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.get_header"><code class="name flex">
-<span>def <span class="ident">get_header</span></span>(<span>self, key)</span>
+<span>def <span class="ident">get_header</span></span>(<span>self, key: str) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -241,14 +262,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_header(self, key):
+<pre><code class="python">def get_header(self, key: str) -&gt; Union[None, str]:
     if self.response is not None:
         return self.response.headers.get(key)
-    else:
-        for value in self.headers:
-            if value[0] == key:
-                return value[1]
-        return None</code></pre>
+    for value in self.headers:
+        if value[0] == key:
+            return value[1]
+    return None</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.get_headers"><code class="name flex">
@@ -263,12 +283,11 @@ inheritance.</p></div>
 <pre><code class="python">def get_headers(self):
     if self.response is None:
         return self.headers
-    else:
-        return self.response.headers</code></pre>
+    return self.response.headers</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.set_cookie"><code class="name flex">
-<span>def <span class="ident">set_cookie</span></span>(<span>self, key: str, value: str = '', max_age: int = None, expires: int = None, path: str = '/', domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = 'lax')</span>
+<span>def <span class="ident">set_cookie</span></span>(<span>self, key: str, value: str, expires: int, path: str = '/', domain: Optional[str] = None, secure: bool = False, httponly: bool = False, samesite: str = 'lax')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -276,27 +295,27 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def set_cookie(self, key: str, value: str = &#34;&#34;, max_age: int = None, expires: int = None, path: str = &#34;/&#34;,
-               domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
+<pre><code class="python">def set_cookie(self, key: str, value: str, expires: int, path: str = &#34;/&#34;,
+               domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
     if self.response is None:
-        self.headers.append((&#34;Set-Cookie&#34;,
-                             dump_cookie(
-                                 key,
-                                 value=value,
-                                 max_age=max_age,
-                                 expires=expires / 1000,
-                                 path=path,
-                                 domain=domain,
-                                 secure=secure,
-                                 httponly=httponly,
-                                 samesite=samesite
-                             )))
+        cookie = dump_cookie(
+            key,
+            value=value,
+            expires=int(expires / 1000),
+            path=path,
+            domain=domain,
+            secure=secure,
+            httponly=httponly,
+            samesite=samesite
+        )
+        self.headers.append((&#34;Set-Cookie&#34;, cookie))
     else:
-        self.response.set_cookie(key, value=value, max_age=max_age, expires=expires / 1000, path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)</code></pre>
+        self.response.set_cookie(key, value=value, expires=expires / 1000,
+                                 path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.set_header"><code class="name flex">
-<span>def <span class="ident">set_header</span></span>(<span>self, key, value)</span>
+<span>def <span class="ident">set_header</span></span>(<span>self, key: str, value: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -304,12 +323,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def set_header(self, key, value):
+<pre><code class="python">def set_header(self, key: str, value: str):
     if self.response is None:
         # TODO in the future the headrs must be validated..
-        if not isinstance(value, str):
-            raise TypeError(&#34;Value should be unicode.&#34;)
-        if u&#34;\n&#34; in value or u&#34;\r&#34; in value:
+        # if not isinstance(value, str):
+        #     raise TypeError(&#34;Value should be unicode.&#34;)
+        if &#34;\n&#34; in value or &#34;\r&#34; in value:
             raise ValueError(
                 &#34;Detected newline in header value.  This is &#34;
                 &#34;a potential security problem&#34;
@@ -320,7 +339,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.set_html_content"><code class="name flex">
-<span>def <span class="ident">set_html_content</span></span>(<span>self, content)</span>
+<span>def <span class="ident">set_html_content</span></span>(<span>self, content: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -328,7 +347,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def set_html_content(self, content):
+<pre><code class="python">def set_html_content(self, content: str):
     if not self.response_sent:
         self.response.data = content
         self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
@@ -336,7 +355,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.set_json_content"><code class="name flex">
-<span>def <span class="ident">set_json_content</span></span>(<span>self, content)</span>
+<span>def <span class="ident">set_json_content</span></span>(<span>self, content: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -344,7 +363,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def set_json_content(self, content):
+<pre><code class="python">def set_json_content(self, content: Dict[str, Any]):
     if not self.response_sent:
         self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
         self.response.data = json.dumps(
@@ -358,7 +377,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.set_status_code"><code class="name flex">
-<span>def <span class="ident">set_status_code</span></span>(<span>self, status_code)</span>
+<span>def <span class="ident">set_status_code</span></span>(<span>self, status_code: int)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -366,7 +385,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def set_status_code(self, status_code):
+<pre><code class="python">def set_status_code(self, status_code: int):
     if not self.status_set:
         self.response.status_code = status_code
         self.status_set = True</code></pre>
@@ -393,6 +412,7 @@ inheritance.</p></div>
 <li>
 <h4><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse" href="#supertokens_python.framework.flask.flask_response.FlaskResponse">FlaskResponse</a></code></h4>
 <ul class="two-column">
+<li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.Response" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.Response">Response</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.get_header" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.get_header">get_header</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.get_headers" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.get_headers">get_headers</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_response.FlaskResponse.set_cookie" href="#supertokens_python.framework.flask.flask_response.FlaskResponse.set_cookie">set_cookie</a></code></li>

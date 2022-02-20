@@ -40,15 +40,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from supertokens_python.recipe.thirdparty.provider import Provider
-from typing import List
-from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
+
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
+
 from httpx import AsyncClient
+from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.types import (
+    AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
+
+if TYPE_CHECKING:
+    from supertokens_python.framework.request import BaseRequest
 
 
 class Facebook(Provider):
     def __init__(self, client_id: str, client_secret: str,
-                 scope: List[str] = None, is_default: bool = False):
+                 scope: Union[None, List[str]] = None, is_default: bool = False):
         super().__init__(&#39;facebook&#39;, client_id, is_default)
         default_scopes = [&#39;email&#39;]
 
@@ -59,7 +65,7 @@ class Facebook(Provider):
         self.access_token_api_url = &#39;https://graph.facebook.com/v9.0/oauth/access_token&#39;
         self.authorisation_redirect_url = &#39;https://www.facebook.com/v9.0/dialog/oauth&#39;
 
-    async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
         access_token: str = auth_code_response[&#39;access_token&#39;]
 
         params = {
@@ -75,8 +81,8 @@ class Facebook(Provider):
                 return UserInfo(user_id)
             return UserInfo(user_id, UserInfoEmail(user_info[&#39;email&#39;], True))
 
-    def get_authorisation_redirect_api_info(self) -&gt; AuthorisationRedirectAPI:
-        params = {
+    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
+        params: Dict[str, Union[Callable[[BaseRequest], str], str]] = {
             &#39;scope&#39;: &#39; &#39;.join(self.scopes),
             &#39;response_type&#39;: &#39;code&#39;,
             &#39;client_id&#39;: self.client_id
@@ -85,14 +91,17 @@ class Facebook(Provider):
             self.authorisation_redirect_url, params)
 
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str) -&gt; AccessTokenAPI:
+            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
         params = {
             &#39;client_id&#39;: self.client_id,
             &#39;client_secret&#39;: self.client_secret,
             &#39;code&#39;: auth_code_from_request,
             &#39;redirect_uri&#39;: redirect_uri
         }
-        return AccessTokenAPI(self.access_token_api_url, params)</code></pre>
+        return AccessTokenAPI(self.access_token_api_url, params)
+
+    def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
+        return None</code></pre>
 </details>
 </section>
 <section>
@@ -106,7 +115,7 @@ class Facebook(Provider):
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.providers.facebook.Facebook"><code class="flex name class">
 <span>class <span class="ident">Facebook</span></span>
-<span>(</span><span>client_id: str, client_secret: str, scope: List[str] = None, is_default: bool = False)</span>
+<span>(</span><span>client_id: str, client_secret: str, scope: Union[None, List[str]] = None, is_default: bool = False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -117,7 +126,7 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class Facebook(Provider):
     def __init__(self, client_id: str, client_secret: str,
-                 scope: List[str] = None, is_default: bool = False):
+                 scope: Union[None, List[str]] = None, is_default: bool = False):
         super().__init__(&#39;facebook&#39;, client_id, is_default)
         default_scopes = [&#39;email&#39;]
 
@@ -128,7 +137,7 @@ inheritance.</p></div>
         self.access_token_api_url = &#39;https://graph.facebook.com/v9.0/oauth/access_token&#39;
         self.authorisation_redirect_url = &#39;https://www.facebook.com/v9.0/dialog/oauth&#39;
 
-    async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
         access_token: str = auth_code_response[&#39;access_token&#39;]
 
         params = {
@@ -144,8 +153,8 @@ inheritance.</p></div>
                 return UserInfo(user_id)
             return UserInfo(user_id, UserInfoEmail(user_info[&#39;email&#39;], True))
 
-    def get_authorisation_redirect_api_info(self) -&gt; AuthorisationRedirectAPI:
-        params = {
+    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
+        params: Dict[str, Union[Callable[[BaseRequest], str], str]] = {
             &#39;scope&#39;: &#39; &#39;.join(self.scopes),
             &#39;response_type&#39;: &#39;code&#39;,
             &#39;client_id&#39;: self.client_id
@@ -154,14 +163,17 @@ inheritance.</p></div>
             self.authorisation_redirect_url, params)
 
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str) -&gt; AccessTokenAPI:
+            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
         params = {
             &#39;client_id&#39;: self.client_id,
             &#39;client_secret&#39;: self.client_secret,
             &#39;code&#39;: auth_code_from_request,
             &#39;redirect_uri&#39;: redirect_uri
         }
-        return AccessTokenAPI(self.access_token_api_url, params)</code></pre>
+        return AccessTokenAPI(self.access_token_api_url, params)
+
+    def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
+        return None</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -171,7 +183,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_access_token_api_info"><code class="name flex">
-<span>def <span class="ident">get_access_token_api_info</span></span>(<span>self, redirect_uri: str, auth_code_from_request: str) ‑> <a title="supertokens_python.recipe.thirdparty.types.AccessTokenAPI" href="../types.html#supertokens_python.recipe.thirdparty.types.AccessTokenAPI">AccessTokenAPI</a></span>
+<span>def <span class="ident">get_access_token_api_info</span></span>(<span>self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.AccessTokenAPI" href="../types.html#supertokens_python.recipe.thirdparty.types.AccessTokenAPI">AccessTokenAPI</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -180,7 +192,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_access_token_api_info(
-        self, redirect_uri: str, auth_code_from_request: str) -&gt; AccessTokenAPI:
+        self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
     params = {
         &#39;client_id&#39;: self.client_id,
         &#39;client_secret&#39;: self.client_secret,
@@ -191,7 +203,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_authorisation_redirect_api_info"><code class="name flex">
-<span>def <span class="ident">get_authorisation_redirect_api_info</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.thirdparty.types.AuthorisationRedirectAPI" href="../types.html#supertokens_python.recipe.thirdparty.types.AuthorisationRedirectAPI">AuthorisationRedirectAPI</a></span>
+<span>def <span class="ident">get_authorisation_redirect_api_info</span></span>(<span>self, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.AuthorisationRedirectAPI" href="../types.html#supertokens_python.recipe.thirdparty.types.AuthorisationRedirectAPI">AuthorisationRedirectAPI</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -199,8 +211,8 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_authorisation_redirect_api_info(self) -&gt; AuthorisationRedirectAPI:
-    params = {
+<pre><code class="python">def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
+    params: Dict[str, Union[Callable[[BaseRequest], str], str]] = {
         &#39;scope&#39;: &#39; &#39;.join(self.scopes),
         &#39;response_type&#39;: &#39;code&#39;,
         &#39;client_id&#39;: self.client_id
@@ -210,7 +222,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_profile_info"><code class="name flex">
-<span>async def <span class="ident">get_profile_info</span></span>(<span>self, auth_code_response: any) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
+<span>async def <span class="ident">get_profile_info</span></span>(<span>self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -218,7 +230,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
+<pre><code class="python">async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
     access_token: str = auth_code_response[&#39;access_token&#39;]
 
     params = {
@@ -233,6 +245,19 @@ inheritance.</p></div>
         if &#39;email&#39; not in user_info or user_info[&#39;email&#39;] is None:
             return UserInfo(user_id)
         return UserInfo(user_id, UserInfoEmail(user_info[&#39;email&#39;], True))</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_redirect_uri"><code class="name flex">
+<span>def <span class="ident">get_redirect_uri</span></span>(<span>self, user_context: Dict[str, Any]) ‑> Optional[str]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
+    return None</code></pre>
 </details>
 </dd>
 </dl>
@@ -259,6 +284,7 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_access_token_api_info" href="#supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_access_token_api_info">get_access_token_api_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_authorisation_redirect_api_info" href="#supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_authorisation_redirect_api_info">get_authorisation_redirect_api_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_profile_info" href="#supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_profile_info">get_profile_info</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_redirect_uri" href="#supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_redirect_uri">get_redirect_uri</a></code></li>
 </ul>
 </li>
 </ul>

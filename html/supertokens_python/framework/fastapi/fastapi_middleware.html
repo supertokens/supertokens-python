@@ -40,20 +40,27 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from typing import Union
+
+from starlette.middleware.base import (BaseHTTPMiddleware,
+                                       RequestResponseEndpoint)
+from supertokens_python.framework import BaseResponse
 
 
 class Middleware(BaseHTTPMiddleware):
+    from fastapi import FastAPI, Request
 
-    def __init__(self, app):
+    def __init__(self, app: FastAPI):
         super().__init__(app)
 
-    async def dispatch(self, request, call_next: RequestResponseEndpoint):
-        from supertokens_python.framework.fastapi.fastapi_request import FastApiRequest
-        from supertokens_python.framework.fastapi.fastapi_response import FastApiResponse
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
         from supertokens_python import Supertokens
         from supertokens_python.exceptions import SuperTokensError
-        from supertokens_python.recipe.session import Session
+        from supertokens_python.framework.fastapi.fastapi_request import \
+            FastApiRequest
+        from supertokens_python.framework.fastapi.fastapi_response import \
+            FastApiResponse
+        from supertokens_python.recipe.session import SessionContainer
         from supertokens_python.supertokens import manage_cookies_post_response
         st = Supertokens.get_instance()
         from fastapi.responses import Response
@@ -61,19 +68,23 @@ class Middleware(BaseHTTPMiddleware):
         try:
             custom_request = FastApiRequest(request)
             response = FastApiResponse(Response())
-            result = await st.middleware(custom_request, response)
+            result: Union[BaseResponse, None] = await st.middleware(custom_request, response)
             if result is None:
                 response = await call_next(request)
                 result = FastApiResponse(response)
 
             if hasattr(request.state, &#34;supertokens&#34;) and isinstance(
-                    request.state.supertokens, Session):
+                    request.state.supertokens, SessionContainer):
                 manage_cookies_post_response(request.state.supertokens, result)
-            return result.response
+            if isinstance(result, FastApiResponse):
+                return result.response
         except SuperTokensError as e:
             response = FastApiResponse(Response())
-            result = await st.handle_supertokens_error(FastApiRequest(request), e, response)
-            return result.response</code></pre>
+            result: Union[BaseResponse, None] = await st.handle_supertokens_error(FastApiRequest(request), e, response)
+            if isinstance(result, FastApiResponse):
+                return result.response
+
+        raise Exception(&#34;Should never come here&#34;)</code></pre>
 </details>
 </section>
 <section>
@@ -87,7 +98,7 @@ class Middleware(BaseHTTPMiddleware):
 <dl>
 <dt id="supertokens_python.framework.fastapi.fastapi_middleware.Middleware"><code class="flex name class">
 <span>class <span class="ident">Middleware</span></span>
-<span>(</span><span>app)</span>
+<span>(</span><span>app: fastapi.applications.FastAPI)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -96,16 +107,19 @@ class Middleware(BaseHTTPMiddleware):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Middleware(BaseHTTPMiddleware):
+    from fastapi import FastAPI, Request
 
-    def __init__(self, app):
+    def __init__(self, app: FastAPI):
         super().__init__(app)
 
-    async def dispatch(self, request, call_next: RequestResponseEndpoint):
-        from supertokens_python.framework.fastapi.fastapi_request import FastApiRequest
-        from supertokens_python.framework.fastapi.fastapi_response import FastApiResponse
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
         from supertokens_python import Supertokens
         from supertokens_python.exceptions import SuperTokensError
-        from supertokens_python.recipe.session import Session
+        from supertokens_python.framework.fastapi.fastapi_request import \
+            FastApiRequest
+        from supertokens_python.framework.fastapi.fastapi_response import \
+            FastApiResponse
+        from supertokens_python.recipe.session import SessionContainer
         from supertokens_python.supertokens import manage_cookies_post_response
         st = Supertokens.get_instance()
         from fastapi.responses import Response
@@ -113,28 +127,66 @@ class Middleware(BaseHTTPMiddleware):
         try:
             custom_request = FastApiRequest(request)
             response = FastApiResponse(Response())
-            result = await st.middleware(custom_request, response)
+            result: Union[BaseResponse, None] = await st.middleware(custom_request, response)
             if result is None:
                 response = await call_next(request)
                 result = FastApiResponse(response)
 
             if hasattr(request.state, &#34;supertokens&#34;) and isinstance(
-                    request.state.supertokens, Session):
+                    request.state.supertokens, SessionContainer):
                 manage_cookies_post_response(request.state.supertokens, result)
-            return result.response
+            if isinstance(result, FastApiResponse):
+                return result.response
         except SuperTokensError as e:
             response = FastApiResponse(Response())
-            result = await st.handle_supertokens_error(FastApiRequest(request), e, response)
-            return result.response</code></pre>
+            result: Union[BaseResponse, None] = await st.handle_supertokens_error(FastApiRequest(request), e, response)
+            if isinstance(result, FastApiResponse):
+                return result.response
+
+        raise Exception(&#34;Should never come here&#34;)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>starlette.middleware.base.BaseHTTPMiddleware</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.framework.fastapi.fastapi_middleware.Middleware.FastAPI"><code class="name">var <span class="ident">FastAPI</span></code></dt>
+<dd>
+<div class="desc"><p>Creates an application instance.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><strong>debug</strong> - Boolean indicating if debug tracebacks should be returned on errors.</li>
+<li><strong>routes</strong> - A list of routes to serve incoming HTTP and WebSocket requests.</li>
+<li><strong>middleware</strong> - A list of middleware to run for every request. A starlette
+application will always automatically include two middleware classes.
+<code>ServerErrorMiddleware</code> is added as the very outermost middleware, to handle
+any uncaught errors occurring anywhere in the entire stack.
+<code>ExceptionMiddleware</code> is added as the very innermost middleware, to deal
+with handled exception cases occurring in the routing or endpoints.</li>
+<li><strong>exception_handlers</strong> - A dictionary mapping either integer status codes,
+or exception class types onto callables which handle the exceptions.
+Exception handler callables should be of the form
+<code>handler(request, exc) -&gt; response</code> and may be be either standard functions, or
+async functions.</li>
+<li><strong>on_startup</strong> - A list of callables to run on application startup.
+Startup handler callables do not take any arguments, and may be be either
+standard functions, or async functions.</li>
+<li><strong>on_shutdown</strong> - A list of callables to run on application shutdown.
+Shutdown handler callables do not take any arguments, and may be be either
+standard functions, or async functions.</li>
+</ul></div>
+</dd>
+<dt id="supertokens_python.framework.fastapi.fastapi_middleware.Middleware.Request"><code class="name">var <span class="ident">Request</span></code></dt>
+<dd>
+<div class="desc"><p>A base class for incoming HTTP connections, that is used to provide
+any functionality that is common to both <code>Request</code> and <code>WebSocket</code>.</p></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.fastapi.fastapi_middleware.Middleware.dispatch"><code class="name flex">
-<span>async def <span class="ident">dispatch</span></span>(<span>self, request, call_next: Callable[[starlette.requests.Request], Awaitable[starlette.responses.Response]])</span>
+<span>async def <span class="ident">dispatch</span></span>(<span>self, request: starlette.requests.Request, call_next: Callable[[starlette.requests.Request], Awaitable[starlette.responses.Response]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -142,12 +194,14 @@ class Middleware(BaseHTTPMiddleware):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def dispatch(self, request, call_next: RequestResponseEndpoint):
-    from supertokens_python.framework.fastapi.fastapi_request import FastApiRequest
-    from supertokens_python.framework.fastapi.fastapi_response import FastApiResponse
+<pre><code class="python">async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
     from supertokens_python import Supertokens
     from supertokens_python.exceptions import SuperTokensError
-    from supertokens_python.recipe.session import Session
+    from supertokens_python.framework.fastapi.fastapi_request import \
+        FastApiRequest
+    from supertokens_python.framework.fastapi.fastapi_response import \
+        FastApiResponse
+    from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.supertokens import manage_cookies_post_response
     st = Supertokens.get_instance()
     from fastapi.responses import Response
@@ -155,19 +209,23 @@ class Middleware(BaseHTTPMiddleware):
     try:
         custom_request = FastApiRequest(request)
         response = FastApiResponse(Response())
-        result = await st.middleware(custom_request, response)
+        result: Union[BaseResponse, None] = await st.middleware(custom_request, response)
         if result is None:
             response = await call_next(request)
             result = FastApiResponse(response)
 
         if hasattr(request.state, &#34;supertokens&#34;) and isinstance(
-                request.state.supertokens, Session):
+                request.state.supertokens, SessionContainer):
             manage_cookies_post_response(request.state.supertokens, result)
-        return result.response
+        if isinstance(result, FastApiResponse):
+            return result.response
     except SuperTokensError as e:
         response = FastApiResponse(Response())
-        result = await st.handle_supertokens_error(FastApiRequest(request), e, response)
-        return result.response</code></pre>
+        result: Union[BaseResponse, None] = await st.handle_supertokens_error(FastApiRequest(request), e, response)
+        if isinstance(result, FastApiResponse):
+            return result.response
+
+    raise Exception(&#34;Should never come here&#34;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -191,6 +249,8 @@ class Middleware(BaseHTTPMiddleware):
 <li>
 <h4><code><a title="supertokens_python.framework.fastapi.fastapi_middleware.Middleware" href="#supertokens_python.framework.fastapi.fastapi_middleware.Middleware">Middleware</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.framework.fastapi.fastapi_middleware.Middleware.FastAPI" href="#supertokens_python.framework.fastapi.fastapi_middleware.Middleware.FastAPI">FastAPI</a></code></li>
+<li><code><a title="supertokens_python.framework.fastapi.fastapi_middleware.Middleware.Request" href="#supertokens_python.framework.fastapi.fastapi_middleware.Middleware.Request">Request</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.fastapi_middleware.Middleware.dispatch" href="#supertokens_python.framework.fastapi.fastapi_middleware.Middleware.dispatch">dispatch</a></code></li>
 </ul>
 </li>

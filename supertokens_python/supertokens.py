@@ -25,6 +25,7 @@ from .constants import (FDI_KEY_HEADER, RID_KEY_HEADER, TELEMETRY,
                         TELEMETRY_SUPERTOKENS_API_URL,
                         TELEMETRY_SUPERTOKENS_API_VERSION, USER_COUNT,
                         USER_DELETE, USERS)
+from .exceptions import SuperTokensError
 from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
 from .querier import Querier
@@ -374,6 +375,6 @@ class Supertokens:
 
         for recipe in self.recipe_modules:
             if recipe.is_error_from_this_recipe_based_on_instance(
-                    err):
+                    err) and isinstance(err, SuperTokensError):
                 return await recipe.handle_error(request, err, response)
         raise err

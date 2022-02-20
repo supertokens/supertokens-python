@@ -40,12 +40,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from . import exceptions
-from .supertokens import Supertokens
-from .recipe import session
-from typing import List, Union, Callable
-from .supertokens import SupertokensConfig, InputAppInfo, AppInfo
+from typing import Callable, List, Union
+
+from . import supertokens
 from .recipe_module import RecipeModule
+
+InputAppInfo = supertokens.InputAppInfo
+Supertokens = supertokens.Supertokens
+SupertokensConfig = supertokens.SupertokensConfig
+AppInfo = supertokens.AppInfo
+
 try:
     from typing import Literal
 except ImportError:
@@ -55,14 +59,15 @@ except ImportError:
 def init(app_info: InputAppInfo,
          framework: Literal[&#39;fastapi&#39;, &#39;flask&#39;, &#39;django&#39;],
          supertokens_config: SupertokensConfig,
-         recipe_list: List[Callable[[AppInfo], RecipeModule]],
+         recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
          mode: Union[Literal[&#39;asgi&#39;, &#39;wsgi&#39;], None] = None,
          telemetry: Union[bool, None] = None):
-    return Supertokens.init(app_info, framework, supertokens_config, recipe_list, mode, telemetry)
+    return Supertokens.init(app_info, framework,
+                            supertokens_config, recipe_list, mode, telemetry)
 
 
-def get_all_cors_headers():
-    return Supertokens.get_instance().get_all_cors_headers()</code></pre>
+def get_all_cors_headers() -&gt; List[str]:
+    return supertokens.Supertokens.get_instance().get_all_cors_headers()</code></pre>
 </details>
 </section>
 <section>
@@ -136,7 +141,7 @@ def get_all_cors_headers():
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.get_all_cors_headers"><code class="name flex">
-<span>def <span class="ident">get_all_cors_headers</span></span>(<span>)</span>
+<span>def <span class="ident">get_all_cors_headers</span></span>(<span>) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -144,8 +149,8 @@ def get_all_cors_headers():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_all_cors_headers():
-    return Supertokens.get_instance().get_all_cors_headers()</code></pre>
+<pre><code class="python">def get_all_cors_headers() -&gt; List[str]:
+    return supertokens.Supertokens.get_instance().get_all_cors_headers()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.init"><code class="name flex">
@@ -160,10 +165,11 @@ def get_all_cors_headers():
 <pre><code class="python">def init(app_info: InputAppInfo,
          framework: Literal[&#39;fastapi&#39;, &#39;flask&#39;, &#39;django&#39;],
          supertokens_config: SupertokensConfig,
-         recipe_list: List[Callable[[AppInfo], RecipeModule]],
+         recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
          mode: Union[Literal[&#39;asgi&#39;, &#39;wsgi&#39;], None] = None,
          telemetry: Union[bool, None] = None):
-    return Supertokens.init(app_info, framework, supertokens_config, recipe_list, mode, telemetry)</code></pre>
+    return Supertokens.init(app_info, framework,
+                            supertokens_config, recipe_list, mode, telemetry)</code></pre>
 </details>
 </dd>
 </dl>

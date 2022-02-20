@@ -40,37 +40,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from abc import ABC, abstractmethod
-from typing import Union, List
+from typing import Any, Dict, Union
+
+from .utils import OpenIdConfig
+
 try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
+
 from supertokens_python.framework import BaseRequest, BaseResponse
-from supertokens_python.recipe.jwt.types import JsonWebKey
-
-
-class CreateJwtResult(ABC):
-    def __init__(
-            self, status: Literal[&#39;OK&#39;, &#39;UNSUPPORTED_ALGORITHM_ERROR&#39;], jwt: str = None):
-        self.status = status
-        self.jwt = jwt
-
-
-class CreateJwtResultOk(CreateJwtResult):
-    def __init__(self, jwt: str):
-        super().__init__(&#39;OK&#39;, jwt)
-
-
-class CreateJwtResultUnsupportedAlgorithm(CreateJwtResult):
-    def __init__(self):
-        super().__init__(&#39;UNSUPPORTED_ALGORITHM_ERROR&#39;)
-
-
-class GetJWKSResult(ABC):
-    def __init__(
-            self, status: Literal[&#39;OK&#39;], keys: List[JsonWebKey]):
-        self.status = status
-        self.keys = keys
+from supertokens_python.recipe.jwt.interfaces import (CreateJwtResult,
+                                                      GetJWKSResult)
 
 
 class GetOpenIdDiscoveryConfigurationResult(ABC):
@@ -86,21 +67,21 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
         pass
 
     @abstractmethod
-    async def get_jwks(self) -&gt; GetJWKSResult:
+    async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
         pass
 
     @abstractmethod
-    async def get_open_id_discovery_configuration(self) -&gt; GetOpenIdDiscoveryConfigurationResult:
+    async def get_open_id_discovery_configuration(self, user_context: Dict[str, Any]) -&gt; GetOpenIdDiscoveryConfigurationResult:
         pass
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: Union[BaseResponse, None], recipe_id: str,
-                 config, recipe_implementation: RecipeInterface):
+    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
+                 config: OpenIdConfig, recipe_implementation: RecipeInterface):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -128,7 +109,8 @@ class APIInterface:
         self.disable_open_id_discovery_configuration_get = False
 
     @abstractmethod
-    async def open_id_discovery_configuration_get(self, api_options: APIOptions) -&gt; OpenIdDiscoveryConfigurationGetResponse:
+    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt;\
+            OpenIdDiscoveryConfigurationGetResponse:
         pass</code></pre>
 </details>
 </section>
@@ -155,7 +137,8 @@ class APIInterface:
         self.disable_open_id_discovery_configuration_get = False
 
     @abstractmethod
-    async def open_id_discovery_configuration_get(self, api_options: APIOptions) -&gt; OpenIdDiscoveryConfigurationGetResponse:
+    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt;\
+            OpenIdDiscoveryConfigurationGetResponse:
         pass</code></pre>
 </details>
 <h3>Subclasses</h3>
@@ -165,7 +148,7 @@ class APIInterface:
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.openid.interfaces.APIInterface.open_id_discovery_configuration_get"><code class="name flex">
-<span>async def <span class="ident">open_id_discovery_configuration_get</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.openid.interfaces.APIOptions" href="#supertokens_python.recipe.openid.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse" href="#supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse">OpenIdDiscoveryConfigurationGetResponse</a></span>
+<span>async def <span class="ident">open_id_discovery_configuration_get</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.openid.interfaces.APIOptions" href="#supertokens_python.recipe.openid.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse" href="#supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse">OpenIdDiscoveryConfigurationGetResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -174,7 +157,8 @@ class APIInterface:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def open_id_discovery_configuration_get(self, api_options: APIOptions) -&gt; OpenIdDiscoveryConfigurationGetResponse:
+async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt;\
+        OpenIdDiscoveryConfigurationGetResponse:
     pass</code></pre>
 </details>
 </dd>
@@ -182,7 +166,7 @@ async def open_id_discovery_configuration_get(self, api_options: APIOptions) -&g
 </dd>
 <dt id="supertokens_python.recipe.openid.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: <a title="supertokens_python.framework.request.BaseRequest" href="../../framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>, response: Optional[<a title="supertokens_python.framework.response.BaseResponse" href="../../framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a>], recipe_id: str, config, recipe_implementation: <a title="supertokens_python.recipe.openid.interfaces.RecipeInterface" href="#supertokens_python.recipe.openid.interfaces.RecipeInterface">RecipeInterface</a>)</span>
+<span>(</span><span>request: <a title="supertokens_python.framework.request.BaseRequest" href="../../framework/request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>, response: <a title="supertokens_python.framework.response.BaseResponse" href="../../framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a>, recipe_id: str, config: <a title="supertokens_python.recipe.openid.utils.OpenIdConfig" href="utils.html#supertokens_python.recipe.openid.utils.OpenIdConfig">OpenIdConfig</a>, recipe_implementation: <a title="supertokens_python.recipe.openid.interfaces.RecipeInterface" href="#supertokens_python.recipe.openid.interfaces.RecipeInterface">RecipeInterface</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -191,104 +175,14 @@ async def open_id_discovery_configuration_get(self, api_options: APIOptions) -&g
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class APIOptions:
-    def __init__(self, request: BaseRequest, response: Union[BaseResponse, None], recipe_id: str,
-                 config, recipe_implementation: RecipeInterface):
+    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
+                 config: OpenIdConfig, recipe_implementation: RecipeInterface):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
         self.config = config
         self.recipe_implementation = recipe_implementation</code></pre>
 </details>
-</dd>
-<dt id="supertokens_python.recipe.openid.interfaces.CreateJwtResult"><code class="flex name class">
-<span>class <span class="ident">CreateJwtResult</span></span>
-<span>(</span><span>status: Literal['OK', 'UNSUPPORTED_ALGORITHM_ERROR'], jwt: str = None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CreateJwtResult(ABC):
-    def __init__(
-            self, status: Literal[&#39;OK&#39;, &#39;UNSUPPORTED_ALGORITHM_ERROR&#39;], jwt: str = None):
-        self.status = status
-        self.jwt = jwt</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.openid.interfaces.CreateJwtResultOk" href="#supertokens_python.recipe.openid.interfaces.CreateJwtResultOk">CreateJwtResultOk</a></li>
-<li><a title="supertokens_python.recipe.openid.interfaces.CreateJwtResultUnsupportedAlgorithm" href="#supertokens_python.recipe.openid.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a></li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.openid.interfaces.CreateJwtResultOk"><code class="flex name class">
-<span>class <span class="ident">CreateJwtResultOk</span></span>
-<span>(</span><span>jwt: str)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CreateJwtResultOk(CreateJwtResult):
-    def __init__(self, jwt: str):
-        super().__init__(&#39;OK&#39;, jwt)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.openid.interfaces.CreateJwtResult" href="#supertokens_python.recipe.openid.interfaces.CreateJwtResult">CreateJwtResult</a></li>
-<li>abc.ABC</li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.openid.interfaces.CreateJwtResultUnsupportedAlgorithm"><code class="flex name class">
-<span>class <span class="ident">CreateJwtResultUnsupportedAlgorithm</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CreateJwtResultUnsupportedAlgorithm(CreateJwtResult):
-    def __init__(self):
-        super().__init__(&#39;UNSUPPORTED_ALGORITHM_ERROR&#39;)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.openid.interfaces.CreateJwtResult" href="#supertokens_python.recipe.openid.interfaces.CreateJwtResult">CreateJwtResult</a></li>
-<li>abc.ABC</li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.openid.interfaces.GetJWKSResult"><code class="flex name class">
-<span>class <span class="ident">GetJWKSResult</span></span>
-<span>(</span><span>status: Literal['OK'], keys: List[<a title="supertokens_python.recipe.jwt.types.JsonWebKey" href="../jwt/types.html#supertokens_python.recipe.jwt.types.JsonWebKey">JsonWebKey</a>])</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class GetJWKSResult(ABC):
-    def __init__(
-            self, status: Literal[&#39;OK&#39;], keys: List[JsonWebKey]):
-        self.status = status
-        self.keys = keys</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
 </dd>
 <dt id="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult"><code class="flex name class">
 <span>class <span class="ident">GetOpenIdDiscoveryConfigurationResult</span></span>
@@ -373,15 +267,15 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
         pass
 
     @abstractmethod
-    async def get_jwks(self) -&gt; GetJWKSResult:
+    async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
         pass
 
     @abstractmethod
-    async def get_open_id_discovery_configuration(self) -&gt; GetOpenIdDiscoveryConfigurationResult:
+    async def get_open_id_discovery_configuration(self, user_context: Dict[str, Any]) -&gt; GetOpenIdDiscoveryConfigurationResult:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -395,7 +289,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.openid.interfaces.RecipeInterface.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: dict = None, validity_seconds: int = None) ‑> <a title="supertokens_python.recipe.openid.interfaces.CreateJwtResult" href="#supertokens_python.recipe.openid.interfaces.CreateJwtResult">CreateJwtResult</a></span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: Dict[str, Any], validity_seconds: Optional[int], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResult" href="../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResult">CreateJwtResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -404,12 +298,12 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
+async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.openid.interfaces.RecipeInterface.get_jwks"><code class="name flex">
-<span>async def <span class="ident">get_jwks</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.openid.interfaces.GetJWKSResult" href="#supertokens_python.recipe.openid.interfaces.GetJWKSResult">GetJWKSResult</a></span>
+<span>async def <span class="ident">get_jwks</span></span>(<span>self, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.jwt.interfaces.GetJWKSResult" href="../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.GetJWKSResult">GetJWKSResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -418,12 +312,12 @@ async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_jwks(self) -&gt; GetJWKSResult:
+async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.openid.interfaces.RecipeInterface.get_open_id_discovery_configuration"><code class="name flex">
-<span>async def <span class="ident">get_open_id_discovery_configuration</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a></span>
+<span>async def <span class="ident">get_open_id_discovery_configuration</span></span>(<span>self, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -432,7 +326,7 @@ async def get_jwks(self) -&gt; GetJWKSResult:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_open_id_discovery_configuration(self) -&gt; GetOpenIdDiscoveryConfigurationResult:
+async def get_open_id_discovery_configuration(self, user_context: Dict[str, Any]) -&gt; GetOpenIdDiscoveryConfigurationResult:
     pass</code></pre>
 </details>
 </dd>
@@ -462,18 +356,6 @@ async def get_open_id_discovery_configuration(self) -&gt; GetOpenIdDiscoveryConf
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.openid.interfaces.APIOptions" href="#supertokens_python.recipe.openid.interfaces.APIOptions">APIOptions</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.openid.interfaces.CreateJwtResult" href="#supertokens_python.recipe.openid.interfaces.CreateJwtResult">CreateJwtResult</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.openid.interfaces.CreateJwtResultOk" href="#supertokens_python.recipe.openid.interfaces.CreateJwtResultOk">CreateJwtResultOk</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.openid.interfaces.CreateJwtResultUnsupportedAlgorithm" href="#supertokens_python.recipe.openid.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.openid.interfaces.GetJWKSResult" href="#supertokens_python.recipe.openid.interfaces.GetJWKSResult">GetJWKSResult</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a></code></h4>

@@ -41,17 +41,22 @@
 # under the License.
 from __future__ import annotations
 
-from supertokens_python.recipe.thirdparty.provider import Provider
-from typing import List, Union, Dict, Callable, TYPE_CHECKING
-from supertokens_python.recipe.thirdparty.types import UserInfo, AccessTokenAPI, AuthorisationRedirectAPI, UserInfoEmail
-from supertokens_python.recipe.thirdparty.api.implementation import get_actual_client_id_from_development_client_id
-from supertokens_python.recipe.thirdparty.constants import APPLE_REDIRECT_HANDLER
-from supertokens_python.supertokens import Supertokens
-from jwt import encode, decode
-from time import time
 from re import sub
+from time import time
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
+
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from httpx import AsyncClient
-from jwt.algorithms import RSAAlgorithm, RSAPublicKey
+from jwt import decode, encode
+from jwt.algorithms import RSAAlgorithm
+from supertokens_python.recipe.thirdparty.api.implementation import \
+    get_actual_client_id_from_development_client_id
+from supertokens_python.recipe.thirdparty.constants import \
+    APPLE_REDIRECT_HANDLER
+from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.types import (
+    AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
+from supertokens_python.supertokens import Supertokens
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -59,14 +64,14 @@ if TYPE_CHECKING:
 
 class Apple(Provider):
     def __init__(self, client_id: str, client_key_id: str, client_private_key: str, client_team_id: str,
-                 scope: List[str] = None,
-                 authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None,
+                 scope: Union[None, List[str]] = None,
+                 authorisation_redirect: Union[None, Dict[str, Union[Callable[[BaseRequest], str], str]]] = None,
                  is_default: bool = False):
         super().__init__(&#39;apple&#39;, client_id, is_default)
         self.APPLE_PUBLIC_KEY_URL = &#34;https://appleid.apple.com/auth/keys&#34;
-        self.APPLE_PUBLIC_KEYS = []
+        self.APPLE_PUBLIC_KEYS: List[RSAPublicKey] = []
         self.APPLE_KEY_CACHE_EXP = 60 * 60 * 24
-        self.APPLE_LAST_KEY_FETCH = 0
+        self.apple_last_fetch = 0
         default_scopes = [&#39;email&#39;]
 
         if scope is None:
@@ -93,16 +98,16 @@ class Apple(Provider):
             &#39;kid&#39;: self.client_key_id
         }
         return encode(payload, sub(
-            r&#39;\\n&#39;, &#39;\n&#39;, self.client_private_key), algorithm=&#39;ES256&#39;, headers=headers)
+            r&#39;\\n&#39;, &#39;\n&#39;, self.client_private_key), algorithm=&#39;ES256&#39;, headers=headers)  # type: ignore
 
-    async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
         # - Verify the JWS E256 signature using the server’s public key
         # - Verify the nonce for the authentication
         # - Verify that the iss field contains https://appleid.apple.com
         # - Verify that the aud field is the developer’s client_id
         # - Verify that the time is earlier than the exp value of the token
         await self._verify_apple_id_token(auth_code_response[&#39;id_token&#39;])
-        payload = decode(
+        payload: Union[None, Dict[str, Any]] = decode(
             jwt=auth_code_response[&#39;id_token&#39;], options={
                 &#39;verify_signature&#39;: False})
         if payload is None:
@@ -117,7 +122,7 @@ class Apple(Provider):
         is_email_verified = payload[&#39;email_verified&#39;] if &#39;email_verified&#39; in payload else False
         return UserInfo(user_id, UserInfoEmail(email, is_email_verified))
 
-    def get_authorisation_redirect_api_info(self) -&gt; AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
         params = {
             &#39;scope&#39;: &#39; &#39;.join(self.scopes),
             &#39;response_type&#39;: &#39;code&#39;,
@@ -129,7 +134,7 @@ class Apple(Provider):
             self.authorisation_redirect_url, params)
 
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str) -&gt; AccessTokenAPI:
+            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
         params = {
             &#39;client_id&#39;: self.client_id,
             &#39;client_secret&#39;: self.__get_client_secret(),
@@ -139,28 +144,29 @@ class Apple(Provider):
         }
         return AccessTokenAPI(self.access_token_api_url, params)
 
-    def get_redirect_uri(self) -&gt; Union[None, str]:
+    def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
         app_info = Supertokens.get_instance().app_info
-        self.redirect_uri = app_info.api_domain.get_as_string_dangerous()
-        self.redirect_uri += app_info.api_base_path.get_as_string_dangerous()
-        self.redirect_uri += APPLE_REDIRECT_HANDLER
-        return self.redirect_uri
+        redirect_uri = app_info.api_domain.get_as_string_dangerous()
+        redirect_uri += app_info.api_base_path.get_as_string_dangerous()
+        redirect_uri += APPLE_REDIRECT_HANDLER
+        return redirect_uri
 
     async def _fetch_apple_public_keys(self) -&gt; List[RSAPublicKey]:
         # Check to see if the public key is unset or is stale before returning
-        if (self.APPLE_LAST_KEY_FETCH + self.APPLE_KEY_CACHE_EXP) &lt; int(time()) or len(self.APPLE_PUBLIC_KEYS) == 0:
+        if (self.apple_last_fetch + self.APPLE_KEY_CACHE_EXP) &lt; int(time()
+                                                                    ) or len(self.APPLE_PUBLIC_KEYS) == 0:
             async with AsyncClient() as client:
                 response = await client.get(self.APPLE_PUBLIC_KEY_URL)
                 key_payload = response.json()
                 for key in key_payload[&#34;keys&#34;]:
-                    self.APPLE_PUBLIC_KEYS.append(RSAAlgorithm.from_jwk(key))
-                self.APPLE_LAST_KEY_FETCH = int(time())
+                    self.APPLE_PUBLIC_KEYS.append(RSAAlgorithm.from_jwk(key))  # type: ignore
+                self.apple_last_fetch = int(time())
 
         return self.APPLE_PUBLIC_KEYS
 
-    async def _verify_apple_id_token(self, token):
+    async def _verify_apple_id_token(self, token: str) -&gt; None:
         public_keys = await self._fetch_apple_public_keys()
-        err = &#34;Id token verification failed&#34;
+        err = Exception(&#34;Id token verification failed&#34;)
         for key in public_keys:
             try:
                 decode(jwt=token, key=key,
@@ -182,7 +188,7 @@ class Apple(Provider):
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.providers.apple.Apple"><code class="flex name class">
 <span>class <span class="ident">Apple</span></span>
-<span>(</span><span>client_id: str, client_key_id: str, client_private_key: str, client_team_id: str, scope: List[str] = None, authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None, is_default: bool = False)</span>
+<span>(</span><span>client_id: str, client_key_id: str, client_private_key: str, client_team_id: str, scope: Union[None, List[str]] = None, authorisation_redirect: Union[None, Dict[str, Union[Callable[[BaseRequest], str], str]]] = None, is_default: bool = False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -193,14 +199,14 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class Apple(Provider):
     def __init__(self, client_id: str, client_key_id: str, client_private_key: str, client_team_id: str,
-                 scope: List[str] = None,
-                 authorisation_redirect: Dict[str, Union[str, Callable[[BaseRequest], str]]] = None,
+                 scope: Union[None, List[str]] = None,
+                 authorisation_redirect: Union[None, Dict[str, Union[Callable[[BaseRequest], str], str]]] = None,
                  is_default: bool = False):
         super().__init__(&#39;apple&#39;, client_id, is_default)
         self.APPLE_PUBLIC_KEY_URL = &#34;https://appleid.apple.com/auth/keys&#34;
-        self.APPLE_PUBLIC_KEYS = []
+        self.APPLE_PUBLIC_KEYS: List[RSAPublicKey] = []
         self.APPLE_KEY_CACHE_EXP = 60 * 60 * 24
-        self.APPLE_LAST_KEY_FETCH = 0
+        self.apple_last_fetch = 0
         default_scopes = [&#39;email&#39;]
 
         if scope is None:
@@ -227,16 +233,16 @@ inheritance.</p></div>
             &#39;kid&#39;: self.client_key_id
         }
         return encode(payload, sub(
-            r&#39;\\n&#39;, &#39;\n&#39;, self.client_private_key), algorithm=&#39;ES256&#39;, headers=headers)
+            r&#39;\\n&#39;, &#39;\n&#39;, self.client_private_key), algorithm=&#39;ES256&#39;, headers=headers)  # type: ignore
 
-    async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
+    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
         # - Verify the JWS E256 signature using the server’s public key
         # - Verify the nonce for the authentication
         # - Verify that the iss field contains https://appleid.apple.com
         # - Verify that the aud field is the developer’s client_id
         # - Verify that the time is earlier than the exp value of the token
         await self._verify_apple_id_token(auth_code_response[&#39;id_token&#39;])
-        payload = decode(
+        payload: Union[None, Dict[str, Any]] = decode(
             jwt=auth_code_response[&#39;id_token&#39;], options={
                 &#39;verify_signature&#39;: False})
         if payload is None:
@@ -251,7 +257,7 @@ inheritance.</p></div>
         is_email_verified = payload[&#39;email_verified&#39;] if &#39;email_verified&#39; in payload else False
         return UserInfo(user_id, UserInfoEmail(email, is_email_verified))
 
-    def get_authorisation_redirect_api_info(self) -&gt; AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
         params = {
             &#39;scope&#39;: &#39; &#39;.join(self.scopes),
             &#39;response_type&#39;: &#39;code&#39;,
@@ -263,7 +269,7 @@ inheritance.</p></div>
             self.authorisation_redirect_url, params)
 
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str) -&gt; AccessTokenAPI:
+            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
         params = {
             &#39;client_id&#39;: self.client_id,
             &#39;client_secret&#39;: self.__get_client_secret(),
@@ -273,28 +279,29 @@ inheritance.</p></div>
         }
         return AccessTokenAPI(self.access_token_api_url, params)
 
-    def get_redirect_uri(self) -&gt; Union[None, str]:
+    def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
         app_info = Supertokens.get_instance().app_info
-        self.redirect_uri = app_info.api_domain.get_as_string_dangerous()
-        self.redirect_uri += app_info.api_base_path.get_as_string_dangerous()
-        self.redirect_uri += APPLE_REDIRECT_HANDLER
-        return self.redirect_uri
+        redirect_uri = app_info.api_domain.get_as_string_dangerous()
+        redirect_uri += app_info.api_base_path.get_as_string_dangerous()
+        redirect_uri += APPLE_REDIRECT_HANDLER
+        return redirect_uri
 
     async def _fetch_apple_public_keys(self) -&gt; List[RSAPublicKey]:
         # Check to see if the public key is unset or is stale before returning
-        if (self.APPLE_LAST_KEY_FETCH + self.APPLE_KEY_CACHE_EXP) &lt; int(time()) or len(self.APPLE_PUBLIC_KEYS) == 0:
+        if (self.apple_last_fetch + self.APPLE_KEY_CACHE_EXP) &lt; int(time()
+                                                                    ) or len(self.APPLE_PUBLIC_KEYS) == 0:
             async with AsyncClient() as client:
                 response = await client.get(self.APPLE_PUBLIC_KEY_URL)
                 key_payload = response.json()
                 for key in key_payload[&#34;keys&#34;]:
-                    self.APPLE_PUBLIC_KEYS.append(RSAAlgorithm.from_jwk(key))
-                self.APPLE_LAST_KEY_FETCH = int(time())
+                    self.APPLE_PUBLIC_KEYS.append(RSAAlgorithm.from_jwk(key))  # type: ignore
+                self.apple_last_fetch = int(time())
 
         return self.APPLE_PUBLIC_KEYS
 
-    async def _verify_apple_id_token(self, token):
+    async def _verify_apple_id_token(self, token: str) -&gt; None:
         public_keys = await self._fetch_apple_public_keys()
-        err = &#34;Id token verification failed&#34;
+        err = Exception(&#34;Id token verification failed&#34;)
         for key in public_keys:
             try:
                 decode(jwt=token, key=key,
@@ -312,7 +319,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.providers.apple.Apple.get_access_token_api_info"><code class="name flex">
-<span>def <span class="ident">get_access_token_api_info</span></span>(<span>self, redirect_uri: str, auth_code_from_request: str) ‑> <a title="supertokens_python.recipe.thirdparty.types.AccessTokenAPI" href="../types.html#supertokens_python.recipe.thirdparty.types.AccessTokenAPI">AccessTokenAPI</a></span>
+<span>def <span class="ident">get_access_token_api_info</span></span>(<span>self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.AccessTokenAPI" href="../types.html#supertokens_python.recipe.thirdparty.types.AccessTokenAPI">AccessTokenAPI</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -321,7 +328,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_access_token_api_info(
-        self, redirect_uri: str, auth_code_from_request: str) -&gt; AccessTokenAPI:
+        self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
     params = {
         &#39;client_id&#39;: self.client_id,
         &#39;client_secret&#39;: self.__get_client_secret(),
@@ -333,7 +340,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.apple.Apple.get_authorisation_redirect_api_info"><code class="name flex">
-<span>def <span class="ident">get_authorisation_redirect_api_info</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.thirdparty.types.AuthorisationRedirectAPI" href="../types.html#supertokens_python.recipe.thirdparty.types.AuthorisationRedirectAPI">AuthorisationRedirectAPI</a></span>
+<span>def <span class="ident">get_authorisation_redirect_api_info</span></span>(<span>self, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.AuthorisationRedirectAPI" href="../types.html#supertokens_python.recipe.thirdparty.types.AuthorisationRedirectAPI">AuthorisationRedirectAPI</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -341,7 +348,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_authorisation_redirect_api_info(self) -&gt; AuthorisationRedirectAPI:
+<pre><code class="python">def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
     params = {
         &#39;scope&#39;: &#39; &#39;.join(self.scopes),
         &#39;response_type&#39;: &#39;code&#39;,
@@ -354,7 +361,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.apple.Apple.get_profile_info"><code class="name flex">
-<span>async def <span class="ident">get_profile_info</span></span>(<span>self, auth_code_response: any) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
+<span>async def <span class="ident">get_profile_info</span></span>(<span>self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.types.UserInfo" href="../types.html#supertokens_python.recipe.thirdparty.types.UserInfo">UserInfo</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -362,14 +369,14 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_profile_info(self, auth_code_response: any) -&gt; UserInfo:
+<pre><code class="python">async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
     # - Verify the JWS E256 signature using the server’s public key
     # - Verify the nonce for the authentication
     # - Verify that the iss field contains https://appleid.apple.com
     # - Verify that the aud field is the developer’s client_id
     # - Verify that the time is earlier than the exp value of the token
     await self._verify_apple_id_token(auth_code_response[&#39;id_token&#39;])
-    payload = decode(
+    payload: Union[None, Dict[str, Any]] = decode(
         jwt=auth_code_response[&#39;id_token&#39;], options={
             &#39;verify_signature&#39;: False})
     if payload is None:
@@ -386,7 +393,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.apple.Apple.get_redirect_uri"><code class="name flex">
-<span>def <span class="ident">get_redirect_uri</span></span>(<span>self) ‑> Optional[str]</span>
+<span>def <span class="ident">get_redirect_uri</span></span>(<span>self, user_context: Dict[str, Any]) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -394,12 +401,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_redirect_uri(self) -&gt; Union[None, str]:
+<pre><code class="python">def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
     app_info = Supertokens.get_instance().app_info
-    self.redirect_uri = app_info.api_domain.get_as_string_dangerous()
-    self.redirect_uri += app_info.api_base_path.get_as_string_dangerous()
-    self.redirect_uri += APPLE_REDIRECT_HANDLER
-    return self.redirect_uri</code></pre>
+    redirect_uri = app_info.api_domain.get_as_string_dangerous()
+    redirect_uri += app_info.api_base_path.get_as_string_dangerous()
+    redirect_uri += APPLE_REDIRECT_HANDLER
+    return redirect_uri</code></pre>
 </details>
 </dd>
 </dl>

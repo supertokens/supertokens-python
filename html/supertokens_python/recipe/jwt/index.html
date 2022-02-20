@@ -39,15 +39,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from __future__ import annotations
 
-from .utils import OverrideConfig
+from typing import TYPE_CHECKING, Callable, Union
 
 from .recipe import JWTRecipe
+from .utils import OverrideConfig
+
+if TYPE_CHECKING:
+    from supertokens_python.supertokens import AppInfo
+
+    from ...recipe_module import RecipeModule
 
 
 def init(jwt_validity_seconds: Union[int, None] = None,
-         override: Union[OverrideConfig, None] = None):
+         override: Union[OverrideConfig, None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
     return JWTRecipe.init(jwt_validity_seconds, override)</code></pre>
 </details>
 </section>
@@ -86,10 +92,6 @@ def init(jwt_validity_seconds: Union[int, None] = None,
 <dd>
 <div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="supertokens_python.recipe.jwt.types" href="types.html">supertokens_python.recipe.jwt.types</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt><code class="name"><a title="supertokens_python.recipe.jwt.utils" href="utils.html">supertokens_python.recipe.jwt.utils</a></code></dt>
 <dd>
 <div class="desc"></div>
@@ -102,7 +104,7 @@ def init(jwt_validity_seconds: Union[int, None] = None,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.jwt.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>jwt_validity_seconds: Optional[int] = None, override: Optional[<a title="supertokens_python.recipe.jwt.utils.OverrideConfig" href="utils.html#supertokens_python.recipe.jwt.utils.OverrideConfig">OverrideConfig</a>] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>jwt_validity_seconds: Union[int, None] = None, override: Union[OverrideConfig, None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -111,7 +113,7 @@ def init(jwt_validity_seconds: Union[int, None] = None,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def init(jwt_validity_seconds: Union[int, None] = None,
-         override: Union[OverrideConfig, None] = None):
+         override: Union[OverrideConfig, None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
     return JWTRecipe.init(jwt_validity_seconds, override)</code></pre>
 </details>
 </dd>
@@ -141,7 +143,6 @@ def init(jwt_validity_seconds: Union[int, None] = None,
 <li><code><a title="supertokens_python.recipe.jwt.recipe" href="recipe.html">supertokens_python.recipe.jwt.recipe</a></code></li>
 <li><code><a title="supertokens_python.recipe.jwt.recipe_implementation" href="recipe_implementation.html">supertokens_python.recipe.jwt.recipe_implementation</a></code></li>
 <li><code><a title="supertokens_python.recipe.jwt.syncio" href="syncio/index.html">supertokens_python.recipe.jwt.syncio</a></code></li>
-<li><code><a title="supertokens_python.recipe.jwt.types" href="types.html">supertokens_python.recipe.jwt.types</a></code></li>
 <li><code><a title="supertokens_python.recipe.jwt.utils" href="utils.html">supertokens_python.recipe.jwt.utils</a></code></li>
 </ul>
 </li>

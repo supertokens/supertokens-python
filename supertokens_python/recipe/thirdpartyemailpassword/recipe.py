@@ -40,8 +40,6 @@ if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.supertokens import AppInfo
 
-from typing import TypeGuard
-
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.utils import \
@@ -144,7 +142,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                 )
 
     def is_error_from_this_recipe_based_on_instance(
-            self, err: Exception) -> TypeGuard[SuperTokensError]:
+            self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SupertokensThirdPartyEmailPasswordError)
             or

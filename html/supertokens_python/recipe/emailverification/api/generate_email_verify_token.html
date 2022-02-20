@@ -40,13 +40,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from supertokens_python.recipe.emailverification.interfaces import APIOptions, APIInterface
+
+from supertokens_python.recipe.emailverification.interfaces import (
+    APIInterface, APIOptions)
 
 
 async def handle_generate_email_verify_token_api(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_generate_email_verify_token_post:
         return None
-    result = await api_implementation.generate_email_verify_token_post(api_options)
+    result = await api_implementation.generate_email_verify_token_post(api_options, {})
     api_options.response.set_json_content(result.to_json())
     return api_options.response</code></pre>
 </details>
@@ -70,7 +72,7 @@ async def handle_generate_email_verify_token_api(api_implementation: APIInterfac
 <pre><code class="python">async def handle_generate_email_verify_token_api(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_generate_email_verify_token_post:
         return None
-    result = await api_implementation.generate_email_verify_token_post(api_options)
+    result = await api_implementation.generate_email_verify_token_post(api_options, {})
     api_options.response.set_json_content(result.to_json())
     return api_options.response</code></pre>
 </details>

@@ -41,46 +41,47 @@
 # under the License.
 
 from abc import ABC, abstractmethod
+from typing import Any, Dict, Union
 
 
 class BaseResponse(ABC):
 
     @abstractmethod
-    def __init__(self, content: dict, status_code: int = 200):
+    def __init__(self, content: Dict[str, Any], status_code: int = 200):
         self.content = content
         self.status_code = status_code
         self.wrapper_used = True
 
     @abstractmethod
     def set_cookie(self, key: str,
-                   value: str = &#34;&#34;,
-                   max_age: int = None,
-                   expires: int = None,
+                   value: str,
+                   #    max_age: Union[int, None] = None,
+                   expires: int,
                    path: str = &#34;/&#34;,
-                   domain: str = None,
+                   domain: Union[str, None] = None,
                    secure: bool = False,
                    httponly: bool = False,
-                   samesite: str = &#34;Lax&#34;, ):
+                   samesite: str = &#34;lax&#34;):
         pass
 
     @abstractmethod
-    def set_header(self, key, value):
+    def set_header(self, key: str, value: str):
         pass
 
     @abstractmethod
-    def get_header(self, key):
+    def get_header(self, key: str) -&gt; Union[str, None]:
         pass
 
     @abstractmethod
-    def set_status_code(self, status_code):
+    def set_status_code(self, status_code: int):
         pass
 
     @abstractmethod
-    def set_json_content(self, content):
+    def set_json_content(self, content: Dict[str, Any]):
         pass
 
     @abstractmethod
-    def set_html_content(self, content):
+    def set_html_content(self, content: str):
         pass</code></pre>
 </details>
 </section>
@@ -95,7 +96,7 @@ class BaseResponse(ABC):
 <dl>
 <dt id="supertokens_python.framework.response.BaseResponse"><code class="flex name class">
 <span>class <span class="ident">BaseResponse</span></span>
-<span>(</span><span>content: dict, status_code: int = 200)</span>
+<span>(</span><span>content: Dict[str, Any], status_code: int = 200)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -107,41 +108,41 @@ inheritance.</p></div>
 <pre><code class="python">class BaseResponse(ABC):
 
     @abstractmethod
-    def __init__(self, content: dict, status_code: int = 200):
+    def __init__(self, content: Dict[str, Any], status_code: int = 200):
         self.content = content
         self.status_code = status_code
         self.wrapper_used = True
 
     @abstractmethod
     def set_cookie(self, key: str,
-                   value: str = &#34;&#34;,
-                   max_age: int = None,
-                   expires: int = None,
+                   value: str,
+                   #    max_age: Union[int, None] = None,
+                   expires: int,
                    path: str = &#34;/&#34;,
-                   domain: str = None,
+                   domain: Union[str, None] = None,
                    secure: bool = False,
                    httponly: bool = False,
-                   samesite: str = &#34;Lax&#34;, ):
+                   samesite: str = &#34;lax&#34;):
         pass
 
     @abstractmethod
-    def set_header(self, key, value):
+    def set_header(self, key: str, value: str):
         pass
 
     @abstractmethod
-    def get_header(self, key):
+    def get_header(self, key: str) -&gt; Union[str, None]:
         pass
 
     @abstractmethod
-    def set_status_code(self, status_code):
+    def set_status_code(self, status_code: int):
         pass
 
     @abstractmethod
-    def set_json_content(self, content):
+    def set_json_content(self, content: Dict[str, Any]):
         pass
 
     @abstractmethod
-    def set_html_content(self, content):
+    def set_html_content(self, content: str):
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -157,7 +158,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.response.BaseResponse.get_header"><code class="name flex">
-<span>def <span class="ident">get_header</span></span>(<span>self, key)</span>
+<span>def <span class="ident">get_header</span></span>(<span>self, key: str) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -166,12 +167,12 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def get_header(self, key):
+def get_header(self, key: str) -&gt; Union[str, None]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.response.BaseResponse.set_cookie"><code class="name flex">
-<span>def <span class="ident">set_cookie</span></span>(<span>self, key: str, value: str = '', max_age: int = None, expires: int = None, path: str = '/', domain: str = None, secure: bool = False, httponly: bool = False, samesite: str = 'Lax')</span>
+<span>def <span class="ident">set_cookie</span></span>(<span>self, key: str, value: str, expires: int, path: str = '/', domain: Optional[str] = None, secure: bool = False, httponly: bool = False, samesite: str = 'lax')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -181,19 +182,19 @@ def get_header(self, key):
 </summary>
 <pre><code class="python">@abstractmethod
 def set_cookie(self, key: str,
-               value: str = &#34;&#34;,
-               max_age: int = None,
-               expires: int = None,
+               value: str,
+               #    max_age: Union[int, None] = None,
+               expires: int,
                path: str = &#34;/&#34;,
-               domain: str = None,
+               domain: Union[str, None] = None,
                secure: bool = False,
                httponly: bool = False,
-               samesite: str = &#34;Lax&#34;, ):
+               samesite: str = &#34;lax&#34;):
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.response.BaseResponse.set_header"><code class="name flex">
-<span>def <span class="ident">set_header</span></span>(<span>self, key, value)</span>
+<span>def <span class="ident">set_header</span></span>(<span>self, key: str, value: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -202,12 +203,12 @@ def set_cookie(self, key: str,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def set_header(self, key, value):
+def set_header(self, key: str, value: str):
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.response.BaseResponse.set_html_content"><code class="name flex">
-<span>def <span class="ident">set_html_content</span></span>(<span>self, content)</span>
+<span>def <span class="ident">set_html_content</span></span>(<span>self, content: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -216,12 +217,12 @@ def set_header(self, key, value):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def set_html_content(self, content):
+def set_html_content(self, content: str):
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.response.BaseResponse.set_json_content"><code class="name flex">
-<span>def <span class="ident">set_json_content</span></span>(<span>self, content)</span>
+<span>def <span class="ident">set_json_content</span></span>(<span>self, content: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -230,12 +231,12 @@ def set_html_content(self, content):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def set_json_content(self, content):
+def set_json_content(self, content: Dict[str, Any]):
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.response.BaseResponse.set_status_code"><code class="name flex">
-<span>def <span class="ident">set_status_code</span></span>(<span>self, status_code)</span>
+<span>def <span class="ident">set_status_code</span></span>(<span>self, status_code: int)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -244,7 +245,7 @@ def set_json_content(self, content):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def set_status_code(self, status_code):
+def set_status_code(self, status_code: int):
     pass</code></pre>
 </details>
 </dd>

@@ -39,13 +39,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python.recipe.openid.interfaces import APIInterface, APIOptions, OpenIdDiscoveryConfigurationGetResponse
+from typing import Any, Dict
+
+from supertokens_python.recipe.openid.interfaces import (
+    APIInterface, APIOptions, OpenIdDiscoveryConfigurationGetResponse)
 
 
 class APIImplementation(APIInterface):
-    async def open_id_discovery_configuration_get(self, api_options: APIOptions) -&gt; OpenIdDiscoveryConfigurationGetResponse:
-        response = await api_options.recipe_implementation.get_open_id_discovery_configuration()
-        return OpenIdDiscoveryConfigurationGetResponse(response.status, response.issuer, response.jwks_uri)</code></pre>
+    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt;\
+            OpenIdDiscoveryConfigurationGetResponse:
+        response = await api_options.recipe_implementation.get_open_id_discovery_configuration(user_context)
+        return OpenIdDiscoveryConfigurationGetResponse(
+            &#39;OK&#39;, response.issuer, response.jwks_uri)</code></pre>
 </details>
 </section>
 <section>
@@ -67,9 +72,11 @@ class APIImplementation(APIInterface):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class APIImplementation(APIInterface):
-    async def open_id_discovery_configuration_get(self, api_options: APIOptions) -&gt; OpenIdDiscoveryConfigurationGetResponse:
-        response = await api_options.recipe_implementation.get_open_id_discovery_configuration()
-        return OpenIdDiscoveryConfigurationGetResponse(response.status, response.issuer, response.jwks_uri)</code></pre>
+    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt;\
+            OpenIdDiscoveryConfigurationGetResponse:
+        response = await api_options.recipe_implementation.get_open_id_discovery_configuration(user_context)
+        return OpenIdDiscoveryConfigurationGetResponse(
+            &#39;OK&#39;, response.issuer, response.jwks_uri)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -78,7 +85,7 @@ class APIImplementation(APIInterface):
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.openid.api.implementation.APIImplementation.open_id_discovery_configuration_get"><code class="name flex">
-<span>async def <span class="ident">open_id_discovery_configuration_get</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.openid.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.openid.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse" href="../interfaces.html#supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse">OpenIdDiscoveryConfigurationGetResponse</a></span>
+<span>async def <span class="ident">open_id_discovery_configuration_get</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.openid.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.openid.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse" href="../interfaces.html#supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse">OpenIdDiscoveryConfigurationGetResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -86,9 +93,11 @@ class APIImplementation(APIInterface):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def open_id_discovery_configuration_get(self, api_options: APIOptions) -&gt; OpenIdDiscoveryConfigurationGetResponse:
-    response = await api_options.recipe_implementation.get_open_id_discovery_configuration()
-    return OpenIdDiscoveryConfigurationGetResponse(response.status, response.issuer, response.jwks_uri)</code></pre>
+<pre><code class="python">async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt;\
+        OpenIdDiscoveryConfigurationGetResponse:
+    response = await api_options.recipe_implementation.get_open_id_discovery_configuration(user_context)
+    return OpenIdDiscoveryConfigurationGetResponse(
+        &#39;OK&#39;, response.issuer, response.jwks_uri)</code></pre>
 </details>
 </dd>
 </dl>

@@ -40,13 +40,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict, List
+
 from supertokens_python.exceptions import SuperTokensError
-from typing import List, TYPE_CHECKING
+
 if TYPE_CHECKING:
     from .types import ErrorFormField
 
 
-def raise_form_field_exception(msg, form_fields):
+def raise_form_field_exception(msg: str, form_fields: List[ErrorFormField]):
     raise FieldError(msg, form_fields)
 
 
@@ -59,8 +62,8 @@ class FieldError(SuperTokensEmailPasswordError):
         super().__init__(msg)
         self.form_fields = form_fields
 
-    def get_json_form_fields(self):
-        form_fields = []
+    def get_json_form_fields(self) -&gt; List[Dict[str, Any]]:
+        form_fields: List[Dict[str, Any]] = []
         for form_field in self.form_fields:
             form_fields.append({
                 &#39;id&#39;: form_field.id,
@@ -77,7 +80,7 @@ class FieldError(SuperTokensEmailPasswordError):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.exceptions.raise_form_field_exception"><code class="name flex">
-<span>def <span class="ident">raise_form_field_exception</span></span>(<span>msg, form_fields)</span>
+<span>def <span class="ident">raise_form_field_exception</span></span>(<span>msg: str, form_fields: List[ErrorFormField])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -85,7 +88,7 @@ class FieldError(SuperTokensEmailPasswordError):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def raise_form_field_exception(msg, form_fields):
+<pre><code class="python">def raise_form_field_exception(msg: str, form_fields: List[ErrorFormField]):
     raise FieldError(msg, form_fields)</code></pre>
 </details>
 </dd>
@@ -109,8 +112,8 @@ class FieldError(SuperTokensEmailPasswordError):
         super().__init__(msg)
         self.form_fields = form_fields
 
-    def get_json_form_fields(self):
-        form_fields = []
+    def get_json_form_fields(self) -&gt; List[Dict[str, Any]]:
+        form_fields: List[Dict[str, Any]] = []
         for form_field in self.form_fields:
             form_fields.append({
                 &#39;id&#39;: form_field.id,
@@ -128,7 +131,7 @@ class FieldError(SuperTokensEmailPasswordError):
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.exceptions.FieldError.get_json_form_fields"><code class="name flex">
-<span>def <span class="ident">get_json_form_fields</span></span>(<span>self)</span>
+<span>def <span class="ident">get_json_form_fields</span></span>(<span>self) ‑> List[Dict[str, Any]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -136,8 +139,8 @@ class FieldError(SuperTokensEmailPasswordError):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_json_form_fields(self):
-    form_fields = []
+<pre><code class="python">def get_json_form_fields(self) -&gt; List[Dict[str, Any]]:
+    form_fields: List[Dict[str, Any]] = []
     for form_field in self.form_fields:
         form_fields.append({
             &#39;id&#39;: form_field.id,
@@ -150,7 +153,7 @@ class FieldError(SuperTokensEmailPasswordError):
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.exceptions.SuperTokensEmailPasswordError"><code class="flex name class">
 <span>class <span class="ident">SuperTokensEmailPasswordError</span></span>
-<span>(</span><span>msg: Union[str, Exception])</span>
+<span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Common base class for all non-exit exceptions.</p></div>

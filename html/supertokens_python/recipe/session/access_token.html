@@ -40,13 +40,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from .jwt import get_payload
+
+from typing import Any, Union
+
 from supertokens_python.utils import get_timestamp_ms
+
 from .exceptions import raise_try_refresh_token_exception
-from typing import Union
+from .jwt import get_payload
 
 
-def sanitize_string(s: any) -&gt; Union[str, None]:
+def sanitize_string(s: Any) -&gt; Union[str, None]:
     if s == &#34;&#34;:
         return s
 
@@ -56,9 +59,9 @@ def sanitize_string(s: any) -&gt; Union[str, None]:
     return s.strip()
 
 
-def sanitize_number(n: any) -&gt; Union[Union[int, float], None]:
+def sanitize_number(n: Any) -&gt; Union[Union[int, float], None]:
     _type = type(n)
-    if _type == int or _type == float:
+    if _type == int or _type == float:  # pylint: disable=consider-using-in
         return n
 
     return None
@@ -165,7 +168,7 @@ def get_info_from_access_token(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.access_token.sanitize_number"><code class="name flex">
-<span>def <span class="ident">sanitize_number</span></span>(<span>n: any) ‑> Union[int, float, ForwardRef(None)]</span>
+<span>def <span class="ident">sanitize_number</span></span>(<span>n: Any) ‑> Union[int, float, ForwardRef(None)]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -173,16 +176,16 @@ def get_info_from_access_token(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def sanitize_number(n: any) -&gt; Union[Union[int, float], None]:
+<pre><code class="python">def sanitize_number(n: Any) -&gt; Union[Union[int, float], None]:
     _type = type(n)
-    if _type == int or _type == float:
+    if _type == int or _type == float:  # pylint: disable=consider-using-in
         return n
 
     return None</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.access_token.sanitize_string"><code class="name flex">
-<span>def <span class="ident">sanitize_string</span></span>(<span>s: any) ‑> Optional[str]</span>
+<span>def <span class="ident">sanitize_string</span></span>(<span>s: Any) ‑> Optional[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -190,7 +193,7 @@ def get_info_from_access_token(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def sanitize_string(s: any) -&gt; Union[str, None]:
+<pre><code class="python">def sanitize_string(s: Any) -&gt; Union[str, None]:
     if s == &#34;&#34;:
         return s
 

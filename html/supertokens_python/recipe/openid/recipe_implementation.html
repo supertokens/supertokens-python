@@ -41,49 +41,53 @@
 # under the License.
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any, Dict, Union
+
 from supertokens_python.querier import Querier
-from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from .utils import OpenIdConfig
     from .interfaces import CreateJwtResult
     from supertokens_python.supertokens import AppInfo
-from .interfaces import RecipeInterface, GetJWKSResult
-from supertokens_python.recipe.jwt.interfaces import RecipeInterface as JWTRecipeInterface
+
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.jwt.constants import GET_JWKS_API
-from .interfaces import GetOpenIdDiscoveryConfigurationResult
+from supertokens_python.recipe.jwt.interfaces import \
+    RecipeInterface as JWTRecipeInterface
+
+from .interfaces import (GetJWKSResult, GetOpenIdDiscoveryConfigurationResult,
+                         RecipeInterface)
 
 
 class RecipeImplementation(RecipeInterface):
 
-    async def get_open_id_discovery_configuration(self) -&gt; GetOpenIdDiscoveryConfigurationResult:
-        issuer = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.get_as_string_dangerous()
+    async def get_open_id_discovery_configuration(self, user_context: Dict[str, Any]) -&gt; GetOpenIdDiscoveryConfigurationResult:
+        issuer = self.config.issuer_domain.get_as_string_dangerous(
+        ) + self.config.issuer_path.get_as_string_dangerous()
 
-        jwks_uri = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.append(
-            NormalisedURLPath(GET_JWKS_API)).get_as_string_dangerous()
+        jwks_uri = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.append(NormalisedURLPath(GET_JWKS_API)).get_as_string_dangerous()
 
         return GetOpenIdDiscoveryConfigurationResult(&#39;OK&#39;, issuer, jwks_uri)
 
-    def __init__(self, querier: Querier, config: OpenIdConfig, app_info: AppInfo, jwt_recipe_implementation: JWTRecipeInterface):
+    def __init__(self, querier: Querier, config: OpenIdConfig,
+                 app_info: AppInfo, jwt_recipe_implementation: JWTRecipeInterface):
         super().__init__()
         self.querier = querier
         self.config = config
         self.app_info = app_info
         self.jwt_recipe_implementation = jwt_recipe_implementation
 
-    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
-        if payload is None:
-            payload = {}
-
-        issuer = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.get_as_string_dangerous()
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
+        issuer = self.config.issuer_domain.get_as_string_dangerous(
+        ) + self.config.issuer_path.get_as_string_dangerous()
         payload = {
             &#39;iss&#39;: issuer,
             **payload
         }
-        return await self.jwt_recipe_implementation.create_jwt(payload, validity_seconds)
+        return await self.jwt_recipe_implementation.create_jwt(payload, validity_seconds, user_context)
 
-    async def get_jwks(self) -&gt; GetJWKSResult:
-        return await self.jwt_recipe_implementation.get_jwks()</code></pre>
+    async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
+        return await self.jwt_recipe_implementation.get_jwks(user_context)</code></pre>
 </details>
 </section>
 <section>
@@ -108,34 +112,33 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class RecipeImplementation(RecipeInterface):
 
-    async def get_open_id_discovery_configuration(self) -&gt; GetOpenIdDiscoveryConfigurationResult:
-        issuer = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.get_as_string_dangerous()
+    async def get_open_id_discovery_configuration(self, user_context: Dict[str, Any]) -&gt; GetOpenIdDiscoveryConfigurationResult:
+        issuer = self.config.issuer_domain.get_as_string_dangerous(
+        ) + self.config.issuer_path.get_as_string_dangerous()
 
-        jwks_uri = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.append(
-            NormalisedURLPath(GET_JWKS_API)).get_as_string_dangerous()
+        jwks_uri = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.append(NormalisedURLPath(GET_JWKS_API)).get_as_string_dangerous()
 
         return GetOpenIdDiscoveryConfigurationResult(&#39;OK&#39;, issuer, jwks_uri)
 
-    def __init__(self, querier: Querier, config: OpenIdConfig, app_info: AppInfo, jwt_recipe_implementation: JWTRecipeInterface):
+    def __init__(self, querier: Querier, config: OpenIdConfig,
+                 app_info: AppInfo, jwt_recipe_implementation: JWTRecipeInterface):
         super().__init__()
         self.querier = querier
         self.config = config
         self.app_info = app_info
         self.jwt_recipe_implementation = jwt_recipe_implementation
 
-    async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
-        if payload is None:
-            payload = {}
-
-        issuer = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.get_as_string_dangerous()
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
+        issuer = self.config.issuer_domain.get_as_string_dangerous(
+        ) + self.config.issuer_path.get_as_string_dangerous()
         payload = {
             &#39;iss&#39;: issuer,
             **payload
         }
-        return await self.jwt_recipe_implementation.create_jwt(payload, validity_seconds)
+        return await self.jwt_recipe_implementation.create_jwt(payload, validity_seconds, user_context)
 
-    async def get_jwks(self) -&gt; GetJWKSResult:
-        return await self.jwt_recipe_implementation.get_jwks()</code></pre>
+    async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
+        return await self.jwt_recipe_implementation.get_jwks(user_context)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -145,7 +148,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.openid.recipe_implementation.RecipeImplementation.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: dict = None, validity_seconds: int = None) ‑> CreateJwtResult</span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) ‑> CreateJwtResult</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -153,20 +156,18 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_jwt(self, payload: dict = None, validity_seconds: int = None) -&gt; CreateJwtResult:
-    if payload is None:
-        payload = {}
-
-    issuer = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.get_as_string_dangerous()
+<pre><code class="python">async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
+    issuer = self.config.issuer_domain.get_as_string_dangerous(
+    ) + self.config.issuer_path.get_as_string_dangerous()
     payload = {
         &#39;iss&#39;: issuer,
         **payload
     }
-    return await self.jwt_recipe_implementation.create_jwt(payload, validity_seconds)</code></pre>
+    return await self.jwt_recipe_implementation.create_jwt(payload, validity_seconds, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.openid.recipe_implementation.RecipeImplementation.get_jwks"><code class="name flex">
-<span>async def <span class="ident">get_jwks</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.openid.interfaces.GetJWKSResult" href="interfaces.html#supertokens_python.recipe.openid.interfaces.GetJWKSResult">GetJWKSResult</a></span>
+<span>async def <span class="ident">get_jwks</span></span>(<span>self, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.jwt.interfaces.GetJWKSResult" href="../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.GetJWKSResult">GetJWKSResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -174,12 +175,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_jwks(self) -&gt; GetJWKSResult:
-    return await self.jwt_recipe_implementation.get_jwks()</code></pre>
+<pre><code class="python">async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
+    return await self.jwt_recipe_implementation.get_jwks(user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.openid.recipe_implementation.RecipeImplementation.get_open_id_discovery_configuration"><code class="name flex">
-<span>async def <span class="ident">get_open_id_discovery_configuration</span></span>(<span>self) ‑> <a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="interfaces.html#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a></span>
+<span>async def <span class="ident">get_open_id_discovery_configuration</span></span>(<span>self, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="interfaces.html#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -187,11 +188,11 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_open_id_discovery_configuration(self) -&gt; GetOpenIdDiscoveryConfigurationResult:
-    issuer = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.get_as_string_dangerous()
+<pre><code class="python">async def get_open_id_discovery_configuration(self, user_context: Dict[str, Any]) -&gt; GetOpenIdDiscoveryConfigurationResult:
+    issuer = self.config.issuer_domain.get_as_string_dangerous(
+    ) + self.config.issuer_path.get_as_string_dangerous()
 
-    jwks_uri = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.append(
-        NormalisedURLPath(GET_JWKS_API)).get_as_string_dangerous()
+    jwks_uri = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.append(NormalisedURLPath(GET_JWKS_API)).get_as_string_dangerous()
 
     return GetOpenIdDiscoveryConfigurationResult(&#39;OK&#39;, issuer, jwks_uri)</code></pre>
 </details>

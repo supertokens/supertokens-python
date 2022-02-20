@@ -39,86 +39,93 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
-
-from deprecated.classic import deprecated
+from typing import Any, Dict, Union
 
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 
+from ..types import User
 
-async def create_email_verification_token(user_id: str):
-    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id)
+
+async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
     return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.create_email_verification_token(
-        user_id, email)
+        user_id, email, user_context)
 
 
-async def verify_email_using_token(token: str):
+async def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
     return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
-        token)
+        token, user_context)
 
 
-async def unverify_email(user_id: str):
-    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id)
+async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
     return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.unverify_email(
-        user_id, email)
+        user_id, email, user_context)
 
 
-async def is_email_verified(user_id: str):
-    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id)
+async def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
     return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.is_email_verified(
-        user_id, email)
-
-
-@deprecated(reason=&#34;Use supertokens_python.get_user_oldest_first(...) function instead IF using core version &gt;= 3.5&#34;)
-async def get_users_oldest_first(limit: int = None, next_pagination: str = None):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_users_oldest_first(limit, next_pagination)
-
-
-@deprecated(reason=&#34;Use supertokens_python.get_users_newest_first(...) function instead IF using core version &gt;= 3.5&#34;)
-async def get_users_newest_first(limit: int = None, next_pagination: str = None):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_users_newest_first(limit, next_pagination)
-
-
-@deprecated(reason=&#34;Use supertokens_python.get_user_count(...) function instead IF using core version &gt;= 3.5&#34;)
-async def get_user_count():
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_count()
+        user_id, email, user_context)
 
 
 async def update_email_or_password(user_id: str, email: Union[str, None] = None,
-                                   password: Union[str, None] = None):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id, email,
-                                                                                                   password)
+                                   password: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id, email, password, user_context)
 
 
-async def get_user_by_id(user_id: str):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id)
+async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[None, User]:
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id, user_context)
 
 
-async def get_user_by_email(email: str):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_email(email)
+async def get_user_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[User, None]:
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_email(email, user_context)
 
 
-async def create_reset_password_token(user_id: str):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.create_reset_password_token(user_id)
+async def create_reset_password_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.create_reset_password_token(user_id, user_context)
 
 
-async def reset_password_using_token(token: str, new_password: str):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(token,
-                                                                                                     new_password)
+async def reset_password_using_token(token: str, new_password: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(token, new_password, user_context)
 
 
-async def sign_in(email: str, password: str):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_in(email, password)
+async def sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_in(email, password, user_context)
 
 
-async def sign_up(email: str, password: str):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_up(email, password)
+async def sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_up(email, password, user_context)
 
 
-async def revoke_email_verification_token(user_id: str):
-    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id)
+async def revoke_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
     return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.revoke_email_verification_tokens(
-        user_id, email)</code></pre>
+        user_id, email, user_context)</code></pre>
 </details>
 </section>
 <section>
@@ -129,7 +136,7 @@ async def revoke_email_verification_token(user_id: str):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.asyncio.create_email_verification_token"><code class="name flex">
-<span>async def <span class="ident">create_email_verification_token</span></span>(<span>user_id: str)</span>
+<span>async def <span class="ident">create_email_verification_token</span></span>(<span>user_id: str, user_context: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -137,14 +144,16 @@ async def revoke_email_verification_token(user_id: str):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_email_verification_token(user_id: str):
-    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id)
+<pre><code class="python">async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
     return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.create_email_verification_token(
-        user_id, email)</code></pre>
+        user_id, email, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.asyncio.create_reset_password_token"><code class="name flex">
-<span>async def <span class="ident">create_reset_password_token</span></span>(<span>user_id: str)</span>
+<span>async def <span class="ident">create_reset_password_token</span></span>(<span>user_id: str, user_context: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -152,12 +161,14 @@ async def revoke_email_verification_token(user_id: str):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_reset_password_token(user_id: str):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.create_reset_password_token(user_id)</code></pre>
+<pre><code class="python">async def create_reset_password_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.create_reset_password_token(user_id, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.asyncio.get_user_by_email"><code class="name flex">
-<span>async def <span class="ident">get_user_by_email</span></span>(<span>email: str)</span>
+<span>async def <span class="ident">get_user_by_email</span></span>(<span>email: str, user_context: Optional[None] = None) ‑> Optional[<a title="supertokens_python.recipe.emailpassword.types.User" href="../types.html#supertokens_python.recipe.emailpassword.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -165,12 +176,14 @@ async def revoke_email_verification_token(user_id: str):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_user_by_email(email: str):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_email(email)</code></pre>
+<pre><code class="python">async def get_user_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[User, None]:
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_email(email, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.asyncio.get_user_by_id"><code class="name flex">
-<span>async def <span class="ident">get_user_by_id</span></span>(<span>user_id: str)</span>
+<span>async def <span class="ident">get_user_by_id</span></span>(<span>user_id: str, user_context: Optional[None] = None) ‑> Optional[<a title="supertokens_python.recipe.emailpassword.types.User" href="../types.html#supertokens_python.recipe.emailpassword.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -178,54 +191,14 @@ async def revoke_email_verification_token(user_id: str):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_user_by_id(user_id: str):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.emailpassword.asyncio.get_user_count"><code class="name flex">
-<span>async def <span class="ident">get_user_count</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@deprecated(reason=&#34;Use supertokens_python.get_user_count(...) function instead IF using core version &gt;= 3.5&#34;)
-async def get_user_count():
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_count()</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.emailpassword.asyncio.get_users_newest_first"><code class="name flex">
-<span>async def <span class="ident">get_users_newest_first</span></span>(<span>limit: int = None, next_pagination: str = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@deprecated(reason=&#34;Use supertokens_python.get_users_newest_first(...) function instead IF using core version &gt;= 3.5&#34;)
-async def get_users_newest_first(limit: int = None, next_pagination: str = None):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_users_newest_first(limit, next_pagination)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.emailpassword.asyncio.get_users_oldest_first"><code class="name flex">
-<span>async def <span class="ident">get_users_oldest_first</span></span>(<span>limit: int = None, next_pagination: str = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@deprecated(reason=&#34;Use supertokens_python.get_user_oldest_first(...) function instead IF using core version &gt;= 3.5&#34;)
-async def get_users_oldest_first(limit: int = None, next_pagination: str = None):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_users_oldest_first(limit, next_pagination)</code></pre>
+<pre><code class="python">async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[None, User]:
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.asyncio.is_email_verified"><code class="name flex">
-<span>async def <span class="ident">is_email_verified</span></span>(<span>user_id: str)</span>
+<span>async def <span class="ident">is_email_verified</span></span>(<span>user_id: str, user_context: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -233,14 +206,16 @@ async def get_users_oldest_first(limit: int = None, next_pagination: str = None)
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def is_email_verified(user_id: str):
-    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id)
+<pre><code class="python">async def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
     return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.is_email_verified(
-        user_id, email)</code></pre>
+        user_id, email, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.asyncio.reset_password_using_token"><code class="name flex">
-<span>async def <span class="ident">reset_password_using_token</span></span>(<span>token: str, new_password: str)</span>
+<span>async def <span class="ident">reset_password_using_token</span></span>(<span>token: str, new_password: str, user_context: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -248,13 +223,14 @@ async def get_users_oldest_first(limit: int = None, next_pagination: str = None)
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def reset_password_using_token(token: str, new_password: str):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(token,
-                                                                                                     new_password)</code></pre>
+<pre><code class="python">async def reset_password_using_token(token: str, new_password: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(token, new_password, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.asyncio.revoke_email_verification_token"><code class="name flex">
-<span>async def <span class="ident">revoke_email_verification_token</span></span>(<span>user_id: str)</span>
+<span>async def <span class="ident">revoke_email_verification_token</span></span>(<span>user_id: str, user_context: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -262,14 +238,16 @@ async def get_users_oldest_first(limit: int = None, next_pagination: str = None)
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_email_verification_token(user_id: str):
-    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id)
+<pre><code class="python">async def revoke_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
     return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.revoke_email_verification_tokens(
-        user_id, email)</code></pre>
+        user_id, email, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.asyncio.sign_in"><code class="name flex">
-<span>async def <span class="ident">sign_in</span></span>(<span>email: str, password: str)</span>
+<span>async def <span class="ident">sign_in</span></span>(<span>email: str, password: str, user_context: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -277,12 +255,14 @@ async def get_users_oldest_first(limit: int = None, next_pagination: str = None)
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def sign_in(email: str, password: str):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_in(email, password)</code></pre>
+<pre><code class="python">async def sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_in(email, password, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.asyncio.sign_up"><code class="name flex">
-<span>async def <span class="ident">sign_up</span></span>(<span>email: str, password: str)</span>
+<span>async def <span class="ident">sign_up</span></span>(<span>email: str, password: str, user_context: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -290,12 +270,14 @@ async def get_users_oldest_first(limit: int = None, next_pagination: str = None)
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def sign_up(email: str, password: str):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_up(email, password)</code></pre>
+<pre><code class="python">async def sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.sign_up(email, password, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.asyncio.unverify_email"><code class="name flex">
-<span>async def <span class="ident">unverify_email</span></span>(<span>user_id: str)</span>
+<span>async def <span class="ident">unverify_email</span></span>(<span>user_id: str, user_context: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -303,14 +285,16 @@ async def get_users_oldest_first(limit: int = None, next_pagination: str = None)
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def unverify_email(user_id: str):
-    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id)
+<pre><code class="python">async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    email = await EmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
     return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.unverify_email(
-        user_id, email)</code></pre>
+        user_id, email, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.asyncio.update_email_or_password"><code class="name flex">
-<span>async def <span class="ident">update_email_or_password</span></span>(<span>user_id: str, email: Optional[str] = None, password: Optional[str] = None)</span>
+<span>async def <span class="ident">update_email_or_password</span></span>(<span>user_id: str, email: Optional[str] = None, password: Optional[str] = None, user_context: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -319,13 +303,14 @@ async def get_users_oldest_first(limit: int = None, next_pagination: str = None)
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def update_email_or_password(user_id: str, email: Union[str, None] = None,
-                                   password: Union[str, None] = None):
-    return await EmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id, email,
-                                                                                                   password)</code></pre>
+                                   password: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await EmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id, email, password, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.asyncio.verify_email_using_token"><code class="name flex">
-<span>async def <span class="ident">verify_email_using_token</span></span>(<span>token: str)</span>
+<span>async def <span class="ident">verify_email_using_token</span></span>(<span>token: str, user_context: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -333,9 +318,11 @@ async def get_users_oldest_first(limit: int = None, next_pagination: str = None)
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def verify_email_using_token(token: str):
+<pre><code class="python">async def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
     return await EmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
-        token)</code></pre>
+        token, user_context)</code></pre>
 </details>
 </dd>
 </dl>
@@ -360,9 +347,6 @@ async def get_users_oldest_first(limit: int = None, next_pagination: str = None)
 <li><code><a title="supertokens_python.recipe.emailpassword.asyncio.create_reset_password_token" href="#supertokens_python.recipe.emailpassword.asyncio.create_reset_password_token">create_reset_password_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.asyncio.get_user_by_email" href="#supertokens_python.recipe.emailpassword.asyncio.get_user_by_email">get_user_by_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.asyncio.get_user_by_id" href="#supertokens_python.recipe.emailpassword.asyncio.get_user_by_id">get_user_by_id</a></code></li>
-<li><code><a title="supertokens_python.recipe.emailpassword.asyncio.get_user_count" href="#supertokens_python.recipe.emailpassword.asyncio.get_user_count">get_user_count</a></code></li>
-<li><code><a title="supertokens_python.recipe.emailpassword.asyncio.get_users_newest_first" href="#supertokens_python.recipe.emailpassword.asyncio.get_users_newest_first">get_users_newest_first</a></code></li>
-<li><code><a title="supertokens_python.recipe.emailpassword.asyncio.get_users_oldest_first" href="#supertokens_python.recipe.emailpassword.asyncio.get_users_oldest_first">get_users_oldest_first</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.asyncio.is_email_verified" href="#supertokens_python.recipe.emailpassword.asyncio.is_email_verified">is_email_verified</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.asyncio.reset_password_using_token" href="#supertokens_python.recipe.emailpassword.asyncio.reset_password_using_token">reset_password_using_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.asyncio.revoke_email_verification_token" href="#supertokens_python.recipe.emailpassword.asyncio.revoke_email_verification_token">revoke_email_verification_token</a></code></li>

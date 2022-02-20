@@ -40,22 +40,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import sys
-from functools import singledispatch, wraps
 import asyncio
-import inspect
-import types
-from typing import Any, Callable, Generator
+from typing import Any, Coroutine, TypeVar
 
-PY35 = sys.version_info &gt;= (3, 5)
-
-
-def _is_awaitable(co: Generator[Any, None, Any]) -&gt; bool:
-    if PY35:
-        return inspect.isawaitable(co)
-    else:
-        return (isinstance(co, types.GeneratorType) or
-                isinstance(co, asyncio.Future))
+_T = TypeVar(&#34;_T&#34;)
 
 
 def check_event_loop():
@@ -67,35 +55,10 @@ def check_event_loop():
             asyncio.set_event_loop(loop)
 
 
-@singledispatch
-def sync(co: Any):
-    raise TypeError(&#39;Called with unsupported argument: {}&#39;.format(co))
-
-
-@sync.register(asyncio.Future)
-@sync.register(types.GeneratorType)
-def sync_co(co: Generator[Any, None, Any]) -&gt; Any:
-    if not _is_awaitable(co):
-        raise TypeError(&#39;Called with unsupported argument: {}&#39;.format(co))
+def sync(co: Coroutine[Any, Any, _T]) -&gt; _T:
     check_event_loop()
-    return asyncio.get_event_loop().run_until_complete(co)
-
-
-@sync.register(types.FunctionType)
-@sync.register(types.MethodType)
-def sync_fu(f: Callable[..., Any]) -&gt; Callable[..., Any]:
-    if not asyncio.iscoroutinefunction(f):
-        raise TypeError(&#39;Called with unsupported argument: {}&#39;.format(f))
-
-    @wraps(f)
-    def run(*args, **kwargs):
-        return asyncio.get_event_loop().run_until_complete(f(*args, **kwargs))
-
-    return run
-
-
-if PY35:
-    sync.register(types.CoroutineType)(sync_co)</code></pre>
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(co)</code></pre>
 </details>
 </section>
 <section>
@@ -124,7 +87,7 @@ if PY35:
 </details>
 </dd>
 <dt id="supertokens_python.async_to_sync_wrapper.sync"><code class="name flex">
-<span>def <span class="ident">sync</span></span>(<span>co: Any)</span>
+<span>def <span class="ident">sync</span></span>(<span>co: Coroutine[Any, Any, ~_T]) ‑> ~_T</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -132,49 +95,10 @@ if PY35:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@singledispatch
-def sync(co: Any):
-    raise TypeError(&#39;Called with unsupported argument: {}&#39;.format(co))</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.async_to_sync_wrapper.sync_co"><code class="name flex">
-<span>def <span class="ident">sync_co</span></span>(<span>co: Generator[Any, None, Any]) ‑> Any</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@sync.register(asyncio.Future)
-@sync.register(types.GeneratorType)
-def sync_co(co: Generator[Any, None, Any]) -&gt; Any:
-    if not _is_awaitable(co):
-        raise TypeError(&#39;Called with unsupported argument: {}&#39;.format(co))
+<pre><code class="python">def sync(co: Coroutine[Any, Any, _T]) -&gt; _T:
     check_event_loop()
-    return asyncio.get_event_loop().run_until_complete(co)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.async_to_sync_wrapper.sync_fu"><code class="name flex">
-<span>def <span class="ident">sync_fu</span></span>(<span>f: Callable[..., Any]) ‑> Callable[..., Any]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@sync.register(types.FunctionType)
-@sync.register(types.MethodType)
-def sync_fu(f: Callable[..., Any]) -&gt; Callable[..., Any]:
-    if not asyncio.iscoroutinefunction(f):
-        raise TypeError(&#39;Called with unsupported argument: {}&#39;.format(f))
-
-    @wraps(f)
-    def run(*args, **kwargs):
-        return asyncio.get_event_loop().run_until_complete(f(*args, **kwargs))
-
-    return run</code></pre>
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(co)</code></pre>
 </details>
 </dd>
 </dl>
@@ -197,8 +121,6 @@ def sync_fu(f: Callable[..., Any]) -&gt; Callable[..., Any]:
 <ul class="">
 <li><code><a title="supertokens_python.async_to_sync_wrapper.check_event_loop" href="#supertokens_python.async_to_sync_wrapper.check_event_loop">check_event_loop</a></code></li>
 <li><code><a title="supertokens_python.async_to_sync_wrapper.sync" href="#supertokens_python.async_to_sync_wrapper.sync">sync</a></code></li>
-<li><code><a title="supertokens_python.async_to_sync_wrapper.sync_co" href="#supertokens_python.async_to_sync_wrapper.sync_co">sync_co</a></code></li>
-<li><code><a title="supertokens_python.async_to_sync_wrapper.sync_fu" href="#supertokens_python.async_to_sync_wrapper.sync_fu">sync_fu</a></code></li>
 </ul>
 </li>
 </ul>

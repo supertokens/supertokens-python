@@ -40,13 +40,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from supertokens_python.recipe.thirdparty.utils import find_right_provider
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
-    from supertokens_python.recipe.thirdparty.provider import Provider
+
 from supertokens_python.exceptions import raise_bad_input_exception
 
 
@@ -54,6 +55,8 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
     if api_implementation.disable_sign_in_up_post:
         return None
     body = await api_options.request.json()
+    if body is None:
+        raise_bad_input_exception(&#34;Please provide a JSON input&#34;)
 
     code = body[&#39;code&#39;] if &#39;code&#39; in body else &#34;&#34;
     auth_code_response = body[&#39;authCodeResponse&#39;] if &#39;authCodeResponse&#39; in body else None
@@ -64,32 +67,31 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
             &#39;Please provide the thirdPartyId in request body&#39;)
 
     if not isinstance(code, str):
-        raise_bad_input_exception(&#39;Please make sure that the code in the request body is a string&#39;)
+        raise_bad_input_exception(
+            &#39;Please make sure that the code in the request body is a string&#39;)
 
     if code == &#39;&#39; and auth_code_response is None:
-        raise_bad_input_exception(&#39;Please provide one of code or authCodeResponse in the request body&#39;)
+        raise_bad_input_exception(
+            &#39;Please provide one of code or authCodeResponse in the request body&#39;)
 
     if auth_code_response is not None and &#39;access_token&#39; not in auth_code_response:
-        raise_bad_input_exception(&#39;Please provide the access_token inside the authCodeResponse request param&#39;)
+        raise_bad_input_exception(
+            &#39;Please provide the access_token inside the authCodeResponse request param&#39;)
 
     if &#39;redirectURI&#39; not in body or not isinstance(body[&#39;redirectURI&#39;], str):
         raise_bad_input_exception(
             &#39;Please provide the redirectURI in request body&#39;)
 
     third_party_id = body[&#39;thirdPartyId&#39;]
-    provider: Provider = find_right_provider(api_options.providers, third_party_id, client_id)
+    provider = find_right_provider(
+        api_options.providers, third_party_id, client_id)
     if provider is None:
         if client_id is None:
-            raise_bad_input_exception(&#39;The third party provider &#39; + third_party_id + &#39; seems to be missing from the &#39;
-                                                                                     &#39;backend configs.&#39;)
-        raise_bad_input_exception(&#39;The third party provider &#39; + third_party_id + &#39; seems to be missing from the &#39;
-                                                                                 &#39;backend configs. If it is &#39;
-                                                                                 &#39;configured, then please make sure &#39;
-                                                                                 &#39;that you are passing the correct &#39;
-                                                                                 &#39;clientId from the frontend.&#39;)
+            raise_bad_input_exception(&#39;The third party provider &#39; + third_party_id + &#39; seems to be missing from the backend configs.&#39;)
+        raise_bad_input_exception(&#39;The third party provider &#39; + third_party_id + &#39; seems to be missing from the backend configs. If it is configured, then please make sure that you are passing the correct clientId from the frontend.&#39;)
 
     result = await api_implementation.sign_in_up_post(provider, code, body[&#39;redirectURI&#39;], client_id,
-                                                      auth_code_response, api_options)
+                                                      auth_code_response, api_options, {})
     api_options.response.set_json_content(result.to_json())
 
     return api_options.response</code></pre>
@@ -115,6 +117,8 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
     if api_implementation.disable_sign_in_up_post:
         return None
     body = await api_options.request.json()
+    if body is None:
+        raise_bad_input_exception(&#34;Please provide a JSON input&#34;)
 
     code = body[&#39;code&#39;] if &#39;code&#39; in body else &#34;&#34;
     auth_code_response = body[&#39;authCodeResponse&#39;] if &#39;authCodeResponse&#39; in body else None
@@ -125,32 +129,31 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
             &#39;Please provide the thirdPartyId in request body&#39;)
 
     if not isinstance(code, str):
-        raise_bad_input_exception(&#39;Please make sure that the code in the request body is a string&#39;)
+        raise_bad_input_exception(
+            &#39;Please make sure that the code in the request body is a string&#39;)
 
     if code == &#39;&#39; and auth_code_response is None:
-        raise_bad_input_exception(&#39;Please provide one of code or authCodeResponse in the request body&#39;)
+        raise_bad_input_exception(
+            &#39;Please provide one of code or authCodeResponse in the request body&#39;)
 
     if auth_code_response is not None and &#39;access_token&#39; not in auth_code_response:
-        raise_bad_input_exception(&#39;Please provide the access_token inside the authCodeResponse request param&#39;)
+        raise_bad_input_exception(
+            &#39;Please provide the access_token inside the authCodeResponse request param&#39;)
 
     if &#39;redirectURI&#39; not in body or not isinstance(body[&#39;redirectURI&#39;], str):
         raise_bad_input_exception(
             &#39;Please provide the redirectURI in request body&#39;)
 
     third_party_id = body[&#39;thirdPartyId&#39;]
-    provider: Provider = find_right_provider(api_options.providers, third_party_id, client_id)
+    provider = find_right_provider(
+        api_options.providers, third_party_id, client_id)
     if provider is None:
         if client_id is None:
-            raise_bad_input_exception(&#39;The third party provider &#39; + third_party_id + &#39; seems to be missing from the &#39;
-                                                                                     &#39;backend configs.&#39;)
-        raise_bad_input_exception(&#39;The third party provider &#39; + third_party_id + &#39; seems to be missing from the &#39;
-                                                                                 &#39;backend configs. If it is &#39;
-                                                                                 &#39;configured, then please make sure &#39;
-                                                                                 &#39;that you are passing the correct &#39;
-                                                                                 &#39;clientId from the frontend.&#39;)
+            raise_bad_input_exception(&#39;The third party provider &#39; + third_party_id + &#39; seems to be missing from the backend configs.&#39;)
+        raise_bad_input_exception(&#39;The third party provider &#39; + third_party_id + &#39; seems to be missing from the backend configs. If it is configured, then please make sure that you are passing the correct clientId from the frontend.&#39;)
 
     result = await api_implementation.sign_in_up_post(provider, code, body[&#39;redirectURI&#39;], client_id,
-                                                      auth_code_response, api_options)
+                                                      auth_code_response, api_options, {})
     api_options.response.set_json_content(result.to_json())
 
     return api_options.response</code></pre>

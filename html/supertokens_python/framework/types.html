@@ -42,28 +42,23 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Union
+from typing import Any, Union
 
 from supertokens_python.framework.request import BaseRequest
-from supertokens_python.framework.response import BaseResponse
 
 frameworks = [&#34;fastapi&#34;, &#34;flask&#34;, &#34;django&#34;]
 
 
 class FrameworkEnum(Enum):
-    FASTAPI = 1,
-    FLASK = 2,
+    FASTAPI = 1
+    FLASK = 2
     DJANGO = 3
 
 
 class Framework(ABC):
 
     @abstractmethod
-    def wrap_request(self, unwrapped) -&gt; Union[BaseRequest, None]:
-        pass
-
-    @abstractmethod
-    def wrap_response(self, unwrapped) -&gt; Union[BaseResponse, None]:
+    def wrap_request(self, unwrapped: Any) -&gt; Union[BaseRequest, None]:
         pass</code></pre>
 </details>
 </section>
@@ -89,11 +84,7 @@ inheritance.</p></div>
 <pre><code class="python">class Framework(ABC):
 
     @abstractmethod
-    def wrap_request(self, unwrapped) -&gt; Union[BaseRequest, None]:
-        pass
-
-    @abstractmethod
-    def wrap_response(self, unwrapped) -&gt; Union[BaseResponse, None]:
+    def wrap_request(self, unwrapped: Any) -&gt; Union[BaseRequest, None]:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -109,7 +100,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.types.Framework.wrap_request"><code class="name flex">
-<span>def <span class="ident">wrap_request</span></span>(<span>self, unwrapped) ‑> Optional[<a title="supertokens_python.framework.request.BaseRequest" href="request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>]</span>
+<span>def <span class="ident">wrap_request</span></span>(<span>self, unwrapped: Any) ‑> Optional[<a title="supertokens_python.framework.request.BaseRequest" href="request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -118,21 +109,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def wrap_request(self, unwrapped) -&gt; Union[BaseRequest, None]:
-    pass</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.framework.types.Framework.wrap_response"><code class="name flex">
-<span>def <span class="ident">wrap_response</span></span>(<span>self, unwrapped) ‑> Optional[<a title="supertokens_python.framework.response.BaseResponse" href="response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a>]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def wrap_response(self, unwrapped) -&gt; Union[BaseResponse, None]:
+def wrap_request(self, unwrapped: Any) -&gt; Union[BaseRequest, None]:
     pass</code></pre>
 </details>
 </dd>
@@ -149,8 +126,8 @@ def wrap_response(self, unwrapped) -&gt; Union[BaseResponse, None]:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class FrameworkEnum(Enum):
-    FASTAPI = 1,
-    FLASK = 2,
+    FASTAPI = 1
+    FLASK = 2
     DJANGO = 3</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -193,7 +170,6 @@ def wrap_response(self, unwrapped) -&gt; Union[BaseResponse, None]:
 <h4><code><a title="supertokens_python.framework.types.Framework" href="#supertokens_python.framework.types.Framework">Framework</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.framework.types.Framework.wrap_request" href="#supertokens_python.framework.types.Framework.wrap_request">wrap_request</a></code></li>
-<li><code><a title="supertokens_python.framework.types.Framework.wrap_response" href="#supertokens_python.framework.types.Framework.wrap_response">wrap_response</a></code></li>
 </ul>
 </li>
 <li>

@@ -42,61 +42,34 @@
 
 from __future__ import annotations
 
+import asyncio
+from base64 import b64decode, b64encode
 from re import fullmatch
-from typing import Union, List, Callable, TYPE_CHECKING
-
-from jsonschema import validate
-from jsonschema.exceptions import ValidationError
-
-from supertokens_python.framework.request import BaseRequest
-from supertokens_python.framework.response import BaseResponse
-
-if TYPE_CHECKING:
-    pass
-from .constants import RID_KEY_HEADER
-from .exceptions import raise_general_exception, raise_bad_input_exception
-from .constants import ERROR_MESSAGE_KEY
 from time import time
-from base64 import b64encode, b64decode
+from typing import (TYPE_CHECKING, Any, Callable, Coroutine, Dict, List,
+                    TypeVar, Union)
 
+from supertokens_python.async_to_sync_wrapper import check_event_loop
 from supertokens_python.framework.django.framework import DjangoFramework
 from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
-from supertokens_python.async_to_sync_wrapper import check_event_loop
-import asyncio
+from supertokens_python.framework.request import BaseRequest
+from supertokens_python.framework.response import BaseResponse
+
+from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER
+from .exceptions import raise_general_exception
+
+_T = TypeVar(&#34;_T&#34;)
+
+if TYPE_CHECKING:
+    pass
+
 
 FRAMEWORKS = {
     &#39;fastapi&#39;: FastapiFramework(),
     &#39;flask&#39;: FlaskFramework(),
     &#39;django&#39;: DjangoFramework(),
 }
-
-
-def validate_framework(config):
-    if config[&#39;framework&#39;] not in FRAMEWORKS.keys():
-        raise_bad_input_exception(
-            recipe=None,
-            msg=config[&#39;framework&#39;] + &#39; framework is not supported.&#39;)
-
-
-def validate_the_structure_of_user_input(
-        config, input_schema, config_root, recipe):
-    try:
-        validate(config, input_schema)
-    except ValidationError as e:
-        path = &#39;.&#39;.join(list(map(str, e.path)))
-        if not path == &#39;&#39;:
-            path = &#39;for path &#34;&#39; + path + &#39;&#34;: &#39;
-
-        error_message = path + e.message
-
-        if &#39;is a required property&#39; in error_message:
-            error_message = &#39;input config &#39; + error_message
-        if &#39;Additional properties are not allowed&#39; in error_message:
-            error_message += &#39; Did you mean to set this on the frontend side?&#39;
-        error_message = &#39;Config schema error in &#39; + config_root + &#39;: &#39; + error_message
-
-        raise_general_exception(recipe, error_message)
 
 
 def is_an_ip_address(ip_address: str) -&gt; bool:
@@ -140,7 +113,7 @@ def compare_version(v1: str, v2: str) -&gt; str:
     for i in range(max_loop):
         if int(v1_split[i]) &gt; int(v2_split[i]):
             return v1
-        elif int(v2_split[i]) &gt; int(v1_split[i]):
+        if int(v2_split[i]) &gt; int(v1_split[i]):
             return v2
 
     if len(v1_split) &gt; len(v2_split):
@@ -157,7 +130,8 @@ def is_5xx_error(status_code: int) -&gt; bool:
     return status_code // 100 == 5
 
 
-def send_non_200_response(message: str, status_code: int, response: BaseResponse) -&gt; Union[BaseResponse, None]:
+def send_non_200_response(message: str, status_code: int,
+                          response: BaseResponse) -&gt; BaseResponse:
     if status_code &lt; 300:
         raise_general_exception(
             &#39;Calling sendNon200Response with status code &lt; 300&#39;)
@@ -168,7 +142,8 @@ def send_non_200_response(message: str, status_code: int, response: BaseResponse
     return response
 
 
-def send_200_response(data_json: dict, response: BaseResponse) -&gt; Union[BaseResponse, None]:
+def send_200_response(
+        data_json: Dict[str, Any], response: BaseResponse) -&gt; BaseResponse:
     response.set_json_content(data_json)
     response.set_status_code(200)
     return response
@@ -186,19 +161,19 @@ def utf_base64decode(s: str) -&gt; str:
     return b64decode(s.encode(&#39;utf-8&#39;)).decode(&#39;utf-8&#39;)
 
 
-def get_filtered_list(func: Callable, given_list: List) -&gt; List:
+def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -&gt; List[_T]:
     return list(filter(func, given_list))
 
 
 def find_first_occurrence_in_list(
-        condition: Callable, given_list: List) -&gt; Union[any, None]:
+        condition: Callable[[_T], bool], given_list: List[_T]) -&gt; Union[_T, None]:
     for item in given_list:
         if condition(item):
             return item
     return None
 
 
-def execute_in_background(mode, func):
+def execute_in_background(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
     if mode == &#39;wsgi&#39;:
         check_event_loop()
         loop = asyncio.get_event_loop()
@@ -235,7 +210,7 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
     for i in range(max_loop):
         if int(v1_split[i]) &gt; int(v2_split[i]):
             return v1
-        elif int(v2_split[i]) &gt; int(v1_split[i]):
+        if int(v2_split[i]) &gt; int(v1_split[i]):
             return v2
 
     if len(v1_split) &gt; len(v2_split):
@@ -245,7 +220,7 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 </details>
 </dd>
 <dt id="supertokens_python.utils.execute_in_background"><code class="name flex">
-<span>def <span class="ident">execute_in_background</span></span>(<span>mode, func)</span>
+<span>def <span class="ident">execute_in_background</span></span>(<span>mode: str, func: Callable[[], Coroutine[Any, Any, None]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -253,7 +228,7 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def execute_in_background(mode, func):
+<pre><code class="python">def execute_in_background(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
     if mode == &#39;wsgi&#39;:
         check_event_loop()
         loop = asyncio.get_event_loop()
@@ -263,7 +238,7 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 </details>
 </dd>
 <dt id="supertokens_python.utils.find_first_occurrence_in_list"><code class="name flex">
-<span>def <span class="ident">find_first_occurrence_in_list</span></span>(<span>condition: Callable, given_list: List) ‑> Optional[<built-in function any>]</span>
+<span>def <span class="ident">find_first_occurrence_in_list</span></span>(<span>condition: Callable[[_T], bool], given_list: List[_T]) ‑> Optional[~_T]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -272,7 +247,7 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def find_first_occurrence_in_list(
-        condition: Callable, given_list: List) -&gt; Union[any, None]:
+        condition: Callable[[_T], bool], given_list: List[_T]) -&gt; Union[_T, None]:
     for item in given_list:
         if condition(item):
             return item
@@ -316,7 +291,7 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 </details>
 </dd>
 <dt id="supertokens_python.utils.get_filtered_list"><code class="name flex">
-<span>def <span class="ident">get_filtered_list</span></span>(<span>func: Callable, given_list: List) ‑> List</span>
+<span>def <span class="ident">get_filtered_list</span></span>(<span>func: Callable[[_T], bool], given_list: List[_T]) ‑> List[~_T]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -324,7 +299,7 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_filtered_list(func: Callable, given_list: List) -&gt; List:
+<pre><code class="python">def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -&gt; List[_T]:
     return list(filter(func, given_list))</code></pre>
 </details>
 </dd>
@@ -423,7 +398,7 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 </details>
 </dd>
 <dt id="supertokens_python.utils.send_200_response"><code class="name flex">
-<span>def <span class="ident">send_200_response</span></span>(<span>data_json: dict, response: BaseResponse) ‑> Optional[<a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a>]</span>
+<span>def <span class="ident">send_200_response</span></span>(<span>data_json: Dict[str, Any], response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -431,14 +406,15 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def send_200_response(data_json: dict, response: BaseResponse) -&gt; Union[BaseResponse, None]:
+<pre><code class="python">def send_200_response(
+        data_json: Dict[str, Any], response: BaseResponse) -&gt; BaseResponse:
     response.set_json_content(data_json)
     response.set_status_code(200)
     return response</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.send_non_200_response"><code class="name flex">
-<span>def <span class="ident">send_non_200_response</span></span>(<span>message: str, status_code: int, response: BaseResponse) ‑> Optional[<a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a>]</span>
+<span>def <span class="ident">send_non_200_response</span></span>(<span>message: str, status_code: int, response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -446,7 +422,8 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def send_non_200_response(message: str, status_code: int, response: BaseResponse) -&gt; Union[BaseResponse, None]:
+<pre><code class="python">def send_non_200_response(message: str, status_code: int,
+                          response: BaseResponse) -&gt; BaseResponse:
     if status_code &lt; 300:
         raise_general_exception(
             &#39;Calling sendNon200Response with status code &lt; 300&#39;)
@@ -481,51 +458,6 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 </summary>
 <pre><code class="python">def utf_base64encode(s: str) -&gt; str:
     return b64encode(s.encode(&#39;utf-8&#39;)).decode(&#39;utf-8&#39;)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.utils.validate_framework"><code class="name flex">
-<span>def <span class="ident">validate_framework</span></span>(<span>config)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def validate_framework(config):
-    if config[&#39;framework&#39;] not in FRAMEWORKS.keys():
-        raise_bad_input_exception(
-            recipe=None,
-            msg=config[&#39;framework&#39;] + &#39; framework is not supported.&#39;)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.utils.validate_the_structure_of_user_input"><code class="name flex">
-<span>def <span class="ident">validate_the_structure_of_user_input</span></span>(<span>config, input_schema, config_root, recipe)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def validate_the_structure_of_user_input(
-        config, input_schema, config_root, recipe):
-    try:
-        validate(config, input_schema)
-    except ValidationError as e:
-        path = &#39;.&#39;.join(list(map(str, e.path)))
-        if not path == &#39;&#39;:
-            path = &#39;for path &#34;&#39; + path + &#39;&#34;: &#39;
-
-        error_message = path + e.message
-
-        if &#39;is a required property&#39; in error_message:
-            error_message = &#39;input config &#39; + error_message
-        if &#39;Additional properties are not allowed&#39; in error_message:
-            error_message += &#39; Did you mean to set this on the frontend side?&#39;
-        error_message = &#39;Config schema error in &#39; + config_root + &#39;: &#39; + error_message
-
-        raise_general_exception(recipe, error_message)</code></pre>
 </details>
 </dd>
 </dl>
@@ -563,8 +495,6 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 <li><code><a title="supertokens_python.utils.send_non_200_response" href="#supertokens_python.utils.send_non_200_response">send_non_200_response</a></code></li>
 <li><code><a title="supertokens_python.utils.utf_base64decode" href="#supertokens_python.utils.utf_base64decode">utf_base64decode</a></code></li>
 <li><code><a title="supertokens_python.utils.utf_base64encode" href="#supertokens_python.utils.utf_base64encode">utf_base64encode</a></code></li>
-<li><code><a title="supertokens_python.utils.validate_framework" href="#supertokens_python.utils.validate_framework">validate_framework</a></code></li>
-<li><code><a title="supertokens_python.utils.validate_the_structure_of_user_input" href="#supertokens_python.utils.validate_the_structure_of_user_input">validate_the_structure_of_user_input</a></code></li>
 </ul>
 </li>
 </ul>
