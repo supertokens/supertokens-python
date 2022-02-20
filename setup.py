@@ -19,7 +19,7 @@ extras_require = {
         'respx==0.16.3',
         'nest-asyncio==1.5.1',
         'Fastapi==0.68.1',
-        'django==4.0.2',
+        'django==3.2.12',
         'Flask==2.0.2',
         'python-dotenv==0.19.2',
         'flask_cors',
