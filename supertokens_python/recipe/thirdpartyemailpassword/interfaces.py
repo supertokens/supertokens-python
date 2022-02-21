@@ -38,16 +38,16 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
+    async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
+                                    email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
         pass
 
     @abstractmethod
-    async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> SignInResult:
+    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> SignInResult:
         pass
 
     @abstractmethod
-    async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> SignUpResult:
+    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> SignUpResult:
         pass
 
     @abstractmethod
@@ -96,7 +96,7 @@ class APIInterface(ABC):
         pass
 
     @abstractmethod
-    async def email_exists_get(self, email: str, api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> EmailExistsGetResponse:
+    async def emailpassword_email_exists_get(self, email: str, api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> EmailExistsGetResponse:
         pass
 
     @abstractmethod

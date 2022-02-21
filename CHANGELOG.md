@@ -17,6 +17,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `get_link_domain_and_path` config in passwordless recipe now takes a class type input as opposed to a string input as the first param
 - Renamed `Session` to `SessionContainer` in session
 - Upgrades `typing_extensions` to version 4.1.1
+- Renames functions in ThirdPartyEmailPassword recipe (https://github.com/supertokens/supertokens-node/issues/219):
+    -   Recipe Interface:
+        -   `sign_in_up` -> `thirdparty_sign_in_up`
+        -   `sign_up` -> `emailpassword_sign_up`
+        -   `sign_in` -> `emailpassword_sign_in`
+    -   API Interface:
+        -   `email_exists_get` -> `emailpassword_email_exists_get`
+    -   User exposed functions (in `recipe/thirdpartyemailpassword/asyncio` and `recipe/thirdpartyemailpassword/syncio`)
+        -   `sign_in_up` -> `thirdparty_sign_in_up`
+        -   `sign_up` -> `emailpassword_sign_up`
+        -   `sign_in` -> `emailpassword_sign_in`
 
 ### Added
 - Returns session from all APIs where a session is created

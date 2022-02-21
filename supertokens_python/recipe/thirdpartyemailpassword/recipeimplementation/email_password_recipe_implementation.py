@@ -54,10 +54,10 @@ class RecipeImplementation(RecipeInterface):
         return await self.recipe_implementation.reset_password_using_token(token, new_password, user_context)
 
     async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> SignInResult:
-        return await self.recipe_implementation.sign_in(email, password, user_context)
+        return await self.recipe_implementation.emailpassword_sign_in(email, password, user_context)
 
     async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> SignUpResult:
-        return await self.recipe_implementation.sign_up(email, password, user_context)
+        return await self.recipe_implementation.emailpassword_sign_up(email, password, user_context)
 
     async def update_email_or_password(self, user_id: str, email: Union[str, None],
                                        password: Union[str, None], user_context: Dict[str, Any]) -> UpdateEmailOrPasswordResult:

@@ -12,11 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, Union, List
+from typing import Any, Dict, List, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
-from ..types import User
+
 from ..interfaces import SignInResult
+from ..types import User
 
 
 def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -57,12 +58,12 @@ def get_user_by_third_party_info(
         third_party_id, third_party_user_id, user_context))
 
 
-def sign_in_up(third_party_id: str, third_party_user_id: str,
-               email: str, email_verified: bool, user_context: Union[None, Dict[str, Any]] = None):
+def thirdparty_sign_in_up(third_party_id: str, third_party_user_id: str,
+                          email: str, email_verified: bool, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import \
-        sign_in_up
-    return sync(sign_in_up(third_party_id,
-                           third_party_user_id, email, email_verified, user_context))
+        thirdparty_sign_in_up
+    return sync(thirdparty_sign_in_up(third_party_id,
+                                      third_party_user_id, email, email_verified, user_context))
 
 
 def create_reset_password_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -78,16 +79,16 @@ def reset_password_using_token(
     return sync(reset_password_using_token(token, new_password, user_context))
 
 
-def sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None) -> SignInResult:
+def emailpassword_sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None) -> SignInResult:
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import \
-        sign_in
-    return sync(sign_in(email, password, user_context))
+        emailpassword_sign_in
+    return sync(emailpassword_sign_in(email, password, user_context))
 
 
-def sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+def emailpassword_sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import \
-        sign_up
-    return sync(sign_up(email, password, user_context))
+        emailpassword_sign_up
+    return sync(emailpassword_sign_up(email, password, user_context))
 
 
 def update_email_or_password(
