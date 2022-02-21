@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [  # type: ignore
     path('ping', views.ping, name='ping'),
-    path('sessionInfo', views.session_info, name='sessionInfo'),  # type: ignore
+    path('sessionInfo', views.session_info, name='sessionInfo'),
     path('token', views.token, name='token'),
     path('test/setFlow', views.test_set_flow, name='setFlow'),
     path('test/getDevice', views.test_get_device, name='getDevice'),
