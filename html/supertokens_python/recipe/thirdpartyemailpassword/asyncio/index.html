@@ -40,11 +40,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, Union, List
-from ..types import User
+from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.thirdpartyemailpassword.recipe import \
     ThirdPartyEmailPasswordRecipe
+
+from ..types import User
 
 
 async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -98,10 +99,10 @@ async def get_user_by_third_party_info(third_party_id: str, third_party_user_id:
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
 
 
-async def sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Union[None, Dict[str, Any]] = None):
+async def thirdparty_sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
-    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
 
 
 async def create_reset_password_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -117,16 +118,16 @@ async def reset_password_using_token(token: str, new_password: str, user_context
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(token, new_password, user_context)
 
 
-async def sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+async def emailpassword_sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
-    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_in(email, password, user_context)
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.emailpassword_sign_in(email, password, user_context)
 
 
-async def sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+async def emailpassword_sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
-    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_up(email, password, user_context)
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.emailpassword_sign_up(email, password, user_context)
 
 
 async def update_email_or_password(user_id: str, email: Union[None, str] = None, password: Union[None, str] = None, user_context: Union[None, Dict[str, Any]] = None):
@@ -179,6 +180,36 @@ async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.create_reset_password_token(user_id,
                                                                                                                 user_context)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.emailpassword_sign_in"><code class="name flex">
+<span>async def <span class="ident">emailpassword_sign_in</span></span>(<span>email: str, password: str, user_context: Optional[None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def emailpassword_sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.emailpassword_sign_in(email, password, user_context)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.emailpassword_sign_up"><code class="name flex">
+<span>async def <span class="ident">emailpassword_sign_up</span></span>(<span>email: str, password: str, user_context: Optional[None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def emailpassword_sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.emailpassword_sign_up(email, password, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_user_by_id"><code class="name flex">
@@ -275,8 +306,8 @@ async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any
         user_id, email, user_context)</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_in"><code class="name flex">
-<span>async def <span class="ident">sign_in</span></span>(<span>email: str, password: str, user_context: Optional[None] = None)</span>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.thirdparty_sign_in_up"><code class="name flex">
+<span>async def <span class="ident">thirdparty_sign_in_up</span></span>(<span>third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -284,40 +315,10 @@ async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def thirdparty_sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
-    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_in(email, password, user_context)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_in_up"><code class="name flex">
-<span>async def <span class="ident">sign_in_up</span></span>(<span>third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Optional[None] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Union[None, Dict[str, Any]] = None):
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_up"><code class="name flex">
-<span>async def <span class="ident">sign_up</span></span>(<span>email: str, password: str, user_context: Optional[None] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.sign_up(email, password, user_context)</code></pre>
+    return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.unverify_email"><code class="name flex">
@@ -388,15 +389,15 @@ async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.create_email_verification_token" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.create_email_verification_token">create_email_verification_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.create_reset_password_token" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.create_reset_password_token">create_reset_password_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.emailpassword_sign_in" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.emailpassword_sign_in">emailpassword_sign_in</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.emailpassword_sign_up" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.emailpassword_sign_up">emailpassword_sign_up</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_user_by_id" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_user_by_id">get_user_by_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_user_by_third_party_info" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_user_by_third_party_info">get_user_by_third_party_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_users_by_email" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.get_users_by_email">get_users_by_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.is_email_verified" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.is_email_verified">is_email_verified</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.reset_password_using_token" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.reset_password_using_token">reset_password_using_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.revoke_email_verification_tokens" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.revoke_email_verification_tokens">revoke_email_verification_tokens</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_in" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_in">sign_in</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_in_up" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_in_up">sign_in_up</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_up" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.sign_up">sign_up</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.thirdparty_sign_in_up" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.thirdparty_sign_in_up">thirdparty_sign_in_up</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.unverify_email" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.unverify_email">unverify_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.update_email_or_password" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.update_email_or_password">update_email_or_password</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio.verify_email_using_token" href="#supertokens_python.recipe.thirdpartyemailpassword.asyncio.verify_email_using_token">verify_email_using_token</a></code></li>
