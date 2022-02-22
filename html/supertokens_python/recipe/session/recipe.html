@@ -44,14 +44,13 @@ from __future__ import annotations
 from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
+from supertokens_python.framework.response import BaseResponse
+from typing_extensions import Literal
+
 from .api import handle_refresh_api, handle_signout_api
 from .cookie_and_header import get_cors_allowed_headers
 from .exceptions import (SuperTokensSessionError, TokenTheftError,
                          UnauthorisedError)
-
-from typing_extensions import Literal
-
-from supertokens_python.framework.response import BaseResponse
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
