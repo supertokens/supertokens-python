@@ -20,10 +20,7 @@ import os
 import sys
 from typing import Union
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
+from typing_extensions import Literal
 
 import uvicorn  # type: ignore
 from fastapi import Depends, FastAPI

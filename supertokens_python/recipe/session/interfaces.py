@@ -20,10 +20,7 @@ from supertokens_python.async_to_sync_wrapper import sync
 
 from .utils import SessionConfig
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
+from typing_extensions import Literal
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
 

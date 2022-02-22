@@ -50,10 +50,7 @@ Supertokens = supertokens.Supertokens
 SupertokensConfig = supertokens.SupertokensConfig
 AppInfo = supertokens.AppInfo
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
+from typing_extensions import Literal
 
 
 def init(app_info: InputAppInfo,

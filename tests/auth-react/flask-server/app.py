@@ -40,10 +40,7 @@ from supertokens_python.recipe.thirdparty.types import (
 from supertokens_python.recipe.thirdpartyemailpassword import (
     Facebook, Github, Google, ThirdPartyEmailPasswordRecipe)
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
+from typing_extensions import Literal
 
 load_dotenv()
 

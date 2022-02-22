@@ -16,10 +16,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, List, Set, Union
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
+from typing_extensions import Literal
 
 from .constants import (FDI_KEY_HEADER, RID_KEY_HEADER, TELEMETRY,
                         TELEMETRY_SUPERTOKENS_API_URL,

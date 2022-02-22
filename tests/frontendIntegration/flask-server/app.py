@@ -21,10 +21,7 @@ import sys
 from functools import wraps
 from typing import Union
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
+from typing_extensions import Literal
 
 from flask import Flask, g, jsonify, make_response, render_template, request
 from flask.wrappers import Response

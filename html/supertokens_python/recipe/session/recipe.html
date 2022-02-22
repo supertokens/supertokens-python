@@ -49,10 +49,7 @@ from .cookie_and_header import get_cors_allowed_headers
 from .exceptions import (SuperTokensSessionError, TokenTheftError,
                          UnauthorisedError)
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
+from typing_extensions import Literal
 
 from supertokens_python.framework.response import BaseResponse
 

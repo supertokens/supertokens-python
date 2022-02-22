@@ -11,13 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
-from supertokens_python.recipe.emailverification.types import User as EVUser
-from supertokens_python.recipe.emailpassword.types import User
-from typing import Any, Dict
-from supertokens_python.recipe.session import SessionContainer
 import asyncio
 import json
+from typing import Any, Dict, Union
 
 from fastapi import FastAPI
 from fastapi.requests import Request
@@ -31,9 +27,12 @@ from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.asyncio import (
     create_email_verification_token, is_email_verified,
     revoke_email_verification_token, unverify_email, verify_email_using_token)
+from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface, APIOptions)
+from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.emailverification.utils import OverrideConfig
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (create_new_session,
                                                        get_session,
                                                        refresh_session)

@@ -16,10 +16,7 @@ from typing import Any, Dict, List, Union
 
 from .utils import JWTConfig
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
+from typing_extensions import Literal
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 
