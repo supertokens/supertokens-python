@@ -44,10 +44,7 @@ from typing import Any, Dict, List, Union
 
 from .types import DeviceType, User
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
+from typing_extensions import Literal
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe.session import SessionContainer

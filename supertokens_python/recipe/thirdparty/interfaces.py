@@ -19,10 +19,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 from ..emailverification.interfaces import \
     RecipeInterface as EmailVerificationRecipeInterface
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
+from typing_extensions import Literal
 
 from .provider import Provider
 

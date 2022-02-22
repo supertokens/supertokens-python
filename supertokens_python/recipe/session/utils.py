@@ -15,10 +15,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Union
 
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
+from typing_extensions import Literal
 
 from urllib.parse import urlparse
 

@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from typing_extensions import Literal
 from typing import Callable, List, Union
 
 from . import supertokens
@@ -21,11 +22,6 @@ InputAppInfo = supertokens.InputAppInfo
 Supertokens = supertokens.Supertokens
 SupertokensConfig = supertokens.SupertokensConfig
 AppInfo = supertokens.AppInfo
-
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
 
 
 def init(app_info: InputAppInfo,

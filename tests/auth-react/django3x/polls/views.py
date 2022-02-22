@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing_extensions import Literal
 import json
 import os
 from typing import Any, Dict, List, Union
@@ -46,10 +47,6 @@ if mode == 'asgi':
 else:
     from supertokens_python.recipe.session.framework.django.syncio import \
         verify_session
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
 
 
 class CustomAuth0Provider(Provider):
