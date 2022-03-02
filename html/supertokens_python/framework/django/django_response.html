@@ -76,7 +76,7 @@ class DjangoResponse(BaseResponse):
             key=key,
             value=value,
             expires=datetime.fromtimestamp(
-                ceil(expires / 1000)).strftime(&#34;%A, %B %d, %Y %I:%M:%S&#34;),
+                ceil(expires / 1000)).strftime(&#34;%A, %B %d, %Y %H:%M:%S&#34;),
             path=path,
             domain=domain,
             secure=secure,
@@ -158,7 +158,7 @@ inheritance.</p></div>
             key=key,
             value=value,
             expires=datetime.fromtimestamp(
-                ceil(expires / 1000)).strftime(&#34;%A, %B %d, %Y %I:%M:%S&#34;),
+                ceil(expires / 1000)).strftime(&#34;%A, %B %d, %Y %H:%M:%S&#34;),
             path=path,
             domain=domain,
             secure=secure,
@@ -241,7 +241,7 @@ inheritance.</p></div>
         key=key,
         value=value,
         expires=datetime.fromtimestamp(
-            ceil(expires / 1000)).strftime(&#34;%A, %B %d, %Y %I:%M:%S&#34;),
+            ceil(expires / 1000)).strftime(&#34;%A, %B %d, %Y %H:%M:%S&#34;),
         path=path,
         domain=domain,
         secure=secure,
