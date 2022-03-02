@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.5.1] - 2022-03-02
+
+### Fixes:
+- Bug where a user had to add dependencies on all frameworks when using the SDK: https://github.com/supertokens/supertokens-python/issues/82
+
 ## [0.5.0] - 2022-02-03
 
 ### Breaking Change
