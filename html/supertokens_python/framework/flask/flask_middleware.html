@@ -39,16 +39,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
 import json
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework import BaseResponse
 
+if TYPE_CHECKING:
+    from flask import Flask
+
 
 class Middleware:
-    from flask import Flask
 
     def __init__(self, app: Flask):
         self.app = app
@@ -135,7 +138,7 @@ class Middleware:
 <dl>
 <dt id="supertokens_python.framework.flask.flask_middleware.Middleware"><code class="flex name class">
 <span>class <span class="ident">Middleware</span></span>
-<span>(</span><span>app: flask.app.Flask)</span>
+<span>(</span><span>app: Flask)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -144,7 +147,6 @@ class Middleware:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Middleware:
-    from flask import Flask
 
     def __init__(self, app: Flask):
         self.app = app
@@ -219,117 +221,6 @@ class Middleware:
                 return result.response
             raise Exception(&#34;Shoulld never come here&#34;)</code></pre>
 </details>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.framework.flask.flask_middleware.Middleware.Flask"><code class="name">var <span class="ident">Flask</span></code></dt>
-<dd>
-<div class="desc"><p>The flask object implements a WSGI application and acts as the central
-object.
-It is passed the name of the module or package of the
-application.
-Once it is created it will act as a central registry for
-the view functions, the URL rules, template configuration and much more.</p>
-<p>The name of the package is used to resolve resources from inside the
-package or the folder the module is contained in depending on if the
-package parameter resolves to an actual python package (a folder with
-an :file:<code>__init__.py</code> file inside) or a standard module (just a <code>.py</code> file).</p>
-<p>For more information about resource loading, see :func:<code>open_resource</code>.</p>
-<p>Usually you create a :class:<code>Flask</code> instance in your main module or
-in the :file:<code>__init__.py</code> file of your package like this::</p>
-<pre><code>from flask import Flask
-app = Flask(__name__)
-</code></pre>
-<div class="admonition admonition">
-<p class="admonition-title">About the First Parameter</p>
-<p>The idea of the first parameter is to give Flask an idea of what
-belongs to your application.
-This name is used to find resources
-on the filesystem, can be used by extensions to improve debugging
-information and a lot more.</p>
-<p>So it's important what you provide there.
-If you are using a single
-module, <code>__name__</code> is always the correct value.
-If you however are
-using a package, it's usually recommended to hardcode the name of
-your package there.</p>
-<p>For example if your application is defined in :file:<code>yourapplication/app.py</code>
-you should create it with one of the two versions below::</p>
-<pre><code>app = Flask('yourapplication')
-app = Flask(__name__.split('.')[0])
-</code></pre>
-<p>Why is that?
-The application will work even with <code>__name__</code>, thanks
-to how resources are looked up.
-However it will make debugging more
-painful.
-Certain extensions can make assumptions based on the
-import name of your application.
-For example the Flask-SQLAlchemy
-extension will look for the code in your application that triggered
-an SQL query in debug mode.
-If the import name is not properly set
-up, that debugging information is lost.
-(For example it would only
-pick up SQL queries in <code>yourapplication.app</code> and not
-<code>yourapplication.views.frontend</code>)</p>
-</div>
-<div class="admonition versionadded">
-<p class="admonition-title">Added in version:&ensp;0.7</p>
-<p>The <code>static_url_path</code>, <code>static_folder</code>, and <code>template_folder</code>
-parameters were added.</p>
-</div>
-<div class="admonition versionadded">
-<p class="admonition-title">Added in version:&ensp;0.8</p>
-<p>The <code>instance_path</code> and <code>instance_relative_config</code> parameters were
-added.</p>
-</div>
-<div class="admonition versionadded">
-<p class="admonition-title">Added in version:&ensp;0.11</p>
-<p>The <code>root_path</code> parameter was added.</p>
-</div>
-<div class="admonition versionadded">
-<p class="admonition-title">Added in version:&ensp;1.0</p>
-<p>The <code>host_matching</code> and <code>static_host</code> parameters were added.</p>
-</div>
-<div class="admonition versionadded">
-<p class="admonition-title">Added in version:&ensp;1.0</p>
-<p>The <code>subdomain_matching</code> parameter was added. Subdomain
-matching needs to be enabled manually now. Setting
-:data:<code>SERVER_NAME</code> does not implicitly enable it.</p>
-</div>
-<p>:param import_name: the name of the application package
-:param static_url_path: can be used to specify a different path for the
-static files on the web.
-Defaults to the name
-of the <code>static_folder</code> folder.
-:param static_folder: The folder with static files that is served at
-<code>static_url_path</code>. Relative to the application <code>root_path</code>
-or an absolute path. Defaults to <code>'static'</code>.
-:param static_host: the host to use when adding the static route.
-Defaults to None. Required when using <code>host_matching=True</code>
-with a <code>static_folder</code> configured.
-:param host_matching: set <code>url_map.host_matching</code> attribute.
-Defaults to False.
-:param subdomain_matching: consider the subdomain relative to
-:data:<code>SERVER_NAME</code> when matching routes. Defaults to False.
-:param template_folder: the folder that contains the templates that should
-be used by the application.
-Defaults to
-<code>'templates'</code> folder in the root path of the
-application.
-:param instance_path: An alternative instance path for the application.
-By default the folder <code>'instance'</code> next to the
-package or module is assumed to be the instance
-path.
-:param instance_relative_config: if set to <code>True</code> relative filenames
-for loading the config are assumed to
-be relative to the instance path instead
-of the application root.
-:param root_path: The path to the root of the application files.
-This should only be set manually when it can't be detected
-automatically, such as for namespace packages.</p></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.flask.flask_middleware.Middleware.set_before_after_request"><code class="name flex">
@@ -441,7 +332,6 @@ automatically, such as for namespace packages.</p></div>
 <li>
 <h4><code><a title="supertokens_python.framework.flask.flask_middleware.Middleware" href="#supertokens_python.framework.flask.flask_middleware.Middleware">Middleware</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.framework.flask.flask_middleware.Middleware.Flask" href="#supertokens_python.framework.flask.flask_middleware.Middleware.Flask">Flask</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_middleware.Middleware.set_before_after_request" href="#supertokens_python.framework.flask.flask_middleware.Middleware.set_before_after_request">set_before_after_request</a></code></li>
 <li><code><a title="supertokens_python.framework.flask.flask_middleware.Middleware.set_error_handler" href="#supertokens_python.framework.flask.flask_middleware.Middleware.set_error_handler">set_error_handler</a></code></li>
 </ul>

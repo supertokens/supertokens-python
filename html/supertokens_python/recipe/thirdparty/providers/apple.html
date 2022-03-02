@@ -169,8 +169,7 @@ class Apple(Provider):
         err = Exception(&#34;Id token verification failed&#34;)
         for key in public_keys:
             try:
-                decode(jwt=token, key=key,
-                       audience=[get_actual_client_id_from_development_client_id(self.client_id)], algorithms=[&#34;RS256&#34;])
+                decode(jwt=token, key=key, audience=[get_actual_client_id_from_development_client_id(self.client_id)], algorithms=[&#34;RS256&#34;])  # type: ignore
                 return
             except Exception as e:
                 err = e
@@ -304,8 +303,7 @@ inheritance.</p></div>
         err = Exception(&#34;Id token verification failed&#34;)
         for key in public_keys:
             try:
-                decode(jwt=token, key=key,
-                       audience=[get_actual_client_id_from_development_client_id(self.client_id)], algorithms=[&#34;RS256&#34;])
+                decode(jwt=token, key=key, audience=[get_actual_client_id_from_development_client_id(self.client_id)], algorithms=[&#34;RS256&#34;])  # type: ignore
                 return
             except Exception as e:
                 err = e
