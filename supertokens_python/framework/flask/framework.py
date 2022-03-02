@@ -11,13 +11,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
-from supertokens_python.framework.flask.flask_request import FlaskRequest
+from typing import TYPE_CHECKING
+
 from supertokens_python.framework.types import Framework
+
+if TYPE_CHECKING:
+    from flask.wrappers import Request
 
 
 class FlaskFramework(Framework):
-    from flask.wrappers import Request
 
     def wrap_request(self, unwrapped: Request):
+        from supertokens_python.framework.flask.flask_request import \
+            FlaskRequest
         return FlaskRequest(unwrapped)

@@ -16,19 +16,25 @@ extras_require = {
         'uvicorn==0.13.4',
         'requests==2.25.1',
         'pytest-asyncio==0.14.0',
-        'respx==0.16.3',
         'nest-asyncio==1.5.1',
-        'Fastapi==0.68.1',
-        'django==3.2.12',
-        'Flask==2.0.2',
         'python-dotenv==0.19.2',
-        'flask_cors',
-        'django-cors-headers==3.11.0',
         'pdoc3==0.10.0',
         'tzdata==2021.5',
         'pylint==2.12.2',
         'isort==5.10.1',
         'pyright==0.0.13',
+    ]),
+    'fastapi': ([
+        'respx==0.16.3',
+        'Fastapi==0.68.1'
+    ]),
+    'flask': ([
+        'flask_cors',
+        'Flask==2.0.2'
+    ]),
+    'django': ([
+        'django-cors-headers==3.11.0',
+        'django==3.2.12',
         'django-stubs==1.9.0'
     ])
 }
