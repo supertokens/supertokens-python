@@ -9,7 +9,7 @@ jobs:
       - checkout
       - run: sudo make dev-install
       - run: pip install setuptools wheel twine
-      - run: python setup.py sdist bdist_wheel
+      - run: sudo python setup.py sdist bdist_wheel
       - run: twine upload -u $USERNAME -p $PASSWORD dist/*
       - slack/status
   test-dev-tag-as-not-passed:
@@ -35,7 +35,7 @@ jobs:
     steps:
       - checkout
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-      - run: make dev-install
+      - run: make dev-install-with-fastapi
       - run: (cd .circleci/ && ./websiteFastApi.sh)
       - slack/status
   test-website-flask:
@@ -45,7 +45,7 @@ jobs:
     steps:
       - checkout
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-      - run: make dev-install
+      - run: make dev-install-with-flask
       - run: (cd .circleci/ && ./websiteFlask.sh)
       - slack/status
   test-website-django:
@@ -55,7 +55,7 @@ jobs:
     steps:
       - checkout
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-      - run: make dev-install
+      - run: make dev-install-with-django
       - run: (cd .circleci/ && ./websiteDjango.sh)
       - slack/status
   test-authreact-fastapi:
@@ -65,7 +65,7 @@ jobs:
     steps:
       - checkout
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-      - run: make dev-install
+      - run: make dev-install-with-fastapi
       - run: (cd .circleci/ && ./authReactFastApi.sh)
       - slack/status
   test-authreact-flask:
@@ -75,7 +75,7 @@ jobs:
     steps:
       - checkout
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-      - run: make dev-install
+      - run: make dev-install-with-flask
       - run: (cd .circleci/ && ./authReactFlask.sh)
       - slack/status
   test-authreact-django:
@@ -85,7 +85,7 @@ jobs:
     steps:
       - checkout
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-      - run: make dev-install
+      - run: make dev-install-with-django
       - run: (cd .circleci/ && ./authReactDjango.sh)
       - slack/status
   test-success:
