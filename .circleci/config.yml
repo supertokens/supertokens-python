@@ -9,7 +9,7 @@ jobs:
       - checkout
       - run: sudo make dev-install
       - run: pip install setuptools wheel twine
-      - run: python setup.py sdist bdist_wheel
+      - run: sudo python setup.py sdist bdist_wheel
       - run: twine upload -u $USERNAME -p $PASSWORD dist/*
       - slack/status
   test-dev-tag-as-not-passed:
