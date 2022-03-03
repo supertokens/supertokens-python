@@ -49,6 +49,36 @@ class ConsumeCodeResult(ABC):
         self.is_restart_flow_error: bool = False
 
 
+class ConsumeCodeOkResult(ConsumeCodeResult):
+    def __init__(self, created_new_user: bool, user: User):
+        super().__init__('OK', created_new_user=created_new_user, user=user)
+        self.is_ok = True
+
+
+class ConsumeCodeIncorrectUserInputCodeErrorResult(ConsumeCodeResult):
+    def __init__(self, failed_code_input_attempt_count: int,
+                 maximum_code_input_attempts: int):
+        super().__init__('INCORRECT_USER_INPUT_CODE_ERROR',
+                         failed_code_input_attempt_count=failed_code_input_attempt_count,
+                         maximum_code_input_attempts=maximum_code_input_attempts)
+        self.is_incorrect_user_input_code_error = True
+
+
+class ConsumeCodeExpiredUserInputCodeErrorResult(ConsumeCodeResult):
+    def __init__(self, failed_code_input_attempt_count: int,
+                 maximum_code_input_attempts: int):
+        super().__init__('EXPIRED_USER_INPUT_CODE_ERROR',
+                         failed_code_input_attempt_count=failed_code_input_attempt_count,
+                         maximum_code_input_attempts=maximum_code_input_attempts)
+        self.is_expired_user_input_code_error = True
+
+
+class ConsumeCodeRestartFlowErrorResult(ConsumeCodeResult):
+    def __init__(self):
+        super().__init__('RESTART_FLOW_ERROR')
+        self.is_restart_flow_error = True
+
+
 class RecipeInterface(ABC):
     def __init__(self):
         pass
@@ -166,6 +196,111 @@ class ConsumeCodePostResponse(ABC):
         self.is_restart_flow_error: bool = False
         self.is_incorrect_user_input_code_error: bool = False
         self.is_expired_user_input_code_error: bool = False
+
+
+class ConsumeCodePostOkResponse(ConsumeCodePostResponse):
+    def __init__(self, created_new_user: bool, user: User, session: SessionContainer):
+        super().__init__(
+            status='OK',
+            created_new_user=created_new_user,
+            user=user,
+            session=session)
+        self.is_ok = True
+
+    def to_json(self):
+        if self.user is None:
+            raise Exception("Should never come here")
+        user = {
+            'id': self.user.user_id,
+            'time_joined': self.user.time_joined
+        }
+        if self.user.email is not None:
+            user = {
+                **user,
+                'email': self.user.email
+            }
+        if self.user.phone_number is not None:
+            user = {
+                **user,
+                'phoneNumber': self.user.email
+            }
+        return {
+            'status': self.status,
+            'createdNewUser': self.created_new_user,
+            'user': user
+        }
+
+
+class ConsumeCodePostRestartFlowErrorResponse(ConsumeCodePostResponse):
+    def __init__(self):
+        super().__init__(
+            status='RESTART_FLOW_ERROR'
+        )
+        self.is_restart_flow_error = True
+
+    def to_json(self):
+        return {
+            'status': self.status
+        }
+
+
+class ConsumeCodePostGeneralErrorResponse(ConsumeCodePostResponse):
+    def __init__(
+            self,
+            message: str):
+        super().__init__(
+            status='GENERAL_ERROR',
+            message=message
+        )
+        self.is_general_error = True
+
+    def to_json(self):
+        return {
+            'status': self.status,
+            'message': self.message
+        }
+
+
+class ConsumeCodePostIncorrectUserInputCodeErrorResponse(
+        ConsumeCodePostResponse):
+    def __init__(
+            self,
+            failed_code_input_attempt_count: int,
+            maximum_code_input_attempts: int):
+        super().__init__(
+            status='INCORRECT_USER_INPUT_CODE_ERROR',
+            failed_code_input_attempt_count=failed_code_input_attempt_count,
+            maximum_code_input_attempts=maximum_code_input_attempts
+        )
+        self.is_incorrect_user_input_code_error = True
+
+    def to_json(self):
+        return {
+            'status': self.status,
+            'failedCodeInputAttemptCount': self.failed_code_input_attempt_count,
+            'maximumCodeInputAttempts': self.maximum_code_input_attempts
+        }
+
+
+class ConsumeCodePostExpiredUserInputCodeErrorResponse(
+        ConsumeCodePostResponse):
+    def __init__(
+            self,
+            failed_code_input_attempt_count: int,
+            maximum_code_input_attempts: int):
+        super().__init__(
+            status='EXPIRED_USER_INPUT_CODE_ERROR',
+            failed_code_input_attempt_count=failed_code_input_attempt_count,
+            maximum_code_input_attempts=maximum_code_input_attempts
+        )
+        self.is_expired_user_input_code_error = True
+
+    def to_json(self):
+        return {
+            'status': self.status,
+            'failedCodeInputAttemptCount': self.failed_code_input_attempt_count,
+            'maximumCodeInputAttempts': self.maximum_code_input_attempts
+        }
 
 
 class APIInterface(ABC):

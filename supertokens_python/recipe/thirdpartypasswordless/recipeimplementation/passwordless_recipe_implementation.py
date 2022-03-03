@@ -16,9 +16,11 @@ from __future__ import annotations
 from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.passwordless.interfaces import (
-    ConsumeCodeResult, CreateCodeResult, CreateNewCodeForDeviceResult,
-    DeviceType, RecipeInterface, RevokeAllCodesResult, RevokeCodeResult,
-    UpdateUserResult)
+    ConsumeCodeExpiredUserInputCodeErrorResult,
+    ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
+    ConsumeCodeRestartFlowErrorResult, ConsumeCodeResult, CreateCodeResult,
+    CreateNewCodeForDeviceResult, DeviceType, RecipeInterface,
+    RevokeAllCodesResult, RevokeCodeResult, UpdateUserResult)
 
 from ...passwordless.types import User
 from ..interfaces import RecipeInterface as ThirdPartyPasswordlessInterface
@@ -52,15 +54,21 @@ class RecipeImplementation(RecipeInterface):
                            user_context: Dict[str, Any]) -> ConsumeCodeResult:
         result = await self.recipe_implementation.consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
 
-        otherTypeUser = result.user
-        thisTypeUser: Union[None, User] = None
-
-        if otherTypeUser is not None:
-            if otherTypeUser.third_party_info is not None:
+        if result.is_ok:
+            if result.user is None or result.created_new_user is None:
                 raise Exception("Should never come here")
-            thisTypeUser = User(otherTypeUser.user_id, otherTypeUser.email, otherTypeUser.phone_number, otherTypeUser.time_joined)
+            return ConsumeCodeOkResult(result.created_new_user, User(result.user.user_id, result.user.email, result.user.phone_number, result.user.time_joined))
+        if result.is_expired_user_input_code_error:
+            if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
+                raise Exception("Should never come here")
+            return ConsumeCodeExpiredUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
+        if result.is_incorrect_user_input_code_error:
+            if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
+                raise Exception("Should never come here")
+            return ConsumeCodeIncorrectUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
 
-        return ConsumeCodeResult(result.status, result.created_new_user, thisTypeUser, result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
+        # restart flow error
+        return ConsumeCodeRestartFlowErrorResult()
 
     async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
         otherTypeUser = await self.recipe_implementation.get_user_by_id(user_id, user_context)
