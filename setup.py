@@ -63,7 +63,7 @@ setup(
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
-    description="SuperTokens session management solution for Python",
+    description="SuperTokens SDK for Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/supertokens/supertokens-python",
