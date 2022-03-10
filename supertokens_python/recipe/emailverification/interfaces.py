@@ -18,6 +18,8 @@ from typing import TYPE_CHECKING, Any, Dict, Union
 
 from typing_extensions import Literal
 
+from .types import STResponse
+
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
 
@@ -133,10 +135,10 @@ class APIOptions:
         self.recipe_implementation = recipe_implementation
 
 
-class EmailVerifyPostResponse(ABC):
-    @abstractmethod
-    def to_json(self) -> Dict[str, Any]:
-        pass
+class EmailVerifyPostResponse(STResponse):
+    # TODO: This is a placeholder class for now, need to figure out
+    # correct hirarchy for Response class from supertokens
+    pass
 
 
 class EmailVerifyPostOkResponse(EmailVerifyPostResponse):

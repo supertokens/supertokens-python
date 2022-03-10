@@ -12,8 +12,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from abc import ABC, abstractmethod
+from typing import Any, Dict
+
 
 class User:
     def __init__(self, user_id: str, email: str):
         self.user_id = user_id
         self.email = email
+
+
+class STResponse(ABC):
+    """
+    Base class for all of the responses (POST and GET) from supertokens.
+    """
+    @abstractmethod
+    def to_json(self) -> Dict[str, Any]:
+        pass
