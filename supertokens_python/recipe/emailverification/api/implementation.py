@@ -32,25 +32,27 @@ from supertokens_python.recipe.session.asyncio import get_session
 
 class APIImplementation(APIInterface):
     async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[EmailVerifyPostOkResponse, EmailVerifyPostInvalidTokenErrorResponse]:
-        """email_verify_post:
-            async method:
-                accepts:
-                    - token: string,
-                    - api_options: APIOptions,
-                    - user_context: python dict
-                returns
-                    EmailVerifyPostResponse: if the user is successfully varified, the response could be as follows
-                        {
-                            "status": "OK",
-                            "user": {
-                              "id": "<usern-id>",
-                              "email": "<email-id>"
-                        }
-                    EmailVerifyPostInvalidTokenErrorResponse: If the token is invalid and the user is not varified,
-                        the response could be as follows:
-                        {
-                            "status": "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
-                        }
+        """email_verify_post is an async mehtod that accepts
+
+               - token: string,
+               - api_options: APIOptions,
+               - user_context: python dict
+
+            if the user is successfully varified, the response could be as follows
+
+                {
+                    "status": "OK",
+                    "user": {
+                      "id": "<usern-id>",
+                      "email": "<email-id>"
+                }
+
+            If the token is invalid and the user is not varified,
+            the response could be as follows:
+
+                {
+                    "status": "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
+                }
         """
         response = await api_options.recipe_implementation.verify_email_using_token(token, user_context)
         if response.user:
