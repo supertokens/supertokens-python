@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface, EmailVerifyPostInvalidTokenErrorResponse,
@@ -23,7 +23,7 @@ from supertokens_python.recipe.emailverification.interfaces import (
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailverification.interfaces import (
-        APIOptions, GenerateEmailVerifyTokenPostResponse, IsEmailVerifiedGetResponse, EmailVerifyPostResponse
+        APIOptions, GenerateEmailVerifyTokenPostResponse, IsEmailVerifiedGetResponse
     )
 
 from supertokens_python.recipe.emailverification.types import User
@@ -31,11 +31,29 @@ from supertokens_python.recipe.session.asyncio import get_session
 
 
 class APIImplementation(APIInterface):
-    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailVerifyPostResponse:
+    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[EmailVerifyPostOkResponse, EmailVerifyPostInvalidTokenErrorResponse]:
+        """email_verify_post:
+            async method:
+                accepts:
+                    - token: string,
+                    - api_options: APIOptions,
+                    - user_context: python dict
+                returns
+                    EmailVerifyPostResponse: if the user is successfully varified, the response could be as follows
+                        {
+                            "status": "OK",
+                            "user": {
+                              "id": "<usern-id>",
+                              "email": "<email-id>"
+                        }
+                    EmailVerifyPostInvalidTokenErrorResponse: If the token is invalid and the user is not varified,
+                        the response could be as follows:
+                        {
+                            "status": "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
+                        }
+        """
         response = await api_options.recipe_implementation.verify_email_using_token(token, user_context)
-        if response.is_ok:
-            if response.user is None:
-                raise Exception("Should never come here")
+        if response.user:
             return EmailVerifyPostOkResponse(response.user)
         return EmailVerifyPostInvalidTokenErrorResponse()
 

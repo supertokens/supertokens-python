@@ -29,7 +29,7 @@ from supertokens_python.recipe.emailpassword.asyncio import (
     revoke_email_verification_token, unverify_email, verify_email_using_token)
 from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.emailverification.interfaces import (
-    APIInterface, APIOptions)
+    APIInterface, APIOptions, EmailVerifyPostOkResponse)
 from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.emailverification.utils import OverrideConfig
 from supertokens_python.recipe.session import SessionContainer
@@ -551,7 +551,7 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
 
             response = await temp(token, api_options, user_context)
 
-            if response.status == "OK":
+            if isinstance(response, EmailVerifyPostOkResponse):
                 user_info_from_callback = response.user
 
             return response
@@ -752,7 +752,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
 
             response = await temp(token, api_options, user_context)
 
-            if response.status == "OK":
+            if isinstance(response, EmailVerifyPostOkResponse):
                 user_info_from_callback = response.user
 
             return response
@@ -844,7 +844,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
 
             response = await temp(token, api_options, user_context)
 
-            if response.status == "OK":
+            if isinstance(response, EmailVerifyPostOkResponse):
                 user_info_from_callback = response.user
 
             raise BadInputError("verify exception")

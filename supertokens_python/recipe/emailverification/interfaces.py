@@ -134,30 +134,23 @@ class APIOptions:
 
 
 class EmailVerifyPostResponse(ABC):
-    def __init__(
-            self, status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'], user: Union[User, None]):
-        self.status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'] = status
-        self.is_ok: bool = False
-        self.is_email_verification_invalid_token_error: bool = False
-        self.user: Union[User, None] = user
-
+    @abstractmethod
     def to_json(self) -> Dict[str, Any]:
-        return {
-            'status': self.status
-        }
+        pass
 
 
 class EmailVerifyPostOkResponse(EmailVerifyPostResponse):
+    """
+    EmailVerifyPostOkResponse: used to send the ok response if the user
+    is successfully verified.
+    """
+
     def __init__(self, user: User):
-        super().__init__('OK', user)
-        self.is_ok = True
-        self.is_email_verification_invalid_token_error = False
+        self.user = user
 
     def to_json(self) -> Dict[str, Any]:
-        if self.user is None:
-            raise Exception("Should never come here")
         return {
-            'status': self.status,
+            'status': "OK",
             'user': {
                 'id': self.user.user_id,
                 'email': self.user.email
@@ -166,10 +159,15 @@ class EmailVerifyPostOkResponse(EmailVerifyPostResponse):
 
 
 class EmailVerifyPostInvalidTokenErrorResponse(EmailVerifyPostResponse):
-    def __init__(self):
-        super().__init__('EMAIL_VERIFICATION_INVALID_TOKEN_ERROR', None)
-        self.is_ok = False
-        self.is_email_verification_invalid_token_error = True
+    """
+    EmailVerifyPostInvalidTokenErrorResponse: used to send the error response if the
+    user varification fails due to invalid token.
+    """
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            'status': 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'
+        }
 
 
 class IsEmailVerifiedGetResponse(ABC):
@@ -231,7 +229,7 @@ class APIInterface(ABC):
         self.disable_generate_email_verify_token_post = False
 
     @abstractmethod
-    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailVerifyPostResponse:
+    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[EmailVerifyPostOkResponse, EmailVerifyPostInvalidTokenErrorResponse]:
         pass
 
     @abstractmethod
