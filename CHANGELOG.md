@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Addition
 - Added docstrings in EmailVerifyPostOkResponse, EmailVerifyPostInvalidTokenErrorResponse and email_verify_post method for email varification.
+- Formatted emailverification recipe with black.
 
 ### Fixes:
 - Bug where a user had to add dependencies on all frameworks when using the SDK: https://github.com/supertokens/supertokens-python/issues/82
