@@ -7,11 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ### Breaking Change
-- Refactored EmailVerifyPostOkResponse and EmailVerifyPostInvalidTokenErrorResponse classes under recipe.emailvarification.interfaces.
-- Removed EmailVerifyPostResponse class.
+- Refactored emailverify recipe interfaces.
 
 ### Addition
-- Added docstrings in EmailVerifyPostOkResponse, EmailVerifyPostInvalidTokenErrorResponse and email_verify_post method for email varification.
+- Added docstrings emailverify recipe interfaces.
 
 ### Fixes:
 - Bug where a user had to add dependencies on all frameworks when using the SDK: https://github.com/supertokens/supertokens-python/issues/82

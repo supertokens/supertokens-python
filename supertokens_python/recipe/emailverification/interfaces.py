@@ -16,9 +16,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Union
 
+from supertokens_python.types import APIResponse
 from typing_extensions import Literal
-
-from .types import STResponse
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -135,13 +134,7 @@ class APIOptions:
         self.recipe_implementation = recipe_implementation
 
 
-class EmailVerifyPostResponse(STResponse):
-    # TODO: This is a placeholder class for now, need to figure out
-    # correct hirarchy for Response class from supertokens
-    pass
-
-
-class EmailVerifyPostOkResponse(EmailVerifyPostResponse):
+class EmailVerifyPostOkResponse(APIResponse):
     """
     EmailVerifyPostOkResponse: used to send the ok response if the user
     is successfully verified.
@@ -160,7 +153,7 @@ class EmailVerifyPostOkResponse(EmailVerifyPostResponse):
         }
 
 
-class EmailVerifyPostInvalidTokenErrorResponse(EmailVerifyPostResponse):
+class EmailVerifyPostInvalidTokenErrorResponse(APIResponse):
     """
     EmailVerifyPostInvalidTokenErrorResponse: used to send the error response if the
     user varification fails due to invalid token.

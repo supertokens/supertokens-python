@@ -55,8 +55,9 @@ class APIImplementation(APIInterface):
                 }
         """
         response = await api_options.recipe_implementation.verify_email_using_token(token, user_context)
-        if response.user:
-            return EmailVerifyPostOkResponse(response.user)
+        if response.is_ok:
+            if response.user:
+                return EmailVerifyPostOkResponse(response.user)
         return EmailVerifyPostInvalidTokenErrorResponse()
 
     async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> IsEmailVerifiedGetResponse:
