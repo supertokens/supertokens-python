@@ -41,17 +41,22 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.recipe.emailverification.interfaces import (
-    APIInterface, EmailVerifyPostInvalidTokenErrorResponse,
+    APIInterface,
+    EmailVerifyPostInvalidTokenErrorResponse,
     EmailVerifyPostOkResponse,
     GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse,
-    GenerateEmailVerifyTokenPostOkResponse, IsEmailVerifiedGetOkResponse)
+    GenerateEmailVerifyTokenPostOkResponse,
+    IsEmailVerifiedGetOkResponse,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailverification.interfaces import (
-        APIOptions, GenerateEmailVerifyTokenPostResponse, IsEmailVerifiedGetResponse, EmailVerifyPostResponse
+        APIOptions,
+        GenerateEmailVerifyTokenPostResponse,
+        IsEmailVerifiedGetResponse,
     )
 
 from supertokens_python.recipe.emailverification.types import User
@@ -59,34 +64,68 @@ from supertokens_python.recipe.session.asyncio import get_session
 
 
 class APIImplementation(APIInterface):
-    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; EmailVerifyPostResponse:
-        response = await api_options.recipe_implementation.verify_email_using_token(token, user_context)
-        if response.is_ok:
-            if response.user is None:
-                raise Exception(&#34;Should never come here&#34;)
+    async def email_verify_post(
+        self, token: str, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; Union[EmailVerifyPostOkResponse, EmailVerifyPostInvalidTokenErrorResponse]:
+        &#34;&#34;&#34;email_verify_post is an async mehtod that accepts
+
+           - token: string,
+           - api_options: APIOptions,
+           - user_context: python dict
+
+        if the user is successfully varified, the response could be as follows
+
+            {
+                &#34;status&#34;: &#34;OK&#34;,
+                &#34;user&#34;: {
+                  &#34;id&#34;: &#34;&lt;usern-id&gt;&#34;,
+                  &#34;email&#34;: &#34;&lt;email-id&gt;&#34;
+            }
+
+        If the token is invalid and the user is not varified,
+        the response could be as follows:
+
+            {
+                &#34;status&#34;: &#34;EMAIL_VERIFICATION_INVALID_TOKEN_ERROR&#34;
+            }
+        &#34;&#34;&#34;
+        response = await api_options.recipe_implementation.verify_email_using_token(
+            token, user_context
+        )
+        if response.user:
             return EmailVerifyPostOkResponse(response.user)
         return EmailVerifyPostInvalidTokenErrorResponse()
 
-    async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; IsEmailVerifiedGetResponse:
+    async def is_email_verified_get(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; IsEmailVerifiedGetResponse:
         session = await get_session(api_options.request)
         if session is None:
-            raise Exception(&#39;Session is undefined. Should not come here.&#39;)
+            raise Exception(&#34;Session is undefined. Should not come here.&#34;)
 
         user_id = session.get_user_id(user_context)
         email = await api_options.config.get_email_for_user_id(user_id, user_context)
 
-        is_verified = await api_options.recipe_implementation.is_email_verified(user_id, email, user_context)
+        is_verified = await api_options.recipe_implementation.is_email_verified(
+            user_id, email, user_context
+        )
         return IsEmailVerifiedGetOkResponse(is_verified)
 
-    async def generate_email_verify_token_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; GenerateEmailVerifyTokenPostResponse:
+    async def generate_email_verify_token_post(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; GenerateEmailVerifyTokenPostResponse:
         session = await get_session(api_options.request)
         if session is None:
-            raise Exception(&#39;Session is undefined. Should not come here.&#39;)
+            raise Exception(&#34;Session is undefined. Should not come here.&#34;)
 
         user_id = session.get_user_id(user_context)
         email = await api_options.config.get_email_for_user_id(user_id, user_context)
 
-        token_result = await api_options.recipe_implementation.create_email_verification_token(user_id, email, user_context)
+        token_result = (
+            await api_options.recipe_implementation.create_email_verification_token(
+                user_id, email, user_context
+            )
+        )
         if token_result.is_email_already_verified:
             return GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse()
 
@@ -94,11 +133,18 @@ class APIImplementation(APIInterface):
 
         if token_result.token is None:
             raise Exception(&#34;Should never come here&#34;)
-        email_verify_link = (await api_options.config.get_email_verification_url(
-            user, user_context)) + &#39;?token=&#39; + token_result.token + &#39;&amp;rid&#39; + api_options.recipe_id
+        email_verify_link = (
+            (await api_options.config.get_email_verification_url(user, user_context))
+            + &#34;?token=&#34;
+            + token_result.token
+            + &#34;&amp;rid&#34;
+            + api_options.recipe_id
+        )
 
         try:
-            await api_options.config.create_and_send_custom_email(user, email_verify_link, user_context)
+            await api_options.config.create_and_send_custom_email(
+                user, email_verify_link, user_context
+            )
         except Exception:
             pass
 
@@ -125,34 +171,68 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class APIImplementation(APIInterface):
-    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; EmailVerifyPostResponse:
-        response = await api_options.recipe_implementation.verify_email_using_token(token, user_context)
-        if response.is_ok:
-            if response.user is None:
-                raise Exception(&#34;Should never come here&#34;)
+    async def email_verify_post(
+        self, token: str, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; Union[EmailVerifyPostOkResponse, EmailVerifyPostInvalidTokenErrorResponse]:
+        &#34;&#34;&#34;email_verify_post is an async mehtod that accepts
+
+           - token: string,
+           - api_options: APIOptions,
+           - user_context: python dict
+
+        if the user is successfully varified, the response could be as follows
+
+            {
+                &#34;status&#34;: &#34;OK&#34;,
+                &#34;user&#34;: {
+                  &#34;id&#34;: &#34;&lt;usern-id&gt;&#34;,
+                  &#34;email&#34;: &#34;&lt;email-id&gt;&#34;
+            }
+
+        If the token is invalid and the user is not varified,
+        the response could be as follows:
+
+            {
+                &#34;status&#34;: &#34;EMAIL_VERIFICATION_INVALID_TOKEN_ERROR&#34;
+            }
+        &#34;&#34;&#34;
+        response = await api_options.recipe_implementation.verify_email_using_token(
+            token, user_context
+        )
+        if response.user:
             return EmailVerifyPostOkResponse(response.user)
         return EmailVerifyPostInvalidTokenErrorResponse()
 
-    async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; IsEmailVerifiedGetResponse:
+    async def is_email_verified_get(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; IsEmailVerifiedGetResponse:
         session = await get_session(api_options.request)
         if session is None:
-            raise Exception(&#39;Session is undefined. Should not come here.&#39;)
+            raise Exception(&#34;Session is undefined. Should not come here.&#34;)
 
         user_id = session.get_user_id(user_context)
         email = await api_options.config.get_email_for_user_id(user_id, user_context)
 
-        is_verified = await api_options.recipe_implementation.is_email_verified(user_id, email, user_context)
+        is_verified = await api_options.recipe_implementation.is_email_verified(
+            user_id, email, user_context
+        )
         return IsEmailVerifiedGetOkResponse(is_verified)
 
-    async def generate_email_verify_token_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; GenerateEmailVerifyTokenPostResponse:
+    async def generate_email_verify_token_post(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; GenerateEmailVerifyTokenPostResponse:
         session = await get_session(api_options.request)
         if session is None:
-            raise Exception(&#39;Session is undefined. Should not come here.&#39;)
+            raise Exception(&#34;Session is undefined. Should not come here.&#34;)
 
         user_id = session.get_user_id(user_context)
         email = await api_options.config.get_email_for_user_id(user_id, user_context)
 
-        token_result = await api_options.recipe_implementation.create_email_verification_token(user_id, email, user_context)
+        token_result = (
+            await api_options.recipe_implementation.create_email_verification_token(
+                user_id, email, user_context
+            )
+        )
         if token_result.is_email_already_verified:
             return GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse()
 
@@ -160,11 +240,18 @@ inheritance.</p></div>
 
         if token_result.token is None:
             raise Exception(&#34;Should never come here&#34;)
-        email_verify_link = (await api_options.config.get_email_verification_url(
-            user, user_context)) + &#39;?token=&#39; + token_result.token + &#39;&amp;rid&#39; + api_options.recipe_id
+        email_verify_link = (
+            (await api_options.config.get_email_verification_url(user, user_context))
+            + &#34;?token=&#34;
+            + token_result.token
+            + &#34;&amp;rid&#34;
+            + api_options.recipe_id
+        )
 
         try:
-            await api_options.config.create_and_send_custom_email(user, email_verify_link, user_context)
+            await api_options.config.create_and_send_custom_email(
+                user, email_verify_link, user_context
+            )
         except Exception:
             pass
 
@@ -178,19 +265,62 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.api.implementation.APIImplementation.email_verify_post"><code class="name flex">
-<span>async def <span class="ident">email_verify_post</span></span>(<span>self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) ‑> EmailVerifyPostResponse</span>
+<span>async def <span class="ident">email_verify_post</span></span>(<span>self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) ‑> Union[EmailVerifyPostOkResponse, EmailVerifyPostInvalidTokenErrorResponse]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>email_verify_post is an async mehtod that accepts</p>
+<ul>
+<li>token: string,</li>
+<li>api_options: APIOptions,</li>
+<li>user_context: python dict</li>
+</ul>
+<p>if the user is successfully varified, the response could be as follows</p>
+<pre><code>{
+    "status": "OK",
+    "user": {
+      "id": "&lt;usern-id&gt;",
+      "email": "&lt;email-id&gt;"
+}
+</code></pre>
+<p>If the token is invalid and the user is not varified,
+the response could be as follows:</p>
+<pre><code>{
+    "status": "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
+}
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; EmailVerifyPostResponse:
-    response = await api_options.recipe_implementation.verify_email_using_token(token, user_context)
-    if response.is_ok:
-        if response.user is None:
-            raise Exception(&#34;Should never come here&#34;)
+<pre><code class="python">async def email_verify_post(
+    self, token: str, api_options: APIOptions, user_context: Dict[str, Any]
+) -&gt; Union[EmailVerifyPostOkResponse, EmailVerifyPostInvalidTokenErrorResponse]:
+    &#34;&#34;&#34;email_verify_post is an async mehtod that accepts
+
+       - token: string,
+       - api_options: APIOptions,
+       - user_context: python dict
+
+    if the user is successfully varified, the response could be as follows
+
+        {
+            &#34;status&#34;: &#34;OK&#34;,
+            &#34;user&#34;: {
+              &#34;id&#34;: &#34;&lt;usern-id&gt;&#34;,
+              &#34;email&#34;: &#34;&lt;email-id&gt;&#34;
+        }
+
+    If the token is invalid and the user is not varified,
+    the response could be as follows:
+
+        {
+            &#34;status&#34;: &#34;EMAIL_VERIFICATION_INVALID_TOKEN_ERROR&#34;
+        }
+    &#34;&#34;&#34;
+    response = await api_options.recipe_implementation.verify_email_using_token(
+        token, user_context
+    )
+    if response.user:
         return EmailVerifyPostOkResponse(response.user)
     return EmailVerifyPostInvalidTokenErrorResponse()</code></pre>
 </details>
@@ -204,15 +334,21 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def generate_email_verify_token_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; GenerateEmailVerifyTokenPostResponse:
+<pre><code class="python">async def generate_email_verify_token_post(
+    self, api_options: APIOptions, user_context: Dict[str, Any]
+) -&gt; GenerateEmailVerifyTokenPostResponse:
     session = await get_session(api_options.request)
     if session is None:
-        raise Exception(&#39;Session is undefined. Should not come here.&#39;)
+        raise Exception(&#34;Session is undefined. Should not come here.&#34;)
 
     user_id = session.get_user_id(user_context)
     email = await api_options.config.get_email_for_user_id(user_id, user_context)
 
-    token_result = await api_options.recipe_implementation.create_email_verification_token(user_id, email, user_context)
+    token_result = (
+        await api_options.recipe_implementation.create_email_verification_token(
+            user_id, email, user_context
+        )
+    )
     if token_result.is_email_already_verified:
         return GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse()
 
@@ -220,11 +356,18 @@ inheritance.</p></div>
 
     if token_result.token is None:
         raise Exception(&#34;Should never come here&#34;)
-    email_verify_link = (await api_options.config.get_email_verification_url(
-        user, user_context)) + &#39;?token=&#39; + token_result.token + &#39;&amp;rid&#39; + api_options.recipe_id
+    email_verify_link = (
+        (await api_options.config.get_email_verification_url(user, user_context))
+        + &#34;?token=&#34;
+        + token_result.token
+        + &#34;&amp;rid&#34;
+        + api_options.recipe_id
+    )
 
     try:
-        await api_options.config.create_and_send_custom_email(user, email_verify_link, user_context)
+        await api_options.config.create_and_send_custom_email(
+            user, email_verify_link, user_context
+        )
     except Exception:
         pass
 
@@ -240,15 +383,19 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; IsEmailVerifiedGetResponse:
+<pre><code class="python">async def is_email_verified_get(
+    self, api_options: APIOptions, user_context: Dict[str, Any]
+) -&gt; IsEmailVerifiedGetResponse:
     session = await get_session(api_options.request)
     if session is None:
-        raise Exception(&#39;Session is undefined. Should not come here.&#39;)
+        raise Exception(&#34;Session is undefined. Should not come here.&#34;)
 
     user_id = session.get_user_id(user_context)
     email = await api_options.config.get_email_for_user_id(user_id, user_context)
 
-    is_verified = await api_options.recipe_implementation.is_email_verified(user_id, email, user_context)
+    is_verified = await api_options.recipe_implementation.is_email_verified(
+        user_id, email, user_context
+    )
     return IsEmailVerifiedGetOkResponse(is_verified)</code></pre>
 </details>
 </dd>
