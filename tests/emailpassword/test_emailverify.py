@@ -25,21 +25,37 @@ from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.asyncio import (
-    create_email_verification_token, is_email_verified,
-    revoke_email_verification_token, unverify_email, verify_email_using_token)
+    create_email_verification_token,
+    is_email_verified,
+    revoke_email_verification_token,
+    unverify_email,
+    verify_email_using_token,
+)
 from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.emailverification.interfaces import (
-    APIInterface, APIOptions, EmailVerifyPostOkResponse)
+    APIInterface,
+    APIOptions,
+    EmailVerifyPostOkResponse,
+)
 from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.emailverification.utils import OverrideConfig
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.asyncio import (create_new_session,
-                                                       get_session,
-                                                       refresh_session)
-from tests.utils import (TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, clean_st,
-                         email_verify_token_request, extract_all_cookies,
-                         reset, set_key_value_in_config, setup_st,
-                         sign_up_request, start_st)
+from supertokens_python.recipe.session.asyncio import (
+    create_new_session,
+    get_session,
+    refresh_session,
+)
+from tests.utils import (
+    TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
+    clean_st,
+    email_verify_token_request,
+    extract_all_cookies,
+    reset,
+    set_key_value_in_config,
+    setup_st,
+    sign_up_request,
+    start_st,
+)
 
 
 def setup_function(_):
@@ -53,43 +69,43 @@ def teardown_function(_):
     clean_st()
 
 
-@fixture(scope='function')
+@fixture(scope="function")
 async def driver_config_client():
     app = FastAPI()
     app.add_middleware(Middleware)
 
-    @app.get('/login')
+    @app.get("/login")
     async def login(request: Request):  # type: ignore
-        user_id = 'userId'
+        user_id = "userId"
         await create_new_session(request, user_id, {}, {})
-        return {'userId': user_id}
+        return {"userId": user_id}
 
-    @app.post('/refresh')
+    @app.post("/refresh")
     async def custom_refresh(request: Request):  # type: ignore
         await refresh_session(request)
         return {}  # type: ignore
 
-    @app.get('/info')
+    @app.get("/info")
     async def info_get(request: Request):  # type: ignore
         await get_session(request, True)
         return {}  # type: ignore
 
-    @app.get('/custom/info')
+    @app.get("/custom/info")
     def custom_info(_):  # type: ignore
         return {}  # type: ignore
 
-    @app.options('/custom/handle')
+    @app.options("/custom/handle")
     def custom_handle_options(_):  # type: ignore
-        return {'method': 'option'}
+        return {"method": "option"}
 
-    @app.get('/handle')
+    @app.get("/handle")
     async def handle_get(request: Request):  # type: ignore
         session: Union[SessionContainer, None] = await get_session(request, True)
         if session is None:
             raise Exception("Should never come here")
-        return {'s': session.get_handle()}
+        return {"s": session.get_handle()}
 
-    @app.post('/logout')
+    @app.post("/logout")
     async def custom_logout(request: Request):  # type: ignore
         session: Union[SessionContainer, None] = await get_session(request, True)
         if session is None:
@@ -101,26 +117,23 @@ async def driver_config_client():
 
 
 @mark.asyncio
-async def test_the_generate_token_api_with_valid_input_email_not_verified(driver_config_client: TestClient):
+async def test_the_generate_token_api_with_valid_input_email_not_verified(
+    driver_config_client: TestClient,
+):
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init()]
+        framework="fastapi",
+        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
     )
     start_st()
 
-    response_1 = sign_up_request(
-        driver_config_client,
-        "test@gmail.com",
-        "testPass123")
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
 
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -129,34 +142,35 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(driver
     user_id = dict_response["user"]["id"]
     cookies = extract_all_cookies(response_1)
 
-    response = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                          cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
-                                          user_id)
+    response = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        cookies["sIdRefreshToken"]["value"],
+        response_1.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
     dict_response = json.loads(response.text)
     assert dict_response["status"] == "OK"
 
 
 @mark.asyncio
-async def test_the_generate_token_api_with_valid_input_email_verified_and_test_error(driver_config_client: TestClient):
+async def test_the_generate_token_api_with_valid_input_email_verified_and_test_error(
+    driver_config_client: TestClient,
+):
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init()]
+        framework="fastapi",
+        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
     )
     start_st()
 
-    response_1 = sign_up_request(
-        driver_config_client,
-        "test@gmail.com",
-        "testPass123")
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
 
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -170,31 +184,35 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
         raise Exception("Should never come here")
     await verify_email_using_token(verify_token.token)
 
-    response = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                          cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
-                                          user_id)
+    response = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        cookies["sIdRefreshToken"]["value"],
+        response_1.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
     dict_response = json.loads(response.text)
     assert dict_response["status"] == "EMAIL_ALREADY_VERIFIED_ERROR"
 
 
 @mark.asyncio
-async def test_the_generate_token_api_with_valid_input_no_session_and_check_output(driver_config_client: TestClient):
+async def test_the_generate_token_api_with_valid_input_no_session_and_check_output(
+    driver_config_client: TestClient,
+):
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init()]
+        framework="fastapi",
+        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
     )
     start_st()
 
-    response_1 = driver_config_client.post(url='/auth/user/email/verify/token')
+    response_1 = driver_config_client.post(url="/auth/user/email/verify/token")
     assert response_1.status_code == 401
     dict_response = json.loads(response_1.text)
     assert dict_response["message"] == "unauthorised"
@@ -202,29 +220,24 @@ async def test_the_generate_token_api_with_valid_input_no_session_and_check_outp
 
 @mark.asyncio
 async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_try_refresh_token_is_returned(
-        driver_config_client: TestClient):
-    set_key_value_in_config(
-        TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, "2")
+    driver_config_client: TestClient,
+):
+    set_key_value_in_config(TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, "2")
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init()]
+        framework="fastapi",
+        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
     )
     start_st()
 
-    response_1 = sign_up_request(
-        driver_config_client,
-        "test@gmail.com",
-        "testPass123")
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
@@ -234,71 +247,82 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
 
     await asyncio.sleep(5)
 
-    response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
-                                            user_id)
+    response_2 = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        cookies["sIdRefreshToken"]["value"],
+        response_1.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
     dict_response = json.loads(response_2.text)
 
     assert response_2.status_code == 401
-    assert dict_response['message'] == 'try refresh token'
+    assert dict_response["message"] == "try refresh token"
 
     response_3 = driver_config_client.post(
         url="/auth/session/refresh",
         headers={
             "Content-Type": "application/json",
-            'anti-csrf': response_1.headers.get('anti-csrf')
+            "anti-csrf": response_1.headers.get("anti-csrf"),
         },
         cookies={
-            'sRefreshToken': cookies['sRefreshToken']['value'],
-            'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
-        })
+            "sRefreshToken": cookies["sRefreshToken"]["value"],
+            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
+        },
+    )
 
     assert response_3.status_code == 200
 
     cookies1 = extract_all_cookies(response_3)
-    response_4 = email_verify_token_request(driver_config_client, cookies1['sAccessToken']['value'],
-                                            cookies1['sIdRefreshToken']['value'], response_3.headers.get('anti-csrf'),  # type: ignore
-                                            user_id)
+    response_4 = email_verify_token_request(
+        driver_config_client,
+        cookies1["sAccessToken"]["value"],
+        cookies1["sIdRefreshToken"]["value"],
+        response_3.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
 
     dict_response = json.loads(response_4.text)
 
     assert response_4.status_code == 200
-    assert dict_response['status'] == 'OK'
+    assert dict_response["status"] == "OK"
 
 
 @mark.asyncio
-async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called(driver_config_client: TestClient):
+async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called(
+    driver_config_client: TestClient,
+):
     user_info: Union[None, User] = None
     email_token = None
 
-    async def custom_f(user: User, email_verification_url_token: str, _: Dict[str, Any]):
+    async def custom_f(
+        user: User, email_verification_url_token: str, _: Dict[str, Any]
+    ):
         nonlocal user_info, email_token
         user_info = user
         email_token = email_verification_url_token
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init(
-            email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                create_and_send_custom_email=custom_f
-            )
-        )]
+        framework="fastapi",
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailpassword.init(
+                email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                    create_and_send_custom_email=custom_f
+                )
+            ),
+        ],
     )
     start_st()
 
-    response_1 = sign_up_request(
-        driver_config_client,
-        "test@gmail.com",
-        "testPass123")
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -307,13 +331,17 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
 
     cookies = extract_all_cookies(response_1)
 
-    response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
-                                            user_id)
+    response_2 = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        cookies["sIdRefreshToken"]["value"],
+        response_1.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
     await asyncio.sleep(2)
 
     dict_response = json.loads(response_2.text)
-    assert dict_response['status'] == 'OK'
+    assert dict_response["status"] == "OK"
     if user_info is None:
         raise Exception("Should never come here")
     assert user_info.user_id == user_id  # type: ignore
@@ -327,32 +355,29 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
 
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
-        token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init(
-            email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                create_and_send_custom_email=custom_f
-            )
-        )]
+        framework="fastapi",
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailpassword.init(
+                email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                    create_and_send_custom_email=custom_f
+                )
+            ),
+        ],
     )
     start_st()
 
-    response_1 = sign_up_request(
-        driver_config_client,
-        "test@gmail.com",
-        "testPass123")
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -361,13 +386,17 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
 
     cookies = extract_all_cookies(response_1)
 
-    response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
-                                            user_id)
+    response_2 = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        cookies["sIdRefreshToken"]["value"],
+        response_1.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
     await asyncio.sleep(2)
 
     dict_response = json.loads(response_2.text)
-    assert dict_response['status'] == 'OK'
+    assert dict_response["status"] == "OK"
 
     assert token is not None
 
@@ -375,54 +404,50 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
         url="/auth/user/email/verify",
         headers={
             "Content-Type": "application/json",
-            'anti-csrf': response_1.headers.get('anti-csrf')
+            "anti-csrf": response_1.headers.get("anti-csrf"),
         },
         cookies={
-            'sRefreshToken': cookies['sRefreshToken']['value'],
-            'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
+            "sRefreshToken": cookies["sRefreshToken"]["value"],
+            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
-        json={
-            "method": "token",
-            "token": token
-        }
+        json={"method": "token", "token": token},
     )
 
     dict_response = json.loads(response_3.text)
-    assert dict_response['status'] == 'OK'
+    assert dict_response["status"] == "OK"
 
 
 @mark.asyncio
-async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_config_client: TestClient):
+async def test_the_email_verify_api_with_invalid_token_and_check_error(
+    driver_config_client: TestClient,
+):
     token = None
 
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
-        token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init(
-            email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                create_and_send_custom_email=custom_f
-            )
-        )]
+        framework="fastapi",
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailpassword.init(
+                email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                    create_and_send_custom_email=custom_f
+                )
+            ),
+        ],
     )
     start_st()
 
-    response_1 = sign_up_request(
-        driver_config_client,
-        "test@gmail.com",
-        "testPass123")
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -431,13 +456,17 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_co
 
     cookies = extract_all_cookies(response_1)
 
-    response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
-                                            user_id)
+    response_2 = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        cookies["sIdRefreshToken"]["value"],
+        response_1.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
     await asyncio.sleep(2)
 
     dict_response = json.loads(response_2.text)
-    assert dict_response['status'] == 'OK'
+    assert dict_response["status"] == "OK"
 
     assert token is not None
 
@@ -445,54 +474,50 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_co
         url="/auth/user/email/verify",
         headers={
             "Content-Type": "application/json",
-            'anti-csrf': response_1.headers.get('anti-csrf')
+            "anti-csrf": response_1.headers.get("anti-csrf"),
         },
         cookies={
-            'sRefreshToken': cookies['sRefreshToken']['value'],
-            'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
+            "sRefreshToken": cookies["sRefreshToken"]["value"],
+            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
-        json={
-            "method": "token",
-            "token": "bad token"
-        }
+        json={"method": "token", "token": "bad token"},
     )
 
     dict_response = json.loads(response_3.text)
-    assert dict_response['status'] == 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'
+    assert dict_response["status"] == "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
 
 
 @mark.asyncio
-async def test_the_email_verify_api_with_token_of_not_type_string(driver_config_client: TestClient):
+async def test_the_email_verify_api_with_token_of_not_type_string(
+    driver_config_client: TestClient,
+):
     token = None
 
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
-        token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init(
-            email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                create_and_send_custom_email=custom_f
-            )
-        )]
+        framework="fastapi",
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailpassword.init(
+                email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                    create_and_send_custom_email=custom_f
+                )
+            ),
+        ],
     )
     start_st()
 
-    response_1 = sign_up_request(
-        driver_config_client,
-        "test@gmail.com",
-        "testPass123")
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -501,13 +526,17 @@ async def test_the_email_verify_api_with_token_of_not_type_string(driver_config_
 
     cookies = extract_all_cookies(response_1)
 
-    response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
-                                            user_id)
+    response_2 = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        cookies["sIdRefreshToken"]["value"],
+        response_1.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
     await asyncio.sleep(2)
 
     dict_response = json.loads(response_2.text)
-    assert dict_response['status'] == 'OK'
+    assert dict_response["status"] == "OK"
 
     assert token is not None
 
@@ -515,38 +544,37 @@ async def test_the_email_verify_api_with_token_of_not_type_string(driver_config_
         url="/auth/user/email/verify",
         headers={
             "Content-Type": "application/json",
-            'anti-csrf': response_1.headers.get('anti-csrf')
+            "anti-csrf": response_1.headers.get("anti-csrf"),
         },
         cookies={
-            'sRefreshToken': cookies['sRefreshToken']['value'],
-            'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
+            "sRefreshToken": cookies["sRefreshToken"]["value"],
+            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
-        json={
-            "method": "token",
-            "token": 200
-        }
+        json={"method": "token", "token": 200},
     )
 
     dict_response = json.loads(response_3.text)
     assert response_3.status_code == 400
-    assert dict_response['message'] == 'The email verification token must be a string'
+    assert dict_response["message"] == "The email verification token must be a string"
 
 
 @mark.asyncio
 async def test_that_the_handle_post_email_verification_callback_is_called_on_successful_verification_if_given(
-        driver_config_client: TestClient):
+    driver_config_client: TestClient,
+):
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
-        token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
 
-        async def email_verify_post(token: str, api_options: APIOptions, user_context: Dict[str, Any]):
+        async def email_verify_post(
+            token: str, api_options: APIOptions, user_context: Dict[str, Any]
+        ):
             nonlocal user_info_from_callback
 
             response = await temp(token, api_options, user_context)
@@ -560,33 +588,31 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         return param
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init(
-            email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                create_and_send_custom_email=custom_f
+        framework="fastapi",
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailpassword.init(
+                email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                    create_and_send_custom_email=custom_f
+                ),
+                override=emailpassword.InputOverrideConfig(
+                    email_verification_feature=OverrideConfig(
+                        apis=apis_override_email_password
+                    )
+                ),
             ),
-            override=emailpassword.InputOverrideConfig(
-                email_verification_feature=OverrideConfig(
-                    apis=apis_override_email_password
-                )
-            )
-        )]
+        ],
     )
     start_st()
 
-    response_1 = sign_up_request(
-        driver_config_client,
-        "test@gmail.com",
-        "testPass123")
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -595,13 +621,17 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
 
     cookies = extract_all_cookies(response_1)
 
-    response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
-                                            user_id)
+    response_2 = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        cookies["sIdRefreshToken"]["value"],
+        response_1.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
     await asyncio.sleep(2)
 
     dict_response = json.loads(response_2.text)
-    assert dict_response['status'] == 'OK'
+    assert dict_response["status"] == "OK"
 
     assert token is not None
 
@@ -609,21 +639,18 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         url="/auth/user/email/verify",
         headers={
             "Content-Type": "application/json",
-            'anti-csrf': response_1.headers.get('anti-csrf')
+            "anti-csrf": response_1.headers.get("anti-csrf"),
         },
         cookies={
-            'sRefreshToken': cookies['sRefreshToken']['value'],
-            'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
+            "sRefreshToken": cookies["sRefreshToken"]["value"],
+            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
-        json={
-            "method": "token",
-            "token": token
-        }
+        json={"method": "token", "token": token},
     )
 
     dict_response = json.loads(response_3.text)
     assert response_3.status_code == 200
-    assert dict_response['status'] == 'OK'
+    assert dict_response["status"] == "OK"
 
     await asyncio.sleep(1)
     if user_info_from_callback is None:
@@ -633,37 +660,36 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
 
 
 @mark.asyncio
-async def test_the_email_verify_with_valid_input_using_the_get_method(driver_config_client: TestClient):
+async def test_the_email_verify_with_valid_input_using_the_get_method(
+    driver_config_client: TestClient,
+):
     token = None
 
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
-        token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init(
-            email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                create_and_send_custom_email=custom_f
-            )
-        )]
+        framework="fastapi",
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailpassword.init(
+                email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                    create_and_send_custom_email=custom_f
+                )
+            ),
+        ],
     )
     start_st()
 
-    response_1 = sign_up_request(
-        driver_config_client,
-        "test@gmail.com",
-        "testPass123")
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -672,58 +698,59 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(driver_con
 
     cookies = extract_all_cookies(response_1)
 
-    response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
-                                            user_id)
+    response_2 = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        cookies["sIdRefreshToken"]["value"],
+        response_1.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
     await asyncio.sleep(2)
 
     dict_response = json.loads(response_2.text)
-    assert dict_response['status'] == 'OK'
+    assert dict_response["status"] == "OK"
 
     assert token is not None
 
     response_3 = driver_config_client.post(
-        url="/auth/user/email/verify",
-        json={
-            "method": "token",
-            "token": token
-        }
+        url="/auth/user/email/verify", json={"method": "token", "token": token}
     )
 
     dict_response = json.loads(response_3.text)
     assert response_3.status_code == 200
-    assert dict_response['status'] == "OK"
+    assert dict_response["status"] == "OK"
 
     response_4 = driver_config_client.get(
         url="/auth/user/email/verify",
         headers={
             "Content-Type": "application/json",
-            'anti-csrf': response_1.headers.get('anti-csrf')
+            "anti-csrf": response_1.headers.get("anti-csrf"),
         },
         cookies={
-            'sAccessToken': cookies['sAccessToken']['value'],
-            'sIdRefreshToken': cookies['sIdRefreshToken']['value'],
-        })
+            "sAccessToken": cookies["sAccessToken"]["value"],
+            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
+        },
+    )
 
     dict_response = json.loads(response_4.text)
     assert response_4.status_code == 200
-    assert dict_response['status'] == 'OK'
+    assert dict_response["status"] == "OK"
 
 
 @mark.asyncio
-async def test_the_email_verify_with_no_session_using_the_get_method(driver_config_client: TestClient):
+async def test_the_email_verify_with_no_session_using_the_get_method(
+    driver_config_client: TestClient,
+):
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init()]
+        framework="fastapi",
+        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
     )
     start_st()
 
@@ -731,23 +758,26 @@ async def test_the_email_verify_with_no_session_using_the_get_method(driver_conf
 
     dict_response = json.loads(response_4.text)
     assert response_4.status_code == 401
-    assert dict_response['message'] == 'unauthorised'
+    assert dict_response["message"] == "unauthorised"
 
 
 @mark.asyncio
-async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_config_client: TestClient):
+async def test_the_email_verify_api_with_valid_input_overriding_apis(
+    driver_config_client: TestClient,
+):
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
-        token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
 
-        async def email_verify_post(token: str, api_options: APIOptions, user_context: Dict[str, Any]):
+        async def email_verify_post(
+            token: str, api_options: APIOptions, user_context: Dict[str, Any]
+        ):
             nonlocal user_info_from_callback
 
             response = await temp(token, api_options, user_context)
@@ -761,33 +791,31 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
         return param
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init(
-            email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                create_and_send_custom_email=custom_f
+        framework="fastapi",
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailpassword.init(
+                email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                    create_and_send_custom_email=custom_f
+                ),
+                override=emailpassword.InputOverrideConfig(
+                    email_verification_feature=OverrideConfig(
+                        apis=apis_override_email_password
+                    )
+                ),
             ),
-            override=emailpassword.InputOverrideConfig(
-                email_verification_feature=OverrideConfig(
-                    apis=apis_override_email_password
-                )
-            )
-        )]
+        ],
     )
     start_st()
 
-    response_1 = sign_up_request(
-        driver_config_client,
-        "test@gmail.com",
-        "testPass123")
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -796,27 +824,27 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
 
     cookies = extract_all_cookies(response_1)
 
-    response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
-                                            user_id)
+    response_2 = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        cookies["sIdRefreshToken"]["value"],
+        response_1.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
     await asyncio.sleep(2)
 
     dict_response = json.loads(response_2.text)
-    assert dict_response['status'] == 'OK'
+    assert dict_response["status"] == "OK"
 
     assert token is not None
 
     response_3 = driver_config_client.post(
-        url="/auth/user/email/verify",
-        json={
-            "method": "token",
-            "token": token
-        }
+        url="/auth/user/email/verify", json={"method": "token", "token": token}
     )
 
     dict_response = json.loads(response_3.text)
     assert response_3.status_code == 200
-    assert dict_response['status'] == 'OK'
+    assert dict_response["status"] == "OK"
 
     await asyncio.sleep(1)
 
@@ -827,19 +855,22 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
 
 
 @mark.asyncio
-async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_error(driver_config_client: TestClient):
+async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_error(
+    driver_config_client: TestClient,
+):
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
-        token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+        token = email_verification_url_token.split("?token=")[1].split("&ride")[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
 
-        async def email_verify_post(token: str, api_options: APIOptions, user_context: Dict[str, Any]):
+        async def email_verify_post(
+            token: str, api_options: APIOptions, user_context: Dict[str, Any]
+        ):
             nonlocal user_info_from_callback
 
             response = await temp(token, api_options, user_context)
@@ -853,33 +884,31 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
         return param
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init(
-            email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                create_and_send_custom_email=custom_f
+        framework="fastapi",
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailpassword.init(
+                email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                    create_and_send_custom_email=custom_f
+                ),
+                override=emailpassword.InputOverrideConfig(
+                    email_verification_feature=OverrideConfig(
+                        apis=apis_override_email_password
+                    )
+                ),
             ),
-            override=emailpassword.InputOverrideConfig(
-                email_verification_feature=OverrideConfig(
-                    apis=apis_override_email_password
-                )
-            )
-        )]
+        ],
     )
     start_st()
 
-    response_1 = sign_up_request(
-        driver_config_client,
-        "test@gmail.com",
-        "testPass123")
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     await asyncio.sleep(1)
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
@@ -888,27 +917,27 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
 
     cookies = extract_all_cookies(response_1)
 
-    response_2 = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                            cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
-                                            user_id)
+    response_2 = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        cookies["sIdRefreshToken"]["value"],
+        response_1.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
     await asyncio.sleep(2)
 
     dict_response = json.loads(response_2.text)
-    assert dict_response['status'] == 'OK'
+    assert dict_response["status"] == "OK"
 
     assert token is not None
 
     response_3 = driver_config_client.post(
-        url="/auth/user/email/verify",
-        json={
-            "method": "token",
-            "token": token
-        }
+        url="/auth/user/email/verify", json={"method": "token", "token": token}
     )
 
     dict_response = json.loads(response_3.text)
     assert response_3.status_code == 400
-    assert dict_response['message'] == 'verify exception'
+    assert dict_response["message"] == "verify exception"
 
     await asyncio.sleep(1)
 
@@ -919,29 +948,26 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
 
 
 @mark.asyncio
-async def test_the_generate_token_api_with_valid_input_and_then_remove_token(driver_config_client: TestClient):
+async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
+    driver_config_client: TestClient,
+):
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init()]
+        framework="fastapi",
+        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
     )
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version in ('2.9', '2.10', '2.11', '2.12')
+    assert version in ("2.9", "2.10", "2.11", "2.12")
 
-    response_1 = sign_up_request(
-        driver_config_client,
-        "test@gmail.com",
-        "testPass123")
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"
@@ -957,29 +983,26 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
 
 
 @mark.asyncio
-async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_email(driver_config_client: TestClient):
+async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_email(
+    driver_config_client: TestClient,
+):
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[session.init(
-            anti_csrf='VIA_TOKEN'
-        ), emailpassword.init()]
+        framework="fastapi",
+        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
     )
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version in ('2.9', '2.10', '2.11', '2.12')
+    assert version in ("2.9", "2.10", "2.11", "2.12")
 
-    response_1 = sign_up_request(
-        driver_config_client,
-        "test@gmail.com",
-        "testPass123")
+    response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     assert response_1.status_code == 200
     dict_response = json.loads(response_1.text)
     assert dict_response["status"] == "OK"

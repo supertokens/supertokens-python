@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Callable
 from . import exceptions as ex
 from .recipe import EmailVerificationRecipe
 from . import utils
+
 InputOverrideConfig = utils.OverrideConfig
 ParentRecipeEmailVerificationConfig = utils.ParentRecipeEmailVerificationConfig
 exception = ex
@@ -29,5 +30,7 @@ if TYPE_CHECKING:
     from ...recipe_module import RecipeModule
 
 
-def init(config: ParentRecipeEmailVerificationConfig) -> Callable[[AppInfo], RecipeModule]:
+def init(
+    config: ParentRecipeEmailVerificationConfig,
+) -> Callable[[AppInfo], RecipeModule]:
     return EmailVerificationRecipe.init(config)
