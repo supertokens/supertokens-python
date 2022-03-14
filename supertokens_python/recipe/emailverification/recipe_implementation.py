@@ -13,17 +13,17 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
 from .interfaces import (
     CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult,
-    CreateEmailVerificationTokenOkResult, CreateEmailVerificationTokenResult,
-    RecipeInterface, RevokeEmailVerificationTokensOkResult,
-    RevokeEmailVerificationTokensResult, UnverifyEmailOkResult,
-    UnverifyEmailResult, VerifyEmailUsingTokenInvalidTokenErrorResult,
-    VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenResult)
+    CreateEmailVerificationTokenOkResult, RecipeInterface,
+    RevokeEmailVerificationTokensOkResult, RevokeEmailVerificationTokensResult,
+    UnverifyEmailOkResult, UnverifyEmailResult,
+    VerifyEmailUsingTokenInvalidTokenErrorResult,
+    VerifyEmailUsingTokenOkResult)
 from .types import User
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ class RecipeImplementation(RecipeInterface):
         self.querier = querier
         self.config = config
 
-    async def create_email_verification_token(self, user_id: str, email: str, user_context: Dict[str, Any]) -> CreateEmailVerificationTokenResult:
+    async def create_email_verification_token(self, user_id: str, email: str, user_context: Dict[str, Any]) -> Union[CreateEmailVerificationTokenOkResult, CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult]:
         data = {
             'userId': user_id,
             'email': email
@@ -48,7 +48,7 @@ class RecipeImplementation(RecipeInterface):
             return CreateEmailVerificationTokenOkResult(response['token'])
         return CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult()
 
-    async def verify_email_using_token(self, token: str, user_context: Dict[str, Any]) -> VerifyEmailUsingTokenResult:
+    async def verify_email_using_token(self, token: str, user_context: Dict[str, Any]) -> Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenErrorResult]:
         data = {
             'method': 'token',
             'token': token
