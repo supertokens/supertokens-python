@@ -16,16 +16,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.recipe.emailverification.interfaces import (
-    APIInterface, CreateEmailVerificationTokenOkResult,
+    APIInterface, CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult,
     EmailVerifyPostInvalidTokenErrorResponse, EmailVerifyPostOkResponse,
     GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse,
     GenerateEmailVerifyTokenPostOkResponse, IsEmailVerifiedGetOkResponse,
     VerifyEmailUsingTokenOkResult)
-from supertokens_python.recipe.session.interfaces import SessionContainer
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailverification.interfaces import (
-        APIOptions, GenerateEmailVerifyTokenPostResponse
+        APIOptions
     )
 
 from supertokens_python.recipe.emailverification.types import User
@@ -34,27 +33,15 @@ from supertokens_python.recipe.session.asyncio import get_session
 
 class APIImplementation(APIInterface):
     async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[EmailVerifyPostOkResponse, EmailVerifyPostInvalidTokenErrorResponse]:
-        """email_verify_post is an async mehtod that accepts
+        """email_verify_post is an async method that accepts
 
                - token: string,
                - api_options: APIOptions,
                - user_context: python dict
 
-            if the user is successfully varified, the response could be as follows
+            if the user is successfully verified the method returns an instance of EmailVerifyPostOkResponse.
 
-                {
-                    "status": "OK",
-                    "user": {
-                      "id": "<usern-id>",
-                      "email": "<email-id>"
-                }
-
-            If the token is invalid and the user is not varified,
-            the response could be as follows:
-
-                {
-                    "status": "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
-                }
+            If the token is invalid and the user is not verified it returns an instance of EmailVerifyPostInvalidTokenErrorResponse.
         """
 
         response = await api_options.recipe_implementation.verify_email_using_token(token, user_context)
@@ -69,14 +56,9 @@ class APIImplementation(APIInterface):
             - api_options: APIOptions
             - user_context: Dict
 
-        returns a json/dict response as follows if the email is verified
+        Upon the successful verification this method returns an instance of IsEmailVerifiedGetOkResponse.
 
-            {
-                "status": "OK",
-                "isVerified": true
-            }
-
-        Otherwise it raises an exception.
+        In the case of failure during verification this method raises an Exception.
         """
 
         # TODO: fix docstring, docstring should mention exact functioning of this method.
@@ -84,7 +66,7 @@ class APIImplementation(APIInterface):
 
         session = await get_session(api_options.request)
 
-        if isinstance(session, SessionContainer):
+        if session:
             user_id = session.get_user_id(user_context)
             email = await api_options.config.get_email_for_user_id(user_id, user_context)
             is_verified = await api_options.recipe_implementation.is_email_verified(user_id, email, user_context)
@@ -92,48 +74,42 @@ class APIImplementation(APIInterface):
 
         raise Exception("Undefined Session")
 
-    async def generate_email_verify_token_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> GenerateEmailVerifyTokenPostResponse:
+    async def generate_email_verify_token_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[GenerateEmailVerifyTokenPostOkResponse, GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse]:
         """
         generate_email_verify_token_post is an async method that accepts
 
             - api_options: APIOptions
             - user_context: Dict
 
-        returns a json/dict response as follows
+        This method returns an instance of GenerateEmailVerifyTokenPostOkResponse class
+        if the verification token for the given email id is successfully generated.
 
-        In the case of success:
+        It returns an instance of GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse
+        if the email id is already verified.
 
-            {
-                "status": "OK"
-            }
-
-        In the case of failure:
-            {
-                "status": "EMAIL_ALREADY_VERIFIED_ERROR"
-            }
+        It raises an exception otherwise.
+        #TODO: need to handle this gracefully
         """
         session = await get_session(api_options.request)
-        if isinstance(session, SessionContainer):
+        if session:
             user_id = session.get_user_id(user_context)
             email = await api_options.config.get_email_for_user_id(user_id, user_context)
 
             token_result = await api_options.recipe_implementation.create_email_verification_token(user_id, email, user_context)
-            if token_result.is_email_already_verified:
+            if isinstance(token_result, CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult):
                 return GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse()
 
             user = User(user_id, email)
 
-            if isinstance(token_result, CreateEmailVerificationTokenOkResult):
+            # TODO: This validation is unnecessary since CreateEmailVerificationTokenOkResult needs a valid token.
+            if token_result.token:
+                email_verify_link = (await api_options.config.get_email_verification_url(
+                    user, user_context)) + '?token=' + token_result.token + '&rid' + api_options.recipe_id
 
-                # TODO: This validation is unnecessary since CreateEmailVerificationTokenOkResult needs a valid token.
-                if token_result.token:
-                    email_verify_link = (await api_options.config.get_email_verification_url(
-                        user, user_context)) + '?token=' + token_result.token + '&rid' + api_options.recipe_id
-
-                    try:
-                        await api_options.config.create_and_send_custom_email(user, email_verify_link, user_context)
-                    except Exception:
-                        pass
-                    return GenerateEmailVerifyTokenPostOkResponse()
+                try:
+                    await api_options.config.create_and_send_custom_email(user, email_verify_link, user_context)
+                except Exception:
+                    pass
+                return GenerateEmailVerifyTokenPostOkResponse()
 
         raise Exception('Undefined Session')

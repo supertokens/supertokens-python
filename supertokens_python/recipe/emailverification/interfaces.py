@@ -54,22 +54,17 @@ class VerifyEmailUsingTokenOkResult:
     def __init__(self, user: User):
         self.status = 'OK'
         self.user = user
-        self.is_ok = True
-        self.is_email_verification_invalid_token_error = False
 
 
 class VerifyEmailUsingTokenInvalidTokenErrorResult:
     def __init__(self):
         self.status = 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'
         self.user = None
-        self.is_ok = False
-        self.is_email_verification_invalid_token_error = True
 
 
 class RevokeEmailVerificationTokensResult(ABC):
     def __init__(self, status: Literal['OK']):
         self.status = status
-        self.is_ok = False
 
 
 class RevokeEmailVerificationTokensOkResult(
@@ -161,7 +156,6 @@ class IsEmailVerifiedGetOkResponse(APIResponse):
     def __init__(self, is_verified: bool):
         self.status = 'OK'
         self.is_verified = is_verified
-        self.is_ok = True
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -170,10 +164,10 @@ class IsEmailVerifiedGetOkResponse(APIResponse):
         }
 
 
-class GenerateEmailVerifyTokenPostResponse(ABC):
-    def __init__(self, status: Literal['OK', 'EMAIL_ALREADY_VERIFIED_ERROR']):
-        self.status = status
-        self.is_ok = False
+class GenerateEmailVerifyTokenPostOkResponse(
+        APIResponse):
+    def __init__(self):
+        self.status = 'OK'
         self.is_email_already_verified_error = False
 
     def to_json(self) -> Dict[str, Any]:
@@ -182,20 +176,15 @@ class GenerateEmailVerifyTokenPostResponse(ABC):
         }
 
 
-class GenerateEmailVerifyTokenPostOkResponse(
-        GenerateEmailVerifyTokenPostResponse):
-    def __init__(self):
-        super().__init__('OK')
-        self.is_ok = True
-        self.is_email_already_verified_error = False
-
-
 class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse(
-        GenerateEmailVerifyTokenPostResponse):
+        APIResponse):
     def __init__(self):
-        super().__init__('EMAIL_ALREADY_VERIFIED_ERROR')
-        self.is_ok = False
-        self.is_email_already_verified_error = True
+        self.status = 'EMAIL_ALREADY_VERIFIED_ERROR'
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            'status': self.status
+        }
 
 
 class APIInterface(ABC):
@@ -214,5 +203,5 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def generate_email_verify_token_post(self, api_options: APIOptions,
-                                               user_context: Dict[str, Any]) -> GenerateEmailVerifyTokenPostResponse:
+                                               user_context: Dict[str, Any]) -> Union[GenerateEmailVerifyTokenPostOkResponse, GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse]:
         pass

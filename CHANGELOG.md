@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ### Breaking Change
-- Refactored emailverify recipe interfaces.
+- Refactored emailverify recipe interfaces towards fixing issue https://github.com/supertokens/supertokens-python/issues/75
 
 ### Addition
 - Added docstrings emailverify recipe interfaces.
