@@ -93,6 +93,25 @@ class APIImplementation(APIInterface):
         raise Exception("Undefined Session")
 
     async def generate_email_verify_token_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> GenerateEmailVerifyTokenPostResponse:
+        """
+        generate_email_verify_token_post is an async method that accepts
+
+            - api_options: APIOptions
+            - user_context: Dict
+
+        returns a json/dict response as follows
+
+        In the case of success:
+
+            {
+                "status": "OK"
+            }
+
+        In the case of failure:
+            {
+                "status": "EMAIL_ALREADY_VERIFIED_ERROR"
+            }
+        """
         session = await get_session(api_options.request)
         if isinstance(session, SessionContainer):
             user_id = session.get_user_id(user_context)
