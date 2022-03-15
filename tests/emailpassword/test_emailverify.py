@@ -29,7 +29,8 @@ from supertokens_python.recipe.emailpassword.asyncio import (
     revoke_email_verification_token, unverify_email, verify_email_using_token)
 from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.emailverification.interfaces import (
-    APIInterface, APIOptions, EmailVerifyPostOkResponse)
+    APIInterface, APIOptions, EmailVerifyPostOkResponse,
+    VerifyEmailUsingTokenInvalidTokenErrorResult)
 from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.emailverification.utils import OverrideConfig
 from supertokens_python.recipe.session import SessionContainer
@@ -953,7 +954,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     if verify_token.token is None:
         raise Exception("Should never come here")
     response = await verify_email_using_token(verify_token.token)
-    assert response.status == "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
+    assert isinstance(response, VerifyEmailUsingTokenInvalidTokenErrorResult)
 
 
 @mark.asyncio

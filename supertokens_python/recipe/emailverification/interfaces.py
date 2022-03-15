@@ -52,14 +52,11 @@ class CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult(
 
 class VerifyEmailUsingTokenOkResult:
     def __init__(self, user: User):
-        self.status = 'OK'
         self.user = user
 
 
 class VerifyEmailUsingTokenInvalidTokenErrorResult:
-    def __init__(self):
-        self.status = 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'
-        self.user = None
+    pass
 
 
 class RevokeEmailVerificationTokensResult(ABC):
@@ -129,10 +126,11 @@ class EmailVerifyPostOkResponse(APIResponse):
 
     def __init__(self, user: User):
         self.user = user
+        self.status = "OK"
 
     def to_json(self) -> Dict[str, Any]:
         return {
-            'status': "OK",
+            'status': self.status,
             'user': {
                 'id': self.user.user_id,
                 'email': self.user.email
@@ -146,9 +144,12 @@ class EmailVerifyPostInvalidTokenErrorResponse(APIResponse):
     user varification fails due to invalid token.
     """
 
+    def __init__(self):
+        self.status = "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
+
     def to_json(self) -> Dict[str, Any]:
         return {
-            'status': 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'
+            'status': self.status
         }
 
 
