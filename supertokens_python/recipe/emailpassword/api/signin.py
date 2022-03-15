@@ -36,7 +36,7 @@ async def handle_sign_in_api(api_implementation: APIInterface, api_options: APIO
                                                             form_fields_raw)
     response = await api_implementation.sign_in_post(form_fields, api_options, {})
 
-    debug_logger(response.status, LoggerCodes.ApiResponse)
+    debug_logger(response.status, LoggerCodes.API_RESPONSE)
     api_options.response.set_json_content(response.to_json())
 
     return api_options.response

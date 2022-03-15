@@ -3,28 +3,27 @@ import logging
 import logging.config
 from datetime import datetime
 from os import getenv
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
 
 from .constants import VERSION
 
 
 class LoggerCodes:
-    ApiResponse = 1
+    API_RESPONSE = 1
 
 # Setup level names to match with other st libraries
 level_maps = {
     logging.DEBUG: "debug",
     logging.INFO: "info",
-    logging.ERROR: "error",
 }
 for level, alias in level_maps.items():
     logging.addLevelName(level, alias)
 
 # Configure logger
 logger = logging.getLogger("com.supertokens")
-debug = (getenv('LOG_LEVEL', 'info').lower() == "debug")
-logger.setLevel(logging.DEBUG if debug else logging.INFO)
-
+log_level = getenv('LOG_LEVEL', "").lower()
+map = {"debug": logging.DEBUG, "info": logging.INFO}
+logger.setLevel(map.get(log_level, logging.INFO))
 
 # Add stream handler
 streamHandler = logging.StreamHandler()
@@ -34,11 +33,11 @@ logger.addHandler(streamHandler)
 
 
 def _get_iso_date():
-    return datetime.now().isoformat()
+    return datetime.now
 
 
 def _log_message(
-    log_level: int, extra_params: Optional[Dict[str, Any]] = None
+    log_level: int, extra_params: Union[None, Dict[str, Any]] = None
 ):
     if extra_params is None:
         extra_params = {}
@@ -64,7 +63,11 @@ def info_logger(message: str):
 
 
 def debug_logger(item: str, code: int):
-    code_to_msg: Dict[int, str] = {
-        LoggerCodes.ApiResponse: f"API replied with status {item}"
+    def api_response(item: str) -> str:
+        return f"API replied with status {item}"
+    
+    code_to_msg: Dict[int, Callable[..., str]] = {
+        LoggerCodes.API_RESPONSE: api_response
     }
-    _debug_logger_helper(code, code_to_msg[code])
+    _debug_logger_helper(code, code_to_msg[code](item))
+
