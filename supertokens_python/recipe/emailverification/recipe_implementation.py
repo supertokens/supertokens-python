@@ -20,8 +20,7 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from .interfaces import (
     CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult,
     CreateEmailVerificationTokenOkResult, RecipeInterface,
-    RevokeEmailVerificationTokensOkResult, RevokeEmailVerificationTokensResult,
-    UnverifyEmailOkResult, UnverifyEmailResult,
+    RevokeEmailVerificationTokensOkResult, UnverifyEmailOkResult,
     VerifyEmailUsingTokenInvalidTokenErrorResult,
     VerifyEmailUsingTokenOkResult)
 from .types import User
@@ -67,7 +66,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_get_request(NormalisedURLPath('/recipe/user/email/verify'), params)
         return response['isVerified']
 
-    async def revoke_email_verification_tokens(self, user_id: str, email: str, user_context: Dict[str, Any]) -> RevokeEmailVerificationTokensResult:
+    async def revoke_email_verification_tokens(self, user_id: str, email: str, user_context: Dict[str, Any]) -> RevokeEmailVerificationTokensOkResult:
         data = {
             'userId': user_id,
             'email': email
@@ -75,7 +74,7 @@ class RecipeImplementation(RecipeInterface):
         await self.querier.send_post_request(NormalisedURLPath('/recipe/user/email/verify/token/remove'), data)
         return RevokeEmailVerificationTokensOkResult()
 
-    async def unverify_email(self, user_id: str, email: str, user_context: Dict[str, Any]) -> UnverifyEmailResult:
+    async def unverify_email(self, user_id: str, email: str, user_context: Dict[str, Any]) -> UnverifyEmailOkResult:
         data = {
             'userId': user_id,
             'email': email

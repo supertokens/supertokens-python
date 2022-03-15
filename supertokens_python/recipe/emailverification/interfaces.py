@@ -59,28 +59,14 @@ class VerifyEmailUsingTokenInvalidTokenErrorResult:
     pass
 
 
-class RevokeEmailVerificationTokensResult(ABC):
-    def __init__(self, status: Literal['OK']):
-        self.status = status
+class RevokeEmailVerificationTokensOkResult:
+    # TODO: add test cases
+    pass
 
 
-class RevokeEmailVerificationTokensOkResult(
-        RevokeEmailVerificationTokensResult):
-    def __init__(self):
-        super().__init__('OK')
-        self.is_ok = True
-
-
-class UnverifyEmailResult(ABC):
-    def __init__(self, status: Literal['OK']):
-        self.status = status
-        self.is_ok = False
-
-
-class UnverifyEmailOkResult(UnverifyEmailResult):
-    def __init__(self):
-        super().__init__('OK')
-        self.is_ok = True
+class UnverifyEmailOkResult:
+    # TODO: add test cases
+    pass
 
 
 class RecipeInterface(ABC):
@@ -100,11 +86,11 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def revoke_email_verification_tokens(self, user_id: str, email: str, user_context: Dict[str, Any]) -> RevokeEmailVerificationTokensResult:
+    async def revoke_email_verification_tokens(self, user_id: str, email: str, user_context: Dict[str, Any]) -> RevokeEmailVerificationTokensOkResult:
         pass
 
     @abstractmethod
-    async def unverify_email(self, user_id: str, email: str, user_context: Dict[str, Any]) -> UnverifyEmailResult:
+    async def unverify_email(self, user_id: str, email: str, user_context: Dict[str, Any]) -> UnverifyEmailOkResult:
         pass
 
 
