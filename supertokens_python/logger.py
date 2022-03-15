@@ -3,7 +3,7 @@ import logging
 import logging.config
 from datetime import datetime
 from os import getenv
-from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
+from typing import Any, Callable, Dict, Union
 
 from .constants import VERSION
 
@@ -11,7 +11,8 @@ from .constants import VERSION
 class LoggerCodes:
     API_RESPONSE = 1
 
-# Setup level names to match with other st libraries
+# Setup level names to match log output with other st libraries
+# If this step is removed, the output will print 'DEBUG' instead of 'debug'
 level_maps = {
     logging.DEBUG: "debug",
     logging.INFO: "info",
@@ -25,7 +26,7 @@ log_level = getenv('LOG_LEVEL', "").lower()
 map = {"debug": logging.DEBUG, "info": logging.INFO}
 logger.setLevel(map.get(log_level, logging.INFO))
 
-# Add stream handler
+# Add stream handler and format
 streamHandler = logging.StreamHandler()
 stream_formatter = logging.Formatter("{name}:{levelname} {message}", style="{")
 streamHandler.setFormatter(stream_formatter)
