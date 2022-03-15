@@ -13,17 +13,18 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.recipe.emailverification.interfaces import (
-    APIInterface, EmailVerifyPostInvalidTokenErrorResponse,
-    EmailVerifyPostOkResponse,
+    APIInterface, CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult,
+    EmailVerifyPostInvalidTokenErrorResponse, EmailVerifyPostOkResponse,
     GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse,
-    GenerateEmailVerifyTokenPostOkResponse, IsEmailVerifiedGetOkResponse)
+    GenerateEmailVerifyTokenPostOkResponse, IsEmailVerifiedGetOkResponse,
+    VerifyEmailUsingTokenOkResult)
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailverification.interfaces import (
-        APIOptions, GenerateEmailVerifyTokenPostResponse, IsEmailVerifiedGetResponse, EmailVerifyPostResponse
+        APIOptions
     )
 
 from supertokens_python.recipe.emailverification.types import User
@@ -31,15 +32,15 @@ from supertokens_python.recipe.session.asyncio import get_session
 
 
 class APIImplementation(APIInterface):
-    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailVerifyPostResponse:
+    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[EmailVerifyPostOkResponse, EmailVerifyPostInvalidTokenErrorResponse]:
         response = await api_options.recipe_implementation.verify_email_using_token(token, user_context)
-        if response.is_ok:
+        if isinstance(response, VerifyEmailUsingTokenOkResult):
             if response.user is None:
                 raise Exception("Should never come here")
             return EmailVerifyPostOkResponse(response.user)
         return EmailVerifyPostInvalidTokenErrorResponse()
 
-    async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> IsEmailVerifiedGetResponse:
+    async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> IsEmailVerifiedGetOkResponse:
         session = await get_session(api_options.request)
         if session is None:
             raise Exception('Session is undefined. Should not come here.')
@@ -50,7 +51,7 @@ class APIImplementation(APIInterface):
         is_verified = await api_options.recipe_implementation.is_email_verified(user_id, email, user_context)
         return IsEmailVerifiedGetOkResponse(is_verified)
 
-    async def generate_email_verify_token_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> GenerateEmailVerifyTokenPostResponse:
+    async def generate_email_verify_token_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[GenerateEmailVerifyTokenPostOkResponse, GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse]:
         session = await get_session(api_options.request)
         if session is None:
             raise Exception('Session is undefined. Should not come here.')
@@ -59,7 +60,7 @@ class APIImplementation(APIInterface):
         email = await api_options.config.get_email_for_user_id(user_id, user_context)
 
         token_result = await api_options.recipe_implementation.create_email_verification_token(user_id, email, user_context)
-        if token_result.is_email_already_verified:
+        if isinstance(token_result, CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult):
             return GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse()
 
         user = User(user_id, email)
