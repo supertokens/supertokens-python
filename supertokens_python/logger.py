@@ -5,7 +5,7 @@ from datetime import datetime
 from os import getenv
 from typing import Any, Dict, Optional
 
-from constants import VERSION
+from .constants import VERSION
 
 
 class LoggerCodes:
@@ -68,4 +68,3 @@ def debug_logger(item: str, code: int):
         LoggerCodes.ApiResponse: f"API replied with status {item}"
     }
     _debug_logger_helper(code, code_to_msg[code])
-

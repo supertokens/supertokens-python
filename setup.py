@@ -3,7 +3,6 @@ from os import path
 from setuptools import find_packages, setup
 
 here = path.abspath(path.dirname(__file__))
-from .supertokens_python.constants import VERSION
 
 # Get the long description from the README file
 with open(path.join(here, "README.md"), mode="r", encoding="utf-8") as f:
@@ -60,7 +59,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version=VERSION,
+    version='0.5.2',
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.io",
