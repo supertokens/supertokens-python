@@ -5,8 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
-
-## [0.5.1] - 2022-03-02
+- Refactored emailverify recipe interfaces towards fixing issue (https://github.com/supertokens/supertokens-python/issues/75)
 
 ### Fixes:
 - Bug where a user had to add dependencies on all frameworks when using the SDK: https://github.com/supertokens/supertokens-python/issues/82
