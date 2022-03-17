@@ -14,27 +14,22 @@
 
 import json
 import logging
-from datetime import datetime
-from math import floor
+from datetime import datetime, timezone
 from os import getenv
 from typing import TextIO, Union
 
 from .constants import VERSION
-
-# from typing import TYPE_CHECKING
-# if TYPE_CHECKING:
 
 # Configure logger
 logger = logging.getLogger()
 log_level_str = getenv('LOG_LEVEL', "").lower()
 default_log_level = logging.INFO
 log_level_dict = {"debug": logging.DEBUG, "info": logging.INFO}
-
 logger.setLevel(log_level_dict.get(log_level_str, default_log_level))
 
 
 def _get_log_timestamp():
-    return floor(datetime.timestamp(datetime.now()))
+    return datetime.now(timezone.utc).isoformat()
 
 
 class CustomStreamHandler(logging.StreamHandler):  # type: ignore
@@ -69,5 +64,4 @@ class CustomStreamHandler(logging.StreamHandler):  # type: ignore
 streamHandler = CustomStreamHandler()
 streamFormatter = logging.Formatter("com.supertokens {message} +{relative}ms", style="{")
 streamHandler.setFormatter(streamFormatter)
-# streamHandler.addFilter(TimeFilter())
 logger.addHandler(streamHandler)
