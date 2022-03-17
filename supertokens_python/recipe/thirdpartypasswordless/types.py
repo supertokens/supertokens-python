@@ -11,17 +11,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-SUPPORTED_CDI_VERSIONS = ['2.9', '2.10', '2.11', '2.12']
-VERSION = '0.5.2'
-TELEMETRY = '/telemetry'
-USER_COUNT = '/users/count'
-USER_DELETE = '/user/remove'
-USERS = '/users'
-TELEMETRY_SUPERTOKENS_API_URL = 'https://api.supertokens.io/0/st/telemetry'
-TELEMETRY_SUPERTOKENS_API_VERSION = '2'
-ERROR_MESSAGE_KEY = 'message'
-API_KEY_HEADER = 'api-key'
-RID_KEY_HEADER = 'rid'
-FDI_KEY_HEADER = 'fdi-version'
-API_VERSION = '/apiversion'
-API_VERSION_HEADER = 'cdi-version'
+from typing import Union
+
+from ..thirdparty.types import ThirdPartyInfo
+
+
+class User:
+    def __init__(self, user_id: str,
+                 email: Union[str, None], phone_number: Union[str, None], third_party_info: Union[ThirdPartyInfo, None], time_joined: int):
+        self.user_id: str = user_id
+        self.email: Union[str, None] = email
+        self.phone_number: Union[str, None] = phone_number
+        self.time_joined: int = time_joined
+        self.third_party_info: Union[ThirdPartyInfo, None] = third_party_info
