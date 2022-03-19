@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime as real_datetime
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
@@ -8,10 +9,12 @@ from supertokens_python.logger import streamFormatter, streamHandler
 
 
 class LoggerUtilsTests(TestCase):
-    @patch('supertokens_python.logger._get_log_timestamp', return_value='timestamp')
-    def test_json_msg_format(self, mock_timestamp: MagicMock):  # pylint: disable=unused-argument
+    @patch('supertokens_python.logger.datetime', wraps=real_datetime)
+    def test_json_msg_format(self, datetime_mock: MagicMock):
+        datetime_mock.utcnow.return_value = real_datetime(2000, 1, 1)  # type: ignore
+
         with self.assertLogs(level='DEBUG') as captured:
-            logging.info("API replied with status 200")
+            logging.debug("API replied with status 200")
 
         record = captured.records[0]
         streamHandler.transform(record)
@@ -19,7 +22,8 @@ class LoggerUtilsTests(TestCase):
         filename = out.pop('file').split(':')[0]
 
         assert filename.endswith('tests/test_logger.py')
-        assert out == {'t': 'timestamp', 'sdkVer': VERSION, 'message': 'API replied with status 200'}
+        assert out == {'t': '2000-01-01T00:00Z', 'sdkVer': VERSION, 'message': 'API replied with status 200'}
 
-    def test_stream_formatter_format(self):
+    @staticmethod
+    def test_stream_formatter_format():
         assert streamFormatter._fmt == "com.supertokens {message} +{relative}ms"  # pylint: disable=protected-access

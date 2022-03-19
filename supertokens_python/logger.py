@@ -12,9 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+# pyright: reportUnknownMemberType=false
+
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from os import getenv
 from typing import TextIO, Union
 
@@ -23,18 +25,16 @@ from .constants import VERSION
 # Configure logger
 logger = logging.getLogger()
 log_level_str = getenv('LOG_LEVEL', "").lower()
-default_log_level = logging.INFO
-log_level_dict = {"debug": logging.DEBUG, "info": logging.INFO}
-logger.setLevel(log_level_dict.get(log_level_str, default_log_level))
+logger.setLevel(logging.DEBUG if log_level_str == "debug" else logging.INFO)
 
 
-def _get_log_timestamp():
-    return datetime.now(timezone.utc).isoformat()
+def _get_log_timestamp() -> str:
+    return datetime.utcnow().isoformat()[:-3] + "Z"
 
 
-class CustomStreamHandler(logging.StreamHandler):  # type: ignore
+class CustomStreamHandler(logging.StreamHandler):
     def __init__(self, stream: Union[TextIO, None] = None):
-        super().__init__(stream)  # type: ignore
+        super().__init__(stream)
         self.last = .0
 
     def transform(self, record: logging.LogRecord) -> None:
