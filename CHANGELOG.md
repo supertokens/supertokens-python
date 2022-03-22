@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ## [0.5.2] - 2022-03-17
-### Adds
+### Fixes
+- https://github.com/supertokens/supertokens-python/issues/90
 - Thirdpartypasswordless recipe + tests
+
+### Changed:
+- Added new function to BaseRequest class called `set_session_as_none` to set session object to None.
 
 ## [0.5.1] - 2022-03-02
 

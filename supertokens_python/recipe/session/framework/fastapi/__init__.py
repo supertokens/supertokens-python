@@ -32,6 +32,7 @@ def verify_session(
         if session is None:
             if session_required:
                 raise Exception("Should never come here")
+            baseRequest.set_session_as_none()
         else:
             baseRequest.set_session(session)
         return baseRequest.get_session()

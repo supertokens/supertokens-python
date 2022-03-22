@@ -61,6 +61,10 @@ class FlaskRequest(BaseRequest):
         from flask import g
         g.supertokens = session
 
+    def set_session_as_none(self):
+        from flask import g
+        g.supertokens = None
+
     def get_path(self) -> str:
         if isinstance(self.request, dict):
             temp: str = self.request['PATH_INFO']
