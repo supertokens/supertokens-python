@@ -11,6 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+"""
+In this module, classes with suffix `Result` are responsible for holding the result of the operations/calls to the supertokens-core.
+The classes with suffix `Response` are responsible for holding the responses to be sent to incomming API requests.
+"""
+
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -586,7 +593,7 @@ class EmailVerifyPostResponse(ABC):
         Flag to indicate if the operation completed successfully.
 
     is_email_verification_invalid_token_error: boolean
-        Flag to indicate if the email is already registered.
+        Flag to indicate if the email verification token is invalid.
 
     user:
         Object of `supertokens_python.recipe.emailpassword.types.User` to hold the user details.
@@ -607,6 +614,27 @@ class EmailVerifyPostResponse(ABC):
 
 
 class EmailVerifyPostOkResponse(EmailVerifyPostResponse):
+    """
+    class for holding the response to be sent for a email verify post request on a successful verification.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the email verify post request.
+        This will hold `OK` in the instance of this class.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_verification_invalid_token_error: boolean
+        Flag to indicate if the email verification token is invalid.
+
+    user:
+        Object of `supertokens_python.recipe.emailpassword.types.User` to hold the user details.
+    """
+
     def __init__(self, user: User):
         super().__init__('OK', user)
         self.is_ok = True
@@ -625,6 +653,24 @@ class EmailVerifyPostOkResponse(EmailVerifyPostResponse):
 
 
 class EmailVerifyPostInvalidTokenErrorResponse(EmailVerifyPostResponse):
+    """
+    class for holding the response to be sent for a email verify post request on a verification failure.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the email verify post request.
+        This will hold `EMAIL_VERIFICATION_INVALID_TOKEN_ERROR` in the instance of this class.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_verification_invalid_token_error: boolean
+        Flag to indicate if the email verification token is invalid.
+    """
+
     def __init__(self):
         super().__init__('EMAIL_VERIFICATION_INVALID_TOKEN_ERROR', None)
         self.is_ok = False
@@ -632,6 +678,21 @@ class EmailVerifyPostInvalidTokenErrorResponse(EmailVerifyPostResponse):
 
 
 class IsEmailVerifiedGetResponse(ABC):
+    """
+    Abstract class for holding the response to be sent for a is email verified get request.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the email verify post request.
+        The possible values for this could be `OK`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+    """
+
     def __init__(self, status: Literal['OK']):
         self.status = status
         self.is_ok = False
@@ -643,6 +704,24 @@ class IsEmailVerifiedGetResponse(ABC):
 
 
 class IsEmailVerifiedGetOkResponse(IsEmailVerifiedGetResponse):
+    """
+    class for holding the response to be sent for a successful is email verified get request.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the email verify post request.
+        This will hold `OK`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_verified: boolean
+        Flag to indicate if the email is verified.
+    """
+
     def __init__(self, is_verified: bool):
         super().__init__('OK')
         self.is_verified = is_verified
@@ -656,6 +735,24 @@ class IsEmailVerifiedGetOkResponse(IsEmailVerifiedGetResponse):
 
 
 class GenerateEmailVerifyTokenPostResponse(ABC):
+    """
+    Abstract class for holding the response to be sent for a generate email verify toekn post request.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the email verify post request.
+        The possible values for this could be `OK` or `EMAIL_ALREADY_VERIFIED_ERROR`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_already_verified_error: boolean
+        Flag to indicate if the email is already verified.
+    """
+
     def __init__(self, status: Literal['OK', 'EMAIL_ALREADY_VERIFIED_ERROR']):
         self.status = status
         self.is_ok = False
@@ -669,6 +766,24 @@ class GenerateEmailVerifyTokenPostResponse(ABC):
 
 class GenerateEmailVerifyTokenPostOkResponse(
         GenerateEmailVerifyTokenPostResponse):
+    """
+    class for holding the response to be sent for a successful generate email verify toekn post request.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the email verify post request.
+        This will hold `OK`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_already_verified_error: boolean
+        Flag to indicate if the email is already verified.
+    """
+
     def __init__(self):
         super().__init__('OK')
         self.is_ok = True
@@ -677,6 +792,24 @@ class GenerateEmailVerifyTokenPostOkResponse(
 
 class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse(
         GenerateEmailVerifyTokenPostResponse):
+    """
+    class for holding the response to be sent for a failed generate email verify toekn post request.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the email verify post request.
+        This will hold `EMAIL_ALREADY_VERIFIED_ERROR`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_already_verified_error: boolean
+        Flag to indicate if the email is already verified.
+    """
+
     def __init__(self):
         super().__init__('EMAIL_ALREADY_VERIFIED_ERROR')
         self.is_ok = False
@@ -684,6 +817,21 @@ class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse(
 
 
 class EmailExistsGetResponse(ABC):
+    """
+    Abstract class for holding the response to be sent for a email exists get request.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the email verify post request.
+        The possible values for this could be `OK`.
+
+    exists: boolean
+        Flag to indicate if the email exists.
+    """
+
     def __init__(self, status: Literal['OK'], exists: bool):
         self.status = status
         self.exists = exists
@@ -696,11 +844,38 @@ class EmailExistsGetResponse(ABC):
 
 
 class EmailExistsGetOkResponse(EmailExistsGetResponse):
+    """
+    class for holding the response to be sent for a email exists get request.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the email verify post request.
+        This holds `OK`.
+
+    exists: boolean
+        Flag to indicate if the email exists.
+    """
+
     def __init__(self, exists: bool):
         super().__init__('OK', exists)
 
 
 class GeneratePasswordResetTokenPostResponse(ABC):
+    """
+    Abstract class for holding the response to be sent for a generate password reset token post request.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the email verify post request.
+        The possible values for this could be `OK`.
+    """
+
     def __init__(self, status: Literal['OK']):
         self.status = status
 
@@ -712,11 +887,38 @@ class GeneratePasswordResetTokenPostResponse(ABC):
 
 class GeneratePasswordResetTokenPostOkResponse(
         GeneratePasswordResetTokenPostResponse):
+    """
+    class for holding the response to be sent for a successful generate password reset token post request.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the generate password reset token post request.
+        This will hold `OK`.
+    """
+
     def __init__(self):
         super().__init__('OK')
 
 
 class PasswordResetPostResponse(ABC):
+    """
+    Abstract class for holding the response to be sent for a password reset post request.
+
+    ...
+
+    Attributes
+    ----------
+    user_id: str
+        user_id for which password needs to be reset.
+
+    status: str
+        Status string for result of the password reset post request.
+        The possible values for this could be `OK` or `RESET_PASSWORD_INVALID_TOKEN_ERROR`.
+    """
+
     def __init__(self, status: Literal['OK',
                  'RESET_PASSWORD_INVALID_TOKEN_ERROR'], user_id: Union[str, None] = None):
         self.user_id: Union[str, None] = user_id
@@ -730,16 +932,74 @@ class PasswordResetPostResponse(ABC):
 
 
 class PasswordResetPostOkResponse(PasswordResetPostResponse):
+    """
+    class for holding the response to be sent for a successful password reset post request.
+
+    ...
+
+    Attributes
+    ----------
+    user_id: str
+        user_id for which password needs to be reset.
+
+    status: str
+        Status string for result of the password reset post request.
+        This will hold `OK`.
+    """
+
     def __init__(self, user_id: Union[str, None]):
         super().__init__('OK', user_id)
 
 
 class PasswordResetPostInvalidTokenResponse(PasswordResetPostResponse):
+    """
+    class for holding the response to be sent for a failed password reset post request.
+
+    ...
+
+    Attributes
+    ----------
+    user_id: str
+        user_id for which password needs to be reset.
+
+    status: str
+        Status string for result of the password reset post request.
+        This will hold `RESET_PASSWORD_INVALID_TOKEN_ERROR`.
+    """
+
     def __init__(self):
         super().__init__('RESET_PASSWORD_INVALID_TOKEN_ERROR')
 
 
 class SignInPostResponse(ABC):
+    """
+    Abstract class for holding the response to be sent for a signin request.
+
+    ...
+
+    Attributes
+    ----------
+
+    status: str
+        Status string for result of the signin request.
+        The possible values for this could be `OK` or `WRONG_CREDENTIALS_ERROR`.
+
+    type: str
+        This holds `emailpassword`
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_wrong_credentials_error: boolean
+        Flag to indicate if the provided credentials are invalid.
+
+    user: `supertokens_python.recipe.emailpassword.types.User`
+        Object of `supertokens_python.recipe.emailpassword.types.User` to hold the user details.
+
+    session: `supertokens_python.recipe.session.SessionContainer`
+        Object of `supertokens_python.recipe.session.SessionContainer` to hold a session object.
+    """
+
     def __init__(
             self, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'],
             user: Union[User, None] = None,
@@ -768,18 +1028,84 @@ class SignInPostResponse(ABC):
 
 
 class SignInPostOkResponse(SignInPostResponse):
+    """
+    class for holding the response to be sent for a successful signin request.
+
+    ...
+
+    Attributes
+    ----------
+
+    status: str
+        Status string for result of the signin post request.
+        This will hold `OK`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    user: `supertokens_python.recipe.emailpassword.types.User`
+        Object of `supertokens_python.recipe.emailpassword.types.User` to hold the user details.
+
+    session: `supertokens_python.recipe.session.SessionContainer`
+        Object of `supertokens_python.recipe.session.SessionContainer` to hold a session object.
+    """
+
     def __init__(self, user: User, session: SessionContainer):
         super().__init__('OK', user, session)
         self.is_ok = True
 
 
 class SignInPostWrongCredentialsErrorResponse(SignInPostResponse):
+    """
+    class for holding the response to be sent for a failed signin request.
+
+    ...
+
+    Attributes
+    ----------
+
+    status: str
+        Status string for result of the signin post request.
+        This will hold `WRONG_CREDENTIALS_ERROR`.
+
+    is_wrong_credentials_error: boolean
+        Flag to indicate if the credentials are invalid
+    """
+
     def __init__(self):
         super().__init__('WRONG_CREDENTIALS_ERROR')
         self.is_wrong_credentials_error = True
 
 
 class SignUpPostResponse(ABC):
+    """
+    Abstract class for holding the response to be sent for a signup request.
+
+    ...
+
+    Attributes
+    ----------
+
+    status: str
+        Status string for result of the signup request.
+        The possible values for this could be `OK` or `EMAIL_ALREADY_EXISTS_ERROR`.
+
+    type: str
+        This holds `emailpassword`
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_already_exists_error: boolean
+        Flag to indicate if the email already exists.
+
+    user: `supertokens_python.recipe.emailpassword.types.User`
+        Object of `supertokens_python.recipe.emailpassword.types.User` to hold the user details.
+
+    session: `supertokens_python.recipe.session.SessionContainer`
+        Object of `supertokens_python.recipe.session.SessionContainer` to hold a session object.
+    """
+
     def __init__(
             self, status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR'],
             user: Union[User, None] = None,
@@ -808,18 +1134,80 @@ class SignUpPostResponse(ABC):
 
 
 class SignUpPostOkResponse(SignUpPostResponse):
+    """
+    class for holding the response to be sent for a successful signup request.
+
+    ...
+
+    Attributes
+    ----------
+
+    status: str
+        Status string for result of the password signup request.
+        This will hold `OK`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    user: `supertokens_python.recipe.emailpassword.types.User`
+        Object of `supertokens_python.recipe.emailpassword.types.User` to hold the user details.
+
+    session: `supertokens_python.recipe.session.SessionContainer`
+        Object of `supertokens_python.recipe.session.SessionContainer` to hold a session object.
+    """
+
     def __init__(self, user: User, session: SessionContainer):
         super().__init__('OK', user, session)
         self.is_ok = True
 
 
 class SignUpPostEmailAlreadyExistsErrorResponse(SignUpPostResponse):
+    """
+    class for holding the response to be sent for a failed signup request.
+
+    ...
+
+    Attributes
+    ----------
+
+    status: str
+        Status string for result of the password signup request.
+        This will hold `EMAIL_ALREADY_EXISTS_ERROR`.
+
+    is_email_already_exists_error: boolean
+        Flag to indicate if the email already exists.
+    """
+
     def __init__(self):
         super().__init__('EMAIL_ALREADY_EXISTS_ERROR')
         self.is_email_already_exists_error = True
 
 
 class APIInterface:
+    """
+    class to define APIInterface for emailpassword recipe
+
+    ...
+
+    Attributes
+    ----------
+
+    disable_email_exists_get: boolean
+        config flag to disable `disable_email_exists_get`
+
+    disable_generate_password_reset_token_post: boolean
+        config flag to disable `disable_generate_password_reset_token_post`
+
+    disable_password_reset_post: boolean
+        config flag to disable `disable_password_reset_post`
+
+    disable_sign_in_post: boolean
+        config flag to disable `disable_sign_in_post`
+
+    disable_sign_up_post: boolean
+        config flag to disable `disable_sign_up_post`
+    """
+
     def __init__(self):
         self.disable_email_exists_get = False
         self.disable_generate_password_reset_token_post = False
