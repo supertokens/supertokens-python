@@ -83,6 +83,9 @@ class FastApiRequest(BaseRequest):
     def set_session(self, session: SessionContainer):
         self.request.state.supertokens = session
 
+    def set_session_as_none(self):
+        self.request.state.supertokens = None
+
     def get_path(self) -&gt; str:
         return self.request.url.path
 
@@ -142,6 +145,9 @@ inheritance.</p></div>
 
     def set_session(self, session: SessionContainer):
         self.request.state.supertokens = session
+
+    def set_session_as_none(self):
+        self.request.state.supertokens = None
 
     def get_path(self) -&gt; str:
         return self.request.url.path
@@ -286,6 +292,14 @@ any functionality that is common to both <code>Request</code> and <code>WebSocke
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.framework.request.BaseRequest" href="../request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.framework.request.BaseRequest.set_session_as_none" href="../request.html#supertokens_python.framework.request.BaseRequest.set_session_as_none">set_session_as_none</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>

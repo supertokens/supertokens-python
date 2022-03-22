@@ -88,6 +88,13 @@ class BaseRequest(ABC):
         pass
 
     @abstractmethod
+    def set_session_as_none(self):
+        &#34;&#34;&#34;
+        This function is used to set the request&#39;s session variable to None.
+        See https://github.com/supertokens/supertokens-python/issues/90
+        &#34;&#34;&#34;
+
+    @abstractmethod
     def get_path(self) -&gt; str:
         pass</code></pre>
 </details>
@@ -149,6 +156,13 @@ inheritance.</p></div>
     @abstractmethod
     def set_session(self, session: SessionContainer):
         pass
+
+    @abstractmethod
+    def set_session_as_none(self):
+        &#34;&#34;&#34;
+        This function is used to set the request&#39;s session variable to None.
+        See https://github.com/supertokens/supertokens-python/issues/90
+        &#34;&#34;&#34;
 
     @abstractmethod
     def get_path(self) -&gt; str:
@@ -293,6 +307,24 @@ def set_session(self, session: SessionContainer):
     pass</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.framework.request.BaseRequest.set_session_as_none"><code class="name flex">
+<span>def <span class="ident">set_session_as_none</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This function is used to set the request's session variable to None.
+See <a href="https://github.com/supertokens/supertokens-python/issues/90">https://github.com/supertokens/supertokens-python/issues/90</a></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def set_session_as_none(self):
+    &#34;&#34;&#34;
+    This function is used to set the request&#39;s session variable to None.
+    See https://github.com/supertokens/supertokens-python/issues/90
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -323,6 +355,7 @@ def set_session(self, session: SessionContainer):
 <li><code><a title="supertokens_python.framework.request.BaseRequest.json" href="#supertokens_python.framework.request.BaseRequest.json">json</a></code></li>
 <li><code><a title="supertokens_python.framework.request.BaseRequest.method" href="#supertokens_python.framework.request.BaseRequest.method">method</a></code></li>
 <li><code><a title="supertokens_python.framework.request.BaseRequest.set_session" href="#supertokens_python.framework.request.BaseRequest.set_session">set_session</a></code></li>
+<li><code><a title="supertokens_python.framework.request.BaseRequest.set_session_as_none" href="#supertokens_python.framework.request.BaseRequest.set_session_as_none">set_session_as_none</a></code></li>
 </ul>
 </li>
 </ul>

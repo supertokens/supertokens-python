@@ -68,6 +68,7 @@ def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: 
             if session is None:
                 if session_required:
                     raise Exception(&#34;Should never come here&#34;)
+                baseRequest.set_session_as_none()
             else:
                 baseRequest.set_session(session)
             response = make_response(f(*args, **kwargs))
@@ -112,6 +113,7 @@ def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: 
             if session is None:
                 if session_required:
                     raise Exception(&#34;Should never come here&#34;)
+                baseRequest.set_session_as_none()
             else:
                 baseRequest.set_session(session)
             response = make_response(f(*args, **kwargs))
