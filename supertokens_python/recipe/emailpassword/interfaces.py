@@ -17,10 +17,10 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 from xmlrpc.client import boolean
 
+from typing_extensions import Literal
+
 from ..emailverification.interfaces import \
     RecipeInterface as EmailVerificationRecipeInterface
-
-from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -31,6 +31,28 @@ if TYPE_CHECKING:
 
 
 class SignUpResult(ABC):
+    """
+    Abstract class for holding the result of signup call.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the signup call to the supertokens-core.
+        The possible values for this could be `OK` or `EMAIL_ALREADY_EXISTS_ERROR`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_already_exists_error: boolean
+        Flag to indicate if the email is already registered.
+
+    user:
+        Object of `supertokens_python.recipe.emailpassword.types.User` to hold the user details.
+        This will be `None` in case of error.
+    """
+
     def __init__(
             self, status: Literal['OK', 'EMAIL_ALREADY_EXISTS_ERROR'], user: Union[User, None]):
         self.status = status
@@ -40,6 +62,27 @@ class SignUpResult(ABC):
 
 
 class SignUpOkResult(SignUpResult):
+    """
+    Class to hold the result of a successful signup call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the signup call to the supertokens-core.
+        The possible values for this could be `OK` or `EMAIL_ALREADY_EXISTS_ERROR`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_already_exists_error: boolean
+        Flag to indicate if the email is already registered.
+
+    user:
+        Object of `supertokens_python.recipe.emailpassword.types.User` to hold the user details.
+    """
+
     def __init__(self, user: User):
         super().__init__('OK', user)
         self.is_ok = True
@@ -47,6 +90,24 @@ class SignUpOkResult(SignUpResult):
 
 
 class SignUpEmailAlreadyExistsErrorResult(SignUpResult):
+    """
+    Class to hold the result of a failed signup call to supertokens-core where the email is already registered.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the signup call to the supertokens-core.
+        The possible values for this could be `OK` or `EMAIL_ALREADY_EXISTS_ERROR`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_already_exists_error: boolean
+        Flag to indicate if the email is already registered.
+    """
+
     def __init__(self):
         super().__init__('EMAIL_ALREADY_EXISTS_ERROR', None)
         self.is_ok = False
@@ -54,6 +115,28 @@ class SignUpEmailAlreadyExistsErrorResult(SignUpResult):
 
 
 class SignInResult(ABC):
+    """
+    Class to hold the result of a Signin call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the Signin call to supertokens-core.
+        The possible values for this could be `OK` or `WRONG_CREDENTIALS_ERROR`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_wrong_credentials_error: boolean
+        Flag to indicate if the provided credentials are incorrect.
+
+    user:
+        Object of `supertokens_python.recipe.emailpassword.types.User` to hold the user details.
+        This will be `None` in case of error.
+    """
+
     def __init__(
             self, status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'], user: Union[User, None]):
         self.status: Literal['OK', 'WRONG_CREDENTIALS_ERROR'] = status
@@ -63,6 +146,27 @@ class SignInResult(ABC):
 
 
 class SignInOkResult(SignInResult):
+    """
+    Class to hold the successful result of a Signin call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the Signin call to supertokens-core.
+        This will hold `OK` in the instance of this class.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_wrong_credentials_error: boolean
+        Flag to indicate if the provided credentials are incorrect.
+
+    user:
+        Object of `supertokens_python.recipe.emailpassword.types.User` to hold the user details.
+    """
+
     def __init__(self, user: User):
         super().__init__('OK', user)
         self.is_ok = True
@@ -70,6 +174,24 @@ class SignInOkResult(SignInResult):
 
 
 class SignInWrongCredentialsErrorResult(SignInResult):
+    """
+    Class to hold the result of a failed Signin call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the Signin call to supertokens-core.
+        This will hold `WRONG_CREDENTIALS_ERROR` in the instance of this class.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_wrong_credentials_error: boolean
+        Flag to indicate if the provided credentials are incorrect.
+    """
+
     def __init__(self):
         super().__init__('WRONG_CREDENTIALS_ERROR', None)
         self.is_ok = False
@@ -77,6 +199,27 @@ class SignInWrongCredentialsErrorResult(SignInResult):
 
 
 class CreateResetPasswordResult(ABC):
+    """
+    Class to hold the result of a create reset password call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the create reset password call to supertokens-core.
+        The possible values for this could be `OK` or `UNKNOWN_USER_ID_ERROR`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_unknown_user_id_error: boolean
+        Flag to indicate if the provided user id is invalid.
+
+    token: str
+        Token to reset password in case of successful create reset user password call to the supertokens-core.
+    """
+
     def __init__(
             self, status: Literal['OK', 'UNKNOWN_USER_ID_ERROR'], token: Union[str, None]):
         self.status = status
@@ -86,6 +229,27 @@ class CreateResetPasswordResult(ABC):
 
 
 class CreateResetPasswordOkResult(CreateResetPasswordResult):
+    """
+    Class to hold the result of a successful create reset password call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the create reset password call to supertokens-core.
+        This will hold `OK` in the instance of this class.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_unknown_user_id_error: boolean
+        Flag to indicate if the provided user id is invalid.
+
+    token: str
+        Token to reset password in case of successful create reset user password call to the supertokens-core.
+    """
+
     def __init__(self, token: str):
         super().__init__('OK', token)
         self.is_ok = True
@@ -93,6 +257,24 @@ class CreateResetPasswordOkResult(CreateResetPasswordResult):
 
 
 class CreateResetPasswordWrongUserIdErrorResult(CreateResetPasswordResult):
+    """
+    Class to hold the result of a failed create reset password call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the create reset password call to supertokens-core.
+        This will hold `UNKNOWN_USER_ID_ERROR` in the instance of this class.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_unknown_user_id_error: boolean
+        Flag to indicate if the provided user id is invalid.
+    """
+
     def __init__(self):
         super().__init__('UNKNOWN_USER_ID_ERROR', None)
         self.is_ok = False
@@ -100,6 +282,27 @@ class CreateResetPasswordWrongUserIdErrorResult(CreateResetPasswordResult):
 
 
 class ResetPasswordUsingTokenResult(ABC):
+    """
+    Class to hold the result of a reset password using token call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the reset password using token call to supertokens-core.
+        The possible values for this could be `OK` or `RESET_PASSWORD_INVALID_TOKEN_ERROR`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_reset_password_invalid_token_error: boolean
+        Flag to indicate if the reset password token is invalid.
+
+    user_id: str
+        user-id for which reset password using token was called.
+    """
+
     def __init__(self, status: Literal['OK',
                  'RESET_PASSWORD_INVALID_TOKEN_ERROR'], user_id: Union[None, str] = None):
         self.status: Literal['OK',
@@ -110,6 +313,27 @@ class ResetPasswordUsingTokenResult(ABC):
 
 
 class ResetPasswordUsingTokenOkResult(ResetPasswordUsingTokenResult):
+    """
+    Class to hold the result of a successful reset password using token call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the successful reset password using token call to supertokens-core.
+        This will hold `OK` in the instance of this class.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_reset_password_invalid_token_error: boolean
+        Flag to indicate if the reset password token is invalid.
+
+    user_id: str
+        user-id for which reset password using token was called.
+    """
+
     def __init__(self, user_id: Union[None, str]):
         super().__init__('OK', user_id)
         self.is_ok = True
@@ -118,6 +342,27 @@ class ResetPasswordUsingTokenOkResult(ResetPasswordUsingTokenResult):
 
 class ResetPasswordUsingTokenWrongUserIdErrorResult(
         ResetPasswordUsingTokenResult):
+    """
+    Class to hold the result of a successful reset password using token call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the failed reset password using token call to supertokens-core.
+        This will hold `RESET_PASSWORD_INVALID_TOKEN_ERROR` in the instance of this class.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_reset_password_invalid_token_error: boolean
+        Flag to indicate if the reset password token is invalid.
+
+    user_id: str
+        user-id for which reset password using token was called.
+    """
+
     def __init__(self):
         super().__init__('RESET_PASSWORD_INVALID_TOKEN_ERROR')
         self.is_ok = False
@@ -125,6 +370,27 @@ class ResetPasswordUsingTokenWrongUserIdErrorResult(
 
 
 class UpdateEmailOrPasswordResult(ABC):
+    """
+    Class to hold the result of a update email or password call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the update email or password call to the supertokens-core.
+        The possible values for this could be `OK`, `UNKNOWN_USER_ID_ERROR` or `EMAIL_ALREADY_EXISTS_ERROR`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_already_exists_error: boolean
+        Flag to indicate if the email is already registered.
+
+    is_unknown_user_id_error: boolean
+        Flag to indicate if the user id used for makeing update email or password call is invalid.
+    """
+
     def __init__(
             self, status: Literal['OK', 'UNKNOWN_USER_ID_ERROR', 'EMAIL_ALREADY_EXISTS_ERROR']):
         self.status = status
@@ -134,6 +400,27 @@ class UpdateEmailOrPasswordResult(ABC):
 
 
 class UpdateEmailOrPasswordOkResult(UpdateEmailOrPasswordResult):
+    """
+    Class to hold the result of successful update email or password call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the update email or password call to the supertokens-core.
+        This will hold `Ok` in the instance of this class.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_already_exists_error: boolean
+        Flag to indicate if the email is already registered.
+
+    is_unknown_user_id_error: boolean
+        Flag to indicate if the user id used for makeing update email or password call is invalid.
+    """
+
     def __init__(self):
         super().__init__('OK')
         self.is_ok = True
@@ -143,6 +430,27 @@ class UpdateEmailOrPasswordOkResult(UpdateEmailOrPasswordResult):
 
 class UpdateEmailOrPasswordEmailAlreadyExistsErrorResult(
         UpdateEmailOrPasswordResult):
+    """
+    Class to hold the result of failed update email or password call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the update email or password call to the supertokens-core.
+        This will hold `EMAIL_ALREADY_EXISTS_ERROR` in the instance of this class.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_already_exists_error: boolean
+        Flag to indicate if the email is already registered.
+
+    is_unknown_user_id_error: boolean
+        Flag to indicate if the user id used for makeing update email or password call is invalid.
+    """
+
     def __init__(self):
         super().__init__('EMAIL_ALREADY_EXISTS_ERROR')
         self.is_ok = False
@@ -152,6 +460,27 @@ class UpdateEmailOrPasswordEmailAlreadyExistsErrorResult(
 
 class UpdateEmailOrPasswordUnknownUserIdErrorResult(
         UpdateEmailOrPasswordResult):
+    """
+    Class to hold the result of failed update email or password call to supertokens-core.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the update email or password call to the supertokens-core.
+        This will hold `UNKNOWN_USER_ID_ERROR` in the instance of this class.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_already_exists_error: boolean
+        Flag to indicate if the email is already registered.
+
+    is_unknown_user_id_error: boolean
+        Flag to indicate if the user id used for makeing update email or password call is invalid.
+    """
+
     def __init__(self):
         super().__init__('UNKNOWN_USER_ID_ERROR')
         self.is_ok = False
@@ -160,6 +489,11 @@ class UpdateEmailOrPasswordUnknownUserIdErrorResult(
 
 
 class RecipeInterface(ABC):
+    """
+    Recipe interface for `supertokens_python.recipe.emailpassword` recipe.
+    #TODO: add more details.
+    """
+
     def __init__(self):
         pass
 
@@ -195,6 +529,36 @@ class RecipeInterface(ABC):
 
 
 class APIOptions:
+    """
+    Class to configure the `supertokens_python.recipe.emailpassword` recipe.
+    This is used to configure the outword facing APIs used in the middleware of the target framewor (`flask`, `django`, `fastapi`).
+
+    ...
+
+    Attributes
+    ----------
+    request: `supertokens_python.framework.BaseRequest`
+        Wrapper for the wsgi request.
+        #TODO: fix the docstring for `supertokens_python.framework.BaseRequest`
+
+    response: `supertokens_python.framework.BaseResponse`
+        Wrapper for the wsgi response
+        #TODO: fix the docstring for `supertokens_python.framework.BaseResponse`
+
+    recipe_id: str
+        name/id for the recipe
+
+    config: `supertokens_python.recipe.emailpassword.utils.EmailPasswordConfig`
+        configuration for the emailpassword recipe
+
+    recipe_implementation: `supertokens_python.recipe.emailpassword.interfcaes.RecipeInterface`
+        Object of `supertokens_python.recipe.emailpassword.interfcaes.RecipeInterface`,
+        modify this object for the customization.
+
+    email_verification_recipe_implementation: `supertokens_python.recipe.emailverification.EmailVerificationRecipeInterface`
+        Object of `supertokens_python.recipe.emailpassword.interfcaes.RecipeInterface`, modify this object for customization.
+    """
+
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: EmailPasswordConfig, recipe_implementation: RecipeInterface,
                  email_verification_recipe_implementation: EmailVerificationRecipeInterface):
@@ -207,6 +571,28 @@ class APIOptions:
 
 
 class EmailVerifyPostResponse(ABC):
+    """
+    Abstract class for holding the response to be sent for a email verify post request.
+
+    ...
+
+    Attributes
+    ----------
+    status: str
+        Status string for result of the email verify post request.
+        The possible values for this could be `OK` or `EMAIL_VERIFICATION_INVALID_TOKEN_ERROR`.
+
+    is_ok: boolean
+        Flag to indicate if the operation completed successfully.
+
+    is_email_verification_invalid_token_error: boolean
+        Flag to indicate if the email is already registered.
+
+    user:
+        Object of `supertokens_python.recipe.emailpassword.types.User` to hold the user details.
+        This will be `None` in case of error.
+    """
+
     def __init__(
             self, status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'], user: Union[User, None]):
         self.status = status
