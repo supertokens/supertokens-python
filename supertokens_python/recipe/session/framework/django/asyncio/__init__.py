@@ -40,6 +40,7 @@ def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: 
                 if session is None:
                     if session_required:
                         raise Exception("Should never come here")
+                    baseRequest.set_session_as_none()
                 else:
                     baseRequest.set_session(session)
                 return await f(baseRequest.request, *args, **kwargs)
