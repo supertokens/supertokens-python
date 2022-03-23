@@ -37,11 +37,39 @@ if TYPE_CHECKING:
 
 
 class RecipeImplementation(RecipeInterface):
+    """
+    The default implementation for `supertokens_python.recipe.emailpassword` recipe.
+
+    ...
+
+    Attributes
+    ----------
+    querier: `supertokens_python.querier.Querier`
+        API required to query `supertokens-core` and collect the result.
+    """
+
     def __init__(self, querier: Querier):
         super().__init__()
         self.querier = querier
 
     async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """
+        async method to retrive user details from the user-id.
+
+        ...
+
+        Args:
+        -----
+        user_id: `str`
+
+        user_context: `Dict`[`str`, `Any`]
+
+        Returns:
+        --------
+        Union[`supertokens_python.recipe.emailpassword.types.User`, `None`]
+
+        """
+
         params = {
             'userId': user_id
         }
@@ -52,6 +80,23 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def get_user_by_email(self, email: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """
+        async method to retrive user details from the email.
+
+        ...
+
+        Args:
+        -----
+        email_id: `str`
+
+        user_context: `Dict`[`str`, `Any`]
+
+        Returns:
+        --------
+        Union[`supertokens_python.recipe.emailpassword.types.User`, `None`]
+
+        """
+
         params = {
             'email': email
         }
@@ -62,6 +107,22 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> CreateResetPasswordResult:
+        """
+        async method to create a reset password token.
+
+        ...
+
+        Args:
+        -----
+        user_id: `str`
+
+        user_context: `Dict`[`str`, `Any`]
+
+        Returns:
+        --------
+        `supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordResult`
+        """
+
         data = {
             'userId': user_id
         }
@@ -73,6 +134,24 @@ class RecipeImplementation(RecipeInterface):
         return CreateResetPasswordWrongUserIdErrorResult()
 
     async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> ResetPasswordUsingTokenResult:
+        """
+        async method to  reset password using token.
+
+        ...
+
+        Args:
+        -----
+        token: `str`
+
+        new_password: `str`
+
+        user_context: `Dict`[`str`, `Any`]
+
+        Returns:
+        --------
+        `supertokens_python.recipe.emailpassword.interfaces.ResetPasswordUsingTokenResult`
+        """
+
         data = {
             'method': 'token',
             'token': token,
@@ -88,6 +167,24 @@ class RecipeImplementation(RecipeInterface):
         return ResetPasswordUsingTokenOkResult(user_id)
 
     async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> SignInResult:
+        """
+        async method to Sign in using email and password.
+
+        ...
+
+        Args:
+        -----
+        email: `str`
+
+        password: `str`
+
+        user_context: `Dict`[`str`, `Any`]
+
+        Returns:
+        --------
+        `supertokens_python.recipe.emailpassword.interfaces.SignInResult`
+        """
+
         data = {
             'password': password,
             'email': email
@@ -99,6 +196,24 @@ class RecipeImplementation(RecipeInterface):
         return SignInWrongCredentialsErrorResult()
 
     async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> SignUpResult:
+        """
+        async method to Sign up using email and password.
+
+        ...
+
+        Args:
+        -----
+        email: `str`
+
+        password: `str`
+
+        user_context: `Dict`[`str`, `Any`]
+
+        Returns:
+        --------
+        `supertokens_python.recipe.emailpassword.interfaces.SignUpResult`
+        """
+
         data = {
             'password': password,
             'email': email
@@ -111,6 +226,26 @@ class RecipeImplementation(RecipeInterface):
 
     async def update_email_or_password(self, user_id: str, email: Union[str, None],
                                        password: Union[str, None], user_context: Dict[str, Any]) -> UpdateEmailOrPasswordResult:
+        """
+        async method to update the email or password.
+
+        ...
+
+        Args:
+        -----
+        user_id: `str`
+
+        email: `Union`[`str`, `None`]
+
+        password: `Union`[`str`, `None`]
+
+        user_context: `Dict`[`str`, `Any`]
+
+        Returns:
+        --------
+        `supertokens_python.recipe.emailpassword.interfaces.SignUpResult`
+        """
+
         data = {
             'userId': user_id
         }

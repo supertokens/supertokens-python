@@ -14,7 +14,7 @@
 
 """
 In this module, classes with suffix `Result` are responsible for holding the result of the operations/calls to the supertokens-core.
-The classes with suffix `Response` are responsible for holding the responses to be sent to incomming API requests.
+The classes with suffix `Response` are responsible for holding the responses to be sent to incoming API requests.
 """
 
 
