@@ -15,6 +15,23 @@ from typing import Awaitable, Callable, List, Union
 
 
 class User:
+    """
+    Class to hold the User details.
+
+    ...
+
+    Attributes
+    ----------
+    user_id: `str`
+        user id for the given user.
+
+    email: `str`
+        email-id for the user.
+
+    time_joined: `int`
+        The time when user joined/signed up.
+    """
+
     def __init__(self, user_id: str, email: str, time_joined: int):
         self.user_id: str = user_id
         self.email: str = email
@@ -23,6 +40,23 @@ class User:
 
 
 class UsersResponse:
+    """
+    Class to hold the User list with pagination response.
+
+    ...
+
+    Attributes
+    ----------
+    users: `List`[`User`]
+        List of the users.
+
+    next_pagination_token: `Union`[`str`, `None`]
+        next pagination token
+
+    time_joined: `int`
+        The time when user joined/signed up.
+    """
+
     def __init__(self, users: List[User],
                  next_pagination_token: Union[str, None]):
         self.users = users
@@ -30,18 +64,63 @@ class UsersResponse:
 
 
 class ErrorFormField:
+    """
+    Class to hold the Form Field with error
+
+    ...
+
+    Attributes
+    ----------
+    id: `str`
+        Field id.
+
+    error: `str`
+        error message.
+    """
+
     def __init__(self, id: str, error: str):  # pylint: disable=redefined-builtin
         self.id = id
         self.error = error
 
 
 class FormField:
+    """
+    Class to hold the Form Field
+
+    ...
+
+    Attributes
+    ----------
+    id: `str`
+        Field id.
+
+    value: `str`
+        Field value.
+    """
+
     def __init__(self, id: str, value: str):  # pylint: disable=redefined-builtin
         self.id: str = id
         self.value: str = value
 
 
 class InputFormField:
+    """
+    Class to hold the Input Form Field
+
+    ...
+
+    Attributes
+    ----------
+    id: `str`
+        Field id.
+
+    validate: `Union`[`Callable`[[`str`], `Awaitable`[`Union`[`str`, `None`]]], `None`]
+        Validation coroutine
+
+    optional: `Union`[`bool`, `None`]
+        If the input form field is optional
+    """
+
     def __init__(self, id: str, validate: Union[Callable[[  # pylint: disable=redefined-builtin
                  str], Awaitable[Union[str, None]]], None] = None, optional: Union[bool, None] = None):
         self.id = id
@@ -50,6 +129,23 @@ class InputFormField:
 
 
 class NormalisedFormField:
+    """
+    Class to hold the Normalised Form Field
+
+    ...
+
+    Attributes
+    ----------
+    id: `str`
+        Field id.
+
+    validate: `Union`[`Callable`[[`str`], `Awaitable`[`Union`[`str`, `None`]]], `None`]
+        Validation coroutine
+
+    optional: `Union`[`bool`, `None`]
+        If the input form field is optional
+    """
+
     def __init__(self, id: str, validate: Callable[[  # pylint: disable=redefined-builtin
                  str], Awaitable[Union[str, None]]], optional: bool):
         self.id = id

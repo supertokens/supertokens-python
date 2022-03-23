@@ -30,6 +30,19 @@ class SuperTokensEmailPasswordError(SuperTokensError):
 
 
 class FieldError(SuperTokensEmailPasswordError):
+    """
+    Error when the Form Fields contain invalid values.
+
+    ...
+
+    Attributes
+    ----------
+    msg: `str`
+        error message
+
+    form_fields: `List`[`supertokens_python.recipe.emailpassword.types.ErrorFormField`]
+    """
+
     def __init__(self, msg: str, form_fields: List[ErrorFormField]):
         super().__init__(msg)
         self.form_fields = form_fields

@@ -243,7 +243,7 @@ class RecipeImplementation(RecipeInterface):
 
         Returns:
         --------
-        `supertokens_python.recipe.emailpassword.interfaces.SignUpResult`
+        `supertokens_python.recipe.emailpassword.interfaces.UpdateEmailOrPasswordResult`
         """
 
         data = {
