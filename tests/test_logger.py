@@ -4,8 +4,8 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 from supertokens_python.constants import VERSION
-from supertokens_python.logger import (log_debug_message, streamFormatter,
-                                       streamHandler)
+from supertokens_python.logger import (NAMESPACE, log_debug_message,
+                                       streamFormatter)
 
 
 class LoggerTests(TestCase):
@@ -17,14 +17,15 @@ class LoggerTests(TestCase):
             log_debug_message("API replied with status 200")
 
         record = captured.records[0]
-        streamHandler.transform(record)
         out = json.loads(record.msg)
-        filename, lineno = out.pop('file').split(':')
 
-        assert int(lineno) > 0
-        assert filename.endswith('tests/test_logger.py')
-        assert out == {'t': '2000-01-01T00:00Z', 'sdkVer': VERSION, 'message': 'API replied with status 200'}
+        assert out == {
+            't': '2000-01-01T00:00Z',
+            'sdkVer': VERSION,
+            'message': 'API replied with status 200',
+            'file': '../tests/test_logger.py:17'
+        }
 
     @staticmethod
     def test_stream_formatter_format():
-        assert streamFormatter._fmt == "com.supertokens {message} +{relative}ms"  # pylint: disable=protected-access
+        assert streamFormatter._fmt == NAMESPACE + " {message} +{relative}ms"  # pylint: disable=protected-access

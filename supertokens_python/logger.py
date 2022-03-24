@@ -12,40 +12,48 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# pyright: reportUnknownMemberType=false
-
 import json
 import logging
 from datetime import datetime
-from os import getenv
+from os import getenv, path
 from typing import TextIO, Union
 
 from .constants import VERSION
 
+NAMESPACE = "com.supertokens"
+DEBUG_ENV_VAR = "SUPERTOKENS_DEBUG"
+
+supertokens_dir = path.dirname(__file__)
+
 # Configure logger
-logger = logging.getLogger()
-log_level_str = getenv('LOG_LEVEL', "").lower()
-logger.setLevel(logging.DEBUG if log_level_str == "debug" else logging.INFO)
+logger = logging.getLogger(NAMESPACE)
+log_level_str = getenv(DEBUG_ENV_VAR, "").lower()
+if log_level_str == "1":
+    logger.setLevel(logging.DEBUG)
 
 
 def _get_log_timestamp() -> str:
     return datetime.utcnow().isoformat()[:-3] + "Z"
 
 
-class CustomStreamHandler(logging.StreamHandler):
+class CustomStreamHandler(logging.StreamHandler):  # type: ignore
     def __init__(self, stream: Union[TextIO, None] = None):
-        super().__init__(stream)
+        super().__init__(stream)  # type: ignore
+        # self.last stores the last log timestamp and is used to calculate the
+        # time difference between two consecutive logs.
         self.last = .0
 
-    def transform(self, record: logging.LogRecord) -> None:
+    def emit(self, record: logging.LogRecord):
+        relative_path = path.relpath(record.pathname, supertokens_dir)
+
         record.msg = json.dumps({
             "t": _get_log_timestamp(),
             "sdkVer": VERSION,
             "message": record.msg,
-            "file": f'{record.pathname}:{record.lineno}'
+            "file": f'{relative_path}:{record.lineno}'
         })
 
-        # Adding relative difference wrt the prev log
+        # Storing relative time difference difference wrt the prev log (in record.relative attribute)
         try:
             last = self.last
         except AttributeError:
@@ -55,16 +63,20 @@ class CustomStreamHandler(logging.StreamHandler):
         record.relative = f"{(delta.seconds + delta.microseconds / 1000000.0):.2f}"  # type: ignore
         self.last = record.relativeCreated
 
-    def emit(self, record: logging.LogRecord):
-        self.transform(record)
         return super().emit(record)
 
 
 # Add stream handler and format
 streamHandler = CustomStreamHandler()
-streamFormatter = logging.Formatter("com.supertokens {message} +{relative}ms", style="{")
+streamFormatter = logging.Formatter("{name} {message} +{relative}ms", style="{")
 streamHandler.setFormatter(streamFormatter)
 logger.addHandler(streamHandler)
+
+
+# The debug logger can be used like this:
+# log_debug_message("Hello")
+# Output log format:
+# com.supertokens {"t": "2022-03-24T06:28:33.659Z", "sdkVer": "0.5.1", "message": "Hello", "file": "logger.py:73"} +0.01ms
 
 # Export logger.debug as log_debug_message function
 log_debug_message = logger.debug
