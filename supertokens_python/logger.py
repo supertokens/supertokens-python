@@ -16,7 +16,6 @@ import json
 import logging
 from datetime import datetime
 from os import getenv, path
-from typing import Dict, TextIO, Union
 
 from .constants import VERSION
 
@@ -37,12 +36,6 @@ def _get_log_timestamp() -> str:
 
 
 class CustomStreamHandler(logging.StreamHandler):  # type: ignore
-    def __init__(self, stream: Union[TextIO, None] = None):
-        super().__init__(stream)  # type: ignore
-        # self.last stores the last log timestamp and is used to calculate the
-        # time difference between two consecutive logs.
-        self.last: Dict[int, float] = {0: .0}
-
     def emit(self, record: logging.LogRecord):
         relative_path = path.relpath(record.pathname, supertokens_dir)
 
