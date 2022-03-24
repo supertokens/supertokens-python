@@ -27,8 +27,8 @@ supertokens_dir = path.dirname(__file__)
 
 # Configure logger
 logger = logging.getLogger(NAMESPACE)
-log_level_str = getenv(DEBUG_ENV_VAR, "").lower()
-if log_level_str == "1":
+debug_env = getenv(DEBUG_ENV_VAR, "").lower()
+if debug_env == "1":
     logger.setLevel(logging.DEBUG)
 
 
