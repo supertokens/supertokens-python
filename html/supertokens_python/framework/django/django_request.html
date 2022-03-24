@@ -88,6 +88,9 @@ class DjangoRequest(BaseRequest):
     def set_session(self, session: SessionContainer):
         self.request.supertokens = session  # type: ignore
 
+    def set_session_as_none(self):
+        self.request.supertokens = None  # type: ignore
+
     def get_path(self) -&gt; str:
         return self.request.path
 
@@ -151,6 +154,9 @@ inheritance.</p></div>
 
     def set_session(self, session: SessionContainer):
         self.request.supertokens = session  # type: ignore
+
+    def set_session_as_none(self):
+        self.request.supertokens = None  # type: ignore
 
     def get_path(self) -&gt; str:
         return self.request.path
@@ -299,6 +305,14 @@ inheritance.</p></div>
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.framework.request.BaseRequest" href="../request.html#supertokens_python.framework.request.BaseRequest">BaseRequest</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.framework.request.BaseRequest.set_session_as_none" href="../request.html#supertokens_python.framework.request.BaseRequest.set_session_as_none">set_session_as_none</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>

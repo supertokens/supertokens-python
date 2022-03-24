@@ -209,8 +209,6 @@ def validate_and_normalise_user_input(
     if get_link_domain_and_path is None:
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)
 
-    if get_link_domain_and_path is not None:
-        get_link_domain_and_path = default_get_link_domain_and_path(app_info)
     return PasswordlessConfig(
         contact_config=contact_config,
         override=OverrideConfig(

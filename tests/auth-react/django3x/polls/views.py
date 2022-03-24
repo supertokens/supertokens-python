@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing_extensions import Literal
 import json
 import os
 from typing import Any, Dict, List, Union
@@ -22,7 +21,8 @@ from httpx import AsyncClient
 from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
                                 init)
 from supertokens_python.recipe import (emailpassword, passwordless, session,
-                                       thirdparty, thirdpartyemailpassword)
+                                       thirdparty, thirdpartyemailpassword,
+                                       thirdpartypasswordless)
 from supertokens_python.recipe.emailpassword import (EmailPasswordRecipe,
                                                      InputFormField)
 from supertokens_python.recipe.emailpassword.types import User
@@ -39,6 +39,9 @@ from supertokens_python.recipe.thirdparty.types import (
     AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
 from supertokens_python.recipe.thirdpartyemailpassword import (
     Facebook, Github, Google, ThirdPartyEmailPasswordRecipe)
+from supertokens_python.recipe.thirdpartypasswordless import \
+    ThirdPartyPasswordlessRecipe
+from typing_extensions import Literal
 
 mode = os.environ.get('APP_MODE', 'asgi')
 if mode == 'asgi':
@@ -164,6 +167,7 @@ def get_website_domain():
 def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']] = None,
                 flow_type: Union[None, Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']] = None):
     PasswordlessRecipe.reset()
+    ThirdPartyPasswordlessRecipe.reset()
     JWTRecipe.reset()
     EmailVerificationRecipe.reset()
     SessionRecipe.reset()
@@ -171,6 +175,23 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
     EmailPasswordRecipe.reset()
     ThirdPartyEmailPasswordRecipe.reset()
     Supertokens.reset()
+
+    providers_list: List[Provider] = [
+        Google(
+            client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+            client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
+        ), Facebook(
+            client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
+            client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
+        ), Github(
+            client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+            client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
+        ), CustomAuth0Provider(
+            client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
+            domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
+            client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
+        )
+    ]
 
     if contact_method is not None and flow_type is not None:
         if contact_method == 'PHONE':
@@ -180,12 +201,26 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
                 ),
                 flow_type=flow_type
             )
+            thirdpartypasswordless_init = thirdpartypasswordless.init(
+                contact_config=ContactPhoneOnlyConfig(
+                    create_and_send_custom_text_message=save_code_text
+                ),
+                flow_type=flow_type,
+                providers=providers_list
+            )
         elif contact_method == 'EMAIL':
             passwordless_init = passwordless.init(
                 contact_config=ContactEmailOnlyConfig(
                     create_and_send_custom_email=save_code_email
                 ),
                 flow_type=flow_type
+            )
+            thirdpartypasswordless_init = thirdpartypasswordless.init(
+                contact_config=ContactEmailOnlyConfig(
+                    create_and_send_custom_email=save_code_email
+                ),
+                flow_type=flow_type,
+                providers=providers_list
             )
         else:
             passwordless_init = passwordless.init(
@@ -195,12 +230,25 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
                 ),
                 flow_type=flow_type
             )
+            thirdpartypasswordless_init = thirdpartypasswordless.init(
+                contact_config=ContactEmailOrPhoneConfig(
+                    create_and_send_custom_email=save_code_email,
+                    create_and_send_custom_text_message=save_code_text
+                ),
+                flow_type=flow_type,
+                providers=providers_list
+            )
     else:
         passwordless_init = passwordless.init(
             contact_config=ContactPhoneOnlyConfig(
                 create_and_send_custom_text_message=save_code_text
             ),
             flow_type='USER_INPUT_CODE_AND_MAGIC_LINK'
+        )
+        thirdpartypasswordless_init = thirdpartypasswordless.init(
+            contact_config=ContactPhoneOnlyConfig(create_and_send_custom_text_message=save_code_text),
+            flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
+            providers=providers_list
         )
 
     recipe_list = [
@@ -215,44 +263,15 @@ def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_
             )
         ),
         thirdparty.init(
-            sign_in_and_up_feature=thirdparty.SignInAndUpFeature([
-                Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
-                ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
-                ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
-                ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
-                    domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
-                )
-            ])
+            sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list)
         ),
         thirdpartyemailpassword.init(
             sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(
                 form_fields),
-            providers=[
-                Google(
-                    client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
-                ), Facebook(
-                    client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
-                    client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
-                ), Github(
-                    client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
-                    client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
-                ), CustomAuth0Provider(
-                    client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
-                    domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
-                    client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
-                )
-            ]
+            providers=providers_list
         ),
-        passwordless_init
+        passwordless_init,
+        thirdpartypasswordless_init
     ]
     init(
         supertokens_config=SupertokensConfig('http://localhost:9000'),
@@ -332,5 +351,5 @@ def before_each(request: HttpRequest):
 
 def test_feature_flags(request: HttpRequest):
     return JsonResponse({
-        'available': ['passwordless']
+        'available': ['passwordless', 'thirdpartypasswordless']
     })

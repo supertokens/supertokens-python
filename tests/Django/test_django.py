@@ -12,22 +12,23 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.emailpassword.interfaces import (APIInterface,
-                                                                APIOptions)
-from typing import Union
 import json
 from inspect import isawaitable
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.test import RequestFactory, TestCase
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.django import middleware
 from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe.emailpassword.interfaces import (APIInterface,
+                                                                APIOptions)
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (create_new_session,
                                                        get_session,
                                                        refresh_session)
+from supertokens_python.recipe.session.framework.django.asyncio import \
+    verify_session
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
@@ -76,6 +77,14 @@ async def handle_view(request: HttpRequest):
     session: Union[None, SessionContainer] = await get_session(request, True)
     if session is None:
         raise Exception("Should never come here")
+    return JsonResponse({'s': session.get_handle()})
+
+
+@verify_session(session_required=False)
+async def optional_session(request: HttpRequest):
+    session: Union[None, SessionContainer] = request.supertokens  # type: ignore
+    if session is None:
+        return JsonResponse({'s': "empty session"})
     return JsonResponse({'s': session.get_handle()})
 
 
@@ -323,3 +332,30 @@ class SupertokensTest(TestCase):
         assert response.status_code == 203
         dict_response = json.loads(response.content)
         assert dict_response["custom"]
+
+    async def test_optional_session(self):
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='django',
+            mode='asgi',
+            recipe_list=[session.init()]
+        )
+
+        start_st()
+
+        my_middleware = middleware(optional_session)
+        request = self.factory.get('/handle-session-optional')
+        temp = my_middleware(request)
+        if not isawaitable(temp):
+            raise Exception("Should never come here")
+        response = await temp
+
+        assert response.status_code == 200
+        dict_response = json.loads(response.content)
+        assert dict_response["s"] == "empty session"
