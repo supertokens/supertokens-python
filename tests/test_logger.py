@@ -4,8 +4,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 from supertokens_python.constants import VERSION
-from supertokens_python.logger import (NAMESPACE, log_debug_message,
-                                       streamFormatter)
+from supertokens_python.logger import log_debug_message, streamFormatter
 
 
 class LoggerTests(TestCase):
@@ -23,9 +22,9 @@ class LoggerTests(TestCase):
             't': '2000-01-01T00:00Z',
             'sdkVer': VERSION,
             'message': 'API replied with status 200',
-            'file': '../tests/test_logger.py:17'
+            'file': '../tests/test_logger.py:16',
         }
 
     @staticmethod
     def test_stream_formatter_format():
-        assert streamFormatter._fmt == NAMESPACE + " {message} +{relative}ms"  # pylint: disable=protected-access
+        assert streamFormatter._fmt == "{name} {message}"  # pylint: disable=protected-access
