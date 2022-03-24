@@ -65,3 +65,6 @@ streamHandler = CustomStreamHandler()
 streamFormatter = logging.Formatter("com.supertokens {message} +{relative}ms", style="{")
 streamHandler.setFormatter(streamFormatter)
 logger.addHandler(streamHandler)
+
+# Export logger.debug as log_debug_message function
+log_debug_message = logger.debug

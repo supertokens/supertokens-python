@@ -1,26 +1,27 @@
 import json
-import logging
 from datetime import datetime as real_datetime
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 from supertokens_python.constants import VERSION
-from supertokens_python.logger import streamFormatter, streamHandler
+from supertokens_python.logger import (log_debug_message, streamFormatter,
+                                       streamHandler)
 
 
-class LoggerUtilsTests(TestCase):
+class LoggerTests(TestCase):
     @patch('supertokens_python.logger.datetime', wraps=real_datetime)
     def test_json_msg_format(self, datetime_mock: MagicMock):
         datetime_mock.utcnow.return_value = real_datetime(2000, 1, 1)  # type: ignore
 
         with self.assertLogs(level='DEBUG') as captured:
-            logging.debug("API replied with status 200")
+            log_debug_message("API replied with status 200")
 
         record = captured.records[0]
         streamHandler.transform(record)
         out = json.loads(record.msg)
-        filename = out.pop('file').split(':')[0]
+        filename, lineno = out.pop('file').split(':')
 
+        assert int(lineno) > 0
         assert filename.endswith('tests/test_logger.py')
         assert out == {'t': '2000-01-01T00:00Z', 'sdkVer': VERSION, 'message': 'API replied with status 200'}
 
