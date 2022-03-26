@@ -21,7 +21,7 @@ from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.exceptions import BadInputError
-from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.asyncio import (
@@ -56,7 +56,7 @@ def teardown_function(_):
 @fixture(scope='function')
 async def driver_config_client():
     app = FastAPI()
-    app.add_middleware(Middleware)
+    app.add_middleware(get_middleware())
 
     @app.get('/login')
     async def login(request: Request):  # type: ignore

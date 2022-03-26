@@ -12,7 +12,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.types import ASGIApp
 from supertokens_python import (InputAppInfo, SupertokensConfig,
                                 get_all_cors_headers, init)
-from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session, thirdpartyemailpassword
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.framework.fastapi import verify_session
@@ -22,7 +22,7 @@ from supertokens_python.recipe.thirdpartyemailpassword import (
 load_dotenv()
 
 app = FastAPI(debug=True)
-app.add_middleware(Middleware)
+app.add_middleware(get_middleware())
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 

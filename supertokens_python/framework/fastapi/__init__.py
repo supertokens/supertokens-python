@@ -12,4 +12,5 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from supertokens_python.framework.fastapi import fastapi_middleware
-Middleware = fastapi_middleware.Middleware
+
+get_middleware = fastapi_middleware.get_middleware
