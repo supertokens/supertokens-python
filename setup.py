@@ -36,6 +36,20 @@ extras_require = {
         'django-cors-headers==3.11.0',
         'django',
         'django-stubs==1.9.0'
+    ]),
+    # the unit tests use fastapi testClient,
+    # and it only works with this version of starlette
+    'unittests': ([
+        'starlette==0.14.2'
+    ]),
+    # we want to fix the versions of the framework that
+    # we use to develop the SDK with otherwise we get
+    # a bunch of type errors on make dev-install depending
+    # on changes in these frameworks
+    'development': ([
+        'Flask==2.0.2',
+        'django==3.2.12',
+        'Fastapi==0.68.1'
     ])
 }
 
@@ -84,18 +98,19 @@ setup(
     ],
     keywords="",
     install_requires=[
-        "PyJWT~=2.0",
-        "httpx~=0.15",
-        "pycryptodome~=3.10",
-        'jsonschema~=3.2',
-        "tldextract~=3.1",
-        "asgiref~=3.4",
-        'typing_extensions~=4.1',
-        'Deprecated~=1.2',
-        'cryptography~=35.0',
-        'phonenumbers~=8.12'
+        "PyJWT==2.0.*",
+        "httpx==0.15.*",
+        "pycryptodome==3.10.*",
+        'jsonschema==3.2.0',
+        "tldextract==3.1.0",
+        "asgiref==3.4.1",
+        'typing_extensions==4.1.1',
+        'Deprecated==1.2.13',
+        'cryptography==35.0',
+        'phonenumbers==8.12'
     ],
     python_requires='>=3.7',
     include_package_data=True,
     extras_require=extras_require
 )
+
