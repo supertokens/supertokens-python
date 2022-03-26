@@ -43,7 +43,6 @@ import json
 from typing import Any, Dict, List, Union
 
 from supertokens_python.framework.response import BaseResponse
-from werkzeug.http import dump_cookie
 
 
 class FlaskResponse(BaseResponse):
@@ -64,6 +63,7 @@ class FlaskResponse(BaseResponse):
 
     def set_cookie(self, key: str, value: str, expires: int, path: str = &#34;/&#34;,
                    domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
+        from werkzeug.http import dump_cookie
         if self.response is None:
             cookie = dump_cookie(
                 key,
@@ -163,6 +163,7 @@ inheritance.</p></div>
 
     def set_cookie(self, key: str, value: str, expires: int, path: str = &#34;/&#34;,
                    domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
+        from werkzeug.http import dump_cookie
         if self.response is None:
             cookie = dump_cookie(
                 key,
@@ -297,6 +298,7 @@ when testing to get the test client response data as JSON.</p>
 </summary>
 <pre><code class="python">def set_cookie(self, key: str, value: str, expires: int, path: str = &#34;/&#34;,
                domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
+    from werkzeug.http import dump_cookie
     if self.response is None:
         cookie = dump_cookie(
             key,
