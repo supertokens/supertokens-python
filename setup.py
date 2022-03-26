@@ -26,15 +26,15 @@ extras_require = {
     ]),
     'fastapi': ([
         'respx==0.16.3',
-        'Fastapi==0.68.1'
+        'Fastapi'
     ]),
     'flask': ([
         'flask_cors',
-        'Flask==2.0.2'
+        'Flask'
     ]),
     'django': ([
         'django-cors-headers==3.11.0',
-        'django==3.2.12',
+        'django',
         'django-stubs==1.9.0'
     ])
 }
@@ -84,18 +84,16 @@ setup(
     ],
     keywords="",
     install_requires=[
-        "PyJWT==2.0.*",
-        "httpx==0.15.*",
-        "pycryptodome==3.10.*",
-        'jsonschema==3.2.0',
-        "tldextract==3.1.0",
-        "asgiref==3.4.1",
-        "werkzeug==2.0.1",
-        'starlette~=0.14.2',
-        'typing_extensions==4.1.1',
-        'Deprecated==1.2.13',
-        'cryptography==35.0',
-        'phonenumbers==8.12'
+        "PyJWT~=2.0",
+        "httpx~=0.15",
+        "pycryptodome~=3.10",
+        'jsonschema~=3.2',
+        "tldextract~=3.1",
+        "asgiref~=3.4",
+        'typing_extensions~=4.1',
+        'Deprecated~=1.2',
+        'cryptography~=35.0',
+        'phonenumbers~=8.12'
     ],
     python_requires='>=3.7',
     include_package_data=True,

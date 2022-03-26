@@ -14,18 +14,18 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 
-from supertokens_python.recipe.jwt.interfaces import APIOptions
 from typing import Any, Dict, List, Union
+
 from _pytest.fixtures import fixture
 from fastapi import FastAPI
 from pytest import mark
 from starlette.requests import Request
 from starlette.testclient import TestClient
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.asyncio import create_jwt
-from supertokens_python.recipe.jwt.interfaces import (APIInterface,
+from supertokens_python.recipe.jwt.interfaces import (APIInterface, APIOptions,
                                                       RecipeInterface)
 from tests.utils import clean_st, reset, setup_st, start_st
 
@@ -44,7 +44,7 @@ def teardown_function(_):
 @fixture(scope='function')
 async def driver_config_client():
     app = FastAPI()
-    app.add_middleware(Middleware)
+    app.add_middleware(get_middleware())
 
     @app.post('/jwtcreate')
     async def jwt_create(request: Request):  # type: ignore
