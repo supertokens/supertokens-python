@@ -6,8 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.5.3] - 2022-03-26
 ### Fixes
-- https://github.com/supertokens/supertokens-python/issues/95
+- Bug in user pagination functions: https://github.com/supertokens/supertokens-python/issues/95
 
 
 ## [0.5.2] - 2022-03-17

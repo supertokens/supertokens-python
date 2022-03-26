@@ -17,10 +17,7 @@ from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.asyncio import (get_users_newest_first,
                                         get_users_oldest_first)
 from supertokens_python.recipe import emailpassword, session
-from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
-from supertokens_python.recipe.emailpassword.recipe_implementation import \
-    RecipeImplementation
 
 from tests.utils import clean_st, reset, setup_st, start_st
 
@@ -52,12 +49,8 @@ async def test_get_users_pagination():
     )
     start_st()
 
-    s = EmailPasswordRecipe.get_instance()
-    if not isinstance(s.recipe_implementation, RecipeImplementation):
-        raise Exception("Should never come here")
-
     for i in range(5):
-        await sign_up(f"dummy{i}@gmail.com", "validpass123", {'manualCall': True})
+        await sign_up(f"dummy{i}@gmail.com", "validpass123")
 
     # Get all the users (No limit)
     response = await get_users_newest_first()
