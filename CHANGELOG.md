@@ -6,6 +6,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.6.0] - 2022-03-26
+
+### Changes
+- Removes dependency on framework specific dependencies (`werkzeug` and `starlette`)
+
+### Breaking change:
+- Import for fastapi middleware:
+   - Old
+      ```
+      from supertokens_python.framework.fastapi import Middleware
+
+      app = FastAPI()
+      app.add_middleware(Middleware)
+      ```
+   - New
+      ```
+      from supertokens_python.framework.fastapi import get_middleware
+
+      app = FastAPI()
+      app.add_middleware(get_middleware())
+      ```
+
 ## [0.5.3] - 2022-03-26
 ### Fixes
 - Bug in user pagination functions: https://github.com/supertokens/supertokens-python/issues/95
