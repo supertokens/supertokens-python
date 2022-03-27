@@ -26,7 +26,7 @@ def create_new_session(request: Any, user_id: str, access_token_payload: Union[D
     from supertokens_python.recipe.session.asyncio import \
         create_new_session as async_create_new_session
     return sync(async_create_new_session(
-        request, user_id, access_token_payload, session_data, user_context))
+        request, user_id, access_token_payload, session_data, user_context=user_context))
 
 
 def get_session(request: Any, anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None) -> Union[SessionContainer, None]:

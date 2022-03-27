@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       app.add_middleware(get_middleware())
       ```
 
+### Fixes
+- `user_context` was passed incorrectly to the `create_new_session_function`.
+
 ## [0.5.3] - 2022-03-26
 ### Fixes
 - Bug in user pagination functions: https://github.com/supertokens/supertokens-python/issues/95
