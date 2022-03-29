@@ -20,16 +20,16 @@ test:
 	pytest ./tests/
 
 dev-install:
-	pip3 install -e .[dev] && pip3 install -e .[fastapi] && pip3 install -e .[django] && pip3 install -e .[flask] && pip3 install -e .[unittests] && pip3 install -e .[development]
+	pip3 install -e .[dev] && pip3 install -e .[fastapi] && pip3 install -e .[django] && pip3 install -e .[flask] && pip3 install -e .[unittests]
 
-dev-install-with-fastapi:
-	pip3 install -e .[dev] && pip3 install -e .[fastapi]
+with-fastapi:
+	pip3 install -e .[fastapi]
 
-dev-install-with-django:
-	pip3 install -e .[dev] && pip3 install -e .[django]
+with-django:
+	pip3 install -e .[django]
 
-dev-install-with-flask:
-	pip3 install -e .[dev] && pip3 install -e .[flask]
+with-flask:
+	pip3 install -e .[flask]
 
 build-docs:
 	rm -rf html && pdoc --html supertokens_python

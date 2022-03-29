@@ -9,6 +9,10 @@ with open(path.join(here, "README.md"), mode="r", encoding="utf-8") as f:
     long_description = f.read()
 
 extras_require = {
+    # we want to fix the versions of the libraries that
+    # we use to develop the SDK with otherwise we get
+    # a bunch of type errors on make dev-install depending
+    # on changes in these frameworks
     'dev': ([
         'pytest==6.2.5',
         'autopep8==1.5.6',
@@ -23,6 +27,11 @@ extras_require = {
         'pylint==2.12.2',
         'isort==5.10.1',
         'pyright==0.0.13',
+        'PyJWT==2.0.0',
+        'httpx==0.15.0',
+        'Flask==2.0.2',
+        'django==3.2.12',
+        'Fastapi==0.68.1',
     ]),
     'fastapi': ([
         'respx==0.16.3',
@@ -42,15 +51,6 @@ extras_require = {
     'unittests': ([
         'starlette==0.14.2'
     ]),
-    # we want to fix the versions of the framework that
-    # we use to develop the SDK with otherwise we get
-    # a bunch of type errors on make dev-install depending
-    # on changes in these frameworks
-    'development': ([
-        'Flask==2.0.2',
-        'django==3.2.12',
-        'Fastapi==0.68.1'
-    ])
 }
 
 exclude_list = [
@@ -73,7 +73,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.6.0",
+    version="0.6.1",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -98,8 +98,8 @@ setup(
     ],
     keywords="",
     install_requires=[
-        "PyJWT==2.0.*",
-        "httpx==0.15.*",
+        "PyJWT>=2.0.0 ,<2.4.0",
+        "httpx>=0.15.0 ,<0.23.0",
         "pycryptodome==3.10.*",
         'jsonschema==3.2.0',
         "tldextract==3.1.0",
