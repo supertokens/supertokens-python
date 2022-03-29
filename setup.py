@@ -35,7 +35,8 @@ extras_require = {
     ]),
     'fastapi': ([
         'respx==0.16.3',
-        'Fastapi'
+        'Fastapi',
+        'uvicorn==0.13.4'
     ]),
     'flask': ([
         'flask_cors',
@@ -44,7 +45,8 @@ extras_require = {
     'django': ([
         'django-cors-headers==3.11.0',
         'django',
-        'django-stubs==1.9.0'
+        'django-stubs==1.9.0',
+        'uvicorn==0.13.4'
     ]),
     # the unit tests use fastapi testClient,
     # and it only works with this version of starlette
