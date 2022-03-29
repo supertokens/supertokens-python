@@ -27,6 +27,8 @@ extras_require = {
         'pylint==2.12.2',
         'isort==5.10.1',
         'pyright==0.0.13',
+        'PyJWT==2.0.0'
+        'httpx==0.15.0',
         'Flask==2.0.2',
         'django==3.2.12',
         'Fastapi==0.68.1',
