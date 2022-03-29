@@ -98,7 +98,7 @@ setup(
     ],
     keywords="",
     install_requires=[
-        "PyJWT>=2.0.0 ,<=2.3.0",
+        "PyJWT>=2.0.0 ,<2.4.0",
         "httpx>=0.15.0 ,<0.23.0",
         "pycryptodome==3.10.*",
         'jsonschema==3.2.0',
