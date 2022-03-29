@@ -99,7 +99,7 @@ setup(
     keywords="",
     install_requires=[
         "PyJWT==2.0.*",
-        "httpx==0.15.*",
+        "httpx>=0.15.0 ,<=0.22.0",
         "pycryptodome==3.10.*",
         'jsonschema==3.2.0',
         "tldextract==3.1.0",
