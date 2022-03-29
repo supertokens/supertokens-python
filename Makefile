@@ -20,7 +20,7 @@ test:
 	pytest ./tests/
 
 dev-install:
-	pip3 install -e .[dev] && pip3 install -e .[fastapi] && pip3 install -e .[django] && pip3 install -e .[flask] && pip3 install -e .[unittests]
+	pip3 install -e .[dev] && pip3 install -e .[fastapi] && pip3 install -e .[django] && pip3 install -e .[flask]
 
 with-fastapi:
 	pip3 install -e .[fastapi]
