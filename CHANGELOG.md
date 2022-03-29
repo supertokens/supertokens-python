@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.6.1] - 2022-03-29
+
 - Expands allowed version range for httpx library to fix https://github.com/supertokens/supertokens-python/issues/98
 
 ## [0.6.0] - 2022-03-26
