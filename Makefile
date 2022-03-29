@@ -22,7 +22,7 @@ test:
 dev-install:
 	pip install -r dev-requirements.txt
 
-update-dev-requirements:
+freeze-dev-requirements:
 	pip freeze > dev-requirements.txt
 
 with-fastapi:
