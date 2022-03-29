@@ -13,27 +13,6 @@ extras_require = {
     # we use to develop the SDK with otherwise we get
     # a bunch of type errors on make dev-install depending
     # on changes in these frameworks
-    'dev': ([
-        'pytest==6.2.5',
-        'autopep8==1.5.6',
-        'PyYAML==5.4.1',
-        'uvicorn==0.13.4',
-        'requests==2.25.1',
-        'pytest-asyncio==0.14.0',
-        'nest-asyncio==1.5.1',
-        'python-dotenv==0.19.2',
-        'pdoc3==0.10.0',
-        'tzdata==2021.5',
-        'pylint==2.12.2',
-        'isort==5.10.1',
-        'pyright==0.0.13',
-        'PyJWT==2.0.1',
-        'httpx==0.15.5',
-        'Flask==2.0.2',
-        'django==3.2.12',
-        'Fastapi==0.68.1',
-        'starlette==0.14.2'
-    ]),
     'fastapi': ([
         'respx==0.16.3',
         'Fastapi',
@@ -69,7 +48,8 @@ exclude_list = [
     "html",
     "pyrightconfig.json",
     "Makefile",
-    ".pylintrc"
+    ".pylintrc",
+    "dev-requirements.txt"
 ]
 
 setup(

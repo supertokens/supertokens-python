@@ -20,7 +20,10 @@ test:
 	pytest ./tests/
 
 dev-install:
-	pip3 install -e .[dev] && pip3 install -e .[fastapi] && pip3 install -e .[django] && pip3 install -e .[flask]
+	pip install -r dev-requirements.txt
+
+update-dev-requirements:
+	pip freeze > dev-requirements.txt
 
 with-fastapi:
 	pip3 install -e .[fastapi]
