@@ -16,6 +16,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict
 
 from httpx import AsyncClient
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryInterface, TypeInput)
+from supertokens_python.recipe.emailverification.emaildelivery.services.backward import \
+    BackwardCompatibilityService
+from supertokens_python.recipe.emailverification.interfaces import \
+    TypeEmailVerificationEmailDeliveryInput
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
@@ -57,42 +63,49 @@ class ParentRecipeEmailVerificationConfig:
     def __init__(self,
                  get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
                  override: Union[OverrideConfig, None] = None,
-                 get_email_verification_url: Union[Callable[[
-                     User, Dict[str, Any]], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[
-                     User, str, Dict[str, Any]], Awaitable[None]], None] = None
+                 get_email_verification_url: Union[Callable[[User, Dict[str, Any]], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[User, str, Dict[str, Any]], Awaitable[None]], None] = None,
+                 email_delivery: Union[TypeInput[TypeEmailVerificationEmailDeliveryInput], None] = None
                  ):
         self.override = override
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
         self.get_email_for_user_id = get_email_for_user_id
+        self.email_delivery = email_delivery
 
 
 class EmailVerificationConfig:
     def __init__(self,
                  override: OverrideConfig,
                  get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
-                 create_and_send_custom_email: Callable[[User, str, Dict[str, Any]], Awaitable[None]],
-                 get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]]
+                 get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
+                 email_delivery: Union[TypeInput[TypeEmailVerificationEmailDeliveryInput], None],
+                 email_service: Union[EmailDeliveryInterface[TypeEmailVerificationEmailDeliveryInput], None]
                  ):
         self.get_email_for_user_id = get_email_for_user_id
         self.get_email_verification_url = get_email_verification_url
-        self.create_and_send_custom_email = create_and_send_custom_email
         self.override = override
+        self.email_delivery = email_delivery
+        self.email_service = email_service
 
 
 def validate_and_normalise_user_input(
         app_info: AppInfo, config: ParentRecipeEmailVerificationConfig):
     get_email_verification_url = config.get_email_verification_url if config.get_email_verification_url is not None \
         else default_get_email_verification_url(app_info)
-    create_and_send_custom_email = config.create_and_send_custom_email if config.create_and_send_custom_email is not None \
-        else default_create_and_send_custom_email(app_info)
+
+    email_service = config.email_delivery.service if config.email_delivery is not None else None
+    if email_service:
+        assert config.create_and_send_custom_email is not None, "Shouldn't have happened"
+        email_service = BackwardCompatibilityService(app_info, config.create_and_send_custom_email)
+
     override = config.override
     if override is None:
         override = OverrideConfig()
     return EmailVerificationConfig(
         override=override,
         get_email_for_user_id=config.get_email_for_user_id,
-        create_and_send_custom_email=create_and_send_custom_email,
+        email_delivery=config.email_delivery,
+        email_service=email_service,
         get_email_verification_url=get_email_verification_url
     )
