@@ -16,6 +16,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 from xmlrpc.client import boolean
+from supertokens_python.ingredients.emaildelivery.interfaces import EmailDeliveryIngredient
+
+from supertokens_python.recipe.emailpassword.types import TypeEmailPasswordEmailDeliveryInput
 
 from ..emailverification.interfaces import \
     RecipeInterface as EmailVerificationRecipeInterface
@@ -197,13 +200,16 @@ class RecipeInterface(ABC):
 class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: EmailPasswordConfig, recipe_implementation: RecipeInterface,
-                 email_verification_recipe_implementation: EmailVerificationRecipeInterface):
+                 email_verification_recipe_implementation: EmailVerificationRecipeInterface,
+                 email_delivery: Union[EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput], None] = None,
+                 ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
         self.config: EmailPasswordConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = email_verification_recipe_implementation
+        self.email_delivery = email_delivery
 
 
 class EmailVerifyPostResponse(ABC):

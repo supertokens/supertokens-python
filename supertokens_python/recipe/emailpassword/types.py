@@ -11,7 +11,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Awaitable, Callable, List, Union
+from abc import ABC, abstractmethod
+from typing import Any, Awaitable, Callable, Dict, Generic, List, TypeVar, Union
+
+from supertokens_python.recipe.emailverification.interfaces import TypeEmailVerificationEmailDeliveryInput
 
 
 class User:
@@ -55,3 +58,23 @@ class NormalisedFormField:
         self.id = id
         self.validate = validate
         self.optional = optional
+
+
+_T = TypeVar('_T')
+
+# class EmailDeliveryInterface(ABC, Generic[_T]):
+#     pass
+
+
+class TypeEmailPasswordPasswordResetEmailDeliveryInput:
+    def __init__(self, user: User, password_reset_link: str, user_context: Dict[str, Any]) -> None:
+        self.type: str = "PASSWORD_RESET"
+        self.user = user
+        self.password_reset_link = password_reset_link
+        self.user_context = user_context
+
+
+TypeEmailPasswordEmailDeliveryInput = Union[
+    TypeEmailPasswordPasswordResetEmailDeliveryInput,
+    TypeEmailVerificationEmailDeliveryInput
+]

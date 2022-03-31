@@ -17,9 +17,13 @@ from os import environ
 from re import fullmatch
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, Union
 
+from supertokens_python.ingredients.emaildelivery.interfaces import EmailDeliveryIngredient
+from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryInterface, TypeInput
+from supertokens_python.recipe.emailpassword.emaildelivery.service.backward import BackwardCompatibilityService
+
 from ..emailverification.types import User as EmailVerificationUser
 from .interfaces import APIInterface, RecipeInterface
-from .types import InputFormField, NormalisedFormField, User
+from .types import InputFormField, NormalisedFormField, TypeEmailPasswordEmailDeliveryInput, User
 
 if TYPE_CHECKING:
     from .recipe import EmailPasswordRecipe
@@ -288,12 +292,15 @@ class EmailPasswordConfig:
                  sign_in_feature: SignInFeature,
                  reset_password_using_token_feature: ResetPasswordUsingTokenFeature,
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
-                 override: OverrideConfig):
+                 override: OverrideConfig,
+                 email_delivery: Union[TypeInput[TypeEmailPasswordEmailDeliveryInput], None] = None
+                 ):
         self.sign_up_feature = sign_up_feature
         self.sign_in_feature = sign_in_feature
         self.reset_password_using_token_feature = reset_password_using_token_feature
         self.email_verification_feature = email_verification_feature
         self.override = override
+        self.email_delivery = email_delivery
 
 
 def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: AppInfo,
@@ -302,7 +309,9 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
                                       reset_password_using_token_feature: Union[
                                           InputResetPasswordUsingTokenFeature, None] = None,
                                       email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-                                      override: Union[InputOverrideConfig, None] = None) -> EmailPasswordConfig:
+                                      override: Union[InputOverrideConfig, None] = None,
+                                      email_delivery_config: Union[EmailDeliveryIngredient, None] = None
+                                      ) -> EmailPasswordConfig:
     if override is None:
         override = InputOverrideConfig()
     if reset_password_using_token_feature is None:
@@ -310,6 +319,19 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
 
     if sign_up_feature is None:
         sign_up_feature = InputSignUpFeature()
+
+    email_service = email_delivery.service if email_delivery_config is not None else None
+    if email_service is None:
+        # assert config.create_and_send_custom_email is not None, "Shouldn't have happened"
+        email_service = BackwardCompatibilityService(
+            app_info,
+            # reset_password_using_token_feature,
+            # email_verification_feature,
+            # email_delivery_config
+        )
+
+        email_delivery = TypeInput[TypeEmailPasswordEmailDeliveryInput](email_service)
+
     return EmailPasswordConfig(
         SignUpFeature(sign_up_feature.form_fields),
         SignInFeature(
@@ -325,5 +347,6 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
             email_verification_feature,
             override
         ),
-        OverrideConfig(functions=override.functions, apis=override.apis)
+        OverrideConfig(functions=override.functions, apis=override.apis),
+        email_delivery=email_delivery,
     )

@@ -28,6 +28,8 @@ class EmailDeliveryInterface(ABC, Generic[_T]):
 class TypeInput(ABC, Generic[_T]):
     service: EmailDeliveryInterface[_T]
 
-    @abstractmethod
     def override(self, original_impl: EmailDeliveryInterface[_T]) -> EmailDeliveryInterface[_T]:
-        pass
+        return original_impl
+
+    def __init__(self, service: EmailDeliveryInterface[_T]) -> None:
+        self.service = service

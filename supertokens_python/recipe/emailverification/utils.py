@@ -12,14 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+from supertokens_python.recipe.emailverification.emaildelivery.services.backward import \
+    BackwardCompatibilityService
 
 from typing import TYPE_CHECKING, Any, Dict
 
 from httpx import AsyncClient
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryInterface, TypeInput)
-from supertokens_python.recipe.emailverification.emaildelivery.services.backward import \
-    BackwardCompatibilityService
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
 
@@ -53,6 +53,7 @@ def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[User, s
 
 
 class OverrideConfig:
+
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
                  apis: Union[Callable[[APIInterface], APIInterface], None] = None):
         self.functions = functions
