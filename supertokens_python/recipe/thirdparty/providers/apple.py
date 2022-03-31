@@ -141,7 +141,7 @@ class Apple(Provider):
         err = Exception("Id token verification failed")
         for key in public_keys:
             try:
-                decode(jwt=token, key=str(key),
+                decode(jwt=token, key=key,
                        audience=[get_actual_client_id_from_development_client_id(self.client_id)], algorithms=["RS256"])
                 return
             except Exception as e:
