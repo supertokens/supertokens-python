@@ -60,5 +60,12 @@ class BaseRequest(ABC):
         pass
 
     @abstractmethod
+    def set_session_as_none(self):
+        """
+        This function is used to set the request's session variable to None.
+        See https://github.com/supertokens/supertokens-python/issues/90
+        """
+
+    @abstractmethod
     def get_path(self) -> str:
         pass

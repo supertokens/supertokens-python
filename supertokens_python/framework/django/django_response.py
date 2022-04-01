@@ -48,7 +48,7 @@ class DjangoResponse(BaseResponse):
             key=key,
             value=value,
             expires=datetime.fromtimestamp(
-                ceil(expires / 1000)).strftime("%A, %B %d, %Y %I:%M:%S"),
+                ceil(expires / 1000)).strftime("%A, %B %d, %Y %H:%M:%S"),
             path=path,
             domain=domain,
             secure=secure,

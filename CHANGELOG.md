@@ -6,6 +6,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.5.3] - 2022-03-26
+### Fixes
+- Bug in user pagination functions: https://github.com/supertokens/supertokens-python/issues/95
+
+
+## [0.5.2] - 2022-03-17
+### Fixes
+- https://github.com/supertokens/supertokens-python/issues/90
+- Thirdpartypasswordless recipe + tests
+
+### Changed:
+- Added new function to BaseRequest class called `set_session_as_none` to set session object to None.
+
+## [0.5.1] - 2022-03-02
+
+### Fixes:
+- Bug where a user had to add dependencies on all frameworks when using the SDK: https://github.com/supertokens/supertokens-python/issues/82
+
 ## [0.5.0] - 2022-02-03
 
 ### Breaking Change

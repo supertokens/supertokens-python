@@ -11,16 +11,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
 import json
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework import BaseResponse
 
+if TYPE_CHECKING:
+    from flask import Flask
+
 
 class Middleware:
-    from flask import Flask
 
     def __init__(self, app: Flask):
         self.app = app
@@ -64,7 +67,7 @@ class Middleware:
         def _(response: Response):
             from flask import g
             response_ = FlaskResponse(response)
-            if hasattr(g, 'supertokens'):
+            if hasattr(g, 'supertokens') and g.supertokens is not None:
                 manage_cookies_post_response(g.supertokens, response_)
 
             return response_.response

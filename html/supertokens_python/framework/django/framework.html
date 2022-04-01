@@ -40,14 +40,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from supertokens_python.framework.django.django_request import DjangoRequest
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from supertokens_python.framework.types import Framework
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
 
 
 class DjangoFramework(Framework):
-    from django.http import HttpRequest
 
     def wrap_request(self, unwrapped: HttpRequest):
+        from supertokens_python.framework.django.django_request import \
+            DjangoRequest
         return DjangoRequest(unwrapped)</code></pre>
 </details>
 </section>
@@ -71,9 +78,10 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class DjangoFramework(Framework):
-    from django.http import HttpRequest
 
     def wrap_request(self, unwrapped: HttpRequest):
+        from supertokens_python.framework.django.django_request import \
+            DjangoRequest
         return DjangoRequest(unwrapped)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -81,17 +89,10 @@ inheritance.</p></div>
 <li><a title="supertokens_python.framework.types.Framework" href="../types.html#supertokens_python.framework.types.Framework">Framework</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.framework.django.framework.DjangoFramework.HttpRequest"><code class="name">var <span class="ident">HttpRequest</span></code></dt>
-<dd>
-<div class="desc"><p>A basic HTTP request.</p></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.django.framework.DjangoFramework.wrap_request"><code class="name flex">
-<span>def <span class="ident">wrap_request</span></span>(<span>self, unwrapped: django.http.request.HttpRequest)</span>
+<span>def <span class="ident">wrap_request</span></span>(<span>self, unwrapped: HttpRequest)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -100,6 +101,8 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def wrap_request(self, unwrapped: HttpRequest):
+    from supertokens_python.framework.django.django_request import \
+        DjangoRequest
     return DjangoRequest(unwrapped)</code></pre>
 </details>
 </dd>
@@ -124,7 +127,6 @@ inheritance.</p></div>
 <li>
 <h4><code><a title="supertokens_python.framework.django.framework.DjangoFramework" href="#supertokens_python.framework.django.framework.DjangoFramework">DjangoFramework</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.framework.django.framework.DjangoFramework.HttpRequest" href="#supertokens_python.framework.django.framework.DjangoFramework.HttpRequest">HttpRequest</a></code></li>
 <li><code><a title="supertokens_python.framework.django.framework.DjangoFramework.wrap_request" href="#supertokens_python.framework.django.framework.DjangoFramework.wrap_request">wrap_request</a></code></li>
 </ul>
 </li>

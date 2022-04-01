@@ -12,17 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, Union
-from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.emailpassword.interfaces import APIInterface
 import json
+from typing import Any, Dict, Union
 
 from _pytest.fixtures import fixture
-from flask import Flask, jsonify, make_response, request
+from flask import Flask, g, jsonify, make_response, request
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.flask import Middleware
 from supertokens_python.recipe import emailpassword, session
-from supertokens_python.recipe.emailpassword.interfaces import APIOptions
+from supertokens_python.recipe.emailpassword.interfaces import (APIInterface,
+                                                                APIOptions)
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.syncio import (create_new_session,
                                                       get_session,
@@ -130,6 +130,16 @@ def driver_config_app():
         session: Union[None, SessionContainer] = get_session(request, True)
         if session is None:
             raise Exception("Should never come here")
+        return jsonify({'s': session.get_user_id()})
+
+    @app.route('/handle-session-optional', methods=['GET', 'OPTIONS'])  # type: ignore
+    @verify_session(session_required=False)
+    def optional_session():  # type: ignore
+        if request.method == 'OPTIONS':  # type: ignore
+            return jsonify({'method': 'option'})
+        session: Union[SessionContainer, None] = g.supertokens  # type: ignore
+        if session is None:
+            return jsonify({'s': "empty session"})
         return jsonify({'s': session.get_user_id()})
 
     @app.route('/logout', methods=['POST'])  # type: ignore
@@ -418,3 +428,15 @@ def test_custom_response(driver_config_app: Any):
     dict_response = json.loads(response.data)
     assert response.status_code == 203
     assert dict_response["custom"]
+
+
+def test_optional_session(driver_config_app: Any):
+    start_st()
+
+    test_client = driver_config_app.test_client()
+    response = test_client.get(
+        '/handle-session-optional')
+
+    dict_response = json.loads(response.data)
+    assert response.status_code == 200
+    assert dict_response["s"] == "empty session"
