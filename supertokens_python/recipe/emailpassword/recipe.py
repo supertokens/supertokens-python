@@ -47,7 +47,6 @@ from .api import (handle_email_exists_api,
                   handle_sign_up_api)
 from .constants import (SIGNIN, SIGNUP, SIGNUP_EMAIL_EXISTS,
                         USER_PASSWORD_RESET, USER_PASSWORD_RESET_TOKEN)
-
 from .utils import (InputEmailVerificationConfig, InputOverrideConfig,
                     InputResetPasswordUsingTokenFeature, InputSignUpFeature,
                     validate_and_normalise_user_input)
@@ -56,7 +55,7 @@ from .utils import (InputEmailVerificationConfig, InputOverrideConfig,
 class EmailPasswordRecipe(RecipeModule):
     recipe_id = 'emailpassword'
     __instance = None
-    email_delivery: EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput]
+    email_delivery_ingredient: EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  sign_up_feature: Union[InputSignUpFeature, None] = None,
@@ -64,7 +63,8 @@ class EmailPasswordRecipe(RecipeModule):
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
-                 email_delivery: Union[EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput], None] = None):
+                 email_delivery: Union[EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput], None] = None,
+                 email_delivery_ingredient: Union[EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput], None] = None):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, app_info, sign_up_feature,
                                                         reset_password_using_token_feature,
@@ -74,20 +74,17 @@ class EmailPasswordRecipe(RecipeModule):
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
 
-        if email_delivery is None:
-            self.email_delivery = EmailDeliveryIngredient(self.config.email_delivery(
-                self.recipe_implementation,
-                email_verification_feature.create_and_send_custom_email,
-            ))
+        if email_delivery_ingredient is None:
+            self.email_delivery_ingredient = EmailDeliveryIngredient(self.config.email_delivery(self))
         else:
-            self.email_delivery = email_delivery_ingredient
+            self.email_delivery_ingredient = email_delivery_ingredient
 
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
         else:
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                      self.config.email_verification_feature,
-                                                                     email_delivery_ingredient=self.email_delivery)
+                                                                     email_delivery_ingredient=self.email_delivery_ingredient)
 
         api_implementation = APIImplementation()
         self.api_implementation = api_implementation if self.config.override.apis is None else \
@@ -119,7 +116,7 @@ class EmailPasswordRecipe(RecipeModule):
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
-        api_options = APIOptions(request, response, self.recipe_id, self.config, self.recipe_implementation, self.email_verification_recipe.recipe_implementation, self.email_delivery)
+        api_options = APIOptions(request, response, self.recipe_id, self.config, self.recipe_implementation, self.email_verification_recipe.recipe_implementation, self.email_delivery_ingredient)
         if request_id == SIGNUP:
             return await handle_sign_up_api(self.api_implementation,
                                             api_options)

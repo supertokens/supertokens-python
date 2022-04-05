@@ -12,8 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from supertokens_python.recipe.emailpassword.emaildelivery.service.backwardCompatibility import \
-    BackwardCompatibilityService
 
 from os import environ
 from re import fullmatch
@@ -23,6 +21,8 @@ from supertokens_python.ingredients.emaildelivery.email_delivery import \
     EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryInterface)
+from supertokens_python.recipe.emailpassword.emaildelivery.service.backwardCompatibility import \
+    BackwardCompatibilityService
 
 from ..emailverification.types import User as EmailVerificationUser
 from .interfaces import APIInterface, RecipeInterface
@@ -297,7 +297,7 @@ class EmailPasswordConfig:
                  reset_password_using_token_feature: ResetPasswordUsingTokenFeature,
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
                  override: OverrideConfig,
-                 email_delivery: Callable[[BackwardCompInput], EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput]]
+                 email_delivery: Callable[[EmailPasswordRecipe], EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput]]
                  ):
         self.sign_up_feature = sign_up_feature
         self.sign_in_feature = sign_in_feature
@@ -326,7 +326,7 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
 
     def backward_comp_input(
         ep_recipe: EmailPasswordRecipe,
-        create_and_send_custom_email: Callable[[User, str, Dict[str, Any]], Awaitable[None]],
+        # create_and_send_custom_email: Callable[[User, str, Dict[str, Any]], Awaitable[None]],
     ) -> EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput]:
         if email_delivery_config:
             return email_delivery_config
@@ -334,9 +334,7 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
             email_service = BackwardCompatibilityService(
                 app_info=app_info,
                 recipeInterfaceImpl=ep_recipe,
-                create_and_send_custom_email=create_and_send_custom_email,
                 reset_password_using_token_feature=reset_password_using_token_feature,
-                email_verification_feature=email_verification_feature
             )
             return EmailDeliveryConfig(email_service, override=None)
 

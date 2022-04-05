@@ -51,10 +51,6 @@ class GetContentResult(TypedDict):
     subject: str
     toEmail: str
 
-# class TypeInputSendRawEmailFrom(GetContentResult):
-#     user_context: Dict[str, Any]
-#     c_from: TypedDict('from', {'name': str, 'email': str})
-
 
 class TypeInputSendRawEmailFrom:
     name: str
