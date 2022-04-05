@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, List, Union
 
 from supertokens_python.exceptions import (SuperTokensError,
                                            raise_general_exception)
-from supertokens_python.ingredients.emaildelivery.interfaces import \
+from supertokens_python.ingredients.emaildelivery.email_delivery import \
     EmailDeliveryIngredient
 from supertokens_python.recipe.emailverification.exceptions import \
     EmailVerificationInvalidTokenError
@@ -47,7 +47,7 @@ from .utils import (ParentRecipeEmailVerificationConfig,
 class EmailVerificationRecipe(RecipeModule):
     recipe_id = 'emailverification'
     __instance = None
-    email_delivery: Union[EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput], None]
+    email_delivery: EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  config: ParentRecipeEmailVerificationConfig,
@@ -61,7 +61,7 @@ class EmailVerificationRecipe(RecipeModule):
         api_implementation = APIImplementation()
         self.api_implementation = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
-        self.email_delivery = EmailDeliveryIngredient(self.config.email_delivery) if (email_delivery_ingredient is None and self.config.email_delivery is not None) else email_delivery_ingredient
+        self.email_delivery = EmailDeliveryIngredient(self.config.email_delivery()) if email_delivery_ingredient is None else email_delivery_ingredient
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -> bool:

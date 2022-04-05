@@ -12,9 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Callable, Dict, Generic, List, TypeVar, Union
+from typing import (Any, Awaitable, Callable, Dict, Generic, List, TypeVar,
+                    Union)
 
-from supertokens_python.recipe.emailverification.interfaces import TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.recipe.emailverification.interfaces import \
+    TypeEmailVerificationEmailDeliveryInput
 
 
 class User:
@@ -66,9 +68,19 @@ _T = TypeVar('_T')
 #     pass
 
 
+class TypeEmailPasswordPasswordResetEmailDeliveryInputUser:
+    def __init__(self, user_id: str, email: str):
+        self.user_id = user_id
+        self.email = email
+
+
 class TypeEmailPasswordPasswordResetEmailDeliveryInput:
-    def __init__(self, user: User, password_reset_link: str, user_context: Dict[str, Any]) -> None:
-        self.type: str = "PASSWORD_RESET"
+    def __init__(
+        self,
+        user: TypeEmailPasswordPasswordResetEmailDeliveryInputUser,
+        password_reset_link: str,
+        user_context: Dict[str, Any]
+    ) -> None:
         self.user = user
         self.password_reset_link = password_reset_link
         self.user_context = user_context

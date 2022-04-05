@@ -16,7 +16,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Union
 
-from supertokens_python.ingredients.emaildelivery.interfaces import \
+from supertokens_python.ingredients.emaildelivery.email_delivery import \
     EmailDeliveryIngredient
 from typing_extensions import Literal
 
@@ -127,7 +127,8 @@ class RecipeInterface(ABC):
 
 class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
-                 config: EmailVerificationConfig, recipe_implementation: RecipeInterface, email_delivery: Union[EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput], None]):
+                 config: EmailVerificationConfig, recipe_implementation: RecipeInterface,
+                 email_delivery: EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput]):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -227,15 +228,19 @@ class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse(
         self.is_email_already_verified_error = True
 
 
+class TypeEmailVerificationEmailDeliveryInputUser:
+    def __init__(self, id: str, email: str):
+        self.id = str
+        self.email = email
+
+
 class TypeEmailVerificationEmailDeliveryInput:
     def __init__(
-        self, user: User,
+        self, user: TypeEmailVerificationEmailDeliveryInputUser,
         email_verify_link: str, user_context: Dict[str, Any]
     ) -> None:
-        self.type: str = "EMAIL_VERIFICATION"
         self.user = user
         self.email_verify_link = email_verify_link
-        self.user_context = user_context
 
 
 class APIInterface(ABC):

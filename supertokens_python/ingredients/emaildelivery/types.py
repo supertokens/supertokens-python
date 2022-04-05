@@ -14,22 +14,24 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Generic, TypeVar, Union
+from typing import Any, Callable, Dict, Generic, TypeVar, Union
 
 _T = TypeVar('_T')
 
 
 class EmailDeliveryInterface(ABC, Generic[_T]):
     @abstractmethod
-    def send_email(self, email_input: Union[_T, None]) -> Any:
+    async def send_email(self, email_input: _T, user_context: Dict[str, Any]) -> None:
         pass
 
 
-class TypeInput(ABC, Generic[_T]):
+class EmailDeliveryConfig(ABC, Generic[_T]):
     service: EmailDeliveryInterface[_T]
 
-    def override(self, original_impl: EmailDeliveryInterface[_T]) -> EmailDeliveryInterface[_T]:
-        return original_impl
-
-    def __init__(self, service: EmailDeliveryInterface[_T]) -> None:
+    def __init__(
+        self,
+        service: EmailDeliveryInterface[_T],
+        override: Union[Callable[[EmailDeliveryInterface[_T]], EmailDeliveryInterface[_T]], None] = None,
+    ) -> None:
         self.service = service
+        self.override = override

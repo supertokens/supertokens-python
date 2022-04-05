@@ -16,14 +16,15 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 from xmlrpc.client import boolean
-from supertokens_python.ingredients.emaildelivery.interfaces import EmailDeliveryIngredient
 
-from supertokens_python.recipe.emailpassword.types import TypeEmailPasswordEmailDeliveryInput
+from supertokens_python.ingredients.emaildelivery.email_delivery import \
+    EmailDeliveryIngredient
+from supertokens_python.recipe.emailpassword.types import \
+    TypeEmailPasswordEmailDeliveryInput
+from typing_extensions import Literal
 
 from ..emailverification.interfaces import \
     RecipeInterface as EmailVerificationRecipeInterface
-
-from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -201,8 +202,7 @@ class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: EmailPasswordConfig, recipe_implementation: RecipeInterface,
                  email_verification_recipe_implementation: EmailVerificationRecipeInterface,
-                 email_delivery: Union[EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput], None] = None,
-                 ):
+                 email_delivery: EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput]):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id

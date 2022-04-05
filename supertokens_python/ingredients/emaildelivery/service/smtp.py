@@ -1,3 +1,17 @@
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
 
 from ..types import EmailDeliveryInterface
 from abc import ABC, abstractmethod
@@ -6,31 +20,31 @@ from typing import Any, Callable, Dict, Generic, TypedDict, TypeVar, Union
 _T = TypeVar('_T')
 
 
-SmtpAuth = TypedDict('auth', {'user': str, 'password': str})
-
-SMTPServiceConfig = TypedDict('SMTPServiceConfig', {
-    'host': str,
-    'from': TypedDict('from', {'name': str, 'email': str}),
-    'port': int,
-    'secure': Union[bool, None],
-    'auth': Union[SmtpAuth, None],
-})
-
-# class SMTPServiceConfigFrom:
-#     name: str
-#     email: str
+class SMTPServiceConfigAuth:
+    user: str
+    password: str
 
 
-# class SMTPServiceConfigAuth:
-#     user: str
-#     password: str
+class SMTPServiceConfigFrom:
+    name: str
+    email: str
 
-# class SMTPServiceConfig:
-#     host: str
-#     c_from: SMTPServiceConfigFrom
-#     port: int
-#     secure: Optional[bool]
-#     auth: SMTPServiceConfigAuth
+
+class SMTPServiceConfig:
+    def __init__(
+        self,
+        host: str,
+        email_from: SMTPServiceConfigFrom,
+        port: int,
+        secure: Union[bool, None] = None,
+        auth: Union[SMTPServiceConfigAuth, None] = None
+    ) -> None:
+        self.host = host
+        self.email_from = email_from
+        self.port = port
+        self.secure = secure
+        self.auth = auth
+
 
 class GetContentResult(TypedDict):
     body: str
@@ -40,13 +54,6 @@ class GetContentResult(TypedDict):
 # class TypeInputSendRawEmailFrom(GetContentResult):
 #     user_context: Dict[str, Any]
 #     c_from: TypedDict('from', {'name': str, 'email': str})
-
-# TypeInputSendRawEmailFrom = TypedDict('TypeInputSendRawEmailFrom', {
-#     'from': TypedDict('from', {
-#         'name': str,
-#         'email': str
-#     })
-# })
 
 
 class TypeInputSendRawEmailFrom:

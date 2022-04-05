@@ -75,7 +75,6 @@ class APIImplementation(APIInterface):
             email_verify_link=email_verify_link,
             user_context=user_context
         )
-        assert api_options.email_delivery is not None
-        await api_options.email_delivery.ingredient_interface_impl.send_email(email_verification_email_delivery_input)
+        await api_options.email_delivery.ingredient_interface_impl.send_email(email_verification_email_delivery_input, user_context)
 
         return GenerateEmailVerifyTokenPostOkResponse()
