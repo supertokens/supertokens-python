@@ -12,12 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from supertokens_python.framework.django.django_request import DjangoRequest
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from supertokens_python.framework.types import Framework
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
 
 
 class DjangoFramework(Framework):
-    from django.http import HttpRequest
 
     def wrap_request(self, unwrapped: HttpRequest):
+        from supertokens_python.framework.django.django_request import \
+            DjangoRequest
         return DjangoRequest(unwrapped)

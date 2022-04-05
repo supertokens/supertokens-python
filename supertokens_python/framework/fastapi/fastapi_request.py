@@ -55,6 +55,9 @@ class FastApiRequest(BaseRequest):
     def set_session(self, session: SessionContainer):
         self.request.state.supertokens = session
 
+    def set_session_as_none(self):
+        self.request.state.supertokens = None
+
     def get_path(self) -> str:
         return self.request.url.path
 

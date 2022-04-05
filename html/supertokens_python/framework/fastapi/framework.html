@@ -39,15 +39,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
-from supertokens_python.framework.fastapi.fastapi_request import FastApiRequest
+from typing import TYPE_CHECKING
+
 from supertokens_python.framework.types import Framework
+
+if TYPE_CHECKING:
+    from fastapi import Request
 
 
 class FastapiFramework(Framework):
-    from fastapi import Request
 
     def wrap_request(self, unwrapped: Request):
+        from supertokens_python.framework.fastapi.fastapi_request import \
+            FastApiRequest
         return FastApiRequest(unwrapped)</code></pre>
 </details>
 </section>
@@ -71,9 +77,10 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class FastapiFramework(Framework):
-    from fastapi import Request
 
     def wrap_request(self, unwrapped: Request):
+        from supertokens_python.framework.fastapi.fastapi_request import \
+            FastApiRequest
         return FastApiRequest(unwrapped)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -81,18 +88,10 @@ inheritance.</p></div>
 <li><a title="supertokens_python.framework.types.Framework" href="../types.html#supertokens_python.framework.types.Framework">Framework</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.framework.fastapi.framework.FastapiFramework.Request"><code class="name">var <span class="ident">Request</span></code></dt>
-<dd>
-<div class="desc"><p>A base class for incoming HTTP connections, that is used to provide
-any functionality that is common to both <code>Request</code> and <code>WebSocket</code>.</p></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.framework.fastapi.framework.FastapiFramework.wrap_request"><code class="name flex">
-<span>def <span class="ident">wrap_request</span></span>(<span>self, unwrapped: starlette.requests.Request)</span>
+<span>def <span class="ident">wrap_request</span></span>(<span>self, unwrapped: Request)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -101,6 +100,8 @@ any functionality that is common to both <code>Request</code> and <code>WebSocke
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def wrap_request(self, unwrapped: Request):
+    from supertokens_python.framework.fastapi.fastapi_request import \
+        FastApiRequest
     return FastApiRequest(unwrapped)</code></pre>
 </details>
 </dd>
@@ -125,7 +126,6 @@ any functionality that is common to both <code>Request</code> and <code>WebSocke
 <li>
 <h4><code><a title="supertokens_python.framework.fastapi.framework.FastapiFramework" href="#supertokens_python.framework.fastapi.framework.FastapiFramework">FastapiFramework</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.framework.fastapi.framework.FastapiFramework.Request" href="#supertokens_python.framework.fastapi.framework.FastapiFramework.Request">Request</a></code></li>
 <li><code><a title="supertokens_python.framework.fastapi.framework.FastapiFramework.wrap_request" href="#supertokens_python.framework.fastapi.framework.FastapiFramework.wrap_request">wrap_request</a></code></li>
 </ul>
 </li>

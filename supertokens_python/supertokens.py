@@ -296,11 +296,10 @@ class Supertokens:
         include_recipe_ids_str = None
         if include_recipe_ids is not None:
             include_recipe_ids_str = ','.join(include_recipe_ids)
-
-        params = {
-            'paginationToken': include_recipe_ids_str,
-            **params
-        }
+            params = {
+                'includeRecipeIds': include_recipe_ids_str,
+                **params
+            }
 
         response = await querier.send_get_request(NormalisedURLPath(USERS), params)
         next_pagination_token = None

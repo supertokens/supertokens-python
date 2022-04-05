@@ -11,16 +11,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 from starlette.middleware.base import (BaseHTTPMiddleware,
                                        RequestResponseEndpoint)
 from supertokens_python.framework import BaseResponse
 
+if TYPE_CHECKING:
+    from fastapi import FastAPI, Request
+
 
 class Middleware(BaseHTTPMiddleware):
-    from fastapi import FastAPI, Request
 
     def __init__(self, app: FastAPI):
         super().__init__(app)

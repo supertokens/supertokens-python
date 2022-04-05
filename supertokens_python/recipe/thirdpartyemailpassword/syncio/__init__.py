@@ -104,7 +104,7 @@ def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = N
     return sync(get_users_by_email(email, user_context))
 
 
-async def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import \
         revoke_email_verification_tokens
     return sync(revoke_email_verification_tokens(user_id, user_context))

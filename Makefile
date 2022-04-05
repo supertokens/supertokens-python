@@ -20,7 +20,16 @@ test:
 	pytest ./tests/
 
 dev-install:
-	pip3 install -e .[dev]
+	pip3 install -e .[dev] && pip3 install -e .[fastapi] && pip3 install -e .[django] && pip3 install -e .[flask]
+
+dev-install-with-fastapi:
+	pip3 install -e .[dev] && pip3 install -e .[fastapi]
+
+dev-install-with-django:
+	pip3 install -e .[dev] && pip3 install -e .[django]
+
+dev-install-with-flask:
+	pip3 install -e .[dev] && pip3 install -e .[flask]
 
 build-docs:
 	rm -rf html && pdoc --html supertokens_python

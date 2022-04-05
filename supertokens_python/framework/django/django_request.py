@@ -60,6 +60,9 @@ class DjangoRequest(BaseRequest):
     def set_session(self, session: SessionContainer):
         self.request.supertokens = session  # type: ignore
 
+    def set_session_as_none(self):
+        self.request.supertokens = None  # type: ignore
+
     def get_path(self) -> str:
         return self.request.path
 
