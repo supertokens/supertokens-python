@@ -17,10 +17,7 @@ from os import environ
 from re import fullmatch
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, Union
 
-from supertokens_python.ingredients.emaildelivery.email_delivery import \
-    EmailDeliveryIngredient
-from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryConfig, EmailDeliveryInterface)
+from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.recipe.emailpassword.emaildelivery.service.backwardCompatibility import \
     BackwardCompatibilityService
 

@@ -20,7 +20,8 @@ from supertokens_python.recipe.emailverification.interfaces import (
     EmailVerifyPostOkResponse,
     GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse,
     GenerateEmailVerifyTokenPostOkResponse, IsEmailVerifiedGetOkResponse,
-    TypeEmailVerificationEmailDeliveryInput)
+    TypeEmailVerificationEmailDeliveryInput,
+    TypeEmailVerificationEmailDeliveryInputUser)
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailverification.interfaces import (
@@ -70,8 +71,9 @@ class APIImplementation(APIInterface):
         email_verify_link = (await api_options.config.get_email_verification_url(
             user, user_context)) + '?token=' + token_result.token + '&rid' + api_options.recipe_id
 
+        email_delivery_user = TypeEmailVerificationEmailDeliveryInputUser(user.user_id, user.email)
         email_verification_email_delivery_input = TypeEmailVerificationEmailDeliveryInput(
-            user=user,
+            user=email_delivery_user,
             email_verify_link=email_verify_link,
             user_context=user_context
         )

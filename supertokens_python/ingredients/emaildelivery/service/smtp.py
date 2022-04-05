@@ -65,8 +65,6 @@ class TypeInputSendRawEmail(GetContentResult):
     user_context: Dict[str, Any]
     config_from: TypeInputSendRawEmailFrom
 
-# TypeInputSendRawEmail: Union[GetContentResult, Dict[str, Any], TypeInputSendRawEmailFrom]
-
 
 class TypeGetContentInput(Generic[_T]):
     user_context: Dict[str, Any]

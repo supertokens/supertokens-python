@@ -18,8 +18,7 @@ from supertokens_python.recipe.emailverification.emaildelivery.services.backward
 from typing import TYPE_CHECKING, Any, Dict
 
 from httpx import AsyncClient
-from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryConfig, EmailDeliveryInterface)
+from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
 
@@ -37,7 +36,6 @@ def default_get_email_verification_url(app_info: AppInfo) -> Callable[[User, Dic
         return app_info.website_domain.get_as_string_dangerous(
         ) + app_info.website_base_path.get_as_string_dangerous() + '/verify-email'
     return func
-
 
 def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
     async def func(user: User, email_verification_url: str, _: Dict[str, Any]):

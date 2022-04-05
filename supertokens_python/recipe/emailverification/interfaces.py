@@ -230,7 +230,7 @@ class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse(
 
 class TypeEmailVerificationEmailDeliveryInputUser:
     def __init__(self, id: str, email: str):
-        self.id = str
+        self.id = id
         self.email = email
 
 

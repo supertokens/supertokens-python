@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+from typing import Callable, cast
 
 from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Union
@@ -23,6 +24,7 @@ from supertokens_python.ingredients.emaildelivery.types import \
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.emailpassword.types import \
     TypeEmailPasswordEmailDeliveryInput
+from supertokens_python.recipe.emailverification.interfaces import TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from ...exceptions import SuperTokensError
@@ -79,12 +81,16 @@ class EmailPasswordRecipe(RecipeModule):
         else:
             self.email_delivery_ingredient = email_delivery_ingredient
 
+        ev_email_delivery_ingredient = cast(
+            EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput],
+            self.email_delivery_ingredient
+        )
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
         else:
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                      self.config.email_verification_feature,
-                                                                     email_delivery_ingredient=self.email_delivery_ingredient)
+                                                                     email_delivery_ingredient=ev_email_delivery_ingredient)
 
         api_implementation = APIImplementation()
         self.api_implementation = api_implementation if self.config.override.apis is None else \

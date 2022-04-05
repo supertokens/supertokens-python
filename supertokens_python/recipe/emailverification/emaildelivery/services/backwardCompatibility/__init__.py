@@ -1,4 +1,5 @@
 
+from ctypes import cast
 from typing import Any, Awaitable, Callable, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery.types import \
@@ -6,8 +7,9 @@ from supertokens_python.ingredients.emaildelivery.types import \
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.recipe.emailverification.types import User
+from supertokens_python.recipe.emailverification.utils import \
+    default_create_and_send_custom_email
 from supertokens_python.supertokens import AppInfo
-from supertokens_python.recipe.emailverification.utils import default_create_and_send_custom_email
 
 
 class CreateAndSendCustomEmailInput:
@@ -26,6 +28,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailVerificationE
 
     async def send_email(self, email_input: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
         try:
-            await self.create_and_send_custom_email(email_input.user, email_input.email_verify_link, user_context)
+            email_user = User(email_input.user.id, email_input.user.email)
+            await self.create_and_send_custom_email(email_user, email_input.email_verify_link, user_context)
         except Exception as _:
             pass
