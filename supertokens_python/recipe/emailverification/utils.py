@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from __future__ import annotations
 from supertokens_python.recipe.emailverification.emaildelivery.services.backwardCompatibility import \
     BackwardCompatibilityService
@@ -28,25 +29,11 @@ if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface
     from typing import Callable, Union, Awaitable
 
-from os import environ
-
 
 def default_get_email_verification_url(app_info: AppInfo) -> Callable[[User, Dict[str, Any]], Awaitable[str]]:
     async def func(_: User, __: Dict[str, Any]):
         return app_info.website_domain.get_as_string_dangerous(
         ) + app_info.website_base_path.get_as_string_dangerous() + '/verify-email'
-    return func
-
-def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
-    async def func(user: User, email_verification_url: str, _: Dict[str, Any]):
-        if ('SUPERTOKENS_ENV' not in environ) or (
-                environ['SUPERTOKENS_ENV'] != 'testing'):
-            return
-        try:
-            async with AsyncClient() as client:
-                await client.post('https://api.supertokens.io/0/st/auth/email/verify', json={'email': user.email, 'appName': app_info.app_name, 'emailVerifyURL': email_verification_url}, headers={'api-version': '0'})  # type: ignore
-        except Exception:
-            pass
     return func
 
 

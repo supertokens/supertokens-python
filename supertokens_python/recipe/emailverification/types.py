@@ -13,7 +13,20 @@
 # under the License.
 
 
+from typing import Union
+
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
+from supertokens_python.recipe.emailverification.interfaces import \
+    TypeEmailVerificationEmailDeliveryInput
+
+
 class User:
     def __init__(self, user_id: str, email: str):
         self.user_id = user_id
         self.email = email
+
+
+class EmailVerificationIngredients:
+    def __init__(self, email_delivery: Union[EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput], None] = None):
+        self.email_delivery = email_delivery

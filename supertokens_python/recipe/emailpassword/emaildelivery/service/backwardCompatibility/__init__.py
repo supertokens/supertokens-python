@@ -12,17 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Awaitable, Callable, Dict, Union, cast
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union, cast
 
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.recipe.emailpassword.interfaces import \
     TypeEmailPasswordEmailDeliveryInput
-from supertokens_python.recipe.emailpassword.recipe import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.emailpassword.utils import (
     InputEmailVerificationConfig, InputResetPasswordUsingTokenFeature,
-    default_create_and_send_custom_email)
+    ResetPasswordUsingTokenFeature, default_create_and_send_custom_email)
 from supertokens_python.recipe.emailverification.emaildelivery.services.backwardCompatibility import \
     BackwardCompatibilityService as \
     EmailVerificationBackwardCompatibilityService
@@ -32,53 +31,63 @@ from supertokens_python.recipe.emailverification.types import \
     User as EmailVerificationUser
 from supertokens_python.supertokens import AppInfo
 
+if TYPE_CHECKING:
+    from supertokens_python.recipe.emailpassword.recipe import \
+        EmailPasswordRecipe
+
 
 class CreateAndSendCustomEmailInput:
     user: str
     email_verification_url_with_token: str
     user_context: Dict[str, Any]
 
+
+class ResetPasswordUsingTokenFeatureWrapper:
+    def __init__(self, create_and_send_custom_email: Callable[[User, str, Dict[str, Any]], Awaitable[None]]) -> None:
+        self.create_and_send_custom_email = create_and_send_custom_email
+
+
 class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
     app_info: AppInfo
     emailVerificationBackwardCompatiblityService: EmailVerificationBackwardCompatibilityService
 
     def __init__(self,
-            app_info: AppInfo,
-            recipeInterfaceImpl: EmailPasswordRecipe, # Any,  # FIXME: Should be EmailPasswordRecipe. But leads to circular dependency
-            reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
-            email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-        ) -> None:
+                 app_info: AppInfo,
+                 recipeInterfaceImpl: EmailPasswordRecipe,  # Any,  # FIXME: Should be EmailPasswordRecipe. But leads to circular dependency
+                 reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
+                 email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+                 ) -> None:
         self.app_info = app_info
         self.recipeInterfaceImpl = recipeInterfaceImpl
-        self.reset_password_using_token_feature = reset_password_using_token_feature
 
-        if reset_password_using_token_feature:
-            if reset_password_using_token_feature.create_and_send_custom_email is None:
-                reset_password_using_token_feature.create_and_send_custom_email = default_create_and_send_custom_email(self.app_info)
-            self.reset_password_using_token_feature = reset_password_using_token_feature
+        rputf_create_and_send_custom_email = default_create_and_send_custom_email(self.app_info)
+        if reset_password_using_token_feature and reset_password_using_token_feature.create_and_send_custom_email is not None:
+            rputf_create_and_send_custom_email = reset_password_using_token_feature.create_and_send_custom_email
 
+        self.reset_password_using_token_feature = ResetPasswordUsingTokenFeatureWrapper(rputf_create_and_send_custom_email)
+
+        create_and_send_custom_email: Union[
+            Callable[[EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]], None
+        ] = None
         if email_verification_feature:
             if email_verification_feature.create_and_send_custom_email is not None:
-                async def create_and_send_custom_email_wrapper(user: User, link: str, user_context: Dict[str, Any]):
+                ev_create_and_send_custom_email = email_verification_feature.create_and_send_custom_email
+
+                async def create_and_send_custom_email_wrapper(
+                    user: EmailVerificationUser, link: str, user_context: Dict[str, Any]
+                ):
                     user_info = await self.recipeInterfaceImpl.recipe_implementation.get_user_by_id(user.user_id, user_context)
                     if user_info is None:
                         raise Exception("Unknown User ID provided")
 
-                    assert email_verification_feature.create_and_send_custom_email is not None
-                    return await email_verification_feature.create_and_send_custom_email(user, link, user_context)
+                    return await ev_create_and_send_custom_email(user_info, link, user_context)
 
-
-                email_verification_feature.create_and_send_custom_email = create_and_send_custom_email_wrapper
+                create_and_send_custom_email = create_and_send_custom_email_wrapper
 
             self.email_verification_feature = email_verification_feature
 
-        assert email_verification_feature is not None and email_verification_feature.create_and_send_custom_email is not None
-        ev_create_and_send_custom_email = cast(
-            Callable[[EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]],
-            email_verification_feature.create_and_send_custom_email
-        )
         self.emailVerificationBackwardCompatiblityService = EmailVerificationBackwardCompatibilityService(
-            app_info, create_and_send_custom_email=ev_create_and_send_custom_email
+            app_info, create_and_send_custom_email=create_and_send_custom_email
         )
 
     async def send_email(self, email_input: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> Any:
@@ -98,7 +107,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
 
             try:
                 await self.reset_password_using_token_feature.create_and_send_custom_email(
-                   user, email_input.password_reset_link, email_input.user_context
+                    user, email_input.password_reset_link, email_input.user_context
                 )
             except Exception:
                 pass

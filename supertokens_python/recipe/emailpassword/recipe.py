@@ -12,19 +12,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Callable, cast
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union, cast
 
-from supertokens_python.ingredients.emaildelivery.email_delivery import \
+from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.emailpassword.types import \
     TypeEmailPasswordEmailDeliveryInput
-from supertokens_python.recipe.emailverification.interfaces import TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.recipe.emailverification.interfaces import \
+    TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.recipe.emailverification.types import \
+    EmailVerificationIngredients
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from ...exceptions import SuperTokensError
@@ -88,9 +90,10 @@ class EmailPasswordRecipe(RecipeModule):
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
         else:
+            email_verification_ingredients = EmailVerificationIngredients(email_delivery=ev_email_delivery_ingredient)
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                      self.config.email_verification_feature,
-                                                                     email_delivery_ingredient=ev_email_delivery_ingredient)
+                                                                     ingredients=email_verification_ingredients)
 
         api_implementation = APIImplementation()
         self.api_implementation = api_implementation if self.config.override.apis is None else \

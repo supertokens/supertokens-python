@@ -17,7 +17,8 @@ from os import environ
 from re import fullmatch
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, Union
 
-from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
+from supertokens_python.ingredients.emaildelivery.types import \
+    EmailDeliveryConfig
 from supertokens_python.recipe.emailpassword.emaildelivery.service.backwardCompatibility import \
     BackwardCompatibilityService
 
@@ -218,8 +219,10 @@ def validate_and_normalise_reset_password_using_token_config(app_info: AppInfo, 
                                                                      sign_up_config.form_fields)))
     get_reset_password_url = config.get_reset_password_url if config.get_reset_password_url is not None else default_get_reset_password_url(
         app_info)
-    create_and_send_custom_email = config.create_and_send_custom_email if config.create_and_send_custom_email is not None else default_create_and_send_custom_email(
-        app_info)
+    if config.create_and_send_custom_email is not None:
+        create_and_send_custom_email = config.create_and_send_custom_email
+    else:
+        create_and_send_custom_email = default_create_and_send_custom_email(app_info)
     return ResetPasswordUsingTokenFeature(form_fields_for_password_reset_form, form_fields_for_generate_token_form,
                                           get_reset_password_url, create_and_send_custom_email)
 
