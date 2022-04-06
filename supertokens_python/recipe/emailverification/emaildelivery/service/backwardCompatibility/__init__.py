@@ -12,21 +12,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from os import environ
 from typing import Any, Awaitable, Callable, Dict, Union
 
+from httpx import AsyncClient
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.recipe.emailverification.types import User
 from supertokens_python.supertokens import AppInfo
-from httpx import AsyncClient
-from os import environ
 
 
 def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
     async def func(user: User, email_verification_url: str, _: Dict[str, Any]):
-        if ('SUPERTOKENS_ENV' not in environ) or (environ['SUPERTOKENS_ENV'] != 'testing'):
+        if ('SUPERTOKENS_ENV' in environ) and (environ['SUPERTOKENS_ENV'] == 'testing'):
             return
         try:
             async with AsyncClient() as client:

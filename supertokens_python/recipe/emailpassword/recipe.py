@@ -14,15 +14,15 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Union, cast
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordEmailDeliveryInput
+from supertokens_python.recipe.emailpassword.types import (
+    EmailPasswordIngredients, TypeEmailPasswordEmailDeliveryInput)
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.recipe.emailverification.types import \
@@ -68,7 +68,8 @@ class EmailPasswordRecipe(RecipeModule):
                  override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
                  email_delivery: Union[EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput], None] = None,
-                 email_delivery_ingredient: Union[EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput], None] = None):
+                 ingredients: Union[EmailPasswordIngredients, None] = None
+                 ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, app_info, sign_up_feature,
                                                         reset_password_using_token_feature,
@@ -78,6 +79,7 @@ class EmailPasswordRecipe(RecipeModule):
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
 
+        email_delivery_ingredient = ingredients.email_delivery if ingredients else None
         if email_delivery_ingredient is None:
             self.email_delivery_ingredient = EmailDeliveryIngredient(self.config.email_delivery(self))
         else:

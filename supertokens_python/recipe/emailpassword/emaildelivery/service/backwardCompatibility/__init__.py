@@ -11,18 +11,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union, cast
+from os import environ
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
+from httpx import AsyncClient
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.recipe.emailpassword.interfaces import \
     TypeEmailPasswordEmailDeliveryInput
 from supertokens_python.recipe.emailpassword.types import User
-from supertokens_python.recipe.emailpassword.utils import (
-    InputEmailVerificationConfig, InputResetPasswordUsingTokenFeature,
-    ResetPasswordUsingTokenFeature, default_create_and_send_custom_email)
-from supertokens_python.recipe.emailverification.emaildelivery.services.backwardCompatibility import \
+from supertokens_python.recipe.emailverification.emaildelivery.service.backwardCompatibility import \
     BackwardCompatibilityService as \
     EmailVerificationBackwardCompatibilityService
 from supertokens_python.recipe.emailverification.interfaces import \
@@ -34,6 +34,27 @@ from supertokens_python.supertokens import AppInfo
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.recipe import \
         EmailPasswordRecipe
+    from supertokens_python.recipe.emailpassword.utils import (
+        InputEmailVerificationConfig, InputResetPasswordUsingTokenFeature)
+
+
+def default_create_and_send_custom_email(
+        app_info: AppInfo) -> Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
+    async def func(user: User, password_reset_url_with_token: str, _: Dict[str, Any]):
+        if ('SUPERTOKENS_ENV' in environ) and (environ['SUPERTOKENS_ENV'] == 'testing'):
+            return
+        try:
+            data = {
+                'email': user.email,
+                'appName': app_info.app_name,
+                'passwordResetURL': password_reset_url_with_token
+            }
+            async with AsyncClient() as client:
+                await client.post('https://api.supertokens.io/0/st/auth/password/reset', json=data, headers={'api-version': '0'})  # type: ignore
+        except Exception:
+            pass
+
+    return func
 
 
 class CreateAndSendCustomEmailInput:
@@ -53,7 +74,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
 
     def __init__(self,
                  app_info: AppInfo,
-                 recipeInterfaceImpl: EmailPasswordRecipe,  # Any,  # FIXME: Should be EmailPasswordRecipe. But leads to circular dependency
+                 recipeInterfaceImpl: EmailPasswordRecipe,
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  ) -> None:

@@ -13,21 +13,23 @@
 # under the License.
 
 from __future__ import annotations
-from supertokens_python.recipe.emailverification.emaildelivery.services.backwardCompatibility import \
-    BackwardCompatibilityService
 
 from typing import TYPE_CHECKING, Any, Dict
 
-from httpx import AsyncClient
-from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
+from supertokens_python.ingredients.emaildelivery.types import \
+    EmailDeliveryConfig
+from supertokens_python.recipe.emailverification.emaildelivery.service.backwardCompatibility import \
+    BackwardCompatibilityService
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
 
 if TYPE_CHECKING:
+    from typing import Awaitable, Callable, Union
+
     from supertokens_python.supertokens import AppInfo
+
+    from .interfaces import APIInterface, RecipeInterface
     from .types import User
-    from .interfaces import RecipeInterface, APIInterface
-    from typing import Callable, Union, Awaitable
 
 
 def default_get_email_verification_url(app_info: AppInfo) -> Callable[[User, Dict[str, Any]], Awaitable[str]]:

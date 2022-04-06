@@ -13,14 +13,13 @@
 # under the License.
 from __future__ import annotations
 
-from os import environ
 from re import fullmatch
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, Union
 
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
-from supertokens_python.recipe.emailpassword.emaildelivery.service.backwardCompatibility import \
-    BackwardCompatibilityService
+from supertokens_python.recipe.emailpassword.emaildelivery.service.backwardCompatibility import (
+    BackwardCompatibilityService, default_create_and_send_custom_email)
 
 from ..emailverification.types import User as EmailVerificationUser
 from .interfaces import APIInterface, RecipeInterface
@@ -33,7 +32,6 @@ if TYPE_CHECKING:
 
 from typing import Dict
 
-from httpx import AsyncClient
 from supertokens_python.recipe.emailverification.utils import \
     OverrideConfig as EmailVerificationOverrideConfig
 from supertokens_python.recipe.emailverification.utils import \
@@ -85,26 +83,6 @@ def default_get_reset_password_url(
     async def func(_: User, __: Dict[str, Any]):
         return app_info.website_domain.get_as_string_dangerous(
         ) + app_info.website_base_path.get_as_string_dangerous() + RESET_PASSWORD
-
-    return func
-
-
-def default_create_and_send_custom_email(
-        app_info: AppInfo) -> Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
-    async def func(user: User, password_reset_url_with_token: str, _: Dict[str, Any]):
-        if ('SUPERTOKENS_ENV' in environ) and (
-                environ['SUPERTOKENS_ENV'] == 'testing'):
-            return
-        try:
-            data = {
-                'email': user.email,
-                'appName': app_info.app_name,
-                'passwordResetURL': password_reset_url_with_token
-            }
-            async with AsyncClient() as client:
-                await client.post('https://api.supertokens.io/0/st/auth/password/reset', json=data, headers={'api-version': '0'})  # type: ignore
-        except Exception:
-            pass
 
     return func
 
