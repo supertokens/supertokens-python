@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Awaitable, Callable, Dict, List, TypeVar, Union
+from typing import Awaitable, Callable, List, TypeVar, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient

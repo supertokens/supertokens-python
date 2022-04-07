@@ -122,7 +122,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
 
             try:
                 await self.reset_password_using_token_feature.create_and_send_custom_email(
-                    user, email_input.password_reset_link, email_input.user_context
+                    user, email_input.password_reset_link, user_context
                 )
             except Exception:
                 pass

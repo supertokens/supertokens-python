@@ -35,6 +35,7 @@ def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[User, s
             pass
     return func
 
+
 class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailVerificationEmailDeliveryInput]):
     def __init__(self,
                  app_info: AppInfo,
