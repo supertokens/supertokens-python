@@ -76,11 +76,9 @@ class TypeEmailPasswordPasswordResetEmailDeliveryInput:
         self,
         user: TypeEmailPasswordPasswordResetEmailDeliveryInputUser,
         password_reset_link: str,
-        user_context: Dict[str, Any]
     ) -> None:
         self.user = user
         self.password_reset_link = password_reset_link
-        self.user_context = user_context
 
 
 TypeEmailPasswordEmailDeliveryInput = Union[

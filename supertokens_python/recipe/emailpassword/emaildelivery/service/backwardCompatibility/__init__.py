@@ -117,7 +117,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
         else:
             user = await self.recipeInterfaceImpl.recipe_implementation.get_user_by_id(
                 user_id=email_input.user.user_id,
-                user_context=email_input.user_context
+                user_context=user_context
             )
 
             if user is None:
