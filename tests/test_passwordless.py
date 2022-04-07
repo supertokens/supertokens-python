@@ -49,7 +49,6 @@ async def test_passwordless_otp(driver_config_client: TestClient):
     user_input_code = None
 
     async def send_text_message(param: passwordless.CreateAndSendCustomTextMessageParameters, user_context: Dict[str, Any]):
-        print(param)
         nonlocal user_input_code
         user_input_code = param.user_input_code
 
