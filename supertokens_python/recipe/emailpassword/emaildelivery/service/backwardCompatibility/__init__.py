@@ -81,11 +81,11 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
         self.app_info = app_info
         self.recipeInterfaceImpl = recipeInterfaceImpl
 
-        rputf_create_and_send_custom_email = default_create_and_send_custom_email(self.app_info)
+        reset_password_feature_send_email_func = default_create_and_send_custom_email(self.app_info)
         if reset_password_using_token_feature and reset_password_using_token_feature.create_and_send_custom_email is not None:
-            rputf_create_and_send_custom_email = reset_password_using_token_feature.create_and_send_custom_email
+            reset_password_feature_send_email_func = reset_password_using_token_feature.create_and_send_custom_email
 
-        self.reset_password_using_token_feature = ResetPasswordUsingTokenFeatureWrapper(rputf_create_and_send_custom_email)
+        self.reset_password_using_token_feature = ResetPasswordUsingTokenFeatureWrapper(reset_password_feature_send_email_func)
 
         create_and_send_custom_email: Union[
             Callable[[EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]], None
