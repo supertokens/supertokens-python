@@ -11,8 +11,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import (Any, Awaitable, Callable, Dict, List, TypeVar, Union)
+from typing import Awaitable, Callable, List, TypeVar, Union
 
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
 
@@ -62,6 +64,7 @@ class NormalisedFormField:
 
 _T = TypeVar('_T')
 
+
 class TypeEmailPasswordPasswordResetEmailDeliveryInputUser:
     def __init__(self, user_id: str, email: str):
         self.user_id = user_id
@@ -73,14 +76,19 @@ class TypeEmailPasswordPasswordResetEmailDeliveryInput:
         self,
         user: TypeEmailPasswordPasswordResetEmailDeliveryInputUser,
         password_reset_link: str,
-        user_context: Dict[str, Any]
     ) -> None:
         self.user = user
         self.password_reset_link = password_reset_link
-        self.user_context = user_context
 
 
 TypeEmailPasswordEmailDeliveryInput = Union[
     TypeEmailPasswordPasswordResetEmailDeliveryInput,
     TypeEmailVerificationEmailDeliveryInput
 ]
+
+
+class EmailPasswordIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput], None] = None
+                 ) -> None:
+        self.email_delivery = email_delivery

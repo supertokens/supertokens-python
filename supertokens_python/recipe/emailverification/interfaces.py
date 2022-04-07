@@ -16,7 +16,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Union
 
-from supertokens_python.ingredients.emaildelivery.email_delivery import \
+from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from typing_extensions import Literal
 
@@ -236,8 +236,9 @@ class TypeEmailVerificationEmailDeliveryInputUser:
 
 class TypeEmailVerificationEmailDeliveryInput:
     def __init__(
-        self, user: TypeEmailVerificationEmailDeliveryInputUser,
-        email_verify_link: str, user_context: Dict[str, Any]
+        self,
+        user: TypeEmailVerificationEmailDeliveryInputUser,
+        email_verify_link: str
     ) -> None:
         self.user = user
         self.email_verify_link = email_verify_link

@@ -12,19 +12,21 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Callable, cast
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union, cast
 
-from supertokens_python.ingredients.emaildelivery.email_delivery import \
+from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordEmailDeliveryInput
-from supertokens_python.recipe.emailverification.interfaces import TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.recipe.emailpassword.types import (
+    EmailPasswordIngredients, TypeEmailPasswordEmailDeliveryInput)
+from supertokens_python.recipe.emailverification.interfaces import \
+    TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.recipe.emailverification.types import \
+    EmailVerificationIngredients
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from ...exceptions import SuperTokensError
@@ -66,7 +68,8 @@ class EmailPasswordRecipe(RecipeModule):
                  override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
                  email_delivery: Union[EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput], None] = None,
-                 email_delivery_ingredient: Union[EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput], None] = None):
+                 ingredients: Union[EmailPasswordIngredients, None] = None
+                 ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, app_info, sign_up_feature,
                                                         reset_password_using_token_feature,
@@ -76,6 +79,7 @@ class EmailPasswordRecipe(RecipeModule):
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
 
+        email_delivery_ingredient = ingredients.email_delivery if ingredients else None
         if email_delivery_ingredient is None:
             self.email_delivery_ingredient = EmailDeliveryIngredient(self.config.email_delivery(self))
         else:
@@ -88,9 +92,10 @@ class EmailPasswordRecipe(RecipeModule):
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
         else:
+            email_verification_ingredients = EmailVerificationIngredients(email_delivery=ev_email_delivery_ingredient)
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                      self.config.email_verification_feature,
-                                                                     email_delivery_ingredient=ev_email_delivery_ingredient)
+                                                                     ingredients=email_verification_ingredients)
 
         api_implementation = APIImplementation()
         self.api_implementation = api_implementation if self.config.override.apis is None else \
