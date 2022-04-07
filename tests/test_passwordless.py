@@ -72,28 +72,23 @@ async def test_passwordless_otp(driver_config_client: TestClient):
     )
     start_st()
 
-    response_1 = driver_config_client.post(
+    create_code_json = driver_config_client.post(
         url="/auth/signinup/code",
         json={
             "phoneNumber": "+919494949494",
         }
-    )
-    assert response_1.status_code == 200
-    res1_json = response_1.json()
+    ).json()
 
-    res = driver_config_client.post(
+    consume_code_json = driver_config_client.post(
         url="/auth/signinup/code/consume",
         json={
-            'preAuthSessionId': res1_json['preAuthSessionId'],
-            'deviceId': res1_json['deviceId'],
+            'preAuthSessionId': create_code_json['preAuthSessionId'],
+            'deviceId': create_code_json['deviceId'],
             'userInputCode': user_input_code,
         }
-    )
+    ).json()
 
-    assert res.status_code == 200
-    res2_json = res.json()
+    consume_code_json['user'].pop('id')
+    consume_code_json['user'].pop('time_joined')
 
-    res2_json['user'].pop('id')
-    res2_json['user'].pop('time_joined')
-
-    assert res2_json == {'status': 'OK', 'createdNewUser': True, 'user': {'phoneNumber': '+919494949494'}}
+    assert consume_code_json == {'status': 'OK', 'createdNewUser': True, 'user': {'phoneNumber': '+919494949494'}}
