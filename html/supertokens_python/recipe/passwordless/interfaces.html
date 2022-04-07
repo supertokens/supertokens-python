@@ -504,7 +504,7 @@ class ConsumeCodePostOkResponse(ConsumeCodePostResponse):
         if self.user.phone_number is not None:
             user = {
                 **user,
-                &#39;phoneNumber&#39;: self.user.email
+                &#39;phoneNumber&#39;: self.user.phone_number
             }
         return {
             &#39;status&#39;: self.status,
@@ -1133,7 +1133,7 @@ inheritance.</p></div>
         if self.user.phone_number is not None:
             user = {
                 **user,
-                &#39;phoneNumber&#39;: self.user.email
+                &#39;phoneNumber&#39;: self.user.phone_number
             }
         return {
             &#39;status&#39;: self.status,
@@ -1172,7 +1172,7 @@ inheritance.</p></div>
     if self.user.phone_number is not None:
         user = {
             **user,
-            &#39;phoneNumber&#39;: self.user.email
+            &#39;phoneNumber&#39;: self.user.phone_number
         }
     return {
         &#39;status&#39;: self.status,

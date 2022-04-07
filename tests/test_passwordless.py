@@ -15,13 +15,13 @@
 
 from typing import Any, Dict
 
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import passwordless, session
 
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
@@ -48,7 +48,7 @@ async def driver_config_client():
 async def test_passwordless_otp(driver_config_client: TestClient):
     user_input_code = None
 
-    async def send_text_message(param: passwordless.CreateAndSendCustomTextMessageParameters, user_context: Dict[str, Any]):
+    async def send_text_message(param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
         nonlocal user_input_code
         user_input_code = param.user_input_code
 
