@@ -63,7 +63,7 @@ class RecipeImplementation(RecipeInterface):
         if phone_number is not None:
             data = {
                 **data,
-                'email': phone_number
+                'phone_number': phone_number
             }
         result = await self.querier.send_post_request(NormalisedURLPath('/recipe/signinup/code'), data)
         return CreateCodeOkResult(
