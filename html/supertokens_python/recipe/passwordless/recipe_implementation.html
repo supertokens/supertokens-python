@@ -91,7 +91,7 @@ class RecipeImplementation(RecipeInterface):
         if phone_number is not None:
             data = {
                 **data,
-                &#39;phone_number&#39;: phone_number
+                &#39;phoneNumber&#39;: phone_number
             }
         result = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/signinup/code&#39;), data)
         return CreateCodeOkResult(
@@ -444,7 +444,7 @@ inheritance.</p></div>
         if phone_number is not None:
             data = {
                 **data,
-                &#39;phone_number&#39;: phone_number
+                &#39;phoneNumber&#39;: phone_number
             }
         result = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/signinup/code&#39;), data)
         return CreateCodeOkResult(
@@ -841,7 +841,7 @@ inheritance.</p></div>
     if phone_number is not None:
         data = {
             **data,
-            &#39;phone_number&#39;: phone_number
+            &#39;phoneNumber&#39;: phone_number
         }
     result = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/signinup/code&#39;), data)
     return CreateCodeOkResult(
