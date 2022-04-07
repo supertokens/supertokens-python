@@ -57,12 +57,6 @@ def default_create_and_send_custom_email(
     return func
 
 
-class CreateAndSendCustomEmailInput:
-    user: str
-    email_verification_url_with_token: str
-    user_context: Dict[str, Any]
-
-
 class ResetPasswordUsingTokenFeatureWrapper:
     def __init__(self, create_and_send_custom_email: Callable[[User, str, Dict[str, Any]], Awaitable[None]]) -> None:
         self.create_and_send_custom_email = create_and_send_custom_email
