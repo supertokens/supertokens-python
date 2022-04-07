@@ -15,13 +15,15 @@
 
 from typing import Any, Dict
 
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
+from supertokens_python.querier import Querier
 from supertokens_python.recipe import passwordless, session
+from supertokens_python.utils import compare_version
 
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
@@ -71,6 +73,11 @@ async def test_passwordless_otp(driver_config_client: TestClient):
         ]
     )
     start_st()
+
+    version = await Querier.get_instance().get_api_version()
+    if compare_version(version, '2.11.0') != '2.11.0':
+        # If the version less than 2.11.0, passwordless OTP doesn't exist. So skip the test
+        return
 
     create_code_json = driver_config_client.post(
         url="/auth/signinup/code",
