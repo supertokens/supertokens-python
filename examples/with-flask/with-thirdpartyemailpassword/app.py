@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, g, jsonify, make_response
+from flask import Flask, g, jsonify
 from flask_cors import CORS
 from supertokens_python import (InputAppInfo, SupertokensConfig,
                                 get_all_cors_headers, init)
@@ -14,12 +14,6 @@ from supertokens_python.recipe.thirdpartyemailpassword import (
 load_dotenv()
 
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
-
-
-def make_default_options_response():
-    _response = make_response()
-    _response.status_code = 204
-    return _response
 
 
 def get_api_port():
@@ -89,7 +83,6 @@ init(
 )
 
 app = Flask(__name__)
-app.make_default_options_response = make_default_options_response
 Middleware(app)
 CORS(
     app=app,
@@ -110,6 +103,8 @@ def get_session_info():
     })
 
 
+# This is required since if this is not there, then OPTIONS requests for
+# the APIs exposed by the supertokens' Middleware will return a 404
 @app.route("/", defaults={"path": ""})  # type: ignore
 @app.route("/<path:path>")  # type: ignore
 def index(_: str):
