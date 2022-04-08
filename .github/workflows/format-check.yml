@@ -18,5 +18,5 @@ jobs:
             - run: git init && git add --all && git -c user.name='test' -c user.email='test@example.com' commit -m 'init for pr action'
             - run: make dev-install
             - run: make format
-            - run: git ls-files . --exclude-standard --others -m | wc -l
+            - run: exit $(git ls-files . --exclude-standard --others -m | wc -l)
              
