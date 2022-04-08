@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, g, jsonify
+from flask import Flask, abort, g, jsonify
 from flask_cors import CORS
 from supertokens_python import (InputAppInfo, SupertokensConfig,
                                 get_all_cors_headers, init)
@@ -105,10 +105,10 @@ def get_session_info():
 
 # This is required since if this is not there, then OPTIONS requests for
 # the APIs exposed by the supertokens' Middleware will return a 404
-@app.route("/", defaults={"path": ""})  # type: ignore
-@app.route("/<path:path>")  # type: ignore
-def index(_: str):
-    return ''
+@app.route('/', defaults={'u_path': ''})  # type: ignore
+@app.route('/<path:u_path>')  # type: ignore
+def catch_all(u_path: str):  # pylint: disable=unused-argument
+    abort(404)
 
 
 if __name__ == '__main__':
