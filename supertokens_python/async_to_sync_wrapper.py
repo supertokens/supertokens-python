@@ -13,7 +13,7 @@
 # under the License.
 
 import asyncio
-from typing import Any, Coroutine, TypeVar
+from typing import Any, Coroutine
 
 _T = TypeVar("_T")
 
