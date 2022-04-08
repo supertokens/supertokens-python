@@ -181,7 +181,7 @@ class APIImplementation(APIInterface):
         if response.user is None or response.created_new_user is None:
             raise Exception("Should never come here")
         user = response.user
-        session = await create_new_session(api_options.request, user.user_id, {}, {}, user_context)
+        session = await create_new_session(api_options.request, user.user_id, {}, {}, user_context=user_context)
         return ConsumeCodePostOkResponse(
             created_new_user=response.created_new_user,
             user=response.user,

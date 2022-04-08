@@ -28,7 +28,7 @@ from starlette.responses import Response
 from starlette.types import ASGIApp
 from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
                                 get_all_cors_headers, init)
-from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import (emailpassword, passwordless, session,
                                        thirdparty, thirdpartyemailpassword,
                                        thirdpartypasswordless)
@@ -56,7 +56,7 @@ from typing_extensions import Literal
 load_dotenv()
 
 app = FastAPI(debug=True)
-app.add_middleware(Middleware)
+app.add_middleware(get_middleware())
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 code_store: Dict[str, List[Dict[str, Any]]] = {}

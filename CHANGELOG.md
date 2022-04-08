@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 - Setup logging for easier debugging
+- Adds github action for checking all things checked by pre commit hook
+
+## [0.6.2] - 2022-04-07
+- Fix Passwordless OTP recipe phone number field to fix https://github.com/supertokens/supertokens-core/issues/416
+
+## [0.6.1] - 2022-03-29
+
+- Expands allowed version range for httpx library to fix https://github.com/supertokens/supertokens-python/issues/98
+
+## [0.6.0] - 2022-03-26
+
+### Changes
+- Removes dependency on framework specific dependencies (`werkzeug` and `starlette`)
+
+### Breaking change:
+- Import for fastapi middleware:
+   - Old
+      ```
+      from supertokens_python.framework.fastapi import Middleware
+
+      app = FastAPI()
+      app.add_middleware(Middleware)
+      ```
+   - New
+      ```
+      from supertokens_python.framework.fastapi import get_middleware
+
+      app = FastAPI()
+      app.add_middleware(get_middleware())
+      ```
+
+### Fixes
+- `user_context` was passed incorrectly to the `create_new_session_function`.
+
+## [0.5.3] - 2022-03-26
+### Fixes
+- Bug in user pagination functions: https://github.com/supertokens/supertokens-python/issues/95
+
 
 ## [0.5.2] - 2022-03-17
 ### Fixes

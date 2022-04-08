@@ -20,16 +20,19 @@ test:
 	pytest ./tests/
 
 dev-install:
-	pip3 install -e .[dev] && pip3 install -e .[fastapi] && pip3 install -e .[django] && pip3 install -e .[flask]
+	pip install -r dev-requirements.txt
 
-dev-install-with-fastapi:
-	pip3 install -e .[dev] && pip3 install -e .[fastapi]
+freeze-dev-requirements:
+	pip freeze > dev-requirements.txt
 
-dev-install-with-django:
-	pip3 install -e .[dev] && pip3 install -e .[django]
+with-fastapi:
+	pip3 install -e .[fastapi]
 
-dev-install-with-flask:
-	pip3 install -e .[dev] && pip3 install -e .[flask]
+with-django:
+	pip3 install -e .[django]
+
+with-flask:
+	pip3 install -e .[flask]
 
 build-docs:
 	rm -rf html && pdoc --html supertokens_python

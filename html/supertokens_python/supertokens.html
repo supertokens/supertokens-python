@@ -324,11 +324,10 @@ class Supertokens:
         include_recipe_ids_str = None
         if include_recipe_ids is not None:
             include_recipe_ids_str = &#39;,&#39;.join(include_recipe_ids)
-
-        params = {
-            &#39;paginationToken&#39;: include_recipe_ids_str,
-            **params
-        }
+            params = {
+                &#39;includeRecipeIds&#39;: include_recipe_ids_str,
+                **params
+            }
 
         response = await querier.send_get_request(NormalisedURLPath(USERS), params)
         next_pagination_token = None
@@ -707,11 +706,10 @@ class Supertokens:
         include_recipe_ids_str = None
         if include_recipe_ids is not None:
             include_recipe_ids_str = &#39;,&#39;.join(include_recipe_ids)
-
-        params = {
-            &#39;paginationToken&#39;: include_recipe_ids_str,
-            **params
-        }
+            params = {
+                &#39;includeRecipeIds&#39;: include_recipe_ids_str,
+                **params
+            }
 
         response = await querier.send_get_request(NormalisedURLPath(USERS), params)
         next_pagination_token = None
@@ -946,11 +944,10 @@ def reset():
     include_recipe_ids_str = None
     if include_recipe_ids is not None:
         include_recipe_ids_str = &#39;,&#39;.join(include_recipe_ids)
-
-    params = {
-        &#39;paginationToken&#39;: include_recipe_ids_str,
-        **params
-    }
+        params = {
+            &#39;includeRecipeIds&#39;: include_recipe_ids_str,
+            **params
+        }
 
     response = await querier.send_get_request(NormalisedURLPath(USERS), params)
     next_pagination_token = None
