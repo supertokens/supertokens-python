@@ -15,6 +15,7 @@ jobs:
         container: rishabhpoddar/supertokens_python_driver_testing
         steps:
             - uses: actions/checkout@v2
+            - run: git init && git add --all && git -c user.name='test' -c user email='test@example.com' commit -m 'init for pr action'
             - run: make dev-install
             - run: make format
             - run: git ls-files . --exclude-standard --others -m | wc -l
