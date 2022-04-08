@@ -21,5 +21,9 @@ jobs:
               with:
                 node-version: '12'
             - run: make dev-install
+            - name: Setup tmate session
+              uses: mxschmitt/action-tmate@v3
+              with:
+                sudo: false
             - run: ./hooks/pre-commit.sh
              
