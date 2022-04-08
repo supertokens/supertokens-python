@@ -51,7 +51,7 @@ class CustomStreamHandler(logging.StreamHandler):  # type: ignore
 
 # Add stream handler and format
 streamHandler = CustomStreamHandler()
-streamFormatter = logging.Formatter("{name} {message}", style="{")
+streamFormatter = logging.Formatter("{name} {message}\n", style="{")
 streamHandler.setFormatter(streamFormatter)
 logger.addHandler(streamHandler)
 
