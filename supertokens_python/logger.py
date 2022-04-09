@@ -16,6 +16,7 @@ import json
 import logging
 from datetime import datetime
 from os import getenv, path
+from typing import Union
 
 from .constants import VERSION
 
@@ -25,10 +26,10 @@ DEBUG_ENV_VAR = "SUPERTOKENS_DEBUG"
 supertokens_dir = path.dirname(__file__)
 
 # Configure logger
-logger = logging.getLogger(NAMESPACE)
+_logger = logging.getLogger(NAMESPACE)
 debug_env = getenv(DEBUG_ENV_VAR, "").lower()
 if debug_env == "1":
-    logger.setLevel(logging.DEBUG)
+    _logger.setLevel(logging.DEBUG)
 
 
 def _get_log_timestamp() -> str:
@@ -53,7 +54,7 @@ class CustomStreamHandler(logging.StreamHandler):  # type: ignore
 streamHandler = CustomStreamHandler()
 streamFormatter = logging.Formatter("{name} {message}\n", style="{")
 streamHandler.setFormatter(streamFormatter)
-logger.addHandler(streamHandler)
+_logger.addHandler(streamHandler)
 
 
 # The debug logger can be used like this:
@@ -62,4 +63,10 @@ logger.addHandler(streamHandler)
 # com.supertokens {"t": "2022-03-24T06:28:33.659Z", "sdkVer": "0.5.1", "message": "Hello", "file": "logger.py:73"}
 
 # Export logger.debug as log_debug_message function
-log_debug_message = logger.debug
+log_debug_message = _logger.debug
+
+
+def get_maybe_none_as_str(o: Union[str, None]) -> str:
+    if o is None:
+        return "None"
+    return o

@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
 
 from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.utils import send_200_response
 
 
 async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: APIOptions):
@@ -64,6 +65,4 @@ async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: A
 
     result = await api_implementation.sign_in_up_post(provider, code, body['redirectURI'], client_id,
                                                       auth_code_response, api_options, {})
-    api_options.response.set_json_content(result.to_json())
-
-    return api_options.response
+    return send_200_response(result.to_json(), api_options.response)

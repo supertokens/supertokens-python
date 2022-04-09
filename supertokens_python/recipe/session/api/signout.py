@@ -19,6 +19,8 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import (APIInterface,
                                                               APIOptions)
 
+from supertokens_python.utils import send_200_response
+
 
 async def handle_signout_api(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_signout_post or api_implementation.signout_post is None:
@@ -26,5 +28,4 @@ async def handle_signout_api(api_implementation: APIInterface, api_options: APIO
     response = await api_implementation.signout_post(api_options, {})
     if api_options.response is None:
         raise Exception("Should never come here")
-    api_options.response.set_json_content(response.to_json())
-    return api_options.response
+    return send_200_response(response.to_json(), api_options.response)

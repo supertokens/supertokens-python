@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import APIOptions, APIInterface
 
 from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.utils import send_200_response
 
 from .utils import validate_form_fields_or_throw_error
 
@@ -40,6 +41,4 @@ async def handle_password_reset_api(api_implementation: APIInterface, api_option
 
     token = body['token']
     response = await api_implementation.password_reset_post(form_fields, token, api_options, {})
-    api_options.response.set_json_content(response.to_json())
-
-    return api_options.response
+    return send_200_response(response.to_json(), api_options.response)
