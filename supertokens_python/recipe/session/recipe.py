@@ -144,12 +144,12 @@ class SessionRecipe(RecipeModule):
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
         if isinstance(err, UnauthorisedError):
-            log_debug_message("error_handler: returning UNAUTHORISED")
+            log_debug_message("errorHandler: returning UNAUTHORISED")
             return await self.config.error_handlers.on_unauthorised(self, err.clear_cookies, request, str(err), response)
         if isinstance(err, TokenTheftError):
-            log_debug_message("error_handler: returning TOKEN_THEFT_DETECTED")
+            log_debug_message("errorHandler: returning TOKEN_THEFT_DETECTED")
             return await self.config.error_handlers.on_token_theft_detected(self, request, err.session_handle, err.user_id, response)
-        log_debug_message("error_handler: returning TRY_REFRESH_TOKEN")
+        log_debug_message("errorHandler: returning TRY_REFRESH_TOKEN")
         return await self.config.error_handlers.on_try_refresh_token(request, str(err), response)
 
     def get_all_cors_headers(self) -> List[str]:

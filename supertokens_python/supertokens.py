@@ -396,19 +396,19 @@ class Supertokens:
         return None
 
     async def handle_supertokens_error(self, request: BaseRequest, err: Exception, response: BaseResponse):
-        log_debug_message("handle_supertokens_error: Started")
-        log_debug_message("handle_supertokens_error: Error is from SuperTokens recipe. Message: %s", str(err))
+        log_debug_message("errorHandler: Started")
+        log_debug_message("errorHandler: Error is from SuperTokens recipe. Message: %s", str(err))
         if isinstance(err, GeneralError):
             raise err
 
         if isinstance(err, BadInputError):
-            log_debug_message("handle_supertokens_error: Sending 400 status code response")
+            log_debug_message("errorHandler: Sending 400 status code response")
             return send_non_200_response(str(err), 400, response)
 
         for recipe in self.recipe_modules:
-            log_debug_message("handle_supertokens_error: Checking recipe for match: %s", recipe.get_recipe_id())
+            log_debug_message("errorHandler: Checking recipe for match: %s", recipe.get_recipe_id())
             if recipe.is_error_from_this_recipe_based_on_instance(
                     err) and isinstance(err, SuperTokensError):
-                log_debug_message("handle_supertokens_error: Matched with recipeID: %s", recipe.get_recipe_id())
+                log_debug_message("errorHandler: Matched with recipeID: %s", recipe.get_recipe_id())
                 return await recipe.handle_error(request, err, response)
         raise err
