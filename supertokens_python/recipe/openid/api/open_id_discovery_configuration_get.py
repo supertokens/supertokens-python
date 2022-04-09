@@ -13,6 +13,7 @@
 # under the License.
 from supertokens_python.recipe.openid.interfaces import (APIInterface,
                                                          APIOptions)
+from supertokens_python.utils import send_200_response
 
 
 async def open_id_discovery_configuration_get(api_implementation: APIInterface, api_options: APIOptions):
@@ -21,6 +22,4 @@ async def open_id_discovery_configuration_get(api_implementation: APIInterface, 
 
     result = await api_implementation.open_id_discovery_configuration_get(api_options, {})
     api_options.response.set_header("Access-Control-Allow-Origin", "*")
-    api_options.response.set_json_content(result.to_json())
-
-    return api_options.response
+    return send_200_response(result.to_json(), api_options.response)

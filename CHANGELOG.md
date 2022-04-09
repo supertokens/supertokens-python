@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+
+## [0.6.3] - 2022-04-09
+- Setup logging for easier debugging
 - Adds github action for checking all things checked by pre commit hook
 
 ## [0.6.2] - 2022-04-07
