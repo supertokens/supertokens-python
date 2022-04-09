@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import APIOptions, APIInterface
 
 from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.utils import send_200_response
 
 
 async def handle_email_exists_api(api_implementation: APIInterface, api_options: APIOptions):
@@ -29,6 +30,4 @@ async def handle_email_exists_api(api_implementation: APIInterface, api_options:
         raise_bad_input_exception('Please provide the email as a GET param')
 
     response = await api_implementation.email_exists_get(email, api_options, {})
-    api_options.response.set_json_content(response.to_json())
-
-    return api_options.response
+    return send_200_response(response.to_json(), api_options.response)

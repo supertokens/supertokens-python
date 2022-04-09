@@ -27,4 +27,4 @@ class LoggerTests(TestCase):
 
     @staticmethod
     def test_stream_formatter_format():
-        assert streamFormatter._fmt == "{name} {message}"  # pylint: disable=protected-access
+        assert streamFormatter._fmt == "{name} {message}\n"  # pylint: disable=protected-access
