@@ -20,19 +20,50 @@ You will need to setup the `supertokens-core` in order to run the `supertokens-p
 ### Prerequisites
 
 -   Python (version 3.7 or above)
--   IDE: [PyCharm](https://www.jetbrains.com/pycharm/download)(recommended) or equivalent IDE
+-   IDE: [vscode](https://code.visualstudio.com/)(recommended) or equivalent IDE
 
 ### Project Setup
 
-TODO:
+- Fork the `supertokens-python` repository on github.
+- Clone the repository you that just forked into your account.
+    ```
+    git clone git@github.com:<your user name>/supertokens-python.git
+    ```
+- On a local machine create a [virtual env](https://docs.python.org/3/library/venv.html)
+- Activate the virtual env
+- Go to `supertokens-python` directory from the terminal
+    ```
+    cd supertokens-python
+    ```
+- Install the dependencies with following command
+   ```
+   make dev-install
+   ```
 
 ## Modifying Code
 
-TODO:
+- Configure `pre-commit` hooks
+    ```
+    make set-up-hooks
+    ```
+- Once the code modifications are done, make sure to fix the code formatting with
+    ```
+    make format 
+    ```
+- To generate the documentation, run
+    ```
+    make build-docs
+    ```
+
+- Make sure to update/add API documentation after modifying the code.
+- Make sure to update/add tests after modifying the code.
 
 ## Testing
 
-TODO:
+- To run the tests, run
+    ```
+    make test
+    ```
 
 ## Pull Request
 
