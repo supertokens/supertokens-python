@@ -23,6 +23,15 @@ from supertokens_python.utils import send_200_response
 
 
 async def handle_refresh_api(api_implementation: APIInterface, api_options: APIOptions):
+    """handle_refresh_api.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if api_implementation.disable_refresh_post or api_implementation.refresh_post is None:
         return None
     await api_implementation.refresh_post(api_options, {})

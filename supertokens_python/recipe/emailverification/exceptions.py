@@ -17,8 +17,14 @@ from supertokens_python.exceptions import SuperTokensError
 
 
 class SuperTokensEmailVerificationError(SuperTokensError):
+    """SuperTokensEmailVerificationError.
+    """
+
     pass
 
 
 class EmailVerificationInvalidTokenError(SuperTokensEmailVerificationError):
+    """EmailVerificationInvalidTokenError.
+    """
+
     pass

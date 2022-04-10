@@ -41,18 +41,51 @@ DEV_OAUTH_REDIRECT_URL = 'https://supertokens.io/dev/oauth/redirect-to-app'
 
 
 def is_using_oauth_development_client_id(client_id: str):
+    """is_using_oauth_development_client_id.
+
+    Parameters
+    ----------
+    client_id : str
+        client_id
+    """
     return client_id.startswith(
         DEV_KEY_IDENTIFIER) or client_id in DEV_OAUTH_CLIENT_IDS
 
 
 def get_actual_client_id_from_development_client_id(client_id: str):
+    """get_actual_client_id_from_development_client_id.
+
+    Parameters
+    ----------
+    client_id : str
+        client_id
+    """
     if client_id.startswith(DEV_KEY_IDENTIFIER):
         return client_id.split(DEV_KEY_IDENTIFIER, 1)[1]
     return client_id
 
 
 class APIImplementation(APIInterface):
+    """APIImplementation.
+    """
+
     async def authorisation_url_get(self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
+        """authorisation_url_get.
+
+        Parameters
+        ----------
+        provider : Provider
+            provider
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        AuthorisationUrlGetResponse
+
+        """
         authorisation_url_info = provider.get_authorisation_redirect_api_info(user_context)
 
         params: Dict[str, str] = {}
@@ -86,6 +119,30 @@ class APIImplementation(APIInterface):
         return AuthorisationUrlGetOkResponse(url)
 
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions, user_context: Dict[str, Any]) -> SignInUpPostResponse:
+        """sign_in_up_post.
+
+        Parameters
+        ----------
+        provider : Provider
+            provider
+        code : str
+            code
+        redirect_uri : str
+            redirect_uri
+        client_id : Union[str, None]
+            client_id
+        auth_code_response : Union[Dict[str, Any], None]
+            auth_code_response
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SignInUpPostResponse
+
+        """
 
         redirect_uri_from_provider = provider.get_redirect_uri(user_context)
         if is_using_oauth_development_client_id(provider.client_id):
@@ -152,6 +209,19 @@ class APIImplementation(APIInterface):
             user, signinup_response.created_new_user, access_token_response, session)
 
     async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions, user_context: Dict[str, Any]):
+        """apple_redirect_handler_post.
+
+        Parameters
+        ----------
+        code : str
+            code
+        state : str
+            state
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+        """
         app_info = api_options.app_info
         redirect_uri = app_info.website_domain.get_as_string_dangerous(
         ) + app_info.website_base_path.get_as_string_dangerous() + '/callback/apple?state=' + state + '&code=' + code

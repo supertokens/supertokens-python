@@ -25,6 +25,15 @@ from .utils import validate_form_fields_or_throw_error
 
 
 async def handle_sign_in_api(api_implementation: APIInterface, api_options: APIOptions):
+    """handle_sign_in_api.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if api_implementation.disable_sign_in_post:
         return None
     body = await api_options.request.json()

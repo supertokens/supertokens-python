@@ -17,9 +17,20 @@ from typing import Any, Dict, Union
 
 
 class BaseResponse(ABC):
+    """BaseResponse.
+    """
 
     @abstractmethod
     def __init__(self, content: Dict[str, Any], status_code: int = 200):
+        """__init__.
+
+        Parameters
+        ----------
+        content : Dict[str, Any]
+            content
+        status_code : int
+            status_code
+        """
         self.content = content
         self.status_code = status_code
         self.wrapper_used = True
@@ -34,24 +45,87 @@ class BaseResponse(ABC):
                    secure: bool = False,
                    httponly: bool = False,
                    samesite: str = "lax"):
+        """set_cookie.
+
+        Parameters
+        ----------
+        key : str
+            key
+        value : str
+            value
+        expires : int
+            expires
+        path : str
+            path
+        domain : Union[str, None]
+            domain
+        secure : bool
+            secure
+        httponly : bool
+            httponly
+        samesite : str
+            samesite
+        """
         pass
 
     @abstractmethod
     def set_header(self, key: str, value: str):
+        """set_header.
+
+        Parameters
+        ----------
+        key : str
+            key
+        value : str
+            value
+        """
         pass
 
     @abstractmethod
     def get_header(self, key: str) -> Union[str, None]:
+        """get_header.
+
+        Parameters
+        ----------
+        key : str
+            key
+
+        Returns
+        -------
+        Union[str, None]
+
+        """
         pass
 
     @abstractmethod
     def set_status_code(self, status_code: int):
+        """set_status_code.
+
+        Parameters
+        ----------
+        status_code : int
+            status_code
+        """
         pass
 
     @abstractmethod
     def set_json_content(self, content: Dict[str, Any]):
+        """set_json_content.
+
+        Parameters
+        ----------
+        content : Dict[str, Any]
+            content
+        """
         pass
 
     @abstractmethod
     def set_html_content(self, content: str):
+        """set_html_content.
+
+        Parameters
+        ----------
+        content : str
+            content
+        """
         pass

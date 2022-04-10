@@ -42,8 +42,20 @@ from .third_party_recipe_implementation import \
 
 
 class RecipeImplementation(RecipeInterface):
+    """RecipeImplementation.
+    """
+
     def __init__(self, passwordless_querier: Querier,
                  thirdparty_querier: Union[Querier, None]):
+        """__init__.
+
+        Parameters
+        ----------
+        passwordless_querier : Querier
+            passwordless_querier
+        thirdparty_querier : Union[Querier, None]
+            thirdparty_querier
+        """
         super().__init__()
         passwordless_implementation = PasswordlessImplementation(
             passwordless_querier)
@@ -96,6 +108,20 @@ class RecipeImplementation(RecipeInterface):
             thirdparty_implementation.sign_in_up = derived_tp.sign_in_up
 
     async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """get_user_by_id.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[User, None]
+
+        """
         pless_user = await self.pless_get_user_by_id(user_id, user_context)
 
         if pless_user is not None:
@@ -110,6 +136,20 @@ class RecipeImplementation(RecipeInterface):
         return User(user_id=tp_user.user_id, email=tp_user.email, time_joined=tp_user.time_joined, third_party_info=tp_user.third_party_info, phone_number=None)
 
     async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -> List[User]:
+        """get_users_by_email.
+
+        Parameters
+        ----------
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        List[User]
+
+        """
         result: List[User] = []
         pless_user = await self.pless_get_user_by_email(email, user_context)
 
@@ -127,6 +167,22 @@ class RecipeImplementation(RecipeInterface):
         return result
 
     async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """get_user_by_thirdparty_info.
+
+        Parameters
+        ----------
+        third_party_id : str
+            third_party_id
+        third_party_user_id : str
+            third_party_user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[User, None]
+
+        """
         if self.tp_get_user_by_thirdparty_info is None:
             return None
         tp_user = await self.tp_get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
@@ -138,11 +194,45 @@ class RecipeImplementation(RecipeInterface):
 
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
                                     email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
+        """thirdparty_sign_in_up.
+
+        Parameters
+        ----------
+        third_party_id : str
+            third_party_id
+        third_party_user_id : str
+            third_party_user_id
+        email : str
+            email
+        email_verified : bool
+            email_verified
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SignInUpResult
+
+        """
         if self.tp_sign_in_up is None:
             raise Exception("No thirdparty provider configured")
         return await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
 
     async def get_user_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """get_user_by_phone_number.
+
+        Parameters
+        ----------
+        phone_number : str
+            phone_number
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[User, None]
+
+        """
         pless_user = await self.pless_get_user_by_phone_number(phone_number, user_context)
         if pless_user is not None:
             return User(user_id=pless_user.user_id, email=pless_user.email, time_joined=pless_user.time_joined, third_party_info=None, phone_number=pless_user.phone_number)
@@ -154,12 +244,46 @@ class RecipeImplementation(RecipeInterface):
                           phone_number: Union[None, str],
                           user_input_code: Union[None, str],
                           user_context: Dict[str, Any]) -> CreateCodeResult:
+        """create_code.
+
+        Parameters
+        ----------
+        email : Union[None, str]
+            email
+        phone_number : Union[None, str]
+            phone_number
+        user_input_code : Union[None, str]
+            user_input_code
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        CreateCodeResult
+
+        """
         return await self.pless_create_code(email, phone_number, user_input_code, user_context)
 
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
                                          user_context: Dict[str, Any]) -> CreateNewCodeForDeviceResult:
+        """create_new_code_for_device.
+
+        Parameters
+        ----------
+        device_id : str
+            device_id
+        user_input_code : Union[str, None]
+            user_input_code
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        CreateNewCodeForDeviceResult
+
+        """
         return await self.pless_create_new_code_for_device(device_id, user_input_code, user_context)
 
     async def consume_code(self,
@@ -168,6 +292,26 @@ class RecipeImplementation(RecipeInterface):
                            device_id: Union[str, None],
                            link_code: Union[str, None],
                            user_context: Dict[str, Any]) -> ConsumeCodeResult:
+        """consume_code.
+
+        Parameters
+        ----------
+        pre_auth_session_id : str
+            pre_auth_session_id
+        user_input_code : Union[str, None]
+            user_input_code
+        device_id : Union[str, None]
+            device_id
+        link_code : Union[str, None]
+            link_code
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        ConsumeCodeResult
+
+        """
         result = await self.pless_consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
 
         if result.is_ok:
@@ -188,24 +332,128 @@ class RecipeImplementation(RecipeInterface):
 
     async def update_passwordless_user(self, user_id: str,
                                        email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
+        """update_passwordless_user.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : Union[str, None]
+            email
+        phone_number : Union[str, None]
+            phone_number
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        UpdateUserResult
+
+        """
         return await self.pless_update_user(user_id, email, phone_number, user_context)
 
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
+        """revoke_all_codes.
+
+        Parameters
+        ----------
+        email : Union[str, None]
+            email
+        phone_number : Union[str, None]
+            phone_number
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        RevokeAllCodesResult
+
+        """
         return await self.pless_revoke_all_codes(email, phone_number, user_context)
 
     async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeResult:
+        """revoke_code.
+
+        Parameters
+        ----------
+        code_id : str
+            code_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        RevokeCodeResult
+
+        """
         return await self.pless_revoke_code(code_id, user_context)
 
     async def list_codes_by_email(self, email: str, user_context: Dict[str, Any]) -> List[DeviceType]:
+        """list_codes_by_email.
+
+        Parameters
+        ----------
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        List[DeviceType]
+
+        """
         return await self.pless_list_codes_by_email(email, user_context)
 
     async def list_codes_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -> List[DeviceType]:
+        """list_codes_by_phone_number.
+
+        Parameters
+        ----------
+        phone_number : str
+            phone_number
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        List[DeviceType]
+
+        """
         return await self.pless_list_codes_by_phone_number(phone_number, user_context)
 
     async def list_codes_by_device_id(self, device_id: str, user_context: Dict[str, Any]) -> Union[DeviceType, None]:
+        """list_codes_by_device_id.
+
+        Parameters
+        ----------
+        device_id : str
+            device_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[DeviceType, None]
+
+        """
         return await self.pless_list_codes_by_device_id(device_id, user_context)
 
     async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str,
                                                 user_context: Dict[str, Any]) -> Union[DeviceType, None]:
+        """list_codes_by_pre_auth_session_id.
+
+        Parameters
+        ----------
+        pre_auth_session_id : str
+            pre_auth_session_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[DeviceType, None]
+
+        """
         return await self.pless_list_codes_by_pre_auth_session_id(pre_auth_session_id, user_context)

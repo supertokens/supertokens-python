@@ -46,8 +46,17 @@ from .interfaces import SessionContainer
 
 
 class HandshakeInfo:
+    """HandshakeInfo.
+    """
 
     def __init__(self, info: Dict[str, Any]):
+        """__init__.
+
+        Parameters
+        ----------
+        info : Dict[str, Any]
+            info
+        """
         self.access_token_blacklisting_enabled = info['accessTokenBlacklistingEnabled']
         self.raw_jwt_signing_public_key_list: List[Dict[str, Any]] = []
         self.anti_csrf = info['antiCsrf']
@@ -55,22 +64,53 @@ class HandshakeInfo:
         self.refresh_token_validity = info['refreshTokenValidity']
 
     def set_jwt_signing_public_key_list(self, updated_list: List[Dict[str, Any]]):
+        """set_jwt_signing_public_key_list.
+
+        Parameters
+        ----------
+        updated_list : List[Dict[str, Any]]
+            updated_list
+        """
         self.raw_jwt_signing_public_key_list = updated_list
 
     def get_jwt_signing_public_key_list(self) -> List[Dict[str, Any]]:
+        """get_jwt_signing_public_key_list.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[Dict[str, Any]]
+
+        """
         time_now = get_timestamp_ms()
         return [
             key for key in self.raw_jwt_signing_public_key_list if key['expiryTime'] > time_now]
 
 
 class RecipeImplementation(RecipeInterface):
+    """RecipeImplementation.
+    """
+
     def __init__(self, querier: Querier, config: SessionConfig):
+        """__init__.
+
+        Parameters
+        ----------
+        querier : Querier
+            querier
+        config : SessionConfig
+            config
+        """
         super().__init__()
         self.querier = querier
         self.config = config
         self.handshake_info: Union[HandshakeInfo, None] = None
 
         async def call_get_handshake_info():
+            """call_get_handshake_info.
+            """
             try:
                 await self.get_handshake_info()
             except Exception:
@@ -82,6 +122,18 @@ class RecipeImplementation(RecipeInterface):
             pass
 
     async def get_handshake_info(self, force_refetch: bool = False) -> HandshakeInfo:
+        """get_handshake_info.
+
+        Parameters
+        ----------
+        force_refetch : bool
+            force_refetch
+
+        Returns
+        -------
+        HandshakeInfo
+
+        """
         if self.handshake_info is None or len(
                 self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
             ProcessState.get_instance().add_state(
@@ -100,6 +152,17 @@ class RecipeImplementation(RecipeInterface):
 
     def update_jwt_signing_public_key_info(
             self, key_list: Union[List[Dict[str, Any]], None], public_key: str, expiry_time: int):
+        """update_jwt_signing_public_key_info.
+
+        Parameters
+        ----------
+        key_list : Union[List[Dict[str, Any]], None]
+            key_list
+        public_key : str
+            public_key
+        expiry_time : int
+            expiry_time
+        """
         if key_list is None:
             key_list = [{
                 'publicKey': public_key,
@@ -113,6 +176,26 @@ class RecipeImplementation(RecipeInterface):
     async def create_new_session(self, request: Any, user_id: str,
                                  access_token_payload: Union[None, Dict[str, Any]],
                                  session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) -> SessionContainer:
+        """create_new_session.
+
+        Parameters
+        ----------
+        request : Any
+            request
+        user_id : str
+            user_id
+        access_token_payload : Union[None, Dict[str, Any]]
+            access_token_payload
+        session_data : Union[None, Dict[str, Any]]
+            session_data
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SessionContainer
+
+        """
         if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
         session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
@@ -131,6 +214,24 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
                           session_required: bool, user_context: Dict[str, Any]) -> Union[SessionContainer, None]:
+        """get_session.
+
+        Parameters
+        ----------
+        request : Any
+            request
+        anti_csrf_check : Union[bool, None]
+            anti_csrf_check
+        session_required : bool
+            session_required
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[SessionContainer, None]
+
+        """
         log_debug_message("getSession: Started")
         if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
@@ -178,6 +279,20 @@ class RecipeImplementation(RecipeInterface):
         return request.get_session()
 
     async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -> SessionContainer:
+        """refresh_session.
+
+        Parameters
+        ----------
+        request : Any
+            request
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SessionContainer
+
+        """
         log_debug_message("refreshSession: Started")
         if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
@@ -211,35 +326,177 @@ class RecipeImplementation(RecipeInterface):
         return request.get_session()
 
     async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -> bool:
+        """revoke_session.
+
+        Parameters
+        ----------
+        session_handle : str
+            session_handle
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        bool
+
+        """
         return await session_functions.revoke_session(self, session_handle)
 
     async def revoke_all_sessions_for_user(self, user_id: str, user_context: Dict[str, Any]) -> List[str]:
+        """revoke_all_sessions_for_user.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        List[str]
+
+        """
         return await session_functions.revoke_all_sessions_for_user(self, user_id)
 
     async def get_all_session_handles_for_user(self, user_id: str, user_context: Dict[str, Any]) -> List[str]:
+        """get_all_session_handles_for_user.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        List[str]
+
+        """
         return await session_functions.get_all_session_handles_for_user(self, user_id)
 
     async def revoke_multiple_sessions(self, session_handles: List[str], user_context: Dict[str, Any]) -> List[str]:
+        """revoke_multiple_sessions.
+
+        Parameters
+        ----------
+        session_handles : List[str]
+            session_handles
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        List[str]
+
+        """
         return await session_functions.revoke_multiple_sessions(self, session_handles)
 
     async def get_session_information(self, session_handle: str, user_context: Dict[str, Any]) -> SessionInformationResult:
+        """get_session_information.
+
+        Parameters
+        ----------
+        session_handle : str
+            session_handle
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SessionInformationResult
+
+        """
         return await session_functions.get_session_information(self, session_handle)
 
     async def update_session_data(self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) -> None:
+        """update_session_data.
+
+        Parameters
+        ----------
+        session_handle : str
+            session_handle
+        new_session_data : Dict[str, Any]
+            new_session_data
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        None
+
+        """
         await session_functions.update_session_data(self, session_handle, new_session_data)
 
     async def update_access_token_payload(self, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) -> None:
+        """update_access_token_payload.
+
+        Parameters
+        ----------
+        session_handle : str
+            session_handle
+        new_access_token_payload : Dict[str, Any]
+            new_access_token_payload
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        None
+
+        """
         await session_functions.update_access_token_payload(self, session_handle, new_access_token_payload)
 
     async def get_access_token_lifetime_ms(self, user_context: Dict[str, Any]) -> int:
+        """get_access_token_lifetime_ms.
+
+        Parameters
+        ----------
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        int
+
+        """
         return (await self.get_handshake_info()).access_token_validity
 
     async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -> int:
+        """get_refresh_token_lifetime_ms.
+
+        Parameters
+        ----------
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        int
+
+        """
         return (await self.get_handshake_info()).refresh_token_validity
 
     async def regenerate_access_token(self,
                                       access_token: str,
                                       new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -> RegenerateAccessTokenResult:
+        """regenerate_access_token.
+
+        Parameters
+        ----------
+        access_token : str
+            access_token
+        new_access_token_payload : Union[Dict[str, Any], None]
+            new_access_token_payload
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        RegenerateAccessTokenResult
+
+        """
         if new_access_token_payload is None:
             new_access_token_payload = {}
         response: Dict[str, Any] = await self.querier.send_post_request(NormalisedURLPath("/recipe/session/regenerate"), {

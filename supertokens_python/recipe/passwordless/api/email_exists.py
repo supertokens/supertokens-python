@@ -18,6 +18,15 @@ from supertokens_python.utils import send_200_response
 
 
 async def email_exists(api_implementation: APIInterface, api_options: APIOptions):
+    """email_exists.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if api_implementation.disable_email_exists_get:
         return None
 

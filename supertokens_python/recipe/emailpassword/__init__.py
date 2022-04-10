@@ -37,6 +37,25 @@ def init(sign_up_feature: Union[utils.InputSignUpFeature, None] = None,
              utils.InputResetPasswordUsingTokenFeature, None] = None,
          email_verification_feature: Union[utils.InputEmailVerificationConfig, None] = None,
          override: Union[utils.InputOverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
+    """init.
+
+    Parameters
+    ----------
+    sign_up_feature : Union[utils.InputSignUpFeature, None]
+        sign_up_feature
+    reset_password_using_token_feature : Union[
+                 utils.InputResetPasswordUsingTokenFeature, None]
+        reset_password_using_token_feature
+    email_verification_feature : Union[utils.InputEmailVerificationConfig, None]
+        email_verification_feature
+    override : Union[utils.InputOverrideConfig, None]
+        override
+
+    Returns
+    -------
+    Callable[[AppInfo], RecipeModule]
+
+    """
     return EmailPasswordRecipe.init(
         sign_up_feature,
         reset_password_using_token_feature,

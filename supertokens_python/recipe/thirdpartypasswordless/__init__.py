@@ -49,5 +49,30 @@ def init(contact_config: ContactConfig,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
          override: Union[InputOverrideConfig, None] = None,
          providers: Union[List[Provider], None] = None) -> Callable[[AppInfo], RecipeModule]:
+    """init.
+
+    Parameters
+    ----------
+    contact_config : ContactConfig
+        contact_config
+    flow_type : Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']
+        flow_type
+    get_link_domain_and_path : Union[Callable[[
+                 PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None]
+        get_link_domain_and_path
+    get_custom_user_input_code : Union[Callable[[Dict[str, Any]], Awaitable[str]], None]
+        get_custom_user_input_code
+    email_verification_feature : Union[InputEmailVerificationConfig, None]
+        email_verification_feature
+    override : Union[InputOverrideConfig, None]
+        override
+    providers : Union[List[Provider], None]
+        providers
+
+    Returns
+    -------
+    Callable[[AppInfo], RecipeModule]
+
+    """
     return ThirdPartyPasswordlessRecipe.init(contact_config, flow_type, get_link_domain_and_path, get_custom_user_input_code, email_verification_feature,
                                              override, providers)

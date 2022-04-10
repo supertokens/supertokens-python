@@ -40,5 +40,21 @@ if TYPE_CHECKING:
 def init(sign_in_and_up_feature: SignInAndUpFeature,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
          override: Union[InputOverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
+    """init.
+
+    Parameters
+    ----------
+    sign_in_and_up_feature : SignInAndUpFeature
+        sign_in_and_up_feature
+    email_verification_feature : Union[InputEmailVerificationConfig, None]
+        email_verification_feature
+    override : Union[InputOverrideConfig, None]
+        override
+
+    Returns
+    -------
+    Callable[[AppInfo], RecipeModule]
+
+    """
     return ThirdPartyRecipe.init(
         sign_in_and_up_feature, email_verification_feature, override)

@@ -38,6 +38,19 @@ from supertokens_python.utils import get_header, utf_base64encode
 
 
 def set_front_token_in_headers(response: BaseResponse, user_id: str, expires_at: int, jwt_payload: Union[None, Dict[str, Any]] = None):
+    """set_front_token_in_headers.
+
+    Parameters
+    ----------
+    response : BaseResponse
+        response
+    user_id : str
+        user_id
+    expires_at : int
+        expires_at
+    jwt_payload : Union[None, Dict[str, Any]]
+        jwt_payload
+    """
     if jwt_payload is None:
         jwt_payload = {}
     token_info = {
@@ -64,11 +77,26 @@ def set_front_token_in_headers(response: BaseResponse, user_id: str, expires_at:
 
 
 def get_cors_allowed_headers():
+    """get_cors_allowed_headers.
+    """
     return [ANTI_CSRF_HEADER_KEY, RID_HEADER_KEY]
 
 
 def set_header(response: BaseResponse,
                key: str, value: str, allow_duplicate: bool):
+    """set_header.
+
+    Parameters
+    ----------
+    response : BaseResponse
+        response
+    key : str
+        key
+    value : str
+        value
+    allow_duplicate : bool
+        allow_duplicate
+    """
     try:
         if allow_duplicate:
             old_value = response.get_header(key)
@@ -87,6 +115,15 @@ def set_header(response: BaseResponse,
 
 
 def get_cookie(request: BaseRequest, key: str):
+    """get_cookie.
+
+    Parameters
+    ----------
+    request : BaseRequest
+        request
+    key : str
+        key
+    """
     cookie_val = request.get_cookie(key)
     if cookie_val is None:
         return None
@@ -95,6 +132,23 @@ def get_cookie(request: BaseRequest, key: str):
 
 def set_cookie(recipe: SessionRecipe, response: BaseResponse, key: str, value: str,
                expires: int, path_type: Literal['refresh_token_path', 'access_token_path']):
+    """set_cookie.
+
+    Parameters
+    ----------
+    recipe : SessionRecipe
+        recipe
+    response : BaseResponse
+        response
+    key : str
+        key
+    value : str
+        value
+    expires : int
+        expires
+    path_type : Literal['refresh_token_path', 'access_token_path']
+        path_type
+    """
     domain = recipe.config.cookie_domain
     secure = recipe.config.cookie_secure
     same_site = recipe.config.cookie_same_site
@@ -109,6 +163,15 @@ def set_cookie(recipe: SessionRecipe, response: BaseResponse, key: str, value: s
 
 
 def attach_anti_csrf_header(response: BaseResponse, value: str):
+    """attach_anti_csrf_header.
+
+    Parameters
+    ----------
+    response : BaseResponse
+        response
+    value : str
+        value
+    """
     set_header(response, ANTI_CSRF_HEADER_KEY, value, False)
     set_header(
         response,
@@ -117,15 +180,42 @@ def attach_anti_csrf_header(response: BaseResponse, value: str):
 
 
 def get_anti_csrf_header(request: BaseRequest):
+    """get_anti_csrf_header.
+
+    Parameters
+    ----------
+    request : BaseRequest
+        request
+    """
     return get_header(request, ANTI_CSRF_HEADER_KEY)
 
 
 def get_rid_header(request: BaseRequest):
+    """get_rid_header.
+
+    Parameters
+    ----------
+    request : BaseRequest
+        request
+    """
     return get_header(request, RID_HEADER_KEY)
 
 
 def attach_access_token_to_cookie(
         recipe: SessionRecipe, response: BaseResponse, token: str, expires_at: int):
+    """attach_access_token_to_cookie.
+
+    Parameters
+    ----------
+    recipe : SessionRecipe
+        recipe
+    response : BaseResponse
+        response
+    token : str
+        token
+    expires_at : int
+        expires_at
+    """
     set_cookie(
         recipe,
         response,
@@ -137,6 +227,19 @@ def attach_access_token_to_cookie(
 
 def attach_refresh_token_to_cookie(
         recipe: SessionRecipe, response: BaseResponse, token: str, expires_at: int):
+    """attach_refresh_token_to_cookie.
+
+    Parameters
+    ----------
+    recipe : SessionRecipe
+        recipe
+    response : BaseResponse
+        response
+    token : str
+        token
+    expires_at : int
+        expires_at
+    """
     set_cookie(
         recipe,
         response,
@@ -148,6 +251,19 @@ def attach_refresh_token_to_cookie(
 
 def attach_id_refresh_token_to_cookie_and_header(
         recipe: SessionRecipe, response: BaseResponse, token: str, expires_at: int):
+    """attach_id_refresh_token_to_cookie_and_header.
+
+    Parameters
+    ----------
+    recipe : SessionRecipe
+        recipe
+    response : BaseResponse
+        response
+    token : str
+        token
+    expires_at : int
+        expires_at
+    """
     set_header(
         response,
         ID_REFRESH_TOKEN_HEADER_SET_KEY,
@@ -172,18 +288,48 @@ def attach_id_refresh_token_to_cookie_and_header(
 
 
 def get_access_token_from_cookie(request: BaseRequest):
+    """get_access_token_from_cookie.
+
+    Parameters
+    ----------
+    request : BaseRequest
+        request
+    """
     return get_cookie(request, ACCESS_TOKEN_COOKIE_KEY)
 
 
 def get_refresh_token_from_cookie(request: BaseRequest):
+    """get_refresh_token_from_cookie.
+
+    Parameters
+    ----------
+    request : BaseRequest
+        request
+    """
     return get_cookie(request, REFRESH_TOKEN_COOKIE_KEY)
 
 
 def get_id_refresh_token_from_cookie(request: BaseRequest):
+    """get_id_refresh_token_from_cookie.
+
+    Parameters
+    ----------
+    request : BaseRequest
+        request
+    """
     return get_cookie(request, ID_REFRESH_TOKEN_COOKIE_KEY)
 
 
 def clear_cookies(recipe: SessionRecipe, response: BaseResponse):
+    """clear_cookies.
+
+    Parameters
+    ----------
+    recipe : SessionRecipe
+        recipe
+    response : BaseResponse
+        response
+    """
     if response is not None:
         set_cookie(
             recipe,

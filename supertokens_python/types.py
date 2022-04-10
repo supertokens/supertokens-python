@@ -15,13 +15,45 @@ from typing import List, Union
 
 
 class ThirdPartyInfo:
+    """ThirdPartyInfo.
+    """
+
     def __init__(self, third_party_user_id: str, third_party_id: str):
+        """__init__.
+
+        Parameters
+        ----------
+        third_party_user_id : str
+            third_party_user_id
+        third_party_id : str
+            third_party_id
+        """
         self.user_id = third_party_user_id
         self.id = third_party_id
 
 
 class User:
+    """User.
+    """
+
     def __init__(self, recipe_id: str, user_id: str, time_joined: int, email: Union[str, None], phone_number: Union[str, None], third_party_info: Union[ThirdPartyInfo, None]):
+        """__init__.
+
+        Parameters
+        ----------
+        recipe_id : str
+            recipe_id
+        user_id : str
+            user_id
+        time_joined : int
+            time_joined
+        email : Union[str, None]
+            email
+        phone_number : Union[str, None]
+            phone_number
+        third_party_info : Union[ThirdPartyInfo, None]
+            third_party_info
+        """
         self.recipe_id = recipe_id
         self.user_id = user_id
         self.email = email
@@ -31,7 +63,19 @@ class User:
 
 
 class UsersResponse:
+    """UsersResponse.
+    """
+
     def __init__(self, users: List[User],
                  next_pagination_token: Union[str, None]):
+        """__init__.
+
+        Parameters
+        ----------
+        users : List[User]
+            users
+        next_pagination_token : Union[str, None]
+            next_pagination_token
+        """
         self.users: List[User] = users
         self.next_pagination_token: Union[str, None] = next_pagination_token

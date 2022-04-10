@@ -17,25 +17,79 @@ from .interfaces import SessionContainer
 
 
 class Session(SessionContainer):
+    """Session.
+    """
 
     async def revoke_session(self, user_context: Union[Any, None] = None) -> None:
+        """revoke_session.
+
+        Parameters
+        ----------
+        user_context : Union[Any, None]
+            user_context
+
+        Returns
+        -------
+        None
+
+        """
         if user_context is None:
             user_context = {}
         if await self.recipe_implementation.revoke_session(self.session_handle, user_context):
             self.remove_cookies = True
 
     async def get_session_data(self, user_context: Union[Dict[str, Any], None] = None) -> Dict[str, Any]:
+        """get_session_data.
+
+        Parameters
+        ----------
+        user_context : Union[Dict[str, Any], None]
+            user_context
+
+        Returns
+        -------
+        Dict[str, Any]
+
+        """
         if user_context is None:
             user_context = {}
         session_info = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
         return session_info.session_data
 
     async def update_session_data(self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -> None:
+        """update_session_data.
+
+        Parameters
+        ----------
+        new_session_data : Dict[str, Any]
+            new_session_data
+        user_context : Union[Dict[str, Any], None]
+            user_context
+
+        Returns
+        -------
+        None
+
+        """
         if user_context is None:
             user_context = {}
         return await self.recipe_implementation.update_session_data(self.session_handle, new_session_data, user_context)
 
     async def update_access_token_payload(self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -> None:
+        """update_access_token_payload.
+
+        Parameters
+        ----------
+        new_access_token_payload : Dict[str, Any]
+            new_access_token_payload
+        user_context : Union[Dict[str, Any], None]
+            user_context
+
+        Returns
+        -------
+        None
+
+        """
         if user_context is None:
             user_context = {}
         response = await self.recipe_implementation.regenerate_access_token(self.access_token, new_access_token_payload, user_context)
@@ -49,25 +103,97 @@ class Session(SessionContainer):
             }
 
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -> str:
+        """get_user_id.
+
+        Parameters
+        ----------
+        user_context : Union[Dict[str, Any], None]
+            user_context
+
+        Returns
+        -------
+        str
+
+        """
         return self.user_id
 
     def get_access_token_payload(
             self, user_context: Union[Dict[str, Any], None] = None) -> Dict[str, Any]:
+        """get_access_token_payload.
+
+        Parameters
+        ----------
+        user_context : Union[Dict[str, Any], None]
+            user_context
+
+        Returns
+        -------
+        Dict[str, Any]
+
+        """
         return self.access_token_payload
 
     def get_handle(self, user_context: Union[Dict[str, Any], None] = None) -> str:
+        """get_handle.
+
+        Parameters
+        ----------
+        user_context : Union[Dict[str, Any], None]
+            user_context
+
+        Returns
+        -------
+        str
+
+        """
         return self.session_handle
 
     def get_access_token(self, user_context: Union[Dict[str, Any], None] = None) -> str:
+        """get_access_token.
+
+        Parameters
+        ----------
+        user_context : Union[Dict[str, Any], None]
+            user_context
+
+        Returns
+        -------
+        str
+
+        """
         return self.access_token
 
     async def get_time_created(self, user_context: Union[Dict[str, Any], None] = None) -> int:
+        """get_time_created.
+
+        Parameters
+        ----------
+        user_context : Union[Dict[str, Any], None]
+            user_context
+
+        Returns
+        -------
+        int
+
+        """
         if user_context is None:
             user_context = {}
         result = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
         return result.time_created
 
     async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -> int:
+        """get_expiry.
+
+        Parameters
+        ----------
+        user_context : Union[Dict[str, Any], None]
+            user_context
+
+        Returns
+        -------
+        int
+
+        """
         if user_context is None:
             user_context = {}
         result = await self.recipe_implementation.get_session_information(self.session_handle, user_context)

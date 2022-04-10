@@ -22,8 +22,17 @@ if TYPE_CHECKING:
 
 
 class FlaskFramework(Framework):
+    """FlaskFramework.
+    """
 
     def wrap_request(self, unwrapped: Request):
+        """wrap_request.
+
+        Parameters
+        ----------
+        unwrapped : Request
+            unwrapped
+        """
         from supertokens_python.framework.flask.flask_request import \
             FlaskRequest
         return FlaskRequest(unwrapped)

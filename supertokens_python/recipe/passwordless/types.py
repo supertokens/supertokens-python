@@ -15,8 +15,24 @@ from typing import List, Union
 
 
 class User:
+    """User.
+    """
+
     def __init__(self, user_id: str,
                  email: Union[str, None], phone_number: Union[str, None], time_joined: int):
+        """__init__.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : Union[str, None]
+            email
+        phone_number : Union[str, None]
+            phone_number
+        time_joined : int
+            time_joined
+        """
         self.user_id: str = user_id
         self.email: Union[str, None] = email
         self.phone_number: Union[str, None] = phone_number
@@ -24,13 +40,30 @@ class User:
 
 
 class DeviceCode:
+    """DeviceCode.
+    """
+
     def __init__(self, code_id: str, time_created: str, code_life_time: int):
+        """__init__.
+
+        Parameters
+        ----------
+        code_id : str
+            code_id
+        time_created : str
+            time_created
+        code_life_time : int
+            code_life_time
+        """
         self.code_id = code_id
         self.time_created = time_created
         self.code_life_time = code_life_time
 
 
 class DeviceType:
+    """DeviceType.
+    """
+
     def __init__(self,
                  pre_auth_session_id: str,
                  failed_code_input_attempt_count: int,
@@ -38,6 +71,21 @@ class DeviceType:
                  email: Union[str, None] = None,
                  phone_number: Union[str, None] = None
                  ):
+        """__init__.
+
+        Parameters
+        ----------
+        pre_auth_session_id : str
+            pre_auth_session_id
+        failed_code_input_attempt_count : int
+            failed_code_input_attempt_count
+        codes : List[DeviceCode]
+            codes
+        email : Union[str, None]
+            email
+        phone_number : Union[str, None]
+            phone_number
+        """
         self.pre_auth_session_id = pre_auth_session_id
         self.failed_code_input_attempt_count = failed_code_input_attempt_count
         self.codes = codes

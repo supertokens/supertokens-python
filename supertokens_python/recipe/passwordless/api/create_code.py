@@ -24,6 +24,15 @@ from supertokens_python.utils import send_200_response
 
 
 async def create_code(api_implementation: APIInterface, api_options: APIOptions):
+    """create_code.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if api_implementation.disable_create_code_post:
         return None
 

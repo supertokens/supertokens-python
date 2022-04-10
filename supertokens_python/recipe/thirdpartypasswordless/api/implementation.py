@@ -43,7 +43,12 @@ from .thirdparty_api_implementation import \
 
 
 class APIImplementation(APIInterface):
+    """APIImplementation.
+    """
+
     def __init__(self):
+        """__init__.
+        """
         super().__init__()
         passwordless_implementation = PasswordlessImplementation()
         self.pless_email_exists_get = passwordless_implementation.email_exists_get
@@ -69,14 +74,67 @@ class APIImplementation(APIInterface):
 
     async def authorisation_url_get(self, provider: Provider,
                                     api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
+        """authorisation_url_get.
+
+        Parameters
+        ----------
+        provider : Provider
+            provider
+        api_options : ThirdPartyAPIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        AuthorisationUrlGetResponse
+
+        """
         return await self.tp_authorisation_url_get(provider, api_options, user_context)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
                                          api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> SignInUpPostResponse:
+        """thirdparty_sign_in_up_post.
+
+        Parameters
+        ----------
+        provider : Provider
+            provider
+        code : str
+            code
+        redirect_uri : str
+            redirect_uri
+        client_id : Union[str, None]
+            client_id
+        auth_code_response : Union[Dict[str, Any], None]
+            auth_code_response
+        api_options : ThirdPartyAPIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SignInUpPostResponse
+
+        """
         return await self.tp_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
 
     async def apple_redirect_handler_post(self, code: str, state: str,
                                           api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]):
+        """apple_redirect_handler_post.
+
+        Parameters
+        ----------
+        code : str
+            code
+        state : str
+            state
+        api_options : ThirdPartyAPIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+        """
         return await self.tp_apple_redirect_handler_post(code, state, api_options, user_context)
 
     async def create_code_post(self,
@@ -84,6 +142,24 @@ class APIImplementation(APIInterface):
                                phone_number: Union[str, None],
                                api_options: PasswordlessAPIOptions,
                                user_context: Dict[str, Any]) -> CreateCodePostResponse:
+        """create_code_post.
+
+        Parameters
+        ----------
+        email : Union[str, None]
+            email
+        phone_number : Union[str, None]
+            phone_number
+        api_options : PasswordlessAPIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        CreateCodePostResponse
+
+        """
         return await self.pless_create_code_post(email, phone_number, api_options, user_context)
 
     async def resend_code_post(self,
@@ -91,6 +167,24 @@ class APIImplementation(APIInterface):
                                pre_auth_session_id: str,
                                api_options: PasswordlessAPIOptions,
                                user_context: Dict[str, Any]) -> ResendCodePostResponse:
+        """resend_code_post.
+
+        Parameters
+        ----------
+        device_id : str
+            device_id
+        pre_auth_session_id : str
+            pre_auth_session_id
+        api_options : PasswordlessAPIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        ResendCodePostResponse
+
+        """
         return await self.resend_code_post(device_id, pre_auth_session_id, api_options, user_context)
 
     async def consume_code_post(self,
@@ -100,6 +194,28 @@ class APIImplementation(APIInterface):
                                 link_code: Union[str, None],
                                 api_options: PasswordlessAPIOptions,
                                 user_context: Dict[str, Any]) -> ConsumeCodePostResponse:
+        """consume_code_post.
+
+        Parameters
+        ----------
+        pre_auth_session_id : str
+            pre_auth_session_id
+        user_input_code : Union[str, None]
+            user_input_code
+        device_id : Union[str, None]
+            device_id
+        link_code : Union[str, None]
+            link_code
+        api_options : PasswordlessAPIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        ConsumeCodePostResponse
+
+        """
         otherType = await self.pless_consume_code_post(pre_auth_session_id, user_input_code, device_id, link_code, api_options, user_context)
         if otherType.is_ok:
             if otherType.created_new_user is None or otherType.user is None or otherType.session is None:
@@ -125,10 +241,42 @@ class APIImplementation(APIInterface):
                                                  email: str,
                                                  api_options: PasswordlessAPIOptions,
                                                  user_context: Dict[str, Any]) -> EmailExistsGetResponse:
+        """passwordless_user_email_exists_get.
+
+        Parameters
+        ----------
+        email : str
+            email
+        api_options : PasswordlessAPIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        EmailExistsGetResponse
+
+        """
         return await self.passwordless_user_email_exists_get(email, api_options, user_context)
 
     async def passwordless_user_phone_number_exists_get(self,
                                                         phone_number: str,
                                                         api_options: PasswordlessAPIOptions,
                                                         user_context: Dict[str, Any]) -> PhoneNumberExistsGetResponse:
+        """passwordless_user_phone_number_exists_get.
+
+        Parameters
+        ----------
+        phone_number : str
+            phone_number
+        api_options : PasswordlessAPIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        PhoneNumberExistsGetResponse
+
+        """
         return await self.passwordless_user_phone_number_exists_get(phone_number, api_options, user_context)

@@ -40,6 +40,15 @@ _allowed_headers = [utf_base64encode(dumps({
 
 
 def get_payload(jwt: str, signing_public_key: str):
+    """get_payload.
+
+    Parameters
+    ----------
+    jwt : str
+        jwt
+    signing_public_key : str
+        signing_public_key
+    """
     splitted_input = jwt.split(".")
     if len(splitted_input) != 3:
         raise Exception("invalid jwt")
@@ -66,6 +75,18 @@ def get_payload(jwt: str, signing_public_key: str):
 
 
 def get_payload_without_verifying(jwt: str) -> Dict[str, Any]:
+    """get_payload_without_verifying.
+
+    Parameters
+    ----------
+    jwt : str
+        jwt
+
+    Returns
+    -------
+    Dict[str, Any]
+
+    """
     splitted_input = jwt.split(".")
     if len(splitted_input) != 3:
         raise Exception("invalid jwt")

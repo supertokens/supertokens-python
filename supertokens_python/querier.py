@@ -34,6 +34,9 @@ from .utils import find_max_version, is_4xx_error, is_5xx_error
 
 
 class Querier:
+    """Querier.
+    """
+
     __init_called = False
     __hosts: List[Host] = []
     __api_key: Union[None, str] = None
@@ -43,6 +46,15 @@ class Querier:
 
     def __init__(self, hosts: List[Host],
                  rid_to_core: Union[None, str] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        hosts : List[Host]
+            hosts
+        rid_to_core : Union[None, str]
+            rid_to_core
+        """
         self.__hosts = hosts
         self.__rid_to_core = None
         if rid_to_core is not None:
@@ -50,6 +62,8 @@ class Querier:
 
     @staticmethod
     def reset():
+        """reset.
+        """
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(
@@ -58,6 +72,8 @@ class Querier:
 
     @staticmethod
     def get_hosts_alive_for_testing():
+        """get_hosts_alive_for_testing.
+        """
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(
@@ -65,6 +81,8 @@ class Querier:
         return Querier.__hosts_alive_for_testing
 
     async def get_api_version(self):
+        """get_api_version.
+        """
         if Querier.__api_version is not None:
             return Querier.__api_version
 
@@ -72,6 +90,18 @@ class Querier:
             AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION)
 
         async def f(url: str) -> Response:
+            """f.
+
+            Parameters
+            ----------
+            url : str
+                url
+
+            Returns
+            -------
+            Response
+
+            """
             headers = {}
             if Querier.__api_key is not None:
                 headers = {
@@ -97,6 +127,13 @@ class Querier:
 
     @staticmethod
     def get_instance(rid_to_core: Union[str, None] = None):
+        """get_instance.
+
+        Parameters
+        ----------
+        rid_to_core : Union[str, None]
+            rid_to_core
+        """
         if (not Querier.__init_called) or (Querier.__hosts is None):
             raise Exception(
                 "Please call the supertokens.init function before using SuperTokens")
@@ -104,6 +141,15 @@ class Querier:
 
     @staticmethod
     def init(hosts: List[Host], api_key: Union[str, None] = None):
+        """init.
+
+        Parameters
+        ----------
+        hosts : List[Host]
+            hosts
+        api_key : Union[str, None]
+            api_key
+        """
         if not Querier.__init_called:
             Querier.__init_called = True
             Querier.__hosts = hosts
@@ -113,6 +159,13 @@ class Querier:
             Querier.__hosts_alive_for_testing = set()
 
     async def __get_headers_with_api_version(self, path: NormalisedURLPath):
+        """__get_headers_with_api_version.
+
+        Parameters
+        ----------
+        path : NormalisedURLPath
+            path
+        """
         headers = {
             API_VERSION_HEADER: await self.get_api_version()
         }
@@ -129,16 +182,48 @@ class Querier:
         return headers
 
     async def send_get_request(self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None):
+        """send_get_request.
+
+        Parameters
+        ----------
+        path : NormalisedURLPath
+            path
+        params : Union[Dict[str, Any], None]
+            params
+        """
         if params is None:
             params = {}
 
         async def f(url: str) -> Response:
+            """f.
+
+            Parameters
+            ----------
+            url : str
+                url
+
+            Returns
+            -------
+            Response
+
+            """
             async with AsyncClient() as client:
                 return await client.get(url, params=params, headers=await self.__get_headers_with_api_version(path))
 
         return await self.__send_request_helper(path, 'GET', f, len(self.__hosts))
 
     async def send_post_request(self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None, test: bool = False):
+        """send_post_request.
+
+        Parameters
+        ----------
+        path : NormalisedURLPath
+            path
+        data : Union[Dict[str, Any], None]
+            data
+        test : bool
+            test
+        """
         if data is None:
             data = {}
 
@@ -150,20 +235,60 @@ class Querier:
         headers['content-type'] = 'application/json; charset=utf-8'
 
         async def f(url: str) -> Response:
+            """f.
+
+            Parameters
+            ----------
+            url : str
+                url
+
+            Returns
+            -------
+            Response
+
+            """
             async with AsyncClient() as client:
                 return await client.post(url, json=data, headers=headers)  # type: ignore
 
         return await self.__send_request_helper(path, 'POST', f, len(self.__hosts))
 
     async def send_delete_request(self, path: NormalisedURLPath):
+        """send_delete_request.
+
+        Parameters
+        ----------
+        path : NormalisedURLPath
+            path
+        """
 
         async def f(url: str) -> Response:
+            """f.
+
+            Parameters
+            ----------
+            url : str
+                url
+
+            Returns
+            -------
+            Response
+
+            """
             async with AsyncClient() as client:
                 return await client.delete(url, headers=await self.__get_headers_with_api_version(path))
 
         return await self.__send_request_helper(path, 'DELETE', f, len(self.__hosts))
 
     async def send_put_request(self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None):
+        """send_put_request.
+
+        Parameters
+        ----------
+        path : NormalisedURLPath
+            path
+        data : Union[Dict[str, Any], None]
+            data
+        """
         if data is None:
             data = {}
 
@@ -171,12 +296,42 @@ class Querier:
         headers['content-type'] = 'application/json; charset=utf-8'
 
         async def f(url: str) -> Response:
+            """f.
+
+            Parameters
+            ----------
+            url : str
+                url
+
+            Returns
+            -------
+            Response
+
+            """
             async with AsyncClient() as client:
                 return await client.put(url, json=data, headers=headers)  # type: ignore
 
         return await self.__send_request_helper(path, 'PUT', f, len(self.__hosts))
 
     async def __send_request_helper(self, path: NormalisedURLPath, method: str, http_function: Callable[[str], Awaitable[Response]], no_of_tries: int) -> Any:
+        """__send_request_helper.
+
+        Parameters
+        ----------
+        path : NormalisedURLPath
+            path
+        method : str
+            method
+        http_function : Callable[[str], Awaitable[Response]]
+            http_function
+        no_of_tries : int
+            no_of_tries
+
+        Returns
+        -------
+        Any
+
+        """
         if no_of_tries == 0:
             raise_general_exception('No SuperTokens core available to query')
 

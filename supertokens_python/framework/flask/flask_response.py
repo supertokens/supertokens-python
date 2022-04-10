@@ -18,9 +18,19 @@ from supertokens_python.framework.response import BaseResponse
 
 
 class FlaskResponse(BaseResponse):
+    """FlaskResponse.
+    """
+
     from flask.wrappers import Response
 
     def __init__(self, response: Response):
+        """__init__.
+
+        Parameters
+        ----------
+        response : Response
+            response
+        """
         super().__init__({})
         self.response = response
         self.headers: List[Any] = []
@@ -28,6 +38,13 @@ class FlaskResponse(BaseResponse):
         self.status_set = False
 
     def set_html_content(self, content: str):
+        """set_html_content.
+
+        Parameters
+        ----------
+        content : str
+            content
+        """
         if not self.response_sent:
             self.response.data = content
             self.set_header('Content-Type', 'text/html')
@@ -35,6 +52,27 @@ class FlaskResponse(BaseResponse):
 
     def set_cookie(self, key: str, value: str, expires: int, path: str = "/",
                    domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = "lax"):
+        """set_cookie.
+
+        Parameters
+        ----------
+        key : str
+            key
+        value : str
+            value
+        expires : int
+            expires
+        path : str
+            path
+        domain : Union[str, None]
+            domain
+        secure : bool
+            secure
+        httponly : bool
+            httponly
+        samesite : str
+            samesite
+        """
         from werkzeug.http import dump_cookie
         if self.response is None:
             cookie = dump_cookie(
@@ -53,6 +91,15 @@ class FlaskResponse(BaseResponse):
                                      path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
 
     def set_header(self, key: str, value: str):
+        """set_header.
+
+        Parameters
+        ----------
+        key : str
+            key
+        value : str
+            value
+        """
         if self.response is None:
             # TODO in the future the headrs must be validated..
             # if not isinstance(value, str):
@@ -67,6 +114,18 @@ class FlaskResponse(BaseResponse):
             self.response.headers.add(key, value)
 
     def get_header(self, key: str) -> Union[None, str]:
+        """get_header.
+
+        Parameters
+        ----------
+        key : str
+            key
+
+        Returns
+        -------
+        Union[None, str]
+
+        """
         if self.response is not None:
             return self.response.headers.get(key)
         for value in self.headers:
@@ -75,16 +134,32 @@ class FlaskResponse(BaseResponse):
         return None
 
     def set_status_code(self, status_code: int):
+        """set_status_code.
+
+        Parameters
+        ----------
+        status_code : int
+            status_code
+        """
         if not self.status_set:
             self.response.status_code = status_code
             self.status_set = True
 
     def get_headers(self):
+        """get_headers.
+        """
         if self.response is None:
             return self.headers
         return self.response.headers
 
     def set_json_content(self, content: Dict[str, Any]):
+        """set_json_content.
+
+        Parameters
+        ----------
+        content : Dict[str, Any]
+            content
+        """
         if not self.response_sent:
             self.set_header('Content-Type', 'application/json; charset=utf-8')
             self.response.data = json.dumps(

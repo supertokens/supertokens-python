@@ -33,11 +33,31 @@ if debug_env == "1":
 
 
 def _get_log_timestamp() -> str:
+    """_get_log_timestamp.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    str
+
+    """
     return datetime.utcnow().isoformat()[:-3] + "Z"
 
 
 class CustomStreamHandler(logging.StreamHandler):  # type: ignore
+    """CustomStreamHandler.
+    """
+
     def emit(self, record: logging.LogRecord):
+        """emit.
+
+        Parameters
+        ----------
+        record : logging.LogRecord
+            record
+        """
         relative_path = path.relpath(record.pathname, supertokens_dir)
 
         record.msg = json.dumps({
@@ -67,6 +87,18 @@ log_debug_message = _logger.debug
 
 
 def get_maybe_none_as_str(o: Union[str, None]) -> str:
+    """get_maybe_none_as_str.
+
+    Parameters
+    ----------
+    o : Union[str, None]
+        o
+
+    Returns
+    -------
+    str
+
+    """
     if o is None:
         return "None"
     return o

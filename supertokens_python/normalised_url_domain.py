@@ -24,15 +24,41 @@ from .exceptions import raise_general_exception
 
 
 class NormalisedURLDomain:
+    """NormalisedURLDomain.
+    """
+
     def __init__(self, url: str):
+        """__init__.
+
+        Parameters
+        ----------
+        url : str
+            url
+        """
         self.__value = normalise_domain_path_or_throw_error(url)
 
     def get_as_string_dangerous(self):
+        """get_as_string_dangerous.
+        """
         return self.__value
 
 
 def normalise_domain_path_or_throw_error(
         input_str: str, ignore_protocol: bool = False) -> str:
+    """normalise_domain_path_or_throw_error.
+
+    Parameters
+    ----------
+    input_str : str
+        input_str
+    ignore_protocol : bool
+        ignore_protocol
+
+    Returns
+    -------
+    str
+
+    """
     input_str = input_str.strip().lower()
 
     try:

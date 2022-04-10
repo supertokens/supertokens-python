@@ -23,6 +23,15 @@ from supertokens_python.utils import send_200_response
 
 
 async def handle_signout_api(api_implementation: APIInterface, api_options: APIOptions):
+    """handle_signout_api.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if api_implementation.disable_signout_post or api_implementation.signout_post is None:
         return None
     response = await api_implementation.signout_post(api_options, {})

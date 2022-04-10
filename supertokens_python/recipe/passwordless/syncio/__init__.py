@@ -26,6 +26,24 @@ def create_code(email: Union[None, str] = None,
                 phone_number: Union[None, str] = None,
                 user_input_code: Union[None, str] = None,
                 user_context: Union[None, Dict[str, Any]] = None) -> CreateCodeResult:
+    """create_code.
+
+    Parameters
+    ----------
+    email : Union[None, str]
+        email
+    phone_number : Union[None, str]
+        phone_number
+    user_input_code : Union[None, str]
+        user_input_code
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    CreateCodeResult
+
+    """
     return sync(asyncio.create_code(email=email, phone_number=phone_number,
                                     user_input_code=user_input_code, user_context=user_context))
 
@@ -33,6 +51,22 @@ def create_code(email: Union[None, str] = None,
 def create_new_code_for_device(device_id: str,
                                user_input_code: Union[str, None] = None,
                                user_context: Union[None, Dict[str, Any]] = None) -> CreateNewCodeForDeviceResult:
+    """create_new_code_for_device.
+
+    Parameters
+    ----------
+    device_id : str
+        device_id
+    user_input_code : Union[str, None]
+        user_input_code
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    CreateNewCodeForDeviceResult
+
+    """
     return sync(asyncio.create_new_code_for_device(device_id=device_id,
                                                    user_input_code=user_input_code,
                                                    user_context=user_context))
@@ -43,28 +77,108 @@ def consume_code(pre_auth_session_id: str,
                  device_id: Union[str, None] = None,
                  link_code: Union[str, None] = None,
                  user_context: Union[None, Dict[str, Any]] = None) -> ConsumeCodeResult:
+    """consume_code.
+
+    Parameters
+    ----------
+    pre_auth_session_id : str
+        pre_auth_session_id
+    user_input_code : Union[str, None]
+        user_input_code
+    device_id : Union[str, None]
+        device_id
+    link_code : Union[str, None]
+        link_code
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    ConsumeCodeResult
+
+    """
     return sync(asyncio.consume_code(pre_auth_session_id=pre_auth_session_id, user_input_code=user_input_code,
                                      device_id=device_id, link_code=link_code, user_context=user_context))
 
 
 def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[User, None]:
+    """get_user_by_id.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    Union[User, None]
+
+    """
     return sync(asyncio.get_user_by_id(
         user_id=user_id, user_context=user_context))
 
 
 def get_user_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[User, None]:
+    """get_user_by_email.
+
+    Parameters
+    ----------
+    email : str
+        email
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    Union[User, None]
+
+    """
     return sync(asyncio.get_user_by_email(
         email=email, user_context=user_context))
 
 
 def get_user_by_phone_number(
         phone_number: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[User, None]:
+    """get_user_by_phone_number.
+
+    Parameters
+    ----------
+    phone_number : str
+        phone_number
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    Union[User, None]
+
+    """
     return sync(asyncio.get_user_by_phone_number(
         phone_number=phone_number, user_context=user_context))
 
 
 def update_user(user_id: str, email: Union[str, None] = None,
                 phone_number: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None) -> UpdateUserResult:
+    """update_user.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    email : Union[str, None]
+        email
+    phone_number : Union[str, None]
+        phone_number
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    UpdateUserResult
+
+    """
     return sync(asyncio.update_user(user_id=user_id, email=email,
                                     phone_number=phone_number, user_context=user_context))
 
@@ -72,45 +186,164 @@ def update_user(user_id: str, email: Union[str, None] = None,
 def revoke_all_codes(email: Union[str, None] = None,
                      phone_number: Union[str, None] = None,
                      user_context: Union[None, Dict[str, Any]] = None) -> RevokeAllCodesResult:
+    """revoke_all_codes.
+
+    Parameters
+    ----------
+    email : Union[str, None]
+        email
+    phone_number : Union[str, None]
+        phone_number
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    RevokeAllCodesResult
+
+    """
     return sync(asyncio.revoke_all_codes(
         email=email, phone_number=phone_number, user_context=user_context))
 
 
 def revoke_code(code_id: str, user_context: Union[None, Dict[str, Any]] = None) -> RevokeCodeResult:
+    """revoke_code.
+
+    Parameters
+    ----------
+    code_id : str
+        code_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    RevokeCodeResult
+
+    """
     return sync(asyncio.revoke_code(
         code_id=code_id, user_context=user_context))
 
 
 def list_codes_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -> List[DeviceType]:
+    """list_codes_by_email.
+
+    Parameters
+    ----------
+    email : str
+        email
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    List[DeviceType]
+
+    """
     return sync(asyncio.list_codes_by_email(
         email=email, user_context=user_context))
 
 
 def list_codes_by_phone_number(
         phone_number: str, user_context: Union[None, Dict[str, Any]] = None) -> List[DeviceType]:
+    """list_codes_by_phone_number.
+
+    Parameters
+    ----------
+    phone_number : str
+        phone_number
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    List[DeviceType]
+
+    """
     return sync(asyncio.list_codes_by_phone_number(
         phone_number=phone_number, user_context=user_context))
 
 
 def list_codes_by_device_id(
         device_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[DeviceType, None]:
+    """list_codes_by_device_id.
+
+    Parameters
+    ----------
+    device_id : str
+        device_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    Union[DeviceType, None]
+
+    """
     return sync(asyncio.list_codes_by_device_id(
         device_id=device_id, user_context=user_context))
 
 
 def list_codes_by_pre_auth_session_id(
         pre_auth_session_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[DeviceType, None]:
+    """list_codes_by_pre_auth_session_id.
+
+    Parameters
+    ----------
+    pre_auth_session_id : str
+        pre_auth_session_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    Union[DeviceType, None]
+
+    """
     return sync(asyncio.list_codes_by_pre_auth_session_id(pre_auth_session_id=pre_auth_session_id,
                                                           user_context=user_context))
 
 
 def create_magic_link(
         email: Union[str, None], phone_number: Union[str, None], user_context: Union[None, Dict[str, Any]] = None) -> str:
+    """create_magic_link.
+
+    Parameters
+    ----------
+    email : Union[str, None]
+        email
+    phone_number : Union[str, None]
+        phone_number
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    str
+
+    """
     return sync(asyncio.create_magic_link(
         email=email, phone_number=phone_number, user_context=user_context))
 
 
 def signinup(email: Union[str, None], phone_number: Union[str,
              None], user_context: Union[None, Dict[str, Any]] = None) -> ConsumeCodeOkResult:
+    """signinup.
+
+    Parameters
+    ----------
+    email : Union[str, None]
+        email
+    phone_number : Union[str,
+                 None]
+        phone_number
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    ConsumeCodeOkResult
+
+    """
     return sync(asyncio.signinup(
         email=email, phone_number=phone_number, user_context=user_context))

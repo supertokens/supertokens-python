@@ -35,7 +35,17 @@ from .types import User
 
 
 class SignInAndUpFeature:
+    """SignInAndUpFeature.
+    """
+
     def __init__(self, providers: List[Provider]):
+        """__init__.
+
+        Parameters
+        ----------
+        providers : List[Provider]
+            providers
+        """
         if len(providers) == 0:
             raise_bad_input_exception('thirdparty recipe requires atleast 1 provider to be passed in sign_in_and_up_feature.providers config')
         default_providers_set: Set[str] = set()
@@ -72,12 +82,26 @@ class SignInAndUpFeature:
 
 
 class InputEmailVerificationConfig:
+    """InputEmailVerificationConfig.
+    """
+
     def __init__(self,
                  get_email_verification_url: Union[Callable[[
                      User, Dict[str, Any]], Awaitable[str]], None] = None,
                  create_and_send_custom_email: Union[Callable[[
                      User, str, Dict[str, Any]], Awaitable[None]], None] = None
                  ):
+        """__init__.
+
+        Parameters
+        ----------
+        get_email_verification_url : Union[Callable[[
+                             User, Dict[str, Any]], Awaitable[str]], None]
+            get_email_verification_url
+        create_and_send_custom_email : Union[Callable[[
+                             User, str, Dict[str, Any]], Awaitable[None]], None]
+            create_and_send_custom_email
+        """
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
 
@@ -86,7 +110,34 @@ def email_verification_create_and_send_custom_email(
         recipe: ThirdPartyRecipe, create_and_send_custom_email: Callable[[
             User, str, Dict[str, Any]], Awaitable[None]]) -> Callable[[
                 EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]]:
+    """email_verification_create_and_send_custom_email.
+
+    Parameters
+    ----------
+    recipe : ThirdPartyRecipe
+        recipe
+    create_and_send_custom_email : Callable[[
+                User, str, Dict[str, Any]], Awaitable[None]]
+        create_and_send_custom_email
+
+    Returns
+    -------
+    Callable[[
+                    EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]]
+
+    """
     async def func(user: EmailVerificationUser, link: str, user_context: Dict[str, Any]):
+        """func.
+
+        Parameters
+        ----------
+        user : EmailVerificationUser
+            user
+        link : str
+            link
+        user_context : Dict[str, Any]
+            user_context
+        """
         user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id, user_context)
         if user_info is None:
             raise Exception('Unknown User ID provided')
@@ -99,7 +150,32 @@ def email_verification_get_email_verification_url(
         recipe: ThirdPartyRecipe, get_email_verification_url: Callable[[
             User, Dict[str, Any]], Awaitable[str]]) -> Callable[[
                 EmailVerificationUser, Any], Awaitable[str]]:
+    """email_verification_get_email_verification_url.
+
+    Parameters
+    ----------
+    recipe : ThirdPartyRecipe
+        recipe
+    get_email_verification_url : Callable[[
+                User, Dict[str, Any]], Awaitable[str]]
+        get_email_verification_url
+
+    Returns
+    -------
+    Callable[[
+                    EmailVerificationUser, Any], Awaitable[str]]
+
+    """
     async def func(user: EmailVerificationUser, user_context: Dict[str, Any]):
+        """func.
+
+        Parameters
+        ----------
+        user : EmailVerificationUser
+            user
+        user_context : Dict[str, Any]
+            user_context
+        """
         user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id, user_context)
         if user_info is None:
             raise Exception('Unknown User ID provided')
@@ -111,6 +187,22 @@ def email_verification_get_email_verification_url(
 def validate_and_normalise_email_verification_config(
         recipe: ThirdPartyRecipe, config: Union[InputEmailVerificationConfig, None], override: InputOverrideConfig)\
         -> ParentRecipeEmailVerificationConfig:
+    """validate_and_normalise_email_verification_config.
+
+    Parameters
+    ----------
+    recipe : ThirdPartyRecipe
+        recipe
+    config : Union[InputEmailVerificationConfig, None]
+        config
+    override : InputOverrideConfig
+        override
+
+    Returns
+    -------
+    ParentRecipeEmailVerificationConfig
+
+    """
     create_and_send_custom_email = None
     get_email_verification_url = None
     if config is None:
@@ -131,27 +223,68 @@ def validate_and_normalise_email_verification_config(
 
 
 class InputOverrideConfig:
+    """InputOverrideConfig.
+    """
+
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
                  apis: Union[Callable[[APIInterface],
                                       APIInterface], None] = None,
                  email_verification_feature: Union[EmailVerificationOverrideConfig, None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        functions : Union[Callable[[RecipeInterface], RecipeInterface], None]
+            functions
+        apis : Union[Callable[[APIInterface],
+                                              APIInterface], None]
+            apis
+        email_verification_feature : Union[EmailVerificationOverrideConfig, None]
+            email_verification_feature
+        """
         self.functions = functions
         self.apis = apis
         self.email_verification_feature = email_verification_feature
 
 
 class OverrideConfig:
+    """OverrideConfig.
+    """
+
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
                  apis: Union[Callable[[APIInterface], APIInterface], None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        functions : Union[Callable[[RecipeInterface], RecipeInterface], None]
+            functions
+        apis : Union[Callable[[APIInterface], APIInterface], None]
+            apis
+        """
         self.functions = functions
         self.apis = apis
 
 
 class ThirdPartyConfig:
+    """ThirdPartyConfig.
+    """
+
     def __init__(self,
                  sign_in_and_up_feature: SignInAndUpFeature,
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
                  override: OverrideConfig):
+        """__init__.
+
+        Parameters
+        ----------
+        sign_in_and_up_feature : SignInAndUpFeature
+            sign_in_and_up_feature
+        email_verification_feature : ParentRecipeEmailVerificationConfig
+            email_verification_feature
+        override : OverrideConfig
+            override
+        """
         self.sign_in_and_up_feature = sign_in_and_up_feature
         self.email_verification_feature = email_verification_feature
         self.override = override
@@ -162,6 +295,24 @@ def validate_and_normalise_user_input(
         sign_in_and_up_feature: SignInAndUpFeature,
         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
         override: Union[InputOverrideConfig, None] = None) -> ThirdPartyConfig:
+    """validate_and_normalise_user_input.
+
+    Parameters
+    ----------
+    recipe : ThirdPartyRecipe
+        recipe
+    sign_in_and_up_feature : SignInAndUpFeature
+        sign_in_and_up_feature
+    email_verification_feature : Union[InputEmailVerificationConfig, None]
+        email_verification_feature
+    override : Union[InputOverrideConfig, None]
+        override
+
+    Returns
+    -------
+    ThirdPartyConfig
+
+    """
     if override is None:
         override = InputOverrideConfig()
     return ThirdPartyConfig(sign_in_and_up_feature, validate_and_normalise_email_verification_config(recipe, email_verification_feature, override),
@@ -175,6 +326,22 @@ def find_right_provider(
         third_party_id: str,
         client_id: Union[str, None]
 ) -> Union[Provider, None]:
+    """find_right_provider.
+
+    Parameters
+    ----------
+    providers : List[Provider]
+        providers
+    third_party_id : str
+        third_party_id
+    client_id : Union[str, None]
+        client_id
+
+    Returns
+    -------
+    Union[Provider, None]
+
+    """
     for provider in providers:
         provider_id = provider.id
         if provider_id != third_party_id:
@@ -203,6 +370,24 @@ def find_right_provider(
 
 def verify_id_token_from_jwks_endpoint(
         id_token: str, jwks_uri: str, audience: str, issuers: List[str]) -> Dict[str, Any]:
+    """verify_id_token_from_jwks_endpoint.
+
+    Parameters
+    ----------
+    id_token : str
+        id_token
+    jwks_uri : str
+        jwks_uri
+    audience : str
+        audience
+    issuers : List[str]
+        issuers
+
+    Returns
+    -------
+    Dict[str, Any]
+
+    """
     jwks_client = PyJWKClient(jwks_uri)
     signing_key = jwks_client.get_signing_key_from_jwt(id_token)
 

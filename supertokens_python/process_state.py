@@ -17,6 +17,9 @@ from enum import Enum
 
 
 class AllowedProcessStates(Enum):
+    """AllowedProcessStates.
+    """
+
     CALLING_SERVICE_IN_VERIFY = 1
     CALLING_SERVICE_IN_GET_HANDSHAKE_INFO = 2
     CALLING_SERVICE_IN_GET_API_VERSION = 3
@@ -24,21 +27,37 @@ class AllowedProcessStates(Enum):
 
 
 class ProcessState:
+    """ProcessState.
+    """
+
     __instance = None
 
     def __init__(self):
+        """__init__.
+        """
         self.history: List[AllowedProcessStates] = []
 
     @staticmethod
     def get_instance():
+        """get_instance.
+        """
         if ProcessState.__instance is None:
             ProcessState.__instance = ProcessState()
         return ProcessState.__instance
 
     def add_state(self, state: AllowedProcessStates):
+        """add_state.
+
+        Parameters
+        ----------
+        state : AllowedProcessStates
+            state
+        """
         if ('SUPERTOKENS_ENV' in environ) and (
                 environ['SUPERTOKENS_ENV'] == 'testing'):
             self.history.append(state)
 
     def reset(self):
+        """reset.
+        """
         self.history = []

@@ -44,6 +44,9 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 
 class PasswordlessRecipe(RecipeModule):
+    """PasswordlessRecipe.
+    """
+
     recipe_id = 'passwordless'
     __instance = None
 
@@ -53,6 +56,26 @@ class PasswordlessRecipe(RecipeModule):
                  get_link_domain_and_path: Union[Callable[[
                      PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
                  get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        recipe_id : str
+            recipe_id
+        app_info : AppInfo
+            app_info
+        contact_config : ContactConfig
+            contact_config
+        flow_type : Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']
+            flow_type
+        override : Union[OverrideConfig, None]
+            override
+        get_link_domain_and_path : Union[Callable[[
+                             PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None]
+            get_link_domain_and_path
+        get_custom_user_input_code : Union[Callable[[Dict[str, Any]], Awaitable[str]], None]
+            get_custom_user_input_code
+        """
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, contact_config, flow_type, override,
                                                         get_link_domain_and_path, get_custom_user_input_code)
@@ -66,6 +89,16 @@ class PasswordlessRecipe(RecipeModule):
             self.config.override.apis(api_implementation)
 
     def get_apis_handled(self) -> List[APIHandled]:
+        """get_apis_handled.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[APIHandled]
+
+        """
         return [
             APIHandled(method='post', path_without_api_base_path=NormalisedURLPath(CONSUME_CODE_API),
                        request_id=CONSUME_CODE_API,
@@ -86,6 +119,21 @@ class PasswordlessRecipe(RecipeModule):
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
+        """handle_api_request.
+
+        Parameters
+        ----------
+        request_id : str
+            request_id
+        request : BaseRequest
+            request
+        path : NormalisedURLPath
+            path
+        method : str
+            method
+        response : BaseResponse
+            response
+        """
         options = APIOptions(
             request,
             response,
@@ -103,13 +151,46 @@ class PasswordlessRecipe(RecipeModule):
         return await resend_code(self.api_implementation, options)
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse):
+        """handle_error.
+
+        Parameters
+        ----------
+        request : BaseRequest
+            request
+        err : SuperTokensError
+            err
+        response : BaseResponse
+            response
+        """
         raise err
 
     def get_all_cors_headers(self) -> List[str]:
+        """get_all_cors_headers.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[str]
+
+        """
         return []
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -> bool:
+        """is_error_from_this_recipe_based_on_instance.
+
+        Parameters
+        ----------
+        err : Exception
+            err
+
+        Returns
+        -------
+        bool
+
+        """
         return isinstance(err, SuperTokensError) and isinstance(
             err, SuperTokensPasswordlessError)
 
@@ -120,7 +201,30 @@ class PasswordlessRecipe(RecipeModule):
              get_link_domain_and_path: Union[Callable[[
                  PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
              get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None):
+        """init.
+
+        Parameters
+        ----------
+        contact_config : ContactConfig
+            contact_config
+        flow_type : Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']
+            flow_type
+        override : Union[OverrideConfig, None]
+            override
+        get_link_domain_and_path : Union[Callable[[
+                         PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None]
+            get_link_domain_and_path
+        get_custom_user_input_code : Union[Callable[[Dict[str, Any]], Awaitable[str]], None]
+            get_custom_user_input_code
+        """
         def func(app_info: AppInfo):
+            """func.
+
+            Parameters
+            ----------
+            app_info : AppInfo
+                app_info
+            """
             if PasswordlessRecipe.__instance is None:
                 PasswordlessRecipe.__instance = PasswordlessRecipe(
                     PasswordlessRecipe.recipe_id,
@@ -135,6 +239,16 @@ class PasswordlessRecipe(RecipeModule):
 
     @staticmethod
     def get_instance() -> PasswordlessRecipe:
+        """get_instance.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        PasswordlessRecipe
+
+        """
         if PasswordlessRecipe.__instance is not None:
             return PasswordlessRecipe.__instance
         raise_general_exception(
@@ -142,6 +256,8 @@ class PasswordlessRecipe(RecipeModule):
 
     @staticmethod
     def reset():
+        """reset.
+        """
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(
@@ -149,6 +265,22 @@ class PasswordlessRecipe(RecipeModule):
         PasswordlessRecipe.__instance = None
 
     async def create_magic_link(self, email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> str:
+        """create_magic_link.
+
+        Parameters
+        ----------
+        email : Union[str, None]
+            email
+        phone_number : Union[str, None]
+            phone_number
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        str
+
+        """
         user_input_code = None
         if self.config.get_custom_user_input_code is not None:
             user_input_code = await self.config.get_custom_user_input_code(user_context)
@@ -161,6 +293,22 @@ class PasswordlessRecipe(RecipeModule):
         return magic_link
 
     async def signinup(self, email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> ConsumeCodeOkResult:
+        """signinup.
+
+        Parameters
+        ----------
+        email : Union[str, None]
+            email
+        phone_number : Union[str, None]
+            phone_number
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        ConsumeCodeOkResult
+
+        """
         code_info = await self.recipe_implementation.create_code(
             email=email, phone_number=phone_number, user_context=user_context, user_input_code=None)
         consume_code_result = await self.recipe_implementation.consume_code(

@@ -22,54 +22,156 @@ if TYPE_CHECKING:
 
 
 class FlaskRequest(BaseRequest):
+    """FlaskRequest.
+    """
+
     from flask.wrappers import Request
 
     def __init__(self, req: Request):
+        """__init__.
+
+        Parameters
+        ----------
+        req : Request
+            req
+        """
         super().__init__()
         self.request = req
 
     def get_query_param(self, key: str, default: Union[str, None] = None):
+        """get_query_param.
+
+        Parameters
+        ----------
+        key : str
+            key
+        default : Union[str, None]
+            default
+        """
         return self.request.args.get(key, default)
 
     async def json(self) -> Union[Any, None]:
+        """json.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Union[Any, None]
+
+        """
         try:
             return self.request.get_json()
         except Exception:
             return {}
 
     def method(self) -> str:
+        """method.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        str
+
+        """
         if isinstance(self.request, dict):
             temp: str = self.request['REQUEST_METHOD']
             return temp
         return self.request.method  # type: ignore
 
     def get_cookie(self, key: str) -> Union[str, None]:
+        """get_cookie.
+
+        Parameters
+        ----------
+        key : str
+            key
+
+        Returns
+        -------
+        Union[str, None]
+
+        """
         return self.request.cookies.get(key, None)
 
     def get_header(self, key: str) -> Union[None, str]:
+        """get_header.
+
+        Parameters
+        ----------
+        key : str
+            key
+
+        Returns
+        -------
+        Union[None, str]
+
+        """
         if isinstance(self.request, dict):
             return self.request.get(key, None)  # type: ignore
         return self.request.headers.get(key)  # type: ignore
 
     def get_session(self) -> Union[SessionContainer, None]:
+        """get_session.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Union[SessionContainer, None]
+
+        """
         from flask import g
         if hasattr(g, 'supertokens'):
             return g.supertokens
         return None
 
     def set_session(self, session: SessionContainer):
+        """set_session.
+
+        Parameters
+        ----------
+        session : SessionContainer
+            session
+        """
         from flask import g
         g.supertokens = session
 
     def set_session_as_none(self):
+        """set_session_as_none.
+        """
         from flask import g
         g.supertokens = None
 
     def get_path(self) -> str:
+        """get_path.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        str
+
+        """
         if isinstance(self.request, dict):
             temp: str = self.request['PATH_INFO']
             return temp
         return self.request.base_url
 
     async def form_data(self) -> Dict[str, Any]:
+        """form_data.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Dict[str, Any]
+
+        """
         return self.request.form.to_dict()

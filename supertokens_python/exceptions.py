@@ -18,6 +18,15 @@ from typing import Union
 
 def raise_general_exception(
         msg: Union[str, Exception], previous: Union[None, Exception] = None):
+    """raise_general_exception.
+
+    Parameters
+    ----------
+    msg : Union[str, Exception]
+        msg
+    previous : Union[None, Exception]
+        previous
+    """
     if isinstance(msg, SuperTokensError):
         raise msg
     if isinstance(msg, Exception):
@@ -26,16 +35,32 @@ def raise_general_exception(
 
 
 def raise_bad_input_exception(msg: str):
+    """raise_bad_input_exception.
+
+    Parameters
+    ----------
+    msg : str
+        msg
+    """
     raise BadInputError(msg)
 
 
 class SuperTokensError(Exception):
+    """SuperTokensError.
+    """
+
     pass
 
 
 class GeneralError(SuperTokensError):
+    """GeneralError.
+    """
+
     pass
 
 
 class BadInputError(SuperTokensError):
+    """BadInputError.
+    """
+
     pass

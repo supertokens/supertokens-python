@@ -33,11 +33,32 @@ from ..utils import PhoneOrEmailInput
 
 
 class APIImplementation(APIInterface):
+    """APIImplementation.
+    """
+
     async def create_code_post(self,
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: APIOptions,
                                user_context: Dict[str, Any]) -> CreateCodePostResponse:
+        """create_code_post.
+
+        Parameters
+        ----------
+        email : Union[str, None]
+            email
+        phone_number : Union[str, None]
+            phone_number
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        CreateCodePostResponse
+
+        """
         user_input_code = None
         if api_options.config.get_custom_user_input_code is not None:
             user_input_code = await api_options.config.get_custom_user_input_code(user_context)
@@ -83,6 +104,24 @@ class APIImplementation(APIInterface):
                                pre_auth_session_id: str,
                                api_options: APIOptions,
                                user_context: Dict[str, Any]) -> ResendCodePostResponse:
+        """resend_code_post.
+
+        Parameters
+        ----------
+        device_id : str
+            device_id
+        pre_auth_session_id : str
+            pre_auth_session_id
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        ResendCodePostResponse
+
+        """
         device_info = await api_options.recipe_implementation.list_codes_by_device_id(
             device_id=device_id,
             user_context=user_context
@@ -155,6 +194,28 @@ class APIImplementation(APIInterface):
                                 link_code: Union[str, None],
                                 api_options: APIOptions,
                                 user_context: Dict[str, Any]) -> ConsumeCodePostResponse:
+        """consume_code_post.
+
+        Parameters
+        ----------
+        pre_auth_session_id : str
+            pre_auth_session_id
+        user_input_code : Union[str, None]
+            user_input_code
+        device_id : Union[str, None]
+            device_id
+        link_code : Union[str, None]
+            link_code
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        ConsumeCodePostResponse
+
+        """
         response = await api_options.recipe_implementation.consume_code(
             pre_auth_session_id=pre_auth_session_id,
             user_input_code=user_input_code,
@@ -189,9 +250,41 @@ class APIImplementation(APIInterface):
         )
 
     async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailExistsGetResponse:
+        """email_exists_get.
+
+        Parameters
+        ----------
+        email : str
+            email
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        EmailExistsGetResponse
+
+        """
         response = await api_options.recipe_implementation.get_user_by_email(email, user_context)
         return EmailExistsGetOkResponse(exists=response is not None)
 
     async def phone_number_exists_get(self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]) -> PhoneNumberExistsGetResponse:
+        """phone_number_exists_get.
+
+        Parameters
+        ----------
+        phone_number : str
+            phone_number
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        PhoneNumberExistsGetResponse
+
+        """
         response = await api_options.recipe_implementation.get_user_by_phone_number(phone_number, user_context)
         return PhoneNumberExistsGetOkResponse(exists=response is not None)

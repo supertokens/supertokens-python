@@ -26,4 +26,18 @@ if TYPE_CHECKING:
 
 def init(jwt_validity_seconds: Union[int, None] = None,
          override: Union[OverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
+    """init.
+
+    Parameters
+    ----------
+    jwt_validity_seconds : Union[int, None]
+        jwt_validity_seconds
+    override : Union[OverrideConfig, None]
+        override
+
+    Returns
+    -------
+    Callable[[AppInfo], RecipeModule]
+
+    """
     return JWTRecipe.init(jwt_validity_seconds, override)

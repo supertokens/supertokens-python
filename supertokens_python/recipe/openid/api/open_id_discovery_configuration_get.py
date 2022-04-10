@@ -17,6 +17,15 @@ from supertokens_python.utils import send_200_response
 
 
 async def open_id_discovery_configuration_get(api_implementation: APIInterface, api_options: APIOptions):
+    """open_id_discovery_configuration_get.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if api_implementation.disable_open_id_discovery_configuration_get:
         return None
 

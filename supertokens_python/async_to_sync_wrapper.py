@@ -19,6 +19,8 @@ _T = TypeVar("_T")
 
 
 def check_event_loop():
+    """check_event_loop.
+    """
     try:
         asyncio.get_event_loop()
     except RuntimeError as ex:
@@ -28,6 +30,18 @@ def check_event_loop():
 
 
 def sync(co: Coroutine[Any, Any, _T]) -> _T:
+    """sync.
+
+    Parameters
+    ----------
+    co : Coroutine[Any, Any, _T]
+        co
+
+    Returns
+    -------
+    _T
+
+    """
     check_event_loop()
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(co)

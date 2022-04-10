@@ -23,27 +23,105 @@ from .exceptions import raise_general_exception
 
 
 class NormalisedURLPath:
+    """NormalisedURLPath.
+    """
+
     def __init__(self, url: str):
+        """__init__.
+
+        Parameters
+        ----------
+        url : str
+            url
+        """
         self.__value = normalise_url_path_or_throw_error(url)
 
     def startswith(self, other: NormalisedURLPath) -> bool:
+        """startswith.
+
+        Parameters
+        ----------
+        other : NormalisedURLPath
+            other
+
+        Returns
+        -------
+        bool
+
+        """
         return self.__value.startswith(other.get_as_string_dangerous())
 
     def append(self, other: NormalisedURLPath) -> NormalisedURLPath:
+        """append.
+
+        Parameters
+        ----------
+        other : NormalisedURLPath
+            other
+
+        Returns
+        -------
+        NormalisedURLPath
+
+        """
         return NormalisedURLPath(
             self.__value + other.get_as_string_dangerous())
 
     def get_as_string_dangerous(self) -> str:
+        """get_as_string_dangerous.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        str
+
+        """
         return self.__value
 
     def equals(self, other: NormalisedURLPath) -> bool:
+        """equals.
+
+        Parameters
+        ----------
+        other : NormalisedURLPath
+            other
+
+        Returns
+        -------
+        bool
+
+        """
         return self.__value == other.get_as_string_dangerous()
 
     def is_a_recipe_path(self) -> bool:
+        """is_a_recipe_path.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        bool
+
+        """
         return self.__value == '/recipe' or self.__value.startswith('/recipe/')
 
 
 def normalise_url_path_or_throw_error(input_str: str) -> str:
+    """normalise_url_path_or_throw_error.
+
+    Parameters
+    ----------
+    input_str : str
+        input_str
+
+    Returns
+    -------
+    str
+
+    """
     input_str = input_str.strip().lower()
 
     try:
@@ -87,6 +165,18 @@ def normalise_url_path_or_throw_error(input_str: str) -> str:
 
 
 def domain_given(input_str: str) -> bool:
+    """domain_given.
+
+    Parameters
+    ----------
+    input_str : str
+        input_str
+
+    Returns
+    -------
+    bool
+
+    """
     if ('.' not in input_str) or (input_str.startswith('/')):
         return False
 

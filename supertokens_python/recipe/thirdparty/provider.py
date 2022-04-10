@@ -22,24 +22,92 @@ if TYPE_CHECKING:
 
 
 class Provider(abc.ABC):
+    """Provider.
+    """
+
     def __init__(self, provider_id: str, client_id: str, is_default: bool):
+        """__init__.
+
+        Parameters
+        ----------
+        provider_id : str
+            provider_id
+        client_id : str
+            client_id
+        is_default : bool
+            is_default
+        """
         self.id: str = provider_id
         self.client_id: str = client_id
         self.is_default: bool = is_default
 
     @abc.abstractmethod
     async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
+        """get_profile_info.
+
+        Parameters
+        ----------
+        auth_code_response : Dict[str, Any]
+            auth_code_response
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        UserInfo
+
+        """
         pass
 
     @abc.abstractmethod
     def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
+        """get_authorisation_redirect_api_info.
+
+        Parameters
+        ----------
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        AuthorisationRedirectAPI
+
+        """
         pass
 
     @abc.abstractmethod
     def get_access_token_api_info(
             self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
+        """get_access_token_api_info.
+
+        Parameters
+        ----------
+        redirect_uri : str
+            redirect_uri
+        auth_code_from_request : str
+            auth_code_from_request
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        AccessTokenAPI
+
+        """
         pass
 
     @abc.abstractmethod
     def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+        """get_redirect_uri.
+
+        Parameters
+        ----------
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[None, str]
+
+        """
         pass

@@ -30,9 +30,36 @@ def init(app_info: InputAppInfo,
          recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
          mode: Union[Literal['asgi', 'wsgi'], None] = None,
          telemetry: Union[bool, None] = None):
+    """init.
+
+    Parameters
+    ----------
+    app_info : InputAppInfo
+        app_info
+    framework : Literal['fastapi', 'flask', 'django']
+        framework
+    supertokens_config : SupertokensConfig
+        supertokens_config
+    recipe_list : List[Callable[[supertokens.AppInfo], RecipeModule]]
+        recipe_list
+    mode : Union[Literal['asgi', 'wsgi'], None]
+        mode
+    telemetry : Union[bool, None]
+        telemetry
+    """
     return Supertokens.init(app_info, framework,
                             supertokens_config, recipe_list, mode, telemetry)
 
 
 def get_all_cors_headers() -> List[str]:
+    """get_all_cors_headers.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    List[str]
+
+    """
     return supertokens.Supertokens.get_instance().get_all_cors_headers()

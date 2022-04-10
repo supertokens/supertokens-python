@@ -41,14 +41,38 @@ from supertokens_python.logger import log_debug_message
 
 
 def normalise_session_scope(session_scope: str) -> str:
+    """normalise_session_scope.
+
+    Parameters
+    ----------
+    session_scope : str
+        session_scope
+
+    Returns
+    -------
+    str
+
+    """
     def helper(scope: str) -> str:
+        """helper.
+
+        Parameters
+        ----------
+        scope : str
+            scope
+
+        Returns
+        -------
+        str
+
+        """
         scope = scope.strip()
 
         if scope.startswith('.'):
             scope = scope[1:]
 
         if (not scope.startswith('https://')
-            ) and (not scope.startswith('http://')):
+                ) and (not scope.startswith('http://')):
             scope = 'http://' + scope
 
         try:
@@ -75,6 +99,18 @@ def normalise_session_scope(session_scope: str) -> str:
 
 
 def normalise_same_site(same_site: str) -> Literal['strict', 'lax', 'none']:
+    """normalise_same_site.
+
+    Parameters
+    ----------
+    same_site : str
+        same_site
+
+    Returns
+    -------
+    Literal['strict', 'lax', 'none']
+
+    """
     same_site = same_site.strip()
     same_site = same_site.lower()
     allowed_values = {'strict', 'lax', 'none'}
@@ -85,11 +121,35 @@ def normalise_same_site(same_site: str) -> Literal['strict', 'lax', 'none']:
 
 
 def get_url_scheme(url: str) -> str:
+    """get_url_scheme.
+
+    Parameters
+    ----------
+    url : str
+        url
+
+    Returns
+    -------
+    str
+
+    """
     url_obj = urlparse(url)
     return url_obj.scheme
 
 
 def get_top_level_domain_for_same_site_resolution(url: str) -> str:
+    """get_top_level_domain_for_same_site_resolution.
+
+    Parameters
+    ----------
+    url : str
+        url
+
+    Returns
+    -------
+    str
+
+    """
     url_obj = urlparse(url)
     hostname = url_obj.hostname
 
@@ -107,13 +167,47 @@ def get_top_level_domain_for_same_site_resolution(url: str) -> str:
 
 
 class ErrorHandlers:
+    """ErrorHandlers.
+    """
+
     def __init__(self, on_token_theft_detected: Callable[[BaseRequest, str, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]],
                  on_try_refresh_token: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], on_unauthorised: Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]):
+        """__init__.
+
+        Parameters
+        ----------
+        on_token_theft_detected : Callable[[BaseRequest, str, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]
+            on_token_theft_detected
+        on_try_refresh_token : Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]
+            on_try_refresh_token
+        on_unauthorised : Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]
+            on_unauthorised
+        """
         self.__on_token_theft_detected = on_token_theft_detected
         self.__on_try_refresh_token = on_try_refresh_token
         self.__on_unauthorised = on_unauthorised
 
     async def on_token_theft_detected(self, recipe: SessionRecipe, request: BaseRequest, session_handle: str, user_id: str, response: BaseResponse) -> BaseResponse:
+        """on_token_theft_detected.
+
+        Parameters
+        ----------
+        recipe : SessionRecipe
+            recipe
+        request : BaseRequest
+            request
+        session_handle : str
+            session_handle
+        user_id : str
+            user_id
+        response : BaseResponse
+            response
+
+        Returns
+        -------
+        BaseResponse
+
+        """
         result: Union[None, BaseResponse] = None
         temp = self.__on_token_theft_detected(
             request, session_handle, user_id, response)
@@ -126,6 +220,17 @@ class ErrorHandlers:
         return result
 
     async def on_try_refresh_token(self, request: BaseRequest, message: str, response: BaseResponse):
+        """on_try_refresh_token.
+
+        Parameters
+        ----------
+        request : BaseRequest
+            request
+        message : str
+            message
+        response : BaseResponse
+            response
+        """
         result: Union[None, BaseResponse] = None
         temp = self.__on_try_refresh_token(request, message, response)
         if isinstance(temp, Awaitable):
@@ -135,6 +240,21 @@ class ErrorHandlers:
         return result
 
     async def on_unauthorised(self, recipe: SessionRecipe, do_clear_cookies: bool, request: BaseRequest, message: str, response: BaseResponse):
+        """on_unauthorised.
+
+        Parameters
+        ----------
+        recipe : SessionRecipe
+            recipe
+        do_clear_cookies : bool
+            do_clear_cookies
+        request : BaseRequest
+            request
+        message : str
+            message
+        response : BaseResponse
+            response
+        """
         result: Union[None, BaseResponse] = None
         temp = self.__on_unauthorised(request, message, response)
         if isinstance(temp, Awaitable):
@@ -148,10 +268,23 @@ class ErrorHandlers:
 
 
 class InputErrorHandlers(ErrorHandlers):
+    """InputErrorHandlers.
+    """
+
     def __init__(self,
                  on_token_theft_detected: Union[None, Callable[[
                      BaseRequest, str, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]] = None,
                  on_unauthorised: Union[Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        on_token_theft_detected : Union[None, Callable[[
+                             BaseRequest, str, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]]]
+            on_token_theft_detected
+        on_unauthorised : Union[Callable[[BaseRequest, str, BaseResponse], Union[BaseResponse, Awaitable[BaseResponse]]], None]
+            on_unauthorised
+        """
         if on_token_theft_detected is None:
             on_token_theft_detected = default_token_theft_detected_callback
         if on_unauthorised is None:
@@ -161,18 +294,68 @@ class InputErrorHandlers(ErrorHandlers):
 
 
 async def default_unauthorised_callback(_: BaseRequest, __: str, response: BaseResponse) -> BaseResponse:
+    """default_unauthorised_callback.
+
+    Parameters
+    ----------
+    _ : BaseRequest
+        _
+    __ : str
+        __
+    response : BaseResponse
+        response
+
+    Returns
+    -------
+    BaseResponse
+
+    """
     from .recipe import SessionRecipe
     return send_non_200_response('unauthorised', SessionRecipe.get_instance(
     ).config.session_expired_status_code, response)
 
 
 async def default_try_refresh_token_callback(_: BaseRequest, __: str, response: BaseResponse) -> BaseResponse:
+    """default_try_refresh_token_callback.
+
+    Parameters
+    ----------
+    _ : BaseRequest
+        _
+    __ : str
+        __
+    response : BaseResponse
+        response
+
+    Returns
+    -------
+    BaseResponse
+
+    """
     from .recipe import SessionRecipe
     return send_non_200_response('try refresh token', SessionRecipe.get_instance(
     ).config.session_expired_status_code, response)
 
 
 async def default_token_theft_detected_callback(_: BaseRequest, session_handle: str, __: str, response: BaseResponse) -> BaseResponse:
+    """default_token_theft_detected_callback.
+
+    Parameters
+    ----------
+    _ : BaseRequest
+        _
+    session_handle : str
+        session_handle
+    __ : str
+        __
+    response : BaseResponse
+        response
+
+    Returns
+    -------
+    BaseResponse
+
+    """
     from .recipe import SessionRecipe
     await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle, {})
     return send_non_200_response('token theft detected', SessionRecipe.get_instance(
@@ -180,6 +363,9 @@ async def default_token_theft_detected_callback(_: BaseRequest, session_handle: 
 
 
 class InputOverrideConfig:
+    """InputOverrideConfig.
+    """
+
     def __init__(
         self,
         functions: Union[Callable[[RecipeInterface],
@@ -187,21 +373,59 @@ class InputOverrideConfig:
         apis: Union[Callable[[APIInterface], APIInterface], None] = None,
         openid_feature: Union[OpenIdInputOverrideConfig, None] = None
     ):
+        """__init__.
+
+        Parameters
+        ----------
+        functions : Union[Callable[[RecipeInterface],
+                                          RecipeInterface], None]
+            functions
+        apis : Union[Callable[[APIInterface], APIInterface], None]
+            apis
+        openid_feature : Union[OpenIdInputOverrideConfig, None]
+            openid_feature
+        """
         self.functions = functions
         self.apis = apis
         self.openid_feature = openid_feature
 
 
 class OverrideConfig:
+    """OverrideConfig.
+    """
+
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
                                         None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        functions : Union[Callable[[RecipeInterface], RecipeInterface],
+                                                None]
+            functions
+        apis : Union[Callable[[APIInterface], APIInterface], None]
+            apis
+        """
         self.functions = functions
         self.apis = apis
 
 
 class JWTConfig:
-    def __init__(self, enable: bool, property_name_in_access_token_payload:
-                 Union[str, None] = None, issuer: Union[str, None] = None):
+    """JWTConfig.
+    """
+
+    def __init__(self, enable: bool, property_name_in_access_token_payload: Union[str, None] = None, issuer: Union[str, None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        enable : bool
+            enable
+        property_name_in_access_token_payload : Union[str, None]
+            property_name_in_access_token_payload
+        issuer : Union[str, None]
+            issuer
+        """
         if property_name_in_access_token_payload is None:
             property_name_in_access_token_payload = 'jwt'
         if property_name_in_access_token_payload == ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY:
@@ -212,6 +436,9 @@ class JWTConfig:
 
 
 class SessionConfig:
+    """SessionConfig.
+    """
+
     def __init__(self,
                  refresh_token_path: NormalisedURLPath,
                  cookie_domain: Union[None, str],
@@ -225,6 +452,33 @@ class SessionConfig:
                  mode: str,
                  jwt: JWTConfig
                  ):
+        """__init__.
+
+        Parameters
+        ----------
+        refresh_token_path : NormalisedURLPath
+            refresh_token_path
+        cookie_domain : Union[None, str]
+            cookie_domain
+        cookie_same_site : Literal['lax', 'strict', 'none']
+            cookie_same_site
+        cookie_secure : bool
+            cookie_secure
+        session_expired_status_code : int
+            session_expired_status_code
+        error_handlers : ErrorHandlers
+            error_handlers
+        anti_csrf : str
+            anti_csrf
+        override : OverrideConfig
+            override
+        framework : str
+            framework
+        mode : str
+            mode
+        jwt : JWTConfig
+            jwt
+        """
         self.refresh_token_path = refresh_token_path
         self.cookie_domain = cookie_domain
         self.cookie_same_site = cookie_same_site
@@ -253,6 +507,34 @@ def validate_and_normalise_user_input(app_info: AppInfo,
                                                       None] = None,
                                       jwt: Union[JWTConfig, None] = None
                                       ):
+    """validate_and_normalise_user_input.
+
+    Parameters
+    ----------
+    app_info : AppInfo
+        app_info
+    cookie_domain : Union[str, None]
+        cookie_domain
+    cookie_secure : Union[bool, None]
+        cookie_secure
+    cookie_same_site : Union[Literal["lax",
+                                                                          "none", "strict"], None]
+        cookie_same_site
+    session_expired_status_code : Union[int,
+                                                                             None]
+        session_expired_status_code
+    anti_csrf : Union[Literal["VIA_TOKEN",
+                                                                   "VIA_CUSTOM_HEADER", "NONE"], None]
+        anti_csrf
+    error_handlers : Union[ErrorHandlers,
+                                                                None]
+        error_handlers
+    override : Union[InputOverrideConfig,
+                                                          None]
+        override
+    jwt : Union[JWTConfig, None]
+        jwt
+    """
     cookie_domain = normalise_session_scope(
         cookie_domain) if cookie_domain is not None else None
     top_level_api_domain = get_top_level_domain_for_same_site_resolution(

@@ -20,14 +20,39 @@ if TYPE_CHECKING:
 
 
 class OverrideConfig:
+    """OverrideConfig.
+    """
+
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
                                         None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        functions : Union[Callable[[RecipeInterface], RecipeInterface],
+                                                None]
+            functions
+        apis : Union[Callable[[APIInterface], APIInterface], None]
+            apis
+        """
         self.functions = functions
         self.apis = apis
 
 
 class JWTConfig:
+    """JWTConfig.
+    """
+
     def __init__(self, override: OverrideConfig, jwt_validity_seconds: int):
+        """__init__.
+
+        Parameters
+        ----------
+        override : OverrideConfig
+            override
+        jwt_validity_seconds : int
+            jwt_validity_seconds
+        """
         self.override = override
         self.jwt_validity_seconds = jwt_validity_seconds
 
@@ -35,6 +60,15 @@ class JWTConfig:
 def validate_and_normalise_user_input(
         jwt_validity_seconds: Union[int, None] = None,
         override: Union[OverrideConfig, None] = None):
+    """validate_and_normalise_user_input.
+
+    Parameters
+    ----------
+    jwt_validity_seconds : Union[int, None]
+        jwt_validity_seconds
+    override : Union[OverrideConfig, None]
+        override
+    """
     if override is None:
         override = OverrideConfig()
     if jwt_validity_seconds is None:

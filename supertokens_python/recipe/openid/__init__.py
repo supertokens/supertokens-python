@@ -27,4 +27,20 @@ if TYPE_CHECKING:
 def init(jwt_validity_seconds: Union[int, None] = None,
          issuer: Union[str, None] = None,
          override: Union[InputOverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
+    """init.
+
+    Parameters
+    ----------
+    jwt_validity_seconds : Union[int, None]
+        jwt_validity_seconds
+    issuer : Union[str, None]
+        issuer
+    override : Union[InputOverrideConfig, None]
+        override
+
+    Returns
+    -------
+    Callable[[AppInfo], RecipeModule]
+
+    """
     return OpenIdRecipe.init(jwt_validity_seconds, issuer, override)

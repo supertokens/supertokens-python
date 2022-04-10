@@ -40,7 +40,12 @@ from .thirdparty_api_implementation import \
 
 
 class APIImplementation(APIInterface):
+    """APIImplementation.
+    """
+
     def __init__(self):
+        """__init__.
+        """
         super().__init__()
         emailpassword_implementation = EmailPasswordImplementation()
         self.ep_email_exists_get = emailpassword_implementation.email_exists_get
@@ -65,30 +70,165 @@ class APIImplementation(APIInterface):
         thirdparty_implementation.apple_redirect_handler_post = derived_tp.apple_redirect_handler_post
 
     async def emailpassword_email_exists_get(self, email: str, api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> EmailExistsGetResponse:
+        """emailpassword_email_exists_get.
+
+        Parameters
+        ----------
+        email : str
+            email
+        api_options : EmailPasswordApiOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        EmailExistsGetResponse
+
+        """
         return await self.ep_email_exists_get(email, api_options, user_context)
 
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
                                                  api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> GeneratePasswordResetTokenPostResponse:
+        """generate_password_reset_token_post.
+
+        Parameters
+        ----------
+        form_fields : List[FormField]
+            form_fields
+        api_options : EmailPasswordApiOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        GeneratePasswordResetTokenPostResponse
+
+        """
         return await self.ep_generate_password_reset_token_post(form_fields, api_options, user_context)
 
     async def password_reset_post(self, form_fields: List[FormField], token: str,
                                   api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> PasswordResetPostResponse:
+        """password_reset_post.
+
+        Parameters
+        ----------
+        form_fields : List[FormField]
+            form_fields
+        token : str
+            token
+        api_options : EmailPasswordApiOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        PasswordResetPostResponse
+
+        """
         return await self.ep_password_reset_post(form_fields, token, api_options, user_context)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
                                          api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> SignInUpPostResponse:
+        """thirdparty_sign_in_up_post.
+
+        Parameters
+        ----------
+        provider : Provider
+            provider
+        code : str
+            code
+        redirect_uri : str
+            redirect_uri
+        client_id : Union[str, None]
+            client_id
+        auth_code_response : Union[Dict[str, Any], None]
+            auth_code_response
+        api_options : ThirdPartyApiOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SignInUpPostResponse
+
+        """
         return await self.tp_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
 
     async def emailpassword_sign_in_post(self, form_fields: List[FormField],
                                          api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> SignInPostResponse:
+        """emailpassword_sign_in_post.
+
+        Parameters
+        ----------
+        form_fields : List[FormField]
+            form_fields
+        api_options : EmailPasswordApiOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SignInPostResponse
+
+        """
         return await self.ep_sign_in_post(form_fields, api_options, user_context)
 
     async def emailpassword_sign_up_post(self, form_fields: List[FormField],
                                          api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> SignUpPostResponse:
+        """emailpassword_sign_up_post.
+
+        Parameters
+        ----------
+        form_fields : List[FormField]
+            form_fields
+        api_options : EmailPasswordApiOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SignUpPostResponse
+
+        """
         return await self.ep_sign_up_post(form_fields, api_options, user_context)
 
     async def authorisation_url_get(self, provider: Provider, api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
+        """authorisation_url_get.
+
+        Parameters
+        ----------
+        provider : Provider
+            provider
+        api_options : ThirdPartyApiOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        AuthorisationUrlGetResponse
+
+        """
         return await self.tp_authorisation_url_get(provider, api_options, user_context)
 
     async def apple_redirect_handler_post(self, code: str, state: str, api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]):
+        """apple_redirect_handler_post.
+
+        Parameters
+        ----------
+        code : str
+            code
+        state : str
+            state
+        api_options : ThirdPartyApiOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+        """
         return await self.tp_apple_redirect_handler_post(code, state, api_options, user_context)

@@ -26,6 +26,15 @@ from supertokens_python.utils import send_200_response
 
 
 async def handle_authorisation_url_api(api_implementation: APIInterface, api_options: APIOptions):
+    """handle_authorisation_url_api.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if api_implementation.disable_authorisation_url_get:
         return None
     third_party_id = api_options.request.get_query_param('thirdPartyId')

@@ -24,14 +24,53 @@ _T = TypeVar('_T', bound=Callable[..., Any])
 
 
 def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None) -> Callable[[_T], _T]:
+    """verify_session.
+
+    Parameters
+    ----------
+    anti_csrf_check : Union[bool, None]
+        anti_csrf_check
+    session_required : bool
+        session_required
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    Callable[[_T], _T]
+
+    """
     if user_context is None:
         user_context = {}
 
     def session_verify(f: _T) -> _T:
+        """session_verify.
+
+        Parameters
+        ----------
+        f : _T
+            f
+
+        Returns
+        -------
+        _T
+
+        """
         from django.http import HttpRequest
 
         @wraps(f)
         async def wrapped_function(request: HttpRequest, *args: Any, **kwargs: Any):
+            """wrapped_function.
+
+            Parameters
+            ----------
+            request : HttpRequest
+                request
+            args : Any
+                args
+            kwargs : Any
+                kwargs
+            """
             from django.http import JsonResponse
             try:
                 baseRequest = DjangoRequest(request)

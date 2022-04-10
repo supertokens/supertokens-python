@@ -21,6 +21,15 @@ if TYPE_CHECKING:
 
 
 async def handle_apple_redirect_api(api_implementation: APIInterface, api_options: APIOptions):
+    """handle_apple_redirect_api.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if api_implementation.disable_apple_redirect_handler_post:
         return None
     body = await api_options.request.form_data()

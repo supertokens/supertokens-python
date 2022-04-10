@@ -40,11 +40,29 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 
 class OpenIdRecipe(RecipeModule):
+    """OpenIdRecipe.
+    """
+
     recipe_id = 'openid'
     __instance = None
 
     def __init__(self, recipe_id: str, app_info: AppInfo, jwt_validity_seconds: Union[int, None] = None,
                  issuer: Union[str, None] = None, override: Union[InputOverrideConfig, None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        recipe_id : str
+            recipe_id
+        app_info : AppInfo
+            app_info
+        jwt_validity_seconds : Union[int, None]
+            jwt_validity_seconds
+        issuer : Union[str, None]
+            issuer
+        override : Union[InputOverrideConfig, None]
+            override
+        """
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
             app_info, issuer, override)
@@ -66,12 +84,37 @@ class OpenIdRecipe(RecipeModule):
             self.config.override.apis(api_implementation)
 
     def get_apis_handled(self) -> List[APIHandled]:
+        """get_apis_handled.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[APIHandled]
+
+        """
         return [APIHandled(method='get', path_without_api_base_path=NormalisedURLPath(GET_DISCOVERY_CONFIG_URL),
                            request_id=GET_DISCOVERY_CONFIG_URL, disabled=self.api_implementation.disable_open_id_discovery_configuration_get)
                 ] + self.jwt_recipe.get_apis_handled()
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
+        """handle_api_request.
+
+        Parameters
+        ----------
+        request_id : str
+            request_id
+        request : BaseRequest
+            request
+        path : NormalisedURLPath
+            path
+        method : str
+            method
+        response : BaseResponse
+            response
+        """
         options = APIOptions(
             request,
             response,
@@ -84,15 +127,48 @@ class OpenIdRecipe(RecipeModule):
         return await self.jwt_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse):
+        """handle_error.
+
+        Parameters
+        ----------
+        request : BaseRequest
+            request
+        err : SuperTokensError
+            err
+        response : BaseResponse
+            response
+        """
         if isinstance(err, SuperTokensOpenIdError):
             raise err
         return await self.jwt_recipe.handle_error(request, err, response)
 
     def get_all_cors_headers(self) -> List[str]:
+        """get_all_cors_headers.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[str]
+
+        """
         return self.jwt_recipe.get_all_cors_headers()
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -> bool:
+        """is_error_from_this_recipe_based_on_instance.
+
+        Parameters
+        ----------
+        err : Exception
+            err
+
+        Returns
+        -------
+        bool
+
+        """
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensOpenIdError)
             or
@@ -103,7 +179,25 @@ class OpenIdRecipe(RecipeModule):
     def init(jwt_validity_seconds: Union[int, None] = None,
              issuer: Union[str, None] = None,
              override: Union[InputOverrideConfig, None] = None):
+        """init.
+
+        Parameters
+        ----------
+        jwt_validity_seconds : Union[int, None]
+            jwt_validity_seconds
+        issuer : Union[str, None]
+            issuer
+        override : Union[InputOverrideConfig, None]
+            override
+        """
         def func(app_info: AppInfo):
+            """func.
+
+            Parameters
+            ----------
+            app_info : AppInfo
+                app_info
+            """
             if OpenIdRecipe.__instance is None:
                 OpenIdRecipe.__instance = OpenIdRecipe(
                     OpenIdRecipe.recipe_id,
@@ -118,6 +212,16 @@ class OpenIdRecipe(RecipeModule):
 
     @staticmethod
     def get_instance() -> OpenIdRecipe:
+        """get_instance.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        OpenIdRecipe
+
+        """
         if OpenIdRecipe.__instance is not None:
             return OpenIdRecipe.__instance
         raise_general_exception(
@@ -125,6 +229,8 @@ class OpenIdRecipe(RecipeModule):
 
     @staticmethod
     def reset():
+        """reset.
+        """
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(

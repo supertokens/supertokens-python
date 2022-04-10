@@ -23,6 +23,26 @@ from ..interfaces import SessionContainer, SessionInformationResult
 
 
 def create_new_session(request: Any, user_id: str, access_token_payload: Union[Dict[str, Any], None] = None, session_data: Union[Dict[str, Any], None] = None, user_context: Union[None, Dict[str, Any]] = None) -> SessionContainer:
+    """create_new_session.
+
+    Parameters
+    ----------
+    request : Any
+        request
+    user_id : str
+        user_id
+    access_token_payload : Union[Dict[str, Any], None]
+        access_token_payload
+    session_data : Union[Dict[str, Any], None]
+        session_data
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    SessionContainer
+
+    """
     from supertokens_python.recipe.session.asyncio import \
         create_new_session as async_create_new_session
     return sync(async_create_new_session(
@@ -30,6 +50,24 @@ def create_new_session(request: Any, user_id: str, access_token_payload: Union[D
 
 
 def get_session(request: Any, anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None) -> Union[SessionContainer, None]:
+    """get_session.
+
+    Parameters
+    ----------
+    request : Any
+        request
+    anti_csrf_check : Union[bool, None]
+        anti_csrf_check
+    session_required : bool
+        session_required
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    Union[SessionContainer, None]
+
+    """
     from supertokens_python.recipe.session.asyncio import \
         get_session as async_get_session
     return sync(async_get_session(request, anti_csrf_check,
@@ -37,24 +75,80 @@ def get_session(request: Any, anti_csrf_check: Union[bool, None] = None, session
 
 
 def refresh_session(request: Any, user_context: Union[None, Dict[str, Any]] = None) -> SessionContainer:
+    """refresh_session.
+
+    Parameters
+    ----------
+    request : Any
+        request
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    SessionContainer
+
+    """
     from supertokens_python.recipe.session.asyncio import \
         refresh_session as async_refresh_session
     return sync(async_refresh_session(request, user_context))
 
 
 def revoke_session(session_handle: str, user_context: Union[None, Dict[str, Any]] = None) -> bool:
+    """revoke_session.
+
+    Parameters
+    ----------
+    session_handle : str
+        session_handle
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    bool
+
+    """
     from supertokens_python.recipe.session.asyncio import \
         revoke_session as async_revoke_session
     return sync(async_revoke_session(session_handle, user_context))
 
 
 def revoke_all_sessions_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> List[str]:
+    """revoke_all_sessions_for_user.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    List[str]
+
+    """
     from supertokens_python.recipe.session.asyncio import \
         revoke_all_sessions_for_user as async_revoke_all_sessions_for_user
     return sync(async_revoke_all_sessions_for_user(user_id, user_context))
 
 
 def get_all_session_handles_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> List[str]:
+    """get_all_session_handles_for_user.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    List[str]
+
+    """
     from supertokens_python.recipe.session.asyncio import \
         get_all_session_handles_for_user as \
         async_get_all_session_handles_for_user
@@ -62,18 +156,62 @@ def get_all_session_handles_for_user(user_id: str, user_context: Union[None, Dic
 
 
 def revoke_multiple_sessions(session_handles: List[str], user_context: Union[None, Dict[str, Any]] = None) -> List[str]:
+    """revoke_multiple_sessions.
+
+    Parameters
+    ----------
+    session_handles : List[str]
+        session_handles
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    List[str]
+
+    """
     from supertokens_python.recipe.session.asyncio import \
         revoke_multiple_sessions as async_revoke_multiple_sessions
     return sync(async_revoke_multiple_sessions(session_handles, user_context))
 
 
 def get_session_information(session_handle: str, user_context: Union[None, Dict[str, Any]] = None) -> SessionInformationResult:
+    """get_session_information.
+
+    Parameters
+    ----------
+    session_handle : str
+        session_handle
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    SessionInformationResult
+
+    """
     from supertokens_python.recipe.session.asyncio import \
         get_session_information as async_get_session_information
     return sync(async_get_session_information(session_handle, user_context))
 
 
 def update_session_data(session_handle: str, new_session_data: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -> None:
+    """update_session_data.
+
+    Parameters
+    ----------
+    session_handle : str
+        session_handle
+    new_session_data : Dict[str, Any]
+        new_session_data
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    None
+
+    """
     from supertokens_python.recipe.session.asyncio import \
         update_session_data as async_update_session_data
     return sync(async_update_session_data(
@@ -81,6 +219,22 @@ def update_session_data(session_handle: str, new_session_data: Dict[str, Any], u
 
 
 def update_access_token_payload(session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -> None:
+    """update_access_token_payload.
+
+    Parameters
+    ----------
+    session_handle : str
+        session_handle
+    new_access_token_payload : Dict[str, Any]
+        new_access_token_payload
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    None
+
+    """
     from supertokens_python.recipe.session.asyncio import \
         update_access_token_payload as async_update_access_token_payload
     return sync(async_update_access_token_payload(
@@ -88,18 +242,58 @@ def update_access_token_payload(session_handle: str, new_access_token_payload: D
 
 
 def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -> CreateJwtResult:
+    """create_jwt.
+
+    Parameters
+    ----------
+    payload : Dict[str, Any]
+        payload
+    validity_seconds : Union[None, int]
+        validity_seconds
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    CreateJwtResult
+
+    """
     from supertokens_python.recipe.session.asyncio import \
         create_jwt as async_create_jwt
     return sync(async_create_jwt(payload, validity_seconds, user_context))
 
 
 def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -> GetJWKSResult:
+    """get_jwks.
+
+    Parameters
+    ----------
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    GetJWKSResult
+
+    """
     from supertokens_python.recipe.session.asyncio import \
         get_jwks as async_get_jwks
     return sync(async_get_jwks(user_context))
 
 
 def get_open_id_discovery_configuration(user_context: Union[None, Dict[str, Any]] = None) -> GetOpenIdDiscoveryConfigurationResult:
+    """get_open_id_discovery_configuration.
+
+    Parameters
+    ----------
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    GetOpenIdDiscoveryConfigurationResult
+
+    """
     from supertokens_python.recipe.session.asyncio import \
         get_open_id_discovery_configuration as \
         async_get_open_id_discovery_configuration
@@ -107,6 +301,17 @@ def get_open_id_discovery_configuration(user_context: Union[None, Dict[str, Any]
 
 
 def regenerate_access_token(access_token: str, new_access_token_payload: Union[Dict[str, Any], None] = None, user_context: Union[None, Dict[str, Any]] = None):
+    """regenerate_access_token.
+
+    Parameters
+    ----------
+    access_token : str
+        access_token
+    new_access_token_payload : Union[Dict[str, Any], None]
+        new_access_token_payload
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     from supertokens_python.recipe.session.asyncio import \
         regenerate_access_token as async_regenerate_access_token
     return sync(async_regenerate_access_token(

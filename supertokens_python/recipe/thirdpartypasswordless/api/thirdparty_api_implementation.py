@@ -25,6 +25,18 @@ from ..interfaces import APIInterface as ThirdPartyPasswordlessAPIInterface
 
 def get_interface_impl(
         api_implementation: ThirdPartyPasswordlessAPIInterface) -> APIInterface:
+    """get_interface_impl.
+
+    Parameters
+    ----------
+    api_implementation : ThirdPartyPasswordlessAPIInterface
+        api_implementation
+
+    Returns
+    -------
+    APIInterface
+
+    """
     implementation = APIInterface()
 
     implementation.disable_authorisation_url_get = api_implementation.disable_authorisation_url_get
@@ -33,6 +45,25 @@ def get_interface_impl(
 
     if not implementation.disable_sign_in_up_post:
         async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions, user_context: Dict[str, Any]):
+            """sign_in_up_post.
+
+            Parameters
+            ----------
+            provider : Provider
+                provider
+            code : str
+                code
+            redirect_uri : str
+                redirect_uri
+            client_id : Union[str, None]
+                client_id
+            auth_code_response : Union[Dict[str, Any], None]
+                auth_code_response
+            api_options : APIOptions
+                api_options
+            user_context : Dict[str, Any]
+                user_context
+            """
             result = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
 
             if result.is_ok:

@@ -25,13 +25,36 @@ from ..interfaces import \
 
 
 class RecipeImplementation(RecipeInterface):
+    """RecipeImplementation.
+    """
 
     def __init__(
             self, recipe_implementation: ThirdPartyPasswordlessRecipeInterface):
+        """__init__.
+
+        Parameters
+        ----------
+        recipe_implementation : ThirdPartyPasswordlessRecipeInterface
+            recipe_implementation
+        """
         super().__init__()
         self.recipe_implementation = recipe_implementation
 
     async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """get_user_by_id.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[User, None]
+
+        """
         user = await self.recipe_implementation.get_user_by_id(user_id, user_context)
         if user is None or user.third_party_info is None:
             return None
@@ -42,6 +65,20 @@ class RecipeImplementation(RecipeInterface):
         return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
 
     async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -> List[User]:
+        """get_users_by_email.
+
+        Parameters
+        ----------
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        List[User]
+
+        """
         users = await self.recipe_implementation.get_users_by_email(email, user_context)
         users_result: List[User] = []
 
@@ -55,6 +92,22 @@ class RecipeImplementation(RecipeInterface):
         return users_result
 
     async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """get_user_by_thirdparty_info.
+
+        Parameters
+        ----------
+        third_party_id : str
+            third_party_id
+        third_party_user_id : str
+            third_party_user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[User, None]
+
+        """
         user = await self.recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
         if user is None or user.third_party_info is None:
             return None
@@ -66,6 +119,26 @@ class RecipeImplementation(RecipeInterface):
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
                          email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
+        """sign_in_up.
+
+        Parameters
+        ----------
+        third_party_id : str
+            third_party_id
+        third_party_user_id : str
+            third_party_user_id
+        email : str
+            email
+        email_verified : bool
+            email_verified
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SignInUpResult
+
+        """
         result = await self.recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
 
         if not result.is_ok:

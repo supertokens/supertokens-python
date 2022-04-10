@@ -22,8 +22,17 @@ if TYPE_CHECKING:
 
 
 class FastapiFramework(Framework):
+    """FastapiFramework.
+    """
 
     def wrap_request(self, unwrapped: Request):
+        """wrap_request.
+
+        Parameters
+        ----------
+        unwrapped : Request
+            unwrapped
+        """
         from supertokens_python.framework.fastapi.fastapi_request import \
             FastApiRequest
         return FastApiRequest(unwrapped)

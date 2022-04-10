@@ -25,6 +25,15 @@ from .utils import validate_form_fields_or_throw_error
 
 
 async def handle_generate_password_reset_token_api(api_implementation: APIInterface, api_options: APIOptions):
+    """handle_generate_password_reset_token_api.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if api_implementation.disable_generate_password_reset_token_post:
         return None
     body = await api_options.request.json()

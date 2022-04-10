@@ -28,6 +28,18 @@ from ..interfaces import APIInterface as ThirdPartyPasswordlessAPIInterface
 
 def get_interface_impl(
         api_implementation: ThirdPartyPasswordlessAPIInterface) -> APIInterface:
+    """get_interface_impl.
+
+    Parameters
+    ----------
+    api_implementation : ThirdPartyPasswordlessAPIInterface
+        api_implementation
+
+    Returns
+    -------
+    APIInterface
+
+    """
     implementation = APIInterface()
 
     implementation.disable_email_exists_get = api_implementation.disable_passwordless_user_email_exists_get
@@ -44,6 +56,28 @@ def get_interface_impl(
                                     link_code: Union[str, None],
                                     api_options: APIOptions,
                                     user_context: Dict[str, Any]) -> ConsumeCodePostResponse:
+            """consume_code_post.
+
+            Parameters
+            ----------
+            pre_auth_session_id : str
+                pre_auth_session_id
+            user_input_code : Union[str, None]
+                user_input_code
+            device_id : Union[str, None]
+                device_id
+            link_code : Union[str, None]
+                link_code
+            api_options : APIOptions
+                api_options
+            user_context : Dict[str, Any]
+                user_context
+
+            Returns
+            -------
+            ConsumeCodePostResponse
+
+            """
             otherType = await api_implementation.consume_code_post(pre_auth_session_id, user_input_code, device_id, link_code, api_options, user_context)
 
             if otherType.is_ok:

@@ -47,6 +47,9 @@ from .utils import (InputEmailVerificationConfig, InputOverrideConfig,
 
 
 class EmailPasswordRecipe(RecipeModule):
+    """EmailPasswordRecipe.
+    """
+
     recipe_id = 'emailpassword'
     __instance = None
 
@@ -56,6 +59,25 @@ class EmailPasswordRecipe(RecipeModule):
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        recipe_id : str
+            recipe_id
+        app_info : AppInfo
+            app_info
+        sign_up_feature : Union[InputSignUpFeature, None]
+            sign_up_feature
+        reset_password_using_token_feature : Union[InputResetPasswordUsingTokenFeature, None]
+            reset_password_using_token_feature
+        email_verification_feature : Union[InputEmailVerificationConfig, None]
+            email_verification_feature
+        override : Union[InputOverrideConfig, None]
+            override
+        email_verification_recipe : Union[EmailVerificationRecipe, None]
+            email_verification_recipe
+        """
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, app_info, sign_up_feature,
                                                         reset_password_using_token_feature,
@@ -75,6 +97,18 @@ class EmailPasswordRecipe(RecipeModule):
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -> bool:
+        """is_error_from_this_recipe_based_on_instance.
+
+        Parameters
+        ----------
+        err : Exception
+            err
+
+        Returns
+        -------
+        bool
+
+        """
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensEmailPasswordError)
             or
@@ -83,6 +117,16 @@ class EmailPasswordRecipe(RecipeModule):
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
+        """get_apis_handled.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[APIHandled]
+
+        """
         return [
             APIHandled(NormalisedURLPath(SIGNUP), 'post', SIGNUP,
                        self.api_implementation.disable_sign_up_post),
@@ -99,6 +143,21 @@ class EmailPasswordRecipe(RecipeModule):
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
+        """handle_api_request.
+
+        Parameters
+        ----------
+        request_id : str
+            request_id
+        request : BaseRequest
+            request
+        path : NormalisedURLPath
+            path
+        method : str
+            method
+        response : BaseResponse
+            response
+        """
         api_options = APIOptions(request, response, self.recipe_id, self.config, self.recipe_implementation, self.email_verification_recipe.recipe_implementation)
         if request_id == SIGNUP:
             return await handle_sign_up_api(self.api_implementation,
@@ -118,6 +177,22 @@ class EmailPasswordRecipe(RecipeModule):
         return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
+        """handle_error.
+
+        Parameters
+        ----------
+        request : BaseRequest
+            request
+        err : SuperTokensError
+            err
+        response : BaseResponse
+            response
+
+        Returns
+        -------
+        BaseResponse
+
+        """
         if isinstance(err, SuperTokensEmailPasswordError):
             if isinstance(err, FieldError):
                 response.set_json_content(
@@ -126,6 +201,16 @@ class EmailPasswordRecipe(RecipeModule):
         return await self.email_verification_recipe.handle_error(request, err, response)
 
     def get_all_cors_headers(self) -> List[str]:
+        """get_all_cors_headers.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[str]
+
+        """
         return self.email_verification_recipe.get_all_cors_headers()
 
     @staticmethod
@@ -133,7 +218,27 @@ class EmailPasswordRecipe(RecipeModule):
              reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
              override: Union[InputOverrideConfig, None] = None):
+        """init.
+
+        Parameters
+        ----------
+        sign_up_feature : Union[InputSignUpFeature, None]
+            sign_up_feature
+        reset_password_using_token_feature : Union[InputResetPasswordUsingTokenFeature, None]
+            reset_password_using_token_feature
+        email_verification_feature : Union[InputEmailVerificationConfig, None]
+            email_verification_feature
+        override : Union[InputOverrideConfig, None]
+            override
+        """
         def func(app_info: AppInfo):
+            """func.
+
+            Parameters
+            ----------
+            app_info : AppInfo
+                app_info
+            """
             if EmailPasswordRecipe.__instance is None:
                 EmailPasswordRecipe.__instance = EmailPasswordRecipe(EmailPasswordRecipe.recipe_id, app_info, sign_up_feature, reset_password_using_token_feature, email_verification_feature, override)
                 return EmailPasswordRecipe.__instance
@@ -143,6 +248,16 @@ class EmailPasswordRecipe(RecipeModule):
 
     @staticmethod
     def get_instance() -> EmailPasswordRecipe:
+        """get_instance.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        EmailPasswordRecipe
+
+        """
         if EmailPasswordRecipe.__instance is not None:
             return EmailPasswordRecipe.__instance
         raise_general_exception(
@@ -150,6 +265,8 @@ class EmailPasswordRecipe(RecipeModule):
 
     @staticmethod
     def reset():
+        """reset.
+        """
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(
@@ -159,6 +276,20 @@ class EmailPasswordRecipe(RecipeModule):
     # instance functions below...............
 
     async def get_email_for_user_id(self, user_id: str, user_context: Dict[str, Any]) -> str:
+        """get_email_for_user_id.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        str
+
+        """
         user_info = await self.recipe_implementation.get_user_by_id(user_id, user_context)
         if user_info is None:
             raise Exception('Unknown User ID provided')

@@ -20,19 +20,75 @@ from supertokens_python.types import UsersResponse
 
 def get_users_oldest_first(limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
                            include_recipe_ids: Union[None, List[str]] = None) -> UsersResponse:
+    """get_users_oldest_first.
+
+    Parameters
+    ----------
+    limit : Union[int, None]
+        limit
+    pagination_token : Union[str, None]
+        pagination_token
+    include_recipe_ids : Union[None, List[str]]
+        include_recipe_ids
+
+    Returns
+    -------
+    UsersResponse
+
+    """
     return sync(Supertokens.get_instance().get_users(
         'ASC', limit, pagination_token, include_recipe_ids))
 
 
 def get_users_newest_first(limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
                            include_recipe_ids: Union[None, List[str]] = None) -> UsersResponse:
+    """get_users_newest_first.
+
+    Parameters
+    ----------
+    limit : Union[int, None]
+        limit
+    pagination_token : Union[str, None]
+        pagination_token
+    include_recipe_ids : Union[None, List[str]]
+        include_recipe_ids
+
+    Returns
+    -------
+    UsersResponse
+
+    """
     return sync(Supertokens.get_instance().get_users(
         'DESC', limit, pagination_token, include_recipe_ids))
 
 
 def get_user_count(include_recipe_ids: Union[None, List[str]] = None) -> int:
+    """get_user_count.
+
+    Parameters
+    ----------
+    include_recipe_ids : Union[None, List[str]]
+        include_recipe_ids
+
+    Returns
+    -------
+    int
+
+    """
     return sync(Supertokens.get_instance().get_user_count(include_recipe_ids))
 
 
 def delete_user(user_id: str) -> None:
+    """delete_user.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+
+    Returns
+    -------
+    None
+
+    """
     return sync(Supertokens.get_instance().delete_user(user_id))

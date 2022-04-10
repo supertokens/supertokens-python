@@ -19,35 +19,90 @@ from supertokens_python.exceptions import SuperTokensError
 
 
 def raise_token_theft_exception(user_id: str, session_handle: str):
+    """raise_token_theft_exception.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    session_handle : str
+        session_handle
+    """
     raise TokenTheftError(user_id, session_handle)
 
 
 def raise_try_refresh_token_exception(ex: Union[str, Exception]):
+    """raise_try_refresh_token_exception.
+
+    Parameters
+    ----------
+    ex : Union[str, Exception]
+        ex
+    """
     if isinstance(ex, SuperTokensError):
         raise ex
     raise TryRefreshTokenError(ex) from None
 
 
 def raise_unauthorised_exception(msg: str, clear_cookies: bool = True):
+    """raise_unauthorised_exception.
+
+    Parameters
+    ----------
+    msg : str
+        msg
+    clear_cookies : bool
+        clear_cookies
+    """
     raise UnauthorisedError(msg, clear_cookies) from None
 
 
 class SuperTokensSessionError(SuperTokensError):
+    """SuperTokensSessionError.
+    """
+
     pass
 
 
 class TokenTheftError(SuperTokensSessionError):
+    """TokenTheftError.
+    """
+
     def __init__(self, user_id: str, session_handle: str):
+        """__init__.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        session_handle : str
+            session_handle
+        """
         super().__init__('token theft detected')
         self.user_id = user_id
         self.session_handle = session_handle
 
 
 class UnauthorisedError(SuperTokensSessionError):
+    """UnauthorisedError.
+    """
+
     def __init__(self, msg: str, clear_cookies: bool = True):
+        """__init__.
+
+        Parameters
+        ----------
+        msg : str
+            msg
+        clear_cookies : bool
+            clear_cookies
+        """
         super().__init__(msg)
         self.clear_cookies = clear_cookies
 
 
 class TryRefreshTokenError(SuperTokensSessionError):
+    """TryRefreshTokenError.
+    """
+
     pass

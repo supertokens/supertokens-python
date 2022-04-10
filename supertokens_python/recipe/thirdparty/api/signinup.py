@@ -25,6 +25,15 @@ from supertokens_python.utils import send_200_response
 
 
 async def handle_sign_in_up_api(api_implementation: APIInterface, api_options: APIOptions):
+    """handle_sign_in_up_api.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if api_implementation.disable_sign_in_up_post:
         return None
     body = await api_options.request.json()

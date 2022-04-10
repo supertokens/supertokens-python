@@ -19,6 +19,15 @@ from supertokens_python.utils import send_200_response
 
 
 async def handle_generate_email_verify_token_api(api_implementation: APIInterface, api_options: APIOptions):
+    """handle_generate_email_verify_token_api.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if api_implementation.disable_generate_email_verify_token_post:
         return None
     result = await api_implementation.generate_email_verify_token_post(api_options, {})

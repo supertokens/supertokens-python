@@ -22,6 +22,18 @@ from .jwt import get_payload
 
 
 def sanitize_string(s: Any) -> Union[str, None]:
+    """sanitize_string.
+
+    Parameters
+    ----------
+    s : Any
+        s
+
+    Returns
+    -------
+    Union[str, None]
+
+    """
     if s == "":
         return s
 
@@ -32,6 +44,18 @@ def sanitize_string(s: Any) -> Union[str, None]:
 
 
 def sanitize_number(n: Any) -> Union[Union[int, float], None]:
+    """sanitize_number.
+
+    Parameters
+    ----------
+    n : Any
+        n
+
+    Returns
+    -------
+    Union[Union[int, float], None]
+
+    """
     _type = type(n)
     if _type == int or _type == float:  # pylint: disable=consider-using-in
         return n
@@ -41,6 +65,17 @@ def sanitize_number(n: Any) -> Union[Union[int, float], None]:
 
 def get_info_from_access_token(
         token: str, jwt_signing_public_key: str, do_anti_csrf_check: bool):
+    """get_info_from_access_token.
+
+    Parameters
+    ----------
+    token : str
+        token
+    jwt_signing_public_key : str
+        jwt_signing_public_key
+    do_anti_csrf_check : bool
+        do_anti_csrf_check
+    """
     try:
         payload = get_payload(token, jwt_signing_public_key)
         session_handle = sanitize_string(payload.get('sessionHandle'))

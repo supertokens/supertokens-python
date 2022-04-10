@@ -39,11 +39,27 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 
 class JWTRecipe(RecipeModule):
+    """JWTRecipe.
+    """
+
     recipe_id = 'jwt'
     __instance = None
 
     def __init__(self, recipe_id: str, app_info: AppInfo, jwt_validity_seconds: Union[int, None] = None,
                  override: Union[OverrideConfig, None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        recipe_id : str
+            recipe_id
+        app_info : AppInfo
+            app_info
+        jwt_validity_seconds : Union[int, None]
+            jwt_validity_seconds
+        override : Union[OverrideConfig, None]
+            override
+        """
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
             jwt_validity_seconds, override)
@@ -57,11 +73,36 @@ class JWTRecipe(RecipeModule):
             self.config.override.apis(api_implementation)
 
     def get_apis_handled(self) -> List[APIHandled]:
+        """get_apis_handled.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[APIHandled]
+
+        """
         return [APIHandled(method='get', path_without_api_base_path=NormalisedURLPath(GET_JWKS_API),
                            request_id=GET_JWKS_API, disabled=self.api_implementation.disable_jwks_get)]
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
+        """handle_api_request.
+
+        Parameters
+        ----------
+        request_id : str
+            request_id
+        request : BaseRequest
+            request
+        path : NormalisedURLPath
+            path
+        method : str
+            method
+        response : BaseResponse
+            response
+        """
         options = APIOptions(
             request,
             response,
@@ -72,20 +113,69 @@ class JWTRecipe(RecipeModule):
         return await jwks_get(self.api_implementation, options)
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse):
+        """handle_error.
+
+        Parameters
+        ----------
+        request : BaseRequest
+            request
+        err : SuperTokensError
+            err
+        response : BaseResponse
+            response
+        """
         raise err
 
     def get_all_cors_headers(self) -> List[str]:
+        """get_all_cors_headers.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[str]
+
+        """
         return []
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -> bool:
+        """is_error_from_this_recipe_based_on_instance.
+
+        Parameters
+        ----------
+        err : Exception
+            err
+
+        Returns
+        -------
+        bool
+
+        """
         return isinstance(err, SuperTokensError) and isinstance(
             err, SuperTokensJWTError)
 
     @staticmethod
     def init(jwt_validity_seconds: Union[int, None] = None,
              override: Union[OverrideConfig, None] = None):
+        """init.
+
+        Parameters
+        ----------
+        jwt_validity_seconds : Union[int, None]
+            jwt_validity_seconds
+        override : Union[OverrideConfig, None]
+            override
+        """
         def func(app_info: AppInfo):
+            """func.
+
+            Parameters
+            ----------
+            app_info : AppInfo
+                app_info
+            """
             if JWTRecipe.__instance is None:
                 JWTRecipe.__instance = JWTRecipe(
                     JWTRecipe.recipe_id, app_info, jwt_validity_seconds, override)
@@ -97,6 +187,16 @@ class JWTRecipe(RecipeModule):
 
     @staticmethod
     def get_instance() -> JWTRecipe:
+        """get_instance.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        JWTRecipe
+
+        """
         if JWTRecipe.__instance is not None:
             return JWTRecipe.__instance
         raise_general_exception(
@@ -104,6 +204,8 @@ class JWTRecipe(RecipeModule):
 
     @staticmethod
     def reset():
+        """reset.
+        """
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(

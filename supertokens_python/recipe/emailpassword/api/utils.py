@@ -27,6 +27,15 @@ from supertokens_python.utils import find_first_occurrence_in_list
 
 
 async def validate_form_or_throw_error(inputs: List[FormField], config_form_fields: List[NormalisedFormField]):
+    """validate_form_or_throw_error.
+
+    Parameters
+    ----------
+    inputs : List[FormField]
+        inputs
+    config_form_fields : List[NormalisedFormField]
+        config_form_fields
+    """
     validation_errors: List[ErrorFormField] = []
     if len(config_form_fields) != len(inputs):
         raise_bad_input_exception(
@@ -55,6 +64,21 @@ async def validate_form_or_throw_error(inputs: List[FormField], config_form_fiel
 
 async def validate_form_fields_or_throw_error(config_form_fields: List[NormalisedFormField], form_fields_raw: Any) -> \
         List[FormField]:
+    """validate_form_fields_or_throw_error.
+
+    Parameters
+    ----------
+    config_form_fields : List[NormalisedFormField]
+        config_form_fields
+    form_fields_raw : Any
+        form_fields_raw
+
+    Returns
+    -------
+    \
+            List[FormField]
+
+    """
     if form_fields_raw is None:
         raise_bad_input_exception('Missing input param: formFields')
 

@@ -14,6 +14,18 @@
 
 
 class User:
+    """User.
+    """
+
     def __init__(self, user_id: str, email: str):
+        """__init__.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : str
+            email
+        """
         self.user_id = user_id
         self.email = email

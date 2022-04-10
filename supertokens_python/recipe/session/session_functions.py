@@ -37,6 +37,19 @@ from .exceptions import (TryRefreshTokenError, raise_token_theft_exception,
 async def create_new_session(recipe_implementation: RecipeImplementation, user_id: str,
                              access_token_payload: Union[None, Dict[str, Any]],
                              session_data: Union[None, Dict[str, Any]]):
+    """create_new_session.
+
+    Parameters
+    ----------
+    recipe_implementation : RecipeImplementation
+        recipe_implementation
+    user_id : str
+        user_id
+    access_token_payload : Union[None, Dict[str, Any]]
+        access_token_payload
+    session_data : Union[None, Dict[str, Any]]
+        session_data
+    """
     if session_data is None:
         session_data = {}
     if access_token_payload is None:
@@ -63,6 +76,26 @@ async def create_new_session(recipe_implementation: RecipeImplementation, user_i
 async def get_session(recipe_implementation: RecipeImplementation, access_token: str,
                       anti_csrf_token: Union[str, None],
                       do_anti_csrf_check: bool, contains_custom_header: bool) -> Dict[str, Any]:
+    """get_session.
+
+    Parameters
+    ----------
+    recipe_implementation : RecipeImplementation
+        recipe_implementation
+    access_token : str
+        access_token
+    anti_csrf_token : Union[str, None]
+        anti_csrf_token
+    do_anti_csrf_check : bool
+        do_anti_csrf_check
+    contains_custom_header : bool
+        contains_custom_header
+
+    Returns
+    -------
+    Dict[str, Any]
+
+    """
     handshake_info = await recipe_implementation.get_handshake_info()
     access_token_info = None
     found_a_sign_key_that_is_older_than_the_access_token = False
@@ -175,6 +208,19 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
 async def refresh_session(recipe_implementation: RecipeImplementation, refresh_token: str,
                           anti_csrf_token: Union[str, None],
                           contains_custom_header: bool):
+    """refresh_session.
+
+    Parameters
+    ----------
+    recipe_implementation : RecipeImplementation
+        recipe_implementation
+    refresh_token : str
+        refresh_token
+    anti_csrf_token : Union[str, None]
+        anti_csrf_token
+    contains_custom_header : bool
+        contains_custom_header
+    """
     handshake_info = await recipe_implementation.get_handshake_info()
     data = {
         'refreshToken': refresh_token,
@@ -203,6 +249,20 @@ async def refresh_session(recipe_implementation: RecipeImplementation, refresh_t
 
 
 async def revoke_all_sessions_for_user(recipe_implementation: RecipeImplementation, user_id: str) -> List[str]:
+    """revoke_all_sessions_for_user.
+
+    Parameters
+    ----------
+    recipe_implementation : RecipeImplementation
+        recipe_implementation
+    user_id : str
+        user_id
+
+    Returns
+    -------
+    List[str]
+
+    """
     response = await recipe_implementation.querier.send_post_request(NormalisedURLPath('/recipe/session/remove'), {
         'userId': user_id
     })
@@ -210,6 +270,20 @@ async def revoke_all_sessions_for_user(recipe_implementation: RecipeImplementati
 
 
 async def get_all_session_handles_for_user(recipe_implementation: RecipeImplementation, user_id: str) -> List[str]:
+    """get_all_session_handles_for_user.
+
+    Parameters
+    ----------
+    recipe_implementation : RecipeImplementation
+        recipe_implementation
+    user_id : str
+        user_id
+
+    Returns
+    -------
+    List[str]
+
+    """
     response = await recipe_implementation.querier.send_get_request(NormalisedURLPath('/recipe/session/user'), {
         'userId': user_id
     })
@@ -217,6 +291,20 @@ async def get_all_session_handles_for_user(recipe_implementation: RecipeImplemen
 
 
 async def revoke_session(recipe_implementation: RecipeImplementation, session_handle: str) -> bool:
+    """revoke_session.
+
+    Parameters
+    ----------
+    recipe_implementation : RecipeImplementation
+        recipe_implementation
+    session_handle : str
+        session_handle
+
+    Returns
+    -------
+    bool
+
+    """
     response = await recipe_implementation.querier.send_post_request(NormalisedURLPath('/recipe/session/remove'), {
         'sessionHandles': [session_handle]
     })
@@ -225,6 +313,21 @@ async def revoke_session(recipe_implementation: RecipeImplementation, session_ha
 
 async def revoke_multiple_sessions(recipe_implementation: RecipeImplementation, session_handles: List[str]) -> List[
         str]:
+    """revoke_multiple_sessions.
+
+    Parameters
+    ----------
+    recipe_implementation : RecipeImplementation
+        recipe_implementation
+    session_handles : List[str]
+        session_handles
+
+    Returns
+    -------
+    List[
+            str]
+
+    """
     response = await recipe_implementation.querier.send_post_request(NormalisedURLPath('/recipe/session/remove'), {
         'sessionHandles': session_handles
     })
@@ -232,6 +335,17 @@ async def revoke_multiple_sessions(recipe_implementation: RecipeImplementation, 
 
 
 async def update_session_data(recipe_implementation: RecipeImplementation, session_handle: str, new_session_data: Dict[str, Any]):
+    """update_session_data.
+
+    Parameters
+    ----------
+    recipe_implementation : RecipeImplementation
+        recipe_implementation
+    session_handle : str
+        session_handle
+    new_session_data : Dict[str, Any]
+        new_session_data
+    """
     response = await recipe_implementation.querier.send_put_request(NormalisedURLPath('/recipe/session/data'), {
         'sessionHandle': session_handle,
         'userDataInDatabase': new_session_data
@@ -241,6 +355,17 @@ async def update_session_data(recipe_implementation: RecipeImplementation, sessi
 
 
 async def update_access_token_payload(recipe_implementation: RecipeImplementation, session_handle: str, new_access_token_payload: Dict[str, Any]):
+    """update_access_token_payload.
+
+    Parameters
+    ----------
+    recipe_implementation : RecipeImplementation
+        recipe_implementation
+    session_handle : str
+        session_handle
+    new_access_token_payload : Dict[str, Any]
+        new_access_token_payload
+    """
     response = await recipe_implementation.querier.send_put_request(NormalisedURLPath('/recipe/jwt/data'), {
         'sessionHandle': session_handle,
         'userDataInJWT': new_access_token_payload
@@ -250,6 +375,20 @@ async def update_access_token_payload(recipe_implementation: RecipeImplementatio
 
 
 async def get_session_information(recipe_implementation: RecipeImplementation, session_handle: str) -> SessionInformationResult:
+    """get_session_information.
+
+    Parameters
+    ----------
+    recipe_implementation : RecipeImplementation
+        recipe_implementation
+    session_handle : str
+        session_handle
+
+    Returns
+    -------
+    SessionInformationResult
+
+    """
     response = await recipe_implementation.querier.send_get_request(NormalisedURLPath('/recipe/session'), {
         'sessionHandle': session_handle
     })

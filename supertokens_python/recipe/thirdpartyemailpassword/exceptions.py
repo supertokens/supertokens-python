@@ -17,4 +17,7 @@ from supertokens_python.exceptions import SuperTokensError
 
 
 class SupertokensThirdPartyEmailPasswordError(SuperTokensError):
+    """SupertokensThirdPartyEmailPasswordError.
+    """
+
     pass

@@ -31,14 +31,43 @@ from .interfaces import JsonWebKey
 
 
 class RecipeImplementation(RecipeInterface):
+    """RecipeImplementation.
+    """
 
     def __init__(self, querier: Querier, config: JWTConfig, app_info: AppInfo):
+        """__init__.
+
+        Parameters
+        ----------
+        querier : Querier
+            querier
+        config : JWTConfig
+            config
+        app_info : AppInfo
+            app_info
+        """
         super().__init__()
         self.querier = querier
         self.config = config
         self.app_info = app_info
 
     async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> CreateJwtResult:
+        """create_jwt.
+
+        Parameters
+        ----------
+        payload : Dict[str, Any]
+            payload
+        validity_seconds : Union[int, None]
+            validity_seconds
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        CreateJwtResult
+
+        """
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
@@ -55,6 +84,18 @@ class RecipeImplementation(RecipeInterface):
         return CreateJwtResultUnsupportedAlgorithm()
 
     async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:
+        """get_jwks.
+
+        Parameters
+        ----------
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        GetJWKSResult
+
+        """
         response = await self.querier.send_get_request(NormalisedURLPath("/recipe/jwt/jwks"), {})
 
         keys: List[JsonWebKey] = []

@@ -28,6 +28,13 @@ from phonenumbers import is_valid_number, parse  # type: ignore
 
 
 async def default_validate_phone_number(value: str):
+    """default_validate_phone_number.
+
+    Parameters
+    ----------
+    value : str
+        value
+    """
     try:
         parsed_phone_number: Any = parse(value, None)
         if not is_valid_number(parsed_phone_number):
@@ -37,13 +44,41 @@ async def default_validate_phone_number(value: str):
 
 
 def default_get_link_domain_and_path(app_info: AppInfo):
+    """default_get_link_domain_and_path.
+
+    Parameters
+    ----------
+    app_info : AppInfo
+        app_info
+    """
     async def get_link_domain_and_path(_: PhoneOrEmailInput, __: Dict[str, Any]) -> str:
+        """get_link_domain_and_path.
+
+        Parameters
+        ----------
+        _ : PhoneOrEmailInput
+            _
+        __ : Dict[str, Any]
+            __
+
+        Returns
+        -------
+        str
+
+        """
         return app_info.website_domain.get_as_string_dangerous(
         ) + app_info.website_base_path.get_as_string_dangerous() + '/verify'
     return get_link_domain_and_path
 
 
 async def default_validate_email(value: str):
+    """default_validate_email.
+
+    Parameters
+    ----------
+    value : str
+        value
+    """
     pattern = r"^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$"
     if fullmatch(pattern, value) is None:
         return 'Email is invalid'
@@ -53,6 +88,20 @@ async def default_create_and_send_custom_text_message(
     _: CreateAndSendCustomTextMessageParameters,
     __: Dict[str, Any]
 ) -> None:
+    """default_create_and_send_custom_text_message.
+
+    Parameters
+    ----------
+    _ : CreateAndSendCustomTextMessageParameters
+        _
+    __ : Dict[str, Any]
+        __
+
+    Returns
+    -------
+    None
+
+    """
     # TODO
     pass
 
@@ -61,17 +110,49 @@ async def default_create_and_send_custom_email(
     _: CreateAndSendCustomEmailParameters,
     __: Dict[str, Any]
 ) -> None:
+    """default_create_and_send_custom_email.
+
+    Parameters
+    ----------
+    _ : CreateAndSendCustomEmailParameters
+        _
+    __ : Dict[str, Any]
+        __
+
+    Returns
+    -------
+    None
+
+    """
     # TODO
     pass
 
 
 class CreateAndSendCustomEmailParameters:
+    """CreateAndSendCustomEmailParameters.
+    """
+
     def __init__(self,
                  code_life_time: int,
                  pre_auth_session_id: str,
                  email: str,
                  user_input_code: Union[str, None] = None,
                  url_with_link_code: Union[str, None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        code_life_time : int
+            code_life_time
+        pre_auth_session_id : str
+            pre_auth_session_id
+        email : str
+            email
+        user_input_code : Union[str, None]
+            user_input_code
+        url_with_link_code : Union[str, None]
+            url_with_link_code
+        """
         self.email: str = email
         self.code_life_time: int = code_life_time
         self.pre_auth_session_id: str = pre_auth_session_id
@@ -80,12 +161,30 @@ class CreateAndSendCustomEmailParameters:
 
 
 class CreateAndSendCustomTextMessageParameters:
+    """CreateAndSendCustomTextMessageParameters.
+    """
+
     def __init__(self,
                  code_life_time: int,
                  pre_auth_session_id: str,
                  phone_number: str,
                  user_input_code: Union[str, None] = None,
                  url_with_link_code: Union[str, None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        code_life_time : int
+            code_life_time
+        pre_auth_session_id : str
+            pre_auth_session_id
+        phone_number : str
+            phone_number
+        user_input_code : Union[str, None]
+            user_input_code
+        url_with_link_code : Union[str, None]
+            url_with_link_code
+        """
         self.phone_number: str = phone_number
         self.code_life_time: int = code_life_time
         self.pre_auth_session_id: str = pre_auth_session_id
@@ -94,25 +193,62 @@ class CreateAndSendCustomTextMessageParameters:
 
 
 class OverrideConfig:
+    """OverrideConfig.
+    """
+
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
                                         None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        functions : Union[Callable[[RecipeInterface], RecipeInterface],
+                                                None]
+            functions
+        apis : Union[Callable[[APIInterface], APIInterface], None]
+            apis
+        """
         self.functions = functions
         self.apis = apis
 
 
 class ContactConfig(ABC):
+    """ContactConfig.
+    """
+
     def __init__(
             self, contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']):
+        """__init__.
+
+        Parameters
+        ----------
+        contact_method : Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']
+            contact_method
+        """
         self.contact_method = contact_method
 
 
 class ContactPhoneOnlyConfig(ContactConfig):
+    """ContactPhoneOnlyConfig.
+    """
+
     def __init__(self,
                  create_and_send_custom_text_message: Callable[
                      [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]],
                  validate_phone_number: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  ):
+        """__init__.
+
+        Parameters
+        ----------
+        create_and_send_custom_text_message : Callable[
+                             [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]]
+            create_and_send_custom_text_message
+        validate_phone_number : Union[Callable[[
+                             str], Awaitable[Union[str, None]]], None]
+            validate_phone_number
+        """
         super().__init__('PHONE')
         if create_and_send_custom_text_message is None:
             self.create_and_send_custom_text_message = default_create_and_send_custom_text_message
@@ -125,12 +261,26 @@ class ContactPhoneOnlyConfig(ContactConfig):
 
 
 class ContactEmailOnlyConfig(ContactConfig):
+    """ContactEmailOnlyConfig.
+    """
+
     def __init__(self,
                  create_and_send_custom_email: Callable[
                      [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]],
                  validate_email_address: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None
                  ):
+        """__init__.
+
+        Parameters
+        ----------
+        create_and_send_custom_email : Callable[
+                             [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]]
+            create_and_send_custom_email
+        validate_email_address : Union[Callable[[
+                             str], Awaitable[Union[str, None]]], None]
+            validate_email_address
+        """
         super().__init__('EMAIL')
         if create_and_send_custom_email is None:
             self.create_and_send_custom_email = default_create_and_send_custom_email
@@ -143,6 +293,9 @@ class ContactEmailOnlyConfig(ContactConfig):
 
 
 class ContactEmailOrPhoneConfig(ContactConfig):
+    """ContactEmailOrPhoneConfig.
+    """
+
     def __init__(self,
                  create_and_send_custom_email: Callable[
                      [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]],
@@ -153,6 +306,23 @@ class ContactEmailOrPhoneConfig(ContactConfig):
                  validate_phone_number: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  ):
+        """__init__.
+
+        Parameters
+        ----------
+        create_and_send_custom_email : Callable[
+                             [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]]
+            create_and_send_custom_email
+        create_and_send_custom_text_message : Callable[
+                             [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]]
+            create_and_send_custom_text_message
+        validate_email_address : Union[Callable[[
+                             str], Awaitable[Union[str, None]]], None]
+            validate_email_address
+        validate_phone_number : Union[Callable[[
+                             str], Awaitable[Union[str, None]]], None]
+            validate_phone_number
+        """
         super().__init__('EMAIL_OR_PHONE')
         if create_and_send_custom_email is None:
             self.create_and_send_custom_email = default_create_and_send_custom_email
@@ -173,12 +343,27 @@ class ContactEmailOrPhoneConfig(ContactConfig):
 
 
 class PhoneOrEmailInput:
+    """PhoneOrEmailInput.
+    """
+
     def __init__(self, phone_number: Union[str, None], email: Union[str, None]):
+        """__init__.
+
+        Parameters
+        ----------
+        phone_number : Union[str, None]
+            phone_number
+        email : Union[str, None]
+            email
+        """
         self.phone_number = phone_number
         self.email = email
 
 
 class PasswordlessConfig:
+    """PasswordlessConfig.
+    """
+
     def __init__(self,
                  contact_config: ContactConfig,
                  override: OverrideConfig,
@@ -187,6 +372,22 @@ class PasswordlessConfig:
                  get_custom_user_input_code: Union[Callable[[
                      Dict[str, Any]], Awaitable[str]], None] = None
                  ):
+        """__init__.
+
+        Parameters
+        ----------
+        contact_config : ContactConfig
+            contact_config
+        override : OverrideConfig
+            override
+        flow_type : Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']
+            flow_type
+        get_link_domain_and_path : Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]]
+            get_link_domain_and_path
+        get_custom_user_input_code : Union[Callable[[
+                             Dict[str, Any]], Awaitable[str]], None]
+            get_custom_user_input_code
+        """
         self.contact_config = contact_config
         self.override = override
         self.flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = flow_type
@@ -202,6 +403,24 @@ def validate_and_normalise_user_input(
         get_link_domain_and_path: Union[Callable[[
             PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
         get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None):
+    """validate_and_normalise_user_input.
+
+    Parameters
+    ----------
+    app_info : AppInfo
+        app_info
+    contact_config : ContactConfig
+        contact_config
+    flow_type : Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']
+        flow_type
+    override : Union[OverrideConfig, None]
+        override
+    get_link_domain_and_path : Union[Callable[[
+                PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None]
+        get_link_domain_and_path
+    get_custom_user_input_code : Union[Callable[[Dict[str, Any]], Awaitable[str]], None]
+        get_custom_user_input_code
+    """
 
     if override is None:
         override = OverrideConfig()

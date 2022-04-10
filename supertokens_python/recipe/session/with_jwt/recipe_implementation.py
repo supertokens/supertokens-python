@@ -36,16 +36,59 @@ EXPIRY_OFFSET_SECONDS = 30
 
 
 def get_jwt_expiry(access_token_expiry: int):
+    """get_jwt_expiry.
+
+    Parameters
+    ----------
+    access_token_expiry : int
+        access_token_expiry
+    """
     return access_token_expiry + EXPIRY_OFFSET_SECONDS
 
 
 def get_recipe_implementation_with_jwt(original_implementation: RecipeInterface, config: SessionConfig, openid_recipe_implementation: OpenIdRecipeInterface) -> RecipeInterface:
+    """get_recipe_implementation_with_jwt.
+
+    Parameters
+    ----------
+    original_implementation : RecipeInterface
+        original_implementation
+    config : SessionConfig
+        config
+    openid_recipe_implementation : OpenIdRecipeInterface
+        openid_recipe_implementation
+
+    Returns
+    -------
+    RecipeInterface
+
+    """
 
     og_create_new_session = original_implementation.create_new_session
 
     async def create_new_session(request: Any, user_id: str,
                                  access_token_payload: Union[None, Dict[str, Any]],
                                  session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) -> SessionContainer:
+        """create_new_session.
+
+        Parameters
+        ----------
+        request : Any
+            request
+        user_id : str
+            user_id
+        access_token_payload : Union[None, Dict[str, Any]]
+            access_token_payload
+        session_data : Union[None, Dict[str, Any]]
+            session_data
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SessionContainer
+
+        """
         if access_token_payload is None:
             access_token_payload = {}
         access_token_validity_in_seconds = ceil(await original_implementation.get_access_token_lifetime_ms(user_context) / 1000)
@@ -64,6 +107,24 @@ def get_recipe_implementation_with_jwt(original_implementation: RecipeInterface,
 
     async def get_session(request: Any, anti_csrf_check: Union[bool, None],
                           session_required: bool, user_context: Dict[str, Any]) -> Union[SessionContainer, None]:
+        """get_session.
+
+        Parameters
+        ----------
+        request : Any
+            request
+        anti_csrf_check : Union[bool, None]
+            anti_csrf_check
+        session_required : bool
+            session_required
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[SessionContainer, None]
+
+        """
         session_container = await og_get_session(request, anti_csrf_check, session_required, user_context)
         if session_container is None:
             return None
@@ -73,6 +134,20 @@ def get_recipe_implementation_with_jwt(original_implementation: RecipeInterface,
     og_refresh_session = original_implementation.refresh_session
 
     async def refresh_session(request: Any, user_context: Dict[str, Any]) -> SessionContainer:
+        """refresh_session.
+
+        Parameters
+        ----------
+        request : Any
+            request
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SessionContainer
+
+        """
         access_token_validity_in_seconds = ceil(await original_implementation.get_access_token_lifetime_ms(user_context) / 1000)
 
         # Refresh session first because this will create a new access token
@@ -95,6 +170,22 @@ def get_recipe_implementation_with_jwt(original_implementation: RecipeInterface,
 
     async def update_access_token_payload(session_handle: str,
                                           new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) -> None:
+        """update_access_token_payload.
+
+        Parameters
+        ----------
+        session_handle : str
+            session_handle
+        new_access_token_payload : Dict[str, Any]
+            new_access_token_payload
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        None
+
+        """
         session_information = await original_implementation.get_session_information(session_handle, user_context)
         access_token_payload = session_information.access_token_payload
 

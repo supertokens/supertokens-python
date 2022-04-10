@@ -20,6 +20,13 @@ from asgiref.sync import async_to_sync
 
 
 def middleware(get_response: Any):
+    """middleware.
+
+    Parameters
+    ----------
+    get_response : Any
+        get_response
+    """
     from supertokens_python import Supertokens
     from supertokens_python.exceptions import SuperTokensError
     from supertokens_python.framework.django.django_request import \
@@ -33,6 +40,13 @@ def middleware(get_response: Any):
 
     if asyncio.iscoroutinefunction(get_response):
         async def __asyncMiddleware(request: HttpRequest):
+            """__asyncMiddleware.
+
+            Parameters
+            ----------
+            request : HttpRequest
+                request
+            """
             st = Supertokens.get_instance()
             custom_request = DjangoRequest(request)
             from django.http import HttpResponse
@@ -58,6 +72,13 @@ def middleware(get_response: Any):
         return __asyncMiddleware
 
     def __syncMiddleware(request: HttpRequest):
+        """__syncMiddleware.
+
+        Parameters
+        ----------
+        request : HttpRequest
+            request
+        """
         st = Supertokens.get_instance()
         custom_request = DjangoRequest(request)
         from django.http import HttpResponse

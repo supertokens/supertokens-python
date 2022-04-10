@@ -22,19 +22,53 @@ if TYPE_CHECKING:
 
 
 def raise_form_field_exception(msg: str, form_fields: List[ErrorFormField]):
+    """raise_form_field_exception.
+
+    Parameters
+    ----------
+    msg : str
+        msg
+    form_fields : List[ErrorFormField]
+        form_fields
+    """
     raise FieldError(msg, form_fields)
 
 
 class SuperTokensEmailPasswordError(SuperTokensError):
+    """SuperTokensEmailPasswordError.
+    """
+
     pass
 
 
 class FieldError(SuperTokensEmailPasswordError):
+    """FieldError.
+    """
+
     def __init__(self, msg: str, form_fields: List[ErrorFormField]):
+        """__init__.
+
+        Parameters
+        ----------
+        msg : str
+            msg
+        form_fields : List[ErrorFormField]
+            form_fields
+        """
         super().__init__(msg)
         self.form_fields = form_fields
 
     def get_json_form_fields(self) -> List[Dict[str, Any]]:
+        """get_json_form_fields.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[Dict[str, Any]]
+
+        """
         form_fields: List[Dict[str, Any]] = []
         for form_field in self.form_fields:
             form_fields.append({

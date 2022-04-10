@@ -32,9 +32,37 @@ if TYPE_CHECKING:
 
 def get_session_with_jwt(original_session: SessionContainer,
                          openid_recipe_implementation: OpenIdRecipeInterface) -> SessionContainer:
+    """get_session_with_jwt.
+
+    Parameters
+    ----------
+    original_session : SessionContainer
+        original_session
+    openid_recipe_implementation : OpenIdRecipeInterface
+        openid_recipe_implementation
+
+    Returns
+    -------
+    SessionContainer
+
+    """
     original_update_access_token_payload = original_session.update_access_token_payload
 
     async def update_access_token_payload(new_access_token_payload: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -> None:
+        """update_access_token_payload.
+
+        Parameters
+        ----------
+        new_access_token_payload : Dict[str, Any]
+            new_access_token_payload
+        user_context : Union[None, Dict[str, Any]]
+            user_context
+
+        Returns
+        -------
+        None
+
+        """
         if new_access_token_payload is None:
             new_access_token_payload = {}
         if user_context is None:

@@ -63,6 +63,9 @@ from .utils import InputOverrideConfig, validate_and_normalise_user_input
 
 
 class ThirdPartyEmailPasswordRecipe(RecipeModule):
+    """ThirdPartyEmailPasswordRecipe.
+    """
+
     recipe_id = 'thirdpartyemailpassword'
     __instance = None
 
@@ -76,6 +79,32 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                  email_password_recipe: Union[EmailPasswordRecipe,
                                               None] = None,
                  third_party_recipe: Union[ThirdPartyRecipe, None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        recipe_id : str
+            recipe_id
+        app_info : AppInfo
+            app_info
+        sign_up_feature : Union[InputSignUpFeature, None]
+            sign_up_feature
+        reset_password_using_token_feature : Union[InputResetPasswordUsingTokenFeature, None]
+            reset_password_using_token_feature
+        email_verification_feature : Union[InputEmailVerificationConfig, None]
+            email_verification_feature
+        override : Union[InputOverrideConfig, None]
+            override
+        providers : Union[List[Provider], None]
+            providers
+        email_verification_recipe : Union[EmailVerificationRecipe, None]
+            email_verification_recipe
+        email_password_recipe : Union[EmailPasswordRecipe,
+                                                      None]
+            email_password_recipe
+        third_party_recipe : Union[ThirdPartyRecipe, None]
+            third_party_recipe
+        """
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self,
                                                         sign_up_feature,
@@ -99,10 +128,34 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                                                                      self.config.email_verification_feature)
 
         def func_override_email_password(_: EmailPasswordRecipeInterface) -> EmailPasswordRecipeInterface:
+            """func_override_email_password.
+
+            Parameters
+            ----------
+            _ : EmailPasswordRecipeInterface
+                _
+
+            Returns
+            -------
+            EmailPasswordRecipeInterface
+
+            """
             return EmailPasswordRecipeImplementation(
                 self.recipe_implementation)
 
         def apis_override_email_password(_: EmailPasswordAPIInterface) -> EmailPasswordAPIInterface:
+            """apis_override_email_password.
+
+            Parameters
+            ----------
+            _ : EmailPasswordAPIInterface
+                _
+
+            Returns
+            -------
+            EmailPasswordAPIInterface
+
+            """
             return get_email_password_interface_impl(self.api_implementation)
 
         if email_password_recipe is not None:
@@ -119,9 +172,33 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                                                              self.email_verification_recipe)
 
         def func_override_third_party(_: ThirdPartyRecipeInterface) -> ThirdPartyRecipeInterface:
+            """func_override_third_party.
+
+            Parameters
+            ----------
+            _ : ThirdPartyRecipeInterface
+                _
+
+            Returns
+            -------
+            ThirdPartyRecipeInterface
+
+            """
             return ThirdPartyRecipeImplementation(self.recipe_implementation)
 
         def apis_override_third_party(_: ThirdPartyAPIInterface) -> ThirdPartyAPIInterface:
+            """apis_override_third_party.
+
+            Parameters
+            ----------
+            _ : ThirdPartyAPIInterface
+                _
+
+            Returns
+            -------
+            ThirdPartyAPIInterface
+
+            """
             return get_third_party_interface_impl(self.api_implementation)
 
         if third_party_recipe is not None:
@@ -143,6 +220,18 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -> bool:
+        """is_error_from_this_recipe_based_on_instance.
+
+        Parameters
+        ----------
+        err : Exception
+            err
+
+        Returns
+        -------
+        bool
+
+        """
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SupertokensThirdPartyEmailPasswordError)
             or
@@ -161,6 +250,16 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
+        """get_apis_handled.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[APIHandled]
+
+        """
         apis_handled = self.email_password_recipe.get_apis_handled(
         ) + self.email_verification_recipe.get_apis_handled()
         if self.third_party_recipe is not None:
@@ -169,6 +268,21 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
+        """handle_api_request.
+
+        Parameters
+        ----------
+        request_id : str
+            request_id
+        request : BaseRequest
+            request
+        path : NormalisedURLPath
+            path
+        method : str
+            method
+        response : BaseResponse
+            response
+        """
         if self.email_password_recipe.return_api_id_if_can_handle_request(
                 path, method) is not None:
             return await self.email_password_recipe.handle_api_request(request_id, request, path, method, response)
@@ -178,6 +292,22 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
+        """handle_error.
+
+        Parameters
+        ----------
+        request : BaseRequest
+            request
+        err : SuperTokensError
+            err
+        response : BaseResponse
+            response
+
+        Returns
+        -------
+        BaseResponse
+
+        """
         if self.email_password_recipe.is_error_from_this_recipe_based_on_instance(
                 err):
             return await self.email_password_recipe.handle_error(
@@ -190,6 +320,16 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             request, err, response)
 
     def get_all_cors_headers(self) -> List[str]:
+        """get_all_cors_headers.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[str]
+
+        """
         cors_headers = self.email_password_recipe.get_all_cors_headers(
         ) + self.email_verification_recipe.get_all_cors_headers()
         if self.third_party_recipe is not None:
@@ -202,7 +342,29 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
              override: Union[InputOverrideConfig, None] = None,
              providers: Union[List[Provider], None] = None):
+        """init.
+
+        Parameters
+        ----------
+        sign_up_feature : Union[InputSignUpFeature, None]
+            sign_up_feature
+        reset_password_using_token_feature : Union[InputResetPasswordUsingTokenFeature, None]
+            reset_password_using_token_feature
+        email_verification_feature : Union[InputEmailVerificationConfig, None]
+            email_verification_feature
+        override : Union[InputOverrideConfig, None]
+            override
+        providers : Union[List[Provider], None]
+            providers
+        """
         def func(app_info: AppInfo):
+            """func.
+
+            Parameters
+            ----------
+            app_info : AppInfo
+                app_info
+            """
             if ThirdPartyEmailPasswordRecipe.__instance is None:
                 ThirdPartyEmailPasswordRecipe.__instance = ThirdPartyEmailPasswordRecipe(
                     ThirdPartyEmailPasswordRecipe.recipe_id, app_info, sign_up_feature,
@@ -217,6 +379,16 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
 
     @staticmethod
     def get_instance() -> ThirdPartyEmailPasswordRecipe:
+        """get_instance.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        ThirdPartyEmailPasswordRecipe
+
+        """
         if ThirdPartyEmailPasswordRecipe.__instance is not None:
             return ThirdPartyEmailPasswordRecipe.__instance
         raise Exception(
@@ -225,6 +397,8 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
 
     @staticmethod
     def reset():
+        """reset.
+        """
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise Exception(
@@ -232,6 +406,20 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         ThirdPartyEmailPasswordRecipe.__instance = None
 
     async def get_email_for_user_id(self, user_id: str, user_context: Dict[str, Any]) -> str:
+        """get_email_for_user_id.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        str
+
+        """
         user_info = await self.recipe_implementation.get_user_by_id(user_id, user_context)
         if user_info is None:
             raise Exception('Unknown User ID provided')

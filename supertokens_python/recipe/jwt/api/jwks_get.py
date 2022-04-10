@@ -16,6 +16,15 @@ from supertokens_python.utils import send_200_response
 
 
 async def jwks_get(api_implementation: APIInterface, api_options: APIOptions):
+    """jwks_get.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if api_implementation.disable_jwks_get:
         return None
 

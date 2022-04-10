@@ -17,8 +17,26 @@ from ..thirdparty.types import ThirdPartyInfo
 
 
 class User:
+    """User.
+    """
+
     def __init__(self, user_id: str,
                  email: Union[str, None], phone_number: Union[str, None], third_party_info: Union[ThirdPartyInfo, None], time_joined: int):
+        """__init__.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : Union[str, None]
+            email
+        phone_number : Union[str, None]
+            phone_number
+        third_party_info : Union[ThirdPartyInfo, None]
+            third_party_info
+        time_joined : int
+            time_joined
+        """
         self.user_id: str = user_id
         self.email: Union[str, None] = email
         self.phone_number: Union[str, None] = phone_number

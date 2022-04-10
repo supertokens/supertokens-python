@@ -25,8 +25,24 @@ if TYPE_CHECKING:
 
 
 class Facebook(Provider):
+    """Facebook.
+    """
+
     def __init__(self, client_id: str, client_secret: str,
                  scope: Union[None, List[str]] = None, is_default: bool = False):
+        """__init__.
+
+        Parameters
+        ----------
+        client_id : str
+            client_id
+        client_secret : str
+            client_secret
+        scope : Union[None, List[str]]
+            scope
+        is_default : bool
+            is_default
+        """
         super().__init__('facebook', client_id, is_default)
         default_scopes = ['email']
 
@@ -38,6 +54,20 @@ class Facebook(Provider):
         self.authorisation_redirect_url = 'https://www.facebook.com/v9.0/dialog/oauth'
 
     async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
+        """get_profile_info.
+
+        Parameters
+        ----------
+        auth_code_response : Dict[str, Any]
+            auth_code_response
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        UserInfo
+
+        """
         access_token: str = auth_code_response['access_token']
 
         params = {
@@ -54,6 +84,18 @@ class Facebook(Provider):
             return UserInfo(user_id, UserInfoEmail(user_info['email'], True))
 
     def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
+        """get_authorisation_redirect_api_info.
+
+        Parameters
+        ----------
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        AuthorisationRedirectAPI
+
+        """
         params: Dict[str, Union[Callable[[BaseRequest], str], str]] = {
             'scope': ' '.join(self.scopes),
             'response_type': 'code',
@@ -64,6 +106,22 @@ class Facebook(Provider):
 
     def get_access_token_api_info(
             self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
+        """get_access_token_api_info.
+
+        Parameters
+        ----------
+        redirect_uri : str
+            redirect_uri
+        auth_code_from_request : str
+            auth_code_from_request
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        AccessTokenAPI
+
+        """
         params = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,
@@ -73,4 +131,16 @@ class Facebook(Provider):
         return AccessTokenAPI(self.access_token_api_url, params)
 
     def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+        """get_redirect_uri.
+
+        Parameters
+        ----------
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[None, str]
+
+        """
         return None

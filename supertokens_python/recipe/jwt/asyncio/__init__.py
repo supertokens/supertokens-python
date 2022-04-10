@@ -19,6 +19,22 @@ from supertokens_python.recipe.jwt.recipe import JWTRecipe
 
 
 async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -> CreateJwtResult:
+    """create_jwt.
+
+    Parameters
+    ----------
+    payload : Union[None, Dict[str, Any]]
+        payload
+    validity_seconds : Union[None, int]
+        validity_seconds
+    user_context : Union[Dict[str, Any], None]
+        user_context
+
+    Returns
+    -------
+    CreateJwtResult
+
+    """
     if user_context is None:
         user_context = {}
     if payload is None:
@@ -28,6 +44,18 @@ async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_secon
 
 
 async def get_jwks(user_context: Union[Dict[str, Any], None] = None) -> GetJWKSResult:
+    """get_jwks.
+
+    Parameters
+    ----------
+    user_context : Union[Dict[str, Any], None]
+        user_context
+
+    Returns
+    -------
+    GetJWKSResult
+
+    """
     if user_context is None:
         user_context = {}
     return await JWTRecipe.get_instance().recipe_implementation.get_jwks(user_context)

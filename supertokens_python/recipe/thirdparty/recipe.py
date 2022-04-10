@@ -43,6 +43,9 @@ from .utils import (InputEmailVerificationConfig,
 
 
 class ThirdPartyRecipe(RecipeModule):
+    """ThirdPartyRecipe.
+    """
+
     recipe_id = 'thirdparty'
     __instance = None
 
@@ -51,6 +54,23 @@ class ThirdPartyRecipe(RecipeModule):
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        recipe_id : str
+            recipe_id
+        app_info : AppInfo
+            app_info
+        sign_in_and_up_feature : SignInAndUpFeature
+            sign_in_and_up_feature
+        email_verification_feature : Union[InputEmailVerificationConfig, None]
+            email_verification_feature
+        override : Union[InputOverrideConfig, None]
+            override
+        email_verification_recipe : Union[EmailVerificationRecipe, None]
+            email_verification_recipe
+        """
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, sign_in_and_up_feature,
                                                         email_verification_feature, override)
@@ -70,9 +90,31 @@ class ThirdPartyRecipe(RecipeModule):
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -> bool:
+        """is_error_from_this_recipe_based_on_instance.
+
+        Parameters
+        ----------
+        err : Exception
+            err
+
+        Returns
+        -------
+        bool
+
+        """
         return isinstance(err, SuperTokensError) and (isinstance(err, SuperTokensThirdPartyError) or self.email_verification_recipe.is_error_from_this_recipe_based_on_instance(err))
 
     def get_apis_handled(self) -> List[APIHandled]:
+        """get_apis_handled.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[APIHandled]
+
+        """
         return [
             APIHandled(NormalisedURLPath(SIGNINUP), 'post', SIGNINUP,
                        self.api_implementation.disable_sign_in_up_post),
@@ -83,6 +125,21 @@ class ThirdPartyRecipe(RecipeModule):
         ] + self.email_verification_recipe.get_apis_handled()
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse):
+        """handle_api_request.
+
+        Parameters
+        ----------
+        request_id : str
+            request_id
+        request : BaseRequest
+            request
+        path : NormalisedURLPath
+            path
+        method : str
+            method
+        response : BaseResponse
+            response
+        """
         api_options = APIOptions(request, response, self.recipe_id, self.config, self.recipe_implementation, self.providers, self.app_info, self.email_verification_recipe.recipe_implementation)
 
         if request_id == SIGNINUP:
@@ -98,19 +155,63 @@ class ThirdPartyRecipe(RecipeModule):
         return await self.email_verification_recipe.handle_api_request(request_id, request, path, method, response)
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
+        """handle_error.
+
+        Parameters
+        ----------
+        request : BaseRequest
+            request
+        err : SuperTokensError
+            err
+        response : BaseResponse
+            response
+
+        Returns
+        -------
+        BaseResponse
+
+        """
         if isinstance(err, SuperTokensThirdPartyError):
             raise err
         return await self.email_verification_recipe.handle_error(
             request, err, response)
 
     def get_all_cors_headers(self) -> List[str]:
+        """get_all_cors_headers.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[str]
+
+        """
         return self.email_verification_recipe.get_all_cors_headers()
 
     @staticmethod
     def init(sign_in_and_up_feature: SignInAndUpFeature,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
              override: Union[InputOverrideConfig, None] = None):
+        """init.
+
+        Parameters
+        ----------
+        sign_in_and_up_feature : SignInAndUpFeature
+            sign_in_and_up_feature
+        email_verification_feature : Union[InputEmailVerificationConfig, None]
+            email_verification_feature
+        override : Union[InputOverrideConfig, None]
+            override
+        """
         def func(app_info: AppInfo):
+            """func.
+
+            Parameters
+            ----------
+            app_info : AppInfo
+                app_info
+            """
             if ThirdPartyRecipe.__instance is None:
                 ThirdPartyRecipe.__instance = ThirdPartyRecipe(
                     ThirdPartyRecipe.recipe_id, app_info, sign_in_and_up_feature, email_verification_feature, override)
@@ -121,6 +222,16 @@ class ThirdPartyRecipe(RecipeModule):
 
     @staticmethod
     def get_instance() -> ThirdPartyRecipe:
+        """get_instance.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        ThirdPartyRecipe
+
+        """
         if ThirdPartyRecipe.__instance is not None:
             return ThirdPartyRecipe.__instance
         raise_general_exception(
@@ -128,6 +239,8 @@ class ThirdPartyRecipe(RecipeModule):
 
     @staticmethod
     def reset():
+        """reset.
+        """
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(
@@ -137,6 +250,20 @@ class ThirdPartyRecipe(RecipeModule):
     # instance functions below...............
 
     async def get_email_for_user_id(self, user_id: str, user_context: Dict[str, Any]) -> str:
+        """get_email_for_user_id.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        str
+
+        """
         user_info = await self.recipe_implementation.get_user_by_id(user_id, user_context)
         if user_info is None:
             raise Exception('Unknown User ID provided')

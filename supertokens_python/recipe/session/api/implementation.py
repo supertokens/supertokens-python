@@ -30,11 +30,41 @@ from supertokens_python.recipe.session.exceptions import UnauthorisedError
 
 
 class APIImplementation(APIInterface):
+    """APIImplementation.
+    """
 
     async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> None:
+        """refresh_post.
+
+        Parameters
+        ----------
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        None
+
+        """
         await api_options.recipe_implementation.refresh_session(api_options.request, user_context)
 
     async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> SignOutResponse:
+        """signout_post.
+
+        Parameters
+        ----------
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SignOutResponse
+
+        """
         try:
             session = await api_options.recipe_implementation.get_session(request=api_options.request, user_context=user_context, anti_csrf_check=None, session_required=True)
         except UnauthorisedError:
@@ -48,6 +78,24 @@ class APIImplementation(APIInterface):
     async def verify_session(self, api_options: APIOptions,
                              anti_csrf_check: Union[bool, None],
                              session_required: bool, user_context: Dict[str, Any]) -> Union[SessionContainer, None]:
+        """verify_session.
+
+        Parameters
+        ----------
+        api_options : APIOptions
+            api_options
+        anti_csrf_check : Union[bool, None]
+            anti_csrf_check
+        session_required : bool
+            session_required
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[SessionContainer, None]
+
+        """
         method = normalise_http_method(api_options.request.method())
         if method in ('options', 'trace'):
             return None

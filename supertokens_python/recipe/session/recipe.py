@@ -47,6 +47,9 @@ from .utils import (InputErrorHandlers, InputOverrideConfig, JWTConfig,
 
 
 class SessionRecipe(RecipeModule):
+    """SessionRecipe.
+    """
+
     recipe_id = 'session'
     __instance = None
 
@@ -61,6 +64,33 @@ class SessionRecipe(RecipeModule):
                  error_handlers: Union[InputErrorHandlers, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  jwt: Union[JWTConfig, None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        recipe_id : str
+            recipe_id
+        app_info : AppInfo
+            app_info
+        cookie_domain : Union[str, None]
+            cookie_domain
+        cookie_secure : Union[bool, None]
+            cookie_secure
+        cookie_same_site : Union[Literal["lax",
+                                                         "none", "strict"], None]
+            cookie_same_site
+        session_expired_status_code : Union[int, None]
+            session_expired_status_code
+        anti_csrf : Union[Literal["VIA_TOKEN",
+                                                  "VIA_CUSTOM_HEADER", "NONE"], None]
+            anti_csrf
+        error_handlers : Union[InputErrorHandlers, None]
+            error_handlers
+        override : Union[InputOverrideConfig, None]
+            override
+        jwt : Union[JWTConfig, None]
+            jwt
+        """
         super().__init__(recipe_id, app_info)
         self.openid_recipe: Union[None, OpenIdRecipe] = None
         self.config = validate_and_normalise_user_input(app_info, cookie_domain,
@@ -101,6 +131,18 @@ class SessionRecipe(RecipeModule):
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -> bool:
+        """is_error_from_this_recipe_based_on_instance.
+
+        Parameters
+        ----------
+        err : Exception
+            err
+
+        Returns
+        -------
+        bool
+
+        """
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensSessionError)
             or
@@ -108,6 +150,16 @@ class SessionRecipe(RecipeModule):
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
+        """get_apis_handled.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[APIHandled]
+
+        """
         apis_handled = [
             APIHandled(NormalisedURLPath(SESSION_REFRESH), 'post', SESSION_REFRESH,
                        self.api_implementation.disable_refresh_post),
@@ -120,6 +172,26 @@ class SessionRecipe(RecipeModule):
         return apis_handled
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse) -> Union[BaseResponse, None]:
+        """handle_api_request.
+
+        Parameters
+        ----------
+        request_id : str
+            request_id
+        request : BaseRequest
+            request
+        path : NormalisedURLPath
+            path
+        method : str
+            method
+        response : BaseResponse
+            response
+
+        Returns
+        -------
+        Union[BaseResponse, None]
+
+        """
         if request_id == SESSION_REFRESH:
             return await handle_refresh_api(self.api_implementation,
                                             APIOptions(
@@ -143,6 +215,22 @@ class SessionRecipe(RecipeModule):
         return None
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
+        """handle_error.
+
+        Parameters
+        ----------
+        request : BaseRequest
+            request
+        err : SuperTokensError
+            err
+        response : BaseResponse
+            response
+
+        Returns
+        -------
+        BaseResponse
+
+        """
         if isinstance(err, UnauthorisedError):
             log_debug_message("errorHandler: returning UNAUTHORISED")
             return await self.config.error_handlers.on_unauthorised(self, err.clear_cookies, request, str(err), response)
@@ -153,6 +241,16 @@ class SessionRecipe(RecipeModule):
         return await self.config.error_handlers.on_try_refresh_token(request, str(err), response)
 
     def get_all_cors_headers(self) -> List[str]:
+        """get_all_cors_headers.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[str]
+
+        """
         cors_headers = get_cors_allowed_headers()
         if self.openid_recipe is not None:
             cors_headers = cors_headers + self.openid_recipe.get_all_cors_headers()
@@ -170,7 +268,37 @@ class SessionRecipe(RecipeModule):
              error_handlers: Union[InputErrorHandlers, None] = None,
              override: Union[InputOverrideConfig, None] = None,
              jwt: Union[JWTConfig, None] = None):
+        """init.
+
+        Parameters
+        ----------
+        cookie_domain : Union[str, None]
+            cookie_domain
+        cookie_secure : Union[bool, None]
+            cookie_secure
+        cookie_same_site : Union[Literal["lax",
+                                                     "none", "strict"], None]
+            cookie_same_site
+        session_expired_status_code : Union[int, None]
+            session_expired_status_code
+        anti_csrf : Union[Literal["VIA_TOKEN",
+                                              "VIA_CUSTOM_HEADER", "NONE"], None]
+            anti_csrf
+        error_handlers : Union[InputErrorHandlers, None]
+            error_handlers
+        override : Union[InputOverrideConfig, None]
+            override
+        jwt : Union[JWTConfig, None]
+            jwt
+        """
         def func(app_info: AppInfo):
+            """func.
+
+            Parameters
+            ----------
+            app_info : AppInfo
+                app_info
+            """
             if SessionRecipe.__instance is None:
                 SessionRecipe.__instance = SessionRecipe(
                     SessionRecipe.recipe_id, app_info, cookie_domain,
@@ -190,6 +318,16 @@ class SessionRecipe(RecipeModule):
 
     @staticmethod
     def get_instance() -> SessionRecipe:
+        """get_instance.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        SessionRecipe
+
+        """
         if SessionRecipe.__instance is not None:
             return SessionRecipe.__instance
         raise_general_exception(
@@ -197,6 +335,8 @@ class SessionRecipe(RecipeModule):
 
     @staticmethod
     def reset():
+        """reset.
+        """
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(
@@ -206,6 +346,19 @@ class SessionRecipe(RecipeModule):
     async def verify_session(self, request: BaseRequest,
                              anti_csrf_check: Union[bool, None],
                              session_required: bool, user_context: Dict[str, Any]):
+        """verify_session.
+
+        Parameters
+        ----------
+        request : BaseRequest
+            request
+        anti_csrf_check : Union[bool, None]
+            anti_csrf_check
+        session_required : bool
+            session_required
+        user_context : Dict[str, Any]
+            user_context
+        """
         return await self.api_implementation.verify_session(
             APIOptions(
                 request,

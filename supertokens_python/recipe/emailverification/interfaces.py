@@ -26,8 +26,20 @@ if TYPE_CHECKING:
 
 
 class CreateEmailVerificationTokenResult(ABC):
+    """CreateEmailVerificationTokenResult.
+    """
+
     def __init__(
             self, status: Literal['OK', 'EMAIL_ALREADY_VERIFIED_ERROR'], token: Union[str, None]):
+        """__init__.
+
+        Parameters
+        ----------
+        status : Literal['OK', 'EMAIL_ALREADY_VERIFIED_ERROR']
+            status
+        token : Union[str, None]
+            token
+        """
         self.status: Literal['OK', 'EMAIL_ALREADY_VERIFIED_ERROR'] = status
         self.is_ok: bool = False
         self.is_email_already_verified: bool = False
@@ -35,7 +47,17 @@ class CreateEmailVerificationTokenResult(ABC):
 
 
 class CreateEmailVerificationTokenOkResult(CreateEmailVerificationTokenResult):
+    """CreateEmailVerificationTokenOkResult.
+    """
+
     def __init__(self, token: str):
+        """__init__.
+
+        Parameters
+        ----------
+        token : str
+            token
+        """
         super().__init__('OK', token)
         self.is_ok = True
         self.is_email_already_verified = False
@@ -43,15 +65,32 @@ class CreateEmailVerificationTokenOkResult(CreateEmailVerificationTokenResult):
 
 class CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult(
         CreateEmailVerificationTokenResult):
+    """CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult.
+    """
+
     def __init__(self):
+        """__init__.
+        """
         super().__init__('EMAIL_ALREADY_VERIFIED_ERROR', None)
         self.is_ok = False
         self.is_email_already_verified = True
 
 
 class VerifyEmailUsingTokenResult(ABC):
+    """VerifyEmailUsingTokenResult.
+    """
+
     def __init__(
             self, status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'], user: Union[User, None]):
+        """__init__.
+
+        Parameters
+        ----------
+        status : Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR']
+            status
+        user : Union[User, None]
+            user
+        """
         self.status = status
         self.is_ok = False
         self.is_email_verification_invalid_token_error = False
@@ -59,7 +98,17 @@ class VerifyEmailUsingTokenResult(ABC):
 
 
 class VerifyEmailUsingTokenOkResult(VerifyEmailUsingTokenResult):
+    """VerifyEmailUsingTokenOkResult.
+    """
+
     def __init__(self, user: User):
+        """__init__.
+
+        Parameters
+        ----------
+        user : User
+            user
+        """
         super().__init__('OK', user)
         self.is_ok = True
         self.is_email_verification_invalid_token_error = False
@@ -67,65 +116,201 @@ class VerifyEmailUsingTokenOkResult(VerifyEmailUsingTokenResult):
 
 class VerifyEmailUsingTokenInvalidTokenErrorResult(
         VerifyEmailUsingTokenResult):
+    """VerifyEmailUsingTokenInvalidTokenErrorResult.
+    """
+
     def __init__(self):
+        """__init__.
+        """
         super().__init__('EMAIL_VERIFICATION_INVALID_TOKEN_ERROR', None)
         self.is_ok = False
         self.is_email_verification_invalid_token_error = True
 
 
 class RevokeEmailVerificationTokensResult(ABC):
+    """RevokeEmailVerificationTokensResult.
+    """
+
     def __init__(self, status: Literal['OK']):
+        """__init__.
+
+        Parameters
+        ----------
+        status : Literal['OK']
+            status
+        """
         self.status = status
         self.is_ok = False
 
 
 class RevokeEmailVerificationTokensOkResult(
         RevokeEmailVerificationTokensResult):
+    """RevokeEmailVerificationTokensOkResult.
+    """
+
     def __init__(self):
+        """__init__.
+        """
         super().__init__('OK')
         self.is_ok = True
 
 
 class UnverifyEmailResult(ABC):
+    """UnverifyEmailResult.
+    """
+
     def __init__(self, status: Literal['OK']):
+        """__init__.
+
+        Parameters
+        ----------
+        status : Literal['OK']
+            status
+        """
         self.status = status
         self.is_ok = False
 
 
 class UnverifyEmailOkResult(UnverifyEmailResult):
+    """UnverifyEmailOkResult.
+    """
+
     def __init__(self):
+        """__init__.
+        """
         super().__init__('OK')
         self.is_ok = True
 
 
 class RecipeInterface(ABC):
+    """RecipeInterface.
+    """
+
     def __init__(self):
+        """__init__.
+        """
         pass
 
     @abstractmethod
     async def create_email_verification_token(self, user_id: str, email: str, user_context: Dict[str, Any]) -> CreateEmailVerificationTokenResult:
+        """create_email_verification_token.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        CreateEmailVerificationTokenResult
+
+        """
         pass
 
     @abstractmethod
     async def verify_email_using_token(self, token: str, user_context: Dict[str, Any]) -> VerifyEmailUsingTokenResult:
+        """verify_email_using_token.
+
+        Parameters
+        ----------
+        token : str
+            token
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        VerifyEmailUsingTokenResult
+
+        """
         pass
 
     @abstractmethod
     async def is_email_verified(self, user_id: str, email: str, user_context: Dict[str, Any]) -> bool:
+        """is_email_verified.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        bool
+
+        """
         pass
 
     @abstractmethod
     async def revoke_email_verification_tokens(self, user_id: str, email: str, user_context: Dict[str, Any]) -> RevokeEmailVerificationTokensResult:
+        """revoke_email_verification_tokens.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        RevokeEmailVerificationTokensResult
+
+        """
         pass
 
     @abstractmethod
     async def unverify_email(self, user_id: str, email: str, user_context: Dict[str, Any]) -> UnverifyEmailResult:
+        """unverify_email.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        UnverifyEmailResult
+
+        """
         pass
 
 
 class APIOptions:
+    """APIOptions.
+    """
+
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: EmailVerificationConfig, recipe_implementation: RecipeInterface):
+        """__init__.
+
+        Parameters
+        ----------
+        request : BaseRequest
+            request
+        response : BaseResponse
+            response
+        recipe_id : str
+            recipe_id
+        config : EmailVerificationConfig
+            config
+        recipe_implementation : RecipeInterface
+            recipe_implementation
+        """
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -134,26 +319,68 @@ class APIOptions:
 
 
 class EmailVerifyPostResponse(ABC):
+    """EmailVerifyPostResponse.
+    """
+
     def __init__(
             self, status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'], user: Union[User, None]):
+        """__init__.
+
+        Parameters
+        ----------
+        status : Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR']
+            status
+        user : Union[User, None]
+            user
+        """
         self.status: Literal['OK', 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'] = status
         self.is_ok: bool = False
         self.is_email_verification_invalid_token_error: bool = False
         self.user: Union[User, None] = user
 
     def to_json(self) -> Dict[str, Any]:
+        """to_json.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Dict[str, Any]
+
+        """
         return {
             'status': self.status
         }
 
 
 class EmailVerifyPostOkResponse(EmailVerifyPostResponse):
+    """EmailVerifyPostOkResponse.
+    """
+
     def __init__(self, user: User):
+        """__init__.
+
+        Parameters
+        ----------
+        user : User
+            user
+        """
         super().__init__('OK', user)
         self.is_ok = True
         self.is_email_verification_invalid_token_error = False
 
     def to_json(self) -> Dict[str, Any]:
+        """to_json.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Dict[str, Any]
+
+        """
         if self.user is None:
             raise Exception("Should never come here")
         return {
@@ -166,30 +393,75 @@ class EmailVerifyPostOkResponse(EmailVerifyPostResponse):
 
 
 class EmailVerifyPostInvalidTokenErrorResponse(EmailVerifyPostResponse):
+    """EmailVerifyPostInvalidTokenErrorResponse.
+    """
+
     def __init__(self):
+        """__init__.
+        """
         super().__init__('EMAIL_VERIFICATION_INVALID_TOKEN_ERROR', None)
         self.is_ok = False
         self.is_email_verification_invalid_token_error = True
 
 
 class IsEmailVerifiedGetResponse(ABC):
+    """IsEmailVerifiedGetResponse.
+    """
+
     def __init__(self, status: Literal['OK']):
+        """__init__.
+
+        Parameters
+        ----------
+        status : Literal['OK']
+            status
+        """
         self.status = status
         self.is_ok = False
 
     def to_json(self) -> Dict[str, Any]:
+        """to_json.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Dict[str, Any]
+
+        """
         return {
             'status': self.status
         }
 
 
 class IsEmailVerifiedGetOkResponse(IsEmailVerifiedGetResponse):
+    """IsEmailVerifiedGetOkResponse.
+    """
+
     def __init__(self, is_verified: bool):
+        """__init__.
+
+        Parameters
+        ----------
+        is_verified : bool
+            is_verified
+        """
         super().__init__('OK')
         self.is_verified = is_verified
         self.is_ok = True
 
     def to_json(self) -> Dict[str, Any]:
+        """to_json.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Dict[str, Any]
+
+        """
         return {
             'status': self.status,
             'isVerified': self.is_verified
@@ -197,12 +469,32 @@ class IsEmailVerifiedGetOkResponse(IsEmailVerifiedGetResponse):
 
 
 class GenerateEmailVerifyTokenPostResponse(ABC):
+    """GenerateEmailVerifyTokenPostResponse.
+    """
+
     def __init__(self, status: Literal['OK', 'EMAIL_ALREADY_VERIFIED_ERROR']):
+        """__init__.
+
+        Parameters
+        ----------
+        status : Literal['OK', 'EMAIL_ALREADY_VERIFIED_ERROR']
+            status
+        """
         self.status = status
         self.is_ok = False
         self.is_email_already_verified_error = False
 
     def to_json(self) -> Dict[str, Any]:
+        """to_json.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Dict[str, Any]
+
+        """
         return {
             'status': self.status
         }
@@ -210,7 +502,12 @@ class GenerateEmailVerifyTokenPostResponse(ABC):
 
 class GenerateEmailVerifyTokenPostOkResponse(
         GenerateEmailVerifyTokenPostResponse):
+    """GenerateEmailVerifyTokenPostOkResponse.
+    """
+
     def __init__(self):
+        """__init__.
+        """
         super().__init__('OK')
         self.is_ok = True
         self.is_email_already_verified_error = False
@@ -218,27 +515,81 @@ class GenerateEmailVerifyTokenPostOkResponse(
 
 class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse(
         GenerateEmailVerifyTokenPostResponse):
+    """GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse.
+    """
+
     def __init__(self):
+        """__init__.
+        """
         super().__init__('EMAIL_ALREADY_VERIFIED_ERROR')
         self.is_ok = False
         self.is_email_already_verified_error = True
 
 
 class APIInterface(ABC):
+    """APIInterface.
+    """
+
     def __init__(self):
+        """__init__.
+        """
         self.disable_email_verify_post = False
         self.disable_is_email_verified_get = False
         self.disable_generate_email_verify_token_post = False
 
     @abstractmethod
     async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailVerifyPostResponse:
+        """email_verify_post.
+
+        Parameters
+        ----------
+        token : str
+            token
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        EmailVerifyPostResponse
+
+        """
         pass
 
     @abstractmethod
     async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> IsEmailVerifiedGetResponse:
+        """is_email_verified_get.
+
+        Parameters
+        ----------
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        IsEmailVerifiedGetResponse
+
+        """
         pass
 
     @abstractmethod
     async def generate_email_verify_token_post(self, api_options: APIOptions,
                                                user_context: Dict[str, Any]) -> GenerateEmailVerifyTokenPostResponse:
+        """generate_email_verify_token_post.
+
+        Parameters
+        ----------
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        GenerateEmailVerifyTokenPostResponse
+
+        """
         pass

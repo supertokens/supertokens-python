@@ -25,25 +25,67 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 
 
 class InputOverrideConfig:
+    """InputOverrideConfig.
+    """
+
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
                  apis: Union[Callable[[APIInterface],
                                       APIInterface], None] = None,
                  jwt_feature: Union[JWTOverrideConfig, None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        functions : Union[Callable[[RecipeInterface], RecipeInterface], None]
+            functions
+        apis : Union[Callable[[APIInterface],
+                                              APIInterface], None]
+            apis
+        jwt_feature : Union[JWTOverrideConfig, None]
+            jwt_feature
+        """
         self.functions = functions
         self.apis = apis
         self.jwt_feature = jwt_feature
 
 
 class OverrideConfig:
+    """OverrideConfig.
+    """
+
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
                                         None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
+        """__init__.
+
+        Parameters
+        ----------
+        functions : Union[Callable[[RecipeInterface], RecipeInterface],
+                                                None]
+            functions
+        apis : Union[Callable[[APIInterface], APIInterface], None]
+            apis
+        """
         self.functions = functions
         self.apis = apis
 
 
 class OpenIdConfig:
+    """OpenIdConfig.
+    """
+
     def __init__(self, override: OverrideConfig,
                  issuer_domain: NormalisedURLDomain, issuer_path: NormalisedURLPath):
+        """__init__.
+
+        Parameters
+        ----------
+        override : OverrideConfig
+            override
+        issuer_domain : NormalisedURLDomain
+            issuer_domain
+        issuer_path : NormalisedURLPath
+            issuer_path
+        """
         self.override = override
         self.issuer_domain = issuer_domain
         self.issuer_path = issuer_path
@@ -53,6 +95,17 @@ def validate_and_normalise_user_input(
         app_info: AppInfo,
         issuer: Union[str, None] = None,
         override: Union[InputOverrideConfig, None] = None):
+    """validate_and_normalise_user_input.
+
+    Parameters
+    ----------
+    app_info : AppInfo
+        app_info
+    issuer : Union[str, None]
+        issuer
+    override : Union[InputOverrideConfig, None]
+        override
+    """
     if issuer is None:
         issuer_domain = app_info.api_domain
         issuer_path = app_info.api_base_path

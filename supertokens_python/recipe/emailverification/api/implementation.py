@@ -31,7 +31,26 @@ from supertokens_python.recipe.session.asyncio import get_session
 
 
 class APIImplementation(APIInterface):
+    """APIImplementation.
+    """
+
     async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailVerifyPostResponse:
+        """email_verify_post.
+
+        Parameters
+        ----------
+        token : str
+            token
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        EmailVerifyPostResponse
+
+        """
         response = await api_options.recipe_implementation.verify_email_using_token(token, user_context)
         if response.is_ok:
             if response.user is None:
@@ -40,6 +59,20 @@ class APIImplementation(APIInterface):
         return EmailVerifyPostInvalidTokenErrorResponse()
 
     async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> IsEmailVerifiedGetResponse:
+        """is_email_verified_get.
+
+        Parameters
+        ----------
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        IsEmailVerifiedGetResponse
+
+        """
         session = await get_session(api_options.request)
         if session is None:
             raise Exception('Session is undefined. Should not come here.')
@@ -51,6 +84,20 @@ class APIImplementation(APIInterface):
         return IsEmailVerifiedGetOkResponse(is_verified)
 
     async def generate_email_verify_token_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> GenerateEmailVerifyTokenPostResponse:
+        """generate_email_verify_token_post.
+
+        Parameters
+        ----------
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        GenerateEmailVerifyTokenPostResponse
+
+        """
         session = await get_session(api_options.request)
         if session is None:
             raise Exception('Session is undefined. Should not come here.')

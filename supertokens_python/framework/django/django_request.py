@@ -24,17 +24,51 @@ if TYPE_CHECKING:
 
 
 class DjangoRequest(BaseRequest):
+    """DjangoRequest.
+    """
+
     from django.http import HttpRequest
 
     def __init__(self, request: HttpRequest):
+        """__init__.
+
+        Parameters
+        ----------
+        request : HttpRequest
+            request
+        """
         super().__init__()
         self.request = request
 
     def get_query_param(
             self, key: str, default: Union[str, None] = None) -> Union[str, None]:
+        """get_query_param.
+
+        Parameters
+        ----------
+        key : str
+            key
+        default : Union[str, None]
+            default
+
+        Returns
+        -------
+        Union[str, None]
+
+        """
         return self.request.GET.get(key, default)
 
     async def json(self) -> Union[Any, None]:
+        """json.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Union[Any, None]
+
+        """
         try:
             body = json.loads(self.request.body)
             return body
@@ -42,29 +76,94 @@ class DjangoRequest(BaseRequest):
             return {}
 
     def method(self) -> str:
+        """method.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        str
+
+        """
         if self.request.method is None:
             raise Exception("Should never come here")
         return self.request.method
 
     def get_cookie(self, key: str) -> Union[str, None]:
+        """get_cookie.
+
+        Parameters
+        ----------
+        key : str
+            key
+
+        Returns
+        -------
+        Union[str, None]
+
+        """
         return self.request.COOKIES.get(key)
 
     def get_header(self, key: str) -> Union[None, str]:
+        """get_header.
+
+        Parameters
+        ----------
+        key : str
+            key
+
+        Returns
+        -------
+        Union[None, str]
+
+        """
         key = key.replace('-', '_')
         key = 'HTTP_' + key
         return self.request.META.get(key.upper())
 
     def get_session(self) -> Union[SessionContainer, None]:
+        """get_session.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Union[SessionContainer, None]
+
+        """
         return self.request.supertokens  # type: ignore
 
     def set_session(self, session: SessionContainer):
+        """set_session.
+
+        Parameters
+        ----------
+        session : SessionContainer
+            session
+        """
         self.request.supertokens = session  # type: ignore
 
     def set_session_as_none(self):
+        """set_session_as_none.
+        """
         self.request.supertokens = None  # type: ignore
 
     def get_path(self) -> str:
+        """get_path.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        str
+
+        """
         return self.request.path
 
     async def form_data(self):
+        """form_data.
+        """
         return dict(parse_qsl(self.request.body.decode('utf-8')))

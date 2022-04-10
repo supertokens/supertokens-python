@@ -21,42 +21,131 @@ if TYPE_CHECKING:
 
 
 class BaseRequest(ABC):
+    """BaseRequest.
+    """
 
     def __init__(self):
+        """__init__.
+        """
         self.wrapper_used = True
         self.request = None
 
     @abstractmethod
     def get_query_param(
             self, key: str, default: Union[str, None] = None) -> Union[str, None]:
+        """get_query_param.
+
+        Parameters
+        ----------
+        key : str
+            key
+        default : Union[str, None]
+            default
+
+        Returns
+        -------
+        Union[str, None]
+
+        """
         pass
 
     @abstractmethod
     async def json(self) -> Union[Any, None]:
+        """json.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Union[Any, None]
+
+        """
         pass
 
     @abstractmethod
     async def form_data(self) -> Dict[str, Any]:
+        """form_data.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Dict[str, Any]
+
+        """
         pass
 
     @abstractmethod
     def method(self) -> str:
+        """method.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        str
+
+        """
         pass
 
     @abstractmethod
     def get_cookie(self, key: str) -> Union[str, None]:
+        """get_cookie.
+
+        Parameters
+        ----------
+        key : str
+            key
+
+        Returns
+        -------
+        Union[str, None]
+
+        """
         pass
 
     @abstractmethod
     def get_header(self, key: str) -> Union[None, str]:
+        """get_header.
+
+        Parameters
+        ----------
+        key : str
+            key
+
+        Returns
+        -------
+        Union[None, str]
+
+        """
         pass
 
     @abstractmethod
     def get_session(self) -> Union[SessionContainer, None]:
+        """get_session.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Union[SessionContainer, None]
+
+        """
         pass
 
     @abstractmethod
     def set_session(self, session: SessionContainer):
+        """set_session.
+
+        Parameters
+        ----------
+        session : SessionContainer
+            session
+        """
         pass
 
     @abstractmethod
@@ -68,4 +157,14 @@ class BaseRequest(ABC):
 
     @abstractmethod
     def get_path(self) -> str:
+        """get_path.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        str
+
+        """
         pass

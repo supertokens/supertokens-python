@@ -37,11 +37,35 @@ if TYPE_CHECKING:
 
 
 class RecipeImplementation(RecipeInterface):
+    """RecipeImplementation.
+    """
+
     def __init__(self, querier: Querier):
+        """__init__.
+
+        Parameters
+        ----------
+        querier : Querier
+            querier
+        """
         super().__init__()
         self.querier = querier
 
     async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """get_user_by_id.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[User, None]
+
+        """
         params = {
             'userId': user_id
         }
@@ -52,6 +76,20 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def get_user_by_email(self, email: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """get_user_by_email.
+
+        Parameters
+        ----------
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[User, None]
+
+        """
         params = {
             'email': email
         }
@@ -62,6 +100,20 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> CreateResetPasswordResult:
+        """create_reset_password_token.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        CreateResetPasswordResult
+
+        """
         data = {
             'userId': user_id
         }
@@ -73,6 +125,22 @@ class RecipeImplementation(RecipeInterface):
         return CreateResetPasswordWrongUserIdErrorResult()
 
     async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> ResetPasswordUsingTokenResult:
+        """reset_password_using_token.
+
+        Parameters
+        ----------
+        token : str
+            token
+        new_password : str
+            new_password
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        ResetPasswordUsingTokenResult
+
+        """
         data = {
             'method': 'token',
             'token': token,
@@ -88,6 +156,22 @@ class RecipeImplementation(RecipeInterface):
         return ResetPasswordUsingTokenOkResult(user_id)
 
     async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> SignInResult:
+        """sign_in.
+
+        Parameters
+        ----------
+        email : str
+            email
+        password : str
+            password
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SignInResult
+
+        """
         data = {
             'password': password,
             'email': email
@@ -99,6 +183,22 @@ class RecipeImplementation(RecipeInterface):
         return SignInWrongCredentialsErrorResult()
 
     async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> SignUpResult:
+        """sign_up.
+
+        Parameters
+        ----------
+        email : str
+            email
+        password : str
+            password
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SignUpResult
+
+        """
         data = {
             'password': password,
             'email': email
@@ -111,6 +211,24 @@ class RecipeImplementation(RecipeInterface):
 
     async def update_email_or_password(self, user_id: str, email: Union[str, None],
                                        password: Union[str, None], user_context: Dict[str, Any]) -> UpdateEmailOrPasswordResult:
+        """update_email_or_password.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : Union[str, None]
+            email
+        password : Union[str, None]
+            password
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        UpdateEmailOrPasswordResult
+
+        """
         data = {
             'userId': user_id
         }

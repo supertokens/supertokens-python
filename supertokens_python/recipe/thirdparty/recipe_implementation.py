@@ -26,12 +26,35 @@ from .types import ThirdPartyInfo, User
 
 
 class RecipeImplementation(RecipeInterface):
+    """RecipeImplementation.
+    """
 
     def __init__(self, querier: Querier):
+        """__init__.
+
+        Parameters
+        ----------
+        querier : Querier
+            querier
+        """
         super().__init__()
         self.querier = querier
 
     async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """get_user_by_id.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[User, None]
+
+        """
         params = {
             'userId': user_id
         }
@@ -49,6 +72,20 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -> List[User]:
+        """get_users_by_email.
+
+        Parameters
+        ----------
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        List[User]
+
+        """
         response = await self.querier.send_get_request(NormalisedURLPath('/recipe/users/by-email'), {'email': email})
         users: List[User] = []
         users_list: List[Dict[str, Any]] = response['users'] if 'users' in response else []
@@ -67,6 +104,22 @@ class RecipeImplementation(RecipeInterface):
         return users
 
     async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """get_user_by_thirdparty_info.
+
+        Parameters
+        ----------
+        third_party_id : str
+            third_party_id
+        third_party_user_id : str
+            third_party_user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[User, None]
+
+        """
         params = {
             'thirdPartyId': third_party_id,
             'thirdPartyUserId': third_party_user_id
@@ -86,6 +139,26 @@ class RecipeImplementation(RecipeInterface):
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
                          email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
+        """sign_in_up.
+
+        Parameters
+        ----------
+        third_party_id : str
+            third_party_id
+        third_party_user_id : str
+            third_party_user_id
+        email : str
+            email
+        email_verified : bool
+            email_verified
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        SignInUpResult
+
+        """
         data = {
             'thirdPartyId': third_party_id,
             'thirdPartyUserId': third_party_user_id,

@@ -43,6 +43,34 @@ def init(cookie_domain: Union[str, None] = None,
          error_handlers: Union[InputErrorHandlers, None] = None,
          override: Union[InputOverrideConfig, None] = None,
          jwt: Union[JWTConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
+    """init.
+
+    Parameters
+    ----------
+    cookie_domain : Union[str, None]
+        cookie_domain
+    cookie_secure : Union[bool, None]
+        cookie_secure
+    cookie_same_site : Union[Literal["lax",
+                                             "none", "strict"], None]
+        cookie_same_site
+    session_expired_status_code : Union[int, None]
+        session_expired_status_code
+    anti_csrf : Union[Literal["VIA_TOKEN",
+                                      "VIA_CUSTOM_HEADER", "NONE"], None]
+        anti_csrf
+    error_handlers : Union[InputErrorHandlers, None]
+        error_handlers
+    override : Union[InputOverrideConfig, None]
+        override
+    jwt : Union[JWTConfig, None]
+        jwt
+
+    Returns
+    -------
+    Callable[[AppInfo], RecipeModule]
+
+    """
     return SessionRecipe.init(cookie_domain,
                               cookie_secure,
                               cookie_same_site,

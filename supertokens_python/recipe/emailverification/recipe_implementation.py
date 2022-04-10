@@ -33,12 +33,40 @@ if TYPE_CHECKING:
 
 
 class RecipeImplementation(RecipeInterface):
+    """RecipeImplementation.
+    """
+
     def __init__(self, querier: Querier, config: EmailVerificationConfig):
+        """__init__.
+
+        Parameters
+        ----------
+        querier : Querier
+            querier
+        config : EmailVerificationConfig
+            config
+        """
         super().__init__()
         self.querier = querier
         self.config = config
 
     async def create_email_verification_token(self, user_id: str, email: str, user_context: Dict[str, Any]) -> CreateEmailVerificationTokenResult:
+        """create_email_verification_token.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        CreateEmailVerificationTokenResult
+
+        """
         data = {
             'userId': user_id,
             'email': email
@@ -49,6 +77,20 @@ class RecipeImplementation(RecipeInterface):
         return CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult()
 
     async def verify_email_using_token(self, token: str, user_context: Dict[str, Any]) -> VerifyEmailUsingTokenResult:
+        """verify_email_using_token.
+
+        Parameters
+        ----------
+        token : str
+            token
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        VerifyEmailUsingTokenResult
+
+        """
         data = {
             'method': 'token',
             'token': token
@@ -60,6 +102,22 @@ class RecipeImplementation(RecipeInterface):
         return VerifyEmailUsingTokenInvalidTokenErrorResult()
 
     async def is_email_verified(self, user_id: str, email: str, user_context: Dict[str, Any]) -> bool:
+        """is_email_verified.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        bool
+
+        """
         params = {
             'userId': user_id,
             'email': email
@@ -68,6 +126,22 @@ class RecipeImplementation(RecipeInterface):
         return response['isVerified']
 
     async def revoke_email_verification_tokens(self, user_id: str, email: str, user_context: Dict[str, Any]) -> RevokeEmailVerificationTokensResult:
+        """revoke_email_verification_tokens.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        RevokeEmailVerificationTokensResult
+
+        """
         data = {
             'userId': user_id,
             'email': email
@@ -76,6 +150,22 @@ class RecipeImplementation(RecipeInterface):
         return RevokeEmailVerificationTokensOkResult()
 
     async def unverify_email(self, user_id: str, email: str, user_context: Dict[str, Any]) -> UnverifyEmailResult:
+        """unverify_email.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        UnverifyEmailResult
+
+        """
         data = {
             'userId': user_id,
             'email': email

@@ -21,6 +21,15 @@ from ..types import User
 
 
 async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    """create_email_verification_token.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     if user_context is None:
         user_context = {}
     email = await ThirdPartyEmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
@@ -29,6 +38,15 @@ async def create_email_verification_token(user_id: str, user_context: Union[None
 
 
 async def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any]] = None):
+    """verify_email_using_token.
+
+    Parameters
+    ----------
+    token : str
+        token
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     if user_context is None:
         user_context = {}
     return ThirdPartyEmailPasswordRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
@@ -36,6 +54,15 @@ async def verify_email_using_token(token: str, user_context: Union[None, Dict[st
 
 
 async def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    """is_email_verified.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     if user_context is None:
         user_context = {}
     email = await ThirdPartyEmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
@@ -44,6 +71,15 @@ async def is_email_verified(user_id: str, user_context: Union[None, Dict[str, An
 
 
 async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    """unverify_email.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     if user_context is None:
         user_context = {}
     email = await ThirdPartyEmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
@@ -52,6 +88,15 @@ async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]]
 
 
 async def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    """revoke_email_verification_tokens.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     if user_context is None:
         user_context = {}
     email = await ThirdPartyEmailPasswordRecipe.get_instance().get_email_for_user_id(user_id, user_context)
@@ -60,24 +105,73 @@ async def revoke_email_verification_tokens(user_id: str, user_context: Union[Non
 
 
 async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[None, User]:
+    """get_user_by_id.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    Union[None, User]
+
+    """
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_id(user_id, user_context)
 
 
 async def get_user_by_third_party_info(third_party_id: str, third_party_user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    """get_user_by_third_party_info.
+
+    Parameters
+    ----------
+    third_party_id : str
+        third_party_id
+    third_party_user_id : str
+        third_party_user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
 
 
 async def thirdparty_sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Union[None, Dict[str, Any]] = None):
+    """thirdparty_sign_in_up.
+
+    Parameters
+    ----------
+    third_party_id : str
+        third_party_id
+    third_party_user_id : str
+        third_party_user_id
+    email : str
+        email
+    email_verified : bool
+        email_verified
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
 
 
 async def create_reset_password_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    """create_reset_password_token.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.create_reset_password_token(user_id,
@@ -85,30 +179,90 @@ async def create_reset_password_token(user_id: str, user_context: Union[None, Di
 
 
 async def reset_password_using_token(token: str, new_password: str, user_context: Union[None, Dict[str, Any]] = None):
+    """reset_password_using_token.
+
+    Parameters
+    ----------
+    token : str
+        token
+    new_password : str
+        new_password
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.reset_password_using_token(token, new_password, user_context)
 
 
 async def emailpassword_sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+    """emailpassword_sign_in.
+
+    Parameters
+    ----------
+    email : str
+        email
+    password : str
+        password
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.emailpassword_sign_in(email, password, user_context)
 
 
 async def emailpassword_sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+    """emailpassword_sign_up.
+
+    Parameters
+    ----------
+    email : str
+        email
+    password : str
+        password
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.emailpassword_sign_up(email, password, user_context)
 
 
 async def update_email_or_password(user_id: str, email: Union[None, str] = None, password: Union[None, str] = None, user_context: Union[None, Dict[str, Any]] = None):
+    """update_email_or_password.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    email : Union[None, str]
+        email
+    password : Union[None, str]
+        password
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.update_email_or_password(user_id, email, password, user_context)
 
 
 async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -> List[User]:
+    """get_users_by_email.
+
+    Parameters
+    ----------
+    email : str
+        email
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    List[User]
+
+    """
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_by_email(email, user_context)

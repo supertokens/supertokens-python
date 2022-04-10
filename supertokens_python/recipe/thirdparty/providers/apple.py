@@ -35,10 +35,32 @@ if TYPE_CHECKING:
 
 
 class Apple(Provider):
+    """Apple.
+    """
+
     def __init__(self, client_id: str, client_key_id: str, client_private_key: str, client_team_id: str,
                  scope: Union[None, List[str]] = None,
                  authorisation_redirect: Union[None, Dict[str, Union[Callable[[BaseRequest], str], str]]] = None,
                  is_default: bool = False):
+        """__init__.
+
+        Parameters
+        ----------
+        client_id : str
+            client_id
+        client_key_id : str
+            client_key_id
+        client_private_key : str
+            client_private_key
+        client_team_id : str
+            client_team_id
+        scope : Union[None, List[str]]
+            scope
+        authorisation_redirect : Union[None, Dict[str, Union[Callable[[BaseRequest], str], str]]]
+            authorisation_redirect
+        is_default : bool
+            is_default
+        """
         super().__init__('apple', client_id, is_default)
         self.APPLE_PUBLIC_KEY_URL = "https://appleid.apple.com/auth/keys"
         self.APPLE_PUBLIC_KEYS: List[RSAPublicKey] = []
@@ -59,6 +81,16 @@ class Apple(Provider):
             self.authorisation_redirect_params = authorisation_redirect
 
     def __get_client_secret(self) -> str:
+        """__get_client_secret.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        str
+
+        """
         payload = {
             'iss': self.client_team_id,
             'iat': time(),
@@ -73,6 +105,20 @@ class Apple(Provider):
             r'\\n', '\n', self.client_private_key), algorithm='ES256', headers=headers)  # type: ignore
 
     async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
+        """get_profile_info.
+
+        Parameters
+        ----------
+        auth_code_response : Dict[str, Any]
+            auth_code_response
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        UserInfo
+
+        """
         # - Verify the JWS E256 signature using the server’s public key
         # - Verify the nonce for the authentication
         # - Verify that the iss field contains https://appleid.apple.com
@@ -95,6 +141,18 @@ class Apple(Provider):
         return UserInfo(user_id, UserInfoEmail(email, is_email_verified))
 
     def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
+        """get_authorisation_redirect_api_info.
+
+        Parameters
+        ----------
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        AuthorisationRedirectAPI
+
+        """
         params = {
             'scope': ' '.join(self.scopes),
             'response_type': 'code',
@@ -107,6 +165,22 @@ class Apple(Provider):
 
     def get_access_token_api_info(
             self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
+        """get_access_token_api_info.
+
+        Parameters
+        ----------
+        redirect_uri : str
+            redirect_uri
+        auth_code_from_request : str
+            auth_code_from_request
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        AccessTokenAPI
+
+        """
         params = {
             'client_id': self.client_id,
             'client_secret': self.__get_client_secret(),
@@ -117,6 +191,18 @@ class Apple(Provider):
         return AccessTokenAPI(self.access_token_api_url, params)
 
     def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+        """get_redirect_uri.
+
+        Parameters
+        ----------
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[None, str]
+
+        """
         app_info = Supertokens.get_instance().app_info
         redirect_uri = app_info.api_domain.get_as_string_dangerous()
         redirect_uri += app_info.api_base_path.get_as_string_dangerous()
@@ -124,6 +210,16 @@ class Apple(Provider):
         return redirect_uri
 
     async def _fetch_apple_public_keys(self) -> List[RSAPublicKey]:
+        """_fetch_apple_public_keys.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[RSAPublicKey]
+
+        """
         # Check to see if the public key is unset or is stale before returning
         if (self.apple_last_fetch + self.APPLE_KEY_CACHE_EXP) < int(time()
                                                                     ) or len(self.APPLE_PUBLIC_KEYS) == 0:
@@ -137,6 +233,18 @@ class Apple(Provider):
         return self.APPLE_PUBLIC_KEYS
 
     async def _verify_apple_id_token(self, token: str) -> None:
+        """_verify_apple_id_token.
+
+        Parameters
+        ----------
+        token : str
+            token
+
+        Returns
+        -------
+        None
+
+        """
         public_keys = await self._fetch_apple_public_keys()
         err = Exception("Id token verification failed")
         for key in public_keys:

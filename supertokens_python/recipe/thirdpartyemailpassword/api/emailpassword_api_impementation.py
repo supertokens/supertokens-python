@@ -20,6 +20,18 @@ from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
 
 def get_interface_impl(
         api_implementation: ThirdPartyEmailPasswordAPIInterface) -> APIInterface:
+    """get_interface_impl.
+
+    Parameters
+    ----------
+    api_implementation : ThirdPartyEmailPasswordAPIInterface
+        api_implementation
+
+    Returns
+    -------
+    APIInterface
+
+    """
     implementation = APIInterface()
 
     implementation.disable_email_exists_get = api_implementation.disable_email_exists_get

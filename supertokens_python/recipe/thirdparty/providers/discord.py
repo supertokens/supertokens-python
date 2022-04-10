@@ -25,10 +25,29 @@ if TYPE_CHECKING:
 
 
 class Discord(Provider):
+    """Discord.
+    """
+
     def __init__(self, client_id: str, client_secret: str, scope: Union[None, List[str]] = None,
                  authorisation_redirect: Union[None, Dict[str, Union[str, Callable[[
                      BaseRequest], str]]]] = None,
                  is_default: bool = False):
+        """__init__.
+
+        Parameters
+        ----------
+        client_id : str
+            client_id
+        client_secret : str
+            client_secret
+        scope : Union[None, List[str]]
+            scope
+        authorisation_redirect : Union[None, Dict[str, Union[str, Callable[[
+                             BaseRequest], str]]]]
+            authorisation_redirect
+        is_default : bool
+            is_default
+        """
         super().__init__('discord', client_id, is_default)
         default_scopes = ["email", "identify"]
         if scope is None:
@@ -43,6 +62,20 @@ class Discord(Provider):
             self.authorisation_redirect_params = authorisation_redirect
 
     async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
+        """get_profile_info.
+
+        Parameters
+        ----------
+        auth_code_response : Dict[str, Any]
+            auth_code_response
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        UserInfo
+
+        """
         access_token: str = auth_code_response['access_token']
         headers = {
             'Authorization': 'Bearer ' + access_token
@@ -58,6 +91,18 @@ class Discord(Provider):
                 user_info['email'], is_email_verified))
 
     def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
+        """get_authorisation_redirect_api_info.
+
+        Parameters
+        ----------
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        AuthorisationRedirectAPI
+
+        """
         params = {
             'scope': ' '.join(self.scopes),
             'client_id': self.client_id,
@@ -69,6 +114,22 @@ class Discord(Provider):
 
     def get_access_token_api_info(
             self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
+        """get_access_token_api_info.
+
+        Parameters
+        ----------
+        redirect_uri : str
+            redirect_uri
+        auth_code_from_request : str
+            auth_code_from_request
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        AccessTokenAPI
+
+        """
         params = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,
@@ -79,4 +140,16 @@ class Discord(Provider):
         return AccessTokenAPI(self.access_token_api_url, params)
 
     def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+        """get_redirect_uri.
+
+        Parameters
+        ----------
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[None, str]
+
+        """
         return None

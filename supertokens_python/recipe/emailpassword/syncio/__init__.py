@@ -19,23 +19,59 @@ from ..interfaces import SignInResult
 
 
 def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    """create_email_verification_token.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     from supertokens_python.recipe.emailpassword.asyncio import \
         create_email_verification_token
     return sync(create_email_verification_token(user_id, user_context))
 
 
 def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any]] = None):
+    """verify_email_using_token.
+
+    Parameters
+    ----------
+    token : str
+        token
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     from supertokens_python.recipe.emailpassword.asyncio import \
         verify_email_using_token
     return sync(verify_email_using_token(token, user_context))
 
 
 async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    """unverify_email.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     from supertokens_python.recipe.emailpassword.asyncio import unverify_email
     return sync(unverify_email(user_id, user_context))
 
 
 def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    """is_email_verified.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     from supertokens_python.recipe.emailpassword.asyncio import \
         is_email_verified
     return sync(is_email_verified(user_id, user_context))
@@ -43,6 +79,19 @@ def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = 
 
 async def update_email_or_password(user_id: str, email: Union[str, None] = None,
                                    password: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None):
+    """update_email_or_password.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    email : Union[str, None]
+        email
+    password : Union[str, None]
+        password
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     from supertokens_python.recipe.emailpassword.asyncio import \
         update_email_or_password
     return sync(update_email_or_password(
@@ -50,17 +99,54 @@ async def update_email_or_password(user_id: str, email: Union[str, None] = None,
 
 
 def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[None, User]:
+    """get_user_by_id.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    Union[None, User]
+
+    """
     from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
     return sync(get_user_by_id(user_id, user_context))
 
 
 def get_user_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[None, User]:
+    """get_user_by_email.
+
+    Parameters
+    ----------
+    email : str
+        email
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    Union[None, User]
+
+    """
     from supertokens_python.recipe.emailpassword.asyncio import \
         get_user_by_email
     return sync(get_user_by_email(email, user_context))
 
 
 def create_reset_password_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    """create_reset_password_token.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     from supertokens_python.recipe.emailpassword.asyncio import \
         create_reset_password_token
     return sync(create_reset_password_token(user_id, user_context))
@@ -68,22 +154,69 @@ def create_reset_password_token(user_id: str, user_context: Union[None, Dict[str
 
 def reset_password_using_token(
         token: str, new_password: str, user_context: Union[None, Dict[str, Any]] = None):
+    """reset_password_using_token.
+
+    Parameters
+    ----------
+    token : str
+        token
+    new_password : str
+        new_password
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     from supertokens_python.recipe.emailpassword.asyncio import \
         reset_password_using_token
     return sync(reset_password_using_token(token, new_password, user_context))
 
 
 def sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None) -> SignInResult:
+    """sign_in.
+
+    Parameters
+    ----------
+    email : str
+        email
+    password : str
+        password
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+
+    Returns
+    -------
+    SignInResult
+
+    """
     from supertokens_python.recipe.emailpassword.asyncio import sign_in
     return sync(sign_in(email, password, user_context))
 
 
 async def sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+    """sign_up.
+
+    Parameters
+    ----------
+    email : str
+        email
+    password : str
+        password
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     from supertokens_python.recipe.emailpassword.asyncio import sign_up
     return sync(sign_up(email, password, user_context))
 
 
 async def revoke_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+    """revoke_email_verification_token.
+
+    Parameters
+    ----------
+    user_id : str
+        user_id
+    user_context : Union[None, Dict[str, Any]]
+        user_context
+    """
     from supertokens_python.recipe.emailpassword.asyncio import \
         revoke_email_verification_token
     return sync(revoke_email_verification_token(user_id, user_context))

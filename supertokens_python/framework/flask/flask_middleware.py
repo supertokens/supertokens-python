@@ -24,13 +24,24 @@ if TYPE_CHECKING:
 
 
 class Middleware:
+    """Middleware.
+    """
 
     def __init__(self, app: Flask):
+        """__init__.
+
+        Parameters
+        ----------
+        app : Flask
+            app
+        """
         self.app = app
         self.set_before_after_request()
         self.set_error_handler()
 
     def set_before_after_request(self):
+        """set_before_after_request.
+        """
         app = self.app
         from supertokens_python.framework.flask.flask_request import \
             FlaskRequest
@@ -44,6 +55,8 @@ class Middleware:
         # for now.
         @app.before_request  # type: ignore
         def _():
+            """_.
+            """
             from supertokens_python import Supertokens
 
             from flask import request
@@ -65,6 +78,13 @@ class Middleware:
 
         @app.after_request
         def _(response: Response):
+            """_.
+
+            Parameters
+            ----------
+            response : Response
+                response
+            """
             from flask import g
             response_ = FlaskResponse(response)
             if hasattr(g, 'supertokens') and g.supertokens is not None:
@@ -73,6 +93,8 @@ class Middleware:
             return response_.response
 
     def set_error_handler(self):
+        """set_error_handler.
+        """
         app = self.app
         from supertokens_python.exceptions import SuperTokensError
 
@@ -80,6 +102,13 @@ class Middleware:
 
         @app.errorhandler(SuperTokensError)
         def _(error: Exception):
+            """_.
+
+            Parameters
+            ----------
+            error : Exception
+                error
+            """
             from supertokens_python import Supertokens
             from supertokens_python.framework.flask.flask_request import \
                 FlaskRequest

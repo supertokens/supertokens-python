@@ -46,6 +46,18 @@ FRAMEWORKS = {
 
 
 def is_an_ip_address(ip_address: str) -> bool:
+    """is_an_ip_address.
+
+    Parameters
+    ----------
+    ip_address : str
+        ip_address
+
+    Returns
+    -------
+    bool
+
+    """
     return fullmatch(
         r'^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|['
         r'01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$',
@@ -53,19 +65,71 @@ def is_an_ip_address(ip_address: str) -> bool:
 
 
 def normalise_http_method(method: str) -> str:
+    """normalise_http_method.
+
+    Parameters
+    ----------
+    method : str
+        method
+
+    Returns
+    -------
+    str
+
+    """
     return method.lower()
 
 
 def get_rid_from_request(request: BaseRequest) -> Union[str, None]:
+    """get_rid_from_request.
+
+    Parameters
+    ----------
+    request : BaseRequest
+        request
+
+    Returns
+    -------
+    Union[str, None]
+
+    """
     return get_header(request, RID_KEY_HEADER)
 
 
 def get_header(request: BaseRequest, key: str) -> Union[str, None]:
+    """get_header.
+
+    Parameters
+    ----------
+    request : BaseRequest
+        request
+    key : str
+        key
+
+    Returns
+    -------
+    Union[str, None]
+
+    """
     return request.get_header(key)
 
 
 def find_max_version(
         versions_1: List[str], versions_2: List[str]) -> Union[str, None]:
+    """find_max_version.
+
+    Parameters
+    ----------
+    versions_1 : List[str]
+        versions_1
+    versions_2 : List[str]
+        versions_2
+
+    Returns
+    -------
+    Union[str, None]
+
+    """
     versions = list(set(versions_1) & set(versions_2))
     if len(versions) == 0:
         return None
@@ -79,6 +143,20 @@ def find_max_version(
 
 
 def compare_version(v1: str, v2: str) -> str:
+    """compare_version.
+
+    Parameters
+    ----------
+    v1 : str
+        v1
+    v2 : str
+        v2
+
+    Returns
+    -------
+    str
+
+    """
     v1_split = v1.split('.')
     v2_split = v2.split('.')
     max_loop = min(len(v1_split), len(v2_split))
@@ -96,15 +174,55 @@ def compare_version(v1: str, v2: str) -> str:
 
 
 def is_4xx_error(status_code: int) -> bool:
+    """is_4xx_error.
+
+    Parameters
+    ----------
+    status_code : int
+        status_code
+
+    Returns
+    -------
+    bool
+
+    """
     return status_code // 100 == 4
 
 
 def is_5xx_error(status_code: int) -> bool:
+    """is_5xx_error.
+
+    Parameters
+    ----------
+    status_code : int
+        status_code
+
+    Returns
+    -------
+    bool
+
+    """
     return status_code // 100 == 5
 
 
 def send_non_200_response(message: str, status_code: int,
                           response: BaseResponse) -> BaseResponse:
+    """send_non_200_response.
+
+    Parameters
+    ----------
+    message : str
+        message
+    status_code : int
+        status_code
+    response : BaseResponse
+        response
+
+    Returns
+    -------
+    BaseResponse
+
+    """
     if status_code < 300:
         raise_general_exception(
             'Calling sendNon200Response with status code < 300')
@@ -118,6 +236,20 @@ def send_non_200_response(message: str, status_code: int,
 
 def send_200_response(
         data_json: Dict[str, Any], response: BaseResponse) -> BaseResponse:
+    """send_200_response.
+
+    Parameters
+    ----------
+    data_json : Dict[str, Any]
+        data_json
+    response : BaseResponse
+        response
+
+    Returns
+    -------
+    BaseResponse
+
+    """
     log_debug_message("Sending response to client with status code: 200")
     response.set_json_content(data_json)
     response.set_status_code(200)
@@ -125,23 +257,85 @@ def send_200_response(
 
 
 def get_timestamp_ms() -> int:
+    """get_timestamp_ms.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    int
+
+    """
     return int(time() * 1000)
 
 
 def utf_base64encode(s: str) -> str:
+    """utf_base64encode.
+
+    Parameters
+    ----------
+    s : str
+        s
+
+    Returns
+    -------
+    str
+
+    """
     return b64encode(s.encode('utf-8')).decode('utf-8')
 
 
 def utf_base64decode(s: str) -> str:
+    """utf_base64decode.
+
+    Parameters
+    ----------
+    s : str
+        s
+
+    Returns
+    -------
+    str
+
+    """
     return b64decode(s.encode('utf-8')).decode('utf-8')
 
 
 def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -> List[_T]:
+    """get_filtered_list.
+
+    Parameters
+    ----------
+    func : Callable[[_T], bool]
+        func
+    given_list : List[_T]
+        given_list
+
+    Returns
+    -------
+    List[_T]
+
+    """
     return list(filter(func, given_list))
 
 
 def find_first_occurrence_in_list(
         condition: Callable[[_T], bool], given_list: List[_T]) -> Union[_T, None]:
+    """find_first_occurrence_in_list.
+
+    Parameters
+    ----------
+    condition : Callable[[_T], bool]
+        condition
+    given_list : List[_T]
+        given_list
+
+    Returns
+    -------
+    Union[_T, None]
+
+    """
     for item in given_list:
         if condition(item):
             return item
@@ -149,6 +343,15 @@ def find_first_occurrence_in_list(
 
 
 def execute_in_background(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
+    """execute_in_background.
+
+    Parameters
+    ----------
+    mode : str
+        mode
+    func : Callable[[], Coroutine[Any, Any, None]]
+        func
+    """
     if mode == 'wsgi':
         check_event_loop()
         loop = asyncio.get_event_loop()
@@ -158,4 +361,16 @@ def execute_in_background(mode: str, func: Callable[[], Coroutine[Any, Any, None
 
 
 def frontend_has_interceptor(request: BaseRequest) -> bool:
+    """frontend_has_interceptor.
+
+    Parameters
+    ----------
+    request : BaseRequest
+        request
+
+    Returns
+    -------
+    bool
+
+    """
     return get_rid_from_request(request) is not None

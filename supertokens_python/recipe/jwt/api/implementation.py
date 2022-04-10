@@ -18,6 +18,23 @@ from supertokens_python.recipe.jwt.interfaces import (APIInterface, APIOptions,
 
 
 class APIImplementation(APIInterface):
+    """APIImplementation.
+    """
+
     async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> JWKSGetResponse:
+        """jwks_get.
+
+        Parameters
+        ----------
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        JWKSGetResponse
+
+        """
         response = await api_options.recipe_implementation.get_jwks(user_context)
         return JWKSGetResponse('OK', response.keys)

@@ -20,6 +20,15 @@ from supertokens_python.utils import normalise_http_method, send_200_response
 
 
 async def handle_email_verify_api(api_implementation: APIInterface, api_options: APIOptions):
+    """handle_email_verify_api.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if normalise_http_method(api_options.request.method()) == 'post':
         if api_implementation.disable_email_verify_post:
             return None

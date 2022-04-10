@@ -30,4 +30,16 @@ if TYPE_CHECKING:
 
 
 def init(config: ParentRecipeEmailVerificationConfig) -> Callable[[AppInfo], RecipeModule]:
+    """init.
+
+    Parameters
+    ----------
+    config : ParentRecipeEmailVerificationConfig
+        config
+
+    Returns
+    -------
+    Callable[[AppInfo], RecipeModule]
+
+    """
     return EmailVerificationRecipe.init(config)

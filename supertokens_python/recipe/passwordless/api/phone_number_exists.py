@@ -18,6 +18,15 @@ from supertokens_python.utils import send_200_response
 
 
 async def phone_number_exists(api_implementation: APIInterface, api_options: APIOptions):
+    """phone_number_exists.
+
+    Parameters
+    ----------
+    api_implementation : APIInterface
+        api_implementation
+    api_options : APIOptions
+        api_options
+    """
     if api_implementation.disable_phone_number_exists_get:
         return None
 

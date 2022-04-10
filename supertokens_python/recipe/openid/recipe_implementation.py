@@ -32,8 +32,22 @@ from .interfaces import (GetJWKSResult, GetOpenIdDiscoveryConfigurationResult,
 
 
 class RecipeImplementation(RecipeInterface):
+    """RecipeImplementation.
+    """
 
     async def get_open_id_discovery_configuration(self, user_context: Dict[str, Any]) -> GetOpenIdDiscoveryConfigurationResult:
+        """get_open_id_discovery_configuration.
+
+        Parameters
+        ----------
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        GetOpenIdDiscoveryConfigurationResult
+
+        """
         issuer = self.config.issuer_domain.get_as_string_dangerous(
         ) + self.config.issuer_path.get_as_string_dangerous()
 
@@ -43,6 +57,19 @@ class RecipeImplementation(RecipeInterface):
 
     def __init__(self, querier: Querier, config: OpenIdConfig,
                  app_info: AppInfo, jwt_recipe_implementation: JWTRecipeInterface):
+        """__init__.
+
+        Parameters
+        ----------
+        querier : Querier
+            querier
+        config : OpenIdConfig
+            config
+        app_info : AppInfo
+            app_info
+        jwt_recipe_implementation : JWTRecipeInterface
+            jwt_recipe_implementation
+        """
         super().__init__()
         self.querier = querier
         self.config = config
@@ -50,6 +77,22 @@ class RecipeImplementation(RecipeInterface):
         self.jwt_recipe_implementation = jwt_recipe_implementation
 
     async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> CreateJwtResult:
+        """create_jwt.
+
+        Parameters
+        ----------
+        payload : Dict[str, Any]
+            payload
+        validity_seconds : Union[int, None]
+            validity_seconds
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        CreateJwtResult
+
+        """
         issuer = self.config.issuer_domain.get_as_string_dangerous(
         ) + self.config.issuer_path.get_as_string_dangerous()
         payload = {
@@ -59,4 +102,16 @@ class RecipeImplementation(RecipeInterface):
         return await self.jwt_recipe_implementation.create_jwt(payload, validity_seconds, user_context)
 
     async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:
+        """get_jwks.
+
+        Parameters
+        ----------
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        GetJWKSResult
+
+        """
         return await self.jwt_recipe_implementation.get_jwks(user_context)

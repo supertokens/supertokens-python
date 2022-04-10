@@ -18,8 +18,25 @@ from supertokens_python.recipe.openid.interfaces import (
 
 
 class APIImplementation(APIInterface):
+    """APIImplementation.
+    """
+
     async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) ->\
             OpenIdDiscoveryConfigurationGetResponse:
+        """open_id_discovery_configuration_get.
+
+        Parameters
+        ----------
+        api_options : APIOptions
+            api_options
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        OpenIdDiscoveryConfigurationGetResponse
+
+        """
         response = await api_options.recipe_implementation.get_open_id_discovery_configuration(user_context)
         return OpenIdDiscoveryConfigurationGetResponse(
             'OK', response.issuer, response.jwks_uri)

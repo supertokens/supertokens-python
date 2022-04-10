@@ -22,13 +22,30 @@ frameworks = ["fastapi", "flask", "django"]
 
 
 class FrameworkEnum(Enum):
+    """FrameworkEnum.
+    """
+
     FASTAPI = 1
     FLASK = 2
     DJANGO = 3
 
 
 class Framework(ABC):
+    """Framework.
+    """
 
     @abstractmethod
     def wrap_request(self, unwrapped: Any) -> Union[BaseRequest, None]:
+        """wrap_request.
+
+        Parameters
+        ----------
+        unwrapped : Any
+            unwrapped
+
+        Returns
+        -------
+        Union[BaseRequest, None]
+
+        """
         pass

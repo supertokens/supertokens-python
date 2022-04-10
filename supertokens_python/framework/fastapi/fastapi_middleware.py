@@ -22,15 +22,35 @@ if TYPE_CHECKING:
 
 
 def get_middleware():
+    """get_middleware.
+    """
     from starlette.middleware.base import (BaseHTTPMiddleware,
                                            RequestResponseEndpoint)
 
     class Middleware(BaseHTTPMiddleware):
+        """Middleware.
+        """
 
         def __init__(self, app: FastAPI):
+            """__init__.
+
+            Parameters
+            ----------
+            app : FastAPI
+                app
+            """
             super().__init__(app)
 
         async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
+            """dispatch.
+
+            Parameters
+            ----------
+            request : Request
+                request
+            call_next : RequestResponseEndpoint
+                call_next
+            """
             from supertokens_python import Supertokens
             from supertokens_python.exceptions import SuperTokensError
             from supertokens_python.framework.fastapi.fastapi_request import \

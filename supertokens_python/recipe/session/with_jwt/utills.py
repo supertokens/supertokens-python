@@ -22,6 +22,23 @@ from .constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
 async def add_jwt_to_access_token_payload(access_token_payload: Dict[str, Any],
                                           jwt_expiry: int, user_id: str, jwt_property_name: str,
                                           openid_recipe_implementation: RecipeInterface, user_context: Dict[str, Any]):
+    """add_jwt_to_access_token_payload.
+
+    Parameters
+    ----------
+    access_token_payload : Dict[str, Any]
+        access_token_payload
+    jwt_expiry : int
+        jwt_expiry
+    user_id : str
+        user_id
+    jwt_property_name : str
+        jwt_property_name
+    openid_recipe_implementation : RecipeInterface
+        openid_recipe_implementation
+    user_context : Dict[str, Any]
+        user_context
+    """
     if ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY in access_token_payload:
         # If jwtPropertyName is not undefined it means that the JWT was added
         # to the access token payload already

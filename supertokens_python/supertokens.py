@@ -53,19 +53,46 @@ from .recipe.session import SessionRecipe
 
 
 class SupertokensConfig:
+    """SupertokensConfig.
+    """
+
     def __init__(self, connection_uri: str, api_key: Union[str, None] = None):  # We keep this = None here because this is directly used by the user.
+        """__init__.
+
+        Parameters
+        ----------
+        connection_uri : str
+            connection_uri
+        api_key : Union[str, None]
+            api_key
+        """
         self.connection_uri = connection_uri
         self.api_key = api_key
 
 
 class Host:
+    """Host.
+    """
+
     def __init__(self, domain: NormalisedURLDomain,
                  base_path: NormalisedURLPath):
+        """__init__.
+
+        Parameters
+        ----------
+        domain : NormalisedURLDomain
+            domain
+        base_path : NormalisedURLPath
+            base_path
+        """
         self.domain = domain
         self.base_path = base_path
 
 
 class InputAppInfo:
+    """InputAppInfo.
+    """
+
     def __init__(self,
                  app_name: str,
                  api_domain: str,
@@ -74,6 +101,23 @@ class InputAppInfo:
                  api_base_path: str = '/auth',
                  website_base_path: str = '/auth',
                  ):
+        """__init__.
+
+        Parameters
+        ----------
+        app_name : str
+            app_name
+        api_domain : str
+            api_domain
+        website_domain : str
+            website_domain
+        api_gateway_path : str
+            api_gateway_path
+        api_base_path : str
+            api_base_path
+        website_base_path : str
+            website_base_path
+        """
         self.app_name = app_name
         self.api_gateway_path = api_gateway_path
         self.api_domain = api_domain
@@ -83,10 +127,34 @@ class InputAppInfo:
 
 
 class AppInfo:
+    """AppInfo.
+    """
+
     def __init__(self, app_name: str, api_domain: str, website_domain: str,
                  framework: Literal['fastapi', 'flask', 'django'], api_gateway_path: str,
                  api_base_path: str, website_base_path: str,
                  mode: Union[Literal['asgi', 'wsgi'], None]):
+        """__init__.
+
+        Parameters
+        ----------
+        app_name : str
+            app_name
+        api_domain : str
+            api_domain
+        website_domain : str
+            website_domain
+        framework : Literal['fastapi', 'flask', 'django']
+            framework
+        api_gateway_path : str
+            api_gateway_path
+        api_base_path : str
+            api_base_path
+        website_base_path : str
+            website_base_path
+        mode : Union[Literal['asgi', 'wsgi'], None]
+            mode
+        """
         self.app_name = app_name
         self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(
             api_gateway_path)
@@ -107,7 +175,16 @@ class AppInfo:
         self.mode = mode
 
     def toJSON(self):
+        """toJSON.
+        """
         def defaultImpl(o: Any):
+            """defaultImpl.
+
+            Parameters
+            ----------
+            o : Any
+                o
+            """
             if isinstance(o, (NormalisedURLDomain, NormalisedURLPath)):
                 return o.get_as_string_dangerous()
             return o.__dict__
@@ -116,6 +193,15 @@ class AppInfo:
 
 
 def manage_cookies_post_response(session: SessionContainer, response: BaseResponse):
+    """manage_cookies_post_response.
+
+    Parameters
+    ----------
+    session : SessionContainer
+        session
+    response : BaseResponse
+        response
+    """
     recipe = SessionRecipe.get_instance()
     if session['remove_cookies']:
         clear_cookies(recipe, response)
@@ -156,6 +242,9 @@ def manage_cookies_post_response(session: SessionContainer, response: BaseRespon
 
 
 class Supertokens:
+    """Supertokens.
+    """
+
     __instance = None
 
     def __init__(self,
@@ -166,6 +255,23 @@ class Supertokens:
                  mode: Union[Literal['asgi', 'wsgi'], None],
                  telemetry: Union[bool, None]
                  ):
+        """__init__.
+
+        Parameters
+        ----------
+        app_info : InputAppInfo
+            app_info
+        framework : Literal['fastapi', 'flask', 'django']
+            framework
+        supertokens_config : SupertokensConfig
+            supertokens_config
+        recipe_list : List[Callable[[AppInfo], RecipeModule]]
+            recipe_list
+        mode : Union[Literal['asgi', 'wsgi'], None]
+            mode
+        telemetry : Union[bool, None]
+            telemetry
+        """
         self.app_info = AppInfo(
             app_info.app_name,
             app_info.api_domain,
@@ -203,6 +309,8 @@ class Supertokens:
                 asyncio.create_task(self.send_telemetry())
 
     async def send_telemetry(self):
+        """send_telemetry.
+        """
         try:
             querier = Querier.get_instance(None)
             response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
@@ -232,12 +340,31 @@ class Supertokens:
              recipe_list: List[Callable[[AppInfo], RecipeModule]],
              mode: Union[Literal['asgi', 'wsgi'], None],
              telemetry: Union[bool, None]):
+        """init.
+
+        Parameters
+        ----------
+        app_info : InputAppInfo
+            app_info
+        framework : Literal['fastapi', 'flask', 'django']
+            framework
+        supertokens_config : SupertokensConfig
+            supertokens_config
+        recipe_list : List[Callable[[AppInfo], RecipeModule]]
+            recipe_list
+        mode : Union[Literal['asgi', 'wsgi'], None]
+            mode
+        telemetry : Union[bool, None]
+            telemetry
+        """
         if Supertokens.__instance is None:
             Supertokens.__instance = Supertokens(
                 app_info, framework, supertokens_config, recipe_list, mode, telemetry)
 
     @staticmethod
     def reset():
+        """reset.
+        """
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(
@@ -247,12 +374,32 @@ class Supertokens:
 
     @staticmethod
     def get_instance() -> Supertokens:
+        """get_instance.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Supertokens
+
+        """
         if Supertokens.__instance is not None:
             return Supertokens.__instance
         raise_general_exception(
             'Initialisation not done. Did you forget to call the SuperTokens.init function?')
 
     def get_all_cors_headers(self) -> List[str]:
+        """get_all_cors_headers.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[str]
+
+        """
         headers_set: Set[str] = set()
         headers_set.add(RID_KEY_HEADER)
         headers_set.add(FDI_KEY_HEADER)
@@ -264,6 +411,18 @@ class Supertokens:
         return list(headers_set)
 
     async def get_user_count(self, include_recipe_ids: Union[None, List[str]]) -> int:  # pylint: disable=no-self-use
+        """get_user_count.
+
+        Parameters
+        ----------
+        include_recipe_ids : Union[None, List[str]]
+            include_recipe_ids
+
+        Returns
+        -------
+        int
+
+        """
         querier = Querier.get_instance(None)
         include_recipe_ids_str = None
         if include_recipe_ids is not None:
@@ -276,6 +435,18 @@ class Supertokens:
         return int(response['count'])
 
     async def delete_user(self, user_id: str) -> None:  # pylint: disable=no-self-use
+        """delete_user.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+
+        Returns
+        -------
+        None
+
+        """
         querier = Querier.get_instance(None)
 
         cdi_version = await querier.get_api_version()
@@ -292,6 +463,24 @@ class Supertokens:
     async def get_users(self, time_joined_order: Literal['ASC', 'DESC'],  # pylint: disable=no-self-use
                         limit: Union[int, None], pagination_token: Union[str, None],
                         include_recipe_ids: Union[None, List[str]]) -> UsersResponse:
+        """get_users.
+
+        Parameters
+        ----------
+        time_joined_order : Literal['ASC', 'DESC']
+            time_joined_order
+        limit : Union[int, None]
+            limit
+        pagination_token : Union[str, None]
+            pagination_token
+        include_recipe_ids : Union[None, List[str]]
+            include_recipe_ids
+
+        Returns
+        -------
+        UsersResponse
+
+        """
         querier = Querier.get_instance(None)
         params = {
             'timeJoinedOrder': time_joined_order
@@ -342,6 +531,21 @@ class Supertokens:
         return UsersResponse(users, next_pagination_token)
 
     async def middleware(self, request: BaseRequest, response: BaseResponse) -> Union[BaseResponse, None]:  # pylint: disable=no-self-use
+        """middleware.
+
+        Parameters
+        ----------
+        request : BaseRequest
+            request
+        response : BaseResponse
+            response
+
+        Returns
+        -------
+        Union[BaseResponse, None]
+
+        """
+
         log_debug_message("middleware: Started")
         path = Supertokens.get_instance().app_info.api_gateway_path.append(
             NormalisedURLPath(
@@ -350,6 +554,7 @@ class Supertokens:
 
         if not path.startswith(
                 Supertokens.get_instance().app_info.api_base_path):
+
             log_debug_message(
                 "middleware: Not handling because request path did not start with config path. Request path: %s", path.get_as_string_dangerous()
             )
@@ -396,6 +601,17 @@ class Supertokens:
         return None
 
     async def handle_supertokens_error(self, request: BaseRequest, err: Exception, response: BaseResponse):
+        """handle_supertokens_error.
+
+        Parameters
+        ----------
+        request : BaseRequest
+            request
+        err : Exception
+            err
+        response : BaseResponse
+            response
+        """
         log_debug_message("errorHandler: Started")
         log_debug_message("errorHandler: Error is from SuperTokens recipe. Message: %s", str(err))
         if isinstance(err, GeneralError):

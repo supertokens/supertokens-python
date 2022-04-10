@@ -22,12 +22,52 @@ from ...jwt.interfaces import CreateJwtResult, GetJWKSResult
 
 
 def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -> CreateJwtResult:
+    """create_jwt.
+
+    Parameters
+    ----------
+    payload : Union[None, Dict[str, Any]]
+        payload
+    validity_seconds : Union[None, int]
+        validity_seconds
+    user_context : Union[Dict[str, Any], None]
+        user_context
+
+    Returns
+    -------
+    CreateJwtResult
+
+    """
     return sync(asyncio.create_jwt(payload, validity_seconds, user_context))
 
 
 def get_jwks(user_context: Union[Dict[str, Any], None] = None) -> GetJWKSResult:
+    """get_jwks.
+
+    Parameters
+    ----------
+    user_context : Union[Dict[str, Any], None]
+        user_context
+
+    Returns
+    -------
+    GetJWKSResult
+
+    """
     return sync(asyncio.get_jwks(user_context))
 
 
 async def get_open_id_discovery_configuration(user_context: Union[Dict[str, Any], None] = None) -> GetOpenIdDiscoveryConfigurationResult:
+    """get_open_id_discovery_configuration.
+
+    Parameters
+    ----------
+    user_context : Union[Dict[str, Any], None]
+        user_context
+
+    Returns
+    -------
+    GetOpenIdDiscoveryConfigurationResult
+
+    """
     return sync(asyncio.get_open_id_discovery_configuration(user_context))

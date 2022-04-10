@@ -43,11 +43,25 @@ from .utils import (ParentRecipeEmailVerificationConfig,
 
 
 class EmailVerificationRecipe(RecipeModule):
+    """EmailVerificationRecipe.
+    """
+
     recipe_id = 'emailverification'
     __instance = None
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  config: ParentRecipeEmailVerificationConfig):
+        """__init__.
+
+        Parameters
+        ----------
+        recipe_id : str
+            recipe_id
+        app_info : AppInfo
+            app_info
+        config : ParentRecipeEmailVerificationConfig
+            config
+        """
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, config)
         recipe_implementation = RecipeImplementation(
@@ -60,10 +74,32 @@ class EmailVerificationRecipe(RecipeModule):
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -> bool:
+        """is_error_from_this_recipe_based_on_instance.
+
+        Parameters
+        ----------
+        err : Exception
+            err
+
+        Returns
+        -------
+        bool
+
+        """
         return isinstance(err, SuperTokensError) and isinstance(
             err, SuperTokensEmailVerificationError)
 
     def get_apis_handled(self) -> List[APIHandled]:
+        """get_apis_handled.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[APIHandled]
+
+        """
         return [
             APIHandled(NormalisedURLPath(USER_EMAIL_VERIFY_TOKEN), 'post', USER_EMAIL_VERIFY_TOKEN,
                        self.api_implementation.disable_generate_email_verify_token_post),
@@ -74,6 +110,26 @@ class EmailVerificationRecipe(RecipeModule):
         ]
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse) -> Union[BaseResponse, None]:
+        """handle_api_request.
+
+        Parameters
+        ----------
+        request_id : str
+            request_id
+        request : BaseRequest
+            request
+        path : NormalisedURLPath
+            path
+        method : str
+            method
+        response : BaseResponse
+            response
+
+        Returns
+        -------
+        Union[BaseResponse, None]
+
+        """
         if request_id == USER_EMAIL_VERIFY_TOKEN:
             return await handle_generate_email_verify_token_api(self.api_implementation,
                                                                 APIOptions(request, response, self.recipe_id, self.config,
@@ -83,6 +139,22 @@ class EmailVerificationRecipe(RecipeModule):
                                                         self.recipe_implementation))
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
+        """handle_error.
+
+        Parameters
+        ----------
+        request : BaseRequest
+            request
+        err : SuperTokensError
+            err
+        response : BaseResponse
+            response
+
+        Returns
+        -------
+        BaseResponse
+
+        """
         if isinstance(err, EmailVerificationInvalidTokenError):
             response.set_json_content(
                 {'status': 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'})
@@ -92,11 +164,35 @@ class EmailVerificationRecipe(RecipeModule):
         return response
 
     def get_all_cors_headers(self) -> List[str]:
+        """get_all_cors_headers.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        List[str]
+
+        """
         return []
 
     @staticmethod
     def init(config: ParentRecipeEmailVerificationConfig):
+        """init.
+
+        Parameters
+        ----------
+        config : ParentRecipeEmailVerificationConfig
+            config
+        """
         def func(app_info: AppInfo):
+            """func.
+
+            Parameters
+            ----------
+            app_info : AppInfo
+                app_info
+            """
             if EmailVerificationRecipe.__instance is None:
                 EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id, app_info, config)
                 return EmailVerificationRecipe.__instance
@@ -106,6 +202,16 @@ class EmailVerificationRecipe(RecipeModule):
 
     @staticmethod
     def get_instance() -> EmailVerificationRecipe:
+        """get_instance.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        EmailVerificationRecipe
+
+        """
         if EmailVerificationRecipe.__instance is not None:
             return EmailVerificationRecipe.__instance
         raise_general_exception(
@@ -113,6 +219,8 @@ class EmailVerificationRecipe(RecipeModule):
 
     @staticmethod
     def reset():
+        """reset.
+        """
         if ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing'):
             raise_general_exception(

@@ -27,9 +27,18 @@ from ..interfaces import RecipeInterface as ThirdPartyPasswordlessInterface
 
 
 class RecipeImplementation(RecipeInterface):
+    """RecipeImplementation.
+    """
 
     def __init__(
             self, recipe_implementation: ThirdPartyPasswordlessInterface):
+        """__init__.
+
+        Parameters
+        ----------
+        recipe_implementation : ThirdPartyPasswordlessInterface
+            recipe_implementation
+        """
         super().__init__()
         self.recipe_implementation = recipe_implementation
 
@@ -38,12 +47,46 @@ class RecipeImplementation(RecipeInterface):
                           phone_number: Union[None, str],
                           user_input_code: Union[None, str],
                           user_context: Dict[str, Any]) -> CreateCodeResult:
+        """create_code.
+
+        Parameters
+        ----------
+        email : Union[None, str]
+            email
+        phone_number : Union[None, str]
+            phone_number
+        user_input_code : Union[None, str]
+            user_input_code
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        CreateCodeResult
+
+        """
         return await self.recipe_implementation.create_code(email, phone_number, user_input_code, user_context)
 
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
                                          user_context: Dict[str, Any]) -> CreateNewCodeForDeviceResult:
+        """create_new_code_for_device.
+
+        Parameters
+        ----------
+        device_id : str
+            device_id
+        user_input_code : Union[str, None]
+            user_input_code
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        CreateNewCodeForDeviceResult
+
+        """
         return await self.create_new_code_for_device(device_id, user_input_code, user_context)
 
     async def consume_code(self,
@@ -52,6 +95,26 @@ class RecipeImplementation(RecipeInterface):
                            device_id: Union[str, None],
                            link_code: Union[str, None],
                            user_context: Dict[str, Any]) -> ConsumeCodeResult:
+        """consume_code.
+
+        Parameters
+        ----------
+        pre_auth_session_id : str
+            pre_auth_session_id
+        user_input_code : Union[str, None]
+            user_input_code
+        device_id : Union[str, None]
+            device_id
+        link_code : Union[str, None]
+            link_code
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        ConsumeCodeResult
+
+        """
         result = await self.recipe_implementation.consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
 
         if result.is_ok:
@@ -71,6 +134,20 @@ class RecipeImplementation(RecipeInterface):
         return ConsumeCodeRestartFlowErrorResult()
 
     async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """get_user_by_id.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[User, None]
+
+        """
         otherTypeUser = await self.recipe_implementation.get_user_by_id(user_id, user_context)
         if otherTypeUser is not None:
             if otherTypeUser.third_party_info is None:
@@ -79,6 +156,20 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def get_user_by_email(self, email: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """get_user_by_email.
+
+        Parameters
+        ----------
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[User, None]
+
+        """
         users = await self.recipe_implementation.get_users_by_email(email, user_context)
         for user in users:
             if user.third_party_info is not None:
@@ -87,6 +178,20 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def get_user_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -> Union[User, None]:
+        """get_user_by_phone_number.
+
+        Parameters
+        ----------
+        phone_number : str
+            phone_number
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[User, None]
+
+        """
         otherTypeUser = await self.recipe_implementation.get_user_by_phone_number(phone_number, user_context)
         if otherTypeUser is not None:
             if otherTypeUser.third_party_info is None:
@@ -96,24 +201,128 @@ class RecipeImplementation(RecipeInterface):
 
     async def update_user(self, user_id: str,
                           email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
+        """update_user.
+
+        Parameters
+        ----------
+        user_id : str
+            user_id
+        email : Union[str, None]
+            email
+        phone_number : Union[str, None]
+            phone_number
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        UpdateUserResult
+
+        """
         return await self.recipe_implementation.update_passwordless_user(user_id, email, phone_number, user_context)
 
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
+        """revoke_all_codes.
+
+        Parameters
+        ----------
+        email : Union[str, None]
+            email
+        phone_number : Union[str, None]
+            phone_number
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        RevokeAllCodesResult
+
+        """
         return await self.recipe_implementation.revoke_all_codes(email, phone_number, user_context)
 
     async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeResult:
+        """revoke_code.
+
+        Parameters
+        ----------
+        code_id : str
+            code_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        RevokeCodeResult
+
+        """
         return await self.recipe_implementation.revoke_code(code_id, user_context)
 
     async def list_codes_by_email(self, email: str, user_context: Dict[str, Any]) -> List[DeviceType]:
+        """list_codes_by_email.
+
+        Parameters
+        ----------
+        email : str
+            email
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        List[DeviceType]
+
+        """
         return await self.recipe_implementation.list_codes_by_email(email, user_context)
 
     async def list_codes_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -> List[DeviceType]:
+        """list_codes_by_phone_number.
+
+        Parameters
+        ----------
+        phone_number : str
+            phone_number
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        List[DeviceType]
+
+        """
         return await self.recipe_implementation.list_codes_by_phone_number(phone_number, user_context)
 
     async def list_codes_by_device_id(self, device_id: str, user_context: Dict[str, Any]) -> Union[DeviceType, None]:
+        """list_codes_by_device_id.
+
+        Parameters
+        ----------
+        device_id : str
+            device_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[DeviceType, None]
+
+        """
         return await self.recipe_implementation.list_codes_by_device_id(device_id, user_context)
 
     async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str,
                                                 user_context: Dict[str, Any]) -> Union[DeviceType, None]:
+        """list_codes_by_pre_auth_session_id.
+
+        Parameters
+        ----------
+        pre_auth_session_id : str
+            pre_auth_session_id
+        user_context : Dict[str, Any]
+            user_context
+
+        Returns
+        -------
+        Union[DeviceType, None]
+
+        """
         return await self.recipe_implementation.list_codes_by_pre_auth_session_id(pre_auth_session_id, user_context)
