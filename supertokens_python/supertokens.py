@@ -42,7 +42,6 @@ if TYPE_CHECKING:
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.recipe.session import SessionContainer
 
-import asyncio
 import json
 from os import environ
 
