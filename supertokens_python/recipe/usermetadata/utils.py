@@ -12,14 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import TYPE_CHECKING, Any, Callable, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable, Union
 
 from supertokens_python.recipe.usermetadata.interfaces import (APIInterface,
                                                                RecipeInterface)
 from supertokens_python.supertokens import AppInfo
 
-# if TYPE_CHECKING:
-# from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
+if TYPE_CHECKING:
+    from supertokens_python.recipe.usermetadata.recipe import \
+        UserMetadataRecipe
 
 
 class InputOverrideConfig:
@@ -34,7 +37,7 @@ class UserMetadataConfig:
         self.override = override
 
 
-def validate_and_normalise_user_input(recipe: Any, app_info: AppInfo,
+def validate_and_normalise_user_input(recipe: UserMetadataRecipe, app_info: AppInfo,
                                       override: Union[InputOverrideConfig, None] = None) -> UserMetadataConfig:
     if override is None:
         override = InputOverrideConfig()

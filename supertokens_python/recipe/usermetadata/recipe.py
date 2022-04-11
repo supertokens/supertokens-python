@@ -12,8 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from __future__ import annotations
+
 from os import environ
-from typing import Any, List, Union
+from typing import List, Union
 
 from supertokens_python.exceptions import (SuperTokensError,
                                            raise_general_exception)
@@ -79,7 +81,7 @@ class UserMetadataRecipe(RecipeModule):
         UserMetadataRecipe.__instance = None
 
     @staticmethod
-    def get_instance() -> Any:  # UserMetadataRecipe
+    def get_instance() -> UserMetadataRecipe:
         if UserMetadataRecipe.__instance is not None:
             return UserMetadataRecipe.__instance
         raise_general_exception(
