@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- Fix telemetry issues related to asyncio when using FastAPI. Related issue: https://github.com/supertokens/supertokens-core/issues/421
 
 ## [0.6.3] - 2022-04-09
 - Setup logging for easier debugging
