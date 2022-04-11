@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- adds git action for running tests
 
 ## [0.6.3] - 2022-04-09
 - Setup logging for easier debugging
