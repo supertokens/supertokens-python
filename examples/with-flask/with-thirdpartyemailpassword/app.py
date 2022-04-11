@@ -13,8 +13,6 @@ from supertokens_python.recipe.thirdpartyemailpassword import (
 
 load_dotenv()
 
-os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
-
 
 def get_api_port():
     return '3001'
