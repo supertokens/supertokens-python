@@ -14,9 +14,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, List, Set, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Set, Union
 
 from typing_extensions import Literal
+
+from supertokens_python.logger import get_maybe_none_as_str, log_debug_message
 
 from .constants import (FDI_KEY_HEADER, RID_KEY_HEADER, TELEMETRY,
                         TELEMETRY_SUPERTOKENS_API_URL,
@@ -41,6 +43,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.session import SessionContainer
 
 import asyncio
+import json
 from os import environ
 
 from httpx import AsyncClient
@@ -102,6 +105,14 @@ class AppInfo:
             mode = 'wsgi'
         self.framework = framework
         self.mode = mode
+
+    def toJSON(self):
+        def defaultImpl(o: Any):
+            if isinstance(o, (NormalisedURLDomain, NormalisedURLPath)):
+                return o.get_as_string_dangerous()
+            return o.__dict__
+        return json.dumps(self, default=defaultImpl,
+                          sort_keys=True, indent=4)
 
 
 def manage_cookies_post_response(session: SessionContainer, response: BaseResponse):
@@ -165,6 +176,9 @@ class Supertokens:
             app_info.website_base_path,
             mode
         )
+        log_debug_message("Started SuperTokens with debug logging (supertokens.init called)")
+        log_debug_message("app_info: %s", self.app_info.toJSON())
+        log_debug_message("framework: %s", framework)
         hosts = list(map(lambda h: Host(NormalisedURLDomain(h.strip()), NormalisedURLPath(h.strip())),
                          filter(lambda x: x != '', supertokens_config.connection_uri.split(';'))))
         Querier.init(hosts, supertokens_config.api_key)
@@ -323,6 +337,7 @@ class Supertokens:
         return UsersResponse(users, next_pagination_token)
 
     async def middleware(self, request: BaseRequest, response: BaseResponse) -> Union[BaseResponse, None]:  # pylint: disable=no-self-use
+        log_debug_message("middleware: Started")
         path = Supertokens.get_instance().app_info.api_gateway_path.append(
             NormalisedURLPath(
                 request.get_path()))
@@ -330,8 +345,12 @@ class Supertokens:
 
         if not path.startswith(
                 Supertokens.get_instance().app_info.api_base_path):
+            log_debug_message(
+                "middleware: Not handling because request path did not start with config path. Request path: %s", path.get_as_string_dangerous()
+            )
             return None
         request_rid = get_rid_from_request(request)
+        log_debug_message("middleware: requestRID is: %s", get_maybe_none_as_str(request_rid))
         if request_rid is not None and request_rid == 'anti-csrf':
             # see
             # https://github.com/supertokens/supertokens-python/issues/54
@@ -340,6 +359,7 @@ class Supertokens:
         matched_recipe = None
         if request_rid is not None:
             for recipe in Supertokens.get_instance().recipe_modules:
+                log_debug_message("middleware: Checking recipe ID for match: %s", recipe.get_recipe_id())
                 if recipe.get_recipe_id() == request_rid:
                     matched_recipe = recipe
                     break
@@ -348,24 +368,42 @@ class Supertokens:
                     path, method)
         else:
             for recipe in Supertokens.get_instance().recipe_modules:
+                log_debug_message("middleware: Checking recipe ID for match: %s", recipe.get_recipe_id())
                 request_id = recipe.return_api_id_if_can_handle_request(
                     path, method)
                 if request_id is not None:
                     matched_recipe = recipe
                     break
+        if matched_recipe is not None:
+            log_debug_message("middleware: Matched with recipe ID: %s", matched_recipe.get_recipe_id())
+        else:
+            log_debug_message("middleware: Not handling because no recipe matched")
+        if matched_recipe is not None and request_id is None:
+            log_debug_message("middleware: Not handling because recipe doesn't handle request path or method. Request path: %s, request method: %s", path.get_as_string_dangerous(), method)
         if request_id is not None and matched_recipe is not None:
-            return await matched_recipe.handle_api_request(request_id, request, path, method, response)
+            log_debug_message("middleware: Request being handled by recipe. ID is: %s", request_id)
+            api_resp = await matched_recipe.handle_api_request(request_id, request, path, method, response)
+            if api_resp is None:
+                log_debug_message("middleware: Not handled because API returned None")
+            else:
+                log_debug_message("middleware: Ended")
+            return api_resp
         return None
 
     async def handle_supertokens_error(self, request: BaseRequest, err: Exception, response: BaseResponse):
+        log_debug_message("errorHandler: Started")
+        log_debug_message("errorHandler: Error is from SuperTokens recipe. Message: %s", str(err))
         if isinstance(err, GeneralError):
             raise err
 
         if isinstance(err, BadInputError):
+            log_debug_message("errorHandler: Sending 400 status code response")
             return send_non_200_response(str(err), 400, response)
 
         for recipe in self.recipe_modules:
+            log_debug_message("errorHandler: Checking recipe for match: %s", recipe.get_recipe_id())
             if recipe.is_error_from_this_recipe_based_on_instance(
                     err) and isinstance(err, SuperTokensError):
+                log_debug_message("errorHandler: Matched with recipeID: %s", recipe.get_recipe_id())
                 return await recipe.handle_error(request, err, response)
         raise err

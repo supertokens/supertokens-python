@@ -43,6 +43,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
 
+from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 from supertokens_python.utils import (FRAMEWORKS, execute_in_background,
@@ -158,25 +159,35 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
                           session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
+        log_debug_message(&#34;getSession: Started&#34;)
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
+
+        log_debug_message(&#34;getSession: rid in header: %s&#34;, str(frontend_has_interceptor(request)))
+        log_debug_message(&#34;getSession: request method: %s&#34;, request.method())
 
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
             if not session_required:
+                log_debug_message(&#34;getSession: returning None because idRefreshToken is undefined and session_required is false&#34;)
                 return None
-            raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the &#39;
-                                         &#39;request as cookies?&#39;, False)
+            log_debug_message(&#34;getSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;)
+            raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the request as cookies?&#39;, False)
         access_token: Union[str, None] = get_access_token_from_cookie(request)
         if access_token is None:
             if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
                     request.method()) == &#39;get&#39;:
+                log_debug_message(
+                    &#34;getSession: Returning try refresh token because access token from cookies is undefined&#34;
+                )
                 raise_try_refresh_token_exception(
                     &#39;Access token has expired. Please call the refresh API&#39;)
             return None
         anti_csrf_token = get_anti_csrf_header(request)
         if anti_csrf_check is None:
             anti_csrf_check = normalise_http_method(request.method()) != &#39;get&#39;
+
+        log_debug_message(&#34;getSession: Value of doAntiCsrfCheck is: %s&#34;, str(anti_csrf_check))
         new_session = await session_functions.get_session(self, access_token, anti_csrf_token, anti_csrf_check,
                                                           get_rid_header(request) is not None)
         if &#39;accessToken&#39; in new_session:
@@ -189,19 +200,24 @@ class RecipeImplementation(RecipeInterface):
 
         if &#39;accessToken&#39; in new_session:
             session.new_access_token_info = new_session[&#39;accessToken&#39;]
+
+        log_debug_message(&#34;getSession: Success!&#34;)
         request.set_session(session)
         return request.get_session()
 
     async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt; SessionContainer:
+        log_debug_message(&#34;refreshSession: Started&#34;)
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
+            log_debug_message(&#34;refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;)
             raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the request &#39;
                                          &#39;as cookies?&#39;, False)
         refresh_token = get_refresh_token_from_cookie(request)
         if refresh_token is None:
+            log_debug_message(&#34;refreshSession: UNAUTHORISED because refresh token from cookies is undefined&#34;)
             raise_unauthorised_exception(&#39;Refresh token not found. Are you sending the refresh token in the &#39;
                                          &#39;request as a cookie?&#39;)
         anti_csrf_token = get_anti_csrf_header(request)
@@ -217,8 +233,9 @@ class RecipeImplementation(RecipeInterface):
         session.new_id_refresh_token_info = id_refresh_token
         if &#39;antiCsrfToken&#39; in new_session and new_session[&#39;antiCsrfToken&#39;] is not None:
             session.new_anti_csrf_token = new_session[&#39;antiCsrfToken&#39;]
-        request.set_session(session)
 
+        log_debug_message(&#34;refreshSession: Success!&#34;)
+        request.set_session(session)
         return request.get_session()
 
     async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -&gt; bool:
@@ -421,25 +438,35 @@ inheritance.</p></div>
 
     async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
                           session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
+        log_debug_message(&#34;getSession: Started&#34;)
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
+
+        log_debug_message(&#34;getSession: rid in header: %s&#34;, str(frontend_has_interceptor(request)))
+        log_debug_message(&#34;getSession: request method: %s&#34;, request.method())
 
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
             if not session_required:
+                log_debug_message(&#34;getSession: returning None because idRefreshToken is undefined and session_required is false&#34;)
                 return None
-            raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the &#39;
-                                         &#39;request as cookies?&#39;, False)
+            log_debug_message(&#34;getSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;)
+            raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the request as cookies?&#39;, False)
         access_token: Union[str, None] = get_access_token_from_cookie(request)
         if access_token is None:
             if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
                     request.method()) == &#39;get&#39;:
+                log_debug_message(
+                    &#34;getSession: Returning try refresh token because access token from cookies is undefined&#34;
+                )
                 raise_try_refresh_token_exception(
                     &#39;Access token has expired. Please call the refresh API&#39;)
             return None
         anti_csrf_token = get_anti_csrf_header(request)
         if anti_csrf_check is None:
             anti_csrf_check = normalise_http_method(request.method()) != &#39;get&#39;
+
+        log_debug_message(&#34;getSession: Value of doAntiCsrfCheck is: %s&#34;, str(anti_csrf_check))
         new_session = await session_functions.get_session(self, access_token, anti_csrf_token, anti_csrf_check,
                                                           get_rid_header(request) is not None)
         if &#39;accessToken&#39; in new_session:
@@ -452,19 +479,24 @@ inheritance.</p></div>
 
         if &#39;accessToken&#39; in new_session:
             session.new_access_token_info = new_session[&#39;accessToken&#39;]
+
+        log_debug_message(&#34;getSession: Success!&#34;)
         request.set_session(session)
         return request.get_session()
 
     async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt; SessionContainer:
+        log_debug_message(&#34;refreshSession: Started&#34;)
         if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
+            log_debug_message(&#34;refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;)
             raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the request &#39;
                                          &#39;as cookies?&#39;, False)
         refresh_token = get_refresh_token_from_cookie(request)
         if refresh_token is None:
+            log_debug_message(&#34;refreshSession: UNAUTHORISED because refresh token from cookies is undefined&#34;)
             raise_unauthorised_exception(&#39;Refresh token not found. Are you sending the refresh token in the &#39;
                                          &#39;request as a cookie?&#39;)
         anti_csrf_token = get_anti_csrf_header(request)
@@ -480,8 +512,9 @@ inheritance.</p></div>
         session.new_id_refresh_token_info = id_refresh_token
         if &#39;antiCsrfToken&#39; in new_session and new_session[&#39;antiCsrfToken&#39;] is not None:
             session.new_anti_csrf_token = new_session[&#39;antiCsrfToken&#39;]
-        request.set_session(session)
 
+        log_debug_message(&#34;refreshSession: Success!&#34;)
+        request.set_session(session)
         return request.get_session()
 
     async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -&gt; bool:
@@ -649,25 +682,35 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
                       session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
+    log_debug_message(&#34;getSession: Started&#34;)
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[self.config.framework].wrap_request(request)
+
+    log_debug_message(&#34;getSession: rid in header: %s&#34;, str(frontend_has_interceptor(request)))
+    log_debug_message(&#34;getSession: request method: %s&#34;, request.method())
 
     id_refresh_token = get_id_refresh_token_from_cookie(request)
     if id_refresh_token is None:
         if not session_required:
+            log_debug_message(&#34;getSession: returning None because idRefreshToken is undefined and session_required is false&#34;)
             return None
-        raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the &#39;
-                                     &#39;request as cookies?&#39;, False)
+        log_debug_message(&#34;getSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;)
+        raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the request as cookies?&#39;, False)
     access_token: Union[str, None] = get_access_token_from_cookie(request)
     if access_token is None:
         if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
                 request.method()) == &#39;get&#39;:
+            log_debug_message(
+                &#34;getSession: Returning try refresh token because access token from cookies is undefined&#34;
+            )
             raise_try_refresh_token_exception(
                 &#39;Access token has expired. Please call the refresh API&#39;)
         return None
     anti_csrf_token = get_anti_csrf_header(request)
     if anti_csrf_check is None:
         anti_csrf_check = normalise_http_method(request.method()) != &#39;get&#39;
+
+    log_debug_message(&#34;getSession: Value of doAntiCsrfCheck is: %s&#34;, str(anti_csrf_check))
     new_session = await session_functions.get_session(self, access_token, anti_csrf_token, anti_csrf_check,
                                                       get_rid_header(request) is not None)
     if &#39;accessToken&#39; in new_session:
@@ -680,6 +723,8 @@ inheritance.</p></div>
 
     if &#39;accessToken&#39; in new_session:
         session.new_access_token_info = new_session[&#39;accessToken&#39;]
+
+    log_debug_message(&#34;getSession: Success!&#34;)
     request.set_session(session)
     return request.get_session()</code></pre>
 </details>
@@ -707,15 +752,18 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt; SessionContainer:
+    log_debug_message(&#34;refreshSession: Started&#34;)
     if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
         request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
     id_refresh_token = get_id_refresh_token_from_cookie(request)
     if id_refresh_token is None:
+        log_debug_message(&#34;refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;)
         raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the request &#39;
                                      &#39;as cookies?&#39;, False)
     refresh_token = get_refresh_token_from_cookie(request)
     if refresh_token is None:
+        log_debug_message(&#34;refreshSession: UNAUTHORISED because refresh token from cookies is undefined&#34;)
         raise_unauthorised_exception(&#39;Refresh token not found. Are you sending the refresh token in the &#39;
                                      &#39;request as a cookie?&#39;)
     anti_csrf_token = get_anti_csrf_header(request)
@@ -731,8 +779,9 @@ inheritance.</p></div>
     session.new_id_refresh_token_info = id_refresh_token
     if &#39;antiCsrfToken&#39; in new_session and new_session[&#39;antiCsrfToken&#39;] is not None:
         session.new_anti_csrf_token = new_session[&#39;antiCsrfToken&#39;]
-    request.set_session(session)
 
+    log_debug_message(&#34;refreshSession: Success!&#34;)
+    request.set_session(session)
     return request.get_session()</code></pre>
 </details>
 </dd>
