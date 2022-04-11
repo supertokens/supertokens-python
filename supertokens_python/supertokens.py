@@ -181,12 +181,12 @@ class Supertokens:
                 environ['SUPERTOKENS_ENV'] != 'testing')
 
         if telemetry:
+            loop = asyncio.get_event_loop()
             if self.app_info.framework.lower(
             ) == 'flask' or self.app_info.framework.lower() == 'django':
-                loop = asyncio.get_event_loop()
                 loop.run_until_complete(self.send_telemetry())
             else:
-                asyncio.create_task(self.send_telemetry())
+                loop.create_task(self.send_telemetry())
 
     async def send_telemetry(self):
         try:
