@@ -1,6 +1,6 @@
 from django.urls import path
 
-from tests.frontendIntegration.django3x.polls import views
+from . import views
 
 urlpatterns = [  # type: ignore
     path('index.html', views.send_file, name='index.html'),  # type: ignore

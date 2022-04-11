@@ -37,7 +37,7 @@ class UserMetadataConfig:
         self.override = override
 
 
-def validate_and_normalise_user_input(recipe: UserMetadataRecipe, app_info: AppInfo,
+def validate_and_normalise_user_input(_recipe: UserMetadataRecipe, _app_info: AppInfo,
                                       override: Union[InputOverrideConfig, None] = None) -> UserMetadataConfig:
     if override is None:
         override = InputOverrideConfig()
