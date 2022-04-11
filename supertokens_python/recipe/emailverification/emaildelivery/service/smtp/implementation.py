@@ -1,6 +1,6 @@
 
 
-from typing import Any, Awaitable, Dict
+from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.service.smtp import (
     GetContentResult, ServiceInterface, Transporter, TypeInputSendRawEmailFrom)
@@ -15,7 +15,7 @@ class DefaultServiceImplementation(ServiceInterface[TypeEmailVerificationEmailDe
         self.transporter = transporter
 
     async def send_raw_email(self, get_content_result: GetContentResult, config_from: TypeInputSendRawEmailFrom, user_context: Dict[str, Any]) -> None:
-        self.transporter.send_email(config_from)
+        self.transporter.send_email(config_from, get_content_result, user_context)
 
     def get_content(self, input: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
         return getEmailVerifyEmailContent(input)

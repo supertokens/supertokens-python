@@ -13,8 +13,9 @@
 # under the License.
 
 
+import smtplib
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Callable, Dict, Generic, TypeVar, Union
+from typing import Any, Callable, Dict, Generic, TypeVar, Union
 
 from ..types import EmailDeliveryInterface
 
@@ -90,15 +91,21 @@ class Transporter:
     def __init__(self, smtpSettings: SMTPServiceConfig) -> None:
         self.smtpSettings = smtpSettings
 
-    def send_email(self, config: Any) -> None:
-        print(config)
+    def send_email(self, config_from: TypeInputSendRawEmailFrom, get_content_result: GetContentResult, user_context: Dict[str, Any]) -> None:
+        print(config_from)
+        try:
+            smtp = smtplib.SMTP(self.smtpSettings.host, self.smtpSettings.port)
+            smtp.starttls()
+            if self.smtpSettings.auth:
+                smtp.login(self.smtpSettings.auth.user, self.smtpSettings.auth.password)
+
+            smtp.sendmail(config_from.email, get_content_result.to_email, get_content_result.body)
+            smtp.quit()
+        except Exception as _:
+            pass
 
 
 TypeGetDefaultEmailServiceImpl = Callable[[Transporter, TypeInputSendRawEmailFrom], ServiceInterface[_T]]
-
-# import smtplib
-# from functools import partial
-
 
 class SMTPEmailDeliveryImplementation(EmailDeliveryInterface[_T]):
     def __init__(self, service_impl: ServiceInterface[_T], send_raw_email_from: TypeInputSendRawEmailFrom) -> None:
