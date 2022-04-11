@@ -5,7 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
-- bug fix in `default_create_and_send_custom_email` for emailverification recipe
+
+## [0.6.4] - 2022-04-11
+- bug fix in `default_create_and_send_custom_email` for emailverification recipe where we were not sending the email if env var was not set.
+- Fix telemetry issues related to asyncio when using FastAPI. Related issue: https://github.com/supertokens/supertokens-core/issues/421
 
 ## [0.6.3] - 2022-04-09
 - Setup logging for easier debugging
