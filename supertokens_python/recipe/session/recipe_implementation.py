@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
 
+from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 from supertokens_python.utils import (FRAMEWORKS, execute_in_background,
@@ -130,25 +131,35 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
                           session_required: bool, user_context: Dict[str, Any]) -> Union[SessionContainer, None]:
+        log_debug_message("getSession: Started")
         if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
+
+        log_debug_message("getSession: rid in header: %s", str(frontend_has_interceptor(request)))
+        log_debug_message("getSession: request method: %s", request.method())
 
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
             if not session_required:
+                log_debug_message("getSession: returning None because idRefreshToken is undefined and session_required is false")
                 return None
-            raise_unauthorised_exception('Session does not exist. Are you sending the session tokens in the '
-                                         'request as cookies?', False)
+            log_debug_message("getSession: UNAUTHORISED because idRefreshToken from cookies is undefined")
+            raise_unauthorised_exception('Session does not exist. Are you sending the session tokens in the request as cookies?', False)
         access_token: Union[str, None] = get_access_token_from_cookie(request)
         if access_token is None:
             if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
                     request.method()) == 'get':
+                log_debug_message(
+                    "getSession: Returning try refresh token because access token from cookies is undefined"
+                )
                 raise_try_refresh_token_exception(
                     'Access token has expired. Please call the refresh API')
             return None
         anti_csrf_token = get_anti_csrf_header(request)
         if anti_csrf_check is None:
             anti_csrf_check = normalise_http_method(request.method()) != 'get'
+
+        log_debug_message("getSession: Value of doAntiCsrfCheck is: %s", str(anti_csrf_check))
         new_session = await session_functions.get_session(self, access_token, anti_csrf_token, anti_csrf_check,
                                                           get_rid_header(request) is not None)
         if 'accessToken' in new_session:
@@ -161,19 +172,24 @@ class RecipeImplementation(RecipeInterface):
 
         if 'accessToken' in new_session:
             session.new_access_token_info = new_session['accessToken']
+
+        log_debug_message("getSession: Success!")
         request.set_session(session)
         return request.get_session()
 
     async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -> SessionContainer:
+        log_debug_message("refreshSession: Started")
         if not hasattr(request, 'wrapper_used') or not request.wrapper_used:
             request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
+            log_debug_message("refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined")
             raise_unauthorised_exception('Session does not exist. Are you sending the session tokens in the request '
                                          'as cookies?', False)
         refresh_token = get_refresh_token_from_cookie(request)
         if refresh_token is None:
+            log_debug_message("refreshSession: UNAUTHORISED because refresh token from cookies is undefined")
             raise_unauthorised_exception('Refresh token not found. Are you sending the refresh token in the '
                                          'request as a cookie?')
         anti_csrf_token = get_anti_csrf_header(request)
@@ -189,8 +205,9 @@ class RecipeImplementation(RecipeInterface):
         session.new_id_refresh_token_info = id_refresh_token
         if 'antiCsrfToken' in new_session and new_session['antiCsrfToken'] is not None:
             session.new_anti_csrf_token = new_session['antiCsrfToken']
-        request.set_session(session)
 
+        log_debug_message("refreshSession: Success!")
+        request.set_session(session)
         return request.get_session()
 
     async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -> bool:

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>supertokens_python.recipe.emailpassword.api.signup API documentation</title>
+<title>supertokens_python.logger API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>supertokens_python.recipe.emailpassword.api.signup</code></h1>
+<h1 class="title">Module <code>supertokens_python.logger</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -39,31 +39,65 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+import json
+import logging
+from datetime import datetime
+from os import getenv, path
+from typing import Union
 
-if TYPE_CHECKING:
-    from supertokens_python.recipe.emailpassword.interfaces import APIOptions, APIInterface
+from .constants import VERSION
 
-from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.utils import send_200_response
+NAMESPACE = &#34;com.supertokens&#34;
+DEBUG_ENV_VAR = &#34;SUPERTOKENS_DEBUG&#34;
 
-from .utils import validate_form_fields_or_throw_error
+supertokens_dir = path.dirname(__file__)
+
+# Configure logger
+_logger = logging.getLogger(NAMESPACE)
+debug_env = getenv(DEBUG_ENV_VAR, &#34;&#34;).lower()
+if debug_env == &#34;1&#34;:
+    _logger.setLevel(logging.DEBUG)
 
 
-async def handle_sign_up_api(api_implementation: APIInterface, api_options: APIOptions):
-    if api_implementation.disable_sign_up_post:
-        return None
-    body = await api_options.request.json()
-    if body is None:
-        raise_bad_input_exception(&#39;Please provide a JSON body&#39;)
-    form_fields_raw: Any = body[&#39;formFields&#39;] if &#39;formFields&#39; in body else []
-    form_fields = await validate_form_fields_or_throw_error(api_options.config.sign_up_feature.form_fields,
-                                                            form_fields_raw)
-    response = await api_implementation.sign_up_post(form_fields, api_options, {})
+def _get_log_timestamp() -&gt; str:
+    return datetime.utcnow().isoformat()[:-3] + &#34;Z&#34;
 
-    return send_200_response(response.to_json(), api_options.response)</code></pre>
+
+class CustomStreamHandler(logging.StreamHandler):  # type: ignore
+    def emit(self, record: logging.LogRecord):
+        relative_path = path.relpath(record.pathname, supertokens_dir)
+
+        record.msg = json.dumps({
+            &#34;t&#34;: _get_log_timestamp(),
+            &#34;sdkVer&#34;: VERSION,
+            &#34;message&#34;: record.msg,
+            &#34;file&#34;: f&#39;{relative_path}:{record.lineno}&#39;
+        })
+
+        return super().emit(record)
+
+
+# Add stream handler and format
+streamHandler = CustomStreamHandler()
+streamFormatter = logging.Formatter(&#34;{name} {message}\n&#34;, style=&#34;{&#34;)
+streamHandler.setFormatter(streamFormatter)
+_logger.addHandler(streamHandler)
+
+
+# The debug logger can be used like this:
+# log_debug_message(&#34;Hello&#34;)
+# Output log format:
+# com.supertokens {&#34;t&#34;: &#34;2022-03-24T06:28:33.659Z&#34;, &#34;sdkVer&#34;: &#34;0.5.1&#34;, &#34;message&#34;: &#34;Hello&#34;, &#34;file&#34;: &#34;logger.py:73&#34;}
+
+# Export logger.debug as log_debug_message function
+log_debug_message = _logger.debug
+
+
+def get_maybe_none_as_str(o: Union[str, None]) -&gt; str:
+    if o is None:
+        return &#34;None&#34;
+    return o</code></pre>
 </details>
 </section>
 <section>
@@ -73,8 +107,8 @@ async def handle_sign_up_api(api_implementation: APIInterface, api_options: APIO
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.recipe.emailpassword.api.signup.handle_sign_up_api"><code class="name flex">
-<span>async def <span class="ident">handle_sign_up_api</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions)</span>
+<dt id="supertokens_python.logger.get_maybe_none_as_str"><code class="name flex">
+<span>def <span class="ident">get_maybe_none_as_str</span></span>(<span>o: Optional[str]) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -82,23 +116,85 @@ async def handle_sign_up_api(api_implementation: APIInterface, api_options: APIO
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def handle_sign_up_api(api_implementation: APIInterface, api_options: APIOptions):
-    if api_implementation.disable_sign_up_post:
-        return None
-    body = await api_options.request.json()
-    if body is None:
-        raise_bad_input_exception(&#39;Please provide a JSON body&#39;)
-    form_fields_raw: Any = body[&#39;formFields&#39;] if &#39;formFields&#39; in body else []
-    form_fields = await validate_form_fields_or_throw_error(api_options.config.sign_up_feature.form_fields,
-                                                            form_fields_raw)
-    response = await api_implementation.sign_up_post(form_fields, api_options, {})
-
-    return send_200_response(response.to_json(), api_options.response)</code></pre>
+<pre><code class="python">def get_maybe_none_as_str(o: Union[str, None]) -&gt; str:
+    if o is None:
+        return &#34;None&#34;
+    return o</code></pre>
 </details>
 </dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.logger.CustomStreamHandler"><code class="flex name class">
+<span>class <span class="ident">CustomStreamHandler</span></span>
+<span>(</span><span>stream=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A handler class which writes logging records, appropriately formatted,
+to a stream. Note that this class does not close the stream, as
+sys.stdout or sys.stderr may be used.</p>
+<p>Initialize the handler.</p>
+<p>If stream is not specified, sys.stderr is used.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CustomStreamHandler(logging.StreamHandler):  # type: ignore
+    def emit(self, record: logging.LogRecord):
+        relative_path = path.relpath(record.pathname, supertokens_dir)
+
+        record.msg = json.dumps({
+            &#34;t&#34;: _get_log_timestamp(),
+            &#34;sdkVer&#34;: VERSION,
+            &#34;message&#34;: record.msg,
+            &#34;file&#34;: f&#39;{relative_path}:{record.lineno}&#39;
+        })
+
+        return super().emit(record)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>logging.StreamHandler</li>
+<li>logging.Handler</li>
+<li>logging.Filterer</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.logger.CustomStreamHandler.emit"><code class="name flex">
+<span>def <span class="ident">emit</span></span>(<span>self, record: logging.LogRecord)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Emit a record.</p>
+<p>If a formatter is specified, it is used to format the record.
+The record is then written to the stream with a trailing newline.
+If
+exception information is present, it is formatted using
+traceback.print_exception and appended to the stream.
+If the stream
+has an 'encoding' attribute, it is used to determine how to do the
+output to the stream.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def emit(self, record: logging.LogRecord):
+    relative_path = path.relpath(record.pathname, supertokens_dir)
+
+    record.msg = json.dumps({
+        &#34;t&#34;: _get_log_timestamp(),
+        &#34;sdkVer&#34;: VERSION,
+        &#34;message&#34;: record.msg,
+        &#34;file&#34;: f&#39;{relative_path}:{record.lineno}&#39;
+    })
+
+    return super().emit(record)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -109,12 +205,22 @@ async def handle_sign_up_api(api_implementation: APIInterface, api_options: APIO
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="supertokens_python.recipe.emailpassword.api" href="index.html">supertokens_python.recipe.emailpassword.api</a></code></li>
+<li><code><a title="supertokens_python" href="index.html">supertokens_python</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.emailpassword.api.signup.handle_sign_up_api" href="#supertokens_python.recipe.emailpassword.api.signup.handle_sign_up_api">handle_sign_up_api</a></code></li>
+<li><code><a title="supertokens_python.logger.get_maybe_none_as_str" href="#supertokens_python.logger.get_maybe_none_as_str">get_maybe_none_as_str</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.logger.CustomStreamHandler" href="#supertokens_python.logger.CustomStreamHandler">CustomStreamHandler</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.logger.CustomStreamHandler.emit" href="#supertokens_python.logger.CustomStreamHandler.emit">emit</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

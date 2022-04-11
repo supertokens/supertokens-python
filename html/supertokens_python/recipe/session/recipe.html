@@ -58,6 +58,7 @@ if TYPE_CHECKING:
 
 from supertokens_python.exceptions import (SuperTokensError,
                                            raise_general_exception)
+from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
@@ -98,6 +99,16 @@ class SessionRecipe(RecipeModule):
                                                         error_handlers,
                                                         override,
                                                         jwt)
+        log_debug_message(&#34;session init: anti_csrf: %s&#34;, self.config.anti_csrf)
+        if self.config.cookie_domain is not None:
+            log_debug_message(&#34;session init: cookie_domain: %s&#34;, self.config.cookie_domain)
+        else:
+            log_debug_message(&#34;session init: cookie_domain: None&#34;)
+        log_debug_message(&#34;session init: cookie_same_site: %s&#34;, self.config.cookie_same_site)
+        log_debug_message(&#34;session init: cookie_secure: %s&#34;, str(self.config.cookie_secure))
+        log_debug_message(&#34;session init: refresh_token_path: %s &#34;, self.config.refresh_token_path.get_as_string_dangerous())
+        log_debug_message(&#34;session init: session_expired_status_code: %s&#34;, str(self.config.session_expired_status_code))
+
         if self.config.jwt.enable:
             openid_feature_override = None
             if override is not None:
@@ -161,9 +172,12 @@ class SessionRecipe(RecipeModule):
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -&gt; BaseResponse:
         if isinstance(err, UnauthorisedError):
+            log_debug_message(&#34;errorHandler: returning UNAUTHORISED&#34;)
             return await self.config.error_handlers.on_unauthorised(self, err.clear_cookies, request, str(err), response)
         if isinstance(err, TokenTheftError):
+            log_debug_message(&#34;errorHandler: returning TOKEN_THEFT_DETECTED&#34;)
             return await self.config.error_handlers.on_token_theft_detected(self, request, err.session_handle, err.user_id, response)
+        log_debug_message(&#34;errorHandler: returning TRY_REFRESH_TOKEN&#34;)
         return await self.config.error_handlers.on_try_refresh_token(request, str(err), response)
 
     def get_all_cors_headers(self) -&gt; List[str]:
@@ -276,6 +290,16 @@ inheritance.</p></div>
                                                         error_handlers,
                                                         override,
                                                         jwt)
+        log_debug_message(&#34;session init: anti_csrf: %s&#34;, self.config.anti_csrf)
+        if self.config.cookie_domain is not None:
+            log_debug_message(&#34;session init: cookie_domain: %s&#34;, self.config.cookie_domain)
+        else:
+            log_debug_message(&#34;session init: cookie_domain: None&#34;)
+        log_debug_message(&#34;session init: cookie_same_site: %s&#34;, self.config.cookie_same_site)
+        log_debug_message(&#34;session init: cookie_secure: %s&#34;, str(self.config.cookie_secure))
+        log_debug_message(&#34;session init: refresh_token_path: %s &#34;, self.config.refresh_token_path.get_as_string_dangerous())
+        log_debug_message(&#34;session init: session_expired_status_code: %s&#34;, str(self.config.session_expired_status_code))
+
         if self.config.jwt.enable:
             openid_feature_override = None
             if override is not None:
@@ -339,9 +363,12 @@ inheritance.</p></div>
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -&gt; BaseResponse:
         if isinstance(err, UnauthorisedError):
+            log_debug_message(&#34;errorHandler: returning UNAUTHORISED&#34;)
             return await self.config.error_handlers.on_unauthorised(self, err.clear_cookies, request, str(err), response)
         if isinstance(err, TokenTheftError):
+            log_debug_message(&#34;errorHandler: returning TOKEN_THEFT_DETECTED&#34;)
             return await self.config.error_handlers.on_token_theft_detected(self, request, err.session_handle, err.user_id, response)
+        log_debug_message(&#34;errorHandler: returning TRY_REFRESH_TOKEN&#34;)
         return await self.config.error_handlers.on_try_refresh_token(request, str(err), response)
 
     def get_all_cors_headers(self) -&gt; List[str]:
@@ -582,9 +609,12 @@ def reset():
 </summary>
 <pre><code class="python">async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -&gt; BaseResponse:
     if isinstance(err, UnauthorisedError):
+        log_debug_message(&#34;errorHandler: returning UNAUTHORISED&#34;)
         return await self.config.error_handlers.on_unauthorised(self, err.clear_cookies, request, str(err), response)
     if isinstance(err, TokenTheftError):
+        log_debug_message(&#34;errorHandler: returning TOKEN_THEFT_DETECTED&#34;)
         return await self.config.error_handlers.on_token_theft_detected(self, request, err.session_handle, err.user_id, response)
+    log_debug_message(&#34;errorHandler: returning TRY_REFRESH_TOKEN&#34;)
     return await self.config.error_handlers.on_try_refresh_token(request, str(err), response)</code></pre>
 </details>
 </dd>

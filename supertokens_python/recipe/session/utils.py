@@ -14,9 +14,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Union
-
-from typing_extensions import Literal
-
 from urllib.parse import urlparse
 
 from supertokens_python.exceptions import raise_general_exception
@@ -26,6 +23,7 @@ from supertokens_python.recipe.openid import \
     InputOverrideConfig as OpenIdInputOverrideConfig
 from supertokens_python.utils import is_an_ip_address, send_non_200_response
 from tldextract import extract  # type: ignore
+from typing_extensions import Literal
 
 from .constants import SESSION_REFRESH
 from .cookie_and_header import clear_cookies
@@ -38,6 +36,8 @@ if TYPE_CHECKING:
 
     from .interfaces import APIInterface, RecipeInterface
     from .recipe import SessionRecipe
+
+from supertokens_python.logger import log_debug_message
 
 
 def normalise_session_scope(session_scope: str) -> str:
@@ -121,6 +121,7 @@ class ErrorHandlers:
             result = await temp
         else:
             result = temp
+        log_debug_message("Clearing cookies because of TOKEN_THEFT_DETECTED response")
         clear_cookies(recipe, result)
         return result
 
@@ -141,6 +142,7 @@ class ErrorHandlers:
         else:
             result = temp
         if do_clear_cookies:
+            log_debug_message("Clearing cookies because of UNAUTHORISED response")
             clear_cookies(recipe, result)
         return result
 

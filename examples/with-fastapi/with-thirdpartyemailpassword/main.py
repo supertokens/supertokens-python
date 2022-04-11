@@ -1,15 +1,11 @@
 import os
-import typing
-from typing import Union
 
 import uvicorn  # type: ignore
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Response
+from fastapi import Depends, FastAPI
 from fastapi.responses import JSONResponse, PlainTextResponse
-from starlette.datastructures import Headers
 from starlette.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
-from starlette.types import ASGIApp
 from supertokens_python import (InputAppInfo, SupertokensConfig,
                                 get_all_cors_headers, init)
 from supertokens_python.framework.fastapi import get_middleware
@@ -44,7 +40,7 @@ init(
     ),
     app_info=InputAppInfo(
         app_name='Supertokens',
-        api_domain='0.0.0.0' + get_api_port(),
+        api_domain='http://localhost:' + get_api_port(),
         website_domain=get_website_domain()
     ),
     framework='fastapi',
@@ -110,31 +106,8 @@ def f_405(_, __: Exception):
     return PlainTextResponse('', status_code=404)
 
 
-class CustomCORSMiddleware(CORSMiddleware):
-    def __init__(
-        self,
-        app_: ASGIApp,
-        allow_origins: typing.Sequence[str] = (),
-        allow_methods: typing.Sequence[str] = ("GET",),
-        allow_headers: typing.Sequence[str] = (),
-        allow_credentials: bool = False,
-        allow_origin_regex: Union[str, None] = None,
-        expose_headers: typing.Sequence[str] = (),
-        max_age: int = 600,
-    ) -> None:
-        super().__init__(app_, allow_origins, allow_methods, allow_headers, allow_credentials, allow_origin_regex, expose_headers, max_age)  # type: ignore
-
-    def preflight_response(self, request_headers: Headers) -> Response:
-        result: Response = super().preflight_response(request_headers)
-        if result.status_code == 200:  # type: ignore
-            result.headers.__delitem__('content-type')
-            result.headers.__delitem__('content-length')
-            return Response(status_code=204, headers=dict(result.headers))
-        return result
-
-
-app = CustomCORSMiddleware(  # type: ignore
-    app_=app,
+app = CORSMiddleware(  # type: ignore
+    app=app,
     allow_origins=[
         get_website_domain()
     ],
