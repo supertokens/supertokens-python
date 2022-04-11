@@ -13,6 +13,8 @@
 # under the License.
 
 
+from supertokens_python.recipe.emailpassword.emaildelivery.service.smtp import (
+    EmailDeliverySMTPConfig, SMTPService)
 from unittest.mock import MagicMock, patch
 
 from fastapi import FastAPI
@@ -21,6 +23,10 @@ from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.ingredients.emaildelivery.service.smtp import \
+    SMTPServiceConfig
+from supertokens_python.ingredients.emaildelivery.types import \
+    EmailDeliveryConfig
 from supertokens_python.recipe import emailpassword, session
 
 from tests.utils import clean_st, reset, setup_st, sign_up_request, start_st
@@ -134,3 +140,54 @@ async def test_email_password_email_delivery_backward_compatibility(mock_default
 
     # Send password reset email to the user with the default method (backwardCompatibility)
     mock_create_and_send_custom_email.assert_called_once()
+
+
+@mark.asyncio
+async def test_email_password_email_delivery_smtp(driver_config_client: TestClient):
+    service = SMTPService(
+        EmailDeliverySMTPConfig(
+            smtpSettings=SMTPServiceConfig(
+                host='0.0.0.0',
+                email_from=SMTPServiceConfigFrom(
+                    'Kumar Shivendu',
+                    "shivendu@it.com"
+                ),
+                port=5000,
+            )
+        )
+    )
+    emc = EmailDeliveryConfig(service, override=None)
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[
+            emailpassword.init(email_delivery=emc),
+            session.init()
+        ]
+    )
+    start_st()
+
+    sign_up_request(
+        driver_config_client,
+        "random@gmail.com",
+        "validpass123"
+    )
+
+    res = driver_config_client.post(
+        url="/auth/user/password/reset/token",
+        json={
+            'formFields':
+                [{
+                    "id": "email",
+                    "value": "random@gmail.com"
+                }]
+        }
+    )
+    assert res.status_code == 200
