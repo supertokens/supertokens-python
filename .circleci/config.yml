@@ -67,7 +67,7 @@ jobs:
       - checkout
       - run:
           name: Generate config
-          command: cd .circleci && ./generateConfig.sh
+          command: cd .circleci && ./generateConfigAuthReactFastAPI.sh
       - continuation/continue:
           configuration_path: .circleci/config_continue_authreact_fastapi.yml
   test-authreact-flask:
