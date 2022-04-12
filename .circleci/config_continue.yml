@@ -213,29 +213,43 @@ workflows:
             branches:
               ignore: /.*/
       - test-authreact-fastapi:
+          requires:
+            - test-dev-tag-as-not-passed
           context:
             - slack-notification
           filters:
+            tags:
+              only: /dev-v[0-9]+(\.[0-9]+)*/
             branches:
-              only: auth-react-tests-parallel
+              ignore: /.*/
           matrix:
             parameters:
               fdi-version: placeholder
       - test-authreact-flask:
+          requires:
+            - test-dev-tag-as-not-passed
           context:
             - slack-notification
           filters:
             branches:
-              only: auth-react-tests-parallel
+              tags:
+                only: /dev-v[0-9]+(\.[0-9]+)*/
+              branches:
+                ignore: /.*/
           matrix:
             parameters:
               fdi-version: placeholder
       - test-authreact-django:
+          requires:
+            - test-dev-tag-as-not-passed
           context:
             - slack-notification
           filters:
             branches:
-              only: auth-react-tests-parallel
+              tags:
+                only: /dev-v[0-9]+(\.[0-9]+)*/
+              branches:
+                ignore: /.*/
           matrix:
             parameters:
               fdi-version: placeholder
