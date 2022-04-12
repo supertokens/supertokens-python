@@ -165,8 +165,6 @@ workflows:
             branches:
               ignore: /.*/
       - test-authreact-fastapi:
-          requires:
-            - test-dev-tag-as-not-passed
           context:
             - slack-notification
           filters:
