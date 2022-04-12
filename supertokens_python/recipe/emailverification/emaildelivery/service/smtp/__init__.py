@@ -1,8 +1,8 @@
 from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.service.smtp import (
-    EmailDeliverySMTPConfig, ServiceInterface, Transporter,
-    TypeInputSendRawEmailFrom, getEmailServiceImplementation)
+    EmailDeliverySMTPConfig, ServiceInterface, SMTPServiceConfigFrom,
+    Transporter, getEmailServiceImplementation)
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.recipe.emailverification.recipe import \
@@ -22,7 +22,7 @@ class SMTPService(EmailDeliveryInterface[TypeEmailVerificationEmailDeliveryInput
 
     async def send_email(self, email_input: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
         content = self.serviceImpl.get_content(email_input, user_context)
-        send_raw_email_from = TypeInputSendRawEmailFrom(
+        send_raw_email_from = SMTPServiceConfigFrom(
             self.config.smtpSettings.email_from.name,
             self.config.smtpSettings.email_from.email
         )

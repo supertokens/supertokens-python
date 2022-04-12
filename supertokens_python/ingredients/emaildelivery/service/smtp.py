@@ -17,8 +17,6 @@ import smtplib
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Generic, TypeVar, Union
 
-from ..types import EmailDeliveryInterface
-
 _T = TypeVar('_T')
 
 
@@ -54,27 +52,17 @@ class GetContentResult:
         self.to_email = to_email
 
 
-class TypeInputSendRawEmailFrom:
-    def __init__(self, name: str, email: str) -> None:
-        self.name = name
-        self.email = email
-
-
-class TypeGetContentInput(Generic[_T]):
-    user_context: Dict[str, Any]
-
-
 class ServiceInterface(ABC, Generic[_T]):
     @abstractmethod
     async def send_raw_email(self,
                              get_content_result: GetContentResult,
-                             config_from: TypeInputSendRawEmailFrom,
+                             config_from: SMTPServiceConfigFrom,
                              user_context: Dict[str, Any]
                              ) -> None:
         pass
 
     @abstractmethod
-    def get_content(self, input: _T, user_context: Dict[str, Any]) -> GetContentResult:
+    def get_content(self, email_input: _T, user_context: Dict[str, Any]) -> GetContentResult:
         pass
 
 
@@ -91,8 +79,8 @@ class Transporter:
     def __init__(self, smtpSettings: SMTPServiceConfig) -> None:
         self.smtpSettings = smtpSettings
 
-    def send_email(self, config_from: TypeInputSendRawEmailFrom, get_content_result: GetContentResult, user_context: Dict[str, Any]) -> None:
-        print(config_from)
+    def send_email(self, config_from: SMTPServiceConfigFrom, get_content_result: GetContentResult,
+                   _: Dict[str, Any]) -> None:
         try:
             smtp = smtplib.SMTP(self.smtpSettings.host, self.smtpSettings.port)
             smtp.starttls()
@@ -101,37 +89,20 @@ class Transporter:
 
             smtp.sendmail(config_from.email, get_content_result.to_email, get_content_result.body)
             smtp.quit()
-        except Exception as _:
+        except Exception:
             pass
 
 
-TypeGetDefaultEmailServiceImpl = Callable[[Transporter, TypeInputSendRawEmailFrom], ServiceInterface[_T]]
-
-class SMTPEmailDeliveryImplementation(EmailDeliveryInterface[_T]):
-    def __init__(self, service_impl: ServiceInterface[_T], send_raw_email_from: TypeInputSendRawEmailFrom) -> None:
-        self.service_impl = service_impl
-        self.send_raw_email_from = send_raw_email_from
-
-    async def send_email(self, email_input: _T, user_context: Dict[str, Any]) -> None:
-        content = self.service_impl.get_content(email_input, user_context)
-        await self.service_impl.send_raw_email(content, self.send_raw_email_from, user_context)
+TypeGetDefaultEmailServiceImpl = Callable[[Transporter, SMTPServiceConfigFrom], ServiceInterface[_T]]
 
 
 def getEmailServiceImplementation(
     config: EmailDeliverySMTPConfig[_T],
     getDefaultEmailServiceImplementation: TypeGetDefaultEmailServiceImpl[_T]
 ) -> ServiceInterface[_T]:
-
-    # smtp_server = smtplib.SMTP_SSL(config.smtpSettings.host, config.smtpSettings.port)
-    # smtp_server.ehlo()
-    # if config.smtpSettings.auth:
-    #     smtp_server.login(config.smtpSettings.auth.user, config.smtpSettings.auth.password)
-
     transporter = Transporter(config.smtpSettings)
 
-    # partial_smtp = partial(smtp_server.sendmail, from_addr=config.smtpSettings.email_from.email)
-
-    send_raw_email_from = TypeInputSendRawEmailFrom(
+    send_raw_email_from = SMTPServiceConfigFrom(
         config.smtpSettings.email_from.name,
         config.smtpSettings.email_from.email
     )
@@ -139,19 +110,4 @@ def getEmailServiceImplementation(
     default_impl = getDefaultEmailServiceImplementation(transporter, send_raw_email_from)
     service_impl = default_impl if config.override is None else config.override(default_impl)
 
-    # emi = SMTPEmailDeliveryImplementation(, send_raw_email_from)
-
     return service_impl
-
-    # partial_smtp(to_addrs=config.smtpSettings.email_from.email, msg=email_text)
-    # smtp_server.close()
-
-    # input_send_raw_email = TypeInputSendRawEmailFrom(name=config_from['name'], email=config_from['email'])
-    # default_impl = getDefaultEmailServiceImplementation(partial_smtp, input_send_raw_email)
-    # impl = config.override if config.override is not None else default_impl
-
-# smtp_service_config = SMTPServiceConfig(
-#     host='0.0.0.0',
-#     email_from=SMTPServiceConfigFrom(name='VRAI Labs', email='vrailabs@gmail.com'),
-#     port=587,
-# )

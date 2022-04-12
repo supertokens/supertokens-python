@@ -229,8 +229,8 @@ class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse(
 
 
 class TypeEmailVerificationEmailDeliveryInputUser:
-    def __init__(self, id: str, email: str):
-        self.id = id
+    def __init__(self, user_id: str, email: str):
+        self.id = user_id
         self.email = email
 
 
