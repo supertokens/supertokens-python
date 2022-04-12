@@ -42,7 +42,6 @@ if TYPE_CHECKING:
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.recipe.session import SessionContainer
 
-import asyncio
 import json
 from os import environ
 
@@ -195,12 +194,7 @@ class Supertokens:
                 environ['SUPERTOKENS_ENV'] != 'testing')
 
         if telemetry:
-            if self.app_info.framework.lower(
-            ) == 'flask' or self.app_info.framework.lower() == 'django':
-                loop = asyncio.get_event_loop()
-                loop.run_until_complete(self.send_telemetry())
-            else:
-                asyncio.create_task(self.send_telemetry())
+            _ = self.send_telemetry()
 
     async def send_telemetry(self):
         try:

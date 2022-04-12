@@ -70,7 +70,6 @@ if TYPE_CHECKING:
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.recipe.session import SessionContainer
 
-import asyncio
 import json
 from os import environ
 
@@ -223,12 +222,7 @@ class Supertokens:
                 environ[&#39;SUPERTOKENS_ENV&#39;] != &#39;testing&#39;)
 
         if telemetry:
-            if self.app_info.framework.lower(
-            ) == &#39;flask&#39; or self.app_info.framework.lower() == &#39;django&#39;:
-                loop = asyncio.get_event_loop()
-                loop.run_until_complete(self.send_telemetry())
-            else:
-                asyncio.create_task(self.send_telemetry())
+            _ = self.send_telemetry()
 
     async def send_telemetry(self):
         try:
@@ -661,12 +655,7 @@ class Supertokens:
                 environ[&#39;SUPERTOKENS_ENV&#39;] != &#39;testing&#39;)
 
         if telemetry:
-            if self.app_info.framework.lower(
-            ) == &#39;flask&#39; or self.app_info.framework.lower() == &#39;django&#39;:
-                loop = asyncio.get_event_loop()
-                loop.run_until_complete(self.send_telemetry())
-            else:
-                asyncio.create_task(self.send_telemetry())
+            _ = self.send_telemetry()
 
     async def send_telemetry(self):
         try:

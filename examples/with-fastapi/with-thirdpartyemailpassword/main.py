@@ -19,7 +19,6 @@ load_dotenv()
 
 app = FastAPI(debug=True)
 app.add_middleware(get_middleware())
-os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 
 def get_api_port():
