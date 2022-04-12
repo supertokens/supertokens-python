@@ -33,7 +33,7 @@ from .recipe.session.cookie_and_header import (
     attach_id_refresh_token_to_cookie_and_header,
     attach_refresh_token_to_cookie, clear_cookies, set_front_token_in_headers)
 from .types import ThirdPartyInfo, User, UsersResponse
-from .utils import (compare_version, get_rid_from_request,
+from .utils import (get_max_version, get_rid_from_request,
                     normalise_http_method, send_non_200_response)
 
 if TYPE_CHECKING:
@@ -280,7 +280,7 @@ class Supertokens:
 
         cdi_version = await querier.get_api_version()
 
-        if compare_version(cdi_version, "2.10") == cdi_version:
+        if get_max_version(cdi_version, "2.10") == cdi_version:
             await querier.send_post_request(NormalisedURLPath(USER_DELETE), {
                 "userId": user_id
             })

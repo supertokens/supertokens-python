@@ -28,7 +28,7 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (create_new_session,
                                                        get_session,
                                                        refresh_session)
-from supertokens_python.utils import compare_version
+from supertokens_python.utils import get_max_version
 from tests.utils import (clean_st, extract_all_cookies, reset, setup_st,
                          sign_up_request, start_st)
 
@@ -574,7 +574,7 @@ async def test_delete_user(driver_config_client: TestClient):
 
     version = await Querier.get_instance().get_api_version()
 
-    if compare_version(version, "2.10") == version:
+    if get_max_version(version, "2.10") == version:
         await delete_user(dict_response["user"]["id"])
         user_count = await get_user_count()
         assert user_count == 0

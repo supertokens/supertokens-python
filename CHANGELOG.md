@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- Renamed `compare_version` to `get_max_version` for readability
 
 ## [0.6.3] - 2022-04-09
 - Setup logging for easier debugging

@@ -73,12 +73,12 @@ def find_max_version(
     max_v = versions[0]
     for i in range(1, len(versions)):
         version = versions[i]
-        max_v = compare_version(max_v, version)
+        max_v = get_max_version(max_v, version)
 
     return max_v
 
 
-def compare_version(v1: str, v2: str) -> str:
+def get_max_version(v1: str, v2: str) -> str:
     v1_split = v1.split('.')
     v2_split = v2.split('.')
     max_loop = min(len(v1_split), len(v2_split))
