@@ -6,4 +6,4 @@ if [ -z "$SUPERTOKENS_API_KEY" ]; then
     exit 1;
 fi
 
-sed -i -e 's/fdi-version: placeholder/fdi-version: '`printf "%q" $frontendDriverArray`'/' config_continue_authreact_fastapi.yml
+sed -i -e 's/fdi-version: placeholder/fdi-version: '`printf "%q" $frontendDriverArray`'/' config_continue.yml
