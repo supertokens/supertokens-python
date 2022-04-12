@@ -69,7 +69,7 @@ async def test_that_usermetadata_recipe_works_as_expected():
     assert get_metadata_res.metadata == TEST_METADATA
 
     # Overriding updates with shallow merge:
-    # Passing {'role': 'None', ...} should remove 'role' from the metdata
+    # Passing {'role': None, ...} should remove 'role' from the metdata
     TEST_METADATA['role'] = None
     update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA, {})
     TEST_METADATA.pop('role')
