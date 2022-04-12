@@ -81,14 +81,12 @@ setup(
     install_requires=[
         "PyJWT>=2.0.0 ,<2.4.0",
         "httpx>=0.15.0 ,<0.23.0",
-        "pycryptodome==3.10.*",
-        'jsonschema==3.2.0',
-        "tldextract==3.1.0",
-        "asgiref==3.4.1",
-        'typing_extensions==4.1.1',
-        'Deprecated==1.2.13',
-        'cryptography==35.0',
-        'phonenumbers==8.12',
+        "pycryptodome>=3.10.0 ,<3.15.0",
+        "tldextract>=3.1.0",
+        "asgiref>=3.4.1",
+        'typing_extensions>=4.1.1', # We only use Literal from typing_extensions. It's here to stay.
+        'cryptography>=3.3.1', # Its version depends on PyJWT/setup.cfg
+        'phonenumbers>=8.12 ,<8.13',
         'Werkzeug>=2.0 ,<2.1.0' # flask depends on this and flask has > '2.0' for this. However, the version before 2.1.0 breaks our lib.
     ],
     python_requires='>=3.7',
