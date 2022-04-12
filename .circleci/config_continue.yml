@@ -231,11 +231,10 @@ workflows:
           context:
             - slack-notification
           filters:
+            tags:
+              only: /dev-v[0-9]+(\.[0-9]+)*/
             branches:
-              tags:
-                only: /dev-v[0-9]+(\.[0-9]+)*/
-              branches:
-                ignore: /.*/
+              ignore: /.*/
           matrix:
             parameters:
               fdi-version: placeholder
@@ -245,11 +244,10 @@ workflows:
           context:
             - slack-notification
           filters:
+            tags:
+              only: /dev-v[0-9]+(\.[0-9]+)*/
             branches:
-              tags:
-                only: /dev-v[0-9]+(\.[0-9]+)*/
-              branches:
-                ignore: /.*/
+              ignore: /.*/
           matrix:
             parameters:
               fdi-version: placeholder
