@@ -7,7 +7,8 @@ fi
 frontendDriverVersion=$1
 frontendDriverVersion=`echo $frontendDriverVersion | tr -d '"'`
 if [[ $frontendDriverVersion == '1.0' ]]; then
-    mkdir ../test_report
+    mkdir ../../supertokens-auth-react
+    mkdir ../../supertokens-auth-react/test_report
     exit 0
 fi
 
@@ -93,7 +94,8 @@ if [[ $frontendDriverVersion == '1.3' || $frontendDriverVersion == '1.8' ]]; the
     # we skip this since the tests for auth-react here are not reliable due to race conditions...
 
     # we skip 1.8 since the SDK with just 1.8 doesn't have the right scripts
-    mkdir ../test_report
+    mkdir ../../supertokens-auth-react
+    mkdir ../../supertokens-auth-react/test_report
     exit 0
 else
     tries=1
@@ -114,7 +116,7 @@ else
             fi
         else
             rm -rf ../../supertokens-root
-            rm -rf ../../supertokens-auth-react
+            # we do not delete supertokens-auth-react here cause the test reports are generated in there.
             break
         fi
     done
