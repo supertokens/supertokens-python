@@ -18,6 +18,8 @@ jobs:
             - checkout
             - attach_workspace:
                   at: /
+            - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+            - run: make with-fastapi
             - run: (cd .circleci && ./authReactFastApi.sh << parameters.fdi-version >>)
             - run: ls -la test_report
             - store_test_results:
