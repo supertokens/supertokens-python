@@ -52,8 +52,8 @@ async def test_that_usermetadata_recipe_works_as_expected():
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if compare_version(version, '2.12.0') != '2.12.0':
-        # If the version less than 2.12.0, user metadata doesn't exist. So skip the test
+    if compare_version(version, '2.13.0') != version:
+        # If the version less than 2.13.0, user metadata doesn't exist. So skip the test
         return
 
     TEST_USER_ID = "userId"
@@ -115,6 +115,11 @@ async def test_recipe_override():
         )]
     )
     start_st()
+
+    version = await Querier.get_instance().get_api_version()
+    if compare_version(version, '2.13.0') != version:
+        # If the version less than 2.13.0, user metadata doesn't exist. So skip the test
+        return
 
     res = await get_user_metadata('userId', {})
     assert res.metadata == {}
