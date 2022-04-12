@@ -21,7 +21,7 @@ jobs:
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
             - run: make with-fastapi
             - run: (cd .circleci && ./authReactFastApi.sh << parameters.fdi-version >>)
-            - run: ls -la ../supertokens-auth-react/test_report
+            - run: ls -la ../supertokens-auth-react/test_report || true
             - store_test_results:
                   path: ../supertokens-auth-react/test_report/report_node-<< parameters.fdi-version >>.xml
             - store_artifacts:
