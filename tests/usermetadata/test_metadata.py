@@ -12,11 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from typing import Any, Dict
+
 from pytest import mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import usermetadata
-from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
+from supertokens_python.recipe.usermetadata.asyncio import (
+    clear_user_metadata, get_user_metadata, update_user_metadata)
+from supertokens_python.recipe.usermetadata.interfaces import RecipeInterface
+from supertokens_python.recipe.usermetadata.utils import InputOverrideConfig
 from supertokens_python.utils import compare_version
 from tests.utils import clean_st, reset, setup_st, start_st
 
@@ -47,26 +52,71 @@ async def test_that_usermetadata_recipe_works_as_expected():
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if compare_version(version, '2.13.0') != '2.13.0':
-        # If the version less than 2.13.0, user metadata doesn't exist. So skip the test
+    if compare_version(version, '2.12.0') != '2.12.0':
+        # If the version less than 2.12.0, user metadata doesn't exist. So skip the test
         return
 
     TEST_USER_ID = "userId"
-    TEST_METADATA = {"role": "admin", "name": {"first": "John", "last": "Doe"}}
+    TEST_METADATA: Dict[str, Any] = {"role": "admin", "name": {"first": "John", "last": "Doe"}}
 
-    s: UserMetadataRecipe = UserMetadataRecipe.get_instance()
+    get_metadata_res = await get_user_metadata(TEST_USER_ID, {})
+    assert get_metadata_res.metadata == {}
 
-    res_get_metadata = await s.recipe_implementation.get_user_metadata(TEST_USER_ID)
-    assert res_get_metadata == {'metadata': {}, 'status': 'OK'}
+    update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA, {})
+    assert update_metadata_res.metadata == TEST_METADATA
 
-    res_update_metadata = await s.recipe_implementation.update_user_metadata(TEST_USER_ID, TEST_METADATA)
-    assert res_update_metadata == {'metadata': TEST_METADATA, 'status': 'OK'}
+    get_metadata_res = await get_user_metadata(TEST_USER_ID, {})
+    assert get_metadata_res.metadata == TEST_METADATA
 
-    res_get_metadata = await s.recipe_implementation.get_user_metadata(TEST_USER_ID)
-    assert res_get_metadata == {'metadata': TEST_METADATA, 'status': 'OK'}
+    # Overriding updates with shallow merge:
+    # Passing {'role': 'None', ...} should remove 'role' from the metdata
+    TEST_METADATA['role'] = None
+    update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA, {})
+    TEST_METADATA.pop('role')
+    assert update_metadata_res.metadata == TEST_METADATA
 
-    res_get_metadata = await s.recipe_implementation.clear_user_metadata(TEST_USER_ID)
-    assert res_get_metadata == {'status': 'OK'}
+    get_metadata_res = await get_user_metadata(TEST_USER_ID, {})
+    assert get_metadata_res.metadata == TEST_METADATA
 
-    res_get_metadata = await s.recipe_implementation.get_user_metadata(TEST_USER_ID)
-    assert res_get_metadata == {'metadata': {}, 'status': 'OK'}
+    clear_metadata_res = await clear_user_metadata(TEST_USER_ID, {})
+    assert clear_metadata_res.status == 'OK'
+
+    get_metadata_res = await get_user_metadata(TEST_USER_ID, {})
+    assert get_metadata_res.metadata == {}
+
+
+@mark.asyncio
+async def test_recipe_override():
+    override_used = False
+
+    def override_func(oi: RecipeInterface) -> RecipeInterface:
+        oi_get_user_metadata = oi.get_user_metadata
+
+        async def new_get_user_metadata(user_id: str, user_context: Dict[str, Any]):
+            nonlocal override_used
+            override_used = True
+            return await oi_get_user_metadata(user_id, user_context)
+
+        oi.get_user_metadata = new_get_user_metadata
+        return oi
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='https://api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[usermetadata.init(
+            override=InputOverrideConfig(
+                functions=override_func
+            )
+        )]
+    )
+    start_st()
+
+    res = await get_user_metadata('userId', {})
+    assert res.metadata == {}
+
+    assert override_used is True

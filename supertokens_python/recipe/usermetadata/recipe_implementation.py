@@ -18,7 +18,8 @@ from typing import Any, Dict
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 
-from .interfaces import RecipeInterface
+from .interfaces import (ClearUserMetadataResult, GetUserMetadataResult,
+                         RecipeInterface, UpdateUserMetadataResult)
 
 
 class RecipeImplementation(RecipeInterface):
@@ -26,14 +27,17 @@ class RecipeImplementation(RecipeInterface):
         super().__init__()
         self.querier = querier
 
-    async def get_user_metadata(self, user_id: str) -> Dict[str, Any]:
+    async def get_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -> GetUserMetadataResult:
         params = {"userId": user_id}
-        return await self.querier.send_get_request(NormalisedURLPath("/recipe/user/metadata"), params)
+        response = await self.querier.send_get_request(NormalisedURLPath("/recipe/user/metadata"), params)
+        return GetUserMetadataResult(status=response['status'], metadata=response['metadata'])
 
-    async def update_user_metadata(self, user_id: str, metadata_update: Dict[str, Any]) -> Dict[str, Any]:
+    async def update_user_metadata(self, user_id: str, metadata_update: Dict[str, Any], user_context: Dict[str, Any]) -> UpdateUserMetadataResult:
         params = {"userId": user_id, "metadataUpdate": metadata_update}
-        return await self.querier.send_put_request(NormalisedURLPath("/recipe/user/metadata"), params)
+        response = await self.querier.send_put_request(NormalisedURLPath("/recipe/user/metadata"), params)
+        return UpdateUserMetadataResult(status=response['status'], metadata=response['metadata'])
 
-    async def clear_user_metadata(self, user_id: str) -> Dict[str, Any]:
+    async def clear_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -> ClearUserMetadataResult:
         params = {"userId": user_id}
-        return await self.querier.send_post_request(NormalisedURLPath("/recipe/user/metadata/remove"), params)
+        response = await self.querier.send_post_request(NormalisedURLPath("/recipe/user/metadata/remove"), params)
+        return ClearUserMetadataResult(status=response['status'])
