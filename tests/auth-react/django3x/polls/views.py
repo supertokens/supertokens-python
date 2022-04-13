@@ -17,7 +17,6 @@ from typing import Any, Dict, List, Union
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from httpx import AsyncClient
 from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
                                 init)
 from supertokens_python.recipe import (emailpassword, passwordless, session,
@@ -61,16 +60,9 @@ class CustomAuth0Provider(Provider):
         self.access_token_api_url = "https://" + self.domain + "/oauth/token"
 
     async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
-        access_token: str = auth_code_response['access_token']
-        headers = {
-            'Authorization': 'Bearer ' + access_token,
-        }
-        async with AsyncClient() as client:
-            response = await client.get(url="https://" + self.domain + "/userinfo", headers=headers)
-            user_info = response.json()
-
-            return UserInfo(user_info['sub'], UserInfoEmail(
-                user_info['name'], True))
+        # we do not query auth0 here cause it reaches their rate limit.
+        return UserInfo("test-user-id-1", UserInfoEmail(
+            "auth0email@example.com", True))
 
     def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
         params: Dict[str, Any] = {
