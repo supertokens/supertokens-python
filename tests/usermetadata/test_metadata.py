@@ -59,29 +59,29 @@ async def test_that_usermetadata_recipe_works_as_expected():
     TEST_USER_ID = "userId"
     TEST_METADATA: Dict[str, Any] = {"role": "admin", "name": {"first": "John", "last": "Doe"}}
 
-    get_metadata_res = await get_user_metadata(TEST_USER_ID, {})
+    get_metadata_res = await get_user_metadata(TEST_USER_ID)
     assert get_metadata_res.metadata == {}
 
-    update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA, {})
+    update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA)
     assert update_metadata_res.metadata == TEST_METADATA
 
-    get_metadata_res = await get_user_metadata(TEST_USER_ID, {})
+    get_metadata_res = await get_user_metadata(TEST_USER_ID)
     assert get_metadata_res.metadata == TEST_METADATA
 
     # Overriding updates with shallow merge:
     # Passing {'role': None, ...} should remove 'role' from the metdata
     TEST_METADATA['role'] = None
-    update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA, {})
+    update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA)
     TEST_METADATA.pop('role')
     assert update_metadata_res.metadata == TEST_METADATA
 
-    get_metadata_res = await get_user_metadata(TEST_USER_ID, {})
+    get_metadata_res = await get_user_metadata(TEST_USER_ID)
     assert get_metadata_res.metadata == TEST_METADATA
 
-    clear_metadata_res = await clear_user_metadata(TEST_USER_ID, {})
+    clear_metadata_res = await clear_user_metadata(TEST_USER_ID)
     assert clear_metadata_res.status == 'OK'
 
-    get_metadata_res = await get_user_metadata(TEST_USER_ID, {})
+    get_metadata_res = await get_user_metadata(TEST_USER_ID)
     assert get_metadata_res.metadata == {}
 
 
@@ -121,7 +121,7 @@ async def test_recipe_override():
         # If the version less than 2.13.0, user metadata doesn't exist. So skip the test
         return
 
-    res = await get_user_metadata('userId', {})
+    res = await get_user_metadata('userId')
     assert res.metadata == {}
 
     assert override_used is True
