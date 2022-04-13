@@ -22,7 +22,7 @@ from supertokens_python.recipe.usermetadata.asyncio import (
     clear_user_metadata, get_user_metadata, update_user_metadata)
 from supertokens_python.recipe.usermetadata.interfaces import RecipeInterface
 from supertokens_python.recipe.usermetadata.utils import InputOverrideConfig
-from supertokens_python.utils import compare_version
+from supertokens_python.utils import get_max_version
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
@@ -52,7 +52,7 @@ async def test_that_usermetadata_recipe_works_as_expected():
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if compare_version(version, '2.13.0') != version:
+    if get_max_version(version, '2.13.0') != version:
         # If the version less than 2.13.0, user metadata doesn't exist. So skip the test
         return
 
@@ -117,7 +117,7 @@ async def test_recipe_override():
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if compare_version(version, '2.13.0') != version:
+    if get_max_version(version, '2.13.0') != version:
         # If the version less than 2.13.0, user metadata doesn't exist. So skip the test
         return
 
