@@ -41,7 +41,7 @@ class DefaultServiceImplementation(ServiceInterface[TypeEmailPasswordEmailDelive
         return getPasswordResetEmailContent(email_input)
 
 
-def getServiceImplementation(transporter: Transporter, input_send_raw_email_from: SMTPServiceConfigFrom) -> ServiceInterface[TypeEmailPasswordEmailDeliveryInput]:
-    emailVerificationSeriveImpl = getEmailVerificationEmailDeliveryServiceImplementation(transporter, input_send_raw_email_from)
+def getServiceImplementation(transporter: Transporter) -> ServiceInterface[TypeEmailPasswordEmailDeliveryInput]:
+    emailVerificationSeriveImpl = getEmailVerificationEmailDeliveryServiceImplementation(transporter)
     si = DefaultServiceImplementation(transporter, emailVerificationSeriveImpl)
     return si

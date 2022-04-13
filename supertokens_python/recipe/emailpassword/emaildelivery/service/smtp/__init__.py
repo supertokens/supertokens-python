@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.service.smtp import (
     EmailDeliverySMTPConfig, ServiceInterface, SMTPServiceConfigFrom,
-    getEmailServiceImplementation)
+    Transporter)
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.recipe.emailpassword.types import \
@@ -22,7 +22,8 @@ class SMTPService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
 
     def __init__(self, config: EmailDeliverySMTPConfig[TypeEmailPasswordEmailDeliveryInput]) -> None:
         self.config = config
-        oi = getEmailServiceImplementation(config, getServiceImplementation)
+        self.transporter = Transporter(config.smtpSettings)
+        oi = getServiceImplementation(self.transporter)
         self.serviceImpl = oi if config.override is None else config.override(oi)
 
         ev_config = EmailDeliverySMTPConfig[TypeEmailVerificationEmailDeliveryInput](

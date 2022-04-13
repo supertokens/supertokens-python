@@ -21,6 +21,6 @@ class DefaultServiceImplementation(ServiceInterface[TypeEmailVerificationEmailDe
         return getEmailVerifyEmailContent(email_input)
 
 
-def getServiceImplementation(transporter: Transporter, input_send_raw_email_from: SMTPServiceConfigFrom) -> ServiceInterface[TypeEmailVerificationEmailDeliveryInput]:
+def getServiceImplementation(transporter: Transporter) -> ServiceInterface[TypeEmailVerificationEmailDeliveryInput]:
     si = DefaultServiceImplementation(transporter)
     return si
