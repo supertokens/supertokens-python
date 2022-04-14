@@ -50,7 +50,7 @@ pydantic==1.9.0
 PyJWT==2.0.1
 pylint==2.12.2
 pyparsing==3.0.7
-pyright==0.0.13
+pyright==1.1.236
 pyrsistent==0.18.1
 pytest==6.2.5
 pytest-asyncio==0.14.0

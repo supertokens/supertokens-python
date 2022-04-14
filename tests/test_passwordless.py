@@ -24,7 +24,7 @@ from supertokens_python.querier import Querier
 from supertokens_python.recipe import passwordless, session
 from supertokens_python.recipe.passwordless.asyncio import (
     delete_phone_number_for_user, get_user_by_id, get_user_by_phone_number)
-from supertokens_python.utils import compare_version
+from supertokens_python.utils import get_max_version
 
 from tests.utils import clean_st, reset, setup_st, start_st
 
@@ -77,7 +77,7 @@ async def test_passwordless_otp(driver_config_client: TestClient):
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if compare_version(version, '2.11.0') != version:
+    if get_max_version(version, '2.11.0') != version:
         # If the version less than 2.11.0, passwordless OTP doesn't exist. So skip the test
         return
 
@@ -138,7 +138,7 @@ async def test_passworldless_delete_user_phone(driver_config_client: TestClient)
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if compare_version(version, '2.11.0') != version:
+    if get_max_version(version, '2.11.0') != version:
         # If the version less than 2.11.0, passwordless OTP doesn't exist. So skip the test
         return
 
