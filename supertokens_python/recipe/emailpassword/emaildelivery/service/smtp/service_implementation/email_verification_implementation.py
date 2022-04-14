@@ -21,18 +21,13 @@ from supertokens_python.recipe.emailpassword.types import (
     TypeEmailVerificationEmailDeliveryInput)
 
 
-class DefaultServiceImplementation(ServiceInterface[TypeEmailVerificationEmailDeliveryInput]):
-    def __init__(self, emailPasswordServiceImpl: ServiceInterface[TypeEmailPasswordEmailDeliveryInput]) -> None:
-        self.emailVerificationSeriveImpl = emailPasswordServiceImpl
+class ServiceImplementation(ServiceInterface[TypeEmailVerificationEmailDeliveryInput]):
+    def __init__(self, email_verification_service_implementation: ServiceInterface[TypeEmailPasswordEmailDeliveryInput]) -> None:
+        self.email_verification_service_implementation = email_verification_service_implementation
 
     async def send_raw_email(self, get_content_result: GetContentResult,
                              config_from: SMTPServiceConfigFrom, user_context: Dict[str, Any]) -> None:
-        return await self.emailVerificationSeriveImpl.send_raw_email(get_content_result, config_from, user_context)
+        return await self.email_verification_service_implementation.send_raw_email(get_content_result, config_from, user_context)
 
-    def get_content(self, email_input: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
-        return self.emailVerificationSeriveImpl.get_content(email_input, user_context)
-
-
-def getServiceInterface(emailPasswordServiceImplementation: ServiceInterface[TypeEmailPasswordEmailDeliveryInput]) -> ServiceInterface[TypeEmailVerificationEmailDeliveryInput]:
-    si = DefaultServiceImplementation(emailPasswordServiceImplementation)
-    return si
+    async def get_content(self, email_input: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
+        return await self.email_verification_service_implementation.get_content(email_input, user_context)

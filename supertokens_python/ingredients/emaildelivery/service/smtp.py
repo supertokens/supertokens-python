@@ -62,7 +62,7 @@ class ServiceInterface(ABC, Generic[_T]):
         pass
 
     @abstractmethod
-    def get_content(self, email_input: _T, user_context: Dict[str, Any]) -> GetContentResult:
+    async def get_content(self, email_input: _T, user_context: Dict[str, Any]) -> GetContentResult:
         pass
 
 
@@ -91,23 +91,3 @@ class Transporter:
             smtp.quit()
         except Exception:
             pass
-
-
-TypeGetDefaultEmailServiceImpl = Callable[[Transporter, SMTPServiceConfigFrom], ServiceInterface[_T]]
-
-
-def getEmailServiceImplementation(
-    config: EmailDeliverySMTPConfig[_T],
-    getDefaultEmailServiceImplementation: TypeGetDefaultEmailServiceImpl[_T]
-) -> ServiceInterface[_T]:
-    transporter = Transporter(config.smtpSettings)
-
-    send_raw_email_from = SMTPServiceConfigFrom(
-        config.smtpSettings.email_from.name,
-        config.smtpSettings.email_from.email
-    )
-
-    default_impl = getDefaultEmailServiceImplementation(transporter, send_raw_email_from)
-    service_impl = default_impl if config.override is None else config.override(default_impl)
-
-    return service_impl

@@ -7,15 +7,15 @@ from supertokens_python.recipe.emailverification.interfaces import \
 from supertokens_python.supertokens import Supertokens
 
 
-def getEmailVerifyEmailContent(input: TypeEmailVerificationEmailDeliveryInput) -> GetContentResult:
+def get_email_verify_email_content(input: TypeEmailVerificationEmailDeliveryInput) -> GetContentResult:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
-    body = getEmailVerifyEmailHTML(app_name, input.user.email, input.email_verify_link)
+    body = get_email_verify_email_html(app_name, input.user.email, input.email_verify_link)
     content_result = GetContentResult(body, "Email verification instructions", input.user.email)
     return content_result
 
 
-def getEmailVerifyEmailHTML(app_name: str, email: str, verification_link: str):
+def get_email_verify_email_html(app_name: str, email: str, verification_link: str):
     return """
     <!DOCTYPE html>
     <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">

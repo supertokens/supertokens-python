@@ -17,31 +17,39 @@ from typing import Any, Dict
 from supertokens_python.ingredients.emaildelivery.service.smtp import (
     GetContentResult, ServiceInterface, SMTPServiceConfigFrom, Transporter)
 from supertokens_python.recipe.emailpassword.emaildelivery.service.smtp.password_reset_implementation import \
-    getPasswordResetEmailContent
+    get_password_reset_email_content
 from supertokens_python.recipe.emailpassword.types import \
     TypeEmailPasswordEmailDeliveryInput
-from supertokens_python.recipe.emailverification.emaildelivery.service.smtp import \
-    getServiceImplementation as \
-    getEmailVerificationEmailDeliveryServiceImplementation
+from supertokens_python.recipe.emailverification.emaildelivery.service.smtp.implementation import \
+    ServiceImplementation as EVServiceImplementation
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
 
+from .email_verification_implementation import \
+    ServiceImplementation as DerivedEVServiceImplementation
 
-class DefaultServiceImplementation(ServiceInterface[TypeEmailPasswordEmailDeliveryInput]):
-    def __init__(self, transporter: Transporter, emailVerificationSeriveImpl: ServiceInterface[TypeEmailVerificationEmailDeliveryInput]) -> None:
+
+class ServiceImplementation(ServiceInterface[TypeEmailPasswordEmailDeliveryInput]):
+    def __init__(self, transporter: Transporter) -> None:
         self.transporter = transporter
-        self.emailVerificationSeriveImpl = emailVerificationSeriveImpl
+
+        email_verification_service_implementation = EVServiceImplementation(transporter)
+        self.ev_send_raw_email = email_verification_service_implementation.send_raw_email
+        self.ev_get_content = email_verification_service_implementation.get_content
+
+        derived_ev_service_implementation = DerivedEVServiceImplementation(self)
+        email_verification_service_implementation.send_raw_email = derived_ev_service_implementation.send_raw_email
+        email_verification_service_implementation.get_content = derived_ev_service_implementation.get_content
 
     async def send_raw_email(self, get_content_result: GetContentResult, config_from: SMTPServiceConfigFrom, user_context: Dict[str, Any]) -> None:
         self.transporter.send_email(config_from, get_content_result, user_context)
 
-    def get_content(self, email_input: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
+    async def get_content(self, email_input: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
         if isinstance(email_input, TypeEmailVerificationEmailDeliveryInput):
-            return self.emailVerificationSeriveImpl.get_content(email_input, user_context)  # FIXME: Node SDK has DerivedEV
-        return getPasswordResetEmailContent(email_input)
+            return await self.ev_get_content(email_input, user_context)
+        return get_password_reset_email_content(email_input)
 
 
 def getServiceImplementation(transporter: Transporter) -> ServiceInterface[TypeEmailPasswordEmailDeliveryInput]:
-    emailVerificationSeriveImpl = getEmailVerificationEmailDeliveryServiceImplementation(transporter)
-    si = DefaultServiceImplementation(transporter, emailVerificationSeriveImpl)
+    si = ServiceImplementation(transporter)
     return si

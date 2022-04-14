@@ -12,23 +12,23 @@ from supertokens_python.recipe.emailverification.emaildelivery.service.smtp impo
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
 
-from .email_verification_implementation import \
-    getServiceInterface as getEmailVerificationServiceImpl
-from .implementation import getServiceImplementation
+from .service_implementation import ServiceImplementation
+from .service_implementation.email_verification_implementation import \
+    ServiceImplementation as EmailVerificationServiceImpl
 
 
 class SMTPService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
-    serviceImpl: ServiceInterface[TypeEmailPasswordEmailDeliveryInput]
+    service_implementation: ServiceInterface[TypeEmailPasswordEmailDeliveryInput]
 
     def __init__(self, config: EmailDeliverySMTPConfig[TypeEmailPasswordEmailDeliveryInput]) -> None:
         self.config = config
         self.transporter = Transporter(config.smtpSettings)
-        oi = getServiceImplementation(self.transporter)
-        self.serviceImpl = oi if config.override is None else config.override(oi)
+        oi = ServiceImplementation(self.transporter)
+        self.service_implementation = oi if config.override is None else config.override(oi)
 
         ev_config = EmailDeliverySMTPConfig[TypeEmailVerificationEmailDeliveryInput](
             smtpSettings=config.smtpSettings,
-            override=lambda _: getEmailVerificationServiceImpl(self.serviceImpl)
+            override=lambda _: EmailVerificationServiceImpl(self.service_implementation)
         )
         self.email_verification_smtp_service = EmailVerificationSMTPService(ev_config)
 
@@ -36,9 +36,9 @@ class SMTPService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
         if isinstance(email_input, TypeEmailVerificationEmailDeliveryInput):
             return await self.email_verification_smtp_service.send_email(email_input, user_context)
 
-        content = self.serviceImpl.get_content(email_input, user_context)
+        content = await self.service_implementation.get_content(email_input, user_context)
         send_raw_email_from = SMTPServiceConfigFrom(
             self.config.smtpSettings.email_from.name,
             self.config.smtpSettings.email_from.email
         )
-        await self.serviceImpl.send_raw_email(content, send_raw_email_from, user_context)
+        await self.service_implementation.send_raw_email(content, send_raw_email_from, user_context)

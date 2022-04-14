@@ -5,15 +5,15 @@ from supertokens_python.recipe.emailpassword.types import \
 from supertokens_python.supertokens import Supertokens
 
 
-def getPasswordResetEmailContent(input: TypeEmailPasswordPasswordResetEmailDeliveryInput) -> GetContentResult:
+def get_password_reset_email_content(input: TypeEmailPasswordPasswordResetEmailDeliveryInput) -> GetContentResult:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
-    body = getPasswordResetEmailHTML(app_name, input.user.email, input.password_reset_link)
+    body = get_password_reset_email_html(app_name, input.user.email, input.password_reset_link)
     content_result = GetContentResult(body, "Email verification instructions", input.user.email)
     return content_result
 
 
-def getPasswordResetEmailHTML(appName: str, email: str, resetLink: str):
+def get_password_reset_email_html(appName: str, email: str, resetLink: str):
     return """
     <!DOCTYPE html>
     <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
