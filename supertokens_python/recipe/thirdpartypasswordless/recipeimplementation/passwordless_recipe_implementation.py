@@ -98,6 +98,12 @@ class RecipeImplementation(RecipeInterface):
                           email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
         return await self.recipe_implementation.update_passwordless_user(user_id, email, phone_number, user_context)
 
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> UpdateUserResult:
+        return await self.recipe_implementation.delete_email_for_user(user_id, user_context)
+
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> UpdateUserResult:
+        return await self.recipe_implementation.delete_phone_number_for_user(user_id, user_context)
+
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
         return await self.recipe_implementation.revoke_all_codes(email, phone_number, user_context)

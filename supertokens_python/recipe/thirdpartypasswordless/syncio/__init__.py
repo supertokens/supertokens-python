@@ -106,6 +106,14 @@ def update_passwordless_user(user_id: str, email: Union[str, None] = None,
                                                  phone_number=phone_number, user_context=user_context))
 
 
+async def delete_email_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> interfaces.UpdateUserResult:
+    return sync(asyncio.delete_email_for_user(user_id=user_id, user_context=user_context))
+
+
+async def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> interfaces.UpdateUserResult:
+    return sync(asyncio.delete_email_for_user(user_id=user_id, user_context=user_context))
+
+
 def revoke_all_codes(email: Union[str, None] = None,
                      phone_number: Union[str, None] = None,
                      user_context: Union[None, Dict[str, Any]] = None) -> interfaces.RevokeAllCodesResult:

@@ -61,6 +61,8 @@ class RecipeImplementation(RecipeInterface):
         self.pless_revoke_all_codes = passwordless_implementation.revoke_all_codes
         self.pless_revoke_code = passwordless_implementation.revoke_code
         self.pless_update_user = passwordless_implementation.update_user
+        self.pless_delete_email_for_user = passwordless_implementation.delete_email_for_user
+        self.pless_delete_phone_number_for_user = passwordless_implementation.delete_phone_number_for_user
 
         derived_pless = DerivedPasswordlessImplementation(self)
         passwordless_implementation.get_user_by_id = derived_pless.get_user_by_id
@@ -76,6 +78,8 @@ class RecipeImplementation(RecipeInterface):
         passwordless_implementation.revoke_all_codes = derived_pless.revoke_all_codes
         passwordless_implementation.revoke_code = derived_pless.revoke_code
         passwordless_implementation.update_user = derived_pless.update_user
+        passwordless_implementation.delete_email_for_user = derived_pless.delete_email_for_user
+        passwordless_implementation.delete_phone_number_for_user = derived_pless.delete_phone_number_for_user
 
         self.tp_get_user_by_id = None
         self.tp_get_users_by_email = None
@@ -189,6 +193,12 @@ class RecipeImplementation(RecipeInterface):
     async def update_passwordless_user(self, user_id: str,
                                        email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
         return await self.pless_update_user(user_id, email, phone_number, user_context)
+
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> UpdateUserResult:
+        return await self.pless_delete_email_for_user(user_id, user_context)
+
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> UpdateUserResult:
+        return await self.pless_delete_phone_number_for_user(user_id, user_context)
 
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
