@@ -15,15 +15,17 @@
 
 from typing import Any, Dict
 
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import passwordless, session
+from supertokens_python.recipe.passwordless.asyncio import (
+    delete_phone_number_for_user, get_user_by_id, get_user_by_phone_number)
 from supertokens_python.utils import compare_version
 
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
@@ -99,3 +101,70 @@ async def test_passwordless_otp(driver_config_client: TestClient):
     consume_code_json['user'].pop('time_joined')
 
     assert consume_code_json == {'status': 'OK', 'createdNewUser': True, 'user': {'phoneNumber': '+919494949494'}}
+
+
+@mark.asyncio
+async def test_passworldless_delete_user_phone(driver_config_client: TestClient):
+    text_code = None
+    email_code = None
+
+    async def send_text_message(param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
+        nonlocal text_code
+        text_code = param.user_input_code
+
+    async def send_email(param: passwordless.CreateAndSendCustomEmailParameters, _: Dict[str, Any]):
+        nonlocal email_code
+        email_code = param.user_input_code
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[passwordless.init(
+            flow_type="USER_INPUT_CODE",
+            contact_config=passwordless.ContactEmailOrPhoneConfig(
+                create_and_send_custom_text_message=send_text_message,
+                create_and_send_custom_email=send_email
+            )
+        ),
+            session.init()
+        ]
+    )
+    start_st()
+
+    version = await Querier.get_instance().get_api_version()
+    if compare_version(version, '2.11.0') != version:
+        # If the version less than 2.11.0, passwordless OTP doesn't exist. So skip the test
+        return
+
+    create_code_json = driver_config_client.post(
+        url="/auth/signinup/code",
+        json={
+            "phoneNumber": "+919494949494",
+        }
+    ).json()
+
+    consume_code_json = driver_config_client.post(
+        url="/auth/signinup/code/consume",
+        json={
+            'preAuthSessionId': create_code_json['preAuthSessionId'],
+            'deviceId': create_code_json['deviceId'],
+            'userInputCode': text_code,
+        }
+    ).json()
+
+    user_id = consume_code_json['user']['id']
+
+    response = await delete_phone_number_for_user(user_id)
+    assert response.status == "OK"
+
+    user = await get_user_by_phone_number("+919494949494")
+    assert user is None
+
+    user = await get_user_by_id(user_id)
+    assert user is not None and user.phone_number == ""

@@ -231,14 +231,14 @@ class RecipeImplementation(RecipeInterface):
         if user is None:
             return UpdateUserUnknownUserIdErrorResult()
 
-        return await self.update_user(user_id, None, user.phone_number, user_context)
+        return await self.update_user(user_id, '', user.phone_number, user_context)
 
     async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> UpdateUserResult:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
             return UpdateUserUnknownUserIdErrorResult()
 
-        return await self.update_user(user_id, user.email, None, user_context)
+        return await self.update_user(user_id, user.email, '', user_context)
 
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
