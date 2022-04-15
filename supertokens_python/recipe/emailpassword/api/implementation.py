@@ -23,7 +23,9 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     PasswordResetPostInvalidTokenResponse, PasswordResetPostOkResponse,
     SignInPostOkResponse, SignInPostWrongCredentialsErrorResponse,
     SignUpPostEmailAlreadyExistsErrorResponse, SignUpPostOkResponse)
-from supertokens_python.recipe.emailpassword.types import FormField
+from supertokens_python.recipe.emailpassword.types import (
+    FormField, TypeEmailPasswordPasswordResetEmailDeliveryInput,
+    TypeEmailPasswordPasswordResetEmailDeliveryInputUser)
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.utils import find_first_occurrence_in_list
 
@@ -61,10 +63,11 @@ class APIImplementation(APIInterface):
         password_reset_link = await api_options.config.reset_password_using_token_feature.get_reset_password_url(
             user, user_context) + '?token=' + token + '&rid=' + api_options.recipe_id
 
-        try:
-            await api_options.config.reset_password_using_token_feature.create_and_send_custom_email(user, password_reset_link, user_context)
-        except Exception:
-            pass
+        send_email_input = TypeEmailPasswordPasswordResetEmailDeliveryInput(
+            user=TypeEmailPasswordPasswordResetEmailDeliveryInputUser(user.user_id, user.email),
+            password_reset_link=password_reset_link
+        )
+        await api_options.email_delivery.ingredient_interface_impl.send_email(send_email_input, user_context)
 
         return GeneratePasswordResetTokenPostOkResponse()
 

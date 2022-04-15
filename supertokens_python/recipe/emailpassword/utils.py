@@ -308,13 +308,13 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
     ) -> EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput]:
         if email_delivery_config:
             return email_delivery_config
-        else:
-            email_service = BackwardCompatibilityService(
-                app_info=app_info,
-                recipeInterfaceImpl=ep_recipe,
-                reset_password_using_token_feature=reset_password_using_token_feature,
-            )
-            return EmailDeliveryConfig(email_service, override=None)
+
+        email_service = BackwardCompatibilityService(
+            app_info=app_info,
+            recipeInterfaceImpl=ep_recipe,
+            reset_password_using_token_feature=reset_password_using_token_feature,
+        )
+        return EmailDeliveryConfig(email_service, override=None)
 
     return EmailPasswordConfig(
         SignUpFeature(sign_up_feature.form_fields),
