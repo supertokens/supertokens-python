@@ -1,3 +1,17 @@
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
 from supertokens_python.ingredients.emaildelivery.service.smtp import \
     GetContentResult
 from supertokens_python.recipe.emailpassword.types import \
@@ -13,7 +27,7 @@ def get_password_reset_email_content(input: TypeEmailPasswordPasswordResetEmailD
     return content_result
 
 
-def get_password_reset_email_html(appName: str, email: str, resetLink: str):
+def get_password_reset_email_html(app_name: str, email: str, reset_link: str):
     return """
     <!DOCTYPE html>
     <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -269,11 +283,11 @@ def get_password_reset_email_html(appName: str, email: str, resetLink: str):
 
             <!-- Visually Hidden Preheader Text : BEGIN -->
             <div style="max-height:0; overflow:hidden; mso-hide:all;" aria-hidden="true">
-                Password Reset Request for {appName}
+                Password Reset Request for {app_name}
             </div>
             <!-- Visually Hidden Preheader Text : END -->
 
-            <!-- Create white space after the desired preview text so email clients don’t pull other distracting text into the inbox preview. Extend as necessary. -->
+            <!-- Create white space after the desired preview text so email clients don't pull other distracting text into the inbox preview. Extend as necessary. -->
             <!-- Preview Text Spacing Hack : BEGIN -->
             <div style="display: none; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; font-family: sans-serif;">
                 &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
@@ -312,7 +326,7 @@ def get_password_reset_email_html(appName: str, email: str, resetLink: str):
                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                             <tr>
                                 <td style="text-align: center; font-size: 17px; line-height: 24px; color: #000000;">
-                                    <p style="margin: 0 0 0px; color: #000000; font-family: 'Rubik', sans-serif; font-weight: 500; padding: 40px 50px 40px 50px;">A password reset request for your account on ${appName} has been received.</p>
+                                    <p style="margin: 0 0 0px; color: #000000; font-family: 'Rubik', sans-serif; font-weight: 500; padding: 40px 50px 40px 50px;">A password reset request for your account on {app_name} has been received.</p>
                                 </td>
                             </tr>
                             <tr>
@@ -321,7 +335,7 @@ def get_password_reset_email_html(appName: str, email: str, resetLink: str):
                                     <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: auto;">
                                         <tr>
                                             <td class="button-td button-td-primary" style="border-radius: 6px;">
-                                                <a class="button-a button-a-primary" href="{resetLink}" target="_blank" style="background: rgb(82, 181, 110); font-size: 17px; line-height: 24px; font-weight: 500; font-family: 'Rubik', sans-serif; text-decoration: none; padding: 9px 25px 9px 25px; color: #ffffff; display: block; border-radius: 6px;">Reset Password</a>
+                                                <a class="button-a button-a-primary" href="{reset_link}" target="_blank" style="background: rgb(82, 181, 110); font-size: 17px; line-height: 24px; font-weight: 500; font-family: 'Rubik', sans-serif; text-decoration: none; padding: 9px 25px 9px 25px; color: #ffffff; display: block; border-radius: 6px;">Reset Password</a>
                                             </td>
                                         </tr>
                                     </table>

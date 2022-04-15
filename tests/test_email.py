@@ -11,8 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-
 from unittest.mock import MagicMock, patch
 
 from fastapi import FastAPI
@@ -22,7 +20,7 @@ from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import Middleware
 from supertokens_python.ingredients.emaildelivery.service.smtp import (
-    GetContentResult, SMTPServiceConfig, SMTPServiceConfigFrom, Transporter)
+    SMTPServiceConfig, SMTPServiceConfigFrom)
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.recipe import emailpassword, session
@@ -143,17 +141,21 @@ async def test_email_password_email_delivery_backward_compatibility(mock_default
 
 
 @mark.asyncio
-@patch("supertokens_python.ingredients.emaildelivery.service.smtp.Transporter")
-async def test_email_password_email_delivery_smtp(mock_transporter: MagicMock, driver_config_client: TestClient):
+@patch("supertokens_python.ingredients.emaildelivery.service.smtp.smtplib")
+async def test_email_password_email_delivery_smtp(
+    mock_smtplib: MagicMock,
+    driver_config_client: TestClient
+):
     service = SMTPService(
         EmailDeliverySMTPConfig(
             smtpSettings=SMTPServiceConfig(
-                host='0.0.0.0',
+                host='localhost',
                 email_from=SMTPServiceConfigFrom(
                     'Foo bar',
                     "foo@bar.com"
                 ),
-                port=5000,
+                port=1025,
+                secure=False,
             )
         )
     )
@@ -193,24 +195,28 @@ async def test_email_password_email_delivery_smtp(mock_transporter: MagicMock, d
     )
     assert res.status_code == 200
 
-    mock_transporter_send_email: MagicMock = mock_transporter.send_email  # type: ignore
-    mock_transporter_send_email.assert_called_once()
+    mock_sendmail: MagicMock = mock_smtplib.SMTP().sendmail  # type: ignore
+    mock_sendmail.assert_called_once()
+
+    sender_email, receiver_email, _ = mock_sendmail.call_args_list[0][0]
+    assert (sender_email, receiver_email) == ("foo@bar.com", "random@gmail.com")
 
 
 @mark.asyncio
-@patch("supertokens_python.ingredients.emaildelivery.service.smtp.Transporter")
+@patch("supertokens_python.ingredients.emaildelivery.service.smtp.smtplib")
 async def test_email_verification_email_delivery_smtp(
-        mock_transporter: MagicMock,
+        mock_smtplib: MagicMock,
         driver_config_client: TestClient):
     service = SMTPService(
         EmailDeliverySMTPConfig(
             smtpSettings=SMTPServiceConfig(
-                host='0.0.0.0',
+                host='localhost',
                 email_from=SMTPServiceConfigFrom(
                     'Foo bar',
                     "foo@bar.com"
                 ),
-                port=5000,
+                secure=False,
+                port=1025,
             )
         )
     )
@@ -253,26 +259,8 @@ async def test_email_verification_email_delivery_smtp(
     resp = driver_config_client.post(url="/auth/user/email/verify/token")
     assert resp.status_code == 200
 
-    mock_transporter_send_email: MagicMock = mock_transporter.send_email  # type: ignore
-    mock_transporter_send_email.assert_called_once()
+    mock_sendmail: MagicMock = mock_smtplib.SMTP().sendmail  # type: ignore
+    mock_sendmail.assert_called_once()
 
-
-@patch("supertokens_python.ingredients.emaildelivery.service.smtp.smtplib")
-def test_smtp_transporter(mock_smtplib: MagicMock):
-    smtpSettings = SMTPServiceConfig(
-        host='0.0.0.0',
-        email_from=SMTPServiceConfigFrom(
-            'Foo bar',
-            "foo@bar.com"
-        ),
-        port=5000,
-    )
-
-    transporter = Transporter(smtpSettings=smtpSettings)
-
-    config_from = SMTPServiceConfigFrom(smtpSettings.email_from.name, smtpSettings.email_from.email)
-    content = GetContentResult('Hell world', 'Greetings!', 'baz@bar.com')
-    transporter.send_email(config_from, content, {})
-
-    mock_smtplib_sendemail: MagicMock = mock_smtplib.sendemail  # type: ignore
-    mock_smtplib_sendemail.assert_called_once()
+    sender_email, receiver_email, _ = mock_sendmail.call_args_list[0][0]
+    assert (sender_email, receiver_email) == ("foo@bar.com", "random@gmail.com")

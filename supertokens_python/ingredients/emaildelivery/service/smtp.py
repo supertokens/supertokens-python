@@ -83,7 +83,8 @@ class Transporter:
                    _: Dict[str, Any]) -> None:
         try:
             smtp = smtplib.SMTP(self.smtpSettings.host, self.smtpSettings.port)
-            smtp.starttls()
+            if self.smtpSettings.secure:
+                smtp.starttls()
             if self.smtpSettings.auth:
                 smtp.login(self.smtpSettings.auth.user, self.smtpSettings.auth.password)
 
