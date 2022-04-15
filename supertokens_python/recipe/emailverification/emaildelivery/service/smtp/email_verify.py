@@ -1,4 +1,18 @@
+# Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License") as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 
+from string import Template
 
 from supertokens_python.ingredients.emaildelivery.service.smtp import \
     GetContentResult
@@ -7,16 +21,16 @@ from supertokens_python.recipe.emailverification.interfaces import \
 from supertokens_python.supertokens import Supertokens
 
 
-def get_email_verify_email_content(input: TypeEmailVerificationEmailDeliveryInput) -> GetContentResult:
+def get_email_verify_email_content(email_input: TypeEmailVerificationEmailDeliveryInput) -> GetContentResult:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
-    body = get_email_verify_email_html(app_name, input.user.email, input.email_verify_link)
-    content_result = GetContentResult(body, "Email verification instructions", input.user.email)
+    body = get_email_verify_email_html(app_name, email_input.user.email, email_input.email_verify_link)
+    content_result = GetContentResult(body, "Email verification instructions", email_input.user.email)
     return content_result
 
 
 def get_email_verify_email_html(app_name: str, email: str, verification_link: str):
-    return """
+    template = Template("""
     <!DOCTYPE html>
     <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
     <head>
@@ -271,11 +285,11 @@ def get_email_verify_email_html(app_name: str, email: str, verification_link: st
 
             <!-- Visually Hidden Preheader Text : BEGIN -->
             <div style="max-height:0; overflow:hidden; mso-hide:all;" aria-hidden="true">
-                Email Verification Request for {app_name}
+                Email Verification Request for ${app_name}
             </div>
             <!-- Visually Hidden Preheader Text : END -->
 
-            <!-- Create white space after the desired preview text so email clients don’t pull other distracting text into the inbox preview. Extend as necessary. -->
+            <!-- Create white space after the desired preview text so email clients don't pull other distracting text into the inbox preview. Extend as necessary. -->
             <!-- Preview Text Spacing Hack : BEGIN -->
             <div style="display: none; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; font-family: sans-serif;">
                 &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
@@ -323,7 +337,7 @@ def get_email_verify_email_html(app_name: str, email: str, verification_link: st
                                     <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: auto;">
                                         <tr>
                                             <td class="button-td button-td-primary" style="border-radius: 6px;">
-                                                <a class="button-a button-a-primary" href="{verification_link}" target="_blank" style="background: rgb(82, 181, 110); font-size: 17px; line-height: 24px; font-weight: 500; font-family: 'Rubik', sans-serif; text-decoration: none; padding: 9px 25px 9px 25px; color: #ffffff; display: block; border-radius: 6px;">Verify My Email</a>
+                                                <a class="button-a button-a-primary" href="${verification_link}" target="_blank" style="background: rgb(82, 181, 110); font-size: 17px; line-height: 24px; font-weight: 500; font-family: 'Rubik', sans-serif; text-decoration: none; padding: 9px 25px 9px 25px; color: #ffffff; display: block; border-radius: 6px;">Verify My Email</a>
                                             </td>
                                         </tr>
                                     </table>
@@ -337,7 +351,7 @@ def get_email_verify_email_html(app_name: str, email: str, verification_link: st
                             </tr>
                             <tr>
                                 <td valign="middle" style="text-align: center; padding-top: 20px; padding-bottom: 35px; font-family: 'Rubik', sans-serif; font-weight: 300; font-size: 17px; line-height: 20px; color: #626262;">
-                                    <p style="margin: 0;">This email was meant for {email}</p>
+                                    <p style="margin: 0;">This email was meant for ${email}</p>
                                 </td>
                             </tr>
 
@@ -364,4 +378,6 @@ def get_email_verify_email_html(app_name: str, email: str, verification_link: st
     </body>
     </html>
 
-    """
+    """)
+
+    return template.substitute(app_name=app_name, verification_link=verification_link, email=email)

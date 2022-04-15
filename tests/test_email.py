@@ -24,7 +24,7 @@ from supertokens_python.ingredients.emaildelivery.service.smtp import (
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.recipe import emailpassword, session
-from supertokens_python.recipe.emailpassword.emaildelivery.service.smtp import (
+from supertokens_python.recipe.emailpassword.emaildelivery import (
     EmailDeliverySMTPConfig, SMTPService)
 
 from tests.utils import clean_st, reset, setup_st, sign_up_request, start_st

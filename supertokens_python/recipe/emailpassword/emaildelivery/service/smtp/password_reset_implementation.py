@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from string import Template
+
 from supertokens_python.ingredients.emaildelivery.service.smtp import \
     GetContentResult
 from supertokens_python.recipe.emailpassword.types import \
@@ -19,16 +21,16 @@ from supertokens_python.recipe.emailpassword.types import \
 from supertokens_python.supertokens import Supertokens
 
 
-def get_password_reset_email_content(input: TypeEmailPasswordPasswordResetEmailDeliveryInput) -> GetContentResult:
+def get_password_reset_email_content(email_input: TypeEmailPasswordPasswordResetEmailDeliveryInput) -> GetContentResult:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
-    body = get_password_reset_email_html(app_name, input.user.email, input.password_reset_link)
-    content_result = GetContentResult(body, "Email verification instructions", input.user.email)
+    body = get_password_reset_email_html(app_name, email_input.user.email, email_input.password_reset_link)
+    content_result = GetContentResult(body, "Email verification instructions", email_input.user.email)
     return content_result
 
 
 def get_password_reset_email_html(app_name: str, email: str, reset_link: str):
-    return """
+    template = Template("""
     <!DOCTYPE html>
     <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
     <head>
@@ -283,7 +285,7 @@ def get_password_reset_email_html(app_name: str, email: str, reset_link: str):
 
             <!-- Visually Hidden Preheader Text : BEGIN -->
             <div style="max-height:0; overflow:hidden; mso-hide:all;" aria-hidden="true">
-                Password Reset Request for {app_name}
+                Password Reset Request for ${app_name}
             </div>
             <!-- Visually Hidden Preheader Text : END -->
 
@@ -326,7 +328,7 @@ def get_password_reset_email_html(app_name: str, email: str, reset_link: str):
                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                             <tr>
                                 <td style="text-align: center; font-size: 17px; line-height: 24px; color: #000000;">
-                                    <p style="margin: 0 0 0px; color: #000000; font-family: 'Rubik', sans-serif; font-weight: 500; padding: 40px 50px 40px 50px;">A password reset request for your account on {app_name} has been received.</p>
+                                    <p style="margin: 0 0 0px; color: #000000; font-family: 'Rubik', sans-serif; font-weight: 500; padding: 40px 50px 40px 50px;">A password reset request for your account on ${app_name} has been received.</p>
                                 </td>
                             </tr>
                             <tr>
@@ -335,7 +337,7 @@ def get_password_reset_email_html(app_name: str, email: str, reset_link: str):
                                     <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: auto;">
                                         <tr>
                                             <td class="button-td button-td-primary" style="border-radius: 6px;">
-                                                <a class="button-a button-a-primary" href="{reset_link}" target="_blank" style="background: rgb(82, 181, 110); font-size: 17px; line-height: 24px; font-weight: 500; font-family: 'Rubik', sans-serif; text-decoration: none; padding: 9px 25px 9px 25px; color: #ffffff; display: block; border-radius: 6px;">Reset Password</a>
+                                                <a class="button-a button-a-primary" href="${reset_link}" target="_blank" style="background: rgb(82, 181, 110); font-size: 17px; line-height: 24px; font-weight: 500; font-family: 'Rubik', sans-serif; text-decoration: none; padding: 9px 25px 9px 25px; color: #ffffff; display: block; border-radius: 6px;">Reset Password</a>
                                             </td>
                                         </tr>
                                     </table>
@@ -349,7 +351,7 @@ def get_password_reset_email_html(app_name: str, email: str, reset_link: str):
                             </tr>
                             <tr>
                                 <td valign="middle" style="text-align: center; padding-top: 20px; padding-bottom: 35px; font-family: 'Rubik', sans-serif; font-weight: 300; font-size: 17px; line-height: 20px; color: #626262;">
-                                    <p style="margin: 0;">This email was meant for {email}</p>
+                                    <p style="margin: 0;">This email was meant for ${email}</p>
                                 </td>
                             </tr>
 
@@ -375,4 +377,6 @@ def get_password_reset_email_html(app_name: str, email: str, reset_link: str):
         </center>
     </body>
     </html>
-    """
+    """)
+
+    return template.substitute(app_name=app_name, email=email, reset_link=reset_link)
