@@ -27,6 +27,7 @@ from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
+from supertokens_python.logger import log_debug_message
 
 from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER
 from .exceptions import raise_general_exception
@@ -72,12 +73,12 @@ def find_max_version(
     max_v = versions[0]
     for i in range(1, len(versions)):
         version = versions[i]
-        max_v = compare_version(max_v, version)
+        max_v = get_max_version(max_v, version)
 
     return max_v
 
 
-def compare_version(v1: str, v2: str) -> str:
+def get_max_version(v1: str, v2: str) -> str:
     v1_split = v1.split('.')
     v2_split = v2.split('.')
     max_loop = min(len(v1_split), len(v2_split))
@@ -107,6 +108,7 @@ def send_non_200_response(message: str, status_code: int,
     if status_code < 300:
         raise_general_exception(
             'Calling sendNon200Response with status code < 300')
+    log_debug_message("Sending response to client with status code: %s", str(status_code))
     response.set_status_code(status_code)
     response.set_json_content(content={
         ERROR_MESSAGE_KEY: message
@@ -116,6 +118,7 @@ def send_non_200_response(message: str, status_code: int,
 
 def send_200_response(
         data_json: Dict[str, Any], response: BaseResponse) -> BaseResponse:
+    log_debug_message("Sending response to client with status code: 200")
     response.set_json_content(data_json)
     response.set_status_code(200)
     return response

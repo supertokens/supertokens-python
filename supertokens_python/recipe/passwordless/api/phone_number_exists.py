@@ -14,6 +14,7 @@
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.passwordless.interfaces import (APIInterface,
                                                                APIOptions)
+from supertokens_python.utils import send_200_response
 
 
 async def phone_number_exists(api_implementation: APIInterface, api_options: APIOptions):
@@ -26,6 +27,4 @@ async def phone_number_exists(api_implementation: APIInterface, api_options: API
             'Please provide the phoneNumber as a GET param')
 
     result = await api_implementation.phone_number_exists_get(phone_number, api_options, {})
-    api_options.response.set_json_content(result.to_json())
-
-    return api_options.response
+    return send_200_response(result.to_json(), api_options.response)

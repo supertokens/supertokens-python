@@ -55,6 +55,7 @@ from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
+from supertokens_python.logger import log_debug_message
 
 from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER
 from .exceptions import raise_general_exception
@@ -135,6 +136,7 @@ def send_non_200_response(message: str, status_code: int,
     if status_code &lt; 300:
         raise_general_exception(
             &#39;Calling sendNon200Response with status code &lt; 300&#39;)
+    log_debug_message(&#34;Sending response to client with status code: %s&#34;, str(status_code))
     response.set_status_code(status_code)
     response.set_json_content(content={
         ERROR_MESSAGE_KEY: message
@@ -144,6 +146,7 @@ def send_non_200_response(message: str, status_code: int,
 
 def send_200_response(
         data_json: Dict[str, Any], response: BaseResponse) -&gt; BaseResponse:
+    log_debug_message(&#34;Sending response to client with status code: 200&#34;)
     response.set_json_content(data_json)
     response.set_status_code(200)
     return response
@@ -408,6 +411,7 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 </summary>
 <pre><code class="python">def send_200_response(
         data_json: Dict[str, Any], response: BaseResponse) -&gt; BaseResponse:
+    log_debug_message(&#34;Sending response to client with status code: 200&#34;)
     response.set_json_content(data_json)
     response.set_status_code(200)
     return response</code></pre>
@@ -427,6 +431,7 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
     if status_code &lt; 300:
         raise_general_exception(
             &#39;Calling sendNon200Response with status code &lt; 300&#39;)
+    log_debug_message(&#34;Sending response to client with status code: %s&#34;, str(status_code))
     response.set_status_code(status_code)
     response.set_json_content(content={
         ERROR_MESSAGE_KEY: message

@@ -11,16 +11,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python.recipe.emailpassword.types import FormField
-from supertokens_python.recipe.emailpassword.interfaces import APIOptions
 from typing import Any, Dict, List, Union
+
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.emailpassword.interfaces import (
-    APIInterface, RecipeInterface)
+    APIInterface, APIOptions, RecipeInterface)
+from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.session.interfaces import \
     RecipeInterface as SRecipeInterface
 
@@ -47,7 +47,7 @@ def teardown_function(_):
 @fixture(scope='function')
 async def driver_config_client():
     app = FastAPI()
-    app.add_middleware(Middleware)
+    app.add_middleware(get_middleware())
 
     return TestClient(app)
 

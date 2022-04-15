@@ -9,34 +9,28 @@ with open(path.join(here, "README.md"), mode="r", encoding="utf-8") as f:
     long_description = f.read()
 
 extras_require = {
-    'dev': ([
-        'pytest==6.2.5',
-        'autopep8==1.5.6',
-        'PyYAML==5.4.1',
-        'uvicorn==0.13.4',
-        'requests==2.25.1',
-        'pytest-asyncio==0.14.0',
-        'nest-asyncio==1.5.1',
-        'python-dotenv==0.19.2',
-        'pdoc3==0.10.0',
-        'tzdata==2021.5',
-        'pylint==2.12.2',
-        'isort==5.10.1',
-        'pyright==0.0.13',
-    ]),
+    # we want to fix the versions of the libraries that
+    # we use to develop the SDK with otherwise we get
+    # a bunch of type errors on make dev-install depending
+    # on changes in these frameworks
     'fastapi': ([
         'respx==0.16.3',
-        'Fastapi==0.68.1'
+        'Fastapi',
+        'uvicorn==0.13.4',
+        'python-dotenv==0.19.2',
     ]),
     'flask': ([
         'flask_cors',
-        'Flask==2.0.2'
+        'Flask',
+        'python-dotenv==0.19.2',
     ]),
     'django': ([
         'django-cors-headers==3.11.0',
-        'django==3.2.12',
-        'django-stubs==1.9.0'
-    ])
+        'django',
+        'django-stubs==1.9.0',
+        'uvicorn==0.13.4',
+        'python-dotenv==0.19.2',
+    ]),
 }
 
 exclude_list = [
@@ -54,12 +48,13 @@ exclude_list = [
     "html",
     "pyrightconfig.json",
     "Makefile",
-    ".pylintrc"
+    ".pylintrc",
+    "dev-requirements.txt"
 ]
 
 setup(
     name="supertokens_python",
-    version="0.5.3",
+    version="0.6.4",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -84,20 +79,20 @@ setup(
     ],
     keywords="",
     install_requires=[
-        "PyJWT==2.0.*",
-        "httpx==0.15.*",
+        "PyJWT>=2.0.0 ,<2.4.0",
+        "httpx>=0.15.0 ,<0.23.0",
         "pycryptodome==3.10.*",
         'jsonschema==3.2.0',
         "tldextract==3.1.0",
         "asgiref==3.4.1",
-        "werkzeug==2.0.1",
-        'starlette~=0.14.2',
         'typing_extensions==4.1.1',
         'Deprecated==1.2.13',
         'cryptography==35.0',
-        'phonenumbers==8.12'
+        'phonenumbers==8.12',
+        'Werkzeug>=2.0 ,<2.1.0' # flask depends on this and flask has > '2.0' for this. However, the version before 2.1.0 breaks our lib.
     ],
     python_requires='>=3.7',
     include_package_data=True,
     extras_require=extras_require
 )
+

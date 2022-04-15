@@ -11,16 +11,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict
-from supertokens_python.recipe.session.interfaces import (APIInterface,
-                                                          RecipeInterface)
-from supertokens_python.framework import BaseRequest, BaseResponse
 import json
 import os
 import sys
-from typing import Union
-
-from typing_extensions import Literal
+from typing import Any, Dict, Union
 
 import uvicorn  # type: ignore
 from fastapi import Depends, FastAPI
@@ -30,19 +24,23 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
                                 get_all_cors_headers, init)
-from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.framework import BaseRequest, BaseResponse
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import InputErrorHandlers
 from supertokens_python.recipe.session.asyncio import (
     SessionContainer, SessionRecipe, create_new_session,
     revoke_all_sessions_for_user)
 from supertokens_python.recipe.session.framework.fastapi import verify_session
+from supertokens_python.recipe.session.interfaces import (APIInterface,
+                                                          RecipeInterface)
+from typing_extensions import Literal
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
 index_file.close()
 app = FastAPI(debug=True)
-app.add_middleware(Middleware)
+app.add_middleware(get_middleware())
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 last_set_enable_anti_csrf = True

@@ -63,8 +63,8 @@ def default_get_email_verification_url(app_info: AppInfo) -&gt; Callable[[User, 
 
 def default_create_and_send_custom_email(app_info: AppInfo) -&gt; Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
     async def func(user: User, email_verification_url: str, _: Dict[str, Any]):
-        if (&#39;SUPERTOKENS_ENV&#39; not in environ) or (
-                environ[&#39;SUPERTOKENS_ENV&#39;] != &#39;testing&#39;):
+        if (&#39;SUPERTOKENS_ENV&#39; in environ) and (
+                environ[&#39;SUPERTOKENS_ENV&#39;] == &#39;testing&#39;):
             return
         try:
             async with AsyncClient() as client:
@@ -144,8 +144,8 @@ def validate_and_normalise_user_input(
 </summary>
 <pre><code class="python">def default_create_and_send_custom_email(app_info: AppInfo) -&gt; Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
     async def func(user: User, email_verification_url: str, _: Dict[str, Any]):
-        if (&#39;SUPERTOKENS_ENV&#39; not in environ) or (
-                environ[&#39;SUPERTOKENS_ENV&#39;] != &#39;testing&#39;):
+        if (&#39;SUPERTOKENS_ENV&#39; in environ) and (
+                environ[&#39;SUPERTOKENS_ENV&#39;] == &#39;testing&#39;):
             return
         try:
             async with AsyncClient() as client:

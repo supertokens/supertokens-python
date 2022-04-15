@@ -14,6 +14,7 @@
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.passwordless.interfaces import (APIInterface,
                                                                APIOptions)
+from supertokens_python.utils import send_200_response
 
 
 async def consume_code(api_implementation: APIInterface, api_options: APIOptions):
@@ -50,6 +51,4 @@ async def consume_code(api_implementation: APIInterface, api_options: APIOptions
     pre_auth_session_id = body['preAuthSessionId']
     result = await api_implementation.consume_code_post(
         pre_auth_session_id, user_input_code, device_id, link_code, api_options, {})
-    api_options.response.set_json_content(result.to_json())
-
-    return api_options.response
+    return send_200_response(result.to_json(), api_options.response)

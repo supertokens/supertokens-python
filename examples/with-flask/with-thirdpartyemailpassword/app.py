@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, g, jsonify, make_response
+from flask import Flask, abort, g, jsonify
 from flask_cors import CORS
 from supertokens_python import (InputAppInfo, SupertokensConfig,
                                 get_all_cors_headers, init)
@@ -12,14 +12,6 @@ from supertokens_python.recipe.thirdpartyemailpassword import (
     Apple, Discord, Github, Google, GoogleWorkspaces)
 
 load_dotenv()
-
-os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
-
-
-def make_default_options_response():
-    _response = make_response()
-    _response.status_code = 204
-    return _response
 
 
 def get_api_port():
@@ -40,7 +32,7 @@ init(
     ),
     app_info=InputAppInfo(
         app_name='Supertokens',
-        api_domain='0.0.0.0' + get_api_port(),
+        api_domain='http://localhost:' + get_api_port(),
         website_domain=get_website_domain()
     ),
     framework='flask',
@@ -89,7 +81,6 @@ init(
 )
 
 app = Flask(__name__)
-app.make_default_options_response = make_default_options_response
 Middleware(app)
 CORS(
     app=app,
@@ -110,10 +101,12 @@ def get_session_info():
     })
 
 
-@app.route("/", defaults={"path": ""})  # type: ignore
-@app.route("/<path:path>")  # type: ignore
-def index(_: str):
-    return ''
+# This is required since if this is not there, then OPTIONS requests for
+# the APIs exposed by the supertokens' Middleware will return a 404
+@app.route('/', defaults={'u_path': ''})  # type: ignore
+@app.route('/<path:u_path>')  # type: ignore
+def catch_all(u_path: str):  # pylint: disable=unused-argument
+    abort(404)
 
 
 if __name__ == '__main__':

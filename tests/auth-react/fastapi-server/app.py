@@ -20,7 +20,6 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse, PlainTextResponse
-from httpx import AsyncClient
 from starlette.datastructures import Headers
 from starlette.exceptions import ExceptionMiddleware
 from starlette.middleware.cors import CORSMiddleware
@@ -28,7 +27,7 @@ from starlette.responses import Response
 from starlette.types import ASGIApp
 from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
                                 get_all_cors_headers, init)
-from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import (emailpassword, passwordless, session,
                                        thirdparty, thirdpartyemailpassword,
                                        thirdpartypasswordless)
@@ -56,7 +55,7 @@ from typing_extensions import Literal
 load_dotenv()
 
 app = FastAPI(debug=True)
-app.add_middleware(Middleware)
+app.add_middleware(get_middleware())
 os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
 
 code_store: Dict[str, List[Dict[str, Any]]] = {}
@@ -129,16 +128,9 @@ class CustomAuth0Provider(Provider):
         self.access_token_api_url = "https://" + self.domain + "/oauth/token"
 
     async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
-        access_token: str = auth_code_response['access_token']
-        headers = {
-            'Authorization': 'Bearer ' + access_token,
-        }
-        async with AsyncClient() as client:
-            response = await client.get(url="https://" + self.domain + "/userinfo", headers=headers)
-            user_info = response.json()
-
-            return UserInfo(user_info['sub'], UserInfoEmail(
-                user_info['name'], True))
+        # we do not query auth0 here cause it reaches their rate limit.
+        return UserInfo("test-user-id-1", UserInfoEmail(
+            "auth0email@example.com", True))
 
     def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
         params: Dict[str, Any] = {
