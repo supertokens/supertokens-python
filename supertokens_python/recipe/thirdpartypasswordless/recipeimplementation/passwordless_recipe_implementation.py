@@ -19,8 +19,8 @@ from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeErrorResult,
     ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
     ConsumeCodeRestartFlowErrorResult, ConsumeCodeResult, CreateCodeResult,
-    CreateNewCodeForDeviceResult, DeviceType, RecipeInterface,
-    RevokeAllCodesResult, RevokeCodeResult, UpdateUserResult)
+    CreateNewCodeForDeviceResult, DeleteUserInfoResult, DeviceType,
+    RecipeInterface, RevokeAllCodesResult, RevokeCodeResult, UpdateUserResult)
 
 from ...passwordless.types import User
 from ..interfaces import RecipeInterface as ThirdPartyPasswordlessInterface
@@ -98,10 +98,10 @@ class RecipeImplementation(RecipeInterface):
                           email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
         return await self.recipe_implementation.update_passwordless_user(user_id, email, phone_number, user_context)
 
-    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> UpdateUserResult:
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
         return await self.recipe_implementation.delete_email_for_user(user_id, user_context)
 
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> UpdateUserResult:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
         return await self.recipe_implementation.delete_phone_number_for_user(user_id, user_context)
 
     async def revoke_all_codes(self,

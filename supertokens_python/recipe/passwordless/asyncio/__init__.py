@@ -15,8 +15,8 @@ from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeOkResult, ConsumeCodeResult, CreateCodeResult,
-    CreateNewCodeForDeviceResult, RevokeAllCodesResult, RevokeCodeResult,
-    UpdateUserResult)
+    CreateNewCodeForDeviceResult, DeleteUserInfoResult, RevokeAllCodesResult,
+    RevokeCodeResult, UpdateUserResult)
 from supertokens_python.recipe.passwordless.recipe import PasswordlessRecipe
 from supertokens_python.recipe.passwordless.types import DeviceType, User
 
@@ -75,13 +75,13 @@ async def update_user(user_id: str,
     return await PasswordlessRecipe.get_instance().recipe_implementation.update_user(user_id=user_id, email=email, phone_number=phone_number, user_context=user_context)
 
 
-async def delete_email_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> UpdateUserResult:
+async def delete_email_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> DeleteUserInfoResult:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_user(user_id=user_id, user_context=user_context)
 
 
-async def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> UpdateUserResult:
+async def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> DeleteUserInfoResult:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(user_id=user_id, user_context=user_context)

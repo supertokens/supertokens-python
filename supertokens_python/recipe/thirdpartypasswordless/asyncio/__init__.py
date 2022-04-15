@@ -14,6 +14,9 @@
 
 from typing import Any, Dict, List, Union
 
+from supertokens_python.recipe.passwordless.interfaces import \
+    DeleteUserInfoResult
+
 from .. import interfaces
 from ..recipe import ThirdPartyPasswordlessRecipe
 from ..types import User
@@ -124,13 +127,13 @@ async def update_passwordless_user(user_id: str,
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.update_passwordless_user(user_id=user_id, email=email, phone_number=phone_number, user_context=user_context)
 
 
-async def delete_email_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> interfaces.UpdateUserResult:
+async def delete_email_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> DeleteUserInfoResult:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_user(user_id=user_id, user_context=user_context)
 
 
-async def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> interfaces.UpdateUserResult:
+async def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> DeleteUserInfoResult:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(user_id=user_id, user_context=user_context)

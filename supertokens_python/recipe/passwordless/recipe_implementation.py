@@ -31,7 +31,9 @@ from .interfaces import (
     ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
     CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowErrorResult,
-    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult, RecipeInterface,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
+    DeleteUserInfoOkResult, DeleteUserInfoResult,
+    DeleteUserInfoUnknownUserIdErrorResult, RecipeInterface,
     RevokeAllCodesOkResult, RevokeCodeOkResult,
     UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
     UpdateUserPhoneNumberAlreadyExistsErrorResult,
@@ -226,19 +228,21 @@ class RecipeImplementation(RecipeInterface):
             return UpdateUserEmailAlreadyExistsErrorResult()
         return UpdateUserPhoneNumberAlreadyExistsErrorResult()
 
-    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> UpdateUserResult:
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
-            return UpdateUserUnknownUserIdErrorResult()
+            return DeleteUserInfoUnknownUserIdErrorResult()
+        data = {'userId': user_id, 'email': None, 'phoneNumber': user.phone_number}
+        await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
+        return DeleteUserInfoOkResult()
 
-        return await self.update_user(user_id, '', user.phone_number, user_context)
-
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> UpdateUserResult:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
-            return UpdateUserUnknownUserIdErrorResult()
-
-        return await self.update_user(user_id, user.email, '', user_context)
+            return DeleteUserInfoUnknownUserIdErrorResult()
+        data = {'userId': user_id, 'email': user.email, 'phoneNumber': None}
+        await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
+        return DeleteUserInfoOkResult()
 
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
