@@ -55,13 +55,13 @@ async def driver_config_client():
 async def test_tp_passworldless_delete_user_info(driver_config_client: TestClient):
     DUMMY_CODE = 'DUMMY_CODE'
 
-    async def save_code_text(param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
+    async def save_code_text(_param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
         pass
 
-    async def save_code_email(param: passwordless.CreateAndSendCustomEmailParameters, _: Dict[str, Any]):
+    async def save_code_email(_param: passwordless.CreateAndSendCustomEmailParameters, _: Dict[str, Any]):
         pass
 
-    async def get_custom_user_input_code(x: Dict[str, Any]) -> str:
+    async def get_custom_user_input_code(_input: Dict[str, Any]) -> str:
         return DUMMY_CODE
 
     init(
@@ -131,8 +131,8 @@ async def test_tp_passworldless_delete_user_info(driver_config_client: TestClien
     response = await delete_email_for_user(user_id)
     assert response.status == "OK"
 
-    user = await get_users_by_email("foo@example.com")
-    assert user is None
+    users = await get_users_by_email("foo@example.com")
+    assert users == []
 
     user = await get_user_by_id(user_id)
     assert user is not None and user.email is None

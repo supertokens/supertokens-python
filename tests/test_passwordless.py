@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from typing import Any, Dict
 
 from fastapi import FastAPI
@@ -160,6 +161,8 @@ async def test_passworldless_delete_user_phone(driver_config_client: TestClient)
 
     user_id = consume_code_json['user']['id']
 
+    await update_user(user_id, "foo@example.com", "+919494949494")
+
     response = await delete_phone_number_for_user(user_id)
     assert response.status == "OK"
 
@@ -227,6 +230,8 @@ async def test_passworldless_delete_user_email(driver_config_client: TestClient)
 
     user_id = consume_code_json['user']['id']
 
+    await update_user(user_id, "hello@example.com", "+919494949494")
+
     response = await delete_email_for_user(user_id)
     assert response.status == "OK"
 
@@ -234,7 +239,7 @@ async def test_passworldless_delete_user_email(driver_config_client: TestClient)
     assert user is None
 
     user = await get_user_by_id(user_id)
-    assert user is not None and user.phone_number is None
+    assert user is not None and user.email is None
 
 
 @mark.asyncio
