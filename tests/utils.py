@@ -32,6 +32,7 @@ from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdpartyemailpassword import \
     ThirdPartyEmailPasswordRecipe
+from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from yaml import FullLoader, dump, load
 
 INSTALLATION_PATH = environ['SUPERTOKENS_PATH']
@@ -178,6 +179,7 @@ def reset():
     ThirdPartyRecipe.reset()
     PasswordlessRecipe.reset()
     JWTRecipe.reset()
+    UserMetadataRecipe.reset()
 
 
 def get_cookie_from_response(response: Response, cookie_name: str):
