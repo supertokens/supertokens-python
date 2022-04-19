@@ -22,7 +22,7 @@ from supertokens_python.recipe.usermetadata.asyncio import (
     clear_user_metadata, get_user_metadata, update_user_metadata)
 from supertokens_python.recipe.usermetadata.interfaces import RecipeInterface
 from supertokens_python.recipe.usermetadata.utils import InputOverrideConfig
-from supertokens_python.utils import get_max_version
+from supertokens_python.utils import is_version_lt
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
@@ -52,8 +52,8 @@ async def test_that_usermetadata_recipe_works_as_expected():
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if get_max_version(version, '2.13.0') != version:
-        # If the version less than 2.13.0, user metadata doesn't exist. So skip the test
+    if is_version_lt(version, '2.13'):
+        # If the version less than 2.13, user metadata doesn't exist. So skip the test
         return
 
     TEST_USER_ID = "userId"
@@ -71,10 +71,11 @@ async def test_that_usermetadata_recipe_works_as_expected():
     # Overriding updates with shallow merge:
     # Passing {'role': None, ...} should remove 'role' from the metdata
     TEST_METADATA['role'] = None
+    # 'first' is inside 'role' so it won't get
+    # removed despite setting 'first' as None
     TEST_METADATA['name']['first'] = None
     update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA)
     TEST_METADATA.pop('role')
-    TEST_METADATA['name'].pop('first')
     assert update_metadata_res.metadata == TEST_METADATA
 
     get_metadata_res = await get_user_metadata(TEST_USER_ID)
@@ -102,8 +103,8 @@ async def test_usermetadata_recipe_shallow_merge():
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if get_max_version(version, '2.13.0') != version:
-        # If the version less than 2.13.0, user metadata doesn't exist. So skip the test
+    if is_version_lt(version, '2.13'):
+        # If the version less than 2.13, user metadata doesn't exist. So skip the test
         return
 
     TEST_USER_ID = "userId"
@@ -133,7 +134,6 @@ async def test_usermetadata_recipe_shallow_merge():
             "subObjectUpdate": 123,
             "subObjectNewProp": "this will appear",
         },
-        "cleared": None,
         "newRootProp": "this should appear in the end result"
     }
 
@@ -179,8 +179,8 @@ async def test_recipe_override():
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if get_max_version(version, '2.13.0') != version:
-        # If the version less than 2.13.0, user metadata doesn't exist. So skip the test
+    if is_version_lt(version, '2.13'):
+        # If the version less than 2.13, user metadata doesn't exist. So skip the test
         return
 
     res = await get_user_metadata('userId')

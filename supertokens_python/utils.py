@@ -78,6 +78,11 @@ def find_max_version(
     return max_v
 
 
+def is_version_lt(version: str, minimum_minor_version: str) -> bool:
+    assert len(minimum_minor_version.split(".")) == 2
+    return get_max_version(version, minimum_minor_version) != version
+
+
 def get_max_version(v1: str, v2: str) -> str:
     v1_split = v1.split('.')
     v2_split = v2.split('.')
