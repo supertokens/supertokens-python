@@ -308,4 +308,4 @@ async def test_passworldless_delete_user_email_and_phone_throws_error(driver_con
     with raises(GeneralError) as e:
         response = await delete_phone_number_for_user(user_id)
 
-    assert e.value.args[0].ends_with("You cannot clear both email and phone number of a user\n")
+    assert e.value.args[0].endswith("You cannot clear both email and phone number of a user\n")
