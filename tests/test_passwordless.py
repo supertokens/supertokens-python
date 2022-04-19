@@ -164,7 +164,7 @@ async def test_passworldless_delete_user_phone(driver_config_client: TestClient)
     await update_user(user_id, "foo@example.com", "+919494949494")
 
     response = await delete_phone_number_for_user(user_id)
-    assert response.status == "OK"
+    assert response.is_ok
 
     user = await get_user_by_phone_number("+919494949494")
     assert user is None
@@ -305,5 +305,7 @@ async def test_passworldless_delete_user_email_and_phone_throws_error(driver_con
     # Delete the email
     response = await delete_email_for_user(user_id)
     # Delete the phone number (Should raise exception because deleting both of them isn't allowed)
-    with raises(GeneralError):
+    with raises(GeneralError) as e:
         response = await delete_phone_number_for_user(user_id)
+
+    assert e.value.args[0].ends_with("You cannot clear both email and phone number of a user\n")

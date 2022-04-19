@@ -229,20 +229,18 @@ class RecipeImplementation(RecipeInterface):
         return UpdateUserPhoneNumberAlreadyExistsErrorResult()
 
     async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
-        user = await self.get_user_by_id(user_id, user_context)
-        if user is None:
-            return DeleteUserInfoUnknownUserIdErrorResult()
-        data = {'userId': user_id, 'email': None, 'phoneNumber': user.phone_number}
-        await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
-        return DeleteUserInfoOkResult()
+        data = {'userId': user_id, 'email': None}
+        result = await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
+        if result['status'] == 'OK':
+            return DeleteUserInfoOkResult()
+        return DeleteUserInfoUnknownUserIdErrorResult()
 
     async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
-        user = await self.get_user_by_id(user_id, user_context)
-        if user is None:
-            return DeleteUserInfoUnknownUserIdErrorResult()
-        data = {'userId': user_id, 'email': user.email, 'phoneNumber': None}
-        await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
-        return DeleteUserInfoOkResult()
+        data = {'userId': user_id, 'phoneNumber': None}
+        result = await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
+        if result['status'] == 'OK':
+            return DeleteUserInfoOkResult()
+        return DeleteUserInfoUnknownUserIdErrorResult()
 
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
