@@ -71,8 +71,10 @@ async def test_that_usermetadata_recipe_works_as_expected():
     # Overriding updates with shallow merge:
     # Passing {'role': None, ...} should remove 'role' from the metdata
     TEST_METADATA['role'] = None
+    TEST_METADATA['name']['first'] = None
     update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA)
     TEST_METADATA.pop('role')
+    TEST_METADATA['name'].pop('first')
     assert update_metadata_res.metadata == TEST_METADATA
 
     get_metadata_res = await get_user_metadata(TEST_USER_ID)
@@ -83,6 +85,66 @@ async def test_that_usermetadata_recipe_works_as_expected():
 
     get_metadata_res = await get_user_metadata(TEST_USER_ID)
     assert get_metadata_res.metadata == {}
+
+
+@mark.asyncio
+async def test_usermetadata_recipe_shallow_merge():
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='https://api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[usermetadata.init()]
+    )
+    start_st()
+
+    version = await Querier.get_instance().get_api_version()
+    if get_max_version(version, '2.13.0') != version:
+        # If the version less than 2.13.0, user metadata doesn't exist. So skip the test
+        return
+
+    TEST_USER_ID = "userId"
+
+    TEST_METADATA_ORIGINAL: Dict[str, Any] = {
+        "updated": {
+            "subObjectNull": "this will become null",
+            "subObjectCleared": "this will be removed",
+            "subObjectUpdate": "this will become a number",
+        },
+        "cleared": "this should not be in the end result",
+    }
+
+    TEST_METADATA_UPDATE: Dict[str, Any] = {
+        "updated": {
+            "subObjectNull": None,
+            "subObjectUpdate": 123,
+            "subObjectNewProp": "this will appear",
+        },
+        "cleared": None,
+        "newRootProp": "this should appear in the end result"
+    }
+
+    TEST_METADATA_RESULT: Dict[str, Any] = {
+        "updated": {
+            "subObjectNull": None,
+            "subObjectUpdate": 123,
+            "subObjectNewProp": "this will appear",
+        },
+        "cleared": None,
+        "newRootProp": "this should appear in the end result"
+    }
+
+    get_metadata_res = await get_user_metadata(TEST_USER_ID)
+    assert get_metadata_res.metadata == {}
+
+    update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA_ORIGINAL)
+    assert update_metadata_res.metadata == TEST_METADATA_ORIGINAL
+
+    update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA_UPDATE)
+    assert update_metadata_res.metadata == TEST_METADATA_RESULT
 
 
 @mark.asyncio
