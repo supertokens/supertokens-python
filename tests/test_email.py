@@ -101,7 +101,7 @@ async def test_email_verification_email_delivery_backward_compatibility(mock_def
 
 
 @mark.asyncio
-@patch("supertokens_python.recipe.emailpassword.utils.default_create_and_send_custom_email")
+@patch("supertokens_python.recipe.emailpassword.emaildelivery.service.backwardCompatibility.default_create_and_send_custom_email")
 async def test_email_password_email_delivery_backward_compatibility(mock_default_create_and_send_custom_email: MagicMock, driver_config_client: TestClient):
     mock_create_and_send_custom_email = mock_default_create_and_send_custom_email.return_value = MagicMock()
 
