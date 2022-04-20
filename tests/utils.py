@@ -11,8 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict
-from typing import List
 from datetime import datetime, timezone
 from http.cookies import SimpleCookie
 from os import environ, kill, remove, scandir
@@ -20,7 +18,9 @@ from shutil import rmtree
 from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
+from typing import Any, Dict, List
 
+from fastapi.testclient import TestClient
 from requests.models import Response
 from supertokens_python import Supertokens
 from supertokens_python.process_state import ProcessState
@@ -31,9 +31,8 @@ from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdpartyemailpassword import \
     ThirdPartyEmailPasswordRecipe
+from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from yaml import FullLoader, dump, load
-
-from fastapi.testclient import TestClient
 
 INSTALLATION_PATH = environ['SUPERTOKENS_PATH']
 SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + '/.started'
@@ -178,6 +177,7 @@ def reset():
     EmailVerificationRecipe.reset()
     ThirdPartyRecipe.reset()
     JWTRecipe.reset()
+    UserMetadataRecipe.reset()
 
 
 def get_cookie_from_response(response: Response, cookie_name: str):
