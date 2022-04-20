@@ -233,6 +233,10 @@ class RecipeImplementation(RecipeInterface):
         result = await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
         if result['status'] == 'OK':
             return DeleteUserInfoOkResult()
+        if result.get("EMAIL_ALREADY_EXISTS_ERROR"):
+            raise Exception("Should never come here")
+        if result.get("PHONE_NUMBER_ALREADY_EXISTS_ERROR"):
+            raise Exception("Should never come here")
         return DeleteUserInfoUnknownUserIdErrorResult()
 
     async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
@@ -240,6 +244,10 @@ class RecipeImplementation(RecipeInterface):
         result = await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
         if result['status'] == 'OK':
             return DeleteUserInfoOkResult()
+        if result.get("EMAIL_ALREADY_EXISTS_ERROR"):
+            raise Exception("Should never come here")
+        if result.get("PHONE_NUMBER_ALREADY_EXISTS_ERROR"):
+            raise Exception("Should never come here")
         return DeleteUserInfoUnknownUserIdErrorResult()
 
     async def revoke_all_codes(self,

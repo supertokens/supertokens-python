@@ -177,6 +177,7 @@ class DeleteUserInfoResult(ABC):
     def __init__(self, status: Literal['OK', 'UNKNOWN_USER_ID_ERROR']):
         self.status = status
         self.is_ok = False
+        self.is_unknown_user_id_error = False
 
 
 class DeleteUserInfoOkResult(DeleteUserInfoResult):
@@ -188,7 +189,7 @@ class DeleteUserInfoOkResult(DeleteUserInfoResult):
 class DeleteUserInfoUnknownUserIdErrorResult(DeleteUserInfoResult):
     def __init__(self):
         super().__init__('UNKNOWN_USER_ID_ERROR')
-        self.is_ok = False
+        self.is_unknown_user_id_error = True
 
 
 class UpdateUserOkResult(UpdateUserResult):
