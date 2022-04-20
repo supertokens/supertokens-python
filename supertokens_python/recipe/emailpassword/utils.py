@@ -313,6 +313,7 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
             app_info=app_info,
             recipeInterfaceImpl=ep_recipe,
             reset_password_using_token_feature=reset_password_using_token_feature,
+            email_verification_feature=email_verification_feature,
         )
         return EmailDeliveryConfig(email_service, override=None)
 
