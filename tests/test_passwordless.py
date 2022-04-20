@@ -22,7 +22,7 @@ from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import passwordless, session
-from supertokens_python.utils import get_max_version
+from supertokens_python.utils import is_version_gte
 
 from tests.utils import clean_st, reset, setup_st, start_st
 
@@ -75,7 +75,7 @@ async def test_passwordless_otp(driver_config_client: TestClient):
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if get_max_version(version, '2.11.0') != version:
+    if not is_version_gte(version, '2.11'):
         # If the version less than 2.11.0, passwordless OTP doesn't exist. So skip the test
         return
 
