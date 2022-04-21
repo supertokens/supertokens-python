@@ -56,9 +56,10 @@ async def driver_config_client():
 
 
 @mark.asyncio
-@patch("supertokens_python.recipe.emailverification.emaildelivery.service.backwardCompatibility.default_create_and_send_custom_email")
-async def test_email_verification_email_delivery_backward_compatibility(mock_default_create_and_send_custom_email: MagicMock, driver_config_client: TestClient):
-    mock_create_and_send_custom_email = mock_default_create_and_send_custom_email.return_value = MagicMock()
+async def test_email_verification_email_delivery_backward_compatibility(driver_config_client: TestClient):
+    mock_create_and_send_custom_email = MagicMock()
+    mock_default_create_and_send_custom_email = patch("supertokens_python.recipe.emailverification.emaildelivery.service.backwardCompatibility.default_create_and_send_custom_email", return_value=mock_create_and_send_custom_email)
+    mock_default_create_and_send_custom_email.start()
 
     init(
         supertokens_config=SupertokensConfig('http://localhost:3567'),
@@ -101,9 +102,10 @@ async def test_email_verification_email_delivery_backward_compatibility(mock_def
 
 
 @mark.asyncio
-@patch("supertokens_python.recipe.emailpassword.emaildelivery.service.backwardCompatibility.default_create_and_send_custom_email")
-async def test_email_password_email_delivery_backward_compatibility(mock_default_create_and_send_custom_email: MagicMock, driver_config_client: TestClient):
-    mock_create_and_send_custom_email = mock_default_create_and_send_custom_email.return_value = MagicMock()
+async def test_email_password_email_delivery_backward_compatibility(driver_config_client: TestClient):
+    mock_create_and_send_custom_email = MagicMock()
+    mock_default_create_and_send_custom_email = patch("supertokens_python.recipe.emailpassword.emaildelivery.service.backwardCompatibility.default_create_and_send_custom_email", return_value=mock_create_and_send_custom_email)
+    mock_default_create_and_send_custom_email.start()
 
     init(
         supertokens_config=SupertokensConfig('http://localhost:3567'),
@@ -141,11 +143,13 @@ async def test_email_password_email_delivery_backward_compatibility(mock_default
 
 
 @mark.asyncio
-@patch("supertokens_python.ingredients.emaildelivery.service.smtp.smtplib")
 async def test_email_password_email_delivery_smtp(
-    mock_smtplib: MagicMock,
     driver_config_client: TestClient
 ):
+    mock_smtp = MagicMock()
+    smtp_patcher = patch("supertokens_python.ingredients.emaildelivery.service.smtp.smtplib.SMTP", return_value=mock_smtp)
+    smtp_patcher.start()
+
     service = SMTPService(
         EmailDeliverySMTPConfig(
             smtpSettings=SMTPServiceConfig(
@@ -195,18 +199,20 @@ async def test_email_password_email_delivery_smtp(
     )
     assert res.status_code == 200
 
-    mock_sendmail: MagicMock = mock_smtplib.SMTP().sendmail  # type: ignore
+    smtp_patcher.stop()
+    mock_sendmail: MagicMock = mock_smtp.sendmail  # type: ignore
     mock_sendmail.assert_called_once()
-
     sender_email, receiver_email, _ = mock_sendmail.call_args_list[0][0]
     assert (sender_email, receiver_email) == ("foo@bar.com", "random@gmail.com")
 
 
 @mark.asyncio
-@patch("supertokens_python.ingredients.emaildelivery.service.smtp.smtplib")
 async def test_email_verification_email_delivery_smtp(
-        mock_smtplib: MagicMock,
         driver_config_client: TestClient):
+    mock_smtp = MagicMock()
+    smtp_patcher = patch("supertokens_python.ingredients.emaildelivery.service.smtp.smtplib.SMTP", return_value=mock_smtp)
+    smtp_patcher.start()
+
     service = SMTPService(
         EmailDeliverySMTPConfig(
             smtpSettings=SMTPServiceConfig(
@@ -259,7 +265,8 @@ async def test_email_verification_email_delivery_smtp(
     resp = driver_config_client.post(url="/auth/user/email/verify/token")
     assert resp.status_code == 200
 
-    mock_sendmail: MagicMock = mock_smtplib.SMTP().sendmail  # type: ignore
+    smtp_patcher.stop()
+    mock_sendmail: MagicMock = mock_smtp.sendmail  # type: ignore
     mock_sendmail.assert_called_once()
 
     sender_email, receiver_email, _ = mock_sendmail.call_args_list[0][0]
