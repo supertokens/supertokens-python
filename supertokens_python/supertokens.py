@@ -17,7 +17,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, List, Set, Union
 
 from typing_extensions import Literal
-
+import asyncio
 from supertokens_python.logger import get_maybe_none_as_str, log_debug_message
 
 from .constants import (FDI_KEY_HEADER, RID_KEY_HEADER, TELEMETRY,
@@ -194,7 +194,12 @@ class Supertokens:
                 environ['SUPERTOKENS_ENV'] != 'testing')
 
         if telemetry:
-            _ = self.send_telemetry()
+            loop = asyncio.get_event_loop()
+            if self.app_info.framework.lower(
+            ) == 'flask' or self.app_info.framework.lower() == 'django':
+                loop.run_until_complete(self.send_telemetry())
+            else:
+                loop.create_task(self.send_telemetry())
 
     async def send_telemetry(self):
         try:
