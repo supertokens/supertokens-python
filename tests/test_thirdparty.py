@@ -27,7 +27,7 @@ from supertokens_python.recipe.passwordless.utils import \
 from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
     delete_email_for_user, delete_phone_number_for_user, get_user_by_id,
     get_user_by_phone_number, get_users_by_email, update_passwordless_user)
-from supertokens_python.utils import get_max_version
+from supertokens_python.utils import is_version_gte
 
 from tests.utils import clean_st, reset, setup_st, start_st
 
@@ -89,7 +89,7 @@ async def test_tp_passworldless_delete_user_info(driver_config_client: TestClien
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if get_max_version(version, '2.11.0') != version:
+    if not is_version_gte(version, '2.11'):
         # If the version less than 2.11.0, passwordless OTP doesn't exist. So skip the test
         return
 
