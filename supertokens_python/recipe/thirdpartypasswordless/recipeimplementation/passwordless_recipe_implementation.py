@@ -99,7 +99,7 @@ class RecipeImplementation(RecipeInterface):
         return await self.recipe_implementation.update_passwordless_user(user_id, email, phone_number, user_context)
 
     async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
-        return await self.recipe_implementation.delete_email_for_user(user_id, user_context)
+        return await self.recipe_implementation.delete_email_for_passwordless_user(user_id, user_context)
 
     async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
         return await self.recipe_implementation.delete_phone_number_for_user(user_id, user_context)

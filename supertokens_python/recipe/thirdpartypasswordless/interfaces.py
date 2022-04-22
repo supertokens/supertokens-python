@@ -136,7 +136,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
         pass
 
     @abstractmethod

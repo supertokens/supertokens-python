@@ -14,8 +14,6 @@
 
 from typing import Any, Dict
 
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
@@ -25,10 +23,13 @@ from supertokens_python.recipe import (passwordless, session,
 from supertokens_python.recipe.passwordless.utils import \
     ContactEmailOrPhoneConfig
 from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
-    delete_email_for_user, delete_phone_number_for_user, get_user_by_id,
-    get_user_by_phone_number, get_users_by_email, update_passwordless_user)
+    delete_email_for_passwordless_user, delete_phone_number_for_user,
+    get_user_by_id, get_user_by_phone_number, get_users_by_email,
+    update_passwordless_user)
 from supertokens_python.utils import is_version_gte
 
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
@@ -128,7 +129,7 @@ async def test_tp_passworldless_delete_user_info(driver_config_client: TestClien
     await update_passwordless_user(user_id, email='foo@example.com', phone_number='+919494949494')
 
     # Check that deleting the user email works:
-    response = await delete_email_for_user(user_id)
+    response = await delete_email_for_passwordless_user(user_id)
     assert response.status == "OK"
 
     users = await get_users_by_email("foo@example.com")
