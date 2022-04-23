@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 - Adds delete email (`delete_email_for_user`) and phone number (`delete_phone_number_for_user`) functions for passwordless and thirdpartypasswordless recipe
 - Adds check for user type in update passwordless info in thirdpartypasswordless recipe
+
+## [0.6.6] - 2022-04-22
+- Fixes issue in user metadata recipe where as are exposing async functions in the syncio file.
+
+## [0.6.5] - 2022-04-18
 - Upgrade and freeze pyright version
 - Rename `compare_version` to `get_max_version` for readability
 - Add user metadata recipe
