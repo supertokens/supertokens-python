@@ -180,6 +180,7 @@ def reset():
     EmailPasswordRecipe.reset()
     EmailVerificationRecipe.reset()
     ThirdPartyRecipe.reset()
+    PasswordlessRecipe.reset()
     JWTRecipe.reset()
     UserMetadataRecipe.reset()
     ThirdPartyPasswordlessRecipe.reset()

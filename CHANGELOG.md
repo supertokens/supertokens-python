@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
+- Adds delete email (`delete_email_for_user`) and phone number (`delete_phone_number_for_user`) functions for passwordless and thirdpartypasswordless recipe
+- Adds check for user type in update passwordless info in thirdpartypasswordless recipe
 
 ## [0.6.6] - 2022-04-22
 - Fixes issue in user metadata recipe where as are exposing async functions in the syncio file.
