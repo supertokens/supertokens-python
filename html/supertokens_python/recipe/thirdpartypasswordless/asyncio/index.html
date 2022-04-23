@@ -42,6 +42,9 @@
 
 from typing import Any, Dict, List, Union
 
+from supertokens_python.recipe.passwordless.interfaces import \
+    DeleteUserInfoResult
+
 from .. import interfaces
 from ..recipe import ThirdPartyPasswordlessRecipe
 from ..types import User
@@ -150,6 +153,18 @@ async def update_passwordless_user(user_id: str,
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.update_passwordless_user(user_id=user_id, email=email, phone_number=phone_number, user_context=user_context)
+
+
+async def delete_email_for_passwordless_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; DeleteUserInfoResult:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_passwordless_user(user_id=user_id, user_context=user_context)
+
+
+async def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; DeleteUserInfoResult:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(user_id=user_id, user_context=user_context)
 
 
 async def revoke_all_codes(email: Union[str, None] = None,
@@ -297,6 +312,36 @@ async def passwordlessSigninup(email: Union[str, None], phone_number: Union[str,
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.create_new_code_for_device(device_id=device_id, user_input_code=user_input_code, user_context=user_context)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.delete_email_for_passwordless_user"><code class="name flex">
+<span>async def <span class="ident">delete_email_for_passwordless_user</span></span>(<span>user_id: str, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def delete_email_for_passwordless_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; DeleteUserInfoResult:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_passwordless_user(user_id=user_id, user_context=user_context)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.delete_phone_number_for_user"><code class="name flex">
+<span>async def <span class="ident">delete_phone_number_for_user</span></span>(<span>user_id: str, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; DeleteUserInfoResult:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(user_id=user_id, user_context=user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.get_user_by_id"><code class="name flex">
@@ -593,6 +638,8 @@ async def passwordlessSigninup(email: Union[str, None], phone_number: Union[str,
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.asyncio.create_email_verification_token" href="#supertokens_python.recipe.thirdpartypasswordless.asyncio.create_email_verification_token">create_email_verification_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.asyncio.create_magic_link" href="#supertokens_python.recipe.thirdpartypasswordless.asyncio.create_magic_link">create_magic_link</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.asyncio.create_new_code_for_device" href="#supertokens_python.recipe.thirdpartypasswordless.asyncio.create_new_code_for_device">create_new_code_for_device</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.asyncio.delete_email_for_passwordless_user" href="#supertokens_python.recipe.thirdpartypasswordless.asyncio.delete_email_for_passwordless_user">delete_email_for_passwordless_user</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.asyncio.delete_phone_number_for_user" href="#supertokens_python.recipe.thirdpartypasswordless.asyncio.delete_phone_number_for_user">delete_phone_number_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.asyncio.get_user_by_id" href="#supertokens_python.recipe.thirdpartypasswordless.asyncio.get_user_by_id">get_user_by_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.asyncio.get_user_by_phone_number" href="#supertokens_python.recipe.thirdpartypasswordless.asyncio.get_user_by_phone_number">get_user_by_phone_number</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.asyncio.get_user_by_third_party_info" href="#supertokens_python.recipe.thirdpartypasswordless.asyncio.get_user_by_third_party_info">get_user_by_third_party_info</a></code></li>

@@ -201,6 +201,25 @@ class UpdateUserResult(ABC):
         self.status = status
 
 
+class DeleteUserInfoResult(ABC):
+    def __init__(self, status: Literal[&#39;OK&#39;, &#39;UNKNOWN_USER_ID_ERROR&#39;]):
+        self.status = status
+        self.is_ok = False
+        self.is_unknown_user_id_error = False
+
+
+class DeleteUserInfoOkResult(DeleteUserInfoResult):
+    def __init__(self):
+        super().__init__(&#39;OK&#39;)
+        self.is_ok = True
+
+
+class DeleteUserInfoUnknownUserIdErrorResult(DeleteUserInfoResult):
+    def __init__(self):
+        super().__init__(&#39;UNKNOWN_USER_ID_ERROR&#39;)
+        self.is_unknown_user_id_error = True
+
+
 class UpdateUserOkResult(UpdateUserResult):
     def __init__(self):
         super().__init__(&#39;OK&#39;)
@@ -284,6 +303,14 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def update_user(self, user_id: str,
                           email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; UpdateUserResult:
+        pass
+
+    @abstractmethod
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        pass
+
+    @abstractmethod
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
         pass
 
     @abstractmethod
@@ -1742,6 +1769,75 @@ inheritance.</p></div>
 <li>abc.ABC</li>
 </ul>
 </dd>
+<dt id="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult"><code class="flex name class">
+<span>class <span class="ident">DeleteUserInfoOkResult</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DeleteUserInfoOkResult(DeleteUserInfoResult):
+    def __init__(self):
+        super().__init__(&#39;OK&#39;)
+        self.is_ok = True</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></li>
+<li>abc.ABC</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult"><code class="flex name class">
+<span>class <span class="ident">DeleteUserInfoResult</span></span>
+<span>(</span><span>status: Literal['OK', 'UNKNOWN_USER_ID_ERROR'])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DeleteUserInfoResult(ABC):
+    def __init__(self, status: Literal[&#39;OK&#39;, &#39;UNKNOWN_USER_ID_ERROR&#39;]):
+        self.status = status
+        self.is_ok = False
+        self.is_unknown_user_id_error = False</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdErrorResult">DeleteUserInfoUnknownUserIdErrorResult</a></li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdErrorResult"><code class="flex name class">
+<span>class <span class="ident">DeleteUserInfoUnknownUserIdErrorResult</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DeleteUserInfoUnknownUserIdErrorResult(DeleteUserInfoResult):
+    def __init__(self):
+        super().__init__(&#39;UNKNOWN_USER_ID_ERROR&#39;)
+        self.is_unknown_user_id_error = True</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></li>
+<li>abc.ABC</li>
+</ul>
+</dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResponse"><code class="flex name class">
 <span>class <span class="ident">EmailExistsGetOkResponse</span></span>
 <span>(</span><span>exists: bool)</span>
@@ -1948,6 +2044,14 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        pass
+
+    @abstractmethod
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        pass
+
+    @abstractmethod
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesResult:
         pass
@@ -2035,6 +2139,34 @@ async def create_new_code_for_device(self,
                                      device_id: str,
                                      user_input_code: Union[str, None],
                                      user_context: Dict[str, Any]) -&gt; CreateNewCodeForDeviceResult:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.delete_email_for_user"><code class="name flex">
+<span>async def <span class="ident">delete_email_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.delete_phone_number_for_user"><code class="name flex">
+<span>async def <span class="ident">delete_phone_number_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
     pass</code></pre>
 </details>
 </dd>
@@ -2688,6 +2820,15 @@ inheritance.</p></div>
 <h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult">CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult</a></code></h4>
 </li>
 <li>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdErrorResult">DeleteUserInfoUnknownUserIdErrorResult</a></code></h4>
+</li>
+<li>
 <h4><code><a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResponse" href="#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResponse">EmailExistsGetOkResponse</a></code></h4>
 </li>
 <li>
@@ -2711,6 +2852,8 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.consume_code" href="#supertokens_python.recipe.passwordless.interfaces.RecipeInterface.consume_code">consume_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.create_code" href="#supertokens_python.recipe.passwordless.interfaces.RecipeInterface.create_code">create_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.create_new_code_for_device" href="#supertokens_python.recipe.passwordless.interfaces.RecipeInterface.create_new_code_for_device">create_new_code_for_device</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.delete_email_for_user" href="#supertokens_python.recipe.passwordless.interfaces.RecipeInterface.delete_email_for_user">delete_email_for_user</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.delete_phone_number_for_user" href="#supertokens_python.recipe.passwordless.interfaces.RecipeInterface.delete_phone_number_for_user">delete_phone_number_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.get_user_by_email" href="#supertokens_python.recipe.passwordless.interfaces.RecipeInterface.get_user_by_email">get_user_by_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.get_user_by_id" href="#supertokens_python.recipe.passwordless.interfaces.RecipeInterface.get_user_by_id">get_user_by_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.get_user_by_phone_number" href="#supertokens_python.recipe.passwordless.interfaces.RecipeInterface.get_user_by_phone_number">get_user_by_phone_number</a></code></li>

@@ -40,7 +40,8 @@ from ..passwordless import interfaces as PlessInterfaces
 from ..passwordless.interfaces import (CreateCodePostResponse,
                                        CreateCodeResult,
                                        CreateNewCodeForDeviceResult,
-                                       DeviceType, EmailExistsGetResponse,
+                                       DeleteUserInfoResult, DeviceType,
+                                       EmailExistsGetResponse,
                                        PhoneNumberExistsGetResponse,
                                        ResendCodePostResponse,
                                        RevokeAllCodesResult, RevokeCodeResult,
@@ -160,6 +161,14 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def update_passwordless_user(self, user_id: str,
                                        email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; UpdateUserResult:
+        pass
+
+    @abstractmethod
+    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        pass
+
+    @abstractmethod
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
         pass
 
     @abstractmethod
@@ -1193,6 +1202,14 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
+    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        pass
+
+    @abstractmethod
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        pass
+
+    @abstractmethod
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesResult:
         pass
@@ -1279,6 +1296,34 @@ async def create_new_code_for_device(self,
                                      device_id: str,
                                      user_input_code: Union[str, None],
                                      user_context: Dict[str, Any]) -&gt; CreateNewCodeForDeviceResult:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.delete_email_for_passwordless_user"><code class="name flex">
+<span>async def <span class="ident">delete_email_for_passwordless_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.delete_phone_number_for_user"><code class="name flex">
+<span>async def <span class="ident">delete_phone_number_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
     pass</code></pre>
 </details>
 </dd>
@@ -1540,6 +1585,8 @@ async def update_passwordless_user(self, user_id: str,
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.consume_code" href="#supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.consume_code">consume_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.create_code" href="#supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.create_code">create_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.create_new_code_for_device" href="#supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.create_new_code_for_device">create_new_code_for_device</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.delete_email_for_passwordless_user" href="#supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.delete_email_for_passwordless_user">delete_email_for_passwordless_user</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.delete_phone_number_for_user" href="#supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.delete_phone_number_for_user">delete_phone_number_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.get_user_by_id" href="#supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.get_user_by_id">get_user_by_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.get_user_by_phone_number" href="#supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.get_user_by_phone_number">get_user_by_phone_number</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.get_user_by_thirdparty_info" href="#supertokens_python.recipe.thirdpartypasswordless.interfaces.RecipeInterface.get_user_by_thirdparty_info">get_user_by_thirdparty_info</a></code></li>
