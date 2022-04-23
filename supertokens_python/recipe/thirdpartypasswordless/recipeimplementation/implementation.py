@@ -17,9 +17,11 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from ...passwordless.interfaces import (CreateCodeResult,
                                         CreateNewCodeForDeviceResult,
-                                        DeleteUserInfoResult, DeviceType,
-                                        RevokeAllCodesResult, RevokeCodeResult,
-                                        UpdateUserResult)
+                                        DeleteUserInfoResult,
+                                        DeleteUserInfoUnknownUserIdErrorResult,
+                                        DeviceType, RevokeAllCodesResult,
+                                        RevokeCodeResult, UpdateUserResult,
+                                        UpdateUserUnknownUserIdErrorResult)
 from ...thirdparty.interfaces import SignInUpResult
 
 if TYPE_CHECKING:
@@ -193,12 +195,30 @@ class RecipeImplementation(RecipeInterface):
 
     async def update_passwordless_user(self, user_id: str,
                                        email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return UpdateUserUnknownUserIdErrorResult()
+        if user.third_party_info is not None:
+            raise Exception(
+                "Cannot update passwordless user info of a user who signed up using third party login.")
         return await self.pless_update_user(user_id, email, phone_number, user_context)
 
     async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return DeleteUserInfoUnknownUserIdErrorResult()
+        if user.third_party_info is not None:
+            raise Exception(
+                "Cannot update passwordless user info of a user who signed up using third party login.")
         return await self.pless_delete_email_for_user(user_id, user_context)
 
     async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return DeleteUserInfoUnknownUserIdErrorResult()
+        if user.third_party_info is not None:
+            raise Exception(
+                "Cannot update passwordless user info of a user who signed up using third party login.")
         return await self.pless_delete_phone_number_for_user(user_id, user_context)
 
     async def revoke_all_codes(self,
