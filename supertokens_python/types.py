@@ -39,9 +39,6 @@ class UsersResponse:
 
 
 class APIResponse(ABC):
-    """
-    Base class for all of the responses (POST and GET) from supertokens.
-    """
     @abstractmethod
     def to_json(self) -> Dict[str, Any]:
         pass

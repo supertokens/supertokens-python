@@ -35,8 +35,6 @@ class APIImplementation(APIInterface):
     async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[EmailVerifyPostOkResponse, EmailVerifyPostInvalidTokenErrorResponse]:
         response = await api_options.recipe_implementation.verify_email_using_token(token, user_context)
         if isinstance(response, VerifyEmailUsingTokenOkResult):
-            if response.user is None:
-                raise Exception("Should never come here")
             return EmailVerifyPostOkResponse(response.user)
         return EmailVerifyPostInvalidTokenErrorResponse()
 
@@ -65,8 +63,6 @@ class APIImplementation(APIInterface):
 
         user = User(user_id, email)
 
-        if token_result.token is None:
-            raise Exception("Should never come here")
         email_verify_link = (await api_options.config.get_email_verification_url(
             user, user_context)) + '?token=' + token_result.token + '&rid' + api_options.recipe_id
 

@@ -168,8 +168,6 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
 
     verify_token = await create_email_verification_token(user_id)
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
-        if verify_token.token is None:
-            raise Exception("Should never come here")
         await verify_email_using_token(verify_token.token)
 
         response = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
@@ -177,6 +175,7 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
                                               user_id)
         dict_response = json.loads(response.text)
         assert dict_response["status"] == "EMAIL_ALREADY_VERIFIED_ERROR"
+    raise Exception("Test failed")
 
 
 @mark.asyncio
@@ -953,10 +952,9 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     await revoke_email_verification_token(user_id)
 
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
-        if verify_token.token is None:
-            raise Exception("Should never come here")
         response = await verify_email_using_token(verify_token.token)
         assert isinstance(response, VerifyEmailUsingTokenInvalidTokenErrorResult)
+    raise Exception("Test failed")
 
 
 @mark.asyncio
@@ -990,8 +988,6 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
 
     verify_token = await create_email_verification_token(user_id)
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
-        if verify_token.token is None:
-            raise Exception("Should never come here")
         await verify_email_using_token(verify_token.token)
 
         assert await is_email_verified(user_id)
@@ -1000,3 +996,4 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
 
         is_verified = await is_email_verified(user_id)
         assert is_verified is False
+    raise Exception("Test failed")

@@ -51,7 +51,7 @@ from typing_extensions import Literal
 
 from ..emailverification.interfaces import (
     CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult,
-    CreateEmailVerificationTokenResult)
+    CreateEmailVerificationTokenOkResult)
 from ..emailverification.interfaces import RecipeInterface as EVRecipeInterface
 from ..emailverification.utils import OverrideConfig as EVOverrideConfig
 from ..passwordless import PasswordlessRecipe
@@ -111,7 +111,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                 og_create_email_verification_token = original_impl.create_email_verification_token
                 og_is_email_verified = original_impl.is_email_verified
 
-                async def create_email_verification_token(user_id: str, email: str, user_context: Dict[str, Any]) -> CreateEmailVerificationTokenResult:
+                async def create_email_verification_token(user_id: str, email: str, user_context: Dict[str, Any]) -> Union[CreateEmailVerificationTokenOkResult, CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult]:
                     user = await self.recipe_implementation.get_user_by_id(user_id, user_context)
                     if user is None or user.third_party_info is not None:
                         return await og_create_email_verification_token(user_id, email, user_context)
