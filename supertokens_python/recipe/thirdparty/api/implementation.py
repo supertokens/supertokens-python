@@ -18,6 +18,8 @@ from urllib.parse import urlencode
 
 from httpx import AsyncClient
 from supertokens_python.exceptions import raise_general_exception
+from supertokens_python.recipe.emailverification.interfaces import \
+    CreateEmailVerificationTokenOkResult
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.thirdparty.interfaces import (
     APIInterface, AuthorisationUrlGetOkResponse,
@@ -138,7 +140,7 @@ class APIImplementation(APIInterface):
         if email_verified:
             token_response = await api_options.email_verification_recipe_implementation.create_email_verification_token(user_id=signinup_response.user.user_id, email=signinup_response.user.email, user_context=user_context)
 
-            if token_response.is_ok:
+            if isinstance(token_response, CreateEmailVerificationTokenOkResult):
                 if token_response.token is None:
                     raise Exception("Should never come here")
                 await api_options.email_verification_recipe_implementation.verify_email_using_token(token=token_response.token, user_context=user_context)
