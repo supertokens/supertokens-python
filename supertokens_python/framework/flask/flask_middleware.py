@@ -67,7 +67,7 @@ class Middleware:
         def _(response: Response):
             from flask import g
             response_ = FlaskResponse(response)
-            if hasattr(g, 'supertokens'):
+            if hasattr(g, 'supertokens') and g.supertokens is not None:
                 manage_cookies_post_response(g.supertokens, response_)
 
             return response_.response

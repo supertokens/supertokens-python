@@ -59,7 +59,9 @@ from .interfaces import (
     ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
     CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowErrorResult,
-    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult, RecipeInterface,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
+    DeleteUserInfoOkResult, DeleteUserInfoResult,
+    DeleteUserInfoUnknownUserIdErrorResult, RecipeInterface,
     RevokeAllCodesOkResult, RevokeCodeOkResult,
     UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
     UpdateUserPhoneNumberAlreadyExistsErrorResult,
@@ -91,7 +93,7 @@ class RecipeImplementation(RecipeInterface):
         if phone_number is not None:
             data = {
                 **data,
-                &#39;email&#39;: phone_number
+                &#39;phoneNumber&#39;: phone_number
             }
         result = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/signinup/code&#39;), data)
         return CreateCodeOkResult(
@@ -253,6 +255,28 @@ class RecipeImplementation(RecipeInterface):
         if result[&#39;status&#39;] == &#39;EMAIL_ALREADY_EXISTS_ERROR&#39;:
             return UpdateUserEmailAlreadyExistsErrorResult()
         return UpdateUserPhoneNumberAlreadyExistsErrorResult()
+
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        data = {&#39;userId&#39;: user_id, &#39;email&#39;: None}
+        result = await self.querier.send_put_request(NormalisedURLPath(&#39;/recipe/user&#39;), data)
+        if result[&#39;status&#39;] == &#39;OK&#39;:
+            return DeleteUserInfoOkResult()
+        if result.get(&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;):
+            raise Exception(&#34;Should never come here&#34;)
+        if result.get(&#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;):
+            raise Exception(&#34;Should never come here&#34;)
+        return DeleteUserInfoUnknownUserIdErrorResult()
+
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        data = {&#39;userId&#39;: user_id, &#39;phoneNumber&#39;: None}
+        result = await self.querier.send_put_request(NormalisedURLPath(&#39;/recipe/user&#39;), data)
+        if result[&#39;status&#39;] == &#39;OK&#39;:
+            return DeleteUserInfoOkResult()
+        if result.get(&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;):
+            raise Exception(&#34;Should never come here&#34;)
+        if result.get(&#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;):
+            raise Exception(&#34;Should never come here&#34;)
+        return DeleteUserInfoUnknownUserIdErrorResult()
 
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesResult:
@@ -444,7 +468,7 @@ inheritance.</p></div>
         if phone_number is not None:
             data = {
                 **data,
-                &#39;email&#39;: phone_number
+                &#39;phoneNumber&#39;: phone_number
             }
         result = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/signinup/code&#39;), data)
         return CreateCodeOkResult(
@@ -606,6 +630,28 @@ inheritance.</p></div>
         if result[&#39;status&#39;] == &#39;EMAIL_ALREADY_EXISTS_ERROR&#39;:
             return UpdateUserEmailAlreadyExistsErrorResult()
         return UpdateUserPhoneNumberAlreadyExistsErrorResult()
+
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        data = {&#39;userId&#39;: user_id, &#39;email&#39;: None}
+        result = await self.querier.send_put_request(NormalisedURLPath(&#39;/recipe/user&#39;), data)
+        if result[&#39;status&#39;] == &#39;OK&#39;:
+            return DeleteUserInfoOkResult()
+        if result.get(&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;):
+            raise Exception(&#34;Should never come here&#34;)
+        if result.get(&#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;):
+            raise Exception(&#34;Should never come here&#34;)
+        return DeleteUserInfoUnknownUserIdErrorResult()
+
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        data = {&#39;userId&#39;: user_id, &#39;phoneNumber&#39;: None}
+        result = await self.querier.send_put_request(NormalisedURLPath(&#39;/recipe/user&#39;), data)
+        if result[&#39;status&#39;] == &#39;OK&#39;:
+            return DeleteUserInfoOkResult()
+        if result.get(&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;):
+            raise Exception(&#34;Should never come here&#34;)
+        if result.get(&#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;):
+            raise Exception(&#34;Should never come here&#34;)
+        return DeleteUserInfoUnknownUserIdErrorResult()
 
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesResult:
@@ -841,7 +887,7 @@ inheritance.</p></div>
     if phone_number is not None:
         data = {
             **data,
-            &#39;email&#39;: phone_number
+            &#39;phoneNumber&#39;: phone_number
         }
     result = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/signinup/code&#39;), data)
     return CreateCodeOkResult(
@@ -890,6 +936,48 @@ inheritance.</p></div>
         code_life_time=result[&#39;codeLifetime&#39;],
         time_created=result[&#39;timeCreated&#39;]
     )</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.delete_email_for_user"><code class="name flex">
+<span>async def <span class="ident">delete_email_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+    data = {&#39;userId&#39;: user_id, &#39;email&#39;: None}
+    result = await self.querier.send_put_request(NormalisedURLPath(&#39;/recipe/user&#39;), data)
+    if result[&#39;status&#39;] == &#39;OK&#39;:
+        return DeleteUserInfoOkResult()
+    if result.get(&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;):
+        raise Exception(&#34;Should never come here&#34;)
+    if result.get(&#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;):
+        raise Exception(&#34;Should never come here&#34;)
+    return DeleteUserInfoUnknownUserIdErrorResult()</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.delete_phone_number_for_user"><code class="name flex">
+<span>async def <span class="ident">delete_phone_number_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+    data = {&#39;userId&#39;: user_id, &#39;phoneNumber&#39;: None}
+    result = await self.querier.send_put_request(NormalisedURLPath(&#39;/recipe/user&#39;), data)
+    if result[&#39;status&#39;] == &#39;OK&#39;:
+        return DeleteUserInfoOkResult()
+    if result.get(&#34;EMAIL_ALREADY_EXISTS_ERROR&#34;):
+        raise Exception(&#34;Should never come here&#34;)
+    if result.get(&#34;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#34;):
+        raise Exception(&#34;Should never come here&#34;)
+    return DeleteUserInfoUnknownUserIdErrorResult()</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_email"><code class="name flex">
@@ -1238,6 +1326,8 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.consume_code" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.consume_code">consume_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.create_code" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.create_code">create_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.create_new_code_for_device" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.create_new_code_for_device">create_new_code_for_device</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.delete_email_for_user" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.delete_email_for_user">delete_email_for_user</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.delete_phone_number_for_user" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.delete_phone_number_for_user">delete_phone_number_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_email" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_email">get_user_by_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_id" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_id">get_user_by_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_phone_number" href="#supertokens_python.recipe.passwordless.recipe_implementation.RecipeImplementation.get_user_by_phone_number">get_user_by_phone_number</a></code></li>

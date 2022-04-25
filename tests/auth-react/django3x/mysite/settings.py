@@ -17,11 +17,11 @@ from typing import Any, Dict, List, Union
 from corsheaders.defaults import default_headers
 from django.conf import settings
 from dotenv import load_dotenv
-from httpx import AsyncClient
 from supertokens_python import (InputAppInfo, SupertokensConfig,
                                 get_all_cors_headers, init)
 from supertokens_python.recipe import (emailpassword, passwordless, session,
-                                       thirdparty, thirdpartyemailpassword)
+                                       thirdparty, thirdpartyemailpassword,
+                                       thirdpartypasswordless)
 from supertokens_python.recipe.emailpassword.types import InputFormField, User
 from supertokens_python.recipe.passwordless import (
     ContactPhoneOnlyConfig, CreateAndSendCustomEmailParameters,
@@ -91,16 +91,9 @@ class CustomAuth0Provider(Provider):
         self.access_token_api_url = "https://" + self.domain + "/oauth/token"
 
     async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
-        access_token: str = auth_code_response['access_token']
-        headers = {
-            'Authorization': 'Bearer ' + access_token,
-        }
-        async with AsyncClient() as client:
-            response = await client.get(url="https://" + self.domain + "/userinfo", headers=headers)
-            user_info = response.json()
-
-            return UserInfo(user_info['sub'], UserInfoEmail(
-                user_info['name'], True))
+        # we do not query auth0 here cause it reaches their rate limit.
+        return UserInfo("test-user-id-1", UserInfoEmail(
+            "auth0email@example.com", True))
 
     def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
         params: Dict[str, Any] = {
@@ -155,6 +148,23 @@ async def save_code_text(param: CreateAndSendCustomTextMessageParameters, _: Dic
     setattr(settings, "CODE_STORE", CODE_STORE)
 
 
+providers_list: List[Provider] = [
+    Google(
+        client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+        client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
+    ), Facebook(
+        client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
+        client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
+    ), Github(
+        client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+        client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
+    ), CustomAuth0Provider(
+        client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
+        domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
+        client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
+    )
+]
+
 recipe_list = [
     session.init(),
     emailpassword.init(
@@ -167,48 +177,25 @@ recipe_list = [
         )
     ),
     thirdparty.init(
-        sign_in_and_up_feature=thirdparty.SignInAndUpFeature([  # type: ignore
-            Google(
-                client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
-                client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
-            ), Facebook(
-                client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
-                client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
-            ), Github(
-                client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
-                client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
-            ), CustomAuth0Provider(
-                client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
-                domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
-                client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
-            )
-        ])
+        sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list)
     ),
     thirdpartyemailpassword.init(
         sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(
             form_fields),
-        providers=[  # type: ignore
-            Google(
-                client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
-                client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
-            ), Facebook(
-                client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
-                client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
-            ), Github(
-                client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
-                client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
-            ), CustomAuth0Provider(
-                client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
-                domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
-                client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
-            )
-        ]
+        providers=providers_list
     ),
     passwordless.init(
         contact_config=ContactPhoneOnlyConfig(
             create_and_send_custom_text_message=save_code_text
         ),
         flow_type='USER_INPUT_CODE_AND_MAGIC_LINK'
+    ),
+    thirdpartypasswordless.init(
+        contact_config=ContactPhoneOnlyConfig(
+            create_and_send_custom_text_message=save_code_text
+        ),
+        flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
+        providers=providers_list
     )
 ]
 init(

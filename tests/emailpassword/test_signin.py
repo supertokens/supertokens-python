@@ -11,9 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
-from supertokens_python.recipe.session import SessionContainer
 import json
+from typing import Union
 
 from fastapi import FastAPI
 from fastapi.requests import Request
@@ -21,14 +20,15 @@ from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.asyncio import delete_user, get_user_count
-from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.interfaces import APIInterface
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (create_new_session,
                                                        get_session,
                                                        refresh_session)
-from supertokens_python.utils import compare_version
+from supertokens_python.utils import is_version_gte
 from tests.utils import (clean_st, extract_all_cookies, reset, setup_st,
                          sign_up_request, start_st)
 
@@ -47,7 +47,7 @@ def teardown_function(_):
 @fixture(scope='function')
 async def driver_config_client():
     app = FastAPI()
-    app.add_middleware(Middleware)
+    app.add_middleware(get_middleware())
 
     @app.get('/login')
     async def login(request: Request):  # type: ignore
@@ -574,7 +574,7 @@ async def test_delete_user(driver_config_client: TestClient):
 
     version = await Querier.get_instance().get_api_version()
 
-    if compare_version(version, "2.10") == version:
+    if is_version_gte(version, "2.10"):
         await delete_user(dict_response["user"]["id"])
         user_count = await get_user_count()
         assert user_count == 0

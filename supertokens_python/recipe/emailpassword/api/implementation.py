@@ -122,5 +122,5 @@ class APIImplementation(APIInterface):
             return SignUpPostEmailAlreadyExistsErrorResponse()
 
         user = result.user
-        session = await create_new_session(api_options.request, user.user_id, user_context)
+        session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
         return SignUpPostOkResponse(user, session)

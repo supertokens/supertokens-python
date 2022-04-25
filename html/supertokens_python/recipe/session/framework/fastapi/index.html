@@ -60,6 +60,7 @@ def verify_session(
         if session is None:
             if session_required:
                 raise Exception(&#34;Should never come here&#34;)
+            baseRequest.set_session_as_none()
         else:
             baseRequest.set_session(session)
         return baseRequest.get_session()
@@ -96,6 +97,7 @@ def verify_session(
         if session is None:
             if session_required:
                 raise Exception(&#34;Should never come here&#34;)
+            baseRequest.set_session_as_none()
         else:
             baseRequest.set_session(session)
         return baseRequest.get_session()

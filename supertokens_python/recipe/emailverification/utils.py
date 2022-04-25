@@ -35,8 +35,8 @@ def default_get_email_verification_url(app_info: AppInfo) -> Callable[[User, Dic
 
 def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
     async def func(user: User, email_verification_url: str, _: Dict[str, Any]):
-        if ('SUPERTOKENS_ENV' not in environ) or (
-                environ['SUPERTOKENS_ENV'] != 'testing'):
+        if ('SUPERTOKENS_ENV' in environ) and (
+                environ['SUPERTOKENS_ENV'] == 'testing'):
             return
         try:
             async with AsyncClient() as client:

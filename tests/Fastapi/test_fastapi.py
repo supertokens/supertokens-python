@@ -11,25 +11,25 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
-from supertokens_python.recipe.emailpassword.interfaces import \
-    APIInterface as EPAPIInterface
-from typing import Any, Dict
-from supertokens_python.recipe.session.interfaces import APIInterface
-from supertokens_python.recipe.session import SessionContainer
 import json
+from typing import Any, Dict, Union
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.requests import Request
 from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe.emailpassword.interfaces import \
+    APIInterface as EPAPIInterface
 from supertokens_python.recipe.emailpassword.interfaces import APIOptions
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (create_new_session,
                                                        get_session,
                                                        refresh_session)
+from supertokens_python.recipe.session.framework.fastapi import verify_session
+from supertokens_python.recipe.session.interfaces import APIInterface
 from tests.utils import (TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH,
                          TEST_DRIVER_CONFIG_COOKIE_DOMAIN,
                          TEST_DRIVER_CONFIG_COOKIE_SAME_SITE,
@@ -51,7 +51,7 @@ def teardown_function(_):
 @fixture(scope='function')
 async def driver_config_client():
     app = FastAPI()
-    app.add_middleware(Middleware)
+    app.add_middleware(get_middleware())
 
     @app.get('/login')
     async def login(request: Request):  # type: ignore
@@ -82,6 +82,12 @@ async def driver_config_client():
         session: Union[None, SessionContainer] = await get_session(request, True)
         if session is None:
             raise Exception("Should never come here")
+        return {'s': session.get_handle()}
+
+    @app.get('/handle-session-optional')
+    async def handle_get_optional(session: SessionContainer = Depends(verify_session(session_required=False))):  # type: ignore
+        if session is None:
+            return {'s': "empty session"}
         return {'s': session.get_handle()}
 
     @app.post('/logout')
@@ -449,3 +455,28 @@ async def test_custom_response(driver_config_client: TestClient):
     dict_response = json.loads(response.text)
     assert response.status_code == 203
     assert dict_response["custom"]
+
+
+@mark.asyncio
+async def test_optional_session(driver_config_client: TestClient):
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[session.init()]
+    )
+    start_st()
+
+    response = driver_config_client.get(
+        url='handle-session-optional',
+    )
+
+    dict_response = json.loads(response.text)
+    assert response.status_code == 200
+    assert dict_response["s"] == "empty session"

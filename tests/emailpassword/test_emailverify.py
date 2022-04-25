@@ -21,7 +21,7 @@ from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.exceptions import BadInputError
-from supertokens_python.framework.fastapi import Middleware
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.asyncio import (
@@ -57,7 +57,7 @@ def teardown_function(_):
 @fixture(scope='function')
 async def driver_config_client():
     app = FastAPI()
-    app.add_middleware(Middleware)
+    app.add_middleware(get_middleware())
 
     @app.get('/login')
     async def login(request: Request):  # type: ignore
@@ -938,7 +938,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version in ('2.9', '2.10', '2.11', '2.12')
+    assert version in ('2.9', '2.10', '2.11', '2.12', '2.13')
 
     response_1 = sign_up_request(
         driver_config_client,
@@ -977,7 +977,7 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version in ('2.9', '2.10', '2.11', '2.12')
+    assert version in ('2.9', '2.10', '2.11', '2.12', '2.13')
 
     response_1 = sign_up_request(
         driver_config_client,

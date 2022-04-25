@@ -25,6 +25,7 @@ from .jwt import get_payload_without_verifying
 if TYPE_CHECKING:
     from .recipe_implementation import RecipeImplementation
 
+from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 
@@ -109,18 +110,22 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
             if anti_csrf_token is None or anti_csrf_token != access_token_info[
                     'antiCsrfToken']:
                 if anti_csrf_token is None:
-                    raise_try_refresh_token_exception('Provided antiCsrfToken is undefined. If you do not '
-                                                      'want anti-csrf check for this API, please set '
-                                                      'doAntiCsrfCheck to false for this API')
+                    log_debug_message(
+                        "getSession: Returning TRY_REFRESH_TOKEN because antiCsrfToken is missing from request"
+                    )
+                    raise_try_refresh_token_exception('Provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false for this API')
                 else:
+                    log_debug_message(
+                        "getSession: Returning TRY_REFRESH_TOKEN because the passed antiCsrfToken is not the same as in the access token"
+                    )
                     raise_try_refresh_token_exception(
                         'anti-csrf check failed')
 
     elif handshake_info.anti_csrf == 'VIA_CUSTOM_HEADER' and do_anti_csrf_check:
         if not contains_custom_header:
-            raise_unauthorised_exception('anti-csrf check failed. Please pass \'rid: "session"\' '
-                                         'header in the request, or set doAntiCsrfCheck to false '
-                                         'for this API')
+            log_debug_message("getSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed")
+            raise_try_refresh_token_exception('anti-csrf check failed. Please pass \'rid: "anti-csrf"\' header in the request, or set doAntiCsrfCheck to false '
+                                              'for this API')
 
     if access_token_info is not None and not handshake_info.access_token_blacklisting_enabled and \
             access_token_info['parentRefreshTokenHash1'] is None:
@@ -153,6 +158,7 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
         response.pop('jwtSigningPublicKeyList', None)
         return response
     if response['status'] == 'UNAUTHORISED':
+        log_debug_message("getSession: Returning UNAUTHORISED because of core response")
         raise_unauthorised_exception(response['message'])
     if response['jwtSigningPublicKeyList'] is not None or response['jwtSigningPublicKey'] is not None or response['jwtSigningPublicKeyExpiryTime'] is not None:
         recipe_implementation.update_jwt_signing_public_key_info(
@@ -161,6 +167,8 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
             response['jwtSigningPublicKeyExpiryTime'])
     else:
         await recipe_implementation.get_handshake_info(True)
+
+    log_debug_message("getSession: Returning TRY_REFRESH_TOKEN because of core response")
     raise_try_refresh_token_exception(response['message'])
 
 
@@ -177,6 +185,7 @@ async def refresh_session(recipe_implementation: RecipeImplementation, refresh_t
 
     if handshake_info.anti_csrf == 'VIA_CUSTOM_HEADER':
         if not contains_custom_header:
+            log_debug_message("refreshSession: Returning UNAUTHORISED because custom header (rid) was not passed")
             raise_unauthorised_exception('anti-csrf check failed. Please pass \'rid: "session"\' header '
                                          'in the request.', False)
     response = await recipe_implementation.querier.send_post_request(NormalisedURLPath('/recipe/session/refresh'), data)
@@ -184,7 +193,9 @@ async def refresh_session(recipe_implementation: RecipeImplementation, refresh_t
         response.pop('status', None)
         return response
     if response['status'] == 'UNAUTHORISED':
+        log_debug_message("refreshSession: Returning UNAUTHORISED because of core response")
         raise_unauthorised_exception(response['message'])
+    log_debug_message("refreshSession: Returning TOKEN_THEFT_DETECTED because of core response")
     raise_token_theft_exception(
         response['session']['userId'],
         response['session']['handle']

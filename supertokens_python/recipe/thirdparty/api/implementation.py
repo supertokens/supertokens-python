@@ -148,7 +148,7 @@ class APIImplementation(APIInterface):
         user = signinup_response.user
         if user is None or signinup_response.created_new_user is None:
             raise Exception("Should never come here")
-        session = await create_new_session(api_options.request, user.user_id, user_context)
+        session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
 
         return SignInUpPostOkResponse(
             user, signinup_response.created_new_user, access_token_response, session)

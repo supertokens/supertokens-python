@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from supertokens_python.recipe.jwt.interfaces import APIInterface, APIOptions
+from supertokens_python.utils import send_200_response
 
 
 async def jwks_get(api_implementation: APIInterface, api_options: APIOptions):
@@ -20,6 +21,4 @@ async def jwks_get(api_implementation: APIInterface, api_options: APIOptions):
 
     result = await api_implementation.jwks_get(api_options, {})
     api_options.response.set_header("Access-Control-Allow-Origin", "*")
-    api_options.response.set_json_content(result.to_json())
-
-    return api_options.response
+    return send_200_response(result.to_json(), api_options.response)

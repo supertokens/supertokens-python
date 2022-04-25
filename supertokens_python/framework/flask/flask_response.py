@@ -15,7 +15,6 @@ import json
 from typing import Any, Dict, List, Union
 
 from supertokens_python.framework.response import BaseResponse
-from werkzeug.http import dump_cookie
 
 
 class FlaskResponse(BaseResponse):
@@ -36,6 +35,7 @@ class FlaskResponse(BaseResponse):
 
     def set_cookie(self, key: str, value: str, expires: int, path: str = "/",
                    domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = "lax"):
+        from werkzeug.http import dump_cookie
         if self.response is None:
             cookie = dump_cookie(
                 key,

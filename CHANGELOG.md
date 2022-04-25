@@ -5,7 +5,74 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
-- Refactored emailverify recipe interfaces towards fixing issue (https://github.com/supertokens/supertokens-python/issues/75)
+
+## [0.6.7] - 2022-04-23
+- Adds delete email (`delete_email_for_user`) and phone number (`delete_phone_number_for_user`) functions for passwordless and thirdpartypasswordless recipe
+- Adds check for user type in update passwordless info in thirdpartypasswordless recipe
+
+## [0.6.6] - 2022-04-22
+- Fixes issue in user metadata recipe where as are exposing async functions in the syncio file.
+
+## [0.6.5] - 2022-04-18
+- Upgrade and freeze pyright version
+- Rename `compare_version` to `get_max_version` for readability
+- Add user metadata recipe
+
+## [0.6.4] - 2022-04-11
+- bug fix in `default_create_and_send_custom_email` for emailverification recipe where we were not sending the email if env var was not set.
+- Fix telemetry issues related to asyncio when using FastAPI. Related issue: https://github.com/supertokens/supertokens-core/issues/421
+- adds git action for running tests
+
+## [0.6.3] - 2022-04-09
+- Setup logging for easier debugging
+- Adds github action for checking all things checked by pre commit hook
+
+## [0.6.2] - 2022-04-07
+- Fix Passwordless OTP recipe phone number field to fix https://github.com/supertokens/supertokens-core/issues/416
+
+## [0.6.1] - 2022-03-29
+
+- Expands allowed version range for httpx library to fix https://github.com/supertokens/supertokens-python/issues/98
+
+## [0.6.0] - 2022-03-26
+
+### Changes
+- Removes dependency on framework specific dependencies (`werkzeug` and `starlette`)
+
+### Breaking change:
+- Import for fastapi middleware:
+   - Old
+      ```
+      from supertokens_python.framework.fastapi import Middleware
+
+      app = FastAPI()
+      app.add_middleware(Middleware)
+      ```
+   - New
+      ```
+      from supertokens_python.framework.fastapi import get_middleware
+
+      app = FastAPI()
+      app.add_middleware(get_middleware())
+      ```
+
+### Fixes
+- `user_context` was passed incorrectly to the `create_new_session_function`.
+
+## [0.5.3] - 2022-03-26
+### Fixes
+- Bug in user pagination functions: https://github.com/supertokens/supertokens-python/issues/95
+
+
+## [0.5.2] - 2022-03-17
+### Fixes
+- https://github.com/supertokens/supertokens-python/issues/90
+- Thirdpartypasswordless recipe + tests
+
+### Changed:
+- Added new function to BaseRequest class called `set_session_as_none` to set session object to None.
+
+## [0.5.1] - 2022-03-02
 
 ### Fixes:
 - Bug where a user had to add dependencies on all frameworks when using the SDK: https://github.com/supertokens/supertokens-python/issues/82

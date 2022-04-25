@@ -57,7 +57,7 @@ def get_recipe_implementation_with_jwt(original_implementation: RecipeInterface,
             openid_recipe_implementation=openid_recipe_implementation,
             user_context=user_context
         )
-        session = await og_create_new_session(request, user_id, access_token_payload, session_data, user_context)
+        session = await og_create_new_session(request, user_id, access_token_payload, session_data, user_context=user_context)
         return get_session_with_jwt(session, openid_recipe_implementation)
 
     og_get_session = original_implementation.get_session

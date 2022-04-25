@@ -11,8 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict
-from typing import List
 from datetime import datetime, timezone
 from http.cookies import SimpleCookie
 from os import environ, kill, remove, scandir
@@ -20,6 +18,7 @@ from shutil import rmtree
 from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
+from typing import Any, Dict, List
 
 from requests.models import Response
 from supertokens_python import Supertokens
@@ -27,10 +26,14 @@ from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
+from supertokens_python.recipe.passwordless import PasswordlessRecipe
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdpartyemailpassword import \
     ThirdPartyEmailPasswordRecipe
+from supertokens_python.recipe.thirdpartypasswordless import \
+    ThirdPartyPasswordlessRecipe
+from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from yaml import FullLoader, dump, load
 
 from fastapi.testclient import TestClient
@@ -177,7 +180,11 @@ def reset():
     EmailPasswordRecipe.reset()
     EmailVerificationRecipe.reset()
     ThirdPartyRecipe.reset()
+    PasswordlessRecipe.reset()
     JWTRecipe.reset()
+    UserMetadataRecipe.reset()
+    ThirdPartyPasswordlessRecipe.reset()
+    PasswordlessRecipe.reset()
 
 
 def get_cookie_from_response(response: Response, cookie_name: str):

@@ -20,6 +20,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
     APIInterface, APIOptions, CreateCodePostGeneralErrorResponse)
 from supertokens_python.recipe.passwordless.utils import (
     ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)
+from supertokens_python.utils import send_200_response
 
 
 async def create_code(api_implementation: APIInterface, api_options: APIOptions):
@@ -81,6 +82,4 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
             phone_number = phone_number.strip()
     result = await api_implementation.create_code_post(
         email=email, phone_number=phone_number, api_options=api_options, user_context={})
-    api_options.response.set_json_content(result.to_json())
-
-    return api_options.response
+    return send_200_response(result.to_json(), api_options.response)

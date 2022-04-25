@@ -47,6 +47,8 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import (APIInterface,
                                                               APIOptions)
 
+from supertokens_python.utils import send_200_response
+
 
 async def handle_refresh_api(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_refresh_post or api_implementation.refresh_post is None:
@@ -54,8 +56,7 @@ async def handle_refresh_api(api_implementation: APIInterface, api_options: APIO
     await api_implementation.refresh_post(api_options, {})
     if api_options.response is None:
         raise Exception(&#34;Should never come here&#34;)
-    api_options.response.set_json_content({})
-    return api_options.response</code></pre>
+    return send_200_response({}, api_options.response)</code></pre>
 </details>
 </section>
 <section>
@@ -80,8 +81,7 @@ async def handle_refresh_api(api_implementation: APIInterface, api_options: APIO
     await api_implementation.refresh_post(api_options, {})
     if api_options.response is None:
         raise Exception(&#34;Should never come here&#34;)
-    api_options.response.set_json_content({})
-    return api_options.response</code></pre>
+    return send_200_response({}, api_options.response)</code></pre>
 </details>
 </dd>
 </dl>
