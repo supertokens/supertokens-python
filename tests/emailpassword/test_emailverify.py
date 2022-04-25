@@ -175,6 +175,7 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
                                               user_id)
         dict_response = json.loads(response.text)
         assert dict_response["status"] == "EMAIL_ALREADY_VERIFIED_ERROR"
+        return
     raise Exception("Test failed")
 
 
@@ -954,6 +955,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
         response = await verify_email_using_token(verify_token.token)
         assert isinstance(response, VerifyEmailUsingTokenInvalidTokenErrorResult)
+        return
     raise Exception("Test failed")
 
 
@@ -996,4 +998,5 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
 
         is_verified = await is_email_verified(user_id)
         assert is_verified is False
+        return
     raise Exception("Test failed")
