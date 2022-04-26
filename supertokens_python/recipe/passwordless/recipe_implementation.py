@@ -20,7 +20,7 @@ from supertokens_python.querier import Querier
 from .types import DeviceCode, DeviceType, User
 
 if TYPE_CHECKING:
-    from .interfaces import CreateCodeResult, RevokeCodeResult, RevokeAllCodesResult, UpdateUserResult, \
+    from .interfaces import CreateCodeOkResult, RevokeCodeResult, RevokeAllCodesResult, UpdateUserResult, \
         ConsumeCodeResult, CreateNewCodeForDeviceResult
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -50,7 +50,7 @@ class RecipeImplementation(RecipeInterface):
                           email: Union[None, str],
                           phone_number: Union[None, str],
                           user_input_code: Union[None, str],
-                          user_context: Dict[str, Any]) -> CreateCodeResult:
+                          user_context: Dict[str, Any]) -> CreateCodeOkResult:
         data: Dict[str, Any] = {}
         if user_input_code is not None:
             data = {

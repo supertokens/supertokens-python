@@ -10,8 +10,8 @@ from supertokens_python.recipe.thirdparty.provider import Provider
 from typing_extensions import Literal
 
 from ..passwordless import interfaces as PlessInterfaces
-from ..passwordless.interfaces import (CreateCodePostResponse,
-                                       CreateCodeResult,
+from ..passwordless.interfaces import (CreateCodeOkResult,
+                                       CreateCodePostResponse,
                                        CreateNewCodeForDeviceResult,
                                        DeleteUserInfoResult, DeviceType,
                                        EmailExistsGetResponse,
@@ -112,7 +112,7 @@ class RecipeInterface(ABC):
                           email: Union[None, str],
                           phone_number: Union[None, str],
                           user_input_code: Union[None, str],
-                          user_context: Dict[str, Any]) -> CreateCodeResult:
+                          user_context: Dict[str, Any]) -> CreateCodeOkResult:
         pass
 
     @abstractmethod

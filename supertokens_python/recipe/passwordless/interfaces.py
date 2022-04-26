@@ -22,19 +22,9 @@ from .types import DeviceType, User
 from .utils import PasswordlessConfig
 
 
-class CreateCodeResult(ABC):
-    def __init__(
-            self,
-            status: Literal['OK'],
-            pre_auth_session_id: str,
-            code_id: str,
-            device_id: str,
-            user_input_code: str,
-            link_code: str,
-            code_life_time: int,
-            time_created: int
-    ):
-        self.status = status
+class CreateCodeOkResult():
+    def __init__(self, pre_auth_session_id: str, code_id: str, device_id: str,
+                 user_input_code: str, link_code: str, code_life_time: int, time_created: int):
         self.pre_auth_session_id = pre_auth_session_id
         self.code_id = code_id
         self.device_id = device_id
@@ -42,13 +32,6 @@ class CreateCodeResult(ABC):
         self.link_code = link_code
         self.code_life_time = code_life_time
         self.time_created = time_created
-
-
-class CreateCodeOkResult(CreateCodeResult):
-    def __init__(self, pre_auth_session_id: str, code_id: str, device_id: str,
-                 user_input_code: str, link_code: str, code_life_time: int, time_created: int):
-        super().__init__('OK', pre_auth_session_id, code_id, device_id, user_input_code, link_code, code_life_time,
-                         time_created)
 
 
 class CreateNewCodeForDeviceResult(ABC):
@@ -241,7 +224,7 @@ class RecipeInterface(ABC):
                           email: Union[None, str],
                           phone_number: Union[None, str],
                           user_input_code: Union[None, str],
-                          user_context: Dict[str, Any]) -> CreateCodeResult:
+                          user_context: Dict[str, Any]) -> CreateCodeOkResult:
         pass
 
     @abstractmethod

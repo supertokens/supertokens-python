@@ -14,7 +14,7 @@
 from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.passwordless.interfaces import (
-    ConsumeCodeOkResult, ConsumeCodeResult, CreateCodeResult,
+    ConsumeCodeOkResult, ConsumeCodeResult, CreateCodeOkResult,
     CreateNewCodeForDeviceResult, DeleteUserInfoResult, RevokeAllCodesResult,
     RevokeCodeResult, UpdateUserResult)
 from supertokens_python.recipe.passwordless.recipe import PasswordlessRecipe
@@ -24,7 +24,7 @@ from supertokens_python.recipe.passwordless.types import DeviceType, User
 async def create_code(email: Union[None, str] = None,
                       phone_number: Union[None, str] = None,
                       user_input_code: Union[None, str] = None,
-                      user_context: Union[None, Dict[str, Any]] = None) -> CreateCodeResult:
+                      user_context: Union[None, Dict[str, Any]] = None) -> CreateCodeOkResult:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.create_code(email=email, phone_number=phone_number, user_input_code=user_input_code, user_context=user_context)

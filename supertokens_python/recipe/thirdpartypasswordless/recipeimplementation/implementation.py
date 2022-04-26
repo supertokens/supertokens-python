@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from ...passwordless.interfaces import (CreateCodeResult,
+from ...passwordless.interfaces import (CreateCodeOkResult,
                                         CreateNewCodeForDeviceResult,
                                         DeleteUserInfoResult,
                                         DeleteUserInfoUnknownUserIdErrorResult,
@@ -160,7 +160,7 @@ class RecipeImplementation(RecipeInterface):
                           email: Union[None, str],
                           phone_number: Union[None, str],
                           user_input_code: Union[None, str],
-                          user_context: Dict[str, Any]) -> CreateCodeResult:
+                          user_context: Dict[str, Any]) -> CreateCodeOkResult:
         return await self.pless_create_code(email, phone_number, user_input_code, user_context)
 
     async def create_new_code_for_device(self,

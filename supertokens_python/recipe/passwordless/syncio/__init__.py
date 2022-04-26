@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Union
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.passwordless import asyncio
 from supertokens_python.recipe.passwordless.interfaces import (
-    ConsumeCodeOkResult, ConsumeCodeResult, CreateCodeResult,
+    ConsumeCodeOkResult, ConsumeCodeResult, CreateCodeOkResult,
     CreateNewCodeForDeviceResult, DeleteUserInfoResult, RevokeAllCodesResult,
     RevokeCodeResult, UpdateUserResult)
 from supertokens_python.recipe.passwordless.types import DeviceType, User
@@ -25,7 +25,7 @@ from supertokens_python.recipe.passwordless.types import DeviceType, User
 def create_code(email: Union[None, str] = None,
                 phone_number: Union[None, str] = None,
                 user_input_code: Union[None, str] = None,
-                user_context: Union[None, Dict[str, Any]] = None) -> CreateCodeResult:
+                user_context: Union[None, Dict[str, Any]] = None) -> CreateCodeOkResult:
     return sync(asyncio.create_code(email=email, phone_number=phone_number,
                                     user_input_code=user_input_code, user_context=user_context))
 

@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Union
 from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeErrorResult,
     ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
-    ConsumeCodeRestartFlowErrorResult, ConsumeCodeResult, CreateCodeResult,
+    ConsumeCodeRestartFlowErrorResult, ConsumeCodeResult, CreateCodeOkResult,
     CreateNewCodeForDeviceResult, DeleteUserInfoResult, DeviceType,
     RecipeInterface, RevokeAllCodesResult, RevokeCodeResult, UpdateUserResult)
 
@@ -37,7 +37,7 @@ class RecipeImplementation(RecipeInterface):
                           email: Union[None, str],
                           phone_number: Union[None, str],
                           user_input_code: Union[None, str],
-                          user_context: Dict[str, Any]) -> CreateCodeResult:
+                          user_context: Dict[str, Any]) -> CreateCodeOkResult:
         return await self.recipe_implementation.create_code(email, phone_number, user_input_code, user_context)
 
     async def create_new_code_for_device(self,

@@ -74,7 +74,7 @@ def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = N
 def create_code(email: Union[None, str] = None,
                 phone_number: Union[None, str] = None,
                 user_input_code: Union[None, str] = None,
-                user_context: Union[None, Dict[str, Any]] = None) -> interfaces.CreateCodeResult:
+                user_context: Union[None, Dict[str, Any]] = None) -> interfaces.CreateCodeOkResult:
     return sync(asyncio.create_code(email=email, phone_number=phone_number,
                                     user_input_code=user_input_code, user_context=user_context))
 
