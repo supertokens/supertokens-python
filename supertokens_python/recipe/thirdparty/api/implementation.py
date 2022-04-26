@@ -22,7 +22,7 @@ from supertokens_python.recipe.emailverification.interfaces import \
     CreateEmailVerificationTokenOkResult
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.thirdparty.interfaces import (
-    APIInterface, AuthorisationUrlGetOkResponse, SignInUpFieldErrorResult,
+    APIInterface, AuthorisationUrlGetOkResponse,
     SignInUpPostFieldErrorResponse, SignInUpPostNoEmailGivenByProviderResponse,
     SignInUpPostOkResponse)
 from supertokens_python.recipe.thirdparty.types import UserInfo
@@ -129,10 +129,13 @@ class APIImplementation(APIInterface):
 
         signinup_response = await api_options.recipe_implementation.sign_in_up(provider.id, user_info.user_id, email, email_verified, user_context)
 
-        if isinstance(signinup_response, SignInUpFieldErrorResult):
+        if signinup_response.is_field_error:
             if signinup_response.error is None:
                 raise Exception("Should never come here")
             return SignInUpPostFieldErrorResponse(signinup_response.error)
+
+        if signinup_response.user is None:
+            raise Exception("Should never come here")
 
         if email_verified:
             token_response = await api_options.email_verification_recipe_implementation.create_email_verification_token(user_id=signinup_response.user.user_id, email=signinup_response.user.email, user_context=user_context)

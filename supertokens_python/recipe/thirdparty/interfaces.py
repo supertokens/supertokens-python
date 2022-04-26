@@ -16,10 +16,11 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from typing_extensions import Literal
-
 from ..emailverification.interfaces import \
     RecipeInterface as EmailVerificationRecipeInterface
+
+from typing_extensions import Literal
+
 from .provider import Provider
 
 if TYPE_CHECKING:
@@ -31,15 +32,27 @@ if TYPE_CHECKING:
     from .utils import ThirdPartyConfig
 
 
-class SignInUpOkResult():
+class SignInUpResult(ABC):
+    def __init__(self, status: Literal['OK', 'FIELD_ERROR'], user: Union[User, None] = None,
+                 created_new_user: Union[bool, None] = None, error: Union[str, None] = None):
+        self.status: Literal['OK', 'FIELD_ERROR'] = status
+        self.is_ok: bool = False
+        self.is_field_error: bool = False
+        self.user: Union[User, None] = user
+        self.created_new_user: Union[bool, None] = created_new_user
+        self.error: Union[str, None] = error
+
+
+class SignInUpOkResult(SignInUpResult):
     def __init__(self, user: User, created_new_user: bool):
-        self.user = user
-        self.created_new_user = created_new_user
+        super().__init__('OK', user, created_new_user)
+        self.is_ok = True
 
 
-class SignInUpFieldErrorResult():
+class SignInUpFieldErrorResult(SignInUpResult):
     def __init__(self, error: str):
-        self.error = error
+        super().__init__('FIELD_ERROR', error=error)
+        self.is_field_error = True
 
 
 class RecipeInterface(ABC):
@@ -61,7 +74,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
+                         email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
         pass
 
 

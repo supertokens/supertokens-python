@@ -15,8 +15,9 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Union
 
-from supertokens_python.recipe.thirdparty.interfaces import (
-    RecipeInterface, SignInUpFieldErrorResult, SignInUpOkResult)
+from supertokens_python.recipe.thirdparty.interfaces import (RecipeInterface,
+                                                             SignInUpOkResult,
+                                                             SignInUpResult)
 from supertokens_python.recipe.thirdparty.types import User
 
 from ..interfaces import \
@@ -64,5 +65,17 @@ class RecipeImplementation(RecipeInterface):
         return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
-        return await self.recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
+                         email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
+        result = await self.recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
+
+        if not result.is_ok:
+            return result
+
+        if result.user is None:
+            raise Exception("Should never come here")
+
+        if result.user.third_party_info is None or result.created_new_user is None:
+            raise Exception("Should never come here")
+
+        return SignInUpOkResult(
+            created_new_user=result.created_new_user, user=result.user)
