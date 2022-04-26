@@ -24,15 +24,29 @@ You will need to setup the `supertokens-core` in order to run the `supertokens-p
 
 ### Project Setup
 
-TODO:
+1. Fork the [supertokens-python](https://github.com/supertokens/supertokens-python) repository
+2. Clone the forked repository in the parent directory of the previously setup `supertokens-root`.
+   `supertokens-python` and `supertokens-root` should exist side by side within the same parent directory
+3. Create a virtual environment for the `supertokens-python` project and activate it.
+4. Install the project dependencies
+   `make dev-install`
+5. Add git pre-commit hooks
+   `make set-up-hooks`
 
 ## Modifying Code
 
-TODO:
+1. Open the `supertokens-python` project in your IDE and you can start modifying the code
+2. After modifying the code, test your changes by running `make test`
 
 ## Testing
 
-TODO:
+1. Navigate to the `supertokens-root` repository
+2. Start the testing environment  
+   `./startTestingEnv --wait`
+3. Navigate to the `supertokens-python` respositry
+   `cd ../supertokens-python`
+4. Run all tests  
+   `make test`
 
 ## Pull Request
 
