@@ -18,10 +18,12 @@ from typing import TYPE_CHECKING, Any, Dict, List
 from supertokens_python.recipe.emailpassword.constants import (
     FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID)
 from supertokens_python.recipe.emailpassword.interfaces import (
-    APIInterface, EmailExistsGetOkResponse,
-    GeneratePasswordResetTokenPostOkResponse,
+    APIInterface, CreateResetPasswordWrongUserIdErrorResult,
+    EmailExistsGetOkResponse, GeneratePasswordResetTokenPostOkResponse,
     PasswordResetPostInvalidTokenResponse, PasswordResetPostOkResponse,
-    SignInPostOkResponse, SignInPostWrongCredentialsErrorResponse,
+    ResetPasswordUsingTokenWrongUserIdErrorResult, SignInPostOkResponse,
+    SignInPostWrongCredentialsErrorResponse, SignInWrongCredentialsErrorResult,
+    SignUpEmailAlreadyExistsErrorResult,
     SignUpPostEmailAlreadyExistsErrorResponse, SignUpPostOkResponse)
 from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.session.asyncio import create_new_session
@@ -54,7 +56,7 @@ class APIImplementation(APIInterface):
 
         token_result = await api_options.recipe_implementation.create_reset_password_token(user.user_id, user_context)
 
-        if token_result.is_unknown_user_id_error or token_result.token is None:
+        if isinstance(token_result, CreateResetPasswordWrongUserIdErrorResult):
             return GeneratePasswordResetTokenPostOkResponse()
 
         token = token_result.token
@@ -77,9 +79,11 @@ class APIImplementation(APIInterface):
         new_password = new_password_for_field.value
 
         result = await api_options.recipe_implementation.reset_password_using_token(token, new_password, user_context)
-        if result.is_ok:
-            return PasswordResetPostOkResponse(result.user_id)
-        return PasswordResetPostInvalidTokenResponse()
+
+        if isinstance(result, ResetPasswordUsingTokenWrongUserIdErrorResult):
+            return PasswordResetPostInvalidTokenResponse()
+
+        return PasswordResetPostOkResponse(result.user_id)
 
     async def sign_in_post(self, form_fields: List[FormField], api_options: APIOptions, user_context: Dict[str, Any]) -> SignInPostResponse:
         password_form_field = find_first_occurrence_in_list(
@@ -96,7 +100,7 @@ class APIImplementation(APIInterface):
 
         result = await api_options.recipe_implementation.sign_in(email, password, user_context)
 
-        if result.is_wrong_credentials_error or result.user is None:
+        if isinstance(result, SignInWrongCredentialsErrorResult):
             return SignInPostWrongCredentialsErrorResponse()
 
         user = result.user
@@ -118,7 +122,7 @@ class APIImplementation(APIInterface):
 
         result = await api_options.recipe_implementation.sign_up(email, password, user_context)
 
-        if result.is_email_already_exists_error or result.user is None:
+        if isinstance(result, SignUpEmailAlreadyExistsErrorResult):
             return SignUpPostEmailAlreadyExistsErrorResponse()
 
         user = result.user

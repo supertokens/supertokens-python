@@ -3,15 +3,21 @@ from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.emailpassword import interfaces as EPInterfaces
 from supertokens_python.recipe.emailpassword.interfaces import (
-    CreateResetPasswordResult, EmailExistsGetResponse,
-    GeneratePasswordResetTokenPostResponse, PasswordResetPostResponse,
-    ResetPasswordUsingTokenResult, SignInPostResponse, SignInResult,
-    SignUpPostResponse, SignUpResult, UpdateEmailOrPasswordResult)
+    CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult,
+    EmailExistsGetResponse, GeneratePasswordResetTokenPostResponse,
+    PasswordResetPostResponse, ResetPasswordUsingTokenOkResult,
+    ResetPasswordUsingTokenWrongUserIdErrorResult, SignInOkResult,
+    SignInPostResponse, SignInWrongCredentialsErrorResult,
+    SignUpEmailAlreadyExistsErrorResult, SignUpOkResult, SignUpPostResponse,
+    UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
+    UpdateEmailOrPasswordOkResult,
+    UpdateEmailOrPasswordUnknownUserIdErrorResult)
 from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.thirdparty import \
     interfaces as ThirdPartyInterfaces
 from supertokens_python.recipe.thirdparty.interfaces import (
-    AuthorisationUrlGetResponse, SignInUpPostResponse, SignInUpResult)
+    AuthorisationUrlGetResponse, SignInUpFieldErrorResult, SignInUpOkResult,
+    SignInUpPostResponse)
 from supertokens_python.recipe.thirdparty.provider import Provider
 
 from .types import User
@@ -39,28 +45,28 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
         pass
 
     @abstractmethod
-    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> SignInResult:
+    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignInOkResult, SignInWrongCredentialsErrorResult]:
         pass
 
     @abstractmethod
-    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> SignUpResult:
+    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
         pass
 
     @abstractmethod
-    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> CreateResetPasswordResult:
+    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult]:
         pass
 
     @abstractmethod
-    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> ResetPasswordUsingTokenResult:
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenWrongUserIdErrorResult]:
         pass
 
     @abstractmethod
     async def update_email_or_password(self, user_id: str, email: Union[str, None],
-                                       password: Union[str, None], user_context: Dict[str, Any]) -> UpdateEmailOrPasswordResult:
+                                       password: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateEmailOrPasswordOkResult, UpdateEmailOrPasswordEmailAlreadyExistsErrorResult, UpdateEmailOrPasswordUnknownUserIdErrorResult]:
         pass
 
 

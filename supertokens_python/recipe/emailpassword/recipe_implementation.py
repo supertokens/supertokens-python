@@ -31,10 +31,6 @@ from .types import User
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
 
-    from .interfaces import (CreateResetPasswordResult,
-                             ResetPasswordUsingTokenResult, SignInResult,
-                             SignUpResult, UpdateEmailOrPasswordResult)
-
 
 class RecipeImplementation(RecipeInterface):
     def __init__(self, querier: Querier):
@@ -61,7 +57,7 @@ class RecipeImplementation(RecipeInterface):
                         ['email'], response['user']['timeJoined'])
         return None
 
-    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> CreateResetPasswordResult:
+    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult]:
         data = {
             'userId': user_id
         }
@@ -72,7 +68,7 @@ class RecipeImplementation(RecipeInterface):
             return CreateResetPasswordOkResult(response['token'])
         return CreateResetPasswordWrongUserIdErrorResult()
 
-    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> ResetPasswordUsingTokenResult:
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenWrongUserIdErrorResult]:
         data = {
             'method': 'token',
             'token': token,
@@ -87,7 +83,7 @@ class RecipeImplementation(RecipeInterface):
             user_id = response['userId']
         return ResetPasswordUsingTokenOkResult(user_id)
 
-    async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> SignInResult:
+    async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignInOkResult, SignInWrongCredentialsErrorResult]:
         data = {
             'password': password,
             'email': email
@@ -98,7 +94,7 @@ class RecipeImplementation(RecipeInterface):
                 User(response['user']['id'], response['user']['email'], response['user']['timeJoined']))
         return SignInWrongCredentialsErrorResult()
 
-    async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> SignUpResult:
+    async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
         data = {
             'password': password,
             'email': email
@@ -110,7 +106,7 @@ class RecipeImplementation(RecipeInterface):
         return SignUpEmailAlreadyExistsErrorResult()
 
     async def update_email_or_password(self, user_id: str, email: Union[str, None],
-                                       password: Union[str, None], user_context: Dict[str, Any]) -> UpdateEmailOrPasswordResult:
+                                       password: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateEmailOrPasswordOkResult, UpdateEmailOrPasswordEmailAlreadyExistsErrorResult, UpdateEmailOrPasswordUnknownUserIdErrorResult]:
         data = {
             'userId': user_id
         }
