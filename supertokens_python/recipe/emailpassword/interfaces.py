@@ -16,6 +16,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
+from ...types import APIResponse
 from ..emailverification.interfaces import \
     RecipeInterface as EmailVerificationRecipeInterface
 
@@ -122,15 +123,13 @@ class APIOptions:
         self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = email_verification_recipe_implementation
 
 
-class EmailVerifyPostOkResponse():
+class EmailVerifyPostOkResponse(APIResponse):
     status: str = 'OK'
 
     def __init__(self, user: User):
         self.user = user
 
     def to_json(self) -> Dict[str, Any]:
-        if self.user is None:
-            raise Exception("Should never come here")
         return {
             'status': self.status,
             'user': {
@@ -140,7 +139,7 @@ class EmailVerifyPostOkResponse():
         }
 
 
-class EmailVerifyPostInvalidTokenErrorResponse():
+class EmailVerifyPostInvalidTokenErrorResponse(APIResponse):
     status: str = 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR'
 
     def to_json(self) -> Dict[str, Any]:
@@ -149,7 +148,7 @@ class EmailVerifyPostInvalidTokenErrorResponse():
         }
 
 
-class IsEmailVerifiedGetOkResponse():
+class IsEmailVerifiedGetOkResponse(APIResponse):
     status: str = 'OK'
 
     def __init__(self, is_verified: bool):
@@ -162,7 +161,7 @@ class IsEmailVerifiedGetOkResponse():
         }
 
 
-class GenerateEmailVerifyTokenPostOkResponse():
+class GenerateEmailVerifyTokenPostOkResponse(APIResponse):
     status: str = 'OK'
 
     def to_json(self) -> Dict[str, Any]:
@@ -171,7 +170,7 @@ class GenerateEmailVerifyTokenPostOkResponse():
         }
 
 
-class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse():
+class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse(APIResponse):
     status: str = 'EMAIL_ALREADY_VERIFIED_ERROR'
 
     def to_json(self) -> Dict[str, Any]:
@@ -180,7 +179,7 @@ class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse():
         }
 
 
-class EmailExistsGetOkResponse():
+class EmailExistsGetOkResponse(APIResponse):
     status: str = 'OK'
 
     def __init__(self, exists: bool):
@@ -193,7 +192,7 @@ class EmailExistsGetOkResponse():
         }
 
 
-class GeneratePasswordResetTokenPostOkResponse():
+class GeneratePasswordResetTokenPostOkResponse(APIResponse):
     status: str = 'OK'
 
     def to_json(self) -> Dict[str, Any]:
@@ -202,7 +201,7 @@ class GeneratePasswordResetTokenPostOkResponse():
         }
 
 
-class PasswordResetPostOkResponse():
+class PasswordResetPostOkResponse(APIResponse):
     status: str = 'OK'
 
     def __init__(self, user_id: Union[str, None]):
@@ -214,7 +213,7 @@ class PasswordResetPostOkResponse():
         }
 
 
-class PasswordResetPostInvalidTokenResponse():
+class PasswordResetPostInvalidTokenResponse(APIResponse):
     status: str = 'RESET_PASSWORD_INVALID_TOKEN_ERROR'
 
     def to_json(self) -> Dict[str, Any]:
@@ -223,7 +222,7 @@ class PasswordResetPostInvalidTokenResponse():
         }
 
 
-class SignInPostOkResponse():
+class SignInPostOkResponse(APIResponse):
     status: str = 'OK'
 
     def __init__(self, user: User, session: SessionContainer):
@@ -241,7 +240,7 @@ class SignInPostOkResponse():
         }
 
 
-class SignInPostWrongCredentialsErrorResponse():
+class SignInPostWrongCredentialsErrorResponse(APIResponse):
     status: str = 'WRONG_CREDENTIALS_ERROR'
 
     def to_json(self) -> Dict[str, Any]:
@@ -250,7 +249,7 @@ class SignInPostWrongCredentialsErrorResponse():
         }
 
 
-class SignUpPostOkResponse():
+class SignUpPostOkResponse(APIResponse):
     status: str = 'OK'
 
     def __init__(self, user: User, session: SessionContainer):
@@ -268,7 +267,7 @@ class SignUpPostOkResponse():
         }
 
 
-class SignUpPostEmailAlreadyExistsErrorResponse():
+class SignUpPostEmailAlreadyExistsErrorResponse(APIResponse):
     status: str = 'EMAIL_ALREADY_EXISTS_ERROR'
 
     def to_json(self) -> Dict[str, Any]:
