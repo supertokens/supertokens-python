@@ -6,7 +6,7 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult,
     EmailExistsGetResponse, GeneratePasswordResetTokenPostResponse,
     PasswordResetPostResponse, ResetPasswordUsingTokenOkResult,
-    ResetPasswordUsingTokenWrongUserIdErrorResult, SignInOkResult,
+    ResetPasswordUsingTokenInvalidTokenErrorResult, SignInOkResult,
     SignInPostResponse, SignInWrongCredentialsErrorResult,
     SignUpEmailAlreadyExistsErrorResult, SignUpOkResult, SignUpPostResponse,
     UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
@@ -60,7 +60,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenWrongUserIdErrorResult]:
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenErrorResult]:
         pass
 
     @abstractmethod

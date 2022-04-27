@@ -21,7 +21,7 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     APIInterface, CreateResetPasswordWrongUserIdErrorResult,
     EmailExistsGetOkResponse, GeneratePasswordResetTokenPostOkResponse,
     PasswordResetPostInvalidTokenResponse, PasswordResetPostOkResponse,
-    ResetPasswordUsingTokenWrongUserIdErrorResult, SignInPostOkResponse,
+    ResetPasswordUsingTokenInvalidTokenErrorResult, SignInPostOkResponse,
     SignInPostWrongCredentialsErrorResponse, SignInWrongCredentialsErrorResult,
     SignUpEmailAlreadyExistsErrorResult,
     SignUpPostEmailAlreadyExistsErrorResponse, SignUpPostOkResponse)
@@ -80,7 +80,7 @@ class APIImplementation(APIInterface):
 
         result = await api_options.recipe_implementation.reset_password_using_token(token, new_password, user_context)
 
-        if isinstance(result, ResetPasswordUsingTokenWrongUserIdErrorResult):
+        if isinstance(result, ResetPasswordUsingTokenInvalidTokenErrorResult):
             return PasswordResetPostInvalidTokenResponse()
 
         return PasswordResetPostOkResponse(result.user_id)

@@ -61,7 +61,7 @@ class ResetPasswordUsingTokenOkResult():
         self.user_id = user_id
 
 
-class ResetPasswordUsingTokenWrongUserIdErrorResult():
+class ResetPasswordUsingTokenInvalidTokenErrorResult():
     pass
 
 
@@ -95,7 +95,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def reset_password_using_token(self, token: str, new_password: str,
-                                         user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenWrongUserIdErrorResult]:
+                                         user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenErrorResult]:
         pass
 
     @abstractmethod
