@@ -4,11 +4,13 @@ from typing import Any, Dict, List, Union
 from supertokens_python.recipe.emailpassword import interfaces as EPInterfaces
 from supertokens_python.recipe.emailpassword.interfaces import (
     CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult,
-    EmailExistsGetResponse, GeneratePasswordResetTokenPostResponse,
-    PasswordResetPostResponse, ResetPasswordUsingTokenOkResult,
-    ResetPasswordUsingTokenInvalidTokenErrorResult, SignInOkResult,
-    SignInPostResponse, SignInWrongCredentialsErrorResult,
-    SignUpEmailAlreadyExistsErrorResult, SignUpOkResult, SignUpPostResponse,
+    EmailExistsGetOkResponse, GeneratePasswordResetTokenPostOkResponse,
+    PasswordResetPostInvalidTokenResponse, PasswordResetPostOkResponse,
+    ResetPasswordUsingTokenInvalidTokenErrorResult,
+    ResetPasswordUsingTokenOkResult, SignInOkResult, SignInPostOkResponse,
+    SignInPostWrongCredentialsErrorResponse, SignInWrongCredentialsErrorResult,
+    SignUpEmailAlreadyExistsErrorResult, SignUpOkResult,
+    SignUpPostEmailAlreadyExistsErrorResponse, SignUpPostOkResponse,
     UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
     UpdateEmailOrPasswordOkResult,
     UpdateEmailOrPasswordUnknownUserIdErrorResult)
@@ -92,26 +94,26 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def emailpassword_sign_in_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> SignInPostResponse:
+                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[SignInPostOkResponse, SignInPostWrongCredentialsErrorResponse]:
         pass
 
     @abstractmethod
     async def emailpassword_sign_up_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> SignUpPostResponse:
+                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[SignUpPostOkResponse, SignUpPostEmailAlreadyExistsErrorResponse]:
         pass
 
     @abstractmethod
-    async def emailpassword_email_exists_get(self, email: str, api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> EmailExistsGetResponse:
+    async def emailpassword_email_exists_get(self, email: str, api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> EmailExistsGetOkResponse:
         pass
 
     @abstractmethod
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
-                                                 api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> GeneratePasswordResetTokenPostResponse:
+                                                 api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> GeneratePasswordResetTokenPostOkResponse:
         pass
 
     @abstractmethod
     async def password_reset_post(self, form_fields: List[FormField], token: str,
-                                  api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> PasswordResetPostResponse:
+                                  api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[PasswordResetPostOkResponse, PasswordResetPostInvalidTokenResponse]:
         pass
 
     @abstractmethod
