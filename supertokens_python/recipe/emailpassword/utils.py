@@ -15,11 +15,14 @@ from __future__ import annotations
 
 from re import fullmatch
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, Union
+from warnings import warn
 
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.recipe.emailpassword.emaildelivery.service.backwardCompatibility import (
     BackwardCompatibilityService, default_create_and_send_custom_email)
+from supertokens_python.recipe.emailpassword.recipe_implementation import \
+    RecipeImplementation
 
 from ..emailverification.types import User as EmailVerificationUser
 from .interfaces import APIInterface, RecipeInterface
@@ -169,11 +172,13 @@ class ResetPasswordUsingTokenFeature:
                  form_fields_for_password_reset_form: List[NormalisedFormField],
                  form_fields_for_generate_token_form: List[NormalisedFormField],
                  get_reset_password_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
-                 create_and_send_custom_email: Callable[[User, str, Dict[str, Any]], Awaitable[None]]):
+                 create_and_send_custom_email: Union[Callable[[User, str, Dict[str, Any]], Awaitable[None]], None] = None):
         self.form_fields_for_password_reset_form = form_fields_for_password_reset_form
         self.form_fields_for_generate_token_form = form_fields_for_generate_token_form
         self.get_reset_password_url = get_reset_password_url
-        self.create_and_send_custom_email = create_and_send_custom_email
+        self.create_and_send_custom_email = None
+        if create_and_send_custom_email:
+            warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
 
 
 class InputEmailVerificationConfig:
@@ -275,14 +280,14 @@ class EmailPasswordConfig:
                  reset_password_using_token_feature: ResetPasswordUsingTokenFeature,
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
                  override: OverrideConfig,
-                 email_delivery: Callable[[EmailPasswordRecipe], EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput]]
+                 get_email_delivery_config: Callable[[RecipeImplementation], EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput]]
                  ):
         self.sign_up_feature = sign_up_feature
         self.sign_in_feature = sign_in_feature
         self.reset_password_using_token_feature = reset_password_using_token_feature
         self.email_verification_feature = email_verification_feature
         self.override = override
-        self.email_delivery = email_delivery
+        self.get_email_delivery_config = get_email_delivery_config
 
 
 def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: AppInfo,
@@ -302,9 +307,8 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
     if sign_up_feature is None:
         sign_up_feature = InputSignUpFeature()
 
-    def backward_comp_input(
-        ep_recipe: EmailPasswordRecipe,
-        # create_and_send_custom_email: Callable[[User, str, Dict[str, Any]], Awaitable[None]],
+    def get_email_delivery_config(
+        ep_recipe: RecipeImplementation,
     ) -> EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput]:
         if email_delivery_config:
             return email_delivery_config
@@ -333,5 +337,5 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
             override
         ),
         OverrideConfig(functions=override.functions, apis=override.apis),
-        email_delivery=backward_comp_input,
+        get_email_delivery_config=get_email_delivery_config,
     )

@@ -21,6 +21,8 @@ from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.recipe.emailpassword.interfaces import \
     TypeEmailPasswordEmailDeliveryInput
+from supertokens_python.recipe.emailpassword.recipe_implementation import \
+    RecipeImplementation
 from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.emailverification.emaildelivery.service.backwardCompatibility import \
     BackwardCompatibilityService as \
@@ -32,8 +34,6 @@ from supertokens_python.recipe.emailverification.types import \
 from supertokens_python.supertokens import AppInfo
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.emailpassword.recipe import \
-        EmailPasswordRecipe
     from supertokens_python.recipe.emailpassword.utils import (
         InputEmailVerificationConfig, InputResetPasswordUsingTokenFeature)
 
@@ -57,18 +57,13 @@ def default_create_and_send_custom_email(
     return func
 
 
-class ResetPasswordUsingTokenFeatureWrapper:
-    def __init__(self, create_and_send_custom_email: Callable[[User, str, Dict[str, Any]], Awaitable[None]]) -> None:
-        self.create_and_send_custom_email = create_and_send_custom_email
-
-
 class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
     app_info: AppInfo
-    emailVerificationBackwardCompatiblityService: EmailVerificationBackwardCompatibilityService
+    emailVerificationBackwardCompatibilityService: EmailVerificationBackwardCompatibilityService
 
     def __init__(self,
                  app_info: AppInfo,
-                 recipeInterfaceImpl: EmailPasswordRecipe,
+                 recipeInterfaceImpl: RecipeImplementation,
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  ) -> None:
@@ -79,7 +74,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
         if reset_password_using_token_feature and reset_password_using_token_feature.create_and_send_custom_email is not None:
             reset_password_feature_send_email_func = reset_password_using_token_feature.create_and_send_custom_email
 
-        self.reset_password_using_token_feature = ResetPasswordUsingTokenFeatureWrapper(reset_password_feature_send_email_func)
+        self.reset_password_feature_send_email_func = reset_password_feature_send_email_func
 
         create_and_send_custom_email: Union[
             Callable[[EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]], None
@@ -91,7 +86,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
                 async def create_and_send_custom_email_wrapper(
                     user: EmailVerificationUser, link: str, user_context: Dict[str, Any]
                 ):
-                    user_info = await self.recipeInterfaceImpl.recipe_implementation.get_user_by_id(user.user_id, user_context)
+                    user_info = await self.recipeInterfaceImpl.get_user_by_id(user.user_id, user_context)
                     if user_info is None:
                         raise Exception("Unknown User ID provided")
 
@@ -101,15 +96,15 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
 
             self.email_verification_feature = email_verification_feature
 
-        self.emailVerificationBackwardCompatiblityService = EmailVerificationBackwardCompatibilityService(
+        self.emailVerificationBackwardCompatibilityService = EmailVerificationBackwardCompatibilityService(
             app_info, create_and_send_custom_email=create_and_send_custom_email
         )
 
     async def send_email(self, email_input: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> Any:
         if isinstance(email_input, TypeEmailVerificationEmailDeliveryInput):
-            await self.emailVerificationBackwardCompatiblityService.send_email(email_input, user_context)
+            await self.emailVerificationBackwardCompatibilityService.send_email(email_input, user_context)
         else:
-            user = await self.recipeInterfaceImpl.recipe_implementation.get_user_by_id(
+            user = await self.recipeInterfaceImpl.get_user_by_id(
                 user_id=email_input.user.user_id,
                 user_context=user_context
             )
@@ -117,11 +112,8 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
             if user is None:
                 raise Exception("Should never come here")
 
-            assert self.reset_password_using_token_feature is not None
-            assert self.reset_password_using_token_feature.create_and_send_custom_email is not None
-
             try:
-                await self.reset_password_using_token_feature.create_and_send_custom_email(
+                await self.reset_password_feature_send_email_func(
                     user, email_input.password_reset_link, user_context
                 )
             except Exception:

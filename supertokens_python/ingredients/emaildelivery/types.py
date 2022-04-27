@@ -26,8 +26,6 @@ class EmailDeliveryInterface(ABC, Generic[_T]):
 
 
 class EmailDeliveryConfig(ABC, Generic[_T]):
-    service: EmailDeliveryInterface[_T]
-
     def __init__(
         self,
         service: EmailDeliveryInterface[_T],

@@ -66,7 +66,7 @@ class EmailVerificationRecipe(RecipeModule):
             self.config.override.apis(api_implementation)
 
         email_delivery_ingredient = ingredients.email_delivery if ingredients is not None else None
-        self.email_delivery = EmailDeliveryIngredient(self.config.email_delivery()) if email_delivery_ingredient is None else email_delivery_ingredient
+        self.email_delivery = EmailDeliveryIngredient(self.config.get_email_delivery_config()) if email_delivery_ingredient is None else email_delivery_ingredient
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -> bool:

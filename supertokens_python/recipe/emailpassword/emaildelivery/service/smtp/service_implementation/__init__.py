@@ -48,8 +48,3 @@ class ServiceImplementation(ServiceInterface[TypeEmailPasswordEmailDeliveryInput
         if isinstance(email_input, TypeEmailVerificationEmailDeliveryInput):
             return await self.ev_get_content(email_input, user_context)
         return get_password_reset_email_content(email_input)
-
-
-def getServiceImplementation(transporter: Transporter) -> ServiceInterface[TypeEmailPasswordEmailDeliveryInput]:
-    si = ServiceImplementation(transporter)
-    return si

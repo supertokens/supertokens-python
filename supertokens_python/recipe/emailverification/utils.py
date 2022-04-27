@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
+from warnings import warn
 
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
@@ -57,9 +58,12 @@ class ParentRecipeEmailVerificationConfig:
                  ):
         self.override = override
         self.get_email_verification_url = get_email_verification_url
-        self.create_and_send_custom_email = create_and_send_custom_email
         self.get_email_for_user_id = get_email_for_user_id
         self.email_delivery = email_delivery
+        self.create_and_send_custom_email = None
+
+        if create_and_send_custom_email:
+            warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
 
 
 class EmailVerificationConfig:
@@ -67,12 +71,16 @@ class EmailVerificationConfig:
                  override: OverrideConfig,
                  get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
                  get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
-                 email_delivery: Callable[[], EmailDeliveryConfig[TypeEmailVerificationEmailDeliveryInput]],
+                 get_email_delivery_config: Callable[[], EmailDeliveryConfig[TypeEmailVerificationEmailDeliveryInput]],
+                 create_and_send_custom_email: Union[Callable[[User, str, Dict[str, Any]], Awaitable[None]], None] = None,
                  ):
         self.get_email_for_user_id = get_email_for_user_id
         self.get_email_verification_url = get_email_verification_url
         self.override = override
-        self.email_delivery = email_delivery
+        self.get_email_delivery_config = get_email_delivery_config
+        self.create_and_send_custom_email = None
+        if create_and_send_custom_email:
+            warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
 
 
 def validate_and_normalise_user_input(
@@ -80,20 +88,20 @@ def validate_and_normalise_user_input(
     get_email_verification_url = config.get_email_verification_url if config.get_email_verification_url is not None \
         else default_get_email_verification_url(app_info)
 
-    def backward_comp_input() -> EmailDeliveryConfig[TypeEmailVerificationEmailDeliveryInput]:
+    def get_email_delivery_config() -> EmailDeliveryConfig[TypeEmailVerificationEmailDeliveryInput]:
         email_service = config.email_delivery.service if config.email_delivery is not None else None
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info, config.create_and_send_custom_email)
 
-        return EmailDeliveryConfig(email_service, override=None)  # FIXME: OVERRIDE=None can be fatal
+        return EmailDeliveryConfig(email_service, override=None)
 
     override = config.override
     if override is None:
         override = OverrideConfig()
 
     return EmailVerificationConfig(
-        override=override,
-        get_email_for_user_id=config.get_email_for_user_id,
-        email_delivery=backward_comp_input,
-        get_email_verification_url=get_email_verification_url
+        override,
+        get_email_verification_url,
+        config.get_email_for_user_id,
+        get_email_delivery_config,
     )
