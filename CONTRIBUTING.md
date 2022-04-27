@@ -36,16 +36,16 @@ You will need to setup the `supertokens-core` in order to run the `supertokens-p
 ## Modifying Code
 
 1. Open the `supertokens-python` project in your IDE and you can start modifying the code
-2. After modifying the code, test your changes by running `make test`
 
 ## Testing
 
 1. Navigate to the `supertokens-root` repository
 2. Start the testing environment  
-   `./startTestingEnv --wait`
-3. Navigate to the `supertokens-python` respositry
+   `./startTestEnv --wait`   
+   and ensure the test environment is up and running
+3. Open a new terminal and navigate to the `supertokens-python` respositry   
    `cd ../supertokens-python`
-4. Run all tests  
+4. Run all tests, while ensuring the test environment is running on a different terminal   
    `make test`
 
 ## Pull Request
