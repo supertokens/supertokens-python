@@ -157,9 +157,10 @@ class SignInUpPostFieldErrorResponse(APIResponse):
         }
 
 
-class AuthorisationUrlGetResponse(ABC):
-    def __init__(self, status: Literal['OK'], url: str):
-        self.status = status
+class AuthorisationUrlGetOkResponse(APIResponse):
+    status: str = 'OK'
+
+    def __init__(self, url: str):
         self.url = url
 
     def to_json(self):
@@ -167,11 +168,6 @@ class AuthorisationUrlGetResponse(ABC):
             'status': self.status,
             'url': self.url
         }
-
-
-class AuthorisationUrlGetOkResponse(AuthorisationUrlGetResponse):
-    def __init__(self, url: str):
-        super().__init__('OK', url)
 
 
 class APIInterface:
@@ -182,7 +178,7 @@ class APIInterface:
 
     @abstractmethod
     async def authorisation_url_get(self, provider: Provider,
-                                    api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
+                                    api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResponse:
         pass
 
     @abstractmethod

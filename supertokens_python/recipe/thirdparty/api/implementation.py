@@ -29,7 +29,7 @@ from supertokens_python.recipe.thirdparty.types import UserInfo
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import (
-        APIOptions, AuthorisationUrlGetResponse)
+        APIOptions)
     from supertokens_python.recipe.thirdparty.provider import Provider
 
 DEV_OAUTH_CLIENT_IDS = [
@@ -54,7 +54,7 @@ def get_actual_client_id_from_development_client_id(client_id: str):
 
 
 class APIImplementation(APIInterface):
-    async def authorisation_url_get(self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
+    async def authorisation_url_get(self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResponse:
         authorisation_url_info = provider.get_authorisation_redirect_api_info(user_context)
 
         params: Dict[str, str] = {}

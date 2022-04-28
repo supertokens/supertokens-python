@@ -18,7 +18,7 @@ from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.thirdparty import \
     interfaces as ThirdPartyInterfaces
 from supertokens_python.recipe.thirdparty.interfaces import (
-    AuthorisationUrlGetResponse, SignInUpFieldErrorResult, SignInUpOkResult,
+    AuthorisationUrlGetOkResponse, SignInUpFieldErrorResult, SignInUpOkResult,
     SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse)
 from supertokens_python.recipe.thirdparty.provider import Provider
 
@@ -85,7 +85,7 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def authorisation_url_get(self, provider: Provider,
-                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
+                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResponse:
         pass
 
     @abstractmethod

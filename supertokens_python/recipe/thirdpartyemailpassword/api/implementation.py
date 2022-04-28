@@ -30,7 +30,8 @@ from supertokens_python.recipe.thirdparty.api.implementation import \
 from supertokens_python.recipe.thirdparty.interfaces import \
     APIOptions as ThirdPartyApiOptions
 from supertokens_python.recipe.thirdparty.interfaces import (
-    AuthorisationUrlGetResponse, SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse)
+    AuthorisationUrlGetOkResponse, SignInUpPostOkResponse,
+    SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
     APIInterface
@@ -89,7 +90,7 @@ class APIImplementation(APIInterface):
                                          api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> Union[SignUpPostOkResponse, SignUpPostEmailAlreadyExistsErrorResponse]:
         return await self.ep_sign_up_post(form_fields, api_options, user_context)
 
-    async def authorisation_url_get(self, provider: Provider, api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
+    async def authorisation_url_get(self, provider: Provider, api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResponse:
         return await self.tp_authorisation_url_get(provider, api_options, user_context)
 
     async def apple_redirect_handler_post(self, code: str, state: str, api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]):

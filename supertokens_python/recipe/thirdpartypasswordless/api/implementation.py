@@ -26,7 +26,7 @@ from ...passwordless.interfaces import (CreateCodePostResponse,
 from ...thirdparty.api.implementation import \
     APIImplementation as ThirdPartyImplementation
 from ...thirdparty.interfaces import APIOptions as ThirdPartyAPIOptions
-from ...thirdparty.interfaces import (AuthorisationUrlGetResponse,
+from ...thirdparty.interfaces import (AuthorisationUrlGetOkResponse,
                                       SignInUpPostOkResponse,
                                       SignInUpPostNoEmailGivenByProviderResponse,
                                       SignInUpPostFieldErrorResponse)
@@ -70,7 +70,7 @@ class APIImplementation(APIInterface):
         thirdparty_implementation.apple_redirect_handler_post = derived_tp.apple_redirect_handler_post
 
     async def authorisation_url_get(self, provider: Provider,
-                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
+                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResponse:
         return await self.tp_authorisation_url_get(provider, api_options, user_context)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
