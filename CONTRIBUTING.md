@@ -44,7 +44,6 @@ You will need to setup the `supertokens-core` in order to run the `supertokens-p
    `./startTestEnv --wait`   
    and ensure the test environment is up and running
 3. Open a new terminal and navigate to the `supertokens-python` respositry   
-   `cd ../supertokens-python`
 4. Run all tests, while ensuring the test environment is running on a different terminal   
    `make test`
 
