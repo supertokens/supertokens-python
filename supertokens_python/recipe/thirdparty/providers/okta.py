@@ -28,10 +28,11 @@
 #     def __init__(self, okta_domain: str, client_id: str, client_secret: str, scope: Union[None, List[str]] = None,
 #                  authorisation_redirect: Union[None, Dict[str, Union[str, Callable[[BaseRequest], str]]]] = None,
 #                  authorization_server_id: str = 'default', is_default: bool = False):
-#         super().__init__('okta', client_id, is_default)
+#         super().__init__('okta', is_default)
 #         default_scopes = ["openid", "email"]
 #         if scope is None:
 #             scope = default_scopes
+#         self.client_id = client_id
 #         self.client_secret = client_secret
 #         self.base_url = 'https://' + okta_domain + '/oauth2/' + authorization_server_id
 #         self.scopes = list(set(scope))

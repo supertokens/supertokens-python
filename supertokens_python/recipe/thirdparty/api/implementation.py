@@ -61,7 +61,7 @@ class APIImplementation(APIInterface):
                 value) else value(api_options.request)
 
         redirect_uri = provider.get_redirect_uri(user_context)
-        if redirect_uri is not None and not is_using_oauth_development_client_id(provider.client_id):
+        if redirect_uri is not None and not is_using_oauth_development_client_id(provider.get_client_id(user_context)):
             # the backend wants to set the redirectURI - so we set that here.
             # we add the not development keys because the oauth provider will
             # redirect to supertokens.io's URL which will redirect the app
@@ -71,13 +71,13 @@ class APIImplementation(APIInterface):
             params['redirect_uri'] = redirect_uri
 
         auth_url = authorisation_url_info.url
-        if is_using_oauth_development_client_id(provider.client_id):
+        if is_using_oauth_development_client_id(provider.get_client_id(user_context)):
             params['actual_redirect_uri'] = authorisation_url_info.url
 
             for k, v in params.items():
-                if v == provider.client_id:
+                if v == provider.get_client_id(user_context):
                     params[k] = get_actual_client_id_from_development_client_id(
-                        provider.client_id)
+                        provider.get_client_id(user_context))
             auth_url = DEV_OAUTH_AUTHORIZATION_URL
 
         query_string = urlencode(params)
@@ -88,7 +88,7 @@ class APIImplementation(APIInterface):
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions, user_context: Dict[str, Any]) -> SignInUpPostResponse:
 
         redirect_uri_from_provider = provider.get_redirect_uri(user_context)
-        if is_using_oauth_development_client_id(provider.client_id):
+        if is_using_oauth_development_client_id(provider.get_client_id(user_context)):
             redirect_uri = DEV_OAUTH_REDIRECT_URL
         elif redirect_uri_from_provider is not None:
             # we overwrite the redirectURI provided by the frontend
@@ -98,11 +98,11 @@ class APIImplementation(APIInterface):
             if auth_code_response is None:
                 access_token_api_info = provider.get_access_token_api_info(
                     redirect_uri, code, user_context)
-                if is_using_oauth_development_client_id(provider.client_id):
+                if is_using_oauth_development_client_id(provider.get_client_id(user_context)):
                     for k, _ in access_token_api_info.params.items():
-                        if access_token_api_info.params[k] == provider.client_id:
+                        if access_token_api_info.params[k] == provider.get_client_id(user_context):
                             access_token_api_info.params[k] = get_actual_client_id_from_development_client_id(
-                                provider.client_id)
+                                provider.get_client_id(user_context))
                 headers = {
                     'Accept': 'application/json',
                     'Content-Type': 'application/x-www-form-urlencoded'
