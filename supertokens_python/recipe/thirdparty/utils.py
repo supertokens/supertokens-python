@@ -195,7 +195,7 @@ def find_right_provider(
 
         # otherwise, we return a provider that matches based on client Id as
         # well.
-        if provider.client_id == client_id:
+        if provider.get_client_id({}) == client_id:
             return provider
 
     return None

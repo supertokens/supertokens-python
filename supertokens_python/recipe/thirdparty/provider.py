@@ -22,9 +22,8 @@ if TYPE_CHECKING:
 
 
 class Provider(abc.ABC):
-    def __init__(self, provider_id: str, client_id: str, is_default: bool):
+    def __init__(self, provider_id: str, is_default: bool):
         self.id: str = provider_id
-        self.client_id: str = client_id
         self.is_default: bool = is_default
 
     @abc.abstractmethod
@@ -42,4 +41,8 @@ class Provider(abc.ABC):
 
     @abc.abstractmethod
     def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
+        pass
+
+    @abc.abstractmethod
+    def get_client_id(self, user_context: Dict[str, Any]) -> str:
         pass
