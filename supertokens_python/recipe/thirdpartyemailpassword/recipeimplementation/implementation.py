@@ -24,7 +24,7 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     UpdateEmailOrPasswordOkResult,
     UpdateEmailOrPasswordUnknownUserIdErrorResult)
 
-from ...thirdparty.interfaces import SignInUpResult
+from ...thirdparty.interfaces import SignInUpFieldErrorResult, SignInUpOkResult
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -126,7 +126,7 @@ class RecipeImplementation(RecipeInterface):
         return User(user_id=tp_user.user_id, email=tp_user.email, time_joined=tp_user.time_joined, third_party_info=tp_user.third_party_info)
 
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
         if self.tp_sign_in_up is None:
             raise Exception("No thirdparty provider configured")
         return await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)

@@ -22,7 +22,7 @@ from supertokens_python.recipe.emailverification.interfaces import \
     CreateEmailVerificationTokenOkResult
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.thirdparty.interfaces import (
-    APIInterface, AuthorisationUrlGetOkResponse,
+    APIInterface, AuthorisationUrlGetOkResponse, SignInUpFieldErrorResult,
     SignInUpPostFieldErrorResponse, SignInUpPostNoEmailGivenByProviderResponse,
     SignInUpPostOkResponse)
 from supertokens_python.recipe.thirdparty.types import UserInfo
@@ -129,13 +129,8 @@ class APIImplementation(APIInterface):
 
         signinup_response = await api_options.recipe_implementation.sign_in_up(provider.id, user_info.user_id, email, email_verified, user_context)
 
-        if signinup_response.is_field_error:
-            if signinup_response.error is None:
-                raise Exception("Should never come here")
+        if isinstance(signinup_response, SignInUpFieldErrorResult):
             return SignInUpPostFieldErrorResponse(signinup_response.error)
-
-        if signinup_response.user is None:
-            raise Exception("Should never come here")
 
         if email_verified:
             token_response = await api_options.email_verification_recipe_implementation.create_email_verification_token(user_id=signinup_response.user.user_id, email=signinup_response.user.email, user_context=user_context)
@@ -144,8 +139,6 @@ class APIImplementation(APIInterface):
                 await api_options.email_verification_recipe_implementation.verify_email_using_token(token=token_response.token, user_context=user_context)
 
         user = signinup_response.user
-        if user is None or signinup_response.created_new_user is None:
-            raise Exception("Should never come here")
         session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
 
         return SignInUpPostOkResponse(
