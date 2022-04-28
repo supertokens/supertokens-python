@@ -16,7 +16,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from typing_extensions import Literal
 
 from ...types import APIResponse
 from ..emailverification.interfaces import \
@@ -77,35 +76,6 @@ class APIOptions:
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info: AppInfo = app_info
         self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = email_verification_recipe_implementation
-
-
-class GeneratePasswordResetTokenResponse(ABC):
-    def __init__(self, status: Literal['OK']):
-        self.status = status
-
-    @abstractmethod
-    def to_json(self):
-        pass
-
-
-class EmailExistsResponse(ABC):
-    def __init__(self, status: Literal['OK'], exists: bool):
-        self.status = status
-        self.exists = exists
-
-    @abstractmethod
-    def to_json(self):
-        pass
-
-
-class PasswordResetResponse(ABC):
-    def __init__(self, status: Literal['OK',
-                 'RESET_PASSWORD_INVALID_TOKEN_ERROR']):
-        self.status = status
-
-    @abstractmethod
-    def to_json(self):
-        pass
 
 
 class SignInUpPostOkResponse(APIResponse):
