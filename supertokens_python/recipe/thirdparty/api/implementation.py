@@ -29,7 +29,7 @@ from supertokens_python.recipe.thirdparty.types import UserInfo
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import (
-        APIOptions, AuthorisationUrlGetResponse, SignInUpPostResponse)
+        APIOptions, AuthorisationUrlGetResponse)
     from supertokens_python.recipe.thirdparty.provider import Provider
 
 DEV_OAUTH_CLIENT_IDS = [
@@ -87,7 +87,7 @@ class APIImplementation(APIInterface):
         url = auth_url + '?' + query_string
         return AuthorisationUrlGetOkResponse(url)
 
-    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions, user_context: Dict[str, Any]) -> SignInUpPostResponse:
+    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions, user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
 
         redirect_uri_from_provider = provider.get_redirect_uri(user_context)
         if is_using_oauth_development_client_id(provider.client_id):

@@ -27,7 +27,9 @@ from ...thirdparty.api.implementation import \
     APIImplementation as ThirdPartyImplementation
 from ...thirdparty.interfaces import APIOptions as ThirdPartyAPIOptions
 from ...thirdparty.interfaces import (AuthorisationUrlGetResponse,
-                                      SignInUpPostResponse)
+                                      SignInUpPostOkResponse,
+                                      SignInUpPostNoEmailGivenByProviderResponse,
+                                      SignInUpPostFieldErrorResponse)
 from ...thirdparty.provider import Provider
 from ..interfaces import (APIInterface,
                           ConsumeCodePostExpiredUserInputCodeErrorResponse,
@@ -72,7 +74,7 @@ class APIImplementation(APIInterface):
         return await self.tp_authorisation_url_get(provider, api_options, user_context)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> SignInUpPostResponse:
+                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
         return await self.tp_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
 
     async def apple_redirect_handler_post(self, code: str, state: str,
