@@ -55,11 +55,12 @@ if TYPE_CHECKING:
 class Facebook(Provider):
     def __init__(self, client_id: str, client_secret: str,
                  scope: Union[None, List[str]] = None, is_default: bool = False):
-        super().__init__(&#39;facebook&#39;, client_id, is_default)
+        super().__init__(&#39;facebook&#39;, is_default)
         default_scopes = [&#39;email&#39;]
 
         if scope is None:
             scope = default_scopes
+        self.client_id = client_id
         self.client_secret = client_secret
         self.scopes = list(set(scope))
         self.access_token_api_url = &#39;https://graph.facebook.com/v9.0/oauth/access_token&#39;
@@ -101,7 +102,10 @@ class Facebook(Provider):
         return AccessTokenAPI(self.access_token_api_url, params)
 
     def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
-        return None</code></pre>
+        return None
+
+    def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
+        return self.client_id</code></pre>
 </details>
 </section>
 <section>
@@ -127,11 +131,12 @@ inheritance.</p></div>
 <pre><code class="python">class Facebook(Provider):
     def __init__(self, client_id: str, client_secret: str,
                  scope: Union[None, List[str]] = None, is_default: bool = False):
-        super().__init__(&#39;facebook&#39;, client_id, is_default)
+        super().__init__(&#39;facebook&#39;, is_default)
         default_scopes = [&#39;email&#39;]
 
         if scope is None:
             scope = default_scopes
+        self.client_id = client_id
         self.client_secret = client_secret
         self.scopes = list(set(scope))
         self.access_token_api_url = &#39;https://graph.facebook.com/v9.0/oauth/access_token&#39;
@@ -173,7 +178,10 @@ inheritance.</p></div>
         return AccessTokenAPI(self.access_token_api_url, params)
 
     def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
-        return None</code></pre>
+        return None
+
+    def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
+        return self.client_id</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -219,6 +227,19 @@ inheritance.</p></div>
     }
     return AuthorisationRedirectAPI(
         self.authorisation_redirect_url, params)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_client_id"><code class="name flex">
+<span>def <span class="ident">get_client_id</span></span>(<span>self, user_context: Dict[str, Any]) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
+    return self.client_id</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_profile_info"><code class="name flex">
@@ -283,6 +304,7 @@ inheritance.</p></div>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_access_token_api_info" href="#supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_access_token_api_info">get_access_token_api_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_authorisation_redirect_api_info" href="#supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_authorisation_redirect_api_info">get_authorisation_redirect_api_info</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_client_id" href="#supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_client_id">get_client_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_profile_info" href="#supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_profile_info">get_profile_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_redirect_uri" href="#supertokens_python.recipe.thirdparty.providers.facebook.Facebook.get_redirect_uri">get_redirect_uri</a></code></li>
 </ul>
