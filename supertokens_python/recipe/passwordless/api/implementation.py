@@ -14,12 +14,14 @@
 from typing import Any, Dict, Union
 
 from supertokens_python.recipe.passwordless.interfaces import (
-    APIInterface, APIOptions, ConsumeCodePostExpiredUserInputCodeErrorResponse,
+    APIInterface, APIOptions, ConsumeCodeExpiredUserInputCodeErrorResult,
+    ConsumeCodeIncorrectUserInputCodeErrorResult,
+    ConsumeCodePostExpiredUserInputCodeErrorResponse,
     ConsumeCodePostIncorrectUserInputCodeErrorResponse,
     ConsumeCodePostOkResponse, ConsumeCodePostResponse,
-    ConsumeCodePostRestartFlowErrorResponse, CreateCodeOkResult,
-    CreateCodePostGeneralErrorResponse, CreateCodePostOkResponse,
-    CreateCodePostResponse,
+    ConsumeCodePostRestartFlowErrorResponse, ConsumeCodeRestartFlowErrorResult,
+    CreateCodeOkResult, CreateCodePostGeneralErrorResponse,
+    CreateCodePostOkResponse, CreateCodePostResponse,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     EmailExistsGetOkResponse, EmailExistsGetResponse,
     PhoneNumberExistsGetOkResponse, PhoneNumberExistsGetResponse,
@@ -163,24 +165,20 @@ class APIImplementation(APIInterface):
             link_code=link_code,
             user_context=user_context
         )
-        if response.is_expired_user_input_code_error:
-            if response.failed_code_input_attempt_count is None or response.maximum_code_input_attempts is None:
-                raise Exception("Should never come here")
+
+        if isinstance(response, ConsumeCodeExpiredUserInputCodeErrorResult):
             return ConsumeCodePostExpiredUserInputCodeErrorResponse(
                 failed_code_input_attempt_count=response.failed_code_input_attempt_count,
                 maximum_code_input_attempts=response.maximum_code_input_attempts
             )
-        if response.is_incorrect_user_input_code_error:
-            if response.failed_code_input_attempt_count is None or response.maximum_code_input_attempts is None:
-                raise Exception("Should never come here")
+        if isinstance(response, ConsumeCodeIncorrectUserInputCodeErrorResult):
             return ConsumeCodePostIncorrectUserInputCodeErrorResponse(
                 failed_code_input_attempt_count=response.failed_code_input_attempt_count,
                 maximum_code_input_attempts=response.maximum_code_input_attempts
             )
-        if response.is_restart_flow_error:
+        if isinstance(response, ConsumeCodeRestartFlowErrorResult):
             return ConsumeCodePostRestartFlowErrorResponse()
-        if response.user is None or response.created_new_user is None:
-            raise Exception("Should never come here")
+
         user = response.user
         session = await create_new_session(api_options.request, user.user_id, {}, {}, user_context=user_context)
         return ConsumeCodePostOkResponse(

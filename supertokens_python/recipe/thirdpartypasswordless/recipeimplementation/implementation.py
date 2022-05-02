@@ -16,7 +16,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from ...passwordless.interfaces import (
-    CreateCodeOkResult, CreateNewCodeForDeviceOkResult,
+    ConsumeCodeExpiredUserInputCodeErrorResult,
+    ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
+    ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
+    CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     DeleteUserInfoResult, DeleteUserInfoUnknownUserIdErrorResult, DeviceType,
@@ -32,11 +35,7 @@ from supertokens_python.recipe.passwordless.recipe_implementation import \
 from supertokens_python.recipe.thirdparty.recipe_implementation import \
     RecipeImplementation as ThirdPartyImplementation
 
-from ..interfaces import (ConsumeCodeExpiredUserInputCodeErrorResult,
-                          ConsumeCodeIncorrectUserInputCodeErrorResult,
-                          ConsumeCodeOkResult,
-                          ConsumeCodeRestartFlowErrorResult, ConsumeCodeResult,
-                          RecipeInterface)
+from ..interfaces import RecipeInterface
 from ..types import User
 from .passwordless_recipe_implementation import \
     RecipeImplementation as DerivedPasswordlessImplementation
@@ -174,24 +173,22 @@ class RecipeImplementation(RecipeInterface):
                            user_input_code: Union[str, None],
                            device_id: Union[str, None],
                            link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -> ConsumeCodeResult:
-        result = await self.pless_consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
+                           user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, ConsumeCodeRestartFlowErrorResult]:
+        return await self.pless_consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
 
-        if result.is_ok:
-            if result.user is None or result.created_new_user is None:
-                raise Exception("Should never come here")
-            return ConsumeCodeOkResult(result.created_new_user, User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined))
-        if result.is_expired_user_input_code_error:
-            if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
-                raise Exception("Should never come here")
-            return ConsumeCodeExpiredUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
-        if result.is_incorrect_user_input_code_error:
-            if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
-                raise Exception("Should never come here")
-            return ConsumeCodeIncorrectUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
+        # if isinstance(result, ConsumeCodeOkResult):
+        #     return ConsumeCodeOkResult(result.created_new_user, User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined))
+        # if result.is_expired_user_input_code_error:
+        #     if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
+        #         raise Exception("Should never come here")
+        #     return ConsumeCodeExpiredUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
+        # if result.is_incorrect_user_input_code_error:
+        #     if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
+        #         raise Exception("Should never come here")
+        #     return ConsumeCodeIncorrectUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
 
-        # restart flow error
-        return ConsumeCodeRestartFlowErrorResult()
+        # # restart flow error
+        # return ConsumeCodeRestartFlowErrorResult()
 
     async def update_passwordless_user(self, user_id: str,
                                        email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:

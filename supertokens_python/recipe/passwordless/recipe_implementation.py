@@ -21,7 +21,7 @@ from .types import DeviceCode, DeviceType, User
 
 if TYPE_CHECKING:
     from .interfaces import CreateCodeOkResult, RevokeCodeResult, RevokeAllCodesResult, UpdateUserResult, \
-        ConsumeCodeResult, CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult
+        CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
@@ -110,7 +110,7 @@ class RecipeImplementation(RecipeInterface):
                            user_input_code: Union[str, None],
                            device_id: Union[str, None],
                            link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -> ConsumeCodeResult:
+                           user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, ConsumeCodeRestartFlowErrorResult]:
         data = {
             'preAuthSessionId': pre_auth_session_id
         }

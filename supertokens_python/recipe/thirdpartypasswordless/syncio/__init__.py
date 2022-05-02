@@ -91,7 +91,7 @@ def consume_code(pre_auth_session_id: str,
                  user_input_code: Union[str, None] = None,
                  device_id: Union[str, None] = None,
                  link_code: Union[str, None] = None,
-                 user_context: Union[None, Dict[str, Any]] = None) -> interfaces.ConsumeCodeResult:
+                 user_context: Union[None, Dict[str, Any]] = None) -> Union[interfaces.ConsumeCodeOkResult, interfaces.ConsumeCodeIncorrectUserInputCodeErrorResult, interfaces.ConsumeCodeExpiredUserInputCodeErrorResult, interfaces.ConsumeCodeRestartFlowErrorResult]:
     return sync(asyncio.consume_code(pre_auth_session_id=pre_auth_session_id, user_input_code=user_input_code,
                                      device_id=device_id, link_code=link_code, user_context=user_context))
 

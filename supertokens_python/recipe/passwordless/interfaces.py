@@ -64,59 +64,28 @@ class CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult():
     pass
 
 
-class ConsumeCodeResult(ABC):
-    def __init__(self,
-                 status: Literal['OK',
-                                 'INCORRECT_USER_INPUT_CODE_ERROR',
-                                 'EXPIRED_USER_INPUT_CODE_ERROR',
-                                 'RESTART_FLOW_ERROR'],
-                 created_new_user: Union[bool, None] = None,
-                 user: Union[User, None] = None,
-                 failed_code_input_attempt_count: Union[int, None] = None,
-                 maximum_code_input_attempts: Union[int, None] = None
-                 ):
-        self.status: Literal['OK',
-                             'INCORRECT_USER_INPUT_CODE_ERROR',
-                             'EXPIRED_USER_INPUT_CODE_ERROR',
-                             'RESTART_FLOW_ERROR'] = status
-        self.created_new_user: Union[bool, None] = created_new_user
-        self.user: Union[User, None] = user
-        self.failed_code_input_attempt_count: Union[int, None] = failed_code_input_attempt_count
-        self.maximum_code_input_attempts: Union[int, None] = maximum_code_input_attempts
-        self.is_ok: bool = False
-        self.is_incorrect_user_input_code_error: bool = False
-        self.is_expired_user_input_code_error: bool = False
-        self.is_restart_flow_error: bool = False
-
-
-class ConsumeCodeOkResult(ConsumeCodeResult):
+class ConsumeCodeOkResult():
     def __init__(self, created_new_user: bool, user: User):
-        super().__init__('OK', created_new_user=created_new_user, user=user)
-        self.is_ok = True
+        self.created_new_user = created_new_user
+        self.user = user
 
 
-class ConsumeCodeIncorrectUserInputCodeErrorResult(ConsumeCodeResult):
+class ConsumeCodeIncorrectUserInputCodeErrorResult():
     def __init__(self, failed_code_input_attempt_count: int,
                  maximum_code_input_attempts: int):
-        super().__init__('INCORRECT_USER_INPUT_CODE_ERROR',
-                         failed_code_input_attempt_count=failed_code_input_attempt_count,
-                         maximum_code_input_attempts=maximum_code_input_attempts)
-        self.is_incorrect_user_input_code_error = True
+        self.failed_code_input_attempt_count = failed_code_input_attempt_count
+        self.maximum_code_input_attempts = maximum_code_input_attempts
 
 
-class ConsumeCodeExpiredUserInputCodeErrorResult(ConsumeCodeResult):
+class ConsumeCodeExpiredUserInputCodeErrorResult():
     def __init__(self, failed_code_input_attempt_count: int,
                  maximum_code_input_attempts: int):
-        super().__init__('EXPIRED_USER_INPUT_CODE_ERROR',
-                         failed_code_input_attempt_count=failed_code_input_attempt_count,
-                         maximum_code_input_attempts=maximum_code_input_attempts)
-        self.is_expired_user_input_code_error = True
+        self.failed_code_input_attempt_count = failed_code_input_attempt_count
+        self.maximum_code_input_attempts = maximum_code_input_attempts
 
 
-class ConsumeCodeRestartFlowErrorResult(ConsumeCodeResult):
-    def __init__(self):
-        super().__init__('RESTART_FLOW_ERROR')
-        self.is_restart_flow_error = True
+class ConsumeCodeRestartFlowErrorResult():
+    pass
 
 
 class UpdateUserResult(ABC):
@@ -209,7 +178,7 @@ class RecipeInterface(ABC):
                            user_input_code: Union[str, None],
                            device_id: Union[str, None],
                            link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -> ConsumeCodeResult:
+                           user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, ConsumeCodeRestartFlowErrorResult]:
         pass
 
     @abstractmethod

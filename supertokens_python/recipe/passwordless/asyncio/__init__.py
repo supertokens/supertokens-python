@@ -14,7 +14,9 @@
 from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.passwordless.interfaces import (
-    ConsumeCodeOkResult, ConsumeCodeResult, CreateCodeOkResult,
+    ConsumeCodeExpiredUserInputCodeErrorResult,
+    ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
+    ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
     CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
@@ -45,7 +47,7 @@ async def consume_code(pre_auth_session_id: str,
                        user_input_code: Union[str, None] = None,
                        device_id: Union[str, None] = None,
                        link_code: Union[str, None] = None,
-                       user_context: Union[None, Dict[str, Any]] = None) -> ConsumeCodeResult:
+                       user_context: Union[None, Dict[str, Any]] = None) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, ConsumeCodeRestartFlowErrorResult]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.consume_code(pre_auth_session_id=pre_auth_session_id, user_input_code=user_input_code, device_id=device_id, link_code=link_code, user_context=user_context)
