@@ -21,7 +21,7 @@ from .types import DeviceCode, DeviceType, User
 
 if TYPE_CHECKING:
     from .interfaces import (
-        CreateCodeOkResult, RevokeCodeResult, RevokeAllCodesResult,
+        CreateCodeOkResult, RevokeCodeResult,
         UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult,
         UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult,
         CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult,
@@ -254,7 +254,7 @@ class RecipeImplementation(RecipeInterface):
         return DeleteUserInfoUnknownUserIdErrorResult()
 
     async def revoke_all_codes(self,
-                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
+                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesOkResult:
         data: Dict[str, Any] = {}
         if email is not None:
             data = {

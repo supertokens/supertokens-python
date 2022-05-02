@@ -112,14 +112,8 @@ class DeleteUserInfoUnknownUserIdErrorResult():
     pass
 
 
-class RevokeAllCodesResult(ABC):
-    def __init__(self, status: Literal['OK']):
-        self.status = status
-
-
-class RevokeAllCodesOkResult(RevokeAllCodesResult):
-    def __init__(self):
-        super().__init__('OK')
+class RevokeAllCodesOkResult():
+    pass
 
 
 class RevokeCodeResult(ABC):
@@ -187,7 +181,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def revoke_all_codes(self,
-                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
+                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesOkResult:
         pass
 
     @abstractmethod

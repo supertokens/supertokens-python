@@ -141,7 +141,7 @@ async def delete_phone_number_for_user(user_id: str, user_context: Union[None, D
 
 async def revoke_all_codes(email: Union[str, None] = None,
                            phone_number: Union[str, None] = None,
-                           user_context: Union[None, Dict[str, Any]] = None) -> interfaces.RevokeAllCodesResult:
+                           user_context: Union[None, Dict[str, Any]] = None) -> interfaces.RevokeAllCodesOkResult:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.revoke_all_codes(email=email, phone_number=phone_number, user_context=user_context)

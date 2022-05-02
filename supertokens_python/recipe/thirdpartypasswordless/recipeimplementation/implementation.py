@@ -23,7 +23,7 @@ from ...passwordless.interfaces import (
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
-    DeviceType, RevokeAllCodesResult, RevokeCodeResult,
+    DeviceType, RevokeAllCodesOkResult, RevokeCodeResult,
     UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
     UpdateUserPhoneNumberAlreadyExistsErrorResult,
     UpdateUserUnknownUserIdErrorResult)
@@ -221,7 +221,7 @@ class RecipeImplementation(RecipeInterface):
         return await self.pless_delete_phone_number_for_user(user_id, user_context)
 
     async def revoke_all_codes(self,
-                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
+                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesOkResult:
         return await self.pless_revoke_all_codes(email, phone_number, user_context)
 
     async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeResult:

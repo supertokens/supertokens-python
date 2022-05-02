@@ -23,7 +23,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
-    DeviceType, RecipeInterface, RevokeAllCodesResult,
+    DeviceType, RecipeInterface, RevokeAllCodesOkResult,
     RevokeCodeResult, UpdateUserEmailAlreadyExistsErrorResult,
     UpdateUserOkResult, UpdateUserPhoneNumberAlreadyExistsErrorResult,
     UpdateUserUnknownUserIdErrorResult)
@@ -95,7 +95,7 @@ class RecipeImplementation(RecipeInterface):
         return await self.recipe_implementation.delete_phone_number_for_user(user_id, user_context)
 
     async def revoke_all_codes(self,
-                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
+                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesOkResult:
         return await self.recipe_implementation.revoke_all_codes(email, phone_number, user_context)
 
     async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeResult:
