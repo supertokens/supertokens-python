@@ -21,7 +21,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
-    RevokeAllCodesOkResult, RevokeCodeResult,
+    RevokeAllCodesOkResult, RevokeCodeOkResult,
     UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
     UpdateUserPhoneNumberAlreadyExistsErrorResult,
     UpdateUserUnknownUserIdErrorResult)
@@ -103,7 +103,7 @@ async def revoke_all_codes(email: Union[str, None] = None,
     return await PasswordlessRecipe.get_instance().recipe_implementation.revoke_all_codes(email=email, phone_number=phone_number, user_context=user_context)
 
 
-async def revoke_code(code_id: str, user_context: Union[None, Dict[str, Any]] = None) -> RevokeCodeResult:
+async def revoke_code(code_id: str, user_context: Union[None, Dict[str, Any]] = None) -> RevokeCodeOkResult:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.revoke_code(code_id=code_id, user_context=user_context)

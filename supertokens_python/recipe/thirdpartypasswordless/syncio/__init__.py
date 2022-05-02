@@ -123,7 +123,7 @@ def revoke_all_codes(email: Union[str, None] = None,
         email=email, phone_number=phone_number, user_context=user_context))
 
 
-def revoke_code(code_id: str, user_context: Union[None, Dict[str, Any]] = None) -> interfaces.RevokeCodeResult:
+def revoke_code(code_id: str, user_context: Union[None, Dict[str, Any]] = None) -> interfaces.RevokeCodeOkResult:
     return sync(asyncio.revoke_code(
         code_id=code_id, user_context=user_context))
 

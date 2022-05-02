@@ -19,7 +19,7 @@ from ..passwordless.interfaces import (
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
     DeviceType, EmailExistsGetResponse, PhoneNumberExistsGetResponse,
-    ResendCodePostResponse, RevokeAllCodesOkResult, RevokeCodeResult,
+    ResendCodePostResponse, RevokeAllCodesOkResult, RevokeCodeOkResult,
     UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
     UpdateUserPhoneNumberAlreadyExistsErrorResult,
     UpdateUserUnknownUserIdErrorResult)
@@ -99,7 +99,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeResult:
+    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeOkResult:
         pass
 
     @abstractmethod

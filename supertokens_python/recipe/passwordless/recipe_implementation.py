@@ -13,19 +13,11 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import Any, Dict, List, Union
 
 from supertokens_python.querier import Querier
 
 from .types import DeviceCode, DeviceType, User
-
-if TYPE_CHECKING:
-    from .interfaces import (
-        CreateCodeOkResult, RevokeCodeResult,
-        UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult,
-        UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult,
-        CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult,
-        CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult)
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
@@ -269,7 +261,7 @@ class RecipeImplementation(RecipeInterface):
         await self.querier.send_post_request(NormalisedURLPath('/recipe/signinup/codes/remove'), data)
         return RevokeAllCodesOkResult()
 
-    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeResult:
+    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeOkResult:
         data = {
             'codeId': code_id
         }

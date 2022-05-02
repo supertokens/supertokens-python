@@ -116,14 +116,8 @@ class RevokeAllCodesOkResult():
     pass
 
 
-class RevokeCodeResult(ABC):
-    def __init__(self, status: Literal['OK']):
-        self.status = status
-
-
-class RevokeCodeOkResult(RevokeCodeResult):
-    def __init__(self):
-        super().__init__('OK')
+class RevokeCodeOkResult():
+    pass
 
 
 class RecipeInterface(ABC):
@@ -185,7 +179,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeResult:
+    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeOkResult:
         pass
 
     @abstractmethod
