@@ -23,7 +23,9 @@ from ...passwordless.interfaces import (
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     DeleteUserInfoResult, DeleteUserInfoUnknownUserIdErrorResult, DeviceType,
-    RevokeAllCodesResult, RevokeCodeResult, UpdateUserResult,
+    RevokeAllCodesResult, RevokeCodeResult,
+    UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
+    UpdateUserPhoneNumberAlreadyExistsErrorResult,
     UpdateUserUnknownUserIdErrorResult)
 from ...thirdparty.interfaces import SignInUpFieldErrorResult, SignInUpOkResult
 
@@ -191,7 +193,7 @@ class RecipeImplementation(RecipeInterface):
         # return ConsumeCodeRestartFlowErrorResult()
 
     async def update_passwordless_user(self, user_id: str,
-                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
+                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
             return UpdateUserUnknownUserIdErrorResult()

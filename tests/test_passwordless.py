@@ -25,6 +25,7 @@ from supertokens_python.recipe import passwordless, session
 from supertokens_python.recipe.passwordless.asyncio import (
     delete_email_for_user, delete_phone_number_for_user, get_user_by_email,
     get_user_by_id, get_user_by_phone_number, update_user)
+from supertokens_python.recipe.passwordless.interfaces import UpdateUserOkResult
 from supertokens_python.utils import is_version_gte
 
 from tests.utils import clean_st, reset, setup_st, start_st
@@ -300,7 +301,7 @@ async def test_passworldless_delete_user_email_and_phone_throws_error(driver_con
     user_id = consume_code_json['user']['id']
 
     response = await update_user(user_id, "hello@example.com", "+919494949494")
-    assert response.status == "OK"
+    assert isinstance(response, UpdateUserOkResult)
 
     # Delete the email
     response = await delete_email_for_user(user_id)

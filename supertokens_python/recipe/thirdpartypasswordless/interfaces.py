@@ -19,7 +19,9 @@ from ..passwordless.interfaces import (
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     DeleteUserInfoResult, DeviceType, EmailExistsGetResponse,
     PhoneNumberExistsGetResponse, ResendCodePostResponse, RevokeAllCodesResult,
-    RevokeCodeResult, UpdateUserResult)
+    RevokeCodeResult, UpdateUserEmailAlreadyExistsErrorResult,
+    UpdateUserOkResult, UpdateUserPhoneNumberAlreadyExistsErrorResult,
+    UpdateUserUnknownUserIdErrorResult)
 from ..session import SessionContainer
 from .types import User
 
@@ -79,7 +81,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def update_passwordless_user(self, user_id: str,
-                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
+                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
         pass
 
     @abstractmethod

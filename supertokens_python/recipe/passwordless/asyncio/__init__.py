@@ -21,7 +21,9 @@ from supertokens_python.recipe.passwordless.interfaces import (
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     DeleteUserInfoResult, RevokeAllCodesResult, RevokeCodeResult,
-    UpdateUserResult)
+    UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
+    UpdateUserPhoneNumberAlreadyExistsErrorResult,
+    UpdateUserUnknownUserIdErrorResult)
 from supertokens_python.recipe.passwordless.recipe import PasswordlessRecipe
 from supertokens_python.recipe.passwordless.types import DeviceType, User
 
@@ -74,7 +76,7 @@ async def get_user_by_phone_number(phone_number: str, user_context: Union[None, 
 async def update_user(user_id: str,
                       email: Union[str, None] = None,
                       phone_number: Union[str, None] = None,
-                      user_context: Union[None, Dict[str, Any]] = None) -> UpdateUserResult:
+                      user_context: Union[None, Dict[str, Any]] = None) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().recipe_implementation.update_user(user_id=user_id, email=email, phone_number=phone_number, user_context=user_context)

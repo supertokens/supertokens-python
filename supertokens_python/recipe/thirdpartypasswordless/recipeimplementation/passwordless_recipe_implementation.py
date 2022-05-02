@@ -23,7 +23,9 @@ from supertokens_python.recipe.passwordless.interfaces import (
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     DeleteUserInfoResult, DeviceType, RecipeInterface, RevokeAllCodesResult,
-    RevokeCodeResult, UpdateUserResult)
+    RevokeCodeResult, UpdateUserEmailAlreadyExistsErrorResult,
+    UpdateUserOkResult, UpdateUserPhoneNumberAlreadyExistsErrorResult,
+    UpdateUserUnknownUserIdErrorResult)
 
 from ...passwordless.types import User
 from ..interfaces import RecipeInterface as ThirdPartyPasswordlessInterface
@@ -82,7 +84,7 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def update_user(self, user_id: str,
-                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
+                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
         return await self.recipe_implementation.update_passwordless_user(user_id, email, phone_number, user_context)
 
     async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:

@@ -20,8 +20,12 @@ from supertokens_python.querier import Querier
 from .types import DeviceCode, DeviceType, User
 
 if TYPE_CHECKING:
-    from .interfaces import CreateCodeOkResult, RevokeCodeResult, RevokeAllCodesResult, UpdateUserResult, \
-        CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult
+    from .interfaces import (
+        CreateCodeOkResult, RevokeCodeResult, RevokeAllCodesResult,
+        UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult,
+        UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult,
+        CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult,
+        CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult)
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
@@ -205,7 +209,7 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def update_user(self, user_id: str,
-                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
+                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
         data = {
             'userId': user_id
         }

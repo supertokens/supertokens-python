@@ -23,7 +23,9 @@ from supertokens_python.recipe.passwordless.interfaces import (
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     DeleteUserInfoResult, RevokeAllCodesResult, RevokeCodeResult,
-    UpdateUserResult)
+    UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
+    UpdateUserPhoneNumberAlreadyExistsErrorResult,
+    UpdateUserUnknownUserIdErrorResult)
 from supertokens_python.recipe.passwordless.types import DeviceType, User
 
 
@@ -69,7 +71,7 @@ def get_user_by_phone_number(
 
 
 def update_user(user_id: str, email: Union[str, None] = None,
-                phone_number: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None) -> UpdateUserResult:
+                phone_number: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
     return sync(asyncio.update_user(user_id=user_id, email=email,
                                     phone_number=phone_number, user_context=user_context))
 

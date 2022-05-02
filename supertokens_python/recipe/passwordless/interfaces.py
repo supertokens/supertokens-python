@@ -88,10 +88,20 @@ class ConsumeCodeRestartFlowErrorResult():
     pass
 
 
-class UpdateUserResult(ABC):
-    def __init__(self, status: Literal['OK', 'UNKNOWN_USER_ID_ERROR',
-                 'EMAIL_ALREADY_EXISTS_ERROR', 'PHONE_NUMBER_ALREADY_EXISTS_ERROR']):
-        self.status = status
+class UpdateUserOkResult():
+    pass
+
+
+class UpdateUserUnknownUserIdErrorResult():
+    pass
+
+
+class UpdateUserEmailAlreadyExistsErrorResult():
+    pass
+
+
+class UpdateUserPhoneNumberAlreadyExistsErrorResult():
+    pass
 
 
 class DeleteUserInfoResult(ABC):
@@ -111,26 +121,6 @@ class DeleteUserInfoUnknownUserIdErrorResult(DeleteUserInfoResult):
     def __init__(self):
         super().__init__('UNKNOWN_USER_ID_ERROR')
         self.is_unknown_user_id_error = True
-
-
-class UpdateUserOkResult(UpdateUserResult):
-    def __init__(self):
-        super().__init__('OK')
-
-
-class UpdateUserUnknownUserIdErrorResult(UpdateUserResult):
-    def __init__(self):
-        super().__init__('UNKNOWN_USER_ID_ERROR')
-
-
-class UpdateUserEmailAlreadyExistsErrorResult(UpdateUserResult):
-    def __init__(self):
-        super().__init__('EMAIL_ALREADY_EXISTS_ERROR')
-
-
-class UpdateUserPhoneNumberAlreadyExistsErrorResult(UpdateUserResult):
-    def __init__(self):
-        super().__init__('PHONE_NUMBER_ALREADY_EXISTS_ERROR')
 
 
 class RevokeAllCodesResult(ABC):
@@ -195,7 +185,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def update_user(self, user_id: str,
-                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
+                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
         pass
 
     @abstractmethod
