@@ -22,8 +22,8 @@ from ...passwordless.interfaces import (
     CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
-    DeleteUserInfoResult, DeleteUserInfoUnknownUserIdErrorResult, DeviceType,
-    RevokeAllCodesResult, RevokeCodeResult,
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
+    DeviceType, RevokeAllCodesResult, RevokeCodeResult,
     UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
     UpdateUserPhoneNumberAlreadyExistsErrorResult,
     UpdateUserUnknownUserIdErrorResult)
@@ -202,7 +202,7 @@ class RecipeImplementation(RecipeInterface):
                 "Cannot update passwordless user info of a user who signed up using third party login.")
         return await self.pless_update_user(user_id, email, phone_number, user_context)
 
-    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
             return DeleteUserInfoUnknownUserIdErrorResult()
@@ -211,7 +211,7 @@ class RecipeImplementation(RecipeInterface):
                 "Cannot update passwordless user info of a user who signed up using third party login.")
         return await self.pless_delete_email_for_user(user_id, user_context)
 
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
             return DeleteUserInfoUnknownUserIdErrorResult()

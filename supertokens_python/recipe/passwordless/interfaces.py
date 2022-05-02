@@ -104,23 +104,12 @@ class UpdateUserPhoneNumberAlreadyExistsErrorResult():
     pass
 
 
-class DeleteUserInfoResult(ABC):
-    def __init__(self, status: Literal['OK', 'UNKNOWN_USER_ID_ERROR']):
-        self.status = status
-        self.is_ok = False
-        self.is_unknown_user_id_error = False
+class DeleteUserInfoOkResult():
+    pass
 
 
-class DeleteUserInfoOkResult(DeleteUserInfoResult):
-    def __init__(self):
-        super().__init__('OK')
-        self.is_ok = True
-
-
-class DeleteUserInfoUnknownUserIdErrorResult(DeleteUserInfoResult):
-    def __init__(self):
-        super().__init__('UNKNOWN_USER_ID_ERROR')
-        self.is_unknown_user_id_error = True
+class DeleteUserInfoUnknownUserIdErrorResult():
+    pass
 
 
 class RevokeAllCodesResult(ABC):
@@ -189,11 +178,11 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         pass
 
     @abstractmethod
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         pass
 
     @abstractmethod

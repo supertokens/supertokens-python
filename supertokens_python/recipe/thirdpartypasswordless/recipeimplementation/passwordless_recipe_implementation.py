@@ -22,7 +22,8 @@ from supertokens_python.recipe.passwordless.interfaces import (
     CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
-    DeleteUserInfoResult, DeviceType, RecipeInterface, RevokeAllCodesResult,
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
+    DeviceType, RecipeInterface, RevokeAllCodesResult,
     RevokeCodeResult, UpdateUserEmailAlreadyExistsErrorResult,
     UpdateUserOkResult, UpdateUserPhoneNumberAlreadyExistsErrorResult,
     UpdateUserUnknownUserIdErrorResult)
@@ -87,10 +88,10 @@ class RecipeImplementation(RecipeInterface):
                           email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
         return await self.recipe_implementation.update_passwordless_user(user_id, email, phone_number, user_context)
 
-    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         return await self.recipe_implementation.delete_email_for_passwordless_user(user_id, user_context)
 
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         return await self.recipe_implementation.delete_phone_number_for_user(user_id, user_context)
 
     async def revoke_all_codes(self,

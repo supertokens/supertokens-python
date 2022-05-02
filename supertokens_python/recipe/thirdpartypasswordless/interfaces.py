@@ -17,10 +17,11 @@ from ..passwordless.interfaces import (
     CreateCodePostResponse, CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
-    DeleteUserInfoResult, DeviceType, EmailExistsGetResponse,
-    PhoneNumberExistsGetResponse, ResendCodePostResponse, RevokeAllCodesResult,
-    RevokeCodeResult, UpdateUserEmailAlreadyExistsErrorResult,
-    UpdateUserOkResult, UpdateUserPhoneNumberAlreadyExistsErrorResult,
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
+    DeviceType, EmailExistsGetResponse, PhoneNumberExistsGetResponse,
+    ResendCodePostResponse, RevokeAllCodesResult, RevokeCodeResult,
+    UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
+    UpdateUserPhoneNumberAlreadyExistsErrorResult,
     UpdateUserUnknownUserIdErrorResult)
 from ..session import SessionContainer
 from .types import User
@@ -85,11 +86,11 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         pass
 
     @abstractmethod
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         pass
 
     @abstractmethod

@@ -36,9 +36,8 @@ from .interfaces import (
     CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
-    DeleteUserInfoOkResult, DeleteUserInfoResult,
-    DeleteUserInfoUnknownUserIdErrorResult, RecipeInterface,
-    RevokeAllCodesOkResult, RevokeCodeOkResult,
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
+    RecipeInterface, RevokeAllCodesOkResult, RevokeCodeOkResult,
     UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
     UpdateUserPhoneNumberAlreadyExistsErrorResult,
     UpdateUserUnknownUserIdErrorResult)
@@ -232,7 +231,7 @@ class RecipeImplementation(RecipeInterface):
             return UpdateUserEmailAlreadyExistsErrorResult()
         return UpdateUserPhoneNumberAlreadyExistsErrorResult()
 
-    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         data = {'userId': user_id, 'email': None}
         result = await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
         if result['status'] == 'OK':
@@ -243,7 +242,7 @@ class RecipeImplementation(RecipeInterface):
             raise Exception("Should never come here")
         return DeleteUserInfoUnknownUserIdErrorResult()
 
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         data = {'userId': user_id, 'phoneNumber': None}
         result = await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
         if result['status'] == 'OK':
