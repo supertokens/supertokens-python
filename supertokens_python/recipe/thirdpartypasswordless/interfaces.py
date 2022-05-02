@@ -10,15 +10,13 @@ from supertokens_python.recipe.thirdparty.provider import Provider
 from typing_extensions import Literal
 
 from ..passwordless import interfaces as PlessInterfaces
-from ..passwordless.interfaces import (CreateCodeOkResult,
-                                       CreateCodePostResponse,
-                                       CreateNewCodeForDeviceResult,
-                                       DeleteUserInfoResult, DeviceType,
-                                       EmailExistsGetResponse,
-                                       PhoneNumberExistsGetResponse,
-                                       ResendCodePostResponse,
-                                       RevokeAllCodesResult, RevokeCodeResult,
-                                       UpdateUserResult)
+from ..passwordless.interfaces import (
+    CreateCodeOkResult, CreateCodePostResponse, CreateNewCodeForDeviceOkResult,
+    CreateNewCodeForDeviceRestartFlowErrorResult,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
+    DeleteUserInfoResult, DeviceType, EmailExistsGetResponse,
+    PhoneNumberExistsGetResponse, ResendCodePostResponse, RevokeAllCodesResult,
+    RevokeCodeResult, UpdateUserResult)
 from ..session import SessionContainer
 from .types import User
 
@@ -119,7 +117,7 @@ class RecipeInterface(ABC):
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -> CreateNewCodeForDeviceResult:
+                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
         pass
 
     @abstractmethod

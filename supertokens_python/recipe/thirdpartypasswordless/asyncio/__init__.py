@@ -96,7 +96,7 @@ async def create_code(email: Union[None, str] = None,
 
 async def create_new_code_for_device(device_id: str,
                                      user_input_code: Union[str, None] = None,
-                                     user_context: Union[None, Dict[str, Any]] = None) -> interfaces.CreateNewCodeForDeviceResult:
+                                     user_context: Union[None, Dict[str, Any]] = None) -> Union[interfaces.CreateNewCodeForDeviceOkResult, interfaces.CreateNewCodeForDeviceRestartFlowErrorResult, interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.create_new_code_for_device(device_id=device_id, user_input_code=user_input_code, user_context=user_context)

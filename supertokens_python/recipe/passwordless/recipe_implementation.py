@@ -21,7 +21,7 @@ from .types import DeviceCode, DeviceType, User
 
 if TYPE_CHECKING:
     from .interfaces import CreateCodeOkResult, RevokeCodeResult, RevokeAllCodesResult, UpdateUserResult, \
-        ConsumeCodeResult, CreateNewCodeForDeviceResult
+        ConsumeCodeResult, CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
@@ -81,7 +81,7 @@ class RecipeImplementation(RecipeInterface):
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -> CreateNewCodeForDeviceResult:
+                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
         data = {
             'deviceId': device_id
         }

@@ -34,18 +34,16 @@ class CreateCodeOkResult():
         self.time_created = time_created
 
 
-class CreateNewCodeForDeviceResult(ABC):
+class CreateNewCodeForDeviceOkResult():
     def __init__(self,
-                 status: Literal['OK', 'RESTART_FLOW_ERROR', 'USER_INPUT_CODE_ALREADY_USED_ERROR'],
-                 pre_auth_session_id: Union[str, None] = None,
-                 code_id: Union[str, None] = None,
-                 device_id: Union[str, None] = None,
-                 user_input_code: Union[str, None] = None,
-                 link_code: Union[str, None] = None,
-                 code_life_time: Union[int, None] = None,
-                 time_created: Union[int, None] = None
+                 pre_auth_session_id: str,
+                 code_id: str,
+                 device_id: str,
+                 user_input_code: str,
+                 link_code: str,
+                 code_life_time: int,
+                 time_created: int
                  ):
-        self.status = status
         self.pre_auth_session_id = pre_auth_session_id
         self.code_id = code_id
         self.device_id = device_id
@@ -58,41 +56,12 @@ class CreateNewCodeForDeviceResult(ABC):
         self.is_user_input_code_already_used_error = False
 
 
-class CreateNewCodeForDeviceOkResult(CreateNewCodeForDeviceResult):
-    def __init__(self,
-                 pre_auth_session_id: str,
-                 code_id: str,
-                 device_id: str,
-                 user_input_code: str,
-                 link_code: str,
-                 code_life_time: int,
-                 time_created: int
-                 ):
-        super().__init__(
-            'OK',
-            pre_auth_session_id,
-            code_id,
-            device_id,
-            user_input_code,
-            link_code,
-            code_life_time,
-            time_created
-        )
-        self.is_ok = True
+class CreateNewCodeForDeviceRestartFlowErrorResult():
+    pass
 
 
-class CreateNewCodeForDeviceRestartFlowErrorResult(
-        CreateNewCodeForDeviceResult):
-    def __init__(self):
-        super().__init__('RESTART_FLOW_ERROR')
-        self.is_restart_flow_error = True
-
-
-class CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult(
-        CreateNewCodeForDeviceResult):
-    def __init__(self):
-        super().__init__('USER_INPUT_CODE_ALREADY_USED_ERROR')
-        self.is_user_input_code_already_used_error = True
+class CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult():
+    pass
 
 
 class ConsumeCodeResult(ABC):
@@ -231,7 +200,7 @@ class RecipeInterface(ABC):
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -> CreateNewCodeForDeviceResult:
+                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
         pass
 
     @abstractmethod

@@ -17,9 +17,11 @@ from supertokens_python.recipe.passwordless.interfaces import (
     APIInterface, APIOptions, ConsumeCodePostExpiredUserInputCodeErrorResponse,
     ConsumeCodePostIncorrectUserInputCodeErrorResponse,
     ConsumeCodePostOkResponse, ConsumeCodePostResponse,
-    ConsumeCodePostRestartFlowErrorResponse,
+    ConsumeCodePostRestartFlowErrorResponse, CreateCodeOkResult,
     CreateCodePostGeneralErrorResponse, CreateCodePostOkResponse,
-    CreateCodePostResponse, EmailExistsGetOkResponse, EmailExistsGetResponse,
+    CreateCodePostResponse,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
+    EmailExistsGetOkResponse, EmailExistsGetResponse,
     PhoneNumberExistsGetOkResponse, PhoneNumberExistsGetResponse,
     ResendCodePostGeneralErrorResponse, ResendCodePostOkResponse,
     ResendCodePostResponse, ResendCodePostRestartFlowErrorResponse)
@@ -103,18 +105,17 @@ class APIImplementation(APIInterface):
                 user_input_code=user_input_code,
                 user_context=user_context
             )
-            if response.is_user_input_code_already_used_error:
+            if isinstance(response, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult):
                 if number_of_tries_to_create_new_code >= 3:
                     return ResendCodePostGeneralErrorResponse(
                         'Failed to generate a one time code. Please try again')
                 continue
-            if response.is_ok:
+
+            if isinstance(response, CreateCodeOkResult):
                 magic_link = None
                 user_input_code = None
                 flow_type = api_options.config.flow_type
                 if flow_type in ('MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'):
-                    if response.link_code is None or response.pre_auth_session_id is None:
-                        raise Exception("Should never come here")
                     magic_link = await api_options.config.get_link_domain_and_path(PhoneOrEmailInput(device_info.phone_number, device_info.email), user_context)
                     magic_link += '?rid=' + api_options.recipe_id + '&preAuthSessionId=' + \
                         response.pre_auth_session_id + '#' + response.link_code

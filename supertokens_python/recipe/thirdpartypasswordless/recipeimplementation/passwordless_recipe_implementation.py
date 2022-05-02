@@ -19,8 +19,11 @@ from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeErrorResult,
     ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
     ConsumeCodeRestartFlowErrorResult, ConsumeCodeResult, CreateCodeOkResult,
-    CreateNewCodeForDeviceResult, DeleteUserInfoResult, DeviceType,
-    RecipeInterface, RevokeAllCodesResult, RevokeCodeResult, UpdateUserResult)
+    CreateNewCodeForDeviceOkResult,
+    CreateNewCodeForDeviceRestartFlowErrorResult,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
+    DeleteUserInfoResult, DeviceType, RecipeInterface, RevokeAllCodesResult,
+    RevokeCodeResult, UpdateUserResult)
 
 from ...passwordless.types import User
 from ..interfaces import RecipeInterface as ThirdPartyPasswordlessInterface
@@ -43,7 +46,7 @@ class RecipeImplementation(RecipeInterface):
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -> CreateNewCodeForDeviceResult:
+                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
         return await self.create_new_code_for_device(device_id, user_input_code, user_context)
 
     async def consume_code(self,

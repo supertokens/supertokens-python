@@ -15,13 +15,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from ...passwordless.interfaces import (CreateCodeOkResult,
-                                        CreateNewCodeForDeviceResult,
-                                        DeleteUserInfoResult,
-                                        DeleteUserInfoUnknownUserIdErrorResult,
-                                        DeviceType, RevokeAllCodesResult,
-                                        RevokeCodeResult, UpdateUserResult,
-                                        UpdateUserUnknownUserIdErrorResult)
+from ...passwordless.interfaces import (
+    CreateCodeOkResult, CreateNewCodeForDeviceOkResult,
+    CreateNewCodeForDeviceRestartFlowErrorResult,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
+    DeleteUserInfoResult, DeleteUserInfoUnknownUserIdErrorResult, DeviceType,
+    RevokeAllCodesResult, RevokeCodeResult, UpdateUserResult,
+    UpdateUserUnknownUserIdErrorResult)
 from ...thirdparty.interfaces import SignInUpFieldErrorResult, SignInUpOkResult
 
 if TYPE_CHECKING:
@@ -166,7 +166,7 @@ class RecipeImplementation(RecipeInterface):
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -> CreateNewCodeForDeviceResult:
+                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
         return await self.pless_create_new_code_for_device(device_id, user_input_code, user_context)
 
     async def consume_code(self,

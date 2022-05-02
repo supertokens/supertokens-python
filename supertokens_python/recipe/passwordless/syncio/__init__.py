@@ -17,8 +17,11 @@ from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.passwordless import asyncio
 from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeOkResult, ConsumeCodeResult, CreateCodeOkResult,
-    CreateNewCodeForDeviceResult, DeleteUserInfoResult, RevokeAllCodesResult,
-    RevokeCodeResult, UpdateUserResult)
+    CreateNewCodeForDeviceOkResult,
+    CreateNewCodeForDeviceRestartFlowErrorResult,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
+    DeleteUserInfoResult, RevokeAllCodesResult, RevokeCodeResult,
+    UpdateUserResult)
 from supertokens_python.recipe.passwordless.types import DeviceType, User
 
 
@@ -32,7 +35,7 @@ def create_code(email: Union[None, str] = None,
 
 def create_new_code_for_device(device_id: str,
                                user_input_code: Union[str, None] = None,
-                               user_context: Union[None, Dict[str, Any]] = None) -> CreateNewCodeForDeviceResult:
+                               user_context: Union[None, Dict[str, Any]] = None) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
     return sync(asyncio.create_new_code_for_device(device_id=device_id,
                                                    user_input_code=user_input_code,
                                                    user_context=user_context))
