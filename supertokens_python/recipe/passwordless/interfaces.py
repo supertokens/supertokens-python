@@ -301,59 +301,16 @@ class ResendCodePostGeneralErrorResponse(ResendCodePostResponse):
         }
 
 
-class ConsumeCodePostResponse(ABC):
-    def __init__(
-        self,
-        status: Literal[
-            'OK',
-            'GENERAL_ERROR',
-            'RESTART_FLOW_ERROR',
-            'INCORRECT_USER_INPUT_CODE_ERROR',
-            'EXPIRED_USER_INPUT_CODE_ERROR'
-        ],
-        created_new_user: Union[bool, None] = None,
-        user: Union[User, None] = None,
-        session: Union[SessionContainer, None] = None,
-        message: Union[str, None] = None,
-        failed_code_input_attempt_count: Union[int, None] = None,
-        maximum_code_input_attempts: Union[int, None] = None
-    ):
-        self.status: Literal[
-            'OK',
-            'GENERAL_ERROR',
-            'RESTART_FLOW_ERROR',
-            'INCORRECT_USER_INPUT_CODE_ERROR',
-            'EXPIRED_USER_INPUT_CODE_ERROR'
-        ] = status
-        self.session: Union[SessionContainer, None] = session
-        self.created_new_user: Union[bool, None] = created_new_user
-        self.user: Union[User, None] = user
-        self.failed_code_input_attempt_count: Union[int, None] = failed_code_input_attempt_count
-        self.maximum_code_input_attempts: Union[int, None] = maximum_code_input_attempts
-        self.message: Union[str, None] = message
-        self.is_ok: bool = False
-        self.is_general_error: bool = False
-        self.is_restart_flow_error: bool = False
-        self.is_incorrect_user_input_code_error: bool = False
-        self.is_expired_user_input_code_error: bool = False
+class ConsumeCodePostOkResponse(APIResponse):
+    status: str = 'OK'
 
-    @abstractmethod
-    def to_json(self) -> Dict[str, Any]:
-        pass
-
-
-class ConsumeCodePostOkResponse(ConsumeCodePostResponse):
     def __init__(self, created_new_user: bool, user: User, session: SessionContainer):
-        super().__init__(
-            status='OK',
-            created_new_user=created_new_user,
-            user=user,
-            session=session)
+        self.created_new_user = created_new_user
+        self.user = user
+        self.session = session
         self.is_ok = True
 
     def to_json(self):
-        if self.user is None:
-            raise Exception("Should never come here")
         user = {
             'id': self.user.user_id,
             'time_joined': self.user.time_joined
@@ -375,12 +332,8 @@ class ConsumeCodePostOkResponse(ConsumeCodePostResponse):
         }
 
 
-class ConsumeCodePostRestartFlowErrorResponse(ConsumeCodePostResponse):
-    def __init__(self):
-        super().__init__(
-            status='RESTART_FLOW_ERROR'
-        )
-        self.is_restart_flow_error = True
+class ConsumeCodePostRestartFlowErrorResponse(APIResponse):
+    status: str = 'RESTART_FLOW_ERROR'
 
     def to_json(self):
         return {
@@ -388,15 +341,13 @@ class ConsumeCodePostRestartFlowErrorResponse(ConsumeCodePostResponse):
         }
 
 
-class ConsumeCodePostGeneralErrorResponse(ConsumeCodePostResponse):
+class ConsumeCodePostGeneralErrorResponse(APIResponse):
+    status: str = 'GENERAL_ERROR'
+
     def __init__(
             self,
             message: str):
-        super().__init__(
-            status='GENERAL_ERROR',
-            message=message
-        )
-        self.is_general_error = True
+        self.message = message
 
     def to_json(self):
         return {
@@ -406,17 +357,15 @@ class ConsumeCodePostGeneralErrorResponse(ConsumeCodePostResponse):
 
 
 class ConsumeCodePostIncorrectUserInputCodeErrorResponse(
-        ConsumeCodePostResponse):
+        APIResponse):
+    status: str = 'INCORRECT_USER_INPUT_CODE_ERROR'
+
     def __init__(
             self,
             failed_code_input_attempt_count: int,
             maximum_code_input_attempts: int):
-        super().__init__(
-            status='INCORRECT_USER_INPUT_CODE_ERROR',
-            failed_code_input_attempt_count=failed_code_input_attempt_count,
-            maximum_code_input_attempts=maximum_code_input_attempts
-        )
-        self.is_incorrect_user_input_code_error = True
+        self.failed_code_input_attempt_count = failed_code_input_attempt_count
+        self.maximum_code_input_attempts = maximum_code_input_attempts
 
     def to_json(self):
         return {
@@ -427,17 +376,15 @@ class ConsumeCodePostIncorrectUserInputCodeErrorResponse(
 
 
 class ConsumeCodePostExpiredUserInputCodeErrorResponse(
-        ConsumeCodePostResponse):
+        APIResponse):
+    status: str = 'EXPIRED_USER_INPUT_CODE_ERROR'
+
     def __init__(
             self,
             failed_code_input_attempt_count: int,
             maximum_code_input_attempts: int):
-        super().__init__(
-            status='EXPIRED_USER_INPUT_CODE_ERROR',
-            failed_code_input_attempt_count=failed_code_input_attempt_count,
-            maximum_code_input_attempts=maximum_code_input_attempts
-        )
-        self.is_expired_user_input_code_error = True
+        self.failed_code_input_attempt_count = failed_code_input_attempt_count
+        self.maximum_code_input_attempts = maximum_code_input_attempts
 
     def to_json(self):
         return {
@@ -520,7 +467,7 @@ class APIInterface:
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
                                 api_options: APIOptions,
-                                user_context: Dict[str, Any]) -> ConsumeCodePostResponse:
+                                user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse, ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse, ConsumeCodePostExpiredUserInputCodeErrorResponse]:
         pass
 
     @abstractmethod

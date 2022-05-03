@@ -18,7 +18,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeIncorrectUserInputCodeErrorResult,
     ConsumeCodePostExpiredUserInputCodeErrorResponse,
     ConsumeCodePostIncorrectUserInputCodeErrorResponse,
-    ConsumeCodePostOkResponse, ConsumeCodePostResponse,
+    ConsumeCodePostOkResponse, ConsumeCodePostGeneralErrorResponse,
     ConsumeCodePostRestartFlowErrorResponse, ConsumeCodeRestartFlowErrorResult,
     CreateCodeOkResult, CreateCodePostGeneralErrorResponse,
     CreateCodePostOkResponse,
@@ -157,7 +157,7 @@ class APIImplementation(APIInterface):
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
                                 api_options: APIOptions,
-                                user_context: Dict[str, Any]) -> ConsumeCodePostResponse:
+                                user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse, ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse, ConsumeCodePostExpiredUserInputCodeErrorResponse]:
         response = await api_options.recipe_implementation.consume_code(
             pre_auth_session_id=pre_auth_session_id,
             user_input_code=user_input_code,

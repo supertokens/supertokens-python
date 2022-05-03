@@ -34,9 +34,8 @@ from ..interfaces import (APIInterface,
                           ConsumeCodePostExpiredUserInputCodeErrorResponse,
                           ConsumeCodePostGeneralErrorResponse,
                           ConsumeCodePostIncorrectUserInputCodeErrorResponse,
-                          ConsumeCodePostOkResponse, ConsumeCodePostResponse,
-                          ConsumeCodePostRestartFlowErrorResponse)
-from ..types import User
+                          ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse)
+
 from .passwordless_api_impementation import \
     get_interface_impl as get_pless_interface_impl
 from .thirdparty_api_implementation import \
@@ -100,27 +99,8 @@ class APIImplementation(APIInterface):
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
                                 api_options: PasswordlessAPIOptions,
-                                user_context: Dict[str, Any]) -> ConsumeCodePostResponse:
-        otherType = await self.pless_consume_code_post(pre_auth_session_id, user_input_code, device_id, link_code, api_options, user_context)
-        if otherType.is_ok:
-            if otherType.created_new_user is None or otherType.user is None or otherType.session is None:
-                raise Exception("Should never come here")
-            return ConsumeCodePostOkResponse(otherType.created_new_user, User(otherType.user.user_id, otherType.user.email, otherType.user.phone_number, None, otherType.user.time_joined), otherType.session)
-        if otherType.is_expired_user_input_code_error:
-            if otherType.failed_code_input_attempt_count is None or otherType.maximum_code_input_attempts is None:
-                raise Exception("Should never come here")
-            return ConsumeCodePostExpiredUserInputCodeErrorResponse(otherType.failed_code_input_attempt_count, otherType.maximum_code_input_attempts)
-        if otherType.is_general_error:
-            if otherType.message is None:
-                raise Exception("Should never come here")
-            return ConsumeCodePostGeneralErrorResponse(otherType.message)
-        if otherType.is_incorrect_user_input_code_error:
-            if otherType.failed_code_input_attempt_count is None or otherType.maximum_code_input_attempts is None:
-                raise Exception("Should never come here")
-            return ConsumeCodePostIncorrectUserInputCodeErrorResponse(otherType.failed_code_input_attempt_count, otherType.maximum_code_input_attempts)
-
-        # restart flow error
-        return ConsumeCodePostRestartFlowErrorResponse()
+                                user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse, ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse, ConsumeCodePostExpiredUserInputCodeErrorResponse]:
+        return await self.pless_consume_code_post(pre_auth_session_id, user_input_code, device_id, link_code, api_options, user_context)
 
     async def passwordless_user_email_exists_get(self,
                                                  email: str,
