@@ -20,7 +20,7 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from .interfaces import (CreateResetPasswordOkResult,
                          CreateResetPasswordWrongUserIdErrorResult,
                          RecipeInterface, ResetPasswordUsingTokenOkResult,
-                         ResetPasswordUsingTokenWrongUserIdErrorResult,
+                         ResetPasswordUsingTokenInvalidTokenErrorResult,
                          SignInOkResult, SignInWrongCredentialsErrorResult,
                          SignUpEmailAlreadyExistsErrorResult, SignUpOkResult,
                          UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
@@ -68,7 +68,7 @@ class RecipeImplementation(RecipeInterface):
             return CreateResetPasswordOkResult(response['token'])
         return CreateResetPasswordWrongUserIdErrorResult()
 
-    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenWrongUserIdErrorResult]:
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenErrorResult]:
         data = {
             'method': 'token',
             'token': token,
@@ -77,7 +77,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_post_request(
             NormalisedURLPath('/recipe/user/password/reset'), data)
         if 'status' not in response or response['status'] != 'OK':
-            return ResetPasswordUsingTokenWrongUserIdErrorResult()
+            return ResetPasswordUsingTokenInvalidTokenErrorResult()
         user_id = None
         if 'userId' in response:
             user_id = response['userId']

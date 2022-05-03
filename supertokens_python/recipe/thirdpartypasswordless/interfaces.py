@@ -4,8 +4,7 @@ from typing import Any, Dict, List, Union
 from supertokens_python.recipe.thirdparty import \
     interfaces as ThirdPartyInterfaces
 from supertokens_python.recipe.thirdparty.interfaces import (
-    AuthorisationUrlGetResponse, SignInUpFieldErrorResult, SignInUpOkResult,
-    SignInUpPostResponse)
+    AuthorisationUrlGetResponse, SignInUpPostResponse, SignInUpResult)
 from supertokens_python.recipe.thirdparty.provider import Provider
 
 from ..passwordless import interfaces as PlessInterfaces
@@ -57,7 +56,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
         pass
 
     @abstractmethod
