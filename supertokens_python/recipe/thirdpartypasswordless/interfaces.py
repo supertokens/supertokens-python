@@ -21,8 +21,10 @@ from ..passwordless.interfaces import (
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
-    DeviceType, EmailExistsGetResponse, PhoneNumberExistsGetResponse,
-    ResendCodePostResponse, RevokeAllCodesOkResult, RevokeCodeOkResult,
+    DeviceType, EmailExistsGetOkResponse, PhoneNumberExistsGetOkResponse,
+    ResendCodePostOkResponse, ResendCodePostRestartFlowErrorResponse,
+    ResendCodePostGeneralErrorResponse,
+    RevokeAllCodesOkResult, RevokeCodeOkResult,
     UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
     UpdateUserPhoneNumberAlreadyExistsErrorResult,
     UpdateUserUnknownUserIdErrorResult)
@@ -161,7 +163,7 @@ class APIInterface(ABC):
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: PasswordlessAPIOptions,
-                               user_context: Dict[str, Any]) -> ResendCodePostResponse:
+                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResponse, ResendCodePostRestartFlowErrorResponse, ResendCodePostGeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -178,12 +180,12 @@ class APIInterface(ABC):
     async def passwordless_user_email_exists_get(self,
                                                  email: str,
                                                  api_options: PasswordlessAPIOptions,
-                                                 user_context: Dict[str, Any]) -> EmailExistsGetResponse:
+                                                 user_context: Dict[str, Any]) -> EmailExistsGetOkResponse:
         pass
 
     @abstractmethod
     async def passwordless_user_phone_number_exists_get(self,
                                                         phone_number: str,
                                                         api_options: PasswordlessAPIOptions,
-                                                        user_context: Dict[str, Any]) -> PhoneNumberExistsGetResponse:
+                                                        user_context: Dict[str, Any]) -> PhoneNumberExistsGetOkResponse:
         pass

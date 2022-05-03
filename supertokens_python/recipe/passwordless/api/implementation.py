@@ -23,10 +23,9 @@ from supertokens_python.recipe.passwordless.interfaces import (
     CreateCodeOkResult, CreateCodePostGeneralErrorResponse,
     CreateCodePostOkResponse,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
-    EmailExistsGetOkResponse, EmailExistsGetResponse,
-    PhoneNumberExistsGetOkResponse, PhoneNumberExistsGetResponse,
+    EmailExistsGetOkResponse, PhoneNumberExistsGetOkResponse,
     ResendCodePostGeneralErrorResponse, ResendCodePostOkResponse,
-    ResendCodePostResponse, ResendCodePostRestartFlowErrorResponse)
+    ResendCodePostRestartFlowErrorResponse)
 from supertokens_python.recipe.passwordless.utils import (
     ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig,
     CreateAndSendCustomEmailParameters,
@@ -86,7 +85,7 @@ class APIImplementation(APIInterface):
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> ResendCodePostResponse:
+                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResponse, ResendCodePostRestartFlowErrorResponse, ResendCodePostGeneralErrorResponse]:
         device_info = await api_options.recipe_implementation.list_codes_by_device_id(
             device_id=device_id,
             user_context=user_context
@@ -187,10 +186,10 @@ class APIImplementation(APIInterface):
             session=session
         )
 
-    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailExistsGetResponse:
+    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailExistsGetOkResponse:
         response = await api_options.recipe_implementation.get_user_by_email(email, user_context)
         return EmailExistsGetOkResponse(exists=response is not None)
 
-    async def phone_number_exists_get(self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]) -> PhoneNumberExistsGetResponse:
+    async def phone_number_exists_get(self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]) -> PhoneNumberExistsGetOkResponse:
         response = await api_options.recipe_implementation.get_user_by_phone_number(phone_number, user_context)
         return PhoneNumberExistsGetOkResponse(exists=response is not None)

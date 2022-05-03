@@ -21,20 +21,23 @@ from ...passwordless.interfaces import APIInterface
 from ...passwordless.interfaces import APIOptions as PasswordlessAPIOptions
 from ...passwordless.interfaces import (CreateCodePostOkResponse,
                                         CreateCodePostGeneralErrorResponse,
-                                        EmailExistsGetResponse,
-                                        PhoneNumberExistsGetResponse,
-                                        ResendCodePostResponse)
+                                        EmailExistsGetOkResponse,
+                                        PhoneNumberExistsGetOkResponse,
+                                        ConsumeCodePostExpiredUserInputCodeErrorResponse,
+                                        ConsumeCodePostGeneralErrorResponse,
+                                        ConsumeCodePostIncorrectUserInputCodeErrorResponse,
+                                        ConsumeCodePostOkResponse,
+                                        ConsumeCodePostRestartFlowErrorResponse,
+                                        ResendCodePostOkResponse,
+                                        ResendCodePostRestartFlowErrorResponse,
+                                        ResendCodePostGeneralErrorResponse)
 from ...thirdparty.api.implementation import \
     APIImplementation as ThirdPartyImplementation
 from ...thirdparty.interfaces import APIOptions as ThirdPartyAPIOptions
 from ...thirdparty.interfaces import (AuthorisationUrlGetResponse,
                                       SignInUpPostResponse)
 from ...thirdparty.provider import Provider
-from ..interfaces import (APIInterface,
-                          ConsumeCodePostExpiredUserInputCodeErrorResponse,
-                          ConsumeCodePostGeneralErrorResponse,
-                          ConsumeCodePostIncorrectUserInputCodeErrorResponse,
-                          ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse)
+from ..interfaces import APIInterface
 
 from .passwordless_api_impementation import \
     get_interface_impl as get_pless_interface_impl
@@ -90,7 +93,7 @@ class APIImplementation(APIInterface):
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: PasswordlessAPIOptions,
-                               user_context: Dict[str, Any]) -> ResendCodePostResponse:
+                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResponse, ResendCodePostRestartFlowErrorResponse, ResendCodePostGeneralErrorResponse]:
         return await self.resend_code_post(device_id, pre_auth_session_id, api_options, user_context)
 
     async def consume_code_post(self,
@@ -105,11 +108,11 @@ class APIImplementation(APIInterface):
     async def passwordless_user_email_exists_get(self,
                                                  email: str,
                                                  api_options: PasswordlessAPIOptions,
-                                                 user_context: Dict[str, Any]) -> EmailExistsGetResponse:
+                                                 user_context: Dict[str, Any]) -> EmailExistsGetOkResponse:
         return await self.passwordless_user_email_exists_get(email, api_options, user_context)
 
     async def passwordless_user_phone_number_exists_get(self,
                                                         phone_number: str,
                                                         api_options: PasswordlessAPIOptions,
-                                                        user_context: Dict[str, Any]) -> PhoneNumberExistsGetResponse:
+                                                        user_context: Dict[str, Any]) -> PhoneNumberExistsGetOkResponse:
         return await self.passwordless_user_phone_number_exists_get(phone_number, api_options, user_context)

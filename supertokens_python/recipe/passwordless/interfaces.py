@@ -248,27 +248,8 @@ class CreateCodePostGeneralErrorResponse(APIResponse):
         }
 
 
-class ResendCodePostResponse(ABC):
-    def __init__(
-        self,
-        status: Literal['OK', 'GENERAL_ERROR', 'RESTART_FLOW_ERROR'],
-        message: Union[str, None] = None
-    ):
-        self.status = status
-        self.message = message
-        self.is_ok = False
-        self.is_general_error = False
-        self.is_restart_flow_error = False
-
-    @abstractmethod
-    def to_json(self) -> Dict[str, Any]:
-        pass
-
-
-class ResendCodePostOkResponse(ResendCodePostResponse):
-    def __init__(self):
-        super().__init__(status='OK')
-        self.is_ok = True
+class ResendCodePostOkResponse(APIResponse):
+    status: str = 'OK'
 
     def to_json(self):
         return {
@@ -276,12 +257,8 @@ class ResendCodePostOkResponse(ResendCodePostResponse):
         }
 
 
-class ResendCodePostRestartFlowErrorResponse(ResendCodePostResponse):
-    def __init__(self):
-        super().__init__(
-            status='RESTART_FLOW_ERROR'
-        )
-        self.is_restart_flow_error = True
+class ResendCodePostRestartFlowErrorResponse(APIResponse):
+    status: str = 'RESTART_FLOW_ERROR'
 
     def to_json(self):
         return {
@@ -289,10 +266,11 @@ class ResendCodePostRestartFlowErrorResponse(ResendCodePostResponse):
         }
 
 
-class ResendCodePostGeneralErrorResponse(ResendCodePostResponse):
+class ResendCodePostGeneralErrorResponse(APIResponse):
+    status: str = 'GENERAL_ERROR'
+
     def __init__(self, message: str):
-        super().__init__(status='GENERAL_ERROR', message=message)
-        self.is_general_error = True
+        self.message = message
 
     def to_json(self):
         return {
@@ -394,13 +372,10 @@ class ConsumeCodePostExpiredUserInputCodeErrorResponse(
         }
 
 
-class PhoneNumberExistsGetResponse(ABC):
-    def __init__(
-        self,
-        status: Literal['OK'],
-        exists: bool
-    ):
-        self.status = status
+class PhoneNumberExistsGetOkResponse(APIResponse):
+    status: str = 'OK'
+
+    def __init__(self, exists: bool):
         self.exists = exists
 
     def to_json(self):
@@ -410,18 +385,10 @@ class PhoneNumberExistsGetResponse(ABC):
         }
 
 
-class PhoneNumberExistsGetOkResponse(PhoneNumberExistsGetResponse):
+class EmailExistsGetOkResponse(APIResponse):
+    status: str = 'OK'
+
     def __init__(self, exists: bool):
-        super().__init__(status='OK', exists=exists)
-
-
-class EmailExistsGetResponse(ABC):
-    def __init__(
-        self,
-        status: Literal['OK'],
-        exists: bool
-    ):
-        self.status = status
         self.exists = exists
 
     def to_json(self):
@@ -429,11 +396,6 @@ class EmailExistsGetResponse(ABC):
             'status': self.status,
             'exists': self.exists
         }
-
-
-class EmailExistsGetOkResponse(EmailExistsGetResponse):
-    def __init__(self, exists: bool):
-        super().__init__(status='OK', exists=exists)
 
 
 class APIInterface:
@@ -457,7 +419,7 @@ class APIInterface:
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> ResendCodePostResponse:
+                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResponse, ResendCodePostRestartFlowErrorResponse, ResendCodePostGeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -474,12 +436,12 @@ class APIInterface:
     async def email_exists_get(self,
                                email: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> EmailExistsGetResponse:
+                               user_context: Dict[str, Any]) -> EmailExistsGetOkResponse:
         pass
 
     @abstractmethod
     async def phone_number_exists_get(self,
                                       phone_number: str,
                                       api_options: APIOptions,
-                                      user_context: Dict[str, Any]) -> PhoneNumberExistsGetResponse:
+                                      user_context: Dict[str, Any]) -> PhoneNumberExistsGetOkResponse:
         pass
