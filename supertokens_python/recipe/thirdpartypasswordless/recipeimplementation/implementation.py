@@ -27,7 +27,7 @@ from ...passwordless.interfaces import (
     UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
     UpdateUserPhoneNumberAlreadyExistsErrorResult,
     UpdateUserUnknownUserIdErrorResult)
-from ...thirdparty.interfaces import SignInUpFieldErrorResult, SignInUpOkResult
+from ...thirdparty.interfaces import SignInUpResult
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
