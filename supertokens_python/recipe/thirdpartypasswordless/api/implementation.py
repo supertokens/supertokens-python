@@ -19,7 +19,8 @@ from ...passwordless.api.implementation import \
     APIImplementation as PasswordlessImplementation
 from ...passwordless.interfaces import APIInterface
 from ...passwordless.interfaces import APIOptions as PasswordlessAPIOptions
-from ...passwordless.interfaces import (CreateCodePostResponse,
+from ...passwordless.interfaces import (CreateCodePostOkResponse,
+                                        CreateCodePostGeneralErrorResponse,
                                         EmailExistsGetResponse,
                                         PhoneNumberExistsGetResponse,
                                         ResendCodePostResponse)
@@ -83,7 +84,7 @@ class APIImplementation(APIInterface):
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: PasswordlessAPIOptions,
-                               user_context: Dict[str, Any]) -> CreateCodePostResponse:
+                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResponse, CreateCodePostGeneralErrorResponse]:
         return await self.pless_create_code_post(email, phone_number, api_options, user_context)
 
     async def resend_code_post(self,

@@ -14,7 +14,8 @@ from ..passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeErrorResult,
     ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
     ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
-    CreateCodePostResponse, CreateNewCodeForDeviceOkResult,
+    CreateCodePostOkResponse, CreateCodePostGeneralErrorResponse,
+    CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
@@ -293,7 +294,7 @@ class APIInterface(ABC):
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: PasswordlessAPIOptions,
-                               user_context: Dict[str, Any]) -> CreateCodePostResponse:
+                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResponse, CreateCodePostGeneralErrorResponse]:
         pass
 
     @abstractmethod

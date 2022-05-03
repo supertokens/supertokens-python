@@ -21,7 +21,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodePostOkResponse, ConsumeCodePostResponse,
     ConsumeCodePostRestartFlowErrorResponse, ConsumeCodeRestartFlowErrorResult,
     CreateCodeOkResult, CreateCodePostGeneralErrorResponse,
-    CreateCodePostOkResponse, CreateCodePostResponse,
+    CreateCodePostOkResponse,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
     EmailExistsGetOkResponse, EmailExistsGetResponse,
     PhoneNumberExistsGetOkResponse, PhoneNumberExistsGetResponse,
@@ -41,7 +41,7 @@ class APIImplementation(APIInterface):
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> CreateCodePostResponse:
+                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResponse, CreateCodePostGeneralErrorResponse]:
         user_input_code = None
         if api_options.config.get_custom_user_input_code is not None:
             user_input_code = await api_options.config.get_custom_user_input_code(user_context)

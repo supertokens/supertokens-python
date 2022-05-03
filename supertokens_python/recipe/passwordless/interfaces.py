@@ -18,6 +18,8 @@ from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe.session import SessionContainer
 from typing_extensions import Literal
 
+from supertokens_python.types import APIResponse
+
 from .types import DeviceType, User
 from .utils import PasswordlessConfig
 
@@ -210,42 +212,17 @@ class APIOptions:
         self.recipe_implementation = recipe_implementation
 
 
-class CreateCodePostResponse(ABC):
-    def __init__(
-        self,
-        status: Literal['OK', 'GENERAL_ERROR'],
-        device_id: Union[str, None] = None,
-        pre_auth_session_id: Union[str, None] = None,
-        flow_type: Union[None, Literal['USER_INPUT_CODE', 'MAGIC_LINK',
-                                       'USER_INPUT_CODE_AND_MAGIC_LINK']] = None,
-        message: Union[str, None] = None
-    ):
-        self.status = status
-        self.device_id = device_id
-        self.pre_auth_session_id = pre_auth_session_id
-        self.flow_type = flow_type
-        self.message = message
-        self.is_ok = False
-        self.is_general_error = False
+class CreateCodePostOkResponse(APIResponse):
+    status: str = 'OK'
 
-    @abstractmethod
-    def to_json(self) -> Dict[str, Any]:
-        pass
-
-
-class CreateCodePostOkResponse(CreateCodePostResponse):
     def __init__(
             self,
             device_id: str,
             pre_auth_session_id: str,
             flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']):
-        super().__init__(
-            status='OK',
-            device_id=device_id,
-            pre_auth_session_id=pre_auth_session_id,
-            flow_type=flow_type
-        )
-        self.is_ok = True
+        self.device_id = device_id
+        self.pre_auth_session_id = pre_auth_session_id
+        self.flow_type = flow_type
 
     def to_json(self):
         return {
@@ -256,15 +233,13 @@ class CreateCodePostOkResponse(CreateCodePostResponse):
         }
 
 
-class CreateCodePostGeneralErrorResponse(CreateCodePostResponse):
+class CreateCodePostGeneralErrorResponse(APIResponse):
+    status: str = 'GENERAL_ERROR'
+
     def __init__(
             self,
             message: str):
-        super().__init__(
-            status='GENERAL_ERROR',
-            message=message
-        )
-        self.is_general_error = True
+        self.message = message
 
     def to_json(self):
         return {
@@ -527,7 +502,7 @@ class APIInterface:
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> CreateCodePostResponse:
+                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResponse, CreateCodePostGeneralErrorResponse]:
         pass
 
     @abstractmethod
