@@ -31,21 +31,13 @@ class JsonWebKey:
         self.use = use
 
 
-class CreateJwtResult(ABC):
-    def __init__(
-            self, status: Literal['OK', 'UNSUPPORTED_ALGORITHM_ERROR'], jwt: Union[None, str] = None):
-        self.status = status
+class CreateJwtResultOk():
+    def __init__(self, jwt: str):
         self.jwt = jwt
 
 
-class CreateJwtResultOk(CreateJwtResult):
-    def __init__(self, jwt: str):
-        super().__init__('OK', jwt)
-
-
-class CreateJwtResultUnsupportedAlgorithm(CreateJwtResult):
-    def __init__(self):
-        super().__init__('UNSUPPORTED_ALGORITHM_ERROR')
+class CreateJwtResultUnsupportedAlgorithm():
+    pass
 
 
 class GetJWKSResult(ABC):
@@ -60,7 +52,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> Union[CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm]:
         pass
 
     @abstractmethod

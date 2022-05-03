@@ -13,6 +13,7 @@
 # under the License.
 
 from typing import Any, Dict
+from supertokens_python.recipe.jwt.interfaces import CreateJwtResultUnsupportedAlgorithm
 
 from supertokens_python.recipe.openid.interfaces import RecipeInterface
 
@@ -40,7 +41,7 @@ async def add_jwt_to_access_token_payload(access_token_payload: Dict[str, Any],
         **access_token_payload
     }, jwt_expiry, user_context)
 
-    if jwt_response.status == 'UNSUPPORTED_ALGORITHM_ERROR':
+    if isinstance(jwt_response, CreateJwtResultUnsupportedAlgorithm):
         # Should never come here
         raise Exception('JWT Signing algorithm not supported')
 
