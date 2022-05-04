@@ -66,16 +66,13 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
         async def get_jwks(user_context: Dict[str, Any]):
             response_ = await temp(user_context)
 
-            if response_.status == "OK":
-                nonlocal jwt_keys
-
-                for key in response_.keys:
-                    jwt_keys.append({'kty': key.kty,
-                                     'kid': key.kid,
-                                     'n': key.n,
-                                     'e': key.e,
-                                     'alg': key.alg,
-                                     'use': key.use})
+            for key in response_.keys:
+                jwt_keys.append({'kty': key.kty,
+                                 'kid': key.kid,
+                                 'n': key.n,
+                                 'e': key.e,
+                                 'alg': key.alg,
+                                 'use': key.use})
 
             return response_
 

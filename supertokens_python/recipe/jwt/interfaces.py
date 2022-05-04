@@ -40,10 +40,8 @@ class CreateJwtResultUnsupportedAlgorithm():
     pass
 
 
-class GetJWKSResult(ABC):
-    def __init__(
-            self, status: Literal['OK'], keys: List[JsonWebKey]):
-        self.status = status
+class GetJWKSResult():
+    def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys
 
 

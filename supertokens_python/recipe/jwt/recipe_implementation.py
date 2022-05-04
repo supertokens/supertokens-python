@@ -66,4 +66,4 @@ class RecipeImplementation(RecipeInterface):
                 key['alg'],
                 key['use']
             ))
-        return GetJWKSResult(response['status'], keys)
+        return GetJWKSResult(keys)
