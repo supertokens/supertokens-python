@@ -14,9 +14,9 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 
-from .utils import JWTConfig
+from supertokens_python.types import APIResponse
 
-from typing_extensions import Literal
+from .utils import JWTConfig
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 
@@ -68,10 +68,10 @@ class APIOptions:
         self.recipe_implementation = recipe_implementation
 
 
-class JWKSGetResponse:
-    def __init__(
-            self, status: Literal['OK'], keys: List[JsonWebKey]):
-        self.status = status
+class JWKSGetResponse(APIResponse):
+    status: str = 'OK'
+
+    def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys
 
     def to_json(self) -> Dict[str, Any]:
@@ -87,7 +87,7 @@ class JWKSGetResponse:
             })
 
         return {
-            'status': 'OK',
+            'status': self.status,
             'keys': keys
         }
 
