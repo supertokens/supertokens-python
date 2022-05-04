@@ -254,5 +254,5 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
         'sessionHandle': session_handle
     })
     if response['status'] == 'OK':
-        return SessionInformationResult('OK', response['sessionHandle'], response['userId'], response['userDataInDatabase'], response['expiry'], response['userDataInJWT'], response['timeCreated'])
+        return SessionInformationResult(response['sessionHandle'], response['userId'], response['userDataInDatabase'], response['expiry'], response['userDataInJWT'], response['timeCreated'])
     raise_unauthorised_exception(response['message'])
