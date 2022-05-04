@@ -26,10 +26,8 @@ def get_interface_impl(
     implementation.disable_sign_in_up_post = api_implementation.disable_thirdparty_sign_in_up_post
     implementation.disable_apple_redirect_handler_post = api_implementation.disable_apple_redirect_handler_post
 
-    if not implementation.disable_sign_in_up_post:
-        implementation.sign_in_up_post = api_implementation.thirdparty_sign_in_up_post
-
     implementation.authorisation_url_get = api_implementation.authorisation_url_get
+    implementation.sign_in_up_post = api_implementation.thirdparty_sign_in_up_post
     implementation.apple_redirect_handler_post = api_implementation.apple_redirect_handler_post
 
     return implementation
