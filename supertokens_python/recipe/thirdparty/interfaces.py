@@ -16,11 +16,10 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
+
+from ...types import APIResponse
 from ..emailverification.interfaces import \
     RecipeInterface as EmailVerificationRecipeInterface
-
-from typing_extensions import Literal
-
 from .provider import Provider
 
 if TYPE_CHECKING:
@@ -32,27 +31,15 @@ if TYPE_CHECKING:
     from .utils import ThirdPartyConfig
 
 
-class SignInUpResult(ABC):
-    def __init__(self, status: Literal['OK', 'FIELD_ERROR'], user: Union[User, None] = None,
-                 created_new_user: Union[bool, None] = None, error: Union[str, None] = None):
-        self.status: Literal['OK', 'FIELD_ERROR'] = status
-        self.is_ok: bool = False
-        self.is_field_error: bool = False
-        self.user: Union[User, None] = user
-        self.created_new_user: Union[bool, None] = created_new_user
-        self.error: Union[str, None] = error
-
-
-class SignInUpOkResult(SignInUpResult):
+class SignInUpOkResult():
     def __init__(self, user: User, created_new_user: bool):
-        super().__init__('OK', user, created_new_user)
-        self.is_ok = True
+        self.user = user
+        self.created_new_user = created_new_user
 
 
-class SignInUpFieldErrorResult(SignInUpResult):
+class SignInUpFieldErrorResult():
     def __init__(self, error: str):
-        super().__init__('FIELD_ERROR', error=error)
-        self.is_field_error = True
+        self.error = error
 
 
 class RecipeInterface(ABC):
@@ -74,7 +61,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -> SignInUpResult:
+                         email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
         pass
 
 
@@ -91,66 +78,18 @@ class APIOptions:
         self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = email_verification_recipe_implementation
 
 
-class SignInUpPostResponse(ABC):
-    def __init__(self, status: Literal['OK', 'NO_EMAIL_GIVEN_BY_PROVIDER', 'FIELD_ERROR'], user: Union[User, None] = None,
-                 created_new_user: Union[bool, None] = None, auth_code_response: Union[Dict[str, Any], None] = None,
-                 error: Union[str, None] = None,
-                 session: Union[SessionContainer, None] = None):
-        self.type = 'thirdparty'
-        self.status: Literal['OK', 'NO_EMAIL_GIVEN_BY_PROVIDER', 'FIELD_ERROR'] = status
-        self.is_ok: bool = False
-        self.is_no_email_given_by_provider: bool = False
-        self.is_field_error: bool = False
-        self.user: Union[User, None] = user
-        self.created_new_user: Union[bool, None] = created_new_user
-        self.error: Union[str, None] = error
-        self.auth_code_response: Union[Dict[str, Any], None] = auth_code_response
-        self.session: Union[SessionContainer, None] = session
+class SignInUpPostOkResponse(APIResponse):
+    status: str = 'OK'
 
-    @abstractmethod
-    def to_json(self) -> Dict[str, Any]:
-        pass
-
-
-class GeneratePasswordResetTokenResponse(ABC):
-    def __init__(self, status: Literal['OK']):
-        self.status = status
-
-    @abstractmethod
-    def to_json(self):
-        pass
-
-
-class EmailExistsResponse(ABC):
-    def __init__(self, status: Literal['OK'], exists: bool):
-        self.status = status
-        self.exists = exists
-
-    @abstractmethod
-    def to_json(self):
-        pass
-
-
-class PasswordResetResponse(ABC):
-    def __init__(self, status: Literal['OK',
-                 'RESET_PASSWORD_INVALID_TOKEN_ERROR']):
-        self.status = status
-
-    @abstractmethod
-    def to_json(self):
-        pass
-
-
-class SignInUpPostOkResponse(SignInUpPostResponse):
     def __init__(self, user: User, created_new_user: bool,
                  auth_code_response: Dict[str, Any],
                  session: SessionContainer):
-        super().__init__('OK', user, created_new_user, auth_code_response, session=session)
-        self.is_ok = True
+        self.user = user
+        self.created_new_user = created_new_user
+        self.auth_code_response = auth_code_response
+        self.session = session
 
     def to_json(self) -> Dict[str, Any]:
-        if self.user is None:
-            raise Exception("Should never come here")
         return {
             'status': self.status,
             'user': {
@@ -166,32 +105,32 @@ class SignInUpPostOkResponse(SignInUpPostResponse):
         }
 
 
-class SignInUpPostNoEmailGivenByProviderResponse(SignInUpPostResponse):
-    def __init__(self):
-        super().__init__('NO_EMAIL_GIVEN_BY_PROVIDER')
-        self.is_no_email_given_by_provider = True
+class SignInUpPostNoEmailGivenByProviderResponse(APIResponse):
+    status: str = 'NO_EMAIL_GIVEN_BY_PROVIDER'
 
-    def to_json(self):
+    def to_json(self) -> Dict[str, Any]:
         return {
             'status': self.status
         }
 
 
-class SignInUpPostFieldErrorResponse(SignInUpPostResponse):
-    def __init__(self, error: str):
-        super().__init__('FIELD_ERROR', error=error)
-        self.is_field_error = True
+class SignInUpPostFieldErrorResponse(APIResponse):
+    status: str = 'FIELD_ERROR'
 
-    def to_json(self):
+    def __init__(self, error: str):
+        self.error = error
+
+    def to_json(self) -> Dict[str, Any]:
         return {
             'status': self.status,
             'error': self.error
         }
 
 
-class AuthorisationUrlGetResponse(ABC):
-    def __init__(self, status: Literal['OK'], url: str):
-        self.status = status
+class AuthorisationUrlGetOkResponse(APIResponse):
+    status: str = 'OK'
+
+    def __init__(self, url: str):
         self.url = url
 
     def to_json(self):
@@ -199,11 +138,6 @@ class AuthorisationUrlGetResponse(ABC):
             'status': self.status,
             'url': self.url
         }
-
-
-class AuthorisationUrlGetOkResponse(AuthorisationUrlGetResponse):
-    def __init__(self, url: str):
-        super().__init__('OK', url)
 
 
 class APIInterface:
@@ -214,12 +148,12 @@ class APIInterface:
 
     @abstractmethod
     async def authorisation_url_get(self, provider: Provider,
-                                    api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
+                                    api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResponse:
         pass
 
     @abstractmethod
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
-                              user_context: Dict[str, Any]) -> SignInUpPostResponse:
+                              user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
         pass
 
     @abstractmethod
