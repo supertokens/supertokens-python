@@ -29,9 +29,7 @@ def get_interface_impl(
     implementation.disable_phone_number_exists_get = api_implementation.disable_passwordless_user_phone_number_exists_get
 
     implementation.email_exists_get = api_implementation.passwordless_user_email_exists_get
-    if not implementation.disable_consume_code_post:
-        implementation.consume_code_post = api_implementation.consume_code_post
-
+    implementation.consume_code_post = api_implementation.consume_code_post
     implementation.create_code_post = api_implementation.create_code_post
     implementation.phone_number_exists_get = api_implementation.passwordless_user_phone_number_exists_get
     implementation.resend_code_post = api_implementation.resend_code_post
