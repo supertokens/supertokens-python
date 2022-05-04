@@ -170,6 +170,5 @@ class PasswordlessRecipe(RecipeModule):
             user_context=user_context
         )
         if isinstance(consume_code_result, ConsumeCodeOkResult):
-            return ConsumeCodeOkResult(
-                consume_code_result.created_new_user, consume_code_result.user)
+            return consume_code_result
         raise Exception('Failed to create user. Please retry')
