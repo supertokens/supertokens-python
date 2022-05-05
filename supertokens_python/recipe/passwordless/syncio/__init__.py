@@ -16,23 +16,31 @@ from typing import Any, Dict, List, Union
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.passwordless import asyncio
 from supertokens_python.recipe.passwordless.interfaces import (
-    ConsumeCodeOkResult, ConsumeCodeResult, CreateCodeResult,
-    CreateNewCodeForDeviceResult, DeleteUserInfoResult, RevokeAllCodesResult,
-    RevokeCodeResult, UpdateUserResult)
+    ConsumeCodeExpiredUserInputCodeErrorResult,
+    ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
+    ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
+    CreateNewCodeForDeviceOkResult,
+    CreateNewCodeForDeviceRestartFlowErrorResult,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
+    RevokeAllCodesOkResult, RevokeCodeOkResult,
+    UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
+    UpdateUserPhoneNumberAlreadyExistsErrorResult,
+    UpdateUserUnknownUserIdErrorResult)
 from supertokens_python.recipe.passwordless.types import DeviceType, User
 
 
 def create_code(email: Union[None, str] = None,
                 phone_number: Union[None, str] = None,
                 user_input_code: Union[None, str] = None,
-                user_context: Union[None, Dict[str, Any]] = None) -> CreateCodeResult:
+                user_context: Union[None, Dict[str, Any]] = None) -> CreateCodeOkResult:
     return sync(asyncio.create_code(email=email, phone_number=phone_number,
                                     user_input_code=user_input_code, user_context=user_context))
 
 
 def create_new_code_for_device(device_id: str,
                                user_input_code: Union[str, None] = None,
-                               user_context: Union[None, Dict[str, Any]] = None) -> CreateNewCodeForDeviceResult:
+                               user_context: Union[None, Dict[str, Any]] = None) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
     return sync(asyncio.create_new_code_for_device(device_id=device_id,
                                                    user_input_code=user_input_code,
                                                    user_context=user_context))
@@ -42,7 +50,7 @@ def consume_code(pre_auth_session_id: str,
                  user_input_code: Union[str, None] = None,
                  device_id: Union[str, None] = None,
                  link_code: Union[str, None] = None,
-                 user_context: Union[None, Dict[str, Any]] = None) -> ConsumeCodeResult:
+                 user_context: Union[None, Dict[str, Any]] = None) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, ConsumeCodeRestartFlowErrorResult]:
     return sync(asyncio.consume_code(pre_auth_session_id=pre_auth_session_id, user_input_code=user_input_code,
                                      device_id=device_id, link_code=link_code, user_context=user_context))
 
@@ -64,27 +72,27 @@ def get_user_by_phone_number(
 
 
 def update_user(user_id: str, email: Union[str, None] = None,
-                phone_number: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None) -> UpdateUserResult:
+                phone_number: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
     return sync(asyncio.update_user(user_id=user_id, email=email,
                                     phone_number=phone_number, user_context=user_context))
 
 
-def delete_email_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> DeleteUserInfoResult:
+def delete_email_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
     return sync(asyncio.delete_email_for_user(user_id=user_id, user_context=user_context))
 
 
-def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> DeleteUserInfoResult:
+def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
     return sync(asyncio.delete_phone_number_for_user(user_id=user_id, user_context=user_context))
 
 
 def revoke_all_codes(email: Union[str, None] = None,
                      phone_number: Union[str, None] = None,
-                     user_context: Union[None, Dict[str, Any]] = None) -> RevokeAllCodesResult:
+                     user_context: Union[None, Dict[str, Any]] = None) -> RevokeAllCodesOkResult:
     return sync(asyncio.revoke_all_codes(
         email=email, phone_number=phone_number, user_context=user_context))
 
 
-def revoke_code(code_id: str, user_context: Union[None, Dict[str, Any]] = None) -> RevokeCodeResult:
+def revoke_code(code_id: str, user_context: Union[None, Dict[str, Any]] = None) -> RevokeCodeOkResult:
     return sync(asyncio.revoke_code(
         code_id=code_id, user_context=user_context))
 

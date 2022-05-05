@@ -12,18 +12,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-
 from typing import Any, Dict, Union
 
-from supertokens_python.recipe.passwordless.interfaces import (
-    APIInterface, APIOptions, ConsumeCodePostExpiredUserInputCodeErrorResponse,
-    ConsumeCodePostGeneralErrorResponse,
-    ConsumeCodePostIncorrectUserInputCodeErrorResponse,
-    ConsumeCodePostOkResponse, ConsumeCodePostResponse,
-    ConsumeCodePostRestartFlowErrorResponse)
+from supertokens_python.recipe.passwordless.interfaces import APIInterface
 
+from ...passwordless.interfaces import APIOptions as PasswordlessAPIOptions
+
+from ...passwordless.interfaces import (
+    ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse,
+    ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse,
+    ConsumeCodePostExpiredUserInputCodeErrorResponse
+)
 from ...passwordless.types import User
-from ..interfaces import APIInterface as ThirdPartyPasswordlessAPIInterface
+from ..interfaces import (
+    APIInterface as ThirdPartyPasswordlessAPIInterface,
+    ConsumeCodePostOkResponse as ThirdPartyConsumeCodePostOkResponse
+)
 
 
 def get_interface_impl(
@@ -37,34 +41,22 @@ def get_interface_impl(
     implementation.disable_phone_number_exists_get = api_implementation.disable_passwordless_user_phone_number_exists_get
 
     implementation.email_exists_get = api_implementation.passwordless_user_email_exists_get
+
     if not implementation.disable_consume_code_post:
         async def consume_code_post(pre_auth_session_id: str,
                                     user_input_code: Union[str, None],
                                     device_id: Union[str, None],
                                     link_code: Union[str, None],
-                                    api_options: APIOptions,
-                                    user_context: Dict[str, Any]) -> ConsumeCodePostResponse:
-            otherType = await api_implementation.consume_code_post(pre_auth_session_id, user_input_code, device_id, link_code, api_options, user_context)
-
-            if otherType.is_ok:
-                if otherType.created_new_user is None or otherType.user is None or otherType.session is None:
-                    raise Exception("Should never come here")
-                return ConsumeCodePostOkResponse(otherType.created_new_user, User(otherType.user.user_id, otherType.user.email, otherType.user.phone_number, otherType.user.time_joined), otherType.session)
-            if otherType.is_expired_user_input_code_error:
-                if otherType.failed_code_input_attempt_count is None or otherType.maximum_code_input_attempts is None:
-                    raise Exception("Should never come here")
-                return ConsumeCodePostExpiredUserInputCodeErrorResponse(otherType.failed_code_input_attempt_count, otherType.maximum_code_input_attempts)
-            if otherType.is_general_error:
-                if otherType.message is None:
-                    raise Exception("Should never come here")
-                return ConsumeCodePostGeneralErrorResponse(otherType.message)
-            if otherType.is_incorrect_user_input_code_error:
-                if otherType.failed_code_input_attempt_count is None or otherType.maximum_code_input_attempts is None:
-                    raise Exception("Should never come here")
-                return ConsumeCodePostIncorrectUserInputCodeErrorResponse(otherType.failed_code_input_attempt_count, otherType.maximum_code_input_attempts)
-
-            # restart flow error
-            return ConsumeCodePostRestartFlowErrorResponse()
+                                    api_options: PasswordlessAPIOptions,
+                                    user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse, ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse, ConsumeCodePostExpiredUserInputCodeErrorResponse]:
+            result = await api_implementation.consume_code_post(pre_auth_session_id, user_input_code, device_id, link_code, api_options, user_context)
+            if isinstance(result, ThirdPartyConsumeCodePostOkResponse):
+                return ConsumeCodePostOkResponse(
+                    result.created_new_user,
+                    User(result.user.user_id, result.user.email, result.user.phone_number, result.user.time_joined),
+                    result.session,
+                )
+            return result
 
         implementation.consume_code_post = consume_code_post
 
