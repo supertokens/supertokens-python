@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the thirdparty recipe.
 - Removes unused classes `GeneratePasswordResetTokenResponse`, `EmailExistsResponse` and `PasswordResetResponse`.
 - Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the passwordless recipe.
+- Adds `SignInOkResult`, `SignUpOkResult` and `SignInUpOkResult` to use the recipe's `User` class.
+- Adds `SignInUpPostOkResponse`, `SignInPostOkResponse` and `SignUpPostOkResponse` to use the recipe's `User` class.
 
 ## [0.6.7] - 2022-04-23
 - Adds delete email (`delete_email_for_user`) and phone number (`delete_phone_number_for_user`) functions for passwordless and thirdpartypasswordless recipe

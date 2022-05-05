@@ -7,25 +7,43 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     EmailExistsGetOkResponse, GeneratePasswordResetTokenPostOkResponse,
     PasswordResetPostInvalidTokenResponse, PasswordResetPostOkResponse,
     ResetPasswordUsingTokenInvalidTokenErrorResult,
-    ResetPasswordUsingTokenOkResult, SignInOkResult, SignInPostOkResponse,
+    ResetPasswordUsingTokenOkResult,
     SignInPostWrongCredentialsErrorResponse, SignInWrongCredentialsErrorResult,
-    SignUpEmailAlreadyExistsErrorResult, SignUpOkResult,
-    SignUpPostEmailAlreadyExistsErrorResponse, SignUpPostOkResponse,
+    SignUpEmailAlreadyExistsErrorResult,
+    SignUpPostEmailAlreadyExistsErrorResponse,
     UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
     UpdateEmailOrPasswordOkResult,
     UpdateEmailOrPasswordUnknownUserIdErrorResult)
 from supertokens_python.recipe.emailpassword.types import FormField
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.thirdparty import \
     interfaces as ThirdPartyInterfaces
 from supertokens_python.recipe.thirdparty.interfaces import (
-    AuthorisationUrlGetOkResponse, SignInUpFieldErrorResult, SignInUpOkResult,
-    SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse)
+    AuthorisationUrlGetOkResponse, SignInUpFieldErrorResult,
+    SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse)
 from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.types import APIResponse
 
 from .types import User
 
 ThirdPartyAPIOptions = ThirdPartyInterfaces.APIOptions
 EmailPasswordAPIOptions = EPInterfaces.APIOptions
+
+
+class SignInUpOkResult():
+    def __init__(self, user: User, created_new_user: bool):
+        self.user = user
+        self.created_new_user = created_new_user
+
+
+class SignUpOkResult():
+    def __init__(self, user: User):
+        self.user = user
+
+
+class SignInOkResult():
+    def __init__(self, user: User):
+        self.user = user
 
 
 class RecipeInterface(ABC):
@@ -70,6 +88,73 @@ class RecipeInterface(ABC):
     async def update_email_or_password(self, user_id: str, email: Union[str, None],
                                        password: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateEmailOrPasswordOkResult, UpdateEmailOrPasswordEmailAlreadyExistsErrorResult, UpdateEmailOrPasswordUnknownUserIdErrorResult]:
         pass
+
+
+class SignInUpPostOkResponse(APIResponse):
+    status: str = 'OK'
+
+    def __init__(self, user: User, created_new_user: bool,
+                 auth_code_response: Dict[str, Any],
+                 session: SessionContainer):
+        self.user = user
+        self.created_new_user = created_new_user
+        self.auth_code_response = auth_code_response
+        self.session = session
+
+    def to_json(self) -> Dict[str, Any]:
+        user: Dict[str, Any] = {
+            'id': self.user.user_id,
+            'email': self.user.email,
+            'timeJoined': self.user.time_joined,
+        }
+        if self.user.third_party_info is not None:
+            user['thirdParty'] = {
+                'id': self.user.third_party_info.id,
+                'userId': self.user.third_party_info.user_id
+            }
+        else:
+            user['thirdParty'] = None
+        return {
+            'status': self.status,
+            'user': user,
+            'createdNewUser': self.created_new_user
+        }
+
+
+class SignInPostOkResponse(APIResponse):
+    status: str = 'OK'
+
+    def __init__(self, user: User, session: SessionContainer):
+        self.user = user
+        self.session = session
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            'status': self.status,
+            'user': {
+                'id': self.user.user_id,
+                'email': self.user.email,
+                'timeJoined': self.user.time_joined
+            },
+        }
+
+
+class SignUpPostOkResponse(APIResponse):
+    status: str = 'OK'
+
+    def __init__(self, user: User, session: SessionContainer):
+        self.user = user
+        self.session = session
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            'status': self.status,
+            'user': {
+                'id': self.user.user_id,
+                'email': self.user.email,
+                'timeJoined': self.user.time_joined
+            },
+        }
 
 
 class APIInterface(ABC):
