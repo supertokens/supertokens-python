@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
+from supertokens_python.recipe.session import SessionContainer
 
 from supertokens_python.recipe.thirdparty import \
     interfaces as ThirdPartyInterfaces
@@ -8,14 +9,15 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse,
     SignInUpPostFieldErrorResponse)
 from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.types import APIResponse
 
 from ..passwordless import interfaces as PlessInterfaces
 from ..passwordless.interfaces import (
-    ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse,
+    ConsumeCodePostRestartFlowErrorResponse,
     ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse,
     ConsumeCodePostExpiredUserInputCodeErrorResponse,
     ConsumeCodeExpiredUserInputCodeErrorResult,
-    ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
+    ConsumeCodeIncorrectUserInputCodeErrorResult,
     ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
     CreateCodePostOkResponse, CreateCodePostGeneralErrorResponse,
     CreateNewCodeForDeviceOkResult,
@@ -33,6 +35,12 @@ from .types import User
 
 ThirdPartyAPIOptions = ThirdPartyInterfaces.APIOptions
 PasswordlessAPIOptions = PlessInterfaces.APIOptions
+
+
+class ConsumeCodeOkResult():
+    def __init__(self, created_new_user: bool, user: User):
+        self.created_new_user = created_new_user
+        self.user = user
 
 
 class RecipeInterface(ABC):
@@ -123,6 +131,36 @@ class RecipeInterface(ABC):
     async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str,
                                                 user_context: Dict[str, Any]) -> Union[DeviceType, None]:
         pass
+
+
+class ConsumeCodePostOkResponse(APIResponse):
+    status: str = 'OK'
+
+    def __init__(self, created_new_user: bool, user: User, session: SessionContainer):
+        self.created_new_user = created_new_user
+        self.user = user
+        self.session = session
+
+    def to_json(self):
+        user = {
+            'id': self.user.user_id,
+            'time_joined': self.user.time_joined
+        }
+        if self.user.email is not None:
+            user = {
+                **user,
+                'email': self.user.email
+            }
+        if self.user.phone_number is not None:
+            user = {
+                **user,
+                'phoneNumber': self.user.phone_number
+            }
+        return {
+            'status': self.status,
+            'createdNewUser': self.created_new_user,
+            'user': user
+        }
 
 
 class APIInterface(ABC):

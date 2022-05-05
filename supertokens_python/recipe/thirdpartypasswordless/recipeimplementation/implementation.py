@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from ...passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeErrorResult,
-    ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
+    ConsumeCodeIncorrectUserInputCodeErrorResult,
     ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
     CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowErrorResult,
@@ -27,6 +27,7 @@ from ...passwordless.interfaces import (
     UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
     UpdateUserPhoneNumberAlreadyExistsErrorResult,
     UpdateUserUnknownUserIdErrorResult)
+from ...passwordless.interfaces import ConsumeCodeOkResult as PasswordlessConsumeCodeOkResult
 from ...thirdparty.interfaces import SignInUpFieldErrorResult, SignInUpOkResult
 
 if TYPE_CHECKING:
@@ -37,7 +38,7 @@ from supertokens_python.recipe.passwordless.recipe_implementation import \
 from supertokens_python.recipe.thirdparty.recipe_implementation import \
     RecipeImplementation as ThirdPartyImplementation
 
-from ..interfaces import RecipeInterface
+from ..interfaces import RecipeInterface, ConsumeCodeOkResult
 from ..types import User
 from .passwordless_recipe_implementation import \
     RecipeImplementation as DerivedPasswordlessImplementation
@@ -176,7 +177,13 @@ class RecipeImplementation(RecipeInterface):
                            device_id: Union[str, None],
                            link_code: Union[str, None],
                            user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, ConsumeCodeRestartFlowErrorResult]:
-        return await self.pless_consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
+        result = await self.pless_consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
+        if isinstance(result, PasswordlessConsumeCodeOkResult):
+            return ConsumeCodeOkResult(
+                result.created_new_user,
+                User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined)
+            )
+        return result
 
     async def update_passwordless_user(self, user_id: str,
                                        email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:

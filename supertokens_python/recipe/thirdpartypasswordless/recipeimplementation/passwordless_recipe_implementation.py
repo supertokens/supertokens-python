@@ -29,7 +29,10 @@ from supertokens_python.recipe.passwordless.interfaces import (
     UpdateUserUnknownUserIdErrorResult)
 
 from ...passwordless.types import User
-from ..interfaces import RecipeInterface as ThirdPartyPasswordlessInterface
+from ..interfaces import (
+    RecipeInterface as ThirdPartyPasswordlessInterface,
+    ConsumeCodeOkResult as ThirdPartyConsumeCodeOkResult
+)
 
 
 class RecipeImplementation(RecipeInterface):
@@ -58,7 +61,12 @@ class RecipeImplementation(RecipeInterface):
                            device_id: Union[str, None],
                            link_code: Union[str, None],
                            user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, ConsumeCodeRestartFlowErrorResult]:
-        return await self.recipe_implementation.consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
+        result = await self.recipe_implementation.consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
+        if isinstance(result, ThirdPartyConsumeCodeOkResult):
+            return ConsumeCodeOkResult(
+                result.created_new_user,
+                User(result.user.user_id, result.user.email, result.user.phone_number, result.user.time_joined))
+        return result
 
     async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
         otherTypeUser = await self.recipe_implementation.get_user_by_id(user_id, user_context)

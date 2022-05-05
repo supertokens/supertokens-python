@@ -186,4 +186,8 @@ async def create_magic_link(email: Union[str, None], phone_number: Union[str, No
 async def passwordlessSigninup(email: Union[str, None], phone_number: Union[str, None], user_context: Union[None, Dict[str, Any]] = None) -> interfaces.ConsumeCodeOkResult:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.signinup(email=email, phone_number=phone_number, user_context=user_context)
+    result = await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.signinup(email=email, phone_number=phone_number, user_context=user_context)
+    return interfaces.ConsumeCodeOkResult(
+        result.created_new_user,
+        User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined)
+    )

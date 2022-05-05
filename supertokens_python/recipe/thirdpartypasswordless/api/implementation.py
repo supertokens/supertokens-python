@@ -18,15 +18,14 @@ from typing import Any, Dict, Union
 from ...passwordless.api.implementation import \
     APIImplementation as PasswordlessImplementation
 from ...passwordless.interfaces import APIInterface
-from ...passwordless.interfaces import APIOptions as PasswordlessAPIOptions
+from ...passwordless.interfaces import (
+    APIOptions as PasswordlessAPIOptions,
+    ConsumeCodePostOkResponse as PasswordlessConsumeCodePostOkResponse
+)
 from ...passwordless.interfaces import (CreateCodePostOkResponse,
                                         CreateCodePostGeneralErrorResponse,
                                         EmailExistsGetOkResponse,
                                         PhoneNumberExistsGetOkResponse,
-                                        ConsumeCodePostExpiredUserInputCodeErrorResponse,
-                                        ConsumeCodePostGeneralErrorResponse,
-                                        ConsumeCodePostIncorrectUserInputCodeErrorResponse,
-                                        ConsumeCodePostOkResponse,
                                         ConsumeCodePostRestartFlowErrorResponse,
                                         ResendCodePostOkResponse,
                                         ResendCodePostRestartFlowErrorResponse,
@@ -39,7 +38,12 @@ from ...thirdparty.interfaces import (AuthorisationUrlGetOkResponse,
                                       SignInUpPostNoEmailGivenByProviderResponse,
                                       SignInUpPostFieldErrorResponse)
 from ...thirdparty.provider import Provider
-from ..interfaces import APIInterface
+from ..interfaces import (
+    APIInterface, ConsumeCodePostExpiredUserInputCodeErrorResponse,
+    ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse,
+    ConsumeCodePostOkResponse
+)
+from ..types import User
 
 from .passwordless_api_impementation import \
     get_interface_impl as get_pless_interface_impl
@@ -105,7 +109,14 @@ class APIImplementation(APIInterface):
                                 link_code: Union[str, None],
                                 api_options: PasswordlessAPIOptions,
                                 user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse, ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse, ConsumeCodePostExpiredUserInputCodeErrorResponse]:
-        return await self.pless_consume_code_post(pre_auth_session_id, user_input_code, device_id, link_code, api_options, user_context)
+        result = await self.pless_consume_code_post(pre_auth_session_id, user_input_code, device_id, link_code, api_options, user_context)
+        if isinstance(result, PasswordlessConsumeCodePostOkResponse):
+            return ConsumeCodePostOkResponse(
+                result.created_new_user,
+                User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined),
+                result.session,
+            )
+        return result
 
     async def passwordless_user_email_exists_get(self,
                                                  email: str,

@@ -53,9 +53,6 @@ class CreateNewCodeForDeviceOkResult():
         self.link_code = link_code
         self.code_life_time = code_life_time
         self.time_created = time_created
-        self.is_ok = False
-        self.is_restart_flow_error = False
-        self.is_user_input_code_already_used_error = False
 
 
 class CreateNewCodeForDeviceRestartFlowErrorResult():
@@ -286,7 +283,6 @@ class ConsumeCodePostOkResponse(APIResponse):
         self.created_new_user = created_new_user
         self.user = user
         self.session = session
-        self.is_ok = True
 
     def to_json(self):
         user = {
