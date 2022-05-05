@@ -18,13 +18,15 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 from supertokens_python.recipe.emailpassword.interfaces import (
     CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult,
     ResetPasswordUsingTokenOkResult,
-    ResetPasswordUsingTokenInvalidTokenErrorResult, SignInOkResult,
+    ResetPasswordUsingTokenInvalidTokenErrorResult,
+    SignInOkResult, SignUpOkResult,
     SignInWrongCredentialsErrorResult, SignUpEmailAlreadyExistsErrorResult,
-    SignUpOkResult, UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
+    UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
     UpdateEmailOrPasswordOkResult,
     UpdateEmailOrPasswordUnknownUserIdErrorResult)
 
-from ...thirdparty.interfaces import SignInUpFieldErrorResult, SignInUpOkResult
+from ...thirdparty.interfaces import (
+    SignInUpFieldErrorResult, SignInUpOkResult)
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -34,7 +36,8 @@ from supertokens_python.recipe.emailpassword.recipe_implementation import \
 from supertokens_python.recipe.thirdparty.recipe_implementation import \
     RecipeImplementation as ThirdPartyImplementation
 
-from ..interfaces import RecipeInterface
+from ..interfaces import (
+    RecipeInterface, EmailPasswordSignUpOkResult, EmailPasswordSignInOkResult, ThirdPartySignInUpOkResult)
 from ..types import User
 from .email_password_recipe_implementation import \
     RecipeImplementation as DerivedEmailPasswordImplementation
@@ -126,16 +129,30 @@ class RecipeImplementation(RecipeInterface):
         return User(user_id=tp_user.user_id, email=tp_user.email, time_joined=tp_user.time_joined, third_party_info=tp_user.third_party_info)
 
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, SignInUpFieldErrorResult]:
         if self.tp_sign_in_up is None:
             raise Exception("No thirdparty provider configured")
-        return await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
+        result = await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
+        if isinstance(result, SignInUpOkResult):
+            return ThirdPartySignInUpOkResult(
+                User(result.user.user_id, result.user.email, result.user.time_joined, result.user.third_party_info),
+                result.created_new_user
+            )
+        return result
 
-    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignInOkResult, SignInWrongCredentialsErrorResult]:
-        return await self.ep_sign_in(email, password, user_context)
+    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInOkResult, SignInWrongCredentialsErrorResult]:
+        result = await self.ep_sign_in(email, password, user_context)
+        if isinstance(result, SignInOkResult):
+            return EmailPasswordSignInOkResult(
+                User(result.user.user_id, result.user.email, result.user.time_joined, None))
+        return result
 
-    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
-        return await self.ep_sign_up(email, password, user_context)
+    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
+        result = await self.ep_sign_up(email, password, user_context)
+        if isinstance(result, SignUpOkResult):
+            return EmailPasswordSignUpOkResult(
+                User(result.user.user_id, result.user.email, result.user.time_joined, None))
+        return result
 
     async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult]:
         return await self.ep_create_reset_password_token(user_id, user_context)
