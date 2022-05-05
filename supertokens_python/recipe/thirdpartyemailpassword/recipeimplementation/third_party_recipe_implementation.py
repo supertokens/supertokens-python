@@ -21,7 +21,7 @@ from supertokens_python.recipe.thirdparty.types import User
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
     RecipeInterface as ThirdPartyEmailPasswordRecipeInterface
 
-from ..interfaces import SignInUpOkResult as TPEPSignInUpOkResult
+from ..interfaces import ThirdPartySignInUpOkResult
 
 
 class RecipeImplementation(RecipeInterface):
@@ -58,7 +58,7 @@ class RecipeImplementation(RecipeInterface):
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
                          email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
         result = await self.recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
-        if isinstance(result, TPEPSignInUpOkResult):
+        if isinstance(result, ThirdPartySignInUpOkResult):
             if result.user.third_party_info is None:
                 raise Exception("Third party info cannot be None")
 

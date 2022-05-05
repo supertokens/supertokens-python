@@ -19,15 +19,14 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult,
     ResetPasswordUsingTokenOkResult,
     ResetPasswordUsingTokenInvalidTokenErrorResult,
-    SignInOkResult as EmailPasswordSignInOkResult,
+    SignInOkResult, SignUpOkResult,
     SignInWrongCredentialsErrorResult, SignUpEmailAlreadyExistsErrorResult,
-    SignUpOkResult as EmailpasswordSignUpOkResult,
     UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
     UpdateEmailOrPasswordOkResult,
     UpdateEmailOrPasswordUnknownUserIdErrorResult)
 
 from ...thirdparty.interfaces import (
-    SignInUpFieldErrorResult, SignInUpOkResult as ThirdPartySignInUpOkResult)
+    SignInUpFieldErrorResult, SignInUpOkResult)
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -38,7 +37,7 @@ from supertokens_python.recipe.thirdparty.recipe_implementation import \
     RecipeImplementation as ThirdPartyImplementation
 
 from ..interfaces import (
-    RecipeInterface, SignUpOkResult, SignInOkResult, SignInUpOkResult)
+    RecipeInterface, EmailPasswordSignUpOkResult, EmailPasswordSignInOkResult, ThirdPartySignInUpOkResult)
 from ..types import User
 from .email_password_recipe_implementation import \
     RecipeImplementation as DerivedEmailPasswordImplementation
@@ -130,28 +129,28 @@ class RecipeImplementation(RecipeInterface):
         return User(user_id=tp_user.user_id, email=tp_user.email, time_joined=tp_user.time_joined, third_party_info=tp_user.third_party_info)
 
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, SignInUpFieldErrorResult]:
         if self.tp_sign_in_up is None:
             raise Exception("No thirdparty provider configured")
         result = await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
-        if isinstance(result, ThirdPartySignInUpOkResult):
-            return SignInUpOkResult(
+        if isinstance(result, SignInUpOkResult):
+            return ThirdPartySignInUpOkResult(
                 User(result.user.user_id, result.user.email, result.user.time_joined, result.user.third_party_info),
                 result.created_new_user
             )
         return result
 
-    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignInOkResult, SignInWrongCredentialsErrorResult]:
+    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInOkResult, SignInWrongCredentialsErrorResult]:
         result = await self.ep_sign_in(email, password, user_context)
-        if isinstance(result, EmailPasswordSignInOkResult):
-            return SignInOkResult(
+        if isinstance(result, SignInOkResult):
+            return EmailPasswordSignInOkResult(
                 User(result.user.user_id, result.user.email, result.user.time_joined, None))
         return result
 
-    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
+    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
         result = await self.ep_sign_up(email, password, user_context)
-        if isinstance(result, EmailpasswordSignUpOkResult):
-            return SignUpOkResult(
+        if isinstance(result, SignUpOkResult):
+            return EmailPasswordSignUpOkResult(
                 User(result.user.user_id, result.user.email, result.user.time_joined, None))
         return result
 

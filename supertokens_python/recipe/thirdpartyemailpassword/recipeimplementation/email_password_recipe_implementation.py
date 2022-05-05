@@ -27,8 +27,7 @@ from supertokens_python.recipe.emailpassword.types import User
 
 from ..interfaces import (
     RecipeInterface as ThirdPartyEmailPasswordRecipeInterface,
-    SignInOkResult as ThirdPartyEmailPasswordSignInOkResult,
-    SignUpOkResult as ThirdPartyEmailPasswordSignUpOkResult)
+    EmailPasswordSignInOkResult, EmailPasswordSignUpOkResult)
 
 
 class RecipeImplementation(RecipeInterface):
@@ -63,14 +62,14 @@ class RecipeImplementation(RecipeInterface):
 
     async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignInOkResult, SignInWrongCredentialsErrorResult]:
         result = await self.recipe_implementation.emailpassword_sign_in(email, password, user_context)
-        if isinstance(result, ThirdPartyEmailPasswordSignInOkResult):
+        if isinstance(result, EmailPasswordSignInOkResult):
             return SignInOkResult(
                 User(result.user.user_id, result.user.email, result.user.time_joined))
         return result
 
     async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
         result = await self.recipe_implementation.emailpassword_sign_up(email, password, user_context)
-        if isinstance(result, ThirdPartyEmailPasswordSignUpOkResult):
+        if isinstance(result, EmailPasswordSignUpOkResult):
             return SignUpOkResult(
                 User(result.user.user_id, result.user.email, result.user.time_joined))
         return result

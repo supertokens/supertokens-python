@@ -23,7 +23,7 @@ from supertokens_python.recipe.thirdparty.provider import Provider
 
 from ..interfaces import (
     APIInterface as ThirdPartyEmailPasswordAPIInterface,
-    SignInUpPostOkResponse as ThirdPartyEmailPasswordSignInUpPostOkResponse)
+    ThirdPartySignInUpPostOkResponse)
 
 
 def get_interface_impl(
@@ -39,7 +39,7 @@ def get_interface_impl(
         async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
                                   user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
             result = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
-            if isinstance(result, ThirdPartyEmailPasswordSignInUpPostOkResponse):
+            if isinstance(result, ThirdPartySignInUpPostOkResponse):
                 if result.user.third_party_info is None:
                     raise Exception("Third Party Info cannot be None")
                 return SignInUpPostOkResponse(

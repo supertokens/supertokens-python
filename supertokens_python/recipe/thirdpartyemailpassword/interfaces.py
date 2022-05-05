@@ -30,18 +30,18 @@ ThirdPartyAPIOptions = ThirdPartyInterfaces.APIOptions
 EmailPasswordAPIOptions = EPInterfaces.APIOptions
 
 
-class SignInUpOkResult():
+class ThirdPartySignInUpOkResult():
     def __init__(self, user: User, created_new_user: bool):
         self.user = user
         self.created_new_user = created_new_user
 
 
-class SignUpOkResult():
+class EmailPasswordSignUpOkResult():
     def __init__(self, user: User):
         self.user = user
 
 
-class SignInOkResult():
+class EmailPasswordSignInOkResult():
     def __init__(self, user: User):
         self.user = user
 
@@ -65,15 +65,15 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, SignInUpFieldErrorResult]:
         pass
 
     @abstractmethod
-    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignInOkResult, SignInWrongCredentialsErrorResult]:
+    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInOkResult, SignInWrongCredentialsErrorResult]:
         pass
 
     @abstractmethod
-    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
+    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
         pass
 
     @abstractmethod
@@ -90,7 +90,7 @@ class RecipeInterface(ABC):
         pass
 
 
-class SignInUpPostOkResponse(APIResponse):
+class ThirdPartySignInUpPostOkResponse(APIResponse):
     status: str = 'OK'
 
     def __init__(self, user: User, created_new_user: bool,
@@ -102,26 +102,25 @@ class SignInUpPostOkResponse(APIResponse):
         self.session = session
 
     def to_json(self) -> Dict[str, Any]:
-        user: Dict[str, Any] = {
-            'id': self.user.user_id,
-            'email': self.user.email,
-            'timeJoined': self.user.time_joined,
-        }
-        if self.user.third_party_info is not None:
-            user['thirdParty'] = {
-                'id': self.user.third_party_info.id,
-                'userId': self.user.third_party_info.user_id
-            }
-        else:
-            user['thirdParty'] = None
+        if self.user.third_party_info is None:
+            raise Exception("Third Party info cannot be None")
+
         return {
             'status': self.status,
-            'user': user,
+            'user': {
+                'id': self.user.user_id,
+                'email': self.user.email,
+                'timeJoined': self.user.time_joined,
+                'thirdParty': {
+                    'id': self.user.third_party_info.id,
+                    'userId': self.user.third_party_info.user_id
+                }
+            },
             'createdNewUser': self.created_new_user
         }
 
 
-class SignInPostOkResponse(APIResponse):
+class EmailPasswordSignInPostOkResponse(APIResponse):
     status: str = 'OK'
 
     def __init__(self, user: User, session: SessionContainer):
@@ -139,7 +138,7 @@ class SignInPostOkResponse(APIResponse):
         }
 
 
-class SignUpPostOkResponse(APIResponse):
+class EmailPasswordSignUpPostOkResponse(APIResponse):
     status: str = 'OK'
 
     def __init__(self, user: User, session: SessionContainer):
@@ -175,17 +174,17 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
+                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
         pass
 
     @abstractmethod
     async def emailpassword_sign_in_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[SignInPostOkResponse, SignInPostWrongCredentialsErrorResponse]:
+                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInPostOkResponse, SignInPostWrongCredentialsErrorResponse]:
         pass
 
     @abstractmethod
     async def emailpassword_sign_up_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[SignUpPostOkResponse, SignUpPostEmailAlreadyExistsErrorResponse]:
+                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpPostOkResponse, SignUpPostEmailAlreadyExistsErrorResponse]:
         pass
 
     @abstractmethod

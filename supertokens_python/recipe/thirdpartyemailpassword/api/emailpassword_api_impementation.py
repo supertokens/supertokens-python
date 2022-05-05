@@ -21,8 +21,7 @@ from supertokens_python.recipe.emailpassword.interfaces import (
 from supertokens_python.recipe.emailpassword.types import FormField, User
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import (
     APIInterface as ThirdPartyEmailPasswordAPIInterface,
-    SignInPostOkResponse as ThirdPartyEmailPasswordSignInPostOkResponse,
-    SignUpPostOkResponse as ThirdPartyEmailPasswordSignUpPostOkResponse)
+    EmailPasswordSignInPostOkResponse, EmailPasswordSignUpPostOkResponse)
 
 
 def get_interface_impl(
@@ -43,7 +42,7 @@ def get_interface_impl(
                                api_options: APIOptions,
                                user_context: Dict[str, Any]) -> Union[SignInPostOkResponse, SignInPostWrongCredentialsErrorResponse]:
             result = await api_implementation.emailpassword_sign_in_post(form_fields, api_options, user_context)
-            if isinstance(result, ThirdPartyEmailPasswordSignInPostOkResponse):
+            if isinstance(result, EmailPasswordSignInPostOkResponse):
                 return SignInPostOkResponse(
                     User(result.user.user_id, result.user.email, result.user.time_joined),
                     result.session)
@@ -55,7 +54,7 @@ def get_interface_impl(
                                api_options: APIOptions,
                                user_context: Dict[str, Any]) -> Union[SignUpPostOkResponse, SignUpPostEmailAlreadyExistsErrorResponse]:
             result = await api_implementation.emailpassword_sign_up_post(form_fields, api_options, user_context)
-            if isinstance(result, ThirdPartyEmailPasswordSignUpPostOkResponse):
+            if isinstance(result, EmailPasswordSignUpPostOkResponse):
                 return SignUpPostOkResponse(
                     User(result.user.user_id, result.user.email, result.user.time_joined),
                     result.session)

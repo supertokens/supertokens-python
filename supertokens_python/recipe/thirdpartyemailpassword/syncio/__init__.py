@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 
-from ..interfaces import SignInOkResult, SignInWrongCredentialsErrorResult
+from ..interfaces import EmailPasswordSignInOkResult, SignInWrongCredentialsErrorResult
 from ..types import User
 
 
@@ -79,7 +79,7 @@ def reset_password_using_token(
     return sync(reset_password_using_token(token, new_password, user_context))
 
 
-def emailpassword_sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[SignInOkResult, SignInWrongCredentialsErrorResult]:
+def emailpassword_sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[EmailPasswordSignInOkResult, SignInWrongCredentialsErrorResult]:
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import \
         emailpassword_sign_in
     return sync(emailpassword_sign_in(email, password, user_context))
