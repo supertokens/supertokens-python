@@ -16,9 +16,8 @@ from __future__ import annotations
 from os import environ
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
-from typing_extensions import Literal
-
 from supertokens_python.querier import Querier
+from typing_extensions import Literal
 
 from .api import (consume_code, create_code, email_exists, phone_number_exists,
                   resend_code)
@@ -170,9 +169,6 @@ class PasswordlessRecipe(RecipeModule):
             user_input_code=code_info.user_input_code,
             user_context=user_context
         )
-        if consume_code_result.is_ok:
-            if consume_code_result.created_new_user is None or consume_code_result.user is None:
-                raise Exception("Should never come here")
-            return ConsumeCodeOkResult(
-                consume_code_result.created_new_user, consume_code_result.user)
+        if isinstance(consume_code_result, ConsumeCodeOkResult):
+            return consume_code_result
         raise Exception('Failed to create user. Please retry')

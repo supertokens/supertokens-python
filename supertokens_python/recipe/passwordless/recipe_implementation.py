@@ -13,15 +13,11 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import Any, Dict, List, Union
 
 from supertokens_python.querier import Querier
 
 from .types import DeviceCode, DeviceType, User
-
-if TYPE_CHECKING:
-    from .interfaces import CreateCodeResult, RevokeCodeResult, RevokeAllCodesResult, UpdateUserResult, \
-        ConsumeCodeResult, CreateNewCodeForDeviceResult
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
@@ -32,9 +28,8 @@ from .interfaces import (
     CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceRestartFlowErrorResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
-    DeleteUserInfoOkResult, DeleteUserInfoResult,
-    DeleteUserInfoUnknownUserIdErrorResult, RecipeInterface,
-    RevokeAllCodesOkResult, RevokeCodeOkResult,
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
+    RecipeInterface, RevokeAllCodesOkResult, RevokeCodeOkResult,
     UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
     UpdateUserPhoneNumberAlreadyExistsErrorResult,
     UpdateUserUnknownUserIdErrorResult)
@@ -50,7 +45,7 @@ class RecipeImplementation(RecipeInterface):
                           email: Union[None, str],
                           phone_number: Union[None, str],
                           user_input_code: Union[None, str],
-                          user_context: Dict[str, Any]) -> CreateCodeResult:
+                          user_context: Dict[str, Any]) -> CreateCodeOkResult:
         data: Dict[str, Any] = {}
         if user_input_code is not None:
             data = {
@@ -81,7 +76,7 @@ class RecipeImplementation(RecipeInterface):
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -> CreateNewCodeForDeviceResult:
+                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
         data = {
             'deviceId': device_id
         }
@@ -110,7 +105,7 @@ class RecipeImplementation(RecipeInterface):
                            user_input_code: Union[str, None],
                            device_id: Union[str, None],
                            link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -> ConsumeCodeResult:
+                           user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, ConsumeCodeRestartFlowErrorResult]:
         data = {
             'preAuthSessionId': pre_auth_session_id
         }
@@ -205,7 +200,7 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def update_user(self, user_id: str,
-                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
+                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
         data = {
             'userId': user_id
         }
@@ -228,7 +223,7 @@ class RecipeImplementation(RecipeInterface):
             return UpdateUserEmailAlreadyExistsErrorResult()
         return UpdateUserPhoneNumberAlreadyExistsErrorResult()
 
-    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         data = {'userId': user_id, 'email': None}
         result = await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
         if result['status'] == 'OK':
@@ -239,7 +234,7 @@ class RecipeImplementation(RecipeInterface):
             raise Exception("Should never come here")
         return DeleteUserInfoUnknownUserIdErrorResult()
 
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         data = {'userId': user_id, 'phoneNumber': None}
         result = await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
         if result['status'] == 'OK':
@@ -251,7 +246,7 @@ class RecipeImplementation(RecipeInterface):
         return DeleteUserInfoUnknownUserIdErrorResult()
 
     async def revoke_all_codes(self,
-                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
+                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesOkResult:
         data: Dict[str, Any] = {}
         if email is not None:
             data = {
@@ -266,7 +261,7 @@ class RecipeImplementation(RecipeInterface):
         await self.querier.send_post_request(NormalisedURLPath('/recipe/signinup/codes/remove'), data)
         return RevokeAllCodesOkResult()
 
-    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeResult:
+    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeOkResult:
         data = {
             'codeId': code_id
         }
