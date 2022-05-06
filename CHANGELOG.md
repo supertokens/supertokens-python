@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.7.1] - 2022-05-06
 - Updates Project Setup, Modifying Code and Testing sections in the contributing guide
 - Fixed async execution of `send_telemetry` in init and `call_get_handshake_info` in session recipe implementation.
+- Fixed `Content-length` in FastAPI Response wrapper.
 
 ## [0.7.0] - 2022-04-28
 - Changes third party provider type to get client ID dynamically so that it can be changed based on user context.
