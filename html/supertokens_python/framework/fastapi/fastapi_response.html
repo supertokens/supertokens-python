@@ -60,8 +60,10 @@ class FastApiResponse(BaseResponse):
 
     def set_html_content(self, content: str):
         if not self.response_sent:
-            self.response.body = bytes(content, &#34;utf-8&#34;)
+            body = bytes(content, &#34;utf-8&#34;)
+            self.set_header(&#39;Content-Length&#39;, str(len(body)))
             self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+            self.response.body = body
             self.response_sent = True
 
     def set_cookie(self, key: str,
@@ -96,14 +98,16 @@ class FastApiResponse(BaseResponse):
 
     def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:
-            self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
-            self.response.body = json.dumps(
+            body = json.dumps(
                 content,
                 ensure_ascii=False,
                 allow_nan=False,
                 indent=None,
                 separators=(&#34;,&#34;, &#34;:&#34;),
             ).encode(&#34;utf-8&#34;)
+            self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
+            self.set_header(&#39;Content-Length&#39;, str(len(body)))
+            self.response.body = body
             self.response_sent = True</code></pre>
 </details>
 </section>
@@ -140,8 +144,10 @@ inheritance.</p></div>
 
     def set_html_content(self, content: str):
         if not self.response_sent:
-            self.response.body = bytes(content, &#34;utf-8&#34;)
+            body = bytes(content, &#34;utf-8&#34;)
+            self.set_header(&#39;Content-Length&#39;, str(len(body)))
             self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+            self.response.body = body
             self.response_sent = True
 
     def set_cookie(self, key: str,
@@ -176,14 +182,16 @@ inheritance.</p></div>
 
     def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:
-            self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
-            self.response.body = json.dumps(
+            body = json.dumps(
                 content,
                 ensure_ascii=False,
                 allow_nan=False,
                 indent=None,
                 separators=(&#34;,&#34;, &#34;:&#34;),
             ).encode(&#34;utf-8&#34;)
+            self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
+            self.set_header(&#39;Content-Length&#39;, str(len(body)))
+            self.response.body = body
             self.response_sent = True</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -266,8 +274,10 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">def set_html_content(self, content: str):
     if not self.response_sent:
-        self.response.body = bytes(content, &#34;utf-8&#34;)
+        body = bytes(content, &#34;utf-8&#34;)
+        self.set_header(&#39;Content-Length&#39;, str(len(body)))
         self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+        self.response.body = body
         self.response_sent = True</code></pre>
 </details>
 </dd>
@@ -282,14 +292,16 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">def set_json_content(self, content: Dict[str, Any]):
     if not self.response_sent:
-        self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
-        self.response.body = json.dumps(
+        body = json.dumps(
             content,
             ensure_ascii=False,
             allow_nan=False,
             indent=None,
             separators=(&#34;,&#34;, &#34;:&#34;),
         ).encode(&#34;utf-8&#34;)
+        self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
+        self.set_header(&#39;Content-Length&#39;, str(len(body)))
+        self.response.body = body
         self.response_sent = True</code></pre>
 </details>
 </dd>
