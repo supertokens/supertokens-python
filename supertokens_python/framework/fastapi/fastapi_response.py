@@ -32,8 +32,10 @@ class FastApiResponse(BaseResponse):
 
     def set_html_content(self, content: str):
         if not self.response_sent:
-            self.response.body = bytes(content, "utf-8")
+            body = bytes(content, "utf-8")
+            self.set_header('Content-Length', str(len(body)))
             self.set_header('Content-Type', 'text/html')
+            self.response.body = body
             self.response_sent = True
 
     def set_cookie(self, key: str,
@@ -68,12 +70,14 @@ class FastApiResponse(BaseResponse):
 
     def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:
-            self.set_header('Content-Type', 'application/json; charset=utf-8')
-            self.response.body = json.dumps(
+            body = json.dumps(
                 content,
                 ensure_ascii=False,
                 allow_nan=False,
                 indent=None,
                 separators=(",", ":"),
             ).encode("utf-8")
+            self.set_header('Content-Type', 'application/json; charset=utf-8')
+            self.set_header('Content-Length', str(len(body)))
+            self.response.body = body
             self.response_sent = True
