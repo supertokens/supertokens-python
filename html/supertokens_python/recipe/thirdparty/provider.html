@@ -50,9 +50,8 @@ if TYPE_CHECKING:
 
 
 class Provider(abc.ABC):
-    def __init__(self, provider_id: str, client_id: str, is_default: bool):
+    def __init__(self, provider_id: str, is_default: bool):
         self.id: str = provider_id
-        self.client_id: str = client_id
         self.is_default: bool = is_default
 
     @abc.abstractmethod
@@ -70,6 +69,10 @@ class Provider(abc.ABC):
 
     @abc.abstractmethod
     def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
+        pass
+
+    @abc.abstractmethod
+    def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
         pass</code></pre>
 </details>
 </section>
@@ -84,7 +87,7 @@ class Provider(abc.ABC):
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.provider.Provider"><code class="flex name class">
 <span>class <span class="ident">Provider</span></span>
-<span>(</span><span>provider_id: str, client_id: str, is_default: bool)</span>
+<span>(</span><span>provider_id: str, is_default: bool)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -94,9 +97,8 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Provider(abc.ABC):
-    def __init__(self, provider_id: str, client_id: str, is_default: bool):
+    def __init__(self, provider_id: str, is_default: bool):
         self.id: str = provider_id
-        self.client_id: str = client_id
         self.is_default: bool = is_default
 
     @abc.abstractmethod
@@ -114,6 +116,10 @@ inheritance.</p></div>
 
     @abc.abstractmethod
     def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
+        pass
+
+    @abc.abstractmethod
+    def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -157,6 +163,20 @@ def get_access_token_api_info(
 </summary>
 <pre><code class="python">@abc.abstractmethod
 def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.provider.Provider.get_client_id"><code class="name flex">
+<span>def <span class="ident">get_client_id</span></span>(<span>self, user_context: Dict[str, Any]) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abc.abstractmethod
+def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
     pass</code></pre>
 </details>
 </dd>
@@ -211,6 +231,7 @@ def get_redirect_uri(self, user_context: Dict[str, Any]) -&gt; Union[None, str]:
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_access_token_api_info" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_access_token_api_info">get_access_token_api_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_authorisation_redirect_api_info" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_authorisation_redirect_api_info">get_authorisation_redirect_api_info</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_client_id" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_client_id">get_client_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_profile_info" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_profile_info">get_profile_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdparty.provider.Provider.get_redirect_uri" href="#supertokens_python.recipe.thirdparty.provider.Provider.get_redirect_uri">get_redirect_uri</a></code></li>
 </ul>

@@ -12,7 +12,8 @@ from ..passwordless import interfaces as PlessInterfaces
 from ..passwordless.interfaces import (CreateCodePostResponse,
                                        CreateCodeResult,
                                        CreateNewCodeForDeviceResult,
-                                       DeviceType, EmailExistsGetResponse,
+                                       DeleteUserInfoResult, DeviceType,
+                                       EmailExistsGetResponse,
                                        PhoneNumberExistsGetResponse,
                                        ResendCodePostResponse,
                                        RevokeAllCodesResult, RevokeCodeResult,
@@ -132,6 +133,14 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def update_passwordless_user(self, user_id: str,
                                        email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
+        pass
+
+    @abstractmethod
+    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+        pass
+
+    @abstractmethod
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
         pass
 
     @abstractmethod

@@ -17,8 +17,8 @@ from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.passwordless import asyncio
 from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeOkResult, ConsumeCodeResult, CreateCodeResult,
-    CreateNewCodeForDeviceResult, RevokeAllCodesResult, RevokeCodeResult,
-    UpdateUserResult)
+    CreateNewCodeForDeviceResult, DeleteUserInfoResult, RevokeAllCodesResult,
+    RevokeCodeResult, UpdateUserResult)
 from supertokens_python.recipe.passwordless.types import DeviceType, User
 
 
@@ -67,6 +67,14 @@ def update_user(user_id: str, email: Union[str, None] = None,
                 phone_number: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None) -> UpdateUserResult:
     return sync(asyncio.update_user(user_id=user_id, email=email,
                                     phone_number=phone_number, user_context=user_context))
+
+
+def delete_email_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> DeleteUserInfoResult:
+    return sync(asyncio.delete_email_for_user(user_id=user_id, user_context=user_context))
+
+
+def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> DeleteUserInfoResult:
+    return sync(asyncio.delete_phone_number_for_user(user_id=user_id, user_context=user_context))
 
 
 def revoke_all_codes(email: Union[str, None] = None,

@@ -45,8 +45,11 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from ...passwordless.interfaces import (CreateCodeResult,
                                         CreateNewCodeForDeviceResult,
+                                        DeleteUserInfoResult,
+                                        DeleteUserInfoUnknownUserIdErrorResult,
                                         DeviceType, RevokeAllCodesResult,
-                                        RevokeCodeResult, UpdateUserResult)
+                                        RevokeCodeResult, UpdateUserResult,
+                                        UpdateUserUnknownUserIdErrorResult)
 from ...thirdparty.interfaces import SignInUpResult
 
 if TYPE_CHECKING:
@@ -89,6 +92,8 @@ class RecipeImplementation(RecipeInterface):
         self.pless_revoke_all_codes = passwordless_implementation.revoke_all_codes
         self.pless_revoke_code = passwordless_implementation.revoke_code
         self.pless_update_user = passwordless_implementation.update_user
+        self.pless_delete_email_for_user = passwordless_implementation.delete_email_for_user
+        self.pless_delete_phone_number_for_user = passwordless_implementation.delete_phone_number_for_user
 
         derived_pless = DerivedPasswordlessImplementation(self)
         passwordless_implementation.get_user_by_id = derived_pless.get_user_by_id
@@ -104,6 +109,8 @@ class RecipeImplementation(RecipeInterface):
         passwordless_implementation.revoke_all_codes = derived_pless.revoke_all_codes
         passwordless_implementation.revoke_code = derived_pless.revoke_code
         passwordless_implementation.update_user = derived_pless.update_user
+        passwordless_implementation.delete_email_for_user = derived_pless.delete_email_for_user
+        passwordless_implementation.delete_phone_number_for_user = derived_pless.delete_phone_number_for_user
 
         self.tp_get_user_by_id = None
         self.tp_get_users_by_email = None
@@ -216,7 +223,31 @@ class RecipeImplementation(RecipeInterface):
 
     async def update_passwordless_user(self, user_id: str,
                                        email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; UpdateUserResult:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return UpdateUserUnknownUserIdErrorResult()
+        if user.third_party_info is not None:
+            raise Exception(
+                &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
         return await self.pless_update_user(user_id, email, phone_number, user_context)
+
+    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return DeleteUserInfoUnknownUserIdErrorResult()
+        if user.third_party_info is not None:
+            raise Exception(
+                &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
+        return await self.pless_delete_email_for_user(user_id, user_context)
+
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return DeleteUserInfoUnknownUserIdErrorResult()
+        if user.third_party_info is not None:
+            raise Exception(
+                &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
+        return await self.pless_delete_phone_number_for_user(user_id, user_context)
 
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesResult:
@@ -279,6 +310,8 @@ inheritance.</p></div>
         self.pless_revoke_all_codes = passwordless_implementation.revoke_all_codes
         self.pless_revoke_code = passwordless_implementation.revoke_code
         self.pless_update_user = passwordless_implementation.update_user
+        self.pless_delete_email_for_user = passwordless_implementation.delete_email_for_user
+        self.pless_delete_phone_number_for_user = passwordless_implementation.delete_phone_number_for_user
 
         derived_pless = DerivedPasswordlessImplementation(self)
         passwordless_implementation.get_user_by_id = derived_pless.get_user_by_id
@@ -294,6 +327,8 @@ inheritance.</p></div>
         passwordless_implementation.revoke_all_codes = derived_pless.revoke_all_codes
         passwordless_implementation.revoke_code = derived_pless.revoke_code
         passwordless_implementation.update_user = derived_pless.update_user
+        passwordless_implementation.delete_email_for_user = derived_pless.delete_email_for_user
+        passwordless_implementation.delete_phone_number_for_user = derived_pless.delete_phone_number_for_user
 
         self.tp_get_user_by_id = None
         self.tp_get_users_by_email = None
@@ -406,7 +441,31 @@ inheritance.</p></div>
 
     async def update_passwordless_user(self, user_id: str,
                                        email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; UpdateUserResult:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return UpdateUserUnknownUserIdErrorResult()
+        if user.third_party_info is not None:
+            raise Exception(
+                &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
         return await self.pless_update_user(user_id, email, phone_number, user_context)
+
+    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return DeleteUserInfoUnknownUserIdErrorResult()
+        if user.third_party_info is not None:
+            raise Exception(
+                &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
+        return await self.pless_delete_email_for_user(user_id, user_context)
+
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return DeleteUserInfoUnknownUserIdErrorResult()
+        if user.third_party_info is not None:
+            raise Exception(
+                &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
+        return await self.pless_delete_phone_number_for_user(user_id, user_context)
 
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesResult:
@@ -500,6 +559,44 @@ inheritance.</p></div>
                                      user_input_code: Union[str, None],
                                      user_context: Dict[str, Any]) -&gt; CreateNewCodeForDeviceResult:
     return await self.pless_create_new_code_for_device(device_id, user_input_code, user_context)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.delete_email_for_passwordless_user"><code class="name flex">
+<span>async def <span class="ident">delete_email_for_passwordless_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+    user = await self.get_user_by_id(user_id, user_context)
+    if user is None:
+        return DeleteUserInfoUnknownUserIdErrorResult()
+    if user.third_party_info is not None:
+        raise Exception(
+            &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
+    return await self.pless_delete_email_for_user(user_id, user_context)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.delete_phone_number_for_user"><code class="name flex">
+<span>async def <span class="ident">delete_phone_number_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+    user = await self.get_user_by_id(user_id, user_context)
+    if user is None:
+        return DeleteUserInfoUnknownUserIdErrorResult()
+    if user.third_party_info is not None:
+        raise Exception(
+            &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
+    return await self.pless_delete_phone_number_for_user(user_id, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_id"><code class="name flex">
@@ -697,6 +794,12 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">async def update_passwordless_user(self, user_id: str,
                                    email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; UpdateUserResult:
+    user = await self.get_user_by_id(user_id, user_context)
+    if user is None:
+        return UpdateUserUnknownUserIdErrorResult()
+    if user.third_party_info is not None:
+        raise Exception(
+            &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
     return await self.pless_update_user(user_id, email, phone_number, user_context)</code></pre>
 </details>
 </dd>
@@ -724,6 +827,8 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.consume_code" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.consume_code">consume_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.create_code" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.create_code">create_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.create_new_code_for_device" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.create_new_code_for_device">create_new_code_for_device</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.delete_email_for_passwordless_user" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.delete_email_for_passwordless_user">delete_email_for_passwordless_user</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.delete_phone_number_for_user" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.delete_phone_number_for_user">delete_phone_number_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_id" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_id">get_user_by_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_phone_number" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_phone_number">get_user_by_phone_number</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_thirdparty_info" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_thirdparty_info">get_user_by_thirdparty_info</a></code></li>
