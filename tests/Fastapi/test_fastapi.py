@@ -18,7 +18,8 @@ from fastapi import Depends, FastAPI
 from fastapi.requests import Request
 from fastapi.testclient import TestClient
 from pytest import fixture, mark
-from supertokens_python import InputAppInfo, SupertokensConfig, init
+import pytest
+from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.interfaces import \
@@ -35,6 +36,8 @@ from tests.utils import (TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH,
                          TEST_DRIVER_CONFIG_COOKIE_SAME_SITE,
                          TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH, clean_st,
                          extract_all_cookies, reset, setup_st, start_st)
+
+import asyncio as aio
 
 
 def setup_function(_):
@@ -104,6 +107,37 @@ async def driver_config_client():
 def apis_override_session(param: APIInterface):
     param.disable_refresh_post = True
     return param
+
+
+@mark.asyncio
+async def test_telemetry():
+    with pytest.warns(None) as record:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[session.init(
+                anti_csrf='VIA_TOKEN',
+                cookie_domain='supertokens.io',
+                override=session.InputOverrideConfig(
+                    apis=apis_override_session
+                )
+            )],
+            telemetry=True
+        )
+        start_st()
+        await aio.sleep(1)
+
+    for warn in record:
+        if warn.category is RuntimeWarning:
+            assert False, 'Asyncio error'
+
+    assert Supertokens.get_instance()._telemetry_status == 'SKIPPED'  # type: ignore pylint: disable=W0212
 
 
 @mark.asyncio

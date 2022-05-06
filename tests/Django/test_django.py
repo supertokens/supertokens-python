@@ -18,7 +18,8 @@ from typing import Any, Dict, Union
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.test import RequestFactory, TestCase
-from supertokens_python import InputAppInfo, SupertokensConfig, init
+import pytest
+from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.framework.django import middleware
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.interfaces import (APIInterface,
@@ -30,6 +31,7 @@ from supertokens_python.recipe.session.asyncio import (create_new_session,
 from supertokens_python.recipe.session.framework.django.asyncio import \
     verify_session
 from tests.utils import clean_st, reset, setup_st, start_st
+import asyncio as aio
 
 
 def get_cookies(response: HttpResponse) -> Dict[str, Any]:
@@ -99,6 +101,33 @@ class SupertokensTest(TestCase):
     def tearDown(self):
         reset()
         clean_st()
+
+    @staticmethod
+    async def test_telemetry():
+        with pytest.warns(None) as record:
+            init(
+                supertokens_config=SupertokensConfig('http://localhost:3567'),
+                app_info=InputAppInfo(
+                    app_name="SuperTokens Demo",
+                    api_domain="http://api.supertokens.io",
+                    website_domain="http://supertokens.io",
+                    api_base_path="/auth"
+                ),
+                framework='django',
+                mode='asgi',
+                recipe_list=[session.init(
+                    anti_csrf='VIA_TOKEN',
+                    cookie_domain='supertokens.io'
+                )],
+                telemetry=True
+            )
+            start_st()
+            await aio.sleep(1)
+        for warn in record:
+            if warn.category is RuntimeWarning:
+                assert False, 'Asyncio error'
+
+        assert Supertokens.get_instance()._telemetry_status == 'SKIPPED'  # type: ignore pylint: disable=W0212
 
     async def test_login_refresh(self):
         init(

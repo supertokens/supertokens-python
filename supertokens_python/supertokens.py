@@ -175,6 +175,7 @@ class Supertokens:
             app_info.website_base_path,
             mode
         )
+        self._telemetry_status: str = 'NONE'
         log_debug_message("Started SuperTokens with debug logging (supertokens.init called)")
         log_debug_message("app_info: %s", self.app_info.toJSON())
         log_debug_message("framework: %s", framework)
@@ -195,13 +196,19 @@ class Supertokens:
 
         if telemetry:
             loop = asyncio.get_event_loop()
-            if self.app_info.framework.lower(
-            ) == 'flask' or self.app_info.framework.lower() == 'django':
+            if self.app_info.mode == 'wsgi':
                 loop.run_until_complete(self.send_telemetry())
             else:
                 loop.create_task(self.send_telemetry())
 
     async def send_telemetry(self):
+        # Don't send telemetry if the app is running in testing mode
+        skip_telemetry = ('SUPERTOKENS_ENV' in environ) and (
+            environ['SUPERTOKENS_ENV'] == 'testing')
+        if skip_telemetry:
+            self._telemetry_status = 'SKIPPED'
+            return
+
         try:
             querier = Querier.get_instance(None)
             response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
@@ -221,8 +228,10 @@ class Supertokens:
             async with AsyncClient() as client:
                 await client.post(url=TELEMETRY_SUPERTOKENS_API_URL, json=data,  # type: ignore
                                   headers={'api-version': TELEMETRY_SUPERTOKENS_API_VERSION})
+
+            self._telemetry_status = 'SUCCESS'
         except Exception:
-            pass
+            self._telemetry_status = 'EXCEPTION'
 
     @staticmethod
     def init(app_info: InputAppInfo,
