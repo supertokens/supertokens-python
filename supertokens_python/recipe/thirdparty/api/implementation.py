@@ -22,14 +22,14 @@ from supertokens_python.recipe.emailverification.interfaces import \
     CreateEmailVerificationTokenOkResult
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.thirdparty.interfaces import (
-    APIInterface, AuthorisationUrlGetOkResponse,
+    APIInterface, AuthorisationUrlGetOkResponse, SignInUpFieldErrorResult,
     SignInUpPostFieldErrorResponse, SignInUpPostNoEmailGivenByProviderResponse,
     SignInUpPostOkResponse)
 from supertokens_python.recipe.thirdparty.types import UserInfo
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import (
-        APIOptions, AuthorisationUrlGetResponse, SignInUpPostResponse)
+        APIOptions)
     from supertokens_python.recipe.thirdparty.provider import Provider
 
 DEV_OAUTH_CLIENT_IDS = [
@@ -54,7 +54,7 @@ def get_actual_client_id_from_development_client_id(client_id: str):
 
 
 class APIImplementation(APIInterface):
-    async def authorisation_url_get(self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetResponse:
+    async def authorisation_url_get(self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResponse:
         authorisation_url_info = provider.get_authorisation_redirect_api_info(user_context)
 
         params: Dict[str, str] = {}
@@ -87,7 +87,7 @@ class APIImplementation(APIInterface):
         url = auth_url + '?' + query_string
         return AuthorisationUrlGetOkResponse(url)
 
-    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions, user_context: Dict[str, Any]) -> SignInUpPostResponse:
+    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions, user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
 
         redirect_uri_from_provider = provider.get_redirect_uri(user_context)
         if is_using_oauth_development_client_id(provider.client_id):
@@ -129,13 +129,8 @@ class APIImplementation(APIInterface):
 
         signinup_response = await api_options.recipe_implementation.sign_in_up(provider.id, user_info.user_id, email, email_verified, user_context)
 
-        if signinup_response.is_field_error:
-            if signinup_response.error is None:
-                raise Exception("Should never come here")
+        if isinstance(signinup_response, SignInUpFieldErrorResult):
             return SignInUpPostFieldErrorResponse(signinup_response.error)
-
-        if signinup_response.user is None:
-            raise Exception("Should never come here")
 
         if email_verified:
             token_response = await api_options.email_verification_recipe_implementation.create_email_verification_token(user_id=signinup_response.user.user_id, email=signinup_response.user.email, user_context=user_context)
@@ -144,8 +139,6 @@ class APIImplementation(APIInterface):
                 await api_options.email_verification_recipe_implementation.verify_email_using_token(token=token_response.token, user_context=user_context)
 
         user = signinup_response.user
-        if user is None or signinup_response.created_new_user is None:
-            raise Exception("Should never come here")
         session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
 
         return SignInUpPostOkResponse(
