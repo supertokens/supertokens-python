@@ -17,24 +17,30 @@ from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.emailpassword.api.implementation import \
     APIImplementation as EmailPasswordImplementation
-from supertokens_python.recipe.emailpassword.interfaces import \
-    APIOptions as EmailPasswordApiOptions
+from supertokens_python.recipe.emailpassword.interfaces import (
+    APIOptions as EmailPasswordApiOptions,
+    SignInPostOkResponse, SignUpPostOkResponse)
 from supertokens_python.recipe.emailpassword.interfaces import (
     EmailExistsGetOkResponse, GeneratePasswordResetTokenPostOkResponse,
     PasswordResetPostInvalidTokenResponse, PasswordResetPostOkResponse,
-    SignInPostOkResponse, SignInPostWrongCredentialsErrorResponse,
-    SignUpPostEmailAlreadyExistsErrorResponse, SignUpPostOkResponse)
+    SignInPostWrongCredentialsErrorResponse,
+    SignUpPostEmailAlreadyExistsErrorResponse)
 from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.thirdparty.api.implementation import \
     APIImplementation as ThirdPartyImplementation
-from supertokens_python.recipe.thirdparty.interfaces import \
-    APIOptions as ThirdPartyApiOptions
 from supertokens_python.recipe.thirdparty.interfaces import (
-    AuthorisationUrlGetOkResponse, SignInUpPostOkResponse,
+    APIOptions as ThirdPartyApiOptions,
+    SignInUpPostOkResponse)
+from supertokens_python.recipe.thirdparty.interfaces import (
+    AuthorisationUrlGetOkResponse,
     SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
     APIInterface
+
+from ..interfaces import (
+    ThirdPartySignInUpPostOkResponse, EmailPasswordSignInPostOkResponse, EmailPasswordSignUpPostOkResponse)
+from ..types import User
 
 from .emailpassword_api_impementation import \
     get_interface_impl as get_ep_interface_impl
@@ -79,16 +85,33 @@ class APIImplementation(APIInterface):
         return await self.ep_password_reset_post(form_fields, token, api_options, user_context)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
-        return await self.tp_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
+                                         api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
+        result = await self.tp_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
+        if isinstance(result, SignInUpPostOkResponse):
+            return ThirdPartySignInUpPostOkResponse(
+                User(result.user.user_id, result.user.email, result.user.time_joined, result.user.third_party_info),
+                result.created_new_user,
+                result.auth_code_response,
+                result.session)
+        return result
 
     async def emailpassword_sign_in_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> Union[SignInPostOkResponse, SignInPostWrongCredentialsErrorResponse]:
-        return await self.ep_sign_in_post(form_fields, api_options, user_context)
+                                         api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInPostOkResponse, SignInPostWrongCredentialsErrorResponse]:
+        result = await self.ep_sign_in_post(form_fields, api_options, user_context)
+        if isinstance(result, SignInPostOkResponse):
+            return EmailPasswordSignInPostOkResponse(
+                User(result.user.user_id, result.user.email, result.user.time_joined, None),
+                result.session)
+        return result
 
     async def emailpassword_sign_up_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> Union[SignUpPostOkResponse, SignUpPostEmailAlreadyExistsErrorResponse]:
-        return await self.ep_sign_up_post(form_fields, api_options, user_context)
+                                         api_options: EmailPasswordApiOptions, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpPostOkResponse, SignUpPostEmailAlreadyExistsErrorResponse]:
+        result = await self.ep_sign_up_post(form_fields, api_options, user_context)
+        if isinstance(result, SignUpPostOkResponse):
+            return EmailPasswordSignUpPostOkResponse(
+                User(result.user.user_id, result.user.email, result.user.time_joined, None),
+                result.session)
+        return result
 
     async def authorisation_url_get(self, provider: Provider, api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResponse:
         return await self.tp_authorisation_url_get(provider, api_options, user_context)

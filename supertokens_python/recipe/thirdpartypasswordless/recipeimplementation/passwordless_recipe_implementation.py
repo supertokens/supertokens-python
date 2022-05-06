@@ -18,12 +18,21 @@ from typing import Any, Dict, List, Union
 from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeErrorResult,
     ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
-    ConsumeCodeRestartFlowErrorResult, ConsumeCodeResult, CreateCodeResult,
-    CreateNewCodeForDeviceResult, DeleteUserInfoResult, DeviceType,
-    RecipeInterface, RevokeAllCodesResult, RevokeCodeResult, UpdateUserResult)
+    ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
+    CreateNewCodeForDeviceOkResult,
+    CreateNewCodeForDeviceRestartFlowErrorResult,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
+    DeviceType, RecipeInterface, RevokeAllCodesOkResult,
+    RevokeCodeOkResult, UpdateUserEmailAlreadyExistsErrorResult,
+    UpdateUserOkResult, UpdateUserPhoneNumberAlreadyExistsErrorResult,
+    UpdateUserUnknownUserIdErrorResult)
 
 from ...passwordless.types import User
-from ..interfaces import RecipeInterface as ThirdPartyPasswordlessInterface
+from ..interfaces import (
+    RecipeInterface as ThirdPartyPasswordlessInterface,
+    ConsumeCodeOkResult as ThirdPartyConsumeCodeOkResult
+)
 
 
 class RecipeImplementation(RecipeInterface):
@@ -37,13 +46,13 @@ class RecipeImplementation(RecipeInterface):
                           email: Union[None, str],
                           phone_number: Union[None, str],
                           user_input_code: Union[None, str],
-                          user_context: Dict[str, Any]) -> CreateCodeResult:
+                          user_context: Dict[str, Any]) -> CreateCodeOkResult:
         return await self.recipe_implementation.create_code(email, phone_number, user_input_code, user_context)
 
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -> CreateNewCodeForDeviceResult:
+                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
         return await self.create_new_code_for_device(device_id, user_input_code, user_context)
 
     async def consume_code(self,
@@ -51,24 +60,13 @@ class RecipeImplementation(RecipeInterface):
                            user_input_code: Union[str, None],
                            device_id: Union[str, None],
                            link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -> ConsumeCodeResult:
+                           user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, ConsumeCodeRestartFlowErrorResult]:
         result = await self.recipe_implementation.consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
-
-        if result.is_ok:
-            if result.user is None or result.created_new_user is None:
-                raise Exception("Should never come here")
-            return ConsumeCodeOkResult(result.created_new_user, User(result.user.user_id, result.user.email, result.user.phone_number, result.user.time_joined))
-        if result.is_expired_user_input_code_error:
-            if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
-                raise Exception("Should never come here")
-            return ConsumeCodeExpiredUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
-        if result.is_incorrect_user_input_code_error:
-            if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
-                raise Exception("Should never come here")
-            return ConsumeCodeIncorrectUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
-
-        # restart flow error
-        return ConsumeCodeRestartFlowErrorResult()
+        if isinstance(result, ThirdPartyConsumeCodeOkResult):
+            return ConsumeCodeOkResult(
+                result.created_new_user,
+                User(result.user.user_id, result.user.email, result.user.phone_number, result.user.time_joined))
+        return result
 
     async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
         otherTypeUser = await self.recipe_implementation.get_user_by_id(user_id, user_context)
@@ -95,20 +93,20 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def update_user(self, user_id: str,
-                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> UpdateUserResult:
+                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
         return await self.recipe_implementation.update_passwordless_user(user_id, email, phone_number, user_context)
 
-    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         return await self.recipe_implementation.delete_email_for_passwordless_user(user_id, user_context)
 
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> DeleteUserInfoResult:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
         return await self.recipe_implementation.delete_phone_number_for_user(user_id, user_context)
 
     async def revoke_all_codes(self,
-                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesResult:
+                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesOkResult:
         return await self.recipe_implementation.revoke_all_codes(email, phone_number, user_context)
 
-    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeResult:
+    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -> RevokeCodeOkResult:
         return await self.recipe_implementation.revoke_code(code_id, user_context)
 
     async def list_codes_by_email(self, email: str, user_context: Dict[str, Any]) -> List[DeviceType]:

@@ -13,9 +13,15 @@
 # under the License.
 from __future__ import annotations
 
-from supertokens_python.recipe.emailpassword.interfaces import APIInterface
-from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
-    APIInterface as ThirdPartyEmailPasswordAPIInterface
+from typing import Any, Dict, List, Union
+
+from supertokens_python.recipe.emailpassword.interfaces import (
+    APIInterface, APIOptions, SignInPostOkResponse, SignInPostWrongCredentialsErrorResponse,
+    SignUpPostOkResponse, SignUpPostEmailAlreadyExistsErrorResponse)
+from supertokens_python.recipe.emailpassword.types import FormField, User
+from supertokens_python.recipe.thirdpartyemailpassword.interfaces import (
+    APIInterface as ThirdPartyEmailPasswordAPIInterface,
+    EmailPasswordSignInPostOkResponse, EmailPasswordSignUpPostOkResponse)
 
 
 def get_interface_impl(
@@ -31,7 +37,28 @@ def get_interface_impl(
     implementation.email_exists_get = api_implementation.emailpassword_email_exists_get
     implementation.generate_password_reset_token_post = api_implementation.generate_password_reset_token_post
     implementation.password_reset_post = api_implementation.password_reset_post
-    implementation.sign_up_post = api_implementation.emailpassword_sign_up_post
-    implementation.sign_in_post = api_implementation.emailpassword_sign_in_post
+    if not implementation.disable_sign_in_post:
+        async def sign_in_post(form_fields: List[FormField],
+                               api_options: APIOptions,
+                               user_context: Dict[str, Any]) -> Union[SignInPostOkResponse, SignInPostWrongCredentialsErrorResponse]:
+            result = await api_implementation.emailpassword_sign_in_post(form_fields, api_options, user_context)
+            if isinstance(result, EmailPasswordSignInPostOkResponse):
+                return SignInPostOkResponse(
+                    User(result.user.user_id, result.user.email, result.user.time_joined),
+                    result.session)
+            return result
+        implementation.sign_in_post = sign_in_post
+
+    if not implementation.disable_sign_up_post:
+        async def sign_up_post(form_fields: List[FormField],
+                               api_options: APIOptions,
+                               user_context: Dict[str, Any]) -> Union[SignUpPostOkResponse, SignUpPostEmailAlreadyExistsErrorResponse]:
+            result = await api_implementation.emailpassword_sign_up_post(form_fields, api_options, user_context)
+            if isinstance(result, EmailPasswordSignUpPostOkResponse):
+                return SignUpPostOkResponse(
+                    User(result.user.user_id, result.user.email, result.user.time_joined),
+                    result.session)
+            return result
+        implementation.sign_up_post = sign_up_post
 
     return implementation

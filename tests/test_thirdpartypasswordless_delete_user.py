@@ -20,6 +20,7 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import (passwordless, session,
                                        thirdpartypasswordless)
+from supertokens_python.recipe.passwordless.interfaces import DeleteUserInfoOkResult
 from supertokens_python.recipe.passwordless.utils import \
     ContactEmailOrPhoneConfig
 from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
@@ -117,7 +118,7 @@ async def test_tp_passworldless_delete_user_info(driver_config_client: TestClien
 
     # Check that deleting the user phone number works:
     response = await delete_phone_number_for_user(user_id)
-    assert response.status == "OK"
+    assert isinstance(response, DeleteUserInfoOkResult)
 
     user = await get_user_by_phone_number("+919494949494")
     assert user is None
@@ -130,7 +131,7 @@ async def test_tp_passworldless_delete_user_info(driver_config_client: TestClien
 
     # Check that deleting the user email works:
     response = await delete_email_for_passwordless_user(user_id)
-    assert response.status == "OK"
+    assert isinstance(response, DeleteUserInfoOkResult)
 
     users = await get_users_by_email("foo@example.com")
     assert users == []
