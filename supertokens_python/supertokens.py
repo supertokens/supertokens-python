@@ -190,6 +190,7 @@ class Supertokens:
             map(lambda func: func(self.app_info), recipe_list))
 
         if telemetry is None:
+            # If telemetry is not provided, enable it by default for production environment
             telemetry = ('SUPERTOKENS_ENV' not in environ) or (
                 environ['SUPERTOKENS_ENV'] != 'testing')
 
@@ -197,7 +198,8 @@ class Supertokens:
             execute_async(self.app_info.mode, self.send_telemetry)
 
     async def send_telemetry(self):
-        # Don't send telemetry if the app is running in testing mode
+        # If telemetry is enabled manually and the app is running in testing mode,
+        # do not send the telemetry
         skip_telemetry = ('SUPERTOKENS_ENV' in environ) and (
             environ['SUPERTOKENS_ENV'] == 'testing')
         if skip_telemetry:
