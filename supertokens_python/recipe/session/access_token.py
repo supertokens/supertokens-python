@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from typing import Any, Union
 
+from supertokens_python.logger import log_debug_message
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
@@ -78,4 +79,7 @@ def get_info_from_access_token(
             'timeCreated': time_created
         }
     except Exception as e:
+        log_debug_message(
+            "getSession: Returning TRY_REFRESH_TOKEN because failed to decode access token"
+        )
         raise_try_refresh_token_exception(e)
