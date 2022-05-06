@@ -20,7 +20,6 @@ from supertokens_python.async_to_sync_wrapper import sync
 
 from .utils import SessionConfig
 
-from typing_extensions import Literal
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
 
@@ -39,23 +38,15 @@ class AccessTokenObj:
         self.created_time = created_time
 
 
-class RegenerateAccessTokenResult(ABC):
-    def __init__(self, status: Literal['OK'], session: SessionObj,
+class RegenerateAccessTokenOkResult():
+    def __init__(self, session: SessionObj,
                  access_token: Union[AccessTokenObj, None]):
-        self.status = status
         self.session = session
         self.access_token = access_token
 
 
-class RegenerateAccessTokenOkResult(RegenerateAccessTokenResult):
-    def __init__(self, session: SessionObj,
-                 access_token: Union[AccessTokenObj, None]):
-        super().__init__('OK', session, access_token)
-
-
-class SessionInformationResult(ABC):
-    def __init__(self, status: Literal['OK'], session_handle: str, user_id: str, session_data: Dict[str, Any], expiry: int, access_token_payload: Dict[str, Any], time_created: int):
-        self.status: Literal['OK'] = status
+class SessionInformationResult():
+    def __init__(self, session_handle: str, user_id: str, session_data: Dict[str, Any], expiry: int, access_token_payload: Dict[str, Any], time_created: int):
         self.session_handle: str = session_handle
         self.user_id: str = user_id
         self.session_data: Dict[str, Any] = session_data
@@ -123,7 +114,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def regenerate_access_token(self,
                                       access_token: str,
-                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -> RegenerateAccessTokenResult:
+                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -> RegenerateAccessTokenOkResult:
         pass
 
 

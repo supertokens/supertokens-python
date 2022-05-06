@@ -39,7 +39,6 @@ if TYPE_CHECKING:
 
     from supertokens_python.querier import Querier
 
-    from .interfaces import RegenerateAccessTokenResult
     from .utils import SessionConfig
 
 from .interfaces import SessionContainer
@@ -239,7 +238,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def regenerate_access_token(self,
                                       access_token: str,
-                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -> RegenerateAccessTokenResult:
+                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -> RegenerateAccessTokenOkResult:
         if new_access_token_payload is None:
             new_access_token_payload = {}
         response: Dict[str, Any] = await self.querier.send_post_request(NormalisedURLPath("/recipe/session/regenerate"), {
