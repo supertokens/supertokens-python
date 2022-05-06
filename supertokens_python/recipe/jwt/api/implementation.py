@@ -20,4 +20,4 @@ from supertokens_python.recipe.jwt.interfaces import (APIInterface, APIOptions,
 class APIImplementation(APIInterface):
     async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> JWKSGetResponse:
         response = await api_options.recipe_implementation.get_jwks(user_context)
-        return JWKSGetResponse('OK', response.keys)
+        return JWKSGetResponse(response.keys)

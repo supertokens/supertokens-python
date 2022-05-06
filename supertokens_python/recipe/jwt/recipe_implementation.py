@@ -20,7 +20,6 @@ from supertokens_python.querier import Querier
 
 if TYPE_CHECKING:
     from .utils import JWTConfig
-    from .interfaces import CreateJwtResult
     from supertokens_python.supertokens import AppInfo
 
 from supertokens_python.recipe.jwt.interfaces import (
@@ -38,7 +37,7 @@ class RecipeImplementation(RecipeInterface):
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> Union[CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm]:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
@@ -67,4 +66,4 @@ class RecipeImplementation(RecipeInterface):
                 key['alg'],
                 key['use']
             ))
-        return GetJWKSResult(response['status'], keys)
+        return GetJWKSResult(keys)
