@@ -39,7 +39,7 @@ class RecipeImplementation(RecipeInterface):
 
         jwks_uri = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.append(NormalisedURLPath(GET_JWKS_API)).get_as_string_dangerous()
 
-        return GetOpenIdDiscoveryConfigurationResult('OK', issuer, jwks_uri)
+        return GetOpenIdDiscoveryConfigurationResult(issuer, jwks_uri)
 
     def __init__(self, querier: Querier, config: OpenIdConfig,
                  app_info: AppInfo, jwt_recipe_implementation: JWTRecipeInterface):
