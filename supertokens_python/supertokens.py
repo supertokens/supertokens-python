@@ -17,7 +17,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, List, Set, Union
 
 from typing_extensions import Literal
-import asyncio
 from supertokens_python.logger import get_maybe_none_as_str, log_debug_message
 
 from .constants import (FDI_KEY_HEADER, RID_KEY_HEADER, TELEMETRY,
@@ -33,7 +32,7 @@ from .recipe.session.cookie_and_header import (
     attach_id_refresh_token_to_cookie_and_header,
     attach_refresh_token_to_cookie, clear_cookies, set_front_token_in_headers)
 from .types import ThirdPartyInfo, User, UsersResponse
-from .utils import (get_max_version, get_rid_from_request,
+from .utils import (execute_async, get_max_version, get_rid_from_request,
                     normalise_http_method, send_non_200_response)
 
 if TYPE_CHECKING:
@@ -195,11 +194,7 @@ class Supertokens:
                 environ['SUPERTOKENS_ENV'] != 'testing')
 
         if telemetry:
-            loop = asyncio.get_event_loop()
-            if self.app_info.mode == 'wsgi':
-                loop.run_until_complete(self.send_telemetry())
-            else:
-                loop.create_task(self.send_telemetry())
+            execute_async(self.app_info.mode, self.send_telemetry)
 
     async def send_telemetry(self):
         # Don't send telemetry if the app is running in testing mode
