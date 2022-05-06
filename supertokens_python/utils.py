@@ -153,13 +153,13 @@ def find_first_occurrence_in_list(
     return None
 
 
-def execute_in_background(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
+def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
     if mode == 'wsgi':
+        asyncio.run(func())
+    else:
         check_event_loop()
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(func())
-    else:
-        asyncio.create_task(func())
+        loop.create_task(func())
 
 
 def frontend_has_interceptor(request: BaseRequest) -> bool:
