@@ -45,6 +45,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, List, Set, Union
 
 from typing_extensions import Literal
+
 from supertokens_python.logger import get_maybe_none_as_str, log_debug_message
 
 from .constants import (FDI_KEY_HEADER, RID_KEY_HEADER, TELEMETRY,
@@ -238,8 +239,8 @@ class Supertokens:
             querier = Querier.get_instance(None)
             response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
             telemetry_id = None
-            if &#39;exists&#39; in response and response[&#39;exists&#39;] and &#39;telemetry_id&#39; in response:
-                telemetry_id = response[&#39;telemetry_id&#39;]
+            if &#39;exists&#39; in response and response[&#39;exists&#39;] and &#39;telemetryId&#39; in response:
+                telemetry_id = response[&#39;telemetryId&#39;]
             data = {
                 &#39;appName&#39;: self.app_info.app_name,
                 &#39;websiteDomain&#39;: self.app_info.website_domain.get_as_string_dangerous(),
@@ -683,8 +684,8 @@ class Supertokens:
             querier = Querier.get_instance(None)
             response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
             telemetry_id = None
-            if &#39;exists&#39; in response and response[&#39;exists&#39;] and &#39;telemetry_id&#39; in response:
-                telemetry_id = response[&#39;telemetry_id&#39;]
+            if &#39;exists&#39; in response and response[&#39;exists&#39;] and &#39;telemetryId&#39; in response:
+                telemetry_id = response[&#39;telemetryId&#39;]
             data = {
                 &#39;appName&#39;: self.app_info.app_name,
                 &#39;websiteDomain&#39;: self.app_info.website_domain.get_as_string_dangerous(),
@@ -1196,8 +1197,8 @@ def reset():
         querier = Querier.get_instance(None)
         response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
         telemetry_id = None
-        if &#39;exists&#39; in response and response[&#39;exists&#39;] and &#39;telemetry_id&#39; in response:
-            telemetry_id = response[&#39;telemetry_id&#39;]
+        if &#39;exists&#39; in response and response[&#39;exists&#39;] and &#39;telemetryId&#39; in response:
+            telemetry_id = response[&#39;telemetryId&#39;]
         data = {
             &#39;appName&#39;: self.app_info.app_name,
             &#39;websiteDomain&#39;: self.app_info.website_domain.get_as_string_dangerous(),
