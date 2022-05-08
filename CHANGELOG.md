@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.7.2] - 2022-05-08
+- Bug fix in telemetry data API
+
 ## [0.7.1] - 2022-05-06
 - Updates Project Setup, Modifying Code and Testing sections in the contributing guide
 - Fixed async execution of `send_telemetry` in init and `call_get_handshake_info` in session recipe implementation.
