@@ -17,6 +17,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, List, Set, Union
 
 from typing_extensions import Literal
+
 from supertokens_python.logger import get_maybe_none_as_str, log_debug_message
 
 from .constants import (FDI_KEY_HEADER, RID_KEY_HEADER, TELEMETRY,
@@ -210,8 +211,10 @@ class Supertokens:
             querier = Querier.get_instance(None)
             response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
             telemetry_id = None
-            if 'exists' in response and response['exists'] and 'telemetry_id' in response:
-                telemetry_id = response['telemetry_id']
+            print(telemetry_id)
+            if 'exists' in response and response['exists'] and 'telemetryId' in response:
+                telemetry_id = response['telemetryId']
+            print(telemetry_id, response)
             data = {
                 'appName': self.app_info.app_name,
                 'websiteDomain': self.app_info.website_domain.get_as_string_dangerous(),
