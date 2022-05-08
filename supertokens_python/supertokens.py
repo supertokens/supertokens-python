@@ -211,10 +211,8 @@ class Supertokens:
             querier = Querier.get_instance(None)
             response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
             telemetry_id = None
-            print(telemetry_id)
             if 'exists' in response and response['exists'] and 'telemetryId' in response:
                 telemetry_id = response['telemetryId']
-            print(telemetry_id, response)
             data = {
                 'appName': self.app_info.app_name,
                 'websiteDomain': self.app_info.website_domain.get_as_string_dangerous(),
