@@ -39,7 +39,7 @@ class Apple(Provider):
                  scope: Union[None, List[str]] = None,
                  authorisation_redirect: Union[None, Dict[str, Union[Callable[[BaseRequest], str], str]]] = None,
                  is_default: bool = False):
-        super().__init__('apple', client_id, is_default)
+        super().__init__('apple', is_default)
         self.APPLE_PUBLIC_KEY_URL = "https://appleid.apple.com/auth/keys"
         self.APPLE_PUBLIC_KEYS: List[RSAPublicKey] = []
         self.APPLE_KEY_CACHE_EXP = 60 * 60 * 24
@@ -48,6 +48,7 @@ class Apple(Provider):
 
         if scope is None:
             scope = default_scopes
+        self.client_id = client_id
         self.client_key_id = client_key_id
         self.client_private_key = client_private_key
         self.client_team_id = client_team_id
@@ -146,3 +147,6 @@ class Apple(Provider):
             except Exception as e:
                 err = e
         raise err
+
+    def get_client_id(self, user_context: Dict[str, Any]) -> str:
+        return self.client_id

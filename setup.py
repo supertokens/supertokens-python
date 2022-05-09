@@ -54,7 +54,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.6.7",
+    version="0.7.2",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",

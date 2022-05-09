@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, Dict
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
-from supertokens_python.utils import (FRAMEWORKS, execute_in_background,
+from supertokens_python.utils import (FRAMEWORKS, execute_async,
                                       frontend_has_interceptor,
                                       get_timestamp_ms, normalise_http_method)
 
@@ -76,7 +76,7 @@ class RecipeImplementation(RecipeInterface):
                 pass
 
         try:
-            execute_in_background(config.mode, call_get_handshake_info)
+            execute_async(config.mode, call_get_handshake_info)
         except Exception:
             pass
 
