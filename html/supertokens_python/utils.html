@@ -181,13 +181,13 @@ def find_first_occurrence_in_list(
     return None
 
 
-def execute_in_background(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
+def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
     if mode == &#39;wsgi&#39;:
+        asyncio.run(func())
+    else:
         check_event_loop()
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(func())
-    else:
-        asyncio.create_task(func())
+        loop.create_task(func())
 
 
 def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
@@ -201,8 +201,8 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.utils.execute_in_background"><code class="name flex">
-<span>def <span class="ident">execute_in_background</span></span>(<span>mode: str, func: Callable[[], Coroutine[Any, Any, None]])</span>
+<dt id="supertokens_python.utils.execute_async"><code class="name flex">
+<span>def <span class="ident">execute_async</span></span>(<span>mode: str, func: Callable[[], Coroutine[Any, Any, None]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -210,13 +210,13 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def execute_in_background(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
+<pre><code class="python">def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
     if mode == &#39;wsgi&#39;:
+        asyncio.run(func())
+    else:
         check_event_loop()
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(func())
-    else:
-        asyncio.create_task(func())</code></pre>
+        loop.create_task(func())</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.find_first_occurrence_in_list"><code class="name flex">
@@ -476,7 +476,7 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.utils.execute_in_background" href="#supertokens_python.utils.execute_in_background">execute_in_background</a></code></li>
+<li><code><a title="supertokens_python.utils.execute_async" href="#supertokens_python.utils.execute_async">execute_async</a></code></li>
 <li><code><a title="supertokens_python.utils.find_first_occurrence_in_list" href="#supertokens_python.utils.find_first_occurrence_in_list">find_first_occurrence_in_list</a></code></li>
 <li><code><a title="supertokens_python.utils.find_max_version" href="#supertokens_python.utils.find_max_version">find_max_version</a></code></li>
 <li><code><a title="supertokens_python.utils.frontend_has_interceptor" href="#supertokens_python.utils.frontend_has_interceptor">frontend_has_interceptor</a></code></li>
