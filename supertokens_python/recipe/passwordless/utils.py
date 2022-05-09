@@ -18,9 +18,9 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
 from typing_extensions import Literal
 
-from supertokens_python import AppInfo
 
 if TYPE_CHECKING:
+    from supertokens_python import AppInfo
     from .interfaces import RecipeInterface, APIInterface
 
 from re import fullmatch
