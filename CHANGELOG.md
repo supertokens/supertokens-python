@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
+
+## [0.8.0]
 - Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the email password recipe.
 - Renames wrongly named `ResetPasswordUsingTokenWrongUserIdErrorResult` to `ResetPasswordUsingTokenInvalidTokenErrorResult`, one of the return types of `reset_password_using_token` method in the `RecipeInterface`.
 - Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the thirdparty recipe.
