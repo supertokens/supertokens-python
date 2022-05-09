@@ -10,7 +10,7 @@ async def send_text_message(param: passwordless.CreateAndSendCustomTextMessagePa
 
 @pytest.mark.asyncio
 async def test_init_validation_passwordless():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as ex:
         init(
             supertokens_config=SupertokensConfig('http://localhost:3567'),
             app_info='AppInfo',  # type: ignore
@@ -24,8 +24,9 @@ async def test_init_validation_passwordless():
                 )
             ]
         )
+    assert 'app_info must be an instance of InputAppInfo' == str(ex.value)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as ex:
         init(
             supertokens_config=SupertokensConfig('http://localhost:3567'),
             app_info=InputAppInfo(
@@ -44,8 +45,9 @@ async def test_init_validation_passwordless():
                 )
             ]
         )
+    assert 'flow_type must be one of USER_INPUT_CODE, MAGIC_LINK, USER_INPUT_CODE_AND_MAGIC_LINK' == str(ex.value)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as ex:
         init(
             supertokens_config=SupertokensConfig('http://localhost:3567'),
             app_info=InputAppInfo(
@@ -62,8 +64,9 @@ async def test_init_validation_passwordless():
                 )
             ]
         )
+    assert 'contact_config must be of type ContactConfig' == str(ex.value)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as ex:
         init(
             supertokens_config=SupertokensConfig('http://localhost:3567'),
             app_info=InputAppInfo(
@@ -83,3 +86,4 @@ async def test_init_validation_passwordless():
                 )
             ]
         )
+    assert 'override must be of type OverrideConfig' == str(ex.value)
