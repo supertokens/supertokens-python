@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the openid recipe.
 - Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the JWT recipe.
 - Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the session recipe.
+- Removed `third_party_info` from emailpassword `User` class.
 
 ## [0.6.7] - 2022-04-23
 - Adds delete email (`delete_email_for_user`) and phone number (`delete_phone_number_for_user`) functions for passwordless and thirdpartypasswordless recipe
