@@ -22,4 +22,4 @@ class APIImplementation(APIInterface):
             OpenIdDiscoveryConfigurationGetResponse:
         response = await api_options.recipe_implementation.get_open_id_discovery_configuration(user_context)
         return OpenIdDiscoveryConfigurationGetResponse(
-            'OK', response.issuer, response.jwks_uri)
+            response.issuer, response.jwks_uri)

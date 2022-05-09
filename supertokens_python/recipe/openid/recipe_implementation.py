@@ -19,7 +19,7 @@ from supertokens_python.querier import Querier
 
 if TYPE_CHECKING:
     from .utils import OpenIdConfig
-    from .interfaces import CreateJwtResult
+    from .interfaces import CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm
     from supertokens_python.supertokens import AppInfo
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -39,7 +39,7 @@ class RecipeImplementation(RecipeInterface):
 
         jwks_uri = self.config.issuer_domain.get_as_string_dangerous() + self.config.issuer_path.append(NormalisedURLPath(GET_JWKS_API)).get_as_string_dangerous()
 
-        return GetOpenIdDiscoveryConfigurationResult('OK', issuer, jwks_uri)
+        return GetOpenIdDiscoveryConfigurationResult(issuer, jwks_uri)
 
     def __init__(self, querier: Querier, config: OpenIdConfig,
                  app_info: AppInfo, jwt_recipe_implementation: JWTRecipeInterface):
@@ -49,7 +49,7 @@ class RecipeImplementation(RecipeInterface):
         self.app_info = app_info
         self.jwt_recipe_implementation = jwt_recipe_implementation
 
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> Union[CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm]:
         issuer = self.config.issuer_domain.get_as_string_dangerous(
         ) + self.config.issuer_path.get_as_string_dangerous()
         payload = {
