@@ -1,20 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
-from typing_extensions import Literal
-
 
 class MetadataResult(ABC):
-    def __init__(self, status: Literal['OK'], metadata: Dict[str, Any]):
-        self.status = status
-        self.is_ok = status == 'OK'
+    def __init__(self, metadata: Dict[str, Any]):
         self.metadata = metadata
 
 
-class ClearUserMetadataResult(ABC):
-    def __init__(self, status: Literal['OK']):
-        self.status = status
-        self.is_ok = status == 'OK'
+class ClearUserMetadataResult():
+    pass
 
 
 class RecipeInterface(ABC):
