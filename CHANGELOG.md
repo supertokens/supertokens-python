@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 - Updates Project Setup, Modifying Code and Testing sections in the contributing guide
+- Adds type checks to the parameters of the passwordless init funtion.
 
 ## [0.7.0] - 2022-04-28
 - Changes third party provider type to get client ID dynamically so that it can be changed based on user context.
