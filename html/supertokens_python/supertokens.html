@@ -61,7 +61,7 @@ from .recipe.session.cookie_and_header import (
     attach_id_refresh_token_to_cookie_and_header,
     attach_refresh_token_to_cookie, clear_cookies, set_front_token_in_headers)
 from .types import ThirdPartyInfo, User, UsersResponse
-from .utils import (get_rid_from_request, is_version_gte,
+from .utils import (execute_async, get_rid_from_request, is_version_gte,
                     normalise_http_method, send_non_200_response)
 
 if TYPE_CHECKING:
@@ -203,6 +203,7 @@ class Supertokens:
             app_info.website_base_path,
             mode
         )
+        self._telemetry_status: str = &#39;NONE&#39;
         log_debug_message(&#34;Started SuperTokens with debug logging (supertokens.init called)&#34;)
         log_debug_message(&#34;app_info: %s&#34;, self.app_info.toJSON())
         log_debug_message(&#34;framework: %s&#34;, framework)
@@ -218,19 +219,28 @@ class Supertokens:
             map(lambda func: func(self.app_info), recipe_list))
 
         if telemetry is None:
+            # If telemetry is not provided, enable it by default for production environment
             telemetry = (&#39;SUPERTOKENS_ENV&#39; not in environ) or (
                 environ[&#39;SUPERTOKENS_ENV&#39;] != &#39;testing&#39;)
 
         if telemetry:
-            _ = self.send_telemetry()
+            execute_async(self.app_info.mode, self.send_telemetry)
 
     async def send_telemetry(self):
+        # If telemetry is enabled manually and the app is running in testing mode,
+        # do not send the telemetry
+        skip_telemetry = (&#39;SUPERTOKENS_ENV&#39; in environ) and (
+            environ[&#39;SUPERTOKENS_ENV&#39;] == &#39;testing&#39;)
+        if skip_telemetry:
+            self._telemetry_status = &#39;SKIPPED&#39;
+            return
+
         try:
             querier = Querier.get_instance(None)
             response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
             telemetry_id = None
-            if &#39;exists&#39; in response and response[&#39;exists&#39;] and &#39;telemetry_id&#39; in response:
-                telemetry_id = response[&#39;telemetry_id&#39;]
+            if &#39;exists&#39; in response and response[&#39;exists&#39;] and &#39;telemetryId&#39; in response:
+                telemetry_id = response[&#39;telemetryId&#39;]
             data = {
                 &#39;appName&#39;: self.app_info.app_name,
                 &#39;websiteDomain&#39;: self.app_info.website_domain.get_as_string_dangerous(),
@@ -244,8 +254,10 @@ class Supertokens:
             async with AsyncClient() as client:
                 await client.post(url=TELEMETRY_SUPERTOKENS_API_URL, json=data,  # type: ignore
                                   headers={&#39;api-version&#39;: TELEMETRY_SUPERTOKENS_API_VERSION})
+
+            self._telemetry_status = &#39;SUCCESS&#39;
         except Exception:
-            pass
+            self._telemetry_status = &#39;EXCEPTION&#39;
 
     @staticmethod
     def init(app_info: InputAppInfo,
@@ -636,6 +648,7 @@ class Supertokens:
             app_info.website_base_path,
             mode
         )
+        self._telemetry_status: str = &#39;NONE&#39;
         log_debug_message(&#34;Started SuperTokens with debug logging (supertokens.init called)&#34;)
         log_debug_message(&#34;app_info: %s&#34;, self.app_info.toJSON())
         log_debug_message(&#34;framework: %s&#34;, framework)
@@ -651,19 +664,28 @@ class Supertokens:
             map(lambda func: func(self.app_info), recipe_list))
 
         if telemetry is None:
+            # If telemetry is not provided, enable it by default for production environment
             telemetry = (&#39;SUPERTOKENS_ENV&#39; not in environ) or (
                 environ[&#39;SUPERTOKENS_ENV&#39;] != &#39;testing&#39;)
 
         if telemetry:
-            _ = self.send_telemetry()
+            execute_async(self.app_info.mode, self.send_telemetry)
 
     async def send_telemetry(self):
+        # If telemetry is enabled manually and the app is running in testing mode,
+        # do not send the telemetry
+        skip_telemetry = (&#39;SUPERTOKENS_ENV&#39; in environ) and (
+            environ[&#39;SUPERTOKENS_ENV&#39;] == &#39;testing&#39;)
+        if skip_telemetry:
+            self._telemetry_status = &#39;SKIPPED&#39;
+            return
+
         try:
             querier = Querier.get_instance(None)
             response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
             telemetry_id = None
-            if &#39;exists&#39; in response and response[&#39;exists&#39;] and &#39;telemetry_id&#39; in response:
-                telemetry_id = response[&#39;telemetry_id&#39;]
+            if &#39;exists&#39; in response and response[&#39;exists&#39;] and &#39;telemetryId&#39; in response:
+                telemetry_id = response[&#39;telemetryId&#39;]
             data = {
                 &#39;appName&#39;: self.app_info.app_name,
                 &#39;websiteDomain&#39;: self.app_info.website_domain.get_as_string_dangerous(),
@@ -677,8 +699,10 @@ class Supertokens:
             async with AsyncClient() as client:
                 await client.post(url=TELEMETRY_SUPERTOKENS_API_URL, json=data,  # type: ignore
                                   headers={&#39;api-version&#39;: TELEMETRY_SUPERTOKENS_API_VERSION})
+
+            self._telemetry_status = &#39;SUCCESS&#39;
         except Exception:
-            pass
+            self._telemetry_status = &#39;EXCEPTION&#39;
 
     @staticmethod
     def init(app_info: InputAppInfo,
@@ -1161,12 +1185,20 @@ def reset():
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def send_telemetry(self):
+    # If telemetry is enabled manually and the app is running in testing mode,
+    # do not send the telemetry
+    skip_telemetry = (&#39;SUPERTOKENS_ENV&#39; in environ) and (
+        environ[&#39;SUPERTOKENS_ENV&#39;] == &#39;testing&#39;)
+    if skip_telemetry:
+        self._telemetry_status = &#39;SKIPPED&#39;
+        return
+
     try:
         querier = Querier.get_instance(None)
         response = await querier.send_get_request(NormalisedURLPath(TELEMETRY), {})
         telemetry_id = None
-        if &#39;exists&#39; in response and response[&#39;exists&#39;] and &#39;telemetry_id&#39; in response:
-            telemetry_id = response[&#39;telemetry_id&#39;]
+        if &#39;exists&#39; in response and response[&#39;exists&#39;] and &#39;telemetryId&#39; in response:
+            telemetry_id = response[&#39;telemetryId&#39;]
         data = {
             &#39;appName&#39;: self.app_info.app_name,
             &#39;websiteDomain&#39;: self.app_info.website_domain.get_as_string_dangerous(),
@@ -1180,8 +1212,10 @@ def reset():
         async with AsyncClient() as client:
             await client.post(url=TELEMETRY_SUPERTOKENS_API_URL, json=data,  # type: ignore
                               headers={&#39;api-version&#39;: TELEMETRY_SUPERTOKENS_API_VERSION})
+
+        self._telemetry_status = &#39;SUCCESS&#39;
     except Exception:
-        pass</code></pre>
+        self._telemetry_status = &#39;EXCEPTION&#39;</code></pre>
 </details>
 </dd>
 </dl>
