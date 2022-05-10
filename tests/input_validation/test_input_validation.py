@@ -1,7 +1,7 @@
 import pytest
 from typing import Dict, Any
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.recipe import emailpassword, emailverification, passwordless
+from supertokens_python.recipe import emailpassword, emailverification, jwt, passwordless
 
 
 @pytest.mark.asyncio
@@ -131,6 +131,45 @@ async def test_init_validation_emailverification():
             ]
         )
     assert 'override must be of type OverrideConfig or None' == str(ex.value)
+
+
+@pytest.mark.asyncio
+async def test_init_validation_jwt():
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                jwt.init(
+                    jwt_validity_seconds='100'  # type: ignore
+                )
+            ]
+        )
+    assert 'jwt_validity_seconds must be an integer or None' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                jwt.init(
+                    override='override'  # type: ignore
+                )
+            ]
+        )
+    assert 'override must be an instance of OverrideConfig or None' == str(ex.value)
 
 
 async def send_text_message(param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
