@@ -2,25 +2,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.emailpassword import interfaces as EPInterfaces
-from supertokens_python.recipe.emailpassword.interfaces import (
-    CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult,
-    EmailExistsGetOkResponse, GeneratePasswordResetTokenPostOkResponse,
-    PasswordResetPostInvalidTokenResponse, PasswordResetPostOkResponse,
-    ResetPasswordUsingTokenInvalidTokenErrorResult,
-    ResetPasswordUsingTokenOkResult,
-    SignInPostWrongCredentialsErrorResponse, SignInWrongCredentialsErrorResult,
-    SignUpEmailAlreadyExistsErrorResult,
-    SignUpPostEmailAlreadyExistsErrorResponse,
-    UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
-    UpdateEmailOrPasswordOkResult,
-    UpdateEmailOrPasswordUnknownUserIdErrorResult)
 from supertokens_python.recipe.emailpassword.types import FormField
+
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.thirdparty import \
-    interfaces as ThirdPartyInterfaces
-from supertokens_python.recipe.thirdparty.interfaces import (
-    AuthorisationUrlGetOkResponse, SignInUpFieldErrorResult,
-    SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse)
+
+from supertokens_python.recipe.thirdparty import interfaces as ThirdPartyInterfaces
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.types import APIResponse
 
@@ -28,6 +14,28 @@ from .types import User
 
 ThirdPartyAPIOptions = ThirdPartyInterfaces.APIOptions
 EmailPasswordAPIOptions = EPInterfaces.APIOptions
+
+# Exporting re-used classes
+CreateResetPasswordOkResult = EPInterfaces.CreateResetPasswordOkResult
+CreateResetPasswordWrongUserIdErrorResult = EPInterfaces.CreateResetPasswordWrongUserIdErrorResult
+EmailExistsGetOkResponse = EPInterfaces.EmailExistsGetOkResponse
+GeneratePasswordResetTokenPostOkResponse = EPInterfaces.GeneratePasswordResetTokenPostOkResponse
+PasswordResetPostInvalidTokenResponse = EPInterfaces.PasswordResetPostInvalidTokenResponse
+PasswordResetPostOkResponse = EPInterfaces.PasswordResetPostOkResponse
+ResetPasswordUsingTokenInvalidTokenErrorResult = EPInterfaces.ResetPasswordUsingTokenInvalidTokenErrorResult
+ResetPasswordUsingTokenOkResult = EPInterfaces.ResetPasswordUsingTokenOkResult
+SignInPostWrongCredentialsErrorResponse = EPInterfaces.SignInPostWrongCredentialsErrorResponse
+SignInWrongCredentialsErrorResult = EPInterfaces.SignInWrongCredentialsErrorResult
+SignUpEmailAlreadyExistsErrorResult = EPInterfaces.SignUpEmailAlreadyExistsErrorResult
+SignUpPostEmailAlreadyExistsErrorResponse = EPInterfaces.SignUpPostEmailAlreadyExistsErrorResponse
+UpdateEmailOrPasswordEmailAlreadyExistsErrorResult = EPInterfaces.UpdateEmailOrPasswordEmailAlreadyExistsErrorResult
+UpdateEmailOrPasswordOkResult = EPInterfaces.UpdateEmailOrPasswordOkResult
+UpdateEmailOrPasswordUnknownUserIdErrorResult = EPInterfaces.UpdateEmailOrPasswordUnknownUserIdErrorResult
+
+AuthorisationUrlGetOkResponse = ThirdPartyInterfaces.AuthorisationUrlGetOkResponse
+SignInUpFieldErrorResult = ThirdPartyInterfaces.SignInUpFieldErrorResult
+SignInUpPostNoEmailGivenByProviderResponse = ThirdPartyInterfaces.SignInUpPostNoEmailGivenByProviderResponse
+SignInUpPostFieldErrorResponse = ThirdPartyInterfaces.SignInUpPostFieldErrorResponse
 
 
 class ThirdPartySignInUpOkResult():
@@ -103,7 +111,7 @@ class ThirdPartySignInUpPostOkResponse(APIResponse):
 
     def to_json(self) -> Dict[str, Any]:
         if self.user.third_party_info is None:
-            raise Exception("Third Party info cannot be None")
+            raise Exception("Third Party Info cannot be None")
 
         return {
             'status': self.status,

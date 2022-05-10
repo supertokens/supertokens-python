@@ -15,18 +15,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from supertokens_python.recipe.emailpassword.interfaces import (
-    CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult,
-    ResetPasswordUsingTokenOkResult,
-    ResetPasswordUsingTokenInvalidTokenErrorResult,
-    SignInOkResult, SignUpOkResult,
-    SignInWrongCredentialsErrorResult, SignUpEmailAlreadyExistsErrorResult,
-    UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
-    UpdateEmailOrPasswordOkResult,
-    UpdateEmailOrPasswordUnknownUserIdErrorResult)
-
-from ...thirdparty.interfaces import (
-    SignInUpFieldErrorResult, SignInUpOkResult)
+import supertokens_python.recipe.emailpassword.interfaces as EPInterfaces
+import supertokens_python.recipe.thirdparty.interfaces as ThirdPartyInterfaces
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -37,7 +27,22 @@ from supertokens_python.recipe.thirdparty.recipe_implementation import \
     RecipeImplementation as ThirdPartyImplementation
 
 from ..interfaces import (
-    RecipeInterface, EmailPasswordSignUpOkResult, EmailPasswordSignInOkResult, ThirdPartySignInUpOkResult)
+    RecipeInterface,
+
+    EmailPasswordSignUpOkResult,
+    EmailPasswordSignInOkResult,
+    CreateResetPasswordOkResult,
+    CreateResetPasswordWrongUserIdErrorResult,
+    ResetPasswordUsingTokenOkResult,
+    ResetPasswordUsingTokenInvalidTokenErrorResult,
+    SignInWrongCredentialsErrorResult,
+    SignUpEmailAlreadyExistsErrorResult,
+    UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
+    UpdateEmailOrPasswordOkResult,
+    UpdateEmailOrPasswordUnknownUserIdErrorResult,
+
+    ThirdPartySignInUpOkResult,
+    SignInUpFieldErrorResult)
 from ..types import User
 from .email_password_recipe_implementation import \
     RecipeImplementation as DerivedEmailPasswordImplementation
@@ -133,7 +138,7 @@ class RecipeImplementation(RecipeInterface):
         if self.tp_sign_in_up is None:
             raise Exception("No thirdparty provider configured")
         result = await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
-        if isinstance(result, SignInUpOkResult):
+        if isinstance(result, ThirdPartyInterfaces.SignInUpOkResult):
             return ThirdPartySignInUpOkResult(
                 User(result.user.user_id, result.user.email, result.user.time_joined, result.user.third_party_info),
                 result.created_new_user
@@ -142,14 +147,14 @@ class RecipeImplementation(RecipeInterface):
 
     async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInOkResult, SignInWrongCredentialsErrorResult]:
         result = await self.ep_sign_in(email, password, user_context)
-        if isinstance(result, SignInOkResult):
+        if isinstance(result, EPInterfaces.SignInOkResult):
             return EmailPasswordSignInOkResult(
                 User(result.user.user_id, result.user.email, result.user.time_joined, None))
         return result
 
     async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
         result = await self.ep_sign_up(email, password, user_context)
-        if isinstance(result, SignUpOkResult):
+        if isinstance(result, EPInterfaces.SignUpOkResult):
             return EmailPasswordSignUpOkResult(
                 User(result.user.user_id, result.user.email, result.user.time_joined, None))
         return result
