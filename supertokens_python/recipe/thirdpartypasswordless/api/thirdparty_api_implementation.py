@@ -13,9 +13,17 @@
 # under the License.
 from __future__ import annotations
 
-from supertokens_python.recipe.thirdparty.interfaces import APIInterface
+from typing import Any, Dict, Union
 
-from ..interfaces import APIInterface as ThirdPartyPasswordlessAPIInterface
+from supertokens_python.recipe.thirdparty.interfaces import (
+    APIInterface, APIOptions,
+    SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse)
+from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.types import User
+
+from ..interfaces import (
+    APIInterface as ThirdPartyPasswordlessAPIInterface,
+    ThirdPartySignInUpPostOkResponse)
 
 
 def get_interface_impl(
@@ -27,7 +35,26 @@ def get_interface_impl(
     implementation.disable_apple_redirect_handler_post = api_implementation.disable_apple_redirect_handler_post
 
     implementation.authorisation_url_get = api_implementation.authorisation_url_get
-    implementation.sign_in_up_post = api_implementation.thirdparty_sign_in_up_post
+
+    if not implementation.disable_sign_in_up_post:
+        async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
+                                  user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
+            response = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
+            if isinstance(response, ThirdPartySignInUpPostOkResponse):
+                if response.user.email is None:
+                    raise Exception('User Email cannot be None')
+
+                if response.user.third_party_info is None:
+                    raise Exception('User Third Party Info cannot be None')
+
+                return SignInUpPostOkResponse(
+                    User(response.user.user_id, response.user.email, response.user.time_joined, response.user.third_party_info),
+                    response.created_new_user,
+                    response.auth_code_response,
+                    response.session
+                )
+            return response
+        implementation.sign_in_up_post = sign_in_up_post
     implementation.apple_redirect_handler_post = api_implementation.apple_redirect_handler_post
 
     return implementation
