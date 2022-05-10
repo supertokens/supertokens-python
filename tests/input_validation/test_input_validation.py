@@ -1,7 +1,7 @@
 import pytest
 from typing import Dict, Any
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.recipe import emailpassword, emailverification, jwt, passwordless
+from supertokens_python.recipe import emailpassword, emailverification, jwt, openid, passwordless
 
 
 @pytest.mark.asyncio
@@ -170,6 +170,25 @@ async def test_init_validation_jwt():
             ]
         )
     assert 'override must be an instance of OverrideConfig or None' == str(ex.value)
+
+
+@pytest.mark.asyncio
+async def test_init_validation_openid():
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                openid.init(override='override')  # type: ignore
+            ]
+        )
+    assert 'override must be an instance of InputOverrideConfig or None' == str(ex.value)
 
 
 async def send_text_message(param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
