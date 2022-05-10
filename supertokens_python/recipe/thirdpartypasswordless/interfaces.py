@@ -6,35 +6,45 @@ from supertokens_python.recipe.thirdparty import \
     interfaces as ThirdPartyInterfaces
 from supertokens_python.recipe.thirdparty.interfaces import (
     AuthorisationUrlGetOkResponse, SignInUpFieldErrorResult, SignInUpOkResult,
-    SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse,
-    SignInUpPostFieldErrorResponse)
+    SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.types import APIResponse
 
 from ..passwordless import interfaces as PlessInterfaces
-from ..passwordless.interfaces import (
-    ConsumeCodePostRestartFlowErrorResponse,
-    ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse,
-    ConsumeCodePostExpiredUserInputCodeErrorResponse,
-    ConsumeCodeExpiredUserInputCodeErrorResult,
-    ConsumeCodeIncorrectUserInputCodeErrorResult,
-    ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
-    CreateCodePostOkResponse, CreateCodePostGeneralErrorResponse,
-    CreateNewCodeForDeviceOkResult,
-    CreateNewCodeForDeviceRestartFlowErrorResult,
-    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
-    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
-    DeviceType, EmailExistsGetOkResponse, PhoneNumberExistsGetOkResponse,
-    ResendCodePostOkResponse, ResendCodePostRestartFlowErrorResponse,
-    ResendCodePostGeneralErrorResponse,
-    RevokeAllCodesOkResult, RevokeCodeOkResult,
-    UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
-    UpdateUserPhoneNumberAlreadyExistsErrorResult,
-    UpdateUserUnknownUserIdErrorResult)
+
 from .types import User
 
+# Export re-used classes
 ThirdPartyAPIOptions = ThirdPartyInterfaces.APIOptions
 PasswordlessAPIOptions = PlessInterfaces.APIOptions
+
+ConsumeCodePostRestartFlowErrorResponse = PlessInterfaces.ConsumeCodePostRestartFlowErrorResponse
+ConsumeCodePostGeneralErrorResponse = PlessInterfaces.ConsumeCodePostGeneralErrorResponse
+ConsumeCodePostIncorrectUserInputCodeErrorResponse = PlessInterfaces.ConsumeCodePostIncorrectUserInputCodeErrorResponse
+ConsumeCodePostExpiredUserInputCodeErrorResponse = PlessInterfaces.ConsumeCodePostExpiredUserInputCodeErrorResponse
+ConsumeCodeExpiredUserInputCodeErrorResult = PlessInterfaces.ConsumeCodeExpiredUserInputCodeErrorResult
+ConsumeCodeIncorrectUserInputCodeErrorResult = PlessInterfaces.ConsumeCodeIncorrectUserInputCodeErrorResult
+ConsumeCodeRestartFlowErrorResult = PlessInterfaces.ConsumeCodeRestartFlowErrorResult
+CreateCodeOkResult = PlessInterfaces.CreateCodeOkResult
+CreateCodePostOkResponse = PlessInterfaces.CreateCodePostOkResponse
+CreateCodePostGeneralErrorResponse = PlessInterfaces.CreateCodePostGeneralErrorResponse
+CreateNewCodeForDeviceOkResult = PlessInterfaces.CreateNewCodeForDeviceOkResult
+CreateNewCodeForDeviceRestartFlowErrorResult = PlessInterfaces.CreateNewCodeForDeviceRestartFlowErrorResult
+CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult = PlessInterfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult
+DeleteUserInfoOkResult = PlessInterfaces.DeleteUserInfoOkResult
+DeleteUserInfoUnknownUserIdErrorResult = PlessInterfaces.DeleteUserInfoUnknownUserIdErrorResult
+DeviceType = PlessInterfaces.DeviceType
+EmailExistsGetOkResponse = PlessInterfaces.EmailExistsGetOkResponse
+PhoneNumberExistsGetOkResponse = PlessInterfaces.PhoneNumberExistsGetOkResponse
+ResendCodePostOkResponse = PlessInterfaces.ResendCodePostOkResponse
+ResendCodePostRestartFlowErrorResponse = PlessInterfaces.ResendCodePostRestartFlowErrorResponse
+ResendCodePostGeneralErrorResponse = PlessInterfaces.ResendCodePostGeneralErrorResponse
+RevokeAllCodesOkResult = PlessInterfaces.RevokeAllCodesOkResult
+RevokeCodeOkResult = PlessInterfaces.RevokeCodeOkResult
+UpdateUserEmailAlreadyExistsErrorResult = PlessInterfaces.UpdateUserEmailAlreadyExistsErrorResult
+UpdateUserOkResult = PlessInterfaces.UpdateUserOkResult
+UpdateUserPhoneNumberAlreadyExistsErrorResult = PlessInterfaces.UpdateUserPhoneNumberAlreadyExistsErrorResult
+UpdateUserUnknownUserIdErrorResult = PlessInterfaces.UpdateUserUnknownUserIdErrorResult
 
 
 class ConsumeCodeOkResult():
@@ -163,6 +173,36 @@ class ConsumeCodePostOkResponse(APIResponse):
         }
 
 
+class ThirdPartySignInUpPostOkResponse(APIResponse):
+    status: str = 'OK'
+
+    def __init__(self, user: User, created_new_user: bool,
+                 auth_code_response: Dict[str, Any],
+                 session: SessionContainer):
+        self.user = user
+        self.created_new_user = created_new_user
+        self.auth_code_response = auth_code_response
+        self.session = session
+
+    def to_json(self) -> Dict[str, Any]:
+        if self.user.third_party_info is None:
+            raise ValueError('Third Party Info cannot be None')
+
+        return {
+            'status': self.status,
+            'user': {
+                'id': self.user.user_id,
+                'email': self.user.email,
+                'timeJoined': self.user.time_joined,
+                'thirdParty': {
+                    'id': self.user.third_party_info.id,
+                    'userId': self.user.third_party_info.user_id
+                }
+            },
+            'createdNewUser': self.created_new_user
+        }
+
+
 class APIInterface(ABC):
     def __init__(self):
         self.disable_thirdparty_sign_in_up_post = False
@@ -181,7 +221,7 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
+                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
         pass
 
     @abstractmethod

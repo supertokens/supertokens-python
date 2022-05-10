@@ -15,33 +15,35 @@ from __future__ import annotations
 
 from typing import Any, Dict, Union
 
-from ...passwordless.api.implementation import \
-    APIImplementation as PasswordlessImplementation
+import supertokens_python.recipe.passwordless.interfaces as PlessInterfaces
+import supertokens_python.recipe.thirdparty.interfaces as ThirdPartyInterfaces
+
+from ...passwordless.api.implementation import APIImplementation as PasswordlessImplementation
 from ...passwordless.interfaces import APIInterface
-from ...passwordless.interfaces import (
-    APIOptions as PasswordlessAPIOptions,
-    ConsumeCodePostOkResponse as PasswordlessConsumeCodePostOkResponse
-)
-from ...passwordless.interfaces import (CreateCodePostOkResponse,
-                                        CreateCodePostGeneralErrorResponse,
-                                        EmailExistsGetOkResponse,
-                                        PhoneNumberExistsGetOkResponse,
-                                        ConsumeCodePostRestartFlowErrorResponse,
-                                        ResendCodePostOkResponse,
-                                        ResendCodePostRestartFlowErrorResponse,
-                                        ResendCodePostGeneralErrorResponse)
-from ...thirdparty.api.implementation import \
-    APIImplementation as ThirdPartyImplementation
+from ...passwordless.interfaces import APIOptions as PasswordlessAPIOptions
+
+from ...thirdparty.api.implementation import APIImplementation as ThirdPartyImplementation
 from ...thirdparty.interfaces import APIOptions as ThirdPartyAPIOptions
-from ...thirdparty.interfaces import (AuthorisationUrlGetOkResponse,
-                                      SignInUpPostOkResponse,
-                                      SignInUpPostNoEmailGivenByProviderResponse,
-                                      SignInUpPostFieldErrorResponse)
 from ...thirdparty.provider import Provider
+
 from ..interfaces import (
-    APIInterface, ConsumeCodePostExpiredUserInputCodeErrorResponse,
-    ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse,
-    ConsumeCodePostOkResponse
+    APIInterface,
+    ConsumeCodePostOkResponse,
+    ConsumeCodePostExpiredUserInputCodeErrorResponse,
+    ConsumeCodePostGeneralErrorResponse,
+    ConsumeCodePostIncorrectUserInputCodeErrorResponse,
+    CreateCodePostOkResponse,
+    CreateCodePostGeneralErrorResponse,
+    EmailExistsGetOkResponse,
+    PhoneNumberExistsGetOkResponse,
+    ConsumeCodePostRestartFlowErrorResponse,
+    ResendCodePostOkResponse,
+    ResendCodePostRestartFlowErrorResponse,
+    ResendCodePostGeneralErrorResponse,
+    AuthorisationUrlGetOkResponse,
+    ThirdPartySignInUpPostOkResponse,
+    SignInUpPostNoEmailGivenByProviderResponse,
+    SignInUpPostFieldErrorResponse
 )
 from ..types import User
 
@@ -81,8 +83,16 @@ class APIImplementation(APIInterface):
         return await self.tp_authorisation_url_get(provider, api_options, user_context)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
-        return await self.tp_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
+                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
+        result = await self.tp_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
+        if isinstance(result, ThirdPartyInterfaces.SignInUpPostOkResponse):
+            return ThirdPartySignInUpPostOkResponse(
+                User(result.user.user_id, result.user.email, None, result.user.third_party_info, result.user.time_joined),
+                result.created_new_user,
+                result.auth_code_response,
+                result.session
+            )
+        return result
 
     async def apple_redirect_handler_post(self, code: str, state: str,
                                           api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]):
@@ -110,7 +120,7 @@ class APIImplementation(APIInterface):
                                 api_options: PasswordlessAPIOptions,
                                 user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse, ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse, ConsumeCodePostExpiredUserInputCodeErrorResponse]:
         result = await self.pless_consume_code_post(pre_auth_session_id, user_input_code, device_id, link_code, api_options, user_context)
-        if isinstance(result, PasswordlessConsumeCodePostOkResponse):
+        if isinstance(result, PlessInterfaces.ConsumeCodePostOkResponse):
             return ConsumeCodePostOkResponse(
                 result.created_new_user,
                 User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined),
