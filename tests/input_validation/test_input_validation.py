@@ -90,8 +90,7 @@ async def test_init_validation_emailpassword():
     assert 'override must be of type InputOverrideConfig or None' == str(ex.value)
 
 
-async def get_email_for_user_id(user_id: str, user_context: Dict[str, Any]) -> str:
-    print(user_context)
+async def get_email_for_user_id(user_id: str, _: Dict[str, Any]) -> str:
     return user_id
 
 
@@ -191,8 +190,8 @@ async def test_init_validation_openid():
     assert 'override must be an instance of InputOverrideConfig or None' == str(ex.value)
 
 
-async def send_text_message(param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
-    print(param)
+async def send_text_message(_: passwordless.CreateAndSendCustomTextMessageParameters, __: Dict[str, Any]):
+    pass
 
 
 @pytest.mark.asyncio
