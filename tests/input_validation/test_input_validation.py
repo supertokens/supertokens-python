@@ -1,7 +1,9 @@
 import pytest
-from typing import Dict, Any
+import os
+from typing import Dict, Any, List
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.recipe import emailpassword, emailverification, jwt, openid, passwordless
+from supertokens_python.recipe import emailpassword, emailverification, jwt, openid, passwordless, thirdparty
+from supertokens_python.recipe.thirdparty.provider import Provider
 
 
 @pytest.mark.asyncio
@@ -273,3 +275,57 @@ async def test_init_validation_passwordless():
             ]
         )
     assert 'override must be of type OverrideConfig' == str(ex.value)
+
+
+providers_list: List[Provider] = [
+    thirdparty.Google(
+        client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
+        client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
+    ), thirdparty.Facebook(
+        client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
+        client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
+    ), thirdparty.Github(
+        client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
+        client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
+    )
+]
+
+
+@pytest.mark.asyncio
+async def test_init_validation_thirdparty():
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdparty.init(
+                    sign_in_and_up_feature='sign in up'  # type: ignore
+                )
+            ]
+        )
+    assert 'sign_in_and_up_feature must be an instance of SignInAndUpFeature' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdparty.init(
+                    sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list),
+                    override='override'  # type: ignore
+                )
+            ]
+        )
+    assert 'override must be an instance of InputOverrideConfig or None' == str(ex.value)
