@@ -2,7 +2,7 @@ import pytest
 import os
 from typing import Dict, Any, List
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.recipe import emailpassword, emailverification, jwt, openid, passwordless, thirdparty
+from supertokens_python.recipe import emailpassword, emailverification, jwt, openid, passwordless, thirdparty, thirdpartyemailpassword
 from supertokens_python.recipe.thirdparty.provider import Provider
 
 
@@ -329,3 +329,114 @@ async def test_init_validation_thirdparty():
             ]
         )
     assert 'override must be an instance of InputOverrideConfig or None' == str(ex.value)
+
+
+@pytest.mark.asyncio
+async def test_init_validation_thirdpartyemailpassword():
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdpartyemailpassword.init(
+                    sign_up_feature='sign up'  # type: ignore
+                )
+            ]
+        )
+    assert 'sign_up_feature must be of type InputSignUpFeature or None' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdpartyemailpassword.init(
+                    reset_password_using_token_feature='reset password'  # type: ignore
+                )
+            ]
+        )
+    assert 'reset_password_using_token_feature must be of type InputResetPasswordUsingTokenFeature or None' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdpartyemailpassword.init(
+                    email_verification_feature='email verification'  # type: ignore
+                )
+            ]
+        )
+    assert 'email_verification_feature must be of type InputEmailVerificationConfig or None' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdpartyemailpassword.init(
+                    override='override'  # type: ignore
+                )
+            ]
+        )
+    assert 'override must be of type InputOverrideConfig or None' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdpartyemailpassword.init(
+                    providers='providers'  # type: ignore
+                )
+            ]
+        )
+    assert 'providers must be of type List[Provider] or None' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdpartyemailpassword.init(
+                    providers=['providers']  # type: ignore
+                )
+            ]
+        )
+    assert 'providers must be of type List[Provider] or None' == str(ex.value)
