@@ -1,7 +1,7 @@
 import pytest
 from typing import Dict, Any
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.recipe import emailpassword, passwordless
+from supertokens_python.recipe import emailpassword, emailverification, passwordless
 
 
 @pytest.mark.asyncio
@@ -90,8 +90,50 @@ async def test_init_validation_emailpassword():
     assert 'override must be of type InputOverrideConfig or None' == str(ex.value)
 
 
-async def send_text_message(param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
-    print(param)
+async def get_email_for_user_id(user_id: str, _: Dict[str, Any]) -> str:
+    return user_id
+
+
+@pytest.mark.asyncio
+async def test_init_validation_emailverification():
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                emailverification.init('config')  # type: ignore
+            ]
+        )
+    assert 'config must be an instance of ParentRecipeEmailVerificationConfig' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                emailverification.init(
+                    emailverification.ParentRecipeEmailVerificationConfig(
+                        get_email_for_user_id=get_email_for_user_id,
+                        override='override'))  # type: ignore
+            ]
+        )
+    assert 'override must be of type OverrideConfig or None' == str(ex.value)
+
+
+async def send_text_message(_: passwordless.CreateAndSendCustomTextMessageParameters, __: Dict[str, Any]):
+    pass
 
 
 @pytest.mark.asyncio
