@@ -28,8 +28,8 @@ CreateCodePostGeneralErrorResponse = PlessInterfaces.CreateCodePostGeneralErrorR
 CreateNewCodeForDeviceOkResult = PlessInterfaces.CreateNewCodeForDeviceOkResult
 CreateNewCodeForDeviceRestartFlowErrorResult = PlessInterfaces.CreateNewCodeForDeviceRestartFlowErrorResult
 CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult = PlessInterfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult
-DeleteUserInfoOkResult = PlessInterfaces.DeleteUserInfoOkResult
-DeleteUserInfoUnknownUserIdErrorResult = PlessInterfaces.DeleteUserInfoUnknownUserIdErrorResult
+PasswordlessDeleteUserInfoOkResult = PlessInterfaces.DeleteUserInfoOkResult
+PasswordlessDeleteUserInfoUnknownUserIdErrorResult = PlessInterfaces.DeleteUserInfoUnknownUserIdErrorResult
 DeviceType = PlessInterfaces.DeviceType
 PasswordlessEmailExistsGetOkResponse = PlessInterfaces.EmailExistsGetOkResponse
 PasswordlessPhoneNumberExistsGetOkResponse = PlessInterfaces.PhoneNumberExistsGetOkResponse
@@ -38,10 +38,10 @@ ResendCodePostRestartFlowErrorResponse = PlessInterfaces.ResendCodePostRestartFl
 ResendCodePostGeneralErrorResponse = PlessInterfaces.ResendCodePostGeneralErrorResponse
 RevokeAllCodesOkResult = PlessInterfaces.RevokeAllCodesOkResult
 RevokeCodeOkResult = PlessInterfaces.RevokeCodeOkResult
-UpdateUserEmailAlreadyExistsErrorResult = PlessInterfaces.UpdateUserEmailAlreadyExistsErrorResult
-UpdateUserOkResult = PlessInterfaces.UpdateUserOkResult
-UpdateUserPhoneNumberAlreadyExistsErrorResult = PlessInterfaces.UpdateUserPhoneNumberAlreadyExistsErrorResult
-UpdateUserUnknownUserIdErrorResult = PlessInterfaces.UpdateUserUnknownUserIdErrorResult
+PasswordlessUpdateUserEmailAlreadyExistsErrorResult = PlessInterfaces.UpdateUserEmailAlreadyExistsErrorResult
+PasswordlessUpdateUserOkResult = PlessInterfaces.UpdateUserOkResult
+PasswordlessUpdateUserPhoneNumberAlreadyExistsErrorResult = PlessInterfaces.UpdateUserPhoneNumberAlreadyExistsErrorResult
+PasswordlessUpdateUserUnknownUserIdErrorResult = PlessInterfaces.UpdateUserUnknownUserIdErrorResult
 
 AuthorisationUrlGetOkResponse = ThirdPartyInterfaces.AuthorisationUrlGetOkResponse
 ThirdPartySignInUpFieldErrorResult = ThirdPartyInterfaces.SignInUpFieldErrorResult
@@ -108,15 +108,15 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def update_passwordless_user(self, user_id: str,
-                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
+                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[PasswordlessUpdateUserOkResult, PasswordlessUpdateUserUnknownUserIdErrorResult, PasswordlessUpdateUserEmailAlreadyExistsErrorResult, PasswordlessUpdateUserPhoneNumberAlreadyExistsErrorResult]:
         pass
 
     @abstractmethod
-    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdErrorResult]:
         pass
 
     @abstractmethod
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdErrorResult]:
         pass
 
     @abstractmethod
