@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 - Exports re-used Result and Response classes from `thirdparty` & `emailpassword` recipe interfaces in the `thirdpartyemailpassword` recipe interfaces.
+- Exports re-used Result and Response classes from `thirdparty` & `passwordless` recipe interfaces in the `thirdpartypasswordless` recipe interfaces.
 
 ## [0.8.0]
 - Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the email password recipe.
