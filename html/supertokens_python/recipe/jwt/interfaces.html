@@ -42,9 +42,9 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 
-from .utils import JWTConfig
+from supertokens_python.types import APIResponse
 
-from typing_extensions import Literal
+from .utils import JWTConfig
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 
@@ -59,27 +59,17 @@ class JsonWebKey:
         self.use = use
 
 
-class CreateJwtResult(ABC):
-    def __init__(
-            self, status: Literal[&#39;OK&#39;, &#39;UNSUPPORTED_ALGORITHM_ERROR&#39;], jwt: Union[None, str] = None):
-        self.status = status
+class CreateJwtOkResult():
+    def __init__(self, jwt: str):
         self.jwt = jwt
 
 
-class CreateJwtResultOk(CreateJwtResult):
-    def __init__(self, jwt: str):
-        super().__init__(&#39;OK&#39;, jwt)
+class CreateJwtResultUnsupportedAlgorithm():
+    pass
 
 
-class CreateJwtResultUnsupportedAlgorithm(CreateJwtResult):
-    def __init__(self):
-        super().__init__(&#39;UNSUPPORTED_ALGORITHM_ERROR&#39;)
-
-
-class GetJWKSResult(ABC):
-    def __init__(
-            self, status: Literal[&#39;OK&#39;], keys: List[JsonWebKey]):
-        self.status = status
+class GetJWKSResult():
+    def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys
 
 
@@ -88,7 +78,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
 
     @abstractmethod
@@ -106,10 +96,10 @@ class APIOptions:
         self.recipe_implementation = recipe_implementation
 
 
-class JWKSGetResponse:
-    def __init__(
-            self, status: Literal[&#39;OK&#39;], keys: List[JsonWebKey]):
-        self.status = status
+class JWKSGetResponse(APIResponse):
+    status: str = &#39;OK&#39;
+
+    def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys
 
     def to_json(self) -&gt; Dict[str, Any]:
@@ -125,7 +115,7 @@ class JWKSGetResponse:
             })
 
         return {
-            &#39;status&#39;: &#39;OK&#39;,
+            &#39;status&#39;: self.status,
             &#39;keys&#39;: keys
         }
 
@@ -207,99 +197,9 @@ async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) 
         self.recipe_implementation = recipe_implementation</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.jwt.interfaces.CreateJwtResult"><code class="flex name class">
-<span>class <span class="ident">CreateJwtResult</span></span>
-<span>(</span><span>status: Literal['OK', 'UNSUPPORTED_ALGORITHM_ERROR'], jwt: Optional[str] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CreateJwtResult(ABC):
-    def __init__(
-            self, status: Literal[&#39;OK&#39;, &#39;UNSUPPORTED_ALGORITHM_ERROR&#39;], jwt: Union[None, str] = None):
-        self.status = status
-        self.jwt = jwt</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultOk" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtResultOk">CreateJwtResultOk</a></li>
-<li><a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a></li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.jwt.interfaces.CreateJwtResultOk"><code class="flex name class">
-<span>class <span class="ident">CreateJwtResultOk</span></span>
+<dt id="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult"><code class="flex name class">
+<span>class <span class="ident">CreateJwtOkResult</span></span>
 <span>(</span><span>jwt: str)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CreateJwtResultOk(CreateJwtResult):
-    def __init__(self, jwt: str):
-        super().__init__(&#39;OK&#39;, jwt)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResult" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtResult">CreateJwtResult</a></li>
-<li>abc.ABC</li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm"><code class="flex name class">
-<span>class <span class="ident">CreateJwtResultUnsupportedAlgorithm</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CreateJwtResultUnsupportedAlgorithm(CreateJwtResult):
-    def __init__(self):
-        super().__init__(&#39;UNSUPPORTED_ALGORITHM_ERROR&#39;)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResult" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtResult">CreateJwtResult</a></li>
-<li>abc.ABC</li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.jwt.interfaces.GetJWKSResult"><code class="flex name class">
-<span>class <span class="ident">GetJWKSResult</span></span>
-<span>(</span><span>status: Literal['OK'], keys: List[<a title="supertokens_python.recipe.jwt.interfaces.JsonWebKey" href="#supertokens_python.recipe.jwt.interfaces.JsonWebKey">JsonWebKey</a>])</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class GetJWKSResult(ABC):
-    def __init__(
-            self, status: Literal[&#39;OK&#39;], keys: List[JsonWebKey]):
-        self.status = status
-        self.keys = keys</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse"><code class="flex name class">
-<span>class <span class="ident">JWKSGetResponse</span></span>
-<span>(</span><span>status: Literal['OK'], keys: List[<a title="supertokens_python.recipe.jwt.interfaces.JsonWebKey" href="#supertokens_python.recipe.jwt.interfaces.JsonWebKey">JsonWebKey</a>])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -307,10 +207,54 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class JWKSGetResponse:
-    def __init__(
-            self, status: Literal[&#39;OK&#39;], keys: List[JsonWebKey]):
-        self.status = status
+<pre><code class="python">class CreateJwtOkResult():
+    def __init__(self, jwt: str):
+        self.jwt = jwt</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm"><code class="flex name class">
+<span>class <span class="ident">CreateJwtResultUnsupportedAlgorithm</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CreateJwtResultUnsupportedAlgorithm():
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.jwt.interfaces.GetJWKSResult"><code class="flex name class">
+<span>class <span class="ident">GetJWKSResult</span></span>
+<span>(</span><span>keys: List[<a title="supertokens_python.recipe.jwt.interfaces.JsonWebKey" href="#supertokens_python.recipe.jwt.interfaces.JsonWebKey">JsonWebKey</a>])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GetJWKSResult():
+    def __init__(self, keys: List[JsonWebKey]):
+        self.keys = keys</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse"><code class="flex name class">
+<span>class <span class="ident">JWKSGetResponse</span></span>
+<span>(</span><span>keys: List[<a title="supertokens_python.recipe.jwt.interfaces.JsonWebKey" href="#supertokens_python.recipe.jwt.interfaces.JsonWebKey">JsonWebKey</a>])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class JWKSGetResponse(APIResponse):
+    status: str = &#39;OK&#39;
+
+    def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys
 
     def to_json(self) -&gt; Dict[str, Any]:
@@ -326,10 +270,22 @@ inheritance.</p></div>
             })
 
         return {
-            &#39;status&#39;: &#39;OK&#39;,
+            &#39;status&#39;: self.status,
             &#39;keys&#39;: keys
         }</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse.to_json"><code class="name flex">
@@ -354,7 +310,7 @@ inheritance.</p></div>
         })
 
     return {
-        &#39;status&#39;: &#39;OK&#39;,
+        &#39;status&#39;: self.status,
         &#39;keys&#39;: keys
     }</code></pre>
 </details>
@@ -396,7 +352,7 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
 
     @abstractmethod
@@ -414,7 +370,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.jwt.interfaces.RecipeInterface.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: Dict[str, Any], validity_seconds: Optional[int], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResult" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtResult">CreateJwtResult</a></span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: Dict[str, Any], validity_seconds: Optional[int], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -423,7 +379,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
+async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     pass</code></pre>
 </details>
 </dd>
@@ -469,10 +425,7 @@ async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
 <h4><code><a title="supertokens_python.recipe.jwt.interfaces.APIOptions" href="#supertokens_python.recipe.jwt.interfaces.APIOptions">APIOptions</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResult" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtResult">CreateJwtResult</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultOk" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtResultOk">CreateJwtResultOk</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a></code></h4>
@@ -483,6 +436,7 @@ async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
 <li>
 <h4><code><a title="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse" href="#supertokens_python.recipe.jwt.interfaces.JWKSGetResponse">JWKSGetResponse</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse.status" href="#supertokens_python.recipe.jwt.interfaces.JWKSGetResponse.status">status</a></code></li>
 <li><code><a title="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse.to_json" href="#supertokens_python.recipe.jwt.interfaces.JWKSGetResponse.to_json">to_json</a></code></li>
 </ul>
 </li>

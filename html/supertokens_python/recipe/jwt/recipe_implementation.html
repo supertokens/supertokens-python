@@ -48,11 +48,10 @@ from supertokens_python.querier import Querier
 
 if TYPE_CHECKING:
     from .utils import JWTConfig
-    from .interfaces import CreateJwtResult
     from supertokens_python.supertokens import AppInfo
 
 from supertokens_python.recipe.jwt.interfaces import (
-    CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult,
+    CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult,
     RecipeInterface)
 
 from .interfaces import JsonWebKey
@@ -66,7 +65,7 @@ class RecipeImplementation(RecipeInterface):
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
@@ -79,7 +78,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/jwt&#34;), data)
 
         if response[&#39;status&#39;] == &#39;OK&#39;:
-            return CreateJwtResultOk(response[&#39;jwt&#39;])
+            return CreateJwtOkResult(response[&#39;jwt&#39;])
         return CreateJwtResultUnsupportedAlgorithm()
 
     async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
@@ -95,7 +94,7 @@ class RecipeImplementation(RecipeInterface):
                 key[&#39;alg&#39;],
                 key[&#39;use&#39;]
             ))
-        return GetJWKSResult(response[&#39;status&#39;], keys)</code></pre>
+        return GetJWKSResult(keys)</code></pre>
 </details>
 </section>
 <section>
@@ -126,7 +125,7 @@ inheritance.</p></div>
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
@@ -139,7 +138,7 @@ inheritance.</p></div>
         response = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/jwt&#34;), data)
 
         if response[&#39;status&#39;] == &#39;OK&#39;:
-            return CreateJwtResultOk(response[&#39;jwt&#39;])
+            return CreateJwtOkResult(response[&#39;jwt&#39;])
         return CreateJwtResultUnsupportedAlgorithm()
 
     async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
@@ -155,7 +154,7 @@ inheritance.</p></div>
                 key[&#39;alg&#39;],
                 key[&#39;use&#39;]
             ))
-        return GetJWKSResult(response[&#39;status&#39;], keys)</code></pre>
+        return GetJWKSResult(keys)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -165,7 +164,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.jwt.recipe_implementation.RecipeImplementation.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) ‑> CreateJwtResult</span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -173,7 +172,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; CreateJwtResult:
+<pre><code class="python">async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if validity_seconds is None:
         validity_seconds = self.config.jwt_validity_seconds
 
@@ -186,7 +185,7 @@ inheritance.</p></div>
     response = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/jwt&#34;), data)
 
     if response[&#39;status&#39;] == &#39;OK&#39;:
-        return CreateJwtResultOk(response[&#39;jwt&#39;])
+        return CreateJwtOkResult(response[&#39;jwt&#39;])
     return CreateJwtResultUnsupportedAlgorithm()</code></pre>
 </details>
 </dd>
@@ -212,7 +211,7 @@ inheritance.</p></div>
             key[&#39;alg&#39;],
             key[&#39;use&#39;]
         ))
-    return GetJWKSResult(response[&#39;status&#39;], keys)</code></pre>
+    return GetJWKSResult(keys)</code></pre>
 </details>
 </dd>
 </dl>

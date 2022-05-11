@@ -285,7 +285,7 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
         &#39;sessionHandle&#39;: session_handle
     })
     if response[&#39;status&#39;] == &#39;OK&#39;:
-        return SessionInformationResult(&#39;OK&#39;, response[&#39;sessionHandle&#39;], response[&#39;userId&#39;], response[&#39;userDataInDatabase&#39;], response[&#39;expiry&#39;], response[&#39;userDataInJWT&#39;], response[&#39;timeCreated&#39;])
+        return SessionInformationResult(response[&#39;sessionHandle&#39;], response[&#39;userId&#39;], response[&#39;userDataInDatabase&#39;], response[&#39;expiry&#39;], response[&#39;userDataInJWT&#39;], response[&#39;timeCreated&#39;])
     raise_unauthorised_exception(response[&#39;message&#39;])</code></pre>
 </details>
 </section>
@@ -485,7 +485,7 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
         &#39;sessionHandle&#39;: session_handle
     })
     if response[&#39;status&#39;] == &#39;OK&#39;:
-        return SessionInformationResult(&#39;OK&#39;, response[&#39;sessionHandle&#39;], response[&#39;userId&#39;], response[&#39;userDataInDatabase&#39;], response[&#39;expiry&#39;], response[&#39;userDataInJWT&#39;], response[&#39;timeCreated&#39;])
+        return SessionInformationResult(response[&#39;sessionHandle&#39;], response[&#39;userId&#39;], response[&#39;userDataInDatabase&#39;], response[&#39;expiry&#39;], response[&#39;userDataInJWT&#39;], response[&#39;timeCreated&#39;])
     raise_unauthorised_exception(response[&#39;message&#39;])</code></pre>
 </details>
 </dd>

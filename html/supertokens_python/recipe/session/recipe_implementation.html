@@ -67,7 +67,6 @@ if TYPE_CHECKING:
 
     from supertokens_python.querier import Querier
 
-    from .interfaces import RegenerateAccessTokenResult
     from .utils import SessionConfig
 
 from .interfaces import SessionContainer
@@ -267,7 +266,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def regenerate_access_token(self,
                                       access_token: str,
-                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenResult:
+                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenOkResult:
         if new_access_token_payload is None:
             new_access_token_payload = {}
         response: Dict[str, Any] = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/session/regenerate&#34;), {
@@ -546,7 +545,7 @@ inheritance.</p></div>
 
     async def regenerate_access_token(self,
                                       access_token: str,
-                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenResult:
+                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenOkResult:
         if new_access_token_payload is None:
             new_access_token_payload = {}
         response: Dict[str, Any] = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/session/regenerate&#34;), {
@@ -786,7 +785,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.regenerate_access_token"><code class="name flex">
-<span>async def <span class="ident">regenerate_access_token</span></span>(<span>self, access_token: str, new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) ‑> RegenerateAccessTokenResult</span>
+<span>async def <span class="ident">regenerate_access_token</span></span>(<span>self, access_token: str, new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) ‑> RegenerateAccessTokenOkResult</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -796,7 +795,7 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">async def regenerate_access_token(self,
                                   access_token: str,
-                                  new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenResult:
+                                  new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenOkResult:
     if new_access_token_payload is None:
         new_access_token_payload = {}
     response: Dict[str, Any] = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/session/regenerate&#34;), {

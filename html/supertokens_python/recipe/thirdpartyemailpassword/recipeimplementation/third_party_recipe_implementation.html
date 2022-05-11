@@ -43,12 +43,13 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Union
 
-from supertokens_python.recipe.thirdparty.interfaces import (RecipeInterface,
-                                                             SignInUpOkResult,
-                                                             SignInUpResult)
+from supertokens_python.recipe.thirdparty.interfaces import (
+    RecipeInterface, SignInUpFieldError, SignInUpOkResult)
 from supertokens_python.recipe.thirdparty.types import User
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
     RecipeInterface as ThirdPartyEmailPasswordRecipeInterface
+
+from ..interfaces import ThirdPartySignInUpOkResult
 
 
 class RecipeImplementation(RecipeInterface):
@@ -83,20 +84,17 @@ class RecipeImplementation(RecipeInterface):
         return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpResult:
+                         email_verified: bool, user_context: Dict[str, Any]) -&gt; Union[SignInUpOkResult, SignInUpFieldError]:
         result = await self.recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
+        if isinstance(result, ThirdPartySignInUpOkResult):
+            if result.user.third_party_info is None:
+                raise Exception(&#34;Third party info cannot be None&#34;)
 
-        if not result.is_ok:
-            return result
-
-        if result.user is None:
-            raise Exception(&#34;Should never come here&#34;)
-
-        if result.user.third_party_info is None or result.created_new_user is None:
-            raise Exception(&#34;Should never come here&#34;)
-
-        return SignInUpOkResult(
-            created_new_user=result.created_new_user, user=result.user)</code></pre>
+            return SignInUpOkResult(
+                User(result.user.user_id, result.user.email, result.user.time_joined, result.user.third_party_info),
+                result.created_new_user
+            )
+        return result</code></pre>
 </details>
 </section>
 <section>
@@ -151,20 +149,17 @@ inheritance.</p></div>
         return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpResult:
+                         email_verified: bool, user_context: Dict[str, Any]) -&gt; Union[SignInUpOkResult, SignInUpFieldError]:
         result = await self.recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
+        if isinstance(result, ThirdPartySignInUpOkResult):
+            if result.user.third_party_info is None:
+                raise Exception(&#34;Third party info cannot be None&#34;)
 
-        if not result.is_ok:
-            return result
-
-        if result.user is None:
-            raise Exception(&#34;Should never come here&#34;)
-
-        if result.user.third_party_info is None or result.created_new_user is None:
-            raise Exception(&#34;Should never come here&#34;)
-
-        return SignInUpOkResult(
-            created_new_user=result.created_new_user, user=result.user)</code></pre>
+            return SignInUpOkResult(
+                User(result.user.user_id, result.user.email, result.user.time_joined, result.user.third_party_info),
+                result.created_new_user
+            )
+        return result</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -228,7 +223,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.sign_in_up"><code class="name flex">
-<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpResult">SignInUpResult</a></span>
+<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpFieldError" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpFieldError">SignInUpFieldError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -237,20 +232,17 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                     email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpResult:
+                     email_verified: bool, user_context: Dict[str, Any]) -&gt; Union[SignInUpOkResult, SignInUpFieldError]:
     result = await self.recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
+    if isinstance(result, ThirdPartySignInUpOkResult):
+        if result.user.third_party_info is None:
+            raise Exception(&#34;Third party info cannot be None&#34;)
 
-    if not result.is_ok:
-        return result
-
-    if result.user is None:
-        raise Exception(&#34;Should never come here&#34;)
-
-    if result.user.third_party_info is None or result.created_new_user is None:
-        raise Exception(&#34;Should never come here&#34;)
-
-    return SignInUpOkResult(
-        created_new_user=result.created_new_user, user=result.user)</code></pre>
+        return SignInUpOkResult(
+            User(result.user.user_id, result.user.email, result.user.time_joined, result.user.third_party_info),
+            result.created_new_user
+        )
+    return result</code></pre>
 </details>
 </dd>
 </dl>
