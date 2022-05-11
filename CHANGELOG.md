@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed `third_party_info` from emailpassword `User` class.
 - Exports re-used Result and Response classes from `thirdparty` & `emailpassword` recipe interfaces in the `thirdpartyemailpassword` recipe interfaces.
 - Exports re-used Result and Response classes from `thirdparty` & `passwordless` recipe interfaces in the `thirdpartypasswordless` recipe interfaces.
+- Renames `*ErrorResult` classes to `*Error`.
+- Renames `*ErrorResponse` classes to `*Error`.
+- Renames `*OkResponse` classes to `*OkResult`.
+- Renames `*ResultOk` classes to `*OkResult`.
 
 ## [0.7.2] - 2022-05-08
 - Bug fix in telemetry data API
