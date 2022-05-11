@@ -103,7 +103,7 @@ def get_user_by_phone_number(
 
 
 def update_passwordless_user(user_id: str, email: Union[str, None] = None,
-                             phone_number: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None) -> Union[interfaces.UpdateUserOkResult, interfaces.UpdateUserUnknownUserIdErrorResult, interfaces.UpdateUserEmailAlreadyExistsErrorResult, interfaces.UpdateUserPhoneNumberAlreadyExistsErrorResult]:
+                             phone_number: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None) -> Union[interfaces.PasswordlessUpdateUserOkResult, interfaces.PasswordlessUpdateUserUnknownUserIdErrorResult, interfaces.PasswordlessUpdateUserEmailAlreadyExistsErrorResult, interfaces.PasswordlessUpdateUserPhoneNumberAlreadyExistsErrorResult]:
     return sync(asyncio.update_passwordless_user(user_id=user_id, email=email,
                                                  phone_number=phone_number, user_context=user_context))
 

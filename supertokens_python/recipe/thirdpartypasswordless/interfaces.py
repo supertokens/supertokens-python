@@ -4,37 +4,50 @@ from supertokens_python.recipe.session import SessionContainer
 
 from supertokens_python.recipe.thirdparty import \
     interfaces as ThirdPartyInterfaces
-from supertokens_python.recipe.thirdparty.interfaces import (
-    AuthorisationUrlGetOkResponse, SignInUpFieldErrorResult, SignInUpOkResult,
-    SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse,
-    SignInUpPostFieldErrorResponse)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.types import APIResponse
 
 from ..passwordless import interfaces as PlessInterfaces
-from ..passwordless.interfaces import (
-    ConsumeCodePostRestartFlowErrorResponse,
-    ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse,
-    ConsumeCodePostExpiredUserInputCodeErrorResponse,
-    ConsumeCodeExpiredUserInputCodeErrorResult,
-    ConsumeCodeIncorrectUserInputCodeErrorResult,
-    ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
-    CreateCodePostOkResponse, CreateCodePostGeneralErrorResponse,
-    CreateNewCodeForDeviceOkResult,
-    CreateNewCodeForDeviceRestartFlowErrorResult,
-    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
-    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
-    DeviceType, EmailExistsGetOkResponse, PhoneNumberExistsGetOkResponse,
-    ResendCodePostOkResponse, ResendCodePostRestartFlowErrorResponse,
-    ResendCodePostGeneralErrorResponse,
-    RevokeAllCodesOkResult, RevokeCodeOkResult,
-    UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
-    UpdateUserPhoneNumberAlreadyExistsErrorResult,
-    UpdateUserUnknownUserIdErrorResult)
+
 from .types import User
 
+# Export re-used classes
 ThirdPartyAPIOptions = ThirdPartyInterfaces.APIOptions
 PasswordlessAPIOptions = PlessInterfaces.APIOptions
+
+ConsumeCodePostRestartFlowErrorResponse = PlessInterfaces.ConsumeCodePostRestartFlowErrorResponse
+ConsumeCodePostGeneralErrorResponse = PlessInterfaces.ConsumeCodePostGeneralErrorResponse
+ConsumeCodePostIncorrectUserInputCodeErrorResponse = PlessInterfaces.ConsumeCodePostIncorrectUserInputCodeErrorResponse
+ConsumeCodePostExpiredUserInputCodeErrorResponse = PlessInterfaces.ConsumeCodePostExpiredUserInputCodeErrorResponse
+ConsumeCodeExpiredUserInputCodeErrorResult = PlessInterfaces.ConsumeCodeExpiredUserInputCodeErrorResult
+ConsumeCodeIncorrectUserInputCodeErrorResult = PlessInterfaces.ConsumeCodeIncorrectUserInputCodeErrorResult
+ConsumeCodeRestartFlowErrorResult = PlessInterfaces.ConsumeCodeRestartFlowErrorResult
+CreateCodeOkResult = PlessInterfaces.CreateCodeOkResult
+CreateCodePostOkResponse = PlessInterfaces.CreateCodePostOkResponse
+CreateCodePostGeneralErrorResponse = PlessInterfaces.CreateCodePostGeneralErrorResponse
+CreateNewCodeForDeviceOkResult = PlessInterfaces.CreateNewCodeForDeviceOkResult
+CreateNewCodeForDeviceRestartFlowErrorResult = PlessInterfaces.CreateNewCodeForDeviceRestartFlowErrorResult
+CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult = PlessInterfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult
+PasswordlessDeleteUserInfoOkResult = PlessInterfaces.DeleteUserInfoOkResult
+PasswordlessDeleteUserInfoUnknownUserIdErrorResult = PlessInterfaces.DeleteUserInfoUnknownUserIdErrorResult
+DeviceType = PlessInterfaces.DeviceType
+PasswordlessEmailExistsGetOkResponse = PlessInterfaces.EmailExistsGetOkResponse
+PasswordlessPhoneNumberExistsGetOkResponse = PlessInterfaces.PhoneNumberExistsGetOkResponse
+ResendCodePostOkResponse = PlessInterfaces.ResendCodePostOkResponse
+ResendCodePostRestartFlowErrorResponse = PlessInterfaces.ResendCodePostRestartFlowErrorResponse
+ResendCodePostGeneralErrorResponse = PlessInterfaces.ResendCodePostGeneralErrorResponse
+RevokeAllCodesOkResult = PlessInterfaces.RevokeAllCodesOkResult
+RevokeCodeOkResult = PlessInterfaces.RevokeCodeOkResult
+PasswordlessUpdateUserEmailAlreadyExistsErrorResult = PlessInterfaces.UpdateUserEmailAlreadyExistsErrorResult
+PasswordlessUpdateUserOkResult = PlessInterfaces.UpdateUserOkResult
+PasswordlessUpdateUserPhoneNumberAlreadyExistsErrorResult = PlessInterfaces.UpdateUserPhoneNumberAlreadyExistsErrorResult
+PasswordlessUpdateUserUnknownUserIdErrorResult = PlessInterfaces.UpdateUserUnknownUserIdErrorResult
+
+AuthorisationUrlGetOkResponse = ThirdPartyInterfaces.AuthorisationUrlGetOkResponse
+ThirdPartySignInUpFieldErrorResult = ThirdPartyInterfaces.SignInUpFieldErrorResult
+ThirdPartySignInUpOkResult = ThirdPartyInterfaces.SignInUpOkResult
+ThirdPartySignInUpPostNoEmailGivenByProviderResponse = ThirdPartyInterfaces.SignInUpPostNoEmailGivenByProviderResponse
+ThirdPartySignInUpPostFieldErrorResponse = ThirdPartyInterfaces.SignInUpPostFieldErrorResponse
 
 
 class ConsumeCodeOkResult():
@@ -66,7 +79,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, ThirdPartySignInUpFieldErrorResult]:
         pass
 
     @abstractmethod
@@ -95,15 +108,15 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def update_passwordless_user(self, user_id: str,
-                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
+                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[PasswordlessUpdateUserOkResult, PasswordlessUpdateUserUnknownUserIdErrorResult, PasswordlessUpdateUserEmailAlreadyExistsErrorResult, PasswordlessUpdateUserPhoneNumberAlreadyExistsErrorResult]:
         pass
 
     @abstractmethod
-    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdErrorResult]:
         pass
 
     @abstractmethod
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdErrorResult]:
         pass
 
     @abstractmethod
@@ -163,6 +176,36 @@ class ConsumeCodePostOkResponse(APIResponse):
         }
 
 
+class ThirdPartySignInUpPostOkResponse(APIResponse):
+    status: str = 'OK'
+
+    def __init__(self, user: User, created_new_user: bool,
+                 auth_code_response: Dict[str, Any],
+                 session: SessionContainer):
+        self.user = user
+        self.created_new_user = created_new_user
+        self.auth_code_response = auth_code_response
+        self.session = session
+
+    def to_json(self) -> Dict[str, Any]:
+        if self.user.third_party_info is None:
+            raise ValueError('Third Party Info cannot be None')
+
+        return {
+            'status': self.status,
+            'user': {
+                'id': self.user.user_id,
+                'email': self.user.email,
+                'timeJoined': self.user.time_joined,
+                'thirdParty': {
+                    'id': self.user.third_party_info.id,
+                    'userId': self.user.third_party_info.user_id
+                }
+            },
+            'createdNewUser': self.created_new_user
+        }
+
+
 class APIInterface(ABC):
     def __init__(self):
         self.disable_thirdparty_sign_in_up_post = False
@@ -181,7 +224,7 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
+                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResponse, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, ThirdPartySignInUpPostFieldErrorResponse]:
         pass
 
     @abstractmethod
@@ -219,12 +262,12 @@ class APIInterface(ABC):
     async def passwordless_user_email_exists_get(self,
                                                  email: str,
                                                  api_options: PasswordlessAPIOptions,
-                                                 user_context: Dict[str, Any]) -> EmailExistsGetOkResponse:
+                                                 user_context: Dict[str, Any]) -> PasswordlessEmailExistsGetOkResponse:
         pass
 
     @abstractmethod
     async def passwordless_user_phone_number_exists_get(self,
                                                         phone_number: str,
                                                         api_options: PasswordlessAPIOptions,
-                                                        user_context: Dict[str, Any]) -> PhoneNumberExistsGetOkResponse:
+                                                        user_context: Dict[str, Any]) -> PasswordlessPhoneNumberExistsGetOkResponse:
         pass
