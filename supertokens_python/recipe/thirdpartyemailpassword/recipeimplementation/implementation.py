@@ -35,14 +35,14 @@ from ..interfaces import (
     CreateResetPasswordWrongUserIdErrorResult,
     ResetPasswordUsingTokenOkResult,
     ResetPasswordUsingTokenInvalidTokenErrorResult,
-    SignInWrongCredentialsErrorResult,
-    SignUpEmailAlreadyExistsErrorResult,
+    EmailPasswordSignInWrongCredentialsErrorResult,
+    EmailPasswordSignUpEmailAlreadyExistsErrorResult,
     UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
     UpdateEmailOrPasswordOkResult,
     UpdateEmailOrPasswordUnknownUserIdErrorResult,
 
     ThirdPartySignInUpOkResult,
-    SignInUpFieldErrorResult)
+    ThirdPartySignInUpFieldErrorResult)
 from ..types import User
 from .email_password_recipe_implementation import \
     RecipeImplementation as DerivedEmailPasswordImplementation
@@ -134,7 +134,7 @@ class RecipeImplementation(RecipeInterface):
         return User(user_id=tp_user.user_id, email=tp_user.email, time_joined=tp_user.time_joined, third_party_info=tp_user.third_party_info)
 
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, SignInUpFieldErrorResult]:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, ThirdPartySignInUpFieldErrorResult]:
         if self.tp_sign_in_up is None:
             raise Exception("No thirdparty provider configured")
         result = await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
@@ -145,14 +145,14 @@ class RecipeImplementation(RecipeInterface):
             )
         return result
 
-    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInOkResult, SignInWrongCredentialsErrorResult]:
+    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInOkResult, EmailPasswordSignInWrongCredentialsErrorResult]:
         result = await self.ep_sign_in(email, password, user_context)
         if isinstance(result, EPInterfaces.SignInOkResult):
             return EmailPasswordSignInOkResult(
                 User(result.user.user_id, result.user.email, result.user.time_joined, None))
         return result
 
-    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
+    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpOkResult, EmailPasswordSignUpEmailAlreadyExistsErrorResult]:
         result = await self.ep_sign_up(email, password, user_context)
         if isinstance(result, EPInterfaces.SignUpOkResult):
             return EmailPasswordSignUpOkResult(

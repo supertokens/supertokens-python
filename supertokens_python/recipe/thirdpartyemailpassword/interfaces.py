@@ -18,24 +18,24 @@ EmailPasswordAPIOptions = EPInterfaces.APIOptions
 # Exporting re-used classes
 CreateResetPasswordOkResult = EPInterfaces.CreateResetPasswordOkResult
 CreateResetPasswordWrongUserIdErrorResult = EPInterfaces.CreateResetPasswordWrongUserIdErrorResult
-EmailExistsGetOkResponse = EPInterfaces.EmailExistsGetOkResponse
+EmailPasswordEmailExistsGetOkResponse = EPInterfaces.EmailExistsGetOkResponse
 GeneratePasswordResetTokenPostOkResponse = EPInterfaces.GeneratePasswordResetTokenPostOkResponse
 PasswordResetPostInvalidTokenResponse = EPInterfaces.PasswordResetPostInvalidTokenResponse
 PasswordResetPostOkResponse = EPInterfaces.PasswordResetPostOkResponse
 ResetPasswordUsingTokenInvalidTokenErrorResult = EPInterfaces.ResetPasswordUsingTokenInvalidTokenErrorResult
 ResetPasswordUsingTokenOkResult = EPInterfaces.ResetPasswordUsingTokenOkResult
-SignInPostWrongCredentialsErrorResponse = EPInterfaces.SignInPostWrongCredentialsErrorResponse
-SignInWrongCredentialsErrorResult = EPInterfaces.SignInWrongCredentialsErrorResult
-SignUpEmailAlreadyExistsErrorResult = EPInterfaces.SignUpEmailAlreadyExistsErrorResult
-SignUpPostEmailAlreadyExistsErrorResponse = EPInterfaces.SignUpPostEmailAlreadyExistsErrorResponse
+EmailPasswordSignInPostWrongCredentialsErrorResponse = EPInterfaces.SignInPostWrongCredentialsErrorResponse
+EmailPasswordSignInWrongCredentialsErrorResult = EPInterfaces.SignInWrongCredentialsErrorResult
+EmailPasswordSignUpEmailAlreadyExistsErrorResult = EPInterfaces.SignUpEmailAlreadyExistsErrorResult
+EmailPasswordSignUpPostEmailAlreadyExistsErrorResponse = EPInterfaces.SignUpPostEmailAlreadyExistsErrorResponse
 UpdateEmailOrPasswordEmailAlreadyExistsErrorResult = EPInterfaces.UpdateEmailOrPasswordEmailAlreadyExistsErrorResult
 UpdateEmailOrPasswordOkResult = EPInterfaces.UpdateEmailOrPasswordOkResult
 UpdateEmailOrPasswordUnknownUserIdErrorResult = EPInterfaces.UpdateEmailOrPasswordUnknownUserIdErrorResult
 
 AuthorisationUrlGetOkResponse = ThirdPartyInterfaces.AuthorisationUrlGetOkResponse
-SignInUpFieldErrorResult = ThirdPartyInterfaces.SignInUpFieldErrorResult
-SignInUpPostNoEmailGivenByProviderResponse = ThirdPartyInterfaces.SignInUpPostNoEmailGivenByProviderResponse
-SignInUpPostFieldErrorResponse = ThirdPartyInterfaces.SignInUpPostFieldErrorResponse
+ThirdPartySignInUpFieldErrorResult = ThirdPartyInterfaces.SignInUpFieldErrorResult
+ThirdPartySignInUpPostNoEmailGivenByProviderResponse = ThirdPartyInterfaces.SignInUpPostNoEmailGivenByProviderResponse
+ThirdPartySignInUpPostFieldErrorResponse = ThirdPartyInterfaces.SignInUpPostFieldErrorResponse
 
 
 class ThirdPartySignInUpOkResult():
@@ -73,15 +73,15 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, SignInUpFieldErrorResult]:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, ThirdPartySignInUpFieldErrorResult]:
         pass
 
     @abstractmethod
-    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInOkResult, SignInWrongCredentialsErrorResult]:
+    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInOkResult, EmailPasswordSignInWrongCredentialsErrorResult]:
         pass
 
     @abstractmethod
-    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
+    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpOkResult, EmailPasswordSignUpEmailAlreadyExistsErrorResult]:
         pass
 
     @abstractmethod
@@ -182,21 +182,21 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
+                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResponse, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, ThirdPartySignInUpPostFieldErrorResponse]:
         pass
 
     @abstractmethod
     async def emailpassword_sign_in_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInPostOkResponse, SignInPostWrongCredentialsErrorResponse]:
+                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInPostOkResponse, EmailPasswordSignInPostWrongCredentialsErrorResponse]:
         pass
 
     @abstractmethod
     async def emailpassword_sign_up_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpPostOkResponse, SignUpPostEmailAlreadyExistsErrorResponse]:
+                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpPostOkResponse, EmailPasswordSignUpPostEmailAlreadyExistsErrorResponse]:
         pass
 
     @abstractmethod
-    async def emailpassword_email_exists_get(self, email: str, api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> EmailExistsGetOkResponse:
+    async def emailpassword_email_exists_get(self, email: str, api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> EmailPasswordEmailExistsGetOkResponse:
         pass
 
     @abstractmethod
