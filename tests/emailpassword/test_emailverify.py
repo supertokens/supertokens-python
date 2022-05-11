@@ -29,7 +29,8 @@ from supertokens_python.recipe.emailpassword.asyncio import (
     revoke_email_verification_token, unverify_email, verify_email_using_token)
 from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.emailverification.interfaces import (
-    APIInterface, APIOptions)
+    APIInterface, APIOptions, CreateEmailVerificationTokenOkResult,
+    EmailVerifyPostOkResult, VerifyEmailUsingTokenInvalidTokenError)
 from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.emailverification.utils import OverrideConfig
 from supertokens_python.recipe.session import SessionContainer
@@ -166,15 +167,16 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
     cookies = extract_all_cookies(response_1)
 
     verify_token = await create_email_verification_token(user_id)
-    if verify_token.token is None:
-        raise Exception("Should never come here")
-    await verify_email_using_token(verify_token.token)
+    if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
+        await verify_email_using_token(verify_token.token)
 
-    response = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
-                                          cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
-                                          user_id)
-    dict_response = json.loads(response.text)
-    assert dict_response["status"] == "EMAIL_ALREADY_VERIFIED_ERROR"
+        response = email_verify_token_request(driver_config_client, cookies['sAccessToken']['value'],
+                                              cookies['sIdRefreshToken']['value'], response_1.headers.get('anti-csrf'),  # type: ignore
+                                              user_id)
+        dict_response = json.loads(response.text)
+        assert dict_response["status"] == "EMAIL_ALREADY_VERIFIED_ERROR"
+        return
+    raise Exception("Test failed")
 
 
 @mark.asyncio
@@ -551,7 +553,7 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
 
             response = await temp(token, api_options, user_context)
 
-            if response.status == "OK":
+            if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
 
             return response
@@ -752,7 +754,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
 
             response = await temp(token, api_options, user_context)
 
-            if response.status == "OK":
+            if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
 
             return response
@@ -844,7 +846,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
 
             response = await temp(token, api_options, user_context)
 
-            if response.status == "OK":
+            if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
 
             raise BadInputError("verify exception")
@@ -950,10 +952,11 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     verify_token = await create_email_verification_token(user_id)
     await revoke_email_verification_token(user_id)
 
-    if verify_token.token is None:
-        raise Exception("Should never come here")
-    response = await verify_email_using_token(verify_token.token)
-    assert response.status == "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
+    if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
+        response = await verify_email_using_token(verify_token.token)
+        assert isinstance(response, VerifyEmailUsingTokenInvalidTokenError)
+        return
+    raise Exception("Test failed")
 
 
 @mark.asyncio
@@ -986,13 +989,14 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     user_id = dict_response["user"]["id"]
 
     verify_token = await create_email_verification_token(user_id)
-    if verify_token.token is None:
-        raise Exception("Should never come here")
-    await verify_email_using_token(verify_token.token)
+    if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
+        await verify_email_using_token(verify_token.token)
 
-    assert await is_email_verified(user_id)
+        assert await is_email_verified(user_id)
 
-    await unverify_email(user_id)
+        await unverify_email(user_id)
 
-    is_verified = await is_email_verified(user_id)
-    assert is_verified is False
+        is_verified = await is_email_verified(user_id)
+        assert is_verified is False
+        return
+    raise Exception("Test failed")

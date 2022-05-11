@@ -30,14 +30,14 @@ class RecipeImplementation(RecipeInterface):
     async def get_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -> MetadataResult:
         params = {"userId": user_id}
         response = await self.querier.send_get_request(NormalisedURLPath("/recipe/user/metadata"), params)
-        return MetadataResult(status=response['status'], metadata=response['metadata'])
+        return MetadataResult(metadata=response['metadata'])
 
     async def update_user_metadata(self, user_id: str, metadata_update: Dict[str, Any], user_context: Dict[str, Any]) -> MetadataResult:
         params = {"userId": user_id, "metadataUpdate": metadata_update}
         response = await self.querier.send_put_request(NormalisedURLPath("/recipe/user/metadata"), params)
-        return MetadataResult(status=response['status'], metadata=response['metadata'])
+        return MetadataResult(metadata=response['metadata'])
 
     async def clear_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -> ClearUserMetadataResult:
         params = {"userId": user_id}
-        response = await self.querier.send_post_request(NormalisedURLPath("/recipe/user/metadata/remove"), params)
-        return ClearUserMetadataResult(status=response['status'])
+        await self.querier.send_post_request(NormalisedURLPath("/recipe/user/metadata/remove"), params)
+        return ClearUserMetadataResult()

@@ -14,19 +14,18 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Union
 
+from supertokens_python.types import APIResponse
+
 from .utils import OpenIdConfig
 
-from typing_extensions import Literal
-
 from supertokens_python.framework import BaseRequest, BaseResponse
-from supertokens_python.recipe.jwt.interfaces import (CreateJwtResult,
+from supertokens_python.recipe.jwt.interfaces import (CreateJwtOkResult,
+                                                      CreateJwtResultUnsupportedAlgorithm,
                                                       GetJWKSResult)
 
 
-class GetOpenIdDiscoveryConfigurationResult(ABC):
-    def __init__(
-            self, status: Literal['OK'], issuer: str, jwks_uri: str):
-        self.status = status
+class GetOpenIdDiscoveryConfigurationResult():
+    def __init__(self, issuer: str, jwks_uri: str):
         self.issuer = issuer
         self.jwks_uri = jwks_uri
 
@@ -36,7 +35,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
 
     @abstractmethod
@@ -58,10 +57,10 @@ class APIOptions:
         self.recipe_implementation = recipe_implementation
 
 
-class OpenIdDiscoveryConfigurationGetResponse:
-    def __init__(
-            self, status: Literal['OK'], issuer: str, jwks_uri: str):
-        self.status = status
+class OpenIdDiscoveryConfigurationGetResponse(APIResponse):
+    status: str = 'OK'
+
+    def __init__(self, issuer: str, jwks_uri: str):
         self.issuer = issuer
         self.jwks_uri = jwks_uri
 

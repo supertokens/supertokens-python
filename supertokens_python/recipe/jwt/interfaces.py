@@ -14,9 +14,9 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 
-from .utils import JWTConfig
+from supertokens_python.types import APIResponse
 
-from typing_extensions import Literal
+from .utils import JWTConfig
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 
@@ -31,27 +31,17 @@ class JsonWebKey:
         self.use = use
 
 
-class CreateJwtResult(ABC):
-    def __init__(
-            self, status: Literal['OK', 'UNSUPPORTED_ALGORITHM_ERROR'], jwt: Union[None, str] = None):
-        self.status = status
+class CreateJwtOkResult():
+    def __init__(self, jwt: str):
         self.jwt = jwt
 
 
-class CreateJwtResultOk(CreateJwtResult):
-    def __init__(self, jwt: str):
-        super().__init__('OK', jwt)
+class CreateJwtResultUnsupportedAlgorithm():
+    pass
 
 
-class CreateJwtResultUnsupportedAlgorithm(CreateJwtResult):
-    def __init__(self):
-        super().__init__('UNSUPPORTED_ALGORITHM_ERROR')
-
-
-class GetJWKSResult(ABC):
-    def __init__(
-            self, status: Literal['OK'], keys: List[JsonWebKey]):
-        self.status = status
+class GetJWKSResult():
+    def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys
 
 
@@ -60,7 +50,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> CreateJwtResult:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
 
     @abstractmethod
@@ -78,10 +68,10 @@ class APIOptions:
         self.recipe_implementation = recipe_implementation
 
 
-class JWKSGetResponse:
-    def __init__(
-            self, status: Literal['OK'], keys: List[JsonWebKey]):
-        self.status = status
+class JWKSGetResponse(APIResponse):
+    status: str = 'OK'
+
+    def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys
 
     def to_json(self) -> Dict[str, Any]:
@@ -97,7 +87,7 @@ class JWKSGetResponse:
             })
 
         return {
-            'status': 'OK',
+            'status': self.status,
             'keys': keys
         }
 

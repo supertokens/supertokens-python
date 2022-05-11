@@ -11,7 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import List, Union
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Union
 
 
 class ThirdPartyInfo:
@@ -35,3 +36,9 @@ class UsersResponse:
                  next_pagination_token: Union[str, None]):
         self.users: List[User] = users
         self.next_pagination_token: Union[str, None] = next_pagination_token
+
+
+class APIResponse(ABC):
+    @abstractmethod
+    def to_json(self) -> Dict[str, Any]:
+        pass
