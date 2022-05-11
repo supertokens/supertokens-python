@@ -20,7 +20,7 @@ from pytest import mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.asyncio import create_jwt
-from supertokens_python.recipe.jwt.interfaces import CreateJwtResultOk
+from supertokens_python.recipe.jwt.interfaces import CreateJwtOkResult
 from supertokens_python.utils import utf_base64decode
 from tests.utils import clean_st, reset, setup_st, start_st
 
@@ -100,7 +100,7 @@ async def test_that_returned_JWT_uses_100_years_for_expiry_for_default_config():
 
     time_rn = time.time()
     result = await create_jwt({})
-    assert isinstance(result, CreateJwtResultOk)
+    assert isinstance(result, CreateJwtOkResult)
     jwt_value = result.jwt.split(".")[1]
     decoded_jwt_value = utf_base64decode(jwt_value)
 
@@ -133,7 +133,7 @@ async def test_that_jwt_validity_is_same_as_validity_set_in_config():
     time_rn = time.time()
 
     result = await create_jwt({})
-    assert isinstance(result, CreateJwtResultOk)
+    assert isinstance(result, CreateJwtOkResult)
     jwt_value = result.jwt.split(".")[1]
     decoded_jwt_value = utf_base64decode(jwt_value)
 
@@ -167,7 +167,7 @@ async def test_that_jwt_validity_is_same_as_validity_passed_in_createJWT_functio
     target_expiry_duration = 500
 
     result = await create_jwt({}, target_expiry_duration)
-    assert isinstance(result, CreateJwtResultOk)
+    assert isinstance(result, CreateJwtOkResult)
     jwt_value = result.jwt.split(".")[1]
     decoded_jwt_value = utf_base64decode(jwt_value)
 

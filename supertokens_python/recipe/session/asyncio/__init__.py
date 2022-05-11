@@ -20,7 +20,7 @@ from supertokens_python.recipe.session.interfaces import (
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.utils import FRAMEWORKS
 
-from ...jwt.interfaces import CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult
+from ...jwt.interfaces import CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult
 
 
 async def create_new_session(request: Any, user_id: str, access_token_payload: Union[Dict[str, Any], None] = None, session_data: Union[Dict[str, Any], None] = None, user_context: Union[None, Dict[str, Any]] = None) -> SessionContainer:
@@ -92,7 +92,7 @@ async def update_access_token_payload(session_handle: str, new_access_token_payl
     return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(session_handle, new_access_token_payload, user_context)
 
 
-async def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -> Union[CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm]:
+async def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if user_context is None:
         user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe

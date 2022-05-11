@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
 from supertokens_python.recipe.jwt.interfaces import (
-    CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult,
+    CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult,
     RecipeInterface)
 
 from .interfaces import JsonWebKey
@@ -37,7 +37,7 @@ class RecipeImplementation(RecipeInterface):
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> Union[CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm]:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
@@ -50,7 +50,7 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_post_request(NormalisedURLPath("/recipe/jwt"), data)
 
         if response['status'] == 'OK':
-            return CreateJwtResultOk(response['jwt'])
+            return CreateJwtOkResult(response['jwt'])
         return CreateJwtResultUnsupportedAlgorithm()
 
     async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:

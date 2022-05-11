@@ -19,7 +19,7 @@ from supertokens_python.types import APIResponse
 from .utils import OpenIdConfig
 
 from supertokens_python.framework import BaseRequest, BaseResponse
-from supertokens_python.recipe.jwt.interfaces import (CreateJwtResultOk,
+from supertokens_python.recipe.jwt.interfaces import (CreateJwtOkResult,
                                                       CreateJwtResultUnsupportedAlgorithm,
                                                       GetJWKSResult)
 
@@ -35,7 +35,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> Union[CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm]:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
 
     @abstractmethod

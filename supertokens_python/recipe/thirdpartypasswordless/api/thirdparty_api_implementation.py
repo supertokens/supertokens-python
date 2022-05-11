@@ -17,13 +17,13 @@ from typing import Any, Dict, Union
 
 from supertokens_python.recipe.thirdparty.interfaces import (
     APIInterface, APIOptions,
-    SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse)
+    SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import User
 
 from ..interfaces import (
     APIInterface as ThirdPartyPasswordlessAPIInterface,
-    ThirdPartySignInUpPostOkResponse)
+    ThirdPartySignInUpPostOkResult)
 
 
 def get_interface_impl(
@@ -38,16 +38,16 @@ def get_interface_impl(
 
     if not implementation.disable_sign_in_up_post:
         async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
-                                  user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
+                                  user_context: Dict[str, Any]) -> Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError]:
             response = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
-            if isinstance(response, ThirdPartySignInUpPostOkResponse):
+            if isinstance(response, ThirdPartySignInUpPostOkResult):
                 if response.user.email is None:
                     raise Exception('User Email cannot be None')
 
                 if response.user.third_party_info is None:
                     raise Exception('User Third Party Info cannot be None')
 
-                return SignInUpPostOkResponse(
+                return SignInUpPostOkResult(
                     User(response.user.user_id, response.user.email, response.user.time_joined, response.user.third_party_info),
                     response.created_new_user,
                     response.auth_code_response,

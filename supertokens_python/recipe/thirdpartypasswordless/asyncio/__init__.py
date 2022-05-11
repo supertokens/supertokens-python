@@ -15,7 +15,7 @@
 from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.passwordless.interfaces import (
-    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult)
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError)
 
 from .. import interfaces
 from ..recipe import ThirdPartyPasswordlessRecipe
@@ -96,7 +96,7 @@ async def create_code(email: Union[None, str] = None,
 
 async def create_new_code_for_device(device_id: str,
                                      user_input_code: Union[str, None] = None,
-                                     user_context: Union[None, Dict[str, Any]] = None) -> Union[interfaces.CreateNewCodeForDeviceOkResult, interfaces.CreateNewCodeForDeviceRestartFlowErrorResult, interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
+                                     user_context: Union[None, Dict[str, Any]] = None) -> Union[interfaces.CreateNewCodeForDeviceOkResult, interfaces.CreateNewCodeForDeviceRestartFlowError, interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.create_new_code_for_device(device_id=device_id, user_input_code=user_input_code, user_context=user_context)
@@ -106,7 +106,7 @@ async def consume_code(pre_auth_session_id: str,
                        user_input_code: Union[str, None] = None,
                        device_id: Union[str, None] = None,
                        link_code: Union[str, None] = None,
-                       user_context: Union[None, Dict[str, Any]] = None) -> Union[interfaces.ConsumeCodeOkResult, interfaces.ConsumeCodeIncorrectUserInputCodeErrorResult, interfaces.ConsumeCodeExpiredUserInputCodeErrorResult, interfaces.ConsumeCodeRestartFlowErrorResult]:
+                       user_context: Union[None, Dict[str, Any]] = None) -> Union[interfaces.ConsumeCodeOkResult, interfaces.ConsumeCodeIncorrectUserInputCodeError, interfaces.ConsumeCodeExpiredUserInputCodeError, interfaces.ConsumeCodeRestartFlowError]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.consume_code(pre_auth_session_id=pre_auth_session_id, user_input_code=user_input_code, device_id=device_id, link_code=link_code, user_context=user_context)
@@ -121,19 +121,19 @@ async def get_user_by_phone_number(phone_number: str, user_context: Union[None, 
 async def update_passwordless_user(user_id: str,
                                    email: Union[str, None] = None,
                                    phone_number: Union[str, None] = None,
-                                   user_context: Union[None, Dict[str, Any]] = None) -> Union[interfaces.PasswordlessUpdateUserOkResult, interfaces.PasswordlessUpdateUserUnknownUserIdErrorResult, interfaces.PasswordlessUpdateUserEmailAlreadyExistsErrorResult, interfaces.PasswordlessUpdateUserPhoneNumberAlreadyExistsErrorResult]:
+                                   user_context: Union[None, Dict[str, Any]] = None) -> Union[interfaces.PasswordlessUpdateUserOkResult, interfaces.PasswordlessUpdateUserUnknownUserIdError, interfaces.PasswordlessUpdateUserEmailAlreadyExistsError, interfaces.PasswordlessUpdateUserPhoneNumberAlreadyExistsError]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.update_passwordless_user(user_id=user_id, email=email, phone_number=phone_number, user_context=user_context)
 
 
-async def delete_email_for_passwordless_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+async def delete_email_for_passwordless_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_passwordless_user(user_id=user_id, user_context=user_context)
 
 
-async def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+async def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(user_id=user_id, user_context=user_context)

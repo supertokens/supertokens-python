@@ -55,11 +55,11 @@ class CreateNewCodeForDeviceOkResult():
         self.time_created = time_created
 
 
-class CreateNewCodeForDeviceRestartFlowErrorResult():
+class CreateNewCodeForDeviceRestartFlowError():
     pass
 
 
-class CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult():
+class CreateNewCodeForDeviceUserInputCodeAlreadyUsedError():
     pass
 
 
@@ -69,21 +69,21 @@ class ConsumeCodeOkResult():
         self.user = user
 
 
-class ConsumeCodeIncorrectUserInputCodeErrorResult():
+class ConsumeCodeIncorrectUserInputCodeError():
     def __init__(self, failed_code_input_attempt_count: int,
                  maximum_code_input_attempts: int):
         self.failed_code_input_attempt_count = failed_code_input_attempt_count
         self.maximum_code_input_attempts = maximum_code_input_attempts
 
 
-class ConsumeCodeExpiredUserInputCodeErrorResult():
+class ConsumeCodeExpiredUserInputCodeError():
     def __init__(self, failed_code_input_attempt_count: int,
                  maximum_code_input_attempts: int):
         self.failed_code_input_attempt_count = failed_code_input_attempt_count
         self.maximum_code_input_attempts = maximum_code_input_attempts
 
 
-class ConsumeCodeRestartFlowErrorResult():
+class ConsumeCodeRestartFlowError():
     pass
 
 
@@ -91,15 +91,15 @@ class UpdateUserOkResult():
     pass
 
 
-class UpdateUserUnknownUserIdErrorResult():
+class UpdateUserUnknownUserIdError():
     pass
 
 
-class UpdateUserEmailAlreadyExistsErrorResult():
+class UpdateUserEmailAlreadyExistsError():
     pass
 
 
-class UpdateUserPhoneNumberAlreadyExistsErrorResult():
+class UpdateUserPhoneNumberAlreadyExistsError():
     pass
 
 
@@ -107,7 +107,7 @@ class DeleteUserInfoOkResult():
     pass
 
 
-class DeleteUserInfoUnknownUserIdErrorResult():
+class DeleteUserInfoUnknownUserIdError():
     pass
 
 
@@ -135,7 +135,7 @@ class RecipeInterface(ABC):
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
+                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
         pass
 
     @abstractmethod
@@ -144,7 +144,7 @@ class RecipeInterface(ABC):
                            user_input_code: Union[str, None],
                            device_id: Union[str, None],
                            link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, ConsumeCodeRestartFlowErrorResult]:
+                           user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeExpiredUserInputCodeError, ConsumeCodeRestartFlowError]:
         pass
 
     @abstractmethod
@@ -161,15 +161,15 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def update_user(self, user_id: str,
-                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
+                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError, UpdateUserEmailAlreadyExistsError, UpdateUserPhoneNumberAlreadyExistsError]:
         pass
 
     @abstractmethod
-    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         pass
 
     @abstractmethod
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         pass
 
     @abstractmethod
@@ -209,7 +209,7 @@ class APIOptions:
         self.recipe_implementation = recipe_implementation
 
 
-class CreateCodePostOkResponse(APIResponse):
+class CreateCodePostOkResult(APIResponse):
     status: str = 'OK'
 
     def __init__(
@@ -230,7 +230,7 @@ class CreateCodePostOkResponse(APIResponse):
         }
 
 
-class CreateCodePostGeneralErrorResponse(APIResponse):
+class CreateCodePostGeneralError(APIResponse):
     status: str = 'GENERAL_ERROR'
 
     def __init__(
@@ -245,7 +245,7 @@ class CreateCodePostGeneralErrorResponse(APIResponse):
         }
 
 
-class ResendCodePostOkResponse(APIResponse):
+class ResendCodePostOkResult(APIResponse):
     status: str = 'OK'
 
     def to_json(self):
@@ -254,7 +254,7 @@ class ResendCodePostOkResponse(APIResponse):
         }
 
 
-class ResendCodePostRestartFlowErrorResponse(APIResponse):
+class ResendCodePostRestartFlowError(APIResponse):
     status: str = 'RESTART_FLOW_ERROR'
 
     def to_json(self):
@@ -263,7 +263,7 @@ class ResendCodePostRestartFlowErrorResponse(APIResponse):
         }
 
 
-class ResendCodePostGeneralErrorResponse(APIResponse):
+class ResendCodePostGeneralError(APIResponse):
     status: str = 'GENERAL_ERROR'
 
     def __init__(self, message: str):
@@ -276,7 +276,7 @@ class ResendCodePostGeneralErrorResponse(APIResponse):
         }
 
 
-class ConsumeCodePostOkResponse(APIResponse):
+class ConsumeCodePostOkResult(APIResponse):
     status: str = 'OK'
 
     def __init__(self, created_new_user: bool, user: User, session: SessionContainer):
@@ -306,7 +306,7 @@ class ConsumeCodePostOkResponse(APIResponse):
         }
 
 
-class ConsumeCodePostRestartFlowErrorResponse(APIResponse):
+class ConsumeCodePostRestartFlowError(APIResponse):
     status: str = 'RESTART_FLOW_ERROR'
 
     def to_json(self):
@@ -315,7 +315,7 @@ class ConsumeCodePostRestartFlowErrorResponse(APIResponse):
         }
 
 
-class ConsumeCodePostGeneralErrorResponse(APIResponse):
+class ConsumeCodePostGeneralError(APIResponse):
     status: str = 'GENERAL_ERROR'
 
     def __init__(
@@ -330,7 +330,7 @@ class ConsumeCodePostGeneralErrorResponse(APIResponse):
         }
 
 
-class ConsumeCodePostIncorrectUserInputCodeErrorResponse(
+class ConsumeCodePostIncorrectUserInputCodeError(
         APIResponse):
     status: str = 'INCORRECT_USER_INPUT_CODE_ERROR'
 
@@ -349,7 +349,7 @@ class ConsumeCodePostIncorrectUserInputCodeErrorResponse(
         }
 
 
-class ConsumeCodePostExpiredUserInputCodeErrorResponse(
+class ConsumeCodePostExpiredUserInputCodeError(
         APIResponse):
     status: str = 'EXPIRED_USER_INPUT_CODE_ERROR'
 
@@ -368,7 +368,7 @@ class ConsumeCodePostExpiredUserInputCodeErrorResponse(
         }
 
 
-class PhoneNumberExistsGetOkResponse(APIResponse):
+class PhoneNumberExistsGetOkResult(APIResponse):
     status: str = 'OK'
 
     def __init__(self, exists: bool):
@@ -381,7 +381,7 @@ class PhoneNumberExistsGetOkResponse(APIResponse):
         }
 
 
-class EmailExistsGetOkResponse(APIResponse):
+class EmailExistsGetOkResult(APIResponse):
     status: str = 'OK'
 
     def __init__(self, exists: bool):
@@ -407,7 +407,7 @@ class APIInterface:
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResponse, CreateCodePostGeneralErrorResponse]:
+                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResult, CreateCodePostGeneralError]:
         pass
 
     @abstractmethod
@@ -415,7 +415,7 @@ class APIInterface:
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResponse, ResendCodePostRestartFlowErrorResponse, ResendCodePostGeneralErrorResponse]:
+                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, ResendCodePostGeneralError]:
         pass
 
     @abstractmethod
@@ -425,19 +425,19 @@ class APIInterface:
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
                                 api_options: APIOptions,
-                                user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse, ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse, ConsumeCodePostExpiredUserInputCodeErrorResponse]:
+                                user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostGeneralError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
         pass
 
     @abstractmethod
     async def email_exists_get(self,
                                email: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> EmailExistsGetOkResponse:
+                               user_context: Dict[str, Any]) -> EmailExistsGetOkResult:
         pass
 
     @abstractmethod
     async def phone_number_exists_get(self,
                                       phone_number: str,
                                       api_options: APIOptions,
-                                      user_context: Dict[str, Any]) -> PhoneNumberExistsGetOkResponse:
+                                      user_context: Dict[str, Any]) -> PhoneNumberExistsGetOkResult:
         pass

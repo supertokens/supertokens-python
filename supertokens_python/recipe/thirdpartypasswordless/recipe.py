@@ -50,7 +50,7 @@ from supertokens_python.recipe.thirdparty.utils import SignInAndUpFeature
 from typing_extensions import Literal
 
 from ..emailverification.interfaces import (
-    CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult,
+    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
     CreateEmailVerificationTokenOkResult)
 from ..emailverification.interfaces import RecipeInterface as EVRecipeInterface
 from ..emailverification.utils import OverrideConfig as EVOverrideConfig
@@ -111,11 +111,11 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                 og_create_email_verification_token = original_impl.create_email_verification_token
                 og_is_email_verified = original_impl.is_email_verified
 
-                async def create_email_verification_token(user_id: str, email: str, user_context: Dict[str, Any]) -> Union[CreateEmailVerificationTokenOkResult, CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult]:
+                async def create_email_verification_token(user_id: str, email: str, user_context: Dict[str, Any]) -> Union[CreateEmailVerificationTokenOkResult, CreateEmailVerificationTokenEmailAlreadyVerifiedError]:
                     user = await self.recipe_implementation.get_user_by_id(user_id, user_context)
                     if user is None or user.third_party_info is not None:
                         return await og_create_email_verification_token(user_id, email, user_context)
-                    return CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult()
+                    return CreateEmailVerificationTokenEmailAlreadyVerifiedError()
 
                 async def is_email_verified(user_id: str, email: str, user_context: Dict[str, Any]) -> bool:
                     user = await self.recipe_implementation.get_user_by_id(user_id, user_context)

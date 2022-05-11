@@ -16,19 +16,19 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from ...passwordless.interfaces import (
-    ConsumeCodeExpiredUserInputCodeErrorResult,
-    ConsumeCodeIncorrectUserInputCodeErrorResult,
-    ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
+    ConsumeCodeExpiredUserInputCodeError,
+    ConsumeCodeIncorrectUserInputCodeError,
+    ConsumeCodeRestartFlowError, CreateCodeOkResult,
     CreateNewCodeForDeviceOkResult,
-    CreateNewCodeForDeviceRestartFlowErrorResult,
-    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
-    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
+    CreateNewCodeForDeviceRestartFlowError,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError,
     DeviceType, RevokeAllCodesOkResult, RevokeCodeOkResult,
-    UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
-    UpdateUserPhoneNumberAlreadyExistsErrorResult,
-    UpdateUserUnknownUserIdErrorResult)
+    UpdateUserEmailAlreadyExistsError, UpdateUserOkResult,
+    UpdateUserPhoneNumberAlreadyExistsError,
+    UpdateUserUnknownUserIdError)
 from ...passwordless.interfaces import ConsumeCodeOkResult as PasswordlessConsumeCodeOkResult
-from ...thirdparty.interfaces import SignInUpFieldErrorResult, SignInUpOkResult
+from ...thirdparty.interfaces import SignInUpFieldError, SignInUpOkResult
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -146,7 +146,7 @@ class RecipeImplementation(RecipeInterface):
         return User(user_id=tp_user.user_id, email=tp_user.email, time_joined=tp_user.time_joined, third_party_info=tp_user.third_party_info, phone_number=None)
 
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldError]:
         if self.tp_sign_in_up is None:
             raise Exception("No thirdparty provider configured")
         return await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
@@ -168,7 +168,7 @@ class RecipeImplementation(RecipeInterface):
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
+                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
         return await self.pless_create_new_code_for_device(device_id, user_input_code, user_context)
 
     async def consume_code(self,
@@ -176,7 +176,7 @@ class RecipeImplementation(RecipeInterface):
                            user_input_code: Union[str, None],
                            device_id: Union[str, None],
                            link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, ConsumeCodeRestartFlowErrorResult]:
+                           user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeExpiredUserInputCodeError, ConsumeCodeRestartFlowError]:
         result = await self.pless_consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
         if isinstance(result, PasswordlessConsumeCodeOkResult):
             return ConsumeCodeOkResult(
@@ -186,28 +186,28 @@ class RecipeImplementation(RecipeInterface):
         return result
 
     async def update_passwordless_user(self, user_id: str,
-                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
+                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError, UpdateUserEmailAlreadyExistsError, UpdateUserPhoneNumberAlreadyExistsError]:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
-            return UpdateUserUnknownUserIdErrorResult()
+            return UpdateUserUnknownUserIdError()
         if user.third_party_info is not None:
             raise Exception(
                 "Cannot update passwordless user info of a user who signed up using third party login.")
         return await self.pless_update_user(user_id, email, phone_number, user_context)
 
-    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
-            return DeleteUserInfoUnknownUserIdErrorResult()
+            return DeleteUserInfoUnknownUserIdError()
         if user.third_party_info is not None:
             raise Exception(
                 "Cannot update passwordless user info of a user who signed up using third party login.")
         return await self.pless_delete_email_for_user(user_id, user_context)
 
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
-            return DeleteUserInfoUnknownUserIdErrorResult()
+            return DeleteUserInfoUnknownUserIdError()
         if user.third_party_info is not None:
             raise Exception(
                 "Cannot update passwordless user info of a user who signed up using third party login.")

@@ -31,7 +31,7 @@ class JsonWebKey:
         self.use = use
 
 
-class CreateJwtResultOk():
+class CreateJwtOkResult():
     def __init__(self, jwt: str):
         self.jwt = jwt
 
@@ -50,7 +50,7 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> Union[CreateJwtResultOk, CreateJwtResultUnsupportedAlgorithm]:
+    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
 
     @abstractmethod

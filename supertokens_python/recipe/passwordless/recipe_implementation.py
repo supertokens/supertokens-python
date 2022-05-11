@@ -22,17 +22,17 @@ from .types import DeviceCode, DeviceType, User
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
 from .interfaces import (
-    ConsumeCodeExpiredUserInputCodeErrorResult,
-    ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
-    ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
+    ConsumeCodeExpiredUserInputCodeError,
+    ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeOkResult,
+    ConsumeCodeRestartFlowError, CreateCodeOkResult,
     CreateNewCodeForDeviceOkResult,
-    CreateNewCodeForDeviceRestartFlowErrorResult,
-    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
-    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
+    CreateNewCodeForDeviceRestartFlowError,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError,
     RecipeInterface, RevokeAllCodesOkResult, RevokeCodeOkResult,
-    UpdateUserEmailAlreadyExistsErrorResult, UpdateUserOkResult,
-    UpdateUserPhoneNumberAlreadyExistsErrorResult,
-    UpdateUserUnknownUserIdErrorResult)
+    UpdateUserEmailAlreadyExistsError, UpdateUserOkResult,
+    UpdateUserPhoneNumberAlreadyExistsError,
+    UpdateUserUnknownUserIdError)
 
 
 class RecipeImplementation(RecipeInterface):
@@ -76,7 +76,7 @@ class RecipeImplementation(RecipeInterface):
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
+                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
         data = {
             'deviceId': device_id
         }
@@ -87,9 +87,9 @@ class RecipeImplementation(RecipeInterface):
             }
         result = await self.querier.send_post_request(NormalisedURLPath('/recipe/signinup/code'), data)
         if result['status'] == 'RESTART_FLOW_ERROR':
-            return CreateNewCodeForDeviceRestartFlowErrorResult()
+            return CreateNewCodeForDeviceRestartFlowError()
         if result['status'] == 'USER_INPUT_CODE_ALREADY_USED_ERROR':
-            return CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult()
+            return CreateNewCodeForDeviceUserInputCodeAlreadyUsedError()
         return CreateNewCodeForDeviceOkResult(
             pre_auth_session_id=result['preAuthSessionId'],
             code_id=result['codeId'],
@@ -105,7 +105,7 @@ class RecipeImplementation(RecipeInterface):
                            user_input_code: Union[str, None],
                            device_id: Union[str, None],
                            link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, ConsumeCodeRestartFlowErrorResult]:
+                           user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeExpiredUserInputCodeError, ConsumeCodeRestartFlowError]:
         data = {
             'preAuthSessionId': pre_auth_session_id
         }
@@ -134,13 +134,13 @@ class RecipeImplementation(RecipeInterface):
                         time_joined=result['user']['timeJoined'])
             return ConsumeCodeOkResult(result['createdNewUser'], user)
         if result['status'] == 'RESTART_FLOW_ERROR':
-            return ConsumeCodeRestartFlowErrorResult()
+            return ConsumeCodeRestartFlowError()
         if result['status'] == 'INCORRECT_USER_INPUT_CODE_ERROR':
-            return ConsumeCodeIncorrectUserInputCodeErrorResult(
+            return ConsumeCodeIncorrectUserInputCodeError(
                 failed_code_input_attempt_count=result['failedCodeInputAttemptCount'],
                 maximum_code_input_attempts=result['maximumCodeInputAttempts']
             )
-        return ConsumeCodeExpiredUserInputCodeErrorResult(
+        return ConsumeCodeExpiredUserInputCodeError(
             failed_code_input_attempt_count=result['failedCodeInputAttemptCount'],
             maximum_code_input_attempts=result['maximumCodeInputAttempts']
         )
@@ -200,7 +200,7 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def update_user(self, user_id: str,
-                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
+                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError, UpdateUserEmailAlreadyExistsError, UpdateUserPhoneNumberAlreadyExistsError]:
         data = {
             'userId': user_id
         }
@@ -218,12 +218,12 @@ class RecipeImplementation(RecipeInterface):
         if result['status'] == 'OK':
             return UpdateUserOkResult()
         if result['status'] == 'UNKNOWN_USER_ID_ERROR':
-            return UpdateUserUnknownUserIdErrorResult()
+            return UpdateUserUnknownUserIdError()
         if result['status'] == 'EMAIL_ALREADY_EXISTS_ERROR':
-            return UpdateUserEmailAlreadyExistsErrorResult()
-        return UpdateUserPhoneNumberAlreadyExistsErrorResult()
+            return UpdateUserEmailAlreadyExistsError()
+        return UpdateUserPhoneNumberAlreadyExistsError()
 
-    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         data = {'userId': user_id, 'email': None}
         result = await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
         if result['status'] == 'OK':
@@ -232,9 +232,9 @@ class RecipeImplementation(RecipeInterface):
             raise Exception("Should never come here")
         if result.get("PHONE_NUMBER_ALREADY_EXISTS_ERROR"):
             raise Exception("Should never come here")
-        return DeleteUserInfoUnknownUserIdErrorResult()
+        return DeleteUserInfoUnknownUserIdError()
 
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         data = {'userId': user_id, 'phoneNumber': None}
         result = await self.querier.send_put_request(NormalisedURLPath('/recipe/user'), data)
         if result['status'] == 'OK':
@@ -243,7 +243,7 @@ class RecipeImplementation(RecipeInterface):
             raise Exception("Should never come here")
         if result.get("PHONE_NUMBER_ALREADY_EXISTS_ERROR"):
             raise Exception("Should never come here")
-        return DeleteUserInfoUnknownUserIdErrorResult()
+        return DeleteUserInfoUnknownUserIdError()
 
     async def revoke_all_codes(self,
                                email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> RevokeAllCodesOkResult:
