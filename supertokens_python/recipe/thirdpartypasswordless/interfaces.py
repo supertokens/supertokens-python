@@ -4,9 +4,6 @@ from supertokens_python.recipe.session import SessionContainer
 
 from supertokens_python.recipe.thirdparty import \
     interfaces as ThirdPartyInterfaces
-from supertokens_python.recipe.thirdparty.interfaces import (
-    AuthorisationUrlGetOkResponse, SignInUpFieldErrorResult, SignInUpOkResult,
-    SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.types import APIResponse
 
@@ -34,8 +31,8 @@ CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult = PlessInterfaces.Crea
 DeleteUserInfoOkResult = PlessInterfaces.DeleteUserInfoOkResult
 DeleteUserInfoUnknownUserIdErrorResult = PlessInterfaces.DeleteUserInfoUnknownUserIdErrorResult
 DeviceType = PlessInterfaces.DeviceType
-EmailExistsGetOkResponse = PlessInterfaces.EmailExistsGetOkResponse
-PhoneNumberExistsGetOkResponse = PlessInterfaces.PhoneNumberExistsGetOkResponse
+PasswordlessEmailExistsGetOkResponse = PlessInterfaces.EmailExistsGetOkResponse
+PasswordlessPhoneNumberExistsGetOkResponse = PlessInterfaces.PhoneNumberExistsGetOkResponse
 ResendCodePostOkResponse = PlessInterfaces.ResendCodePostOkResponse
 ResendCodePostRestartFlowErrorResponse = PlessInterfaces.ResendCodePostRestartFlowErrorResponse
 ResendCodePostGeneralErrorResponse = PlessInterfaces.ResendCodePostGeneralErrorResponse
@@ -45,6 +42,12 @@ UpdateUserEmailAlreadyExistsErrorResult = PlessInterfaces.UpdateUserEmailAlready
 UpdateUserOkResult = PlessInterfaces.UpdateUserOkResult
 UpdateUserPhoneNumberAlreadyExistsErrorResult = PlessInterfaces.UpdateUserPhoneNumberAlreadyExistsErrorResult
 UpdateUserUnknownUserIdErrorResult = PlessInterfaces.UpdateUserUnknownUserIdErrorResult
+
+AuthorisationUrlGetOkResponse = ThirdPartyInterfaces.AuthorisationUrlGetOkResponse
+ThirdPartySignInUpFieldErrorResult = ThirdPartyInterfaces.SignInUpFieldErrorResult
+ThirdPartySignInUpOkResult = ThirdPartyInterfaces.SignInUpOkResult
+ThirdPartySignInUpPostNoEmailGivenByProviderResponse = ThirdPartyInterfaces.SignInUpPostNoEmailGivenByProviderResponse
+ThirdPartySignInUpPostFieldErrorResponse = ThirdPartyInterfaces.SignInUpPostFieldErrorResponse
 
 
 class ConsumeCodeOkResult():
@@ -76,7 +79,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, ThirdPartySignInUpFieldErrorResult]:
         pass
 
     @abstractmethod
@@ -221,7 +224,7 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
+                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResponse, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, ThirdPartySignInUpPostFieldErrorResponse]:
         pass
 
     @abstractmethod
@@ -259,12 +262,12 @@ class APIInterface(ABC):
     async def passwordless_user_email_exists_get(self,
                                                  email: str,
                                                  api_options: PasswordlessAPIOptions,
-                                                 user_context: Dict[str, Any]) -> EmailExistsGetOkResponse:
+                                                 user_context: Dict[str, Any]) -> PasswordlessEmailExistsGetOkResponse:
         pass
 
     @abstractmethod
     async def passwordless_user_phone_number_exists_get(self,
                                                         phone_number: str,
                                                         api_options: PasswordlessAPIOptions,
-                                                        user_context: Dict[str, Any]) -> PhoneNumberExistsGetOkResponse:
+                                                        user_context: Dict[str, Any]) -> PasswordlessPhoneNumberExistsGetOkResponse:
         pass
