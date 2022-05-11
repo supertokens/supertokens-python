@@ -16,13 +16,13 @@ from __future__ import annotations
 from typing import Any, Dict, Union
 
 from supertokens_python.recipe.emailpassword.interfaces import (
-    CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult,
+    CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError,
     RecipeInterface, ResetPasswordUsingTokenOkResult,
-    ResetPasswordUsingTokenInvalidTokenErrorResult, SignInOkResult,
-    SignInWrongCredentialsErrorResult, SignUpEmailAlreadyExistsErrorResult,
-    SignUpOkResult, UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
+    ResetPasswordUsingTokenInvalidTokenError, SignInOkResult,
+    SignInWrongCredentialsError, SignUpEmailAlreadyExistsError,
+    SignUpOkResult, UpdateEmailOrPasswordEmailAlreadyExistsError,
     UpdateEmailOrPasswordOkResult,
-    UpdateEmailOrPasswordUnknownUserIdErrorResult)
+    UpdateEmailOrPasswordUnknownUserIdError)
 from supertokens_python.recipe.emailpassword.types import User
 
 from ..interfaces import (
@@ -54,20 +54,20 @@ class RecipeImplementation(RecipeInterface):
 
         return None
 
-    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult]:
+    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
         return await self.recipe_implementation.create_reset_password_token(user_id, user_context)
 
-    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenErrorResult]:
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError]:
         return await self.recipe_implementation.reset_password_using_token(token, new_password, user_context)
 
-    async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignInOkResult, SignInWrongCredentialsErrorResult]:
+    async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignInOkResult, SignInWrongCredentialsError]:
         result = await self.recipe_implementation.emailpassword_sign_in(email, password, user_context)
         if isinstance(result, EmailPasswordSignInOkResult):
             return SignInOkResult(
                 User(result.user.user_id, result.user.email, result.user.time_joined))
         return result
 
-    async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
+    async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsError]:
         result = await self.recipe_implementation.emailpassword_sign_up(email, password, user_context)
         if isinstance(result, EmailPasswordSignUpOkResult):
             return SignUpOkResult(
@@ -75,5 +75,5 @@ class RecipeImplementation(RecipeInterface):
         return result
 
     async def update_email_or_password(self, user_id: str, email: Union[str, None],
-                                       password: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateEmailOrPasswordOkResult, UpdateEmailOrPasswordEmailAlreadyExistsErrorResult, UpdateEmailOrPasswordUnknownUserIdErrorResult]:
+                                       password: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateEmailOrPasswordOkResult, UpdateEmailOrPasswordEmailAlreadyExistsError, UpdateEmailOrPasswordUnknownUserIdError]:
         return await self.recipe_implementation.update_email_or_password(user_id, email, password, user_context)

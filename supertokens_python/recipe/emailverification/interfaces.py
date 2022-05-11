@@ -30,7 +30,7 @@ class CreateEmailVerificationTokenOkResult:
         self.token = token
 
 
-class CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult:
+class CreateEmailVerificationTokenEmailAlreadyVerifiedError:
     pass
 
 
@@ -39,7 +39,7 @@ class VerifyEmailUsingTokenOkResult:
         self.user = user
 
 
-class VerifyEmailUsingTokenInvalidTokenErrorResult:
+class VerifyEmailUsingTokenInvalidTokenError:
     pass
 
 
@@ -56,11 +56,11 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_email_verification_token(self, user_id: str, email: str, user_context: Dict[str, Any]) -> Union[CreateEmailVerificationTokenOkResult, CreateEmailVerificationTokenEmailAlreadyVerifiedErrorResult]:
+    async def create_email_verification_token(self, user_id: str, email: str, user_context: Dict[str, Any]) -> Union[CreateEmailVerificationTokenOkResult, CreateEmailVerificationTokenEmailAlreadyVerifiedError]:
         pass
 
     @abstractmethod
-    async def verify_email_using_token(self, token: str, user_context: Dict[str, Any]) -> Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenErrorResult]:
+    async def verify_email_using_token(self, token: str, user_context: Dict[str, Any]) -> Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenError]:
         pass
 
     @abstractmethod
@@ -86,7 +86,7 @@ class APIOptions:
         self.recipe_implementation = recipe_implementation
 
 
-class EmailVerifyPostOkResponse(APIResponse):
+class EmailVerifyPostOkResult(APIResponse):
     def __init__(self, user: User):
         self.user = user
         self.status = "OK"
@@ -101,7 +101,7 @@ class EmailVerifyPostOkResponse(APIResponse):
         }
 
 
-class EmailVerifyPostInvalidTokenErrorResponse(APIResponse):
+class EmailVerifyPostInvalidTokenError(APIResponse):
     def __init__(self):
         self.status = "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
 
@@ -111,7 +111,7 @@ class EmailVerifyPostInvalidTokenErrorResponse(APIResponse):
         }
 
 
-class IsEmailVerifiedGetOkResponse(APIResponse):
+class IsEmailVerifiedGetOkResult(APIResponse):
     def __init__(self, is_verified: bool):
         self.status = 'OK'
         self.is_verified = is_verified
@@ -123,7 +123,7 @@ class IsEmailVerifiedGetOkResponse(APIResponse):
         }
 
 
-class GenerateEmailVerifyTokenPostOkResponse(
+class GenerateEmailVerifyTokenPostOkResult(
         APIResponse):
     def __init__(self):
         self.status = 'OK'
@@ -134,7 +134,7 @@ class GenerateEmailVerifyTokenPostOkResponse(
         }
 
 
-class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse(
+class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError(
         APIResponse):
     def __init__(self):
         self.status = 'EMAIL_ALREADY_VERIFIED_ERROR'
@@ -152,14 +152,14 @@ class APIInterface(ABC):
         self.disable_generate_email_verify_token_post = False
 
     @abstractmethod
-    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[EmailVerifyPostOkResponse, EmailVerifyPostInvalidTokenErrorResponse]:
+    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError]:
         pass
 
     @abstractmethod
-    async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> IsEmailVerifiedGetOkResponse:
+    async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> IsEmailVerifiedGetOkResult:
         pass
 
     @abstractmethod
     async def generate_email_verify_token_post(self, api_options: APIOptions,
-                                               user_context: Dict[str, Any]) -> Union[GenerateEmailVerifyTokenPostOkResponse, GenerateEmailVerifyTokenPostEmailAlreadyVerifiedErrorResponse]:
+                                               user_context: Dict[str, Any]) -> Union[GenerateEmailVerifyTokenPostOkResult, GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError]:
         pass

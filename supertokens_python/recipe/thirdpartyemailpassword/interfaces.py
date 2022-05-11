@@ -17,25 +17,25 @@ EmailPasswordAPIOptions = EPInterfaces.APIOptions
 
 # Exporting re-used classes
 CreateResetPasswordOkResult = EPInterfaces.CreateResetPasswordOkResult
-CreateResetPasswordWrongUserIdErrorResult = EPInterfaces.CreateResetPasswordWrongUserIdErrorResult
-EmailPasswordEmailExistsGetOkResponse = EPInterfaces.EmailExistsGetOkResponse
-GeneratePasswordResetTokenPostOkResponse = EPInterfaces.GeneratePasswordResetTokenPostOkResponse
+CreateResetPasswordWrongUserIdError = EPInterfaces.CreateResetPasswordWrongUserIdError
+EmailPasswordEmailExistsGetOkResult = EPInterfaces.EmailExistsGetOkResult
+GeneratePasswordResetTokenPostOkResult = EPInterfaces.GeneratePasswordResetTokenPostOkResult
 PasswordResetPostInvalidTokenResponse = EPInterfaces.PasswordResetPostInvalidTokenResponse
-PasswordResetPostOkResponse = EPInterfaces.PasswordResetPostOkResponse
-ResetPasswordUsingTokenInvalidTokenErrorResult = EPInterfaces.ResetPasswordUsingTokenInvalidTokenErrorResult
+PasswordResetPostOkResult = EPInterfaces.PasswordResetPostOkResult
+ResetPasswordUsingTokenInvalidTokenError = EPInterfaces.ResetPasswordUsingTokenInvalidTokenError
 ResetPasswordUsingTokenOkResult = EPInterfaces.ResetPasswordUsingTokenOkResult
-EmailPasswordSignInPostWrongCredentialsErrorResponse = EPInterfaces.SignInPostWrongCredentialsErrorResponse
-EmailPasswordSignInWrongCredentialsErrorResult = EPInterfaces.SignInWrongCredentialsErrorResult
-EmailPasswordSignUpEmailAlreadyExistsErrorResult = EPInterfaces.SignUpEmailAlreadyExistsErrorResult
-EmailPasswordSignUpPostEmailAlreadyExistsErrorResponse = EPInterfaces.SignUpPostEmailAlreadyExistsErrorResponse
-UpdateEmailOrPasswordEmailAlreadyExistsErrorResult = EPInterfaces.UpdateEmailOrPasswordEmailAlreadyExistsErrorResult
+EmailPasswordSignInPostWrongCredentialsError = EPInterfaces.SignInPostWrongCredentialsError
+EmailPasswordSignInWrongCredentialsError = EPInterfaces.SignInWrongCredentialsError
+EmailPasswordSignUpEmailAlreadyExistsError = EPInterfaces.SignUpEmailAlreadyExistsError
+EmailPasswordSignUpPostEmailAlreadyExistsError = EPInterfaces.SignUpPostEmailAlreadyExistsError
+UpdateEmailOrPasswordEmailAlreadyExistsError = EPInterfaces.UpdateEmailOrPasswordEmailAlreadyExistsError
 UpdateEmailOrPasswordOkResult = EPInterfaces.UpdateEmailOrPasswordOkResult
-UpdateEmailOrPasswordUnknownUserIdErrorResult = EPInterfaces.UpdateEmailOrPasswordUnknownUserIdErrorResult
+UpdateEmailOrPasswordUnknownUserIdError = EPInterfaces.UpdateEmailOrPasswordUnknownUserIdError
 
-AuthorisationUrlGetOkResponse = ThirdPartyInterfaces.AuthorisationUrlGetOkResponse
-ThirdPartySignInUpFieldErrorResult = ThirdPartyInterfaces.SignInUpFieldErrorResult
+AuthorisationUrlGetOkResult = ThirdPartyInterfaces.AuthorisationUrlGetOkResult
+ThirdPartySignInUpFieldError = ThirdPartyInterfaces.SignInUpFieldError
 ThirdPartySignInUpPostNoEmailGivenByProviderResponse = ThirdPartyInterfaces.SignInUpPostNoEmailGivenByProviderResponse
-ThirdPartySignInUpPostFieldErrorResponse = ThirdPartyInterfaces.SignInUpPostFieldErrorResponse
+ThirdPartySignInUpPostFieldError = ThirdPartyInterfaces.SignInUpPostFieldError
 
 
 class ThirdPartySignInUpOkResult():
@@ -73,32 +73,32 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, ThirdPartySignInUpFieldErrorResult]:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, ThirdPartySignInUpFieldError]:
         pass
 
     @abstractmethod
-    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInOkResult, EmailPasswordSignInWrongCredentialsErrorResult]:
+    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInOkResult, EmailPasswordSignInWrongCredentialsError]:
         pass
 
     @abstractmethod
-    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpOkResult, EmailPasswordSignUpEmailAlreadyExistsErrorResult]:
+    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpOkResult, EmailPasswordSignUpEmailAlreadyExistsError]:
         pass
 
     @abstractmethod
-    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult]:
+    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
         pass
 
     @abstractmethod
-    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenErrorResult]:
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError]:
         pass
 
     @abstractmethod
     async def update_email_or_password(self, user_id: str, email: Union[str, None],
-                                       password: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateEmailOrPasswordOkResult, UpdateEmailOrPasswordEmailAlreadyExistsErrorResult, UpdateEmailOrPasswordUnknownUserIdErrorResult]:
+                                       password: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateEmailOrPasswordOkResult, UpdateEmailOrPasswordEmailAlreadyExistsError, UpdateEmailOrPasswordUnknownUserIdError]:
         pass
 
 
-class ThirdPartySignInUpPostOkResponse(APIResponse):
+class ThirdPartySignInUpPostOkResult(APIResponse):
     status: str = 'OK'
 
     def __init__(self, user: User, created_new_user: bool,
@@ -128,7 +128,7 @@ class ThirdPartySignInUpPostOkResponse(APIResponse):
         }
 
 
-class EmailPasswordSignInPostOkResponse(APIResponse):
+class EmailPasswordSignInPostOkResult(APIResponse):
     status: str = 'OK'
 
     def __init__(self, user: User, session: SessionContainer):
@@ -146,7 +146,7 @@ class EmailPasswordSignInPostOkResponse(APIResponse):
         }
 
 
-class EmailPasswordSignUpPostOkResponse(APIResponse):
+class EmailPasswordSignUpPostOkResult(APIResponse):
     status: str = 'OK'
 
     def __init__(self, user: User, session: SessionContainer):
@@ -177,36 +177,36 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def authorisation_url_get(self, provider: Provider,
-                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResponse:
+                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResult:
         pass
 
     @abstractmethod
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResponse, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, ThirdPartySignInUpPostFieldErrorResponse]:
+                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResult, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, ThirdPartySignInUpPostFieldError]:
         pass
 
     @abstractmethod
     async def emailpassword_sign_in_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInPostOkResponse, EmailPasswordSignInPostWrongCredentialsErrorResponse]:
+                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInPostOkResult, EmailPasswordSignInPostWrongCredentialsError]:
         pass
 
     @abstractmethod
     async def emailpassword_sign_up_post(self, form_fields: List[FormField],
-                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpPostOkResponse, EmailPasswordSignUpPostEmailAlreadyExistsErrorResponse]:
+                                         api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpPostOkResult, EmailPasswordSignUpPostEmailAlreadyExistsError]:
         pass
 
     @abstractmethod
-    async def emailpassword_email_exists_get(self, email: str, api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> EmailPasswordEmailExistsGetOkResponse:
+    async def emailpassword_email_exists_get(self, email: str, api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> EmailPasswordEmailExistsGetOkResult:
         pass
 
     @abstractmethod
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
-                                                 api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> GeneratePasswordResetTokenPostOkResponse:
+                                                 api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> GeneratePasswordResetTokenPostOkResult:
         pass
 
     @abstractmethod
     async def password_reset_post(self, form_fields: List[FormField], token: str,
-                                  api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[PasswordResetPostOkResponse, PasswordResetPostInvalidTokenResponse]:
+                                  api_options: EmailPasswordAPIOptions, user_context: Dict[str, Any]) -> Union[PasswordResetPostOkResult, PasswordResetPostInvalidTokenResponse]:
         pass
 
     @abstractmethod

@@ -14,18 +14,18 @@
 from typing import Any, Dict, Union
 
 from supertokens_python.recipe.passwordless.interfaces import (
-    APIInterface, APIOptions, ConsumeCodeExpiredUserInputCodeErrorResult,
-    ConsumeCodeIncorrectUserInputCodeErrorResult,
-    ConsumeCodePostExpiredUserInputCodeErrorResponse,
-    ConsumeCodePostIncorrectUserInputCodeErrorResponse,
-    ConsumeCodePostOkResponse, ConsumeCodePostGeneralErrorResponse,
-    ConsumeCodePostRestartFlowErrorResponse, ConsumeCodeRestartFlowErrorResult,
-    CreateCodeOkResult, CreateCodePostGeneralErrorResponse,
-    CreateCodePostOkResponse,
-    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
-    EmailExistsGetOkResponse, PhoneNumberExistsGetOkResponse,
-    ResendCodePostGeneralErrorResponse, ResendCodePostOkResponse,
-    ResendCodePostRestartFlowErrorResponse)
+    APIInterface, APIOptions, ConsumeCodeExpiredUserInputCodeError,
+    ConsumeCodeIncorrectUserInputCodeError,
+    ConsumeCodePostExpiredUserInputCodeError,
+    ConsumeCodePostIncorrectUserInputCodeError,
+    ConsumeCodePostOkResult, ConsumeCodePostGeneralError,
+    ConsumeCodePostRestartFlowError, ConsumeCodeRestartFlowError,
+    CreateCodeOkResult, CreateCodePostGeneralError,
+    CreateCodePostOkResult,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
+    EmailExistsGetOkResult, PhoneNumberExistsGetOkResult,
+    ResendCodePostGeneralError, ResendCodePostOkResult,
+    ResendCodePostRestartFlowError)
 from supertokens_python.recipe.passwordless.utils import (
     ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig,
     CreateAndSendCustomEmailParameters,
@@ -40,7 +40,7 @@ class APIImplementation(APIInterface):
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResponse, CreateCodePostGeneralErrorResponse]:
+                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResult, CreateCodePostGeneralError]:
         user_input_code = None
         if api_options.config.get_custom_user_input_code is not None:
             user_input_code = await api_options.config.get_custom_user_input_code(user_context)
@@ -78,23 +78,23 @@ class APIImplementation(APIInterface):
                     pre_auth_session_id=response.pre_auth_session_id
                 ), user_context)
         except Exception as e:
-            return CreateCodePostGeneralErrorResponse(str(e))
-        return CreateCodePostOkResponse(response.device_id, response.pre_auth_session_id, flow_type)
+            return CreateCodePostGeneralError(str(e))
+        return CreateCodePostOkResult(response.device_id, response.pre_auth_session_id, flow_type)
 
     async def resend_code_post(self,
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResponse, ResendCodePostRestartFlowErrorResponse, ResendCodePostGeneralErrorResponse]:
+                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, ResendCodePostGeneralError]:
         device_info = await api_options.recipe_implementation.list_codes_by_device_id(
             device_id=device_id,
             user_context=user_context
         )
         if device_info is None:
-            return ResendCodePostRestartFlowErrorResponse()
+            return ResendCodePostRestartFlowError()
         if (isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) and device_info.email is None) or \
                 (isinstance(api_options.config.contact_config, ContactPhoneOnlyConfig) and device_info.phone_number is None):
-            return ResendCodePostRestartFlowErrorResponse()
+            return ResendCodePostRestartFlowError()
         number_of_tries_to_create_new_code = 0
         while True:
             number_of_tries_to_create_new_code += 1
@@ -106,9 +106,9 @@ class APIImplementation(APIInterface):
                 user_input_code=user_input_code,
                 user_context=user_context
             )
-            if isinstance(response, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult):
+            if isinstance(response, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError):
                 if number_of_tries_to_create_new_code >= 3:
-                    return ResendCodePostGeneralErrorResponse(
+                    return ResendCodePostGeneralError(
                         'Failed to generate a one time code. Please try again')
                 continue
 
@@ -147,8 +147,8 @@ class APIImplementation(APIInterface):
                             pre_auth_session_id=response.pre_auth_session_id
                         ), user_context)
                 except Exception as e:
-                    return ResendCodePostGeneralErrorResponse(str(e))
-            return ResendCodePostOkResponse()
+                    return ResendCodePostGeneralError(str(e))
+            return ResendCodePostOkResult()
 
     async def consume_code_post(self,
                                 pre_auth_session_id: str,
@@ -156,7 +156,7 @@ class APIImplementation(APIInterface):
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
                                 api_options: APIOptions,
-                                user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse, ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse, ConsumeCodePostExpiredUserInputCodeErrorResponse]:
+                                user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostGeneralError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
         response = await api_options.recipe_implementation.consume_code(
             pre_auth_session_id=pre_auth_session_id,
             user_input_code=user_input_code,
@@ -165,31 +165,31 @@ class APIImplementation(APIInterface):
             user_context=user_context
         )
 
-        if isinstance(response, ConsumeCodeExpiredUserInputCodeErrorResult):
-            return ConsumeCodePostExpiredUserInputCodeErrorResponse(
+        if isinstance(response, ConsumeCodeExpiredUserInputCodeError):
+            return ConsumeCodePostExpiredUserInputCodeError(
                 failed_code_input_attempt_count=response.failed_code_input_attempt_count,
                 maximum_code_input_attempts=response.maximum_code_input_attempts
             )
-        if isinstance(response, ConsumeCodeIncorrectUserInputCodeErrorResult):
-            return ConsumeCodePostIncorrectUserInputCodeErrorResponse(
+        if isinstance(response, ConsumeCodeIncorrectUserInputCodeError):
+            return ConsumeCodePostIncorrectUserInputCodeError(
                 failed_code_input_attempt_count=response.failed_code_input_attempt_count,
                 maximum_code_input_attempts=response.maximum_code_input_attempts
             )
-        if isinstance(response, ConsumeCodeRestartFlowErrorResult):
-            return ConsumeCodePostRestartFlowErrorResponse()
+        if isinstance(response, ConsumeCodeRestartFlowError):
+            return ConsumeCodePostRestartFlowError()
 
         user = response.user
         session = await create_new_session(api_options.request, user.user_id, {}, {}, user_context=user_context)
-        return ConsumeCodePostOkResponse(
+        return ConsumeCodePostOkResult(
             created_new_user=response.created_new_user,
             user=response.user,
             session=session
         )
 
-    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailExistsGetOkResponse:
+    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailExistsGetOkResult:
         response = await api_options.recipe_implementation.get_user_by_email(email, user_context)
-        return EmailExistsGetOkResponse(exists=response is not None)
+        return EmailExistsGetOkResult(exists=response is not None)
 
-    async def phone_number_exists_get(self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]) -> PhoneNumberExistsGetOkResponse:
+    async def phone_number_exists_get(self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]) -> PhoneNumberExistsGetOkResult:
         response = await api_options.recipe_implementation.get_user_by_phone_number(phone_number, user_context)
-        return PhoneNumberExistsGetOkResponse(exists=response is not None)
+        return PhoneNumberExistsGetOkResult(exists=response is not None)

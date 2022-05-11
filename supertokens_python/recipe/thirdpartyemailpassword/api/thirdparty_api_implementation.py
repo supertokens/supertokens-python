@@ -16,14 +16,14 @@ from __future__ import annotations
 from typing import Any, Dict, Union
 
 from supertokens_python.recipe.thirdparty.interfaces import (
-    APIInterface, APIOptions, SignInUpPostOkResponse,
-    SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse)
+    APIInterface, APIOptions, SignInUpPostOkResult,
+    SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError)
 from supertokens_python.recipe.thirdparty.types import User
 from supertokens_python.recipe.thirdparty.provider import Provider
 
 from ..interfaces import (
     APIInterface as ThirdPartyEmailPasswordAPIInterface,
-    ThirdPartySignInUpPostOkResponse)
+    ThirdPartySignInUpPostOkResult)
 
 
 def get_interface_impl(
@@ -37,12 +37,12 @@ def get_interface_impl(
     implementation.authorisation_url_get = api_implementation.authorisation_url_get
     if not implementation.disable_sign_in_up_post:
         async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
-                                  user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
+                                  user_context: Dict[str, Any]) -> Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError]:
             result = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
-            if isinstance(result, ThirdPartySignInUpPostOkResponse):
+            if isinstance(result, ThirdPartySignInUpPostOkResult):
                 if result.user.third_party_info is None:
                     raise Exception("Third Party Info cannot be None")
-                return SignInUpPostOkResponse(
+                return SignInUpPostOkResult(
                     User(result.user.user_id, result.user.email, result.user.time_joined, result.user.third_party_info),
                     result.created_new_user,
                     result.auth_code_response,

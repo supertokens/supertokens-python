@@ -28,22 +28,22 @@ from ...thirdparty.provider import Provider
 
 from ..interfaces import (
     APIInterface,
-    ConsumeCodePostOkResponse,
-    ConsumeCodePostExpiredUserInputCodeErrorResponse,
-    ConsumeCodePostGeneralErrorResponse,
-    ConsumeCodePostIncorrectUserInputCodeErrorResponse,
-    CreateCodePostOkResponse,
-    CreateCodePostGeneralErrorResponse,
-    PasswordlessEmailExistsGetOkResponse,
-    PasswordlessPhoneNumberExistsGetOkResponse,
-    ConsumeCodePostRestartFlowErrorResponse,
-    ResendCodePostOkResponse,
-    ResendCodePostRestartFlowErrorResponse,
-    ResendCodePostGeneralErrorResponse,
-    AuthorisationUrlGetOkResponse,
-    ThirdPartySignInUpPostOkResponse,
+    ConsumeCodePostOkResult,
+    ConsumeCodePostExpiredUserInputCodeError,
+    ConsumeCodePostGeneralError,
+    ConsumeCodePostIncorrectUserInputCodeError,
+    CreateCodePostOkResult,
+    CreateCodePostGeneralError,
+    PasswordlessEmailExistsGetOkResult,
+    PasswordlessPhoneNumberExistsGetOkResult,
+    ConsumeCodePostRestartFlowError,
+    ResendCodePostOkResult,
+    ResendCodePostRestartFlowError,
+    ResendCodePostGeneralError,
+    AuthorisationUrlGetOkResult,
+    ThirdPartySignInUpPostOkResult,
     ThirdPartySignInUpPostNoEmailGivenByProviderResponse,
-    ThirdPartySignInUpPostFieldErrorResponse
+    ThirdPartySignInUpPostFieldError
 )
 from ..types import User
 
@@ -79,14 +79,14 @@ class APIImplementation(APIInterface):
         thirdparty_implementation.apple_redirect_handler_post = derived_tp.apple_redirect_handler_post
 
     async def authorisation_url_get(self, provider: Provider,
-                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResponse:
+                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResult:
         return await self.tp_authorisation_url_get(provider, api_options, user_context)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResponse, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, ThirdPartySignInUpPostFieldErrorResponse]:
+                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResult, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, ThirdPartySignInUpPostFieldError]:
         result = await self.tp_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
-        if isinstance(result, ThirdPartyInterfaces.SignInUpPostOkResponse):
-            return ThirdPartySignInUpPostOkResponse(
+        if isinstance(result, ThirdPartyInterfaces.SignInUpPostOkResult):
+            return ThirdPartySignInUpPostOkResult(
                 User(result.user.user_id, result.user.email, None, result.user.third_party_info, result.user.time_joined),
                 result.created_new_user,
                 result.auth_code_response,
@@ -102,14 +102,14 @@ class APIImplementation(APIInterface):
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: PasswordlessAPIOptions,
-                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResponse, CreateCodePostGeneralErrorResponse]:
+                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResult, CreateCodePostGeneralError]:
         return await self.pless_create_code_post(email, phone_number, api_options, user_context)
 
     async def resend_code_post(self,
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: PasswordlessAPIOptions,
-                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResponse, ResendCodePostRestartFlowErrorResponse, ResendCodePostGeneralErrorResponse]:
+                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, ResendCodePostGeneralError]:
         return await self.resend_code_post(device_id, pre_auth_session_id, api_options, user_context)
 
     async def consume_code_post(self,
@@ -118,10 +118,10 @@ class APIImplementation(APIInterface):
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
                                 api_options: PasswordlessAPIOptions,
-                                user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse, ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse, ConsumeCodePostExpiredUserInputCodeErrorResponse]:
+                                user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostGeneralError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
         result = await self.pless_consume_code_post(pre_auth_session_id, user_input_code, device_id, link_code, api_options, user_context)
-        if isinstance(result, PlessInterfaces.ConsumeCodePostOkResponse):
-            return ConsumeCodePostOkResponse(
+        if isinstance(result, PlessInterfaces.ConsumeCodePostOkResult):
+            return ConsumeCodePostOkResult(
                 result.created_new_user,
                 User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined),
                 result.session,
@@ -131,11 +131,11 @@ class APIImplementation(APIInterface):
     async def passwordless_user_email_exists_get(self,
                                                  email: str,
                                                  api_options: PasswordlessAPIOptions,
-                                                 user_context: Dict[str, Any]) -> PasswordlessEmailExistsGetOkResponse:
+                                                 user_context: Dict[str, Any]) -> PasswordlessEmailExistsGetOkResult:
         return await self.passwordless_user_email_exists_get(email, api_options, user_context)
 
     async def passwordless_user_phone_number_exists_get(self,
                                                         phone_number: str,
                                                         api_options: PasswordlessAPIOptions,
-                                                        user_context: Dict[str, Any]) -> PasswordlessPhoneNumberExistsGetOkResponse:
+                                                        user_context: Dict[str, Any]) -> PasswordlessPhoneNumberExistsGetOkResult:
         return await self.passwordless_user_phone_number_exists_get(phone_number, api_options, user_context)

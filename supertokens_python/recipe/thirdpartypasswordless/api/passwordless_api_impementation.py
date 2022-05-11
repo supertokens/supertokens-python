@@ -19,14 +19,14 @@ from supertokens_python.recipe.passwordless.interfaces import APIInterface
 from ...passwordless.interfaces import APIOptions as PasswordlessAPIOptions
 
 from ...passwordless.interfaces import (
-    ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse,
-    ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse,
-    ConsumeCodePostExpiredUserInputCodeErrorResponse
+    ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError,
+    ConsumeCodePostGeneralError, ConsumeCodePostIncorrectUserInputCodeError,
+    ConsumeCodePostExpiredUserInputCodeError
 )
 from ...passwordless.types import User
 from ..interfaces import (
     APIInterface as ThirdPartyPasswordlessAPIInterface,
-    ConsumeCodePostOkResponse as ThirdPartyConsumeCodePostOkResponse
+    ConsumeCodePostOkResult as ThirdPartyConsumeCodePostOkResult
 )
 
 
@@ -48,10 +48,10 @@ def get_interface_impl(
                                     device_id: Union[str, None],
                                     link_code: Union[str, None],
                                     api_options: PasswordlessAPIOptions,
-                                    user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResponse, ConsumeCodePostRestartFlowErrorResponse, ConsumeCodePostGeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeErrorResponse, ConsumeCodePostExpiredUserInputCodeErrorResponse]:
+                                    user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostGeneralError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
             result = await api_implementation.consume_code_post(pre_auth_session_id, user_input_code, device_id, link_code, api_options, user_context)
-            if isinstance(result, ThirdPartyConsumeCodePostOkResponse):
-                return ConsumeCodePostOkResponse(
+            if isinstance(result, ThirdPartyConsumeCodePostOkResult):
+                return ConsumeCodePostOkResult(
                     result.created_new_user,
                     User(result.user.user_id, result.user.email, result.user.phone_number, result.user.time_joined),
                     result.session,

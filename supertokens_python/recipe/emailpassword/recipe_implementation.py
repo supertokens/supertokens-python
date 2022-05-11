@@ -18,14 +18,14 @@ from typing import TYPE_CHECKING, Any, Dict, Union
 from supertokens_python.normalised_url_path import NormalisedURLPath
 
 from .interfaces import (CreateResetPasswordOkResult,
-                         CreateResetPasswordWrongUserIdErrorResult,
+                         CreateResetPasswordWrongUserIdError,
                          RecipeInterface, ResetPasswordUsingTokenOkResult,
-                         ResetPasswordUsingTokenInvalidTokenErrorResult,
-                         SignInOkResult, SignInWrongCredentialsErrorResult,
-                         SignUpEmailAlreadyExistsErrorResult, SignUpOkResult,
-                         UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
+                         ResetPasswordUsingTokenInvalidTokenError,
+                         SignInOkResult, SignInWrongCredentialsError,
+                         SignUpEmailAlreadyExistsError, SignUpOkResult,
+                         UpdateEmailOrPasswordEmailAlreadyExistsError,
                          UpdateEmailOrPasswordOkResult,
-                         UpdateEmailOrPasswordUnknownUserIdErrorResult)
+                         UpdateEmailOrPasswordUnknownUserIdError)
 from .types import User
 
 if TYPE_CHECKING:
@@ -57,7 +57,7 @@ class RecipeImplementation(RecipeInterface):
                         ['email'], response['user']['timeJoined'])
         return None
 
-    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult]:
+    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
         data = {
             'userId': user_id
         }
@@ -66,9 +66,9 @@ class RecipeImplementation(RecipeInterface):
             data)
         if 'status' in response and response['status'] == 'OK':
             return CreateResetPasswordOkResult(response['token'])
-        return CreateResetPasswordWrongUserIdErrorResult()
+        return CreateResetPasswordWrongUserIdError()
 
-    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenErrorResult]:
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError]:
         data = {
             'method': 'token',
             'token': token,
@@ -77,13 +77,13 @@ class RecipeImplementation(RecipeInterface):
         response = await self.querier.send_post_request(
             NormalisedURLPath('/recipe/user/password/reset'), data)
         if 'status' not in response or response['status'] != 'OK':
-            return ResetPasswordUsingTokenInvalidTokenErrorResult()
+            return ResetPasswordUsingTokenInvalidTokenError()
         user_id = None
         if 'userId' in response:
             user_id = response['userId']
         return ResetPasswordUsingTokenOkResult(user_id)
 
-    async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignInOkResult, SignInWrongCredentialsErrorResult]:
+    async def sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignInOkResult, SignInWrongCredentialsError]:
         data = {
             'password': password,
             'email': email
@@ -92,9 +92,9 @@ class RecipeImplementation(RecipeInterface):
         if 'status' in response and response['status'] == 'OK':
             return SignInOkResult(
                 User(response['user']['id'], response['user']['email'], response['user']['timeJoined']))
-        return SignInWrongCredentialsErrorResult()
+        return SignInWrongCredentialsError()
 
-    async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsErrorResult]:
+    async def sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[SignUpOkResult, SignUpEmailAlreadyExistsError]:
         data = {
             'password': password,
             'email': email
@@ -103,10 +103,10 @@ class RecipeImplementation(RecipeInterface):
         if 'status' in response and response['status'] == 'OK':
             return SignUpOkResult(
                 User(response['user']['id'], response['user']['email'], response['user']['timeJoined']))
-        return SignUpEmailAlreadyExistsErrorResult()
+        return SignUpEmailAlreadyExistsError()
 
     async def update_email_or_password(self, user_id: str, email: Union[str, None],
-                                       password: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateEmailOrPasswordOkResult, UpdateEmailOrPasswordEmailAlreadyExistsErrorResult, UpdateEmailOrPasswordUnknownUserIdErrorResult]:
+                                       password: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateEmailOrPasswordOkResult, UpdateEmailOrPasswordEmailAlreadyExistsError, UpdateEmailOrPasswordUnknownUserIdError]:
         data = {
             'userId': user_id
         }
@@ -124,5 +124,5 @@ class RecipeImplementation(RecipeInterface):
         if 'status' in response and response['status'] == 'OK':
             return UpdateEmailOrPasswordOkResult()
         if 'status' in response and response['status'] == 'EMAIL_ALREADY_EXISTS_ERROR':
-            return UpdateEmailOrPasswordEmailAlreadyExistsErrorResult()
-        return UpdateEmailOrPasswordUnknownUserIdErrorResult()
+            return UpdateEmailOrPasswordEmailAlreadyExistsError()
+        return UpdateEmailOrPasswordUnknownUserIdError()

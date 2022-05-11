@@ -30,7 +30,7 @@ from supertokens_python.recipe.emailpassword.asyncio import (
 from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface, APIOptions, CreateEmailVerificationTokenOkResult,
-    EmailVerifyPostOkResponse, VerifyEmailUsingTokenInvalidTokenErrorResult)
+    EmailVerifyPostOkResult, VerifyEmailUsingTokenInvalidTokenError)
 from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.emailverification.utils import OverrideConfig
 from supertokens_python.recipe.session import SessionContainer
@@ -553,7 +553,7 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
 
             response = await temp(token, api_options, user_context)
 
-            if isinstance(response, EmailVerifyPostOkResponse):
+            if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
 
             return response
@@ -754,7 +754,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
 
             response = await temp(token, api_options, user_context)
 
-            if isinstance(response, EmailVerifyPostOkResponse):
+            if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
 
             return response
@@ -846,7 +846,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
 
             response = await temp(token, api_options, user_context)
 
-            if isinstance(response, EmailVerifyPostOkResponse):
+            if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
 
             raise BadInputError("verify exception")
@@ -954,7 +954,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
 
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
         response = await verify_email_using_token(verify_token.token)
-        assert isinstance(response, VerifyEmailUsingTokenInvalidTokenErrorResult)
+        assert isinstance(response, VerifyEmailUsingTokenInvalidTokenError)
         return
     raise Exception("Test failed")
 

@@ -22,9 +22,9 @@ from supertokens_python.recipe.emailverification.interfaces import \
     CreateEmailVerificationTokenOkResult
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.thirdparty.interfaces import (
-    APIInterface, AuthorisationUrlGetOkResponse, SignInUpFieldErrorResult,
-    SignInUpPostFieldErrorResponse, SignInUpPostNoEmailGivenByProviderResponse,
-    SignInUpPostOkResponse)
+    APIInterface, AuthorisationUrlGetOkResult, SignInUpFieldError,
+    SignInUpPostFieldError, SignInUpPostNoEmailGivenByProviderResponse,
+    SignInUpPostOkResult)
 from supertokens_python.recipe.thirdparty.types import UserInfo
 
 if TYPE_CHECKING:
@@ -54,7 +54,7 @@ def get_actual_client_id_from_development_client_id(client_id: str):
 
 
 class APIImplementation(APIInterface):
-    async def authorisation_url_get(self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResponse:
+    async def authorisation_url_get(self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResult:
         authorisation_url_info = provider.get_authorisation_redirect_api_info(user_context)
 
         params: Dict[str, str] = {}
@@ -85,9 +85,9 @@ class APIImplementation(APIInterface):
         query_string = urlencode(params)
 
         url = auth_url + '?' + query_string
-        return AuthorisationUrlGetOkResponse(url)
+        return AuthorisationUrlGetOkResult(url)
 
-    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions, user_context: Dict[str, Any]) -> Union[SignInUpPostOkResponse, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldErrorResponse]:
+    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions, user_context: Dict[str, Any]) -> Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError]:
 
         redirect_uri_from_provider = provider.get_redirect_uri(user_context)
         if is_using_oauth_development_client_id(provider.get_client_id(user_context)):
@@ -121,7 +121,7 @@ class APIImplementation(APIInterface):
         try:
             user_info = await provider.get_profile_info(access_token_response, user_context)
         except Exception as e:
-            return SignInUpPostFieldErrorResponse(str(e))
+            return SignInUpPostFieldError(str(e))
         email = user_info.email.id if user_info.email is not None else None
         email_verified = user_info.email.is_verified if user_info.email is not None else None
         if email is None or email_verified is None:
@@ -129,8 +129,8 @@ class APIImplementation(APIInterface):
 
         signinup_response = await api_options.recipe_implementation.sign_in_up(provider.id, user_info.user_id, email, email_verified, user_context)
 
-        if isinstance(signinup_response, SignInUpFieldErrorResult):
-            return SignInUpPostFieldErrorResponse(signinup_response.error)
+        if isinstance(signinup_response, SignInUpFieldError):
+            return SignInUpPostFieldError(signinup_response.error)
 
         if email_verified:
             token_response = await api_options.email_verification_recipe_implementation.create_email_verification_token(user_id=signinup_response.user.user_id, email=signinup_response.user.email, user_context=user_context)
@@ -141,7 +141,7 @@ class APIImplementation(APIInterface):
         user = signinup_response.user
         session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
 
-        return SignInUpPostOkResponse(
+        return SignInUpPostOkResult(
             user, signinup_response.created_new_user, access_token_response, session)
 
     async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions, user_context: Dict[str, Any]):

@@ -20,7 +20,7 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
 
-from .interfaces import (RecipeInterface, SignInUpFieldErrorResult,
+from .interfaces import (RecipeInterface, SignInUpFieldError,
                          SignInUpOkResult)
 from .types import ThirdPartyInfo, User
 
@@ -85,7 +85,7 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldErrorResult]:
+                         email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldError]:
         data = {
             'thirdPartyId': third_party_id,
             'thirdPartyUserId': third_party_user_id,

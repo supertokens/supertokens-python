@@ -32,17 +32,17 @@ from ..interfaces import (
     EmailPasswordSignUpOkResult,
     EmailPasswordSignInOkResult,
     CreateResetPasswordOkResult,
-    CreateResetPasswordWrongUserIdErrorResult,
+    CreateResetPasswordWrongUserIdError,
     ResetPasswordUsingTokenOkResult,
-    ResetPasswordUsingTokenInvalidTokenErrorResult,
-    EmailPasswordSignInWrongCredentialsErrorResult,
-    EmailPasswordSignUpEmailAlreadyExistsErrorResult,
-    UpdateEmailOrPasswordEmailAlreadyExistsErrorResult,
+    ResetPasswordUsingTokenInvalidTokenError,
+    EmailPasswordSignInWrongCredentialsError,
+    EmailPasswordSignUpEmailAlreadyExistsError,
+    UpdateEmailOrPasswordEmailAlreadyExistsError,
     UpdateEmailOrPasswordOkResult,
-    UpdateEmailOrPasswordUnknownUserIdErrorResult,
+    UpdateEmailOrPasswordUnknownUserIdError,
 
     ThirdPartySignInUpOkResult,
-    ThirdPartySignInUpFieldErrorResult)
+    ThirdPartySignInUpFieldError)
 from ..types import User
 from .email_password_recipe_implementation import \
     RecipeImplementation as DerivedEmailPasswordImplementation
@@ -134,7 +134,7 @@ class RecipeImplementation(RecipeInterface):
         return User(user_id=tp_user.user_id, email=tp_user.email, time_joined=tp_user.time_joined, third_party_info=tp_user.third_party_info)
 
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, ThirdPartySignInUpFieldErrorResult]:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, ThirdPartySignInUpFieldError]:
         if self.tp_sign_in_up is None:
             raise Exception("No thirdparty provider configured")
         result = await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
@@ -145,30 +145,30 @@ class RecipeImplementation(RecipeInterface):
             )
         return result
 
-    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInOkResult, EmailPasswordSignInWrongCredentialsErrorResult]:
+    async def emailpassword_sign_in(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignInOkResult, EmailPasswordSignInWrongCredentialsError]:
         result = await self.ep_sign_in(email, password, user_context)
         if isinstance(result, EPInterfaces.SignInOkResult):
             return EmailPasswordSignInOkResult(
                 User(result.user.user_id, result.user.email, result.user.time_joined, None))
         return result
 
-    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpOkResult, EmailPasswordSignUpEmailAlreadyExistsErrorResult]:
+    async def emailpassword_sign_up(self, email: str, password: str, user_context: Dict[str, Any]) -> Union[EmailPasswordSignUpOkResult, EmailPasswordSignUpEmailAlreadyExistsError]:
         result = await self.ep_sign_up(email, password, user_context)
         if isinstance(result, EPInterfaces.SignUpOkResult):
             return EmailPasswordSignUpOkResult(
                 User(result.user.user_id, result.user.email, result.user.time_joined, None))
         return result
 
-    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdErrorResult]:
+    async def create_reset_password_token(self, user_id: str, user_context: Dict[str, Any]) -> Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]:
         return await self.ep_create_reset_password_token(user_id, user_context)
 
-    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenErrorResult]:
+    async def reset_password_using_token(self, token: str, new_password: str, user_context: Dict[str, Any]) -> Union[ResetPasswordUsingTokenOkResult, ResetPasswordUsingTokenInvalidTokenError]:
         return await self.ep_reset_password_using_token(token, new_password, user_context)
 
-    async def update_email_or_password(self, user_id: str, email: Union[None, str], password: Union[None, str], user_context: Dict[str, Any]) -> Union[UpdateEmailOrPasswordOkResult, UpdateEmailOrPasswordEmailAlreadyExistsErrorResult, UpdateEmailOrPasswordUnknownUserIdErrorResult]:
+    async def update_email_or_password(self, user_id: str, email: Union[None, str], password: Union[None, str], user_context: Dict[str, Any]) -> Union[UpdateEmailOrPasswordOkResult, UpdateEmailOrPasswordEmailAlreadyExistsError, UpdateEmailOrPasswordUnknownUserIdError]:
         user = await self.get_user_by_id(user_id, user_context)
         if user is None:
-            return UpdateEmailOrPasswordUnknownUserIdErrorResult()
+            return UpdateEmailOrPasswordUnknownUserIdError()
         if user.third_party_info is not None:
             raise Exception(
                 "Cannot update email or password of a user who signed up using third party login.")

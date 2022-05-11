@@ -16,17 +16,17 @@ from __future__ import annotations
 from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.passwordless.interfaces import (
-    ConsumeCodeExpiredUserInputCodeErrorResult,
-    ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeOkResult,
-    ConsumeCodeRestartFlowErrorResult, CreateCodeOkResult,
+    ConsumeCodeExpiredUserInputCodeError,
+    ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeOkResult,
+    ConsumeCodeRestartFlowError, CreateCodeOkResult,
     CreateNewCodeForDeviceOkResult,
-    CreateNewCodeForDeviceRestartFlowErrorResult,
-    CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult,
-    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult,
+    CreateNewCodeForDeviceRestartFlowError,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError,
     DeviceType, RecipeInterface, RevokeAllCodesOkResult,
-    RevokeCodeOkResult, UpdateUserEmailAlreadyExistsErrorResult,
-    UpdateUserOkResult, UpdateUserPhoneNumberAlreadyExistsErrorResult,
-    UpdateUserUnknownUserIdErrorResult)
+    RevokeCodeOkResult, UpdateUserEmailAlreadyExistsError,
+    UpdateUserOkResult, UpdateUserPhoneNumberAlreadyExistsError,
+    UpdateUserUnknownUserIdError)
 
 from ...passwordless.types import User
 from ..interfaces import (
@@ -52,7 +52,7 @@ class RecipeImplementation(RecipeInterface):
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowErrorResult, CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult]:
+                                         user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
         return await self.create_new_code_for_device(device_id, user_input_code, user_context)
 
     async def consume_code(self,
@@ -60,7 +60,7 @@ class RecipeImplementation(RecipeInterface):
                            user_input_code: Union[str, None],
                            device_id: Union[str, None],
                            link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeErrorResult, ConsumeCodeExpiredUserInputCodeErrorResult, ConsumeCodeRestartFlowErrorResult]:
+                           user_context: Dict[str, Any]) -> Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeExpiredUserInputCodeError, ConsumeCodeRestartFlowError]:
         result = await self.recipe_implementation.consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
         if isinstance(result, ThirdPartyConsumeCodeOkResult):
             return ConsumeCodeOkResult(
@@ -93,13 +93,13 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def update_user(self, user_id: str,
-                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdErrorResult, UpdateUserEmailAlreadyExistsErrorResult, UpdateUserPhoneNumberAlreadyExistsErrorResult]:
+                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -> Union[UpdateUserOkResult, UpdateUserUnknownUserIdError, UpdateUserEmailAlreadyExistsError, UpdateUserPhoneNumberAlreadyExistsError]:
         return await self.recipe_implementation.update_passwordless_user(user_id, email, phone_number, user_context)
 
-    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         return await self.recipe_implementation.delete_email_for_passwordless_user(user_id, user_context)
 
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdErrorResult]:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -> Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         return await self.recipe_implementation.delete_phone_number_for_user(user_id, user_context)
 
     async def revoke_all_codes(self,
