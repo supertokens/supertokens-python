@@ -163,7 +163,7 @@ def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
         real_mode = 'wsgi'
 
     if mode != real_mode:
-        warnings.warn('Inconsistent mode detected, check if you are using the right mode', category=RuntimeWarning)
+        warnings.warn('Inconsistent mode detected, check if you are using the right asgi / wsgi mode', category=RuntimeWarning)
 
     if real_mode == 'wsgi':
         asyncio.run(func())
