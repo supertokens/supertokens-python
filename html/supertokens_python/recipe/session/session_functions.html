@@ -130,8 +130,11 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
                 break
 
     if not found_a_sign_key_that_is_older_than_the_access_token:
+        log_debug_message(
+            &#34;getSession: Returning TRY_REFRESH_TOKEN because signing key in handshake info is not up to date.&#34;
+        )
         raise_try_refresh_token_exception(
-            &#39;anti-csrf check failed&#39;)
+            &#39;access token has expired. Please call the refresh API&#39;)
 
     if handshake_info.anti_csrf == &#39;VIA_TOKEN&#39; and do_anti_csrf_check:
         if access_token_info is not None:
@@ -282,7 +285,7 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
         &#39;sessionHandle&#39;: session_handle
     })
     if response[&#39;status&#39;] == &#39;OK&#39;:
-        return SessionInformationResult(&#39;OK&#39;, response[&#39;sessionHandle&#39;], response[&#39;userId&#39;], response[&#39;userDataInDatabase&#39;], response[&#39;expiry&#39;], response[&#39;userDataInJWT&#39;], response[&#39;timeCreated&#39;])
+        return SessionInformationResult(response[&#39;sessionHandle&#39;], response[&#39;userId&#39;], response[&#39;userDataInDatabase&#39;], response[&#39;expiry&#39;], response[&#39;userDataInJWT&#39;], response[&#39;timeCreated&#39;])
     raise_unauthorised_exception(response[&#39;message&#39;])</code></pre>
 </details>
 </section>
@@ -395,8 +398,11 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
                 break
 
     if not found_a_sign_key_that_is_older_than_the_access_token:
+        log_debug_message(
+            &#34;getSession: Returning TRY_REFRESH_TOKEN because signing key in handshake info is not up to date.&#34;
+        )
         raise_try_refresh_token_exception(
-            &#39;anti-csrf check failed&#39;)
+            &#39;access token has expired. Please call the refresh API&#39;)
 
     if handshake_info.anti_csrf == &#39;VIA_TOKEN&#39; and do_anti_csrf_check:
         if access_token_info is not None:
@@ -479,7 +485,7 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
         &#39;sessionHandle&#39;: session_handle
     })
     if response[&#39;status&#39;] == &#39;OK&#39;:
-        return SessionInformationResult(&#39;OK&#39;, response[&#39;sessionHandle&#39;], response[&#39;userId&#39;], response[&#39;userDataInDatabase&#39;], response[&#39;expiry&#39;], response[&#39;userDataInJWT&#39;], response[&#39;timeCreated&#39;])
+        return SessionInformationResult(response[&#39;sessionHandle&#39;], response[&#39;userId&#39;], response[&#39;userDataInDatabase&#39;], response[&#39;expiry&#39;], response[&#39;userDataInJWT&#39;], response[&#39;timeCreated&#39;])
     raise_unauthorised_exception(response[&#39;message&#39;])</code></pre>
 </details>
 </dd>

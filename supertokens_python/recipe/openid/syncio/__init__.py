@@ -18,10 +18,10 @@ from supertokens_python.recipe.openid import asyncio
 from supertokens_python.recipe.openid.interfaces import \
     GetOpenIdDiscoveryConfigurationResult
 
-from ...jwt.interfaces import CreateJwtResult, GetJWKSResult
+from ...jwt.interfaces import CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult
 
 
-def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -> CreateJwtResult:
+def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     return sync(asyncio.create_jwt(payload, validity_seconds, user_context))
 
 

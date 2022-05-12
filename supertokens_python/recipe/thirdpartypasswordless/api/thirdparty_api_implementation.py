@@ -16,11 +16,14 @@ from __future__ import annotations
 from typing import Any, Dict, Union
 
 from supertokens_python.recipe.thirdparty.interfaces import (
-    APIInterface, APIOptions, SignInUpPostFieldErrorResponse,
-    SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostOkResponse)
+    APIInterface, APIOptions,
+    SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError)
 from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.types import User
 
-from ..interfaces import APIInterface as ThirdPartyPasswordlessAPIInterface
+from ..interfaces import (
+    APIInterface as ThirdPartyPasswordlessAPIInterface,
+    ThirdPartySignInUpPostOkResult)
 
 
 def get_interface_impl(
@@ -31,25 +34,27 @@ def get_interface_impl(
     implementation.disable_sign_in_up_post = api_implementation.disable_thirdparty_sign_in_up_post
     implementation.disable_apple_redirect_handler_post = api_implementation.disable_apple_redirect_handler_post
 
-    if not implementation.disable_sign_in_up_post:
-        async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions, user_context: Dict[str, Any]):
-            result = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
-
-            if result.is_ok:
-                if result.user is None or result.user.third_party_info is None or result.created_new_user is None or result.auth_code_response is None or result.session is None:
-                    raise Exception("Should never come here")
-                return SignInUpPostOkResponse(
-                    result.user, result.created_new_user, result.auth_code_response, result.session)
-
-            if result.is_no_email_given_by_provider:
-                return SignInUpPostNoEmailGivenByProviderResponse()
-            if result.error is None:
-                raise Exception("Should never come here")
-            return SignInUpPostFieldErrorResponse(result.error)
-
-        implementation.sign_in_up_post = sign_in_up_post
-
     implementation.authorisation_url_get = api_implementation.authorisation_url_get
+
+    if not implementation.disable_sign_in_up_post:
+        async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
+                                  user_context: Dict[str, Any]) -> Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError]:
+            response = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
+            if isinstance(response, ThirdPartySignInUpPostOkResult):
+                if response.user.email is None:
+                    raise Exception('User Email cannot be None')
+
+                if response.user.third_party_info is None:
+                    raise Exception('User Third Party Info cannot be None')
+
+                return SignInUpPostOkResult(
+                    User(response.user.user_id, response.user.email, response.user.time_joined, response.user.third_party_info),
+                    response.created_new_user,
+                    response.auth_code_response,
+                    response.session
+                )
+            return response
+        implementation.sign_in_up_post = sign_in_up_post
     implementation.apple_redirect_handler_post = api_implementation.apple_redirect_handler_post
 
     return implementation

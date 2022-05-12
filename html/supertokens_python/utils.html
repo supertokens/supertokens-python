@@ -43,6 +43,7 @@
 from __future__ import annotations
 
 import asyncio
+import warnings
 from base64 import b64decode, b64encode
 from re import fullmatch
 from time import time
@@ -101,12 +102,17 @@ def find_max_version(
     max_v = versions[0]
     for i in range(1, len(versions)):
         version = versions[i]
-        max_v = get_max_version(max_v, version)
+        max_v = _get_max_version(max_v, version)
 
     return max_v
 
 
-def get_max_version(v1: str, v2: str) -&gt; str:
+def is_version_gte(version: str, minimum_minor_version: str) -&gt; bool:
+    assert len(minimum_minor_version.split(&#34;.&#34;)) == 2
+    return _get_max_version(version, minimum_minor_version) == version
+
+
+def _get_max_version(v1: str, v2: str) -&gt; str:
     v1_split = v1.split(&#39;.&#39;)
     v2_split = v2.split(&#39;.&#39;)
     max_loop = min(len(v1_split), len(v2_split))
@@ -176,13 +182,23 @@ def find_first_occurrence_in_list(
     return None
 
 
-def execute_in_background(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
-    if mode == &#39;wsgi&#39;:
+def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
+    real_mode = None
+    try:
+        asyncio.get_running_loop()
+        real_mode = &#39;asgi&#39;
+    except RuntimeError:
+        real_mode = &#39;wsgi&#39;
+
+    if mode != real_mode:
+        warnings.warn(&#39;Inconsistent mode detected, check if you are using the right asgi / wsgi mode&#39;, category=RuntimeWarning)
+
+    if real_mode == &#39;wsgi&#39;:
+        asyncio.run(func())
+    else:
         check_event_loop()
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(func())
-    else:
-        asyncio.create_task(func())
+        loop.create_task(func())
 
 
 def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
@@ -196,8 +212,8 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.utils.execute_in_background"><code class="name flex">
-<span>def <span class="ident">execute_in_background</span></span>(<span>mode: str, func: Callable[[], Coroutine[Any, Any, None]])</span>
+<dt id="supertokens_python.utils.execute_async"><code class="name flex">
+<span>def <span class="ident">execute_async</span></span>(<span>mode: str, func: Callable[[], Coroutine[Any, Any, None]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -205,13 +221,23 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def execute_in_background(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
-    if mode == &#39;wsgi&#39;:
+<pre><code class="python">def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
+    real_mode = None
+    try:
+        asyncio.get_running_loop()
+        real_mode = &#39;asgi&#39;
+    except RuntimeError:
+        real_mode = &#39;wsgi&#39;
+
+    if mode != real_mode:
+        warnings.warn(&#39;Inconsistent mode detected, check if you are using the right asgi / wsgi mode&#39;, category=RuntimeWarning)
+
+    if real_mode == &#39;wsgi&#39;:
+        asyncio.run(func())
+    else:
         check_event_loop()
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(func())
-    else:
-        asyncio.create_task(func())</code></pre>
+        loop.create_task(func())</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.find_first_occurrence_in_list"><code class="name flex">
@@ -249,7 +275,7 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
     max_v = versions[0]
     for i in range(1, len(versions)):
         version = versions[i]
-        max_v = get_max_version(max_v, version)
+        max_v = _get_max_version(max_v, version)
 
     return max_v</code></pre>
 </details>
@@ -291,32 +317,6 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 </summary>
 <pre><code class="python">def get_header(request: BaseRequest, key: str) -&gt; Union[str, None]:
     return request.get_header(key)</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.utils.get_max_version"><code class="name flex">
-<span>def <span class="ident">get_max_version</span></span>(<span>v1: str, v2: str) ‑> str</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_max_version(v1: str, v2: str) -&gt; str:
-    v1_split = v1.split(&#39;.&#39;)
-    v2_split = v2.split(&#39;.&#39;)
-    max_loop = min(len(v1_split), len(v2_split))
-
-    for i in range(max_loop):
-        if int(v1_split[i]) &gt; int(v2_split[i]):
-            return v1
-        if int(v2_split[i]) &gt; int(v1_split[i]):
-            return v2
-
-    if len(v1_split) &gt; len(v2_split):
-        return v1
-
-    return v2</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.get_rid_from_request"><code class="name flex">
@@ -385,6 +385,20 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
         r&#39;^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[&#39;
         r&#39;01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$&#39;,
         ip_address) is not None</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.utils.is_version_gte"><code class="name flex">
+<span>def <span class="ident">is_version_gte</span></span>(<span>version: str, minimum_minor_version: str) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_version_gte(version: str, minimum_minor_version: str) -&gt; bool:
+    assert len(minimum_minor_version.split(&#34;.&#34;)) == 2
+    return _get_max_version(version, minimum_minor_version) == version</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.normalise_http_method"><code class="name flex">
@@ -483,18 +497,18 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.utils.execute_in_background" href="#supertokens_python.utils.execute_in_background">execute_in_background</a></code></li>
+<li><code><a title="supertokens_python.utils.execute_async" href="#supertokens_python.utils.execute_async">execute_async</a></code></li>
 <li><code><a title="supertokens_python.utils.find_first_occurrence_in_list" href="#supertokens_python.utils.find_first_occurrence_in_list">find_first_occurrence_in_list</a></code></li>
 <li><code><a title="supertokens_python.utils.find_max_version" href="#supertokens_python.utils.find_max_version">find_max_version</a></code></li>
 <li><code><a title="supertokens_python.utils.frontend_has_interceptor" href="#supertokens_python.utils.frontend_has_interceptor">frontend_has_interceptor</a></code></li>
 <li><code><a title="supertokens_python.utils.get_filtered_list" href="#supertokens_python.utils.get_filtered_list">get_filtered_list</a></code></li>
 <li><code><a title="supertokens_python.utils.get_header" href="#supertokens_python.utils.get_header">get_header</a></code></li>
-<li><code><a title="supertokens_python.utils.get_max_version" href="#supertokens_python.utils.get_max_version">get_max_version</a></code></li>
 <li><code><a title="supertokens_python.utils.get_rid_from_request" href="#supertokens_python.utils.get_rid_from_request">get_rid_from_request</a></code></li>
 <li><code><a title="supertokens_python.utils.get_timestamp_ms" href="#supertokens_python.utils.get_timestamp_ms">get_timestamp_ms</a></code></li>
 <li><code><a title="supertokens_python.utils.is_4xx_error" href="#supertokens_python.utils.is_4xx_error">is_4xx_error</a></code></li>
 <li><code><a title="supertokens_python.utils.is_5xx_error" href="#supertokens_python.utils.is_5xx_error">is_5xx_error</a></code></li>
 <li><code><a title="supertokens_python.utils.is_an_ip_address" href="#supertokens_python.utils.is_an_ip_address">is_an_ip_address</a></code></li>
+<li><code><a title="supertokens_python.utils.is_version_gte" href="#supertokens_python.utils.is_version_gte">is_version_gte</a></code></li>
 <li><code><a title="supertokens_python.utils.normalise_http_method" href="#supertokens_python.utils.normalise_http_method">normalise_http_method</a></code></li>
 <li><code><a title="supertokens_python.utils.send_200_response" href="#supertokens_python.utils.send_200_response">send_200_response</a></code></li>
 <li><code><a title="supertokens_python.utils.send_non_200_response" href="#supertokens_python.utils.send_non_200_response">send_non_200_response</a></code></li>

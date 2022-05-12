@@ -84,8 +84,9 @@ def get_website_domain():
 
 class CustomAuth0Provider(Provider):
     def __init__(self, client_id: str, client_secret: str, domain: str):
-        super().__init__('auth0', client_id, False)
+        super().__init__('auth0', False)
         self.domain = domain
+        self.client_id = client_id
         self.client_secret = client_secret
         self.authorisation_redirect_url = "https://" + self.domain + "/authorize"
         self.access_token_api_url = "https://" + self.domain + "/oauth/token"
@@ -117,6 +118,9 @@ class CustomAuth0Provider(Provider):
 
     def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
         return None
+
+    def get_client_id(self, user_context: Dict[str, Any]) -> str:
+        return self.client_id
 
 
 CODE_STORE: Dict[str, List[Dict[str, Any]]] = {}

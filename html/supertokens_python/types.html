@@ -39,7 +39,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import List, Union
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Union
 
 
 class ThirdPartyInfo:
@@ -62,7 +63,13 @@ class UsersResponse:
     def __init__(self, users: List[User],
                  next_pagination_token: Union[str, None]):
         self.users: List[User] = users
-        self.next_pagination_token: Union[str, None] = next_pagination_token</code></pre>
+        self.next_pagination_token: Union[str, None] = next_pagination_token
+
+
+class APIResponse(ABC):
+    @abstractmethod
+    def to_json(self) -&gt; Dict[str, Any]:
+        pass</code></pre>
 </details>
 </section>
 <section>
@@ -74,6 +81,87 @@ class UsersResponse:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.types.APIResponse"><code class="flex name class">
+<span>class <span class="ident">APIResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class APIResponse(ABC):
+    @abstractmethod
+    def to_json(self) -&gt; Dict[str, Any]:
+        pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.EmailVerifyPostInvalidTokenError" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailVerifyPostInvalidTokenError">EmailVerifyPostInvalidTokenError</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.EmailVerifyPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailVerifyPostOkResult">EmailVerifyPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError">GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.GenerateEmailVerifyTokenPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.GenerateEmailVerifyTokenPostOkResult">GenerateEmailVerifyTokenPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult">GeneratePasswordResetTokenPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.IsEmailVerifiedGetOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.IsEmailVerifiedGetOkResult">IsEmailVerifiedGetOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse">PasswordResetPostInvalidTokenResponse</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult">PasswordResetPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInPostOkResult">SignInPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostWrongCredentialsError" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInPostWrongCredentialsError">SignInPostWrongCredentialsError</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostEmailAlreadyExistsError" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpPostEmailAlreadyExistsError">SignUpPostEmailAlreadyExistsError</a></li>
+<li><a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignUpPostOkResult">SignUpPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailverification.interfaces.EmailVerifyPostInvalidTokenError" href="recipe/emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.EmailVerifyPostInvalidTokenError">EmailVerifyPostInvalidTokenError</a></li>
+<li><a title="supertokens_python.recipe.emailverification.interfaces.EmailVerifyPostOkResult" href="recipe/emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.EmailVerifyPostOkResult">EmailVerifyPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError" href="recipe/emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError">GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError</a></li>
+<li><a title="supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostOkResult" href="recipe/emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.GenerateEmailVerifyTokenPostOkResult">GenerateEmailVerifyTokenPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.emailverification.interfaces.IsEmailVerifiedGetOkResult" href="recipe/emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.IsEmailVerifiedGetOkResult">IsEmailVerifiedGetOkResult</a></li>
+<li><a title="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse" href="recipe/jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.JWKSGetResponse">JWKSGetResponse</a></li>
+<li><a title="supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse" href="recipe/openid/interfaces.html#supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse">OpenIdDiscoveryConfigurationGetResponse</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError">ConsumeCodePostGeneralError</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError">ConsumeCodePostRestartFlowError</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError">CreateCodePostGeneralError</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult">CreateCodePostOkResult</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult">PhoneNumberExistsGetOkResult</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError">ResendCodePostGeneralError</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult">ResendCodePostOkResult</a></li>
+<li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError">ResendCodePostRestartFlowError</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult" href="recipe/thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult">AuthorisationUrlGetOkResult</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError" href="recipe/thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError">SignInUpPostFieldError</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="recipe/thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a></li>
+<li><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult" href="recipe/thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult">SignInUpPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignInPostOkResult" href="recipe/thirdpartyemailpassword/interfaces.html#supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignInPostOkResult">EmailPasswordSignInPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignUpPostOkResult" href="recipe/thirdpartyemailpassword/interfaces.html#supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignUpPostOkResult">EmailPasswordSignUpPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.ThirdPartySignInUpPostOkResult" href="recipe/thirdpartyemailpassword/interfaces.html#supertokens_python.recipe.thirdpartyemailpassword.interfaces.ThirdPartySignInUpPostOkResult">ThirdPartySignInUpPostOkResult</a></li>
+<li><a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.ConsumeCodePostOkResult" href="recipe/thirdpartypasswordless/interfaces.html#supertokens_python.recipe.thirdpartypasswordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a></li>
+<li><a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.ThirdPartySignInUpPostOkResult" href="recipe/thirdpartypasswordless/interfaces.html#supertokens_python.recipe.thirdpartypasswordless.interfaces.ThirdPartySignInUpPostOkResult">ThirdPartySignInUpPostOkResult</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.types.APIResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def to_json(self) -&gt; Dict[str, Any]:
+    pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="supertokens_python.types.ThirdPartyInfo"><code class="flex name class">
 <span>class <span class="ident">ThirdPartyInfo</span></span>
 <span>(</span><span>third_party_user_id: str, third_party_id: str)</span>
@@ -143,6 +231,12 @@ class UsersResponse:
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="supertokens_python.types.APIResponse" href="#supertokens_python.types.APIResponse">APIResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.APIResponse.to_json" href="#supertokens_python.types.APIResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
 <li>
 <h4><code><a title="supertokens_python.types.ThirdPartyInfo" href="#supertokens_python.types.ThirdPartyInfo">ThirdPartyInfo</a></code></h4>
 </li>

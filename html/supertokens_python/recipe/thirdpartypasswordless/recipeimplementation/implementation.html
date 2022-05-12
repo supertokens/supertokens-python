@@ -43,11 +43,20 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from ...passwordless.interfaces import (CreateCodeResult,
-                                        CreateNewCodeForDeviceResult,
-                                        DeviceType, RevokeAllCodesResult,
-                                        RevokeCodeResult, UpdateUserResult)
-from ...thirdparty.interfaces import SignInUpResult
+from ...passwordless.interfaces import (
+    ConsumeCodeExpiredUserInputCodeError,
+    ConsumeCodeIncorrectUserInputCodeError,
+    ConsumeCodeRestartFlowError, CreateCodeOkResult,
+    CreateNewCodeForDeviceOkResult,
+    CreateNewCodeForDeviceRestartFlowError,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError,
+    DeviceType, RevokeAllCodesOkResult, RevokeCodeOkResult,
+    UpdateUserEmailAlreadyExistsError, UpdateUserOkResult,
+    UpdateUserPhoneNumberAlreadyExistsError,
+    UpdateUserUnknownUserIdError)
+from ...passwordless.interfaces import ConsumeCodeOkResult as PasswordlessConsumeCodeOkResult
+from ...thirdparty.interfaces import SignInUpFieldError, SignInUpOkResult
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -57,11 +66,7 @@ from supertokens_python.recipe.passwordless.recipe_implementation import \
 from supertokens_python.recipe.thirdparty.recipe_implementation import \
     RecipeImplementation as ThirdPartyImplementation
 
-from ..interfaces import (ConsumeCodeExpiredUserInputCodeErrorResult,
-                          ConsumeCodeIncorrectUserInputCodeErrorResult,
-                          ConsumeCodeOkResult,
-                          ConsumeCodeRestartFlowErrorResult, ConsumeCodeResult,
-                          RecipeInterface)
+from ..interfaces import RecipeInterface, ConsumeCodeOkResult
 from ..types import User
 from .passwordless_recipe_implementation import \
     RecipeImplementation as DerivedPasswordlessImplementation
@@ -89,6 +94,8 @@ class RecipeImplementation(RecipeInterface):
         self.pless_revoke_all_codes = passwordless_implementation.revoke_all_codes
         self.pless_revoke_code = passwordless_implementation.revoke_code
         self.pless_update_user = passwordless_implementation.update_user
+        self.pless_delete_email_for_user = passwordless_implementation.delete_email_for_user
+        self.pless_delete_phone_number_for_user = passwordless_implementation.delete_phone_number_for_user
 
         derived_pless = DerivedPasswordlessImplementation(self)
         passwordless_implementation.get_user_by_id = derived_pless.get_user_by_id
@@ -104,6 +111,8 @@ class RecipeImplementation(RecipeInterface):
         passwordless_implementation.revoke_all_codes = derived_pless.revoke_all_codes
         passwordless_implementation.revoke_code = derived_pless.revoke_code
         passwordless_implementation.update_user = derived_pless.update_user
+        passwordless_implementation.delete_email_for_user = derived_pless.delete_email_for_user
+        passwordless_implementation.delete_phone_number_for_user = derived_pless.delete_phone_number_for_user
 
         self.tp_get_user_by_id = None
         self.tp_get_users_by_email = None
@@ -165,7 +174,7 @@ class RecipeImplementation(RecipeInterface):
         return User(user_id=tp_user.user_id, email=tp_user.email, time_joined=tp_user.time_joined, third_party_info=tp_user.third_party_info, phone_number=None)
 
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpResult:
+                                    email_verified: bool, user_context: Dict[str, Any]) -&gt; Union[SignInUpOkResult, SignInUpFieldError]:
         if self.tp_sign_in_up is None:
             raise Exception(&#34;No thirdparty provider configured&#34;)
         return await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
@@ -181,13 +190,13 @@ class RecipeImplementation(RecipeInterface):
                           email: Union[None, str],
                           phone_number: Union[None, str],
                           user_input_code: Union[None, str],
-                          user_context: Dict[str, Any]) -&gt; CreateCodeResult:
+                          user_context: Dict[str, Any]) -&gt; CreateCodeOkResult:
         return await self.pless_create_code(email, phone_number, user_input_code, user_context)
 
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -&gt; CreateNewCodeForDeviceResult:
+                                         user_context: Dict[str, Any]) -&gt; Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
         return await self.pless_create_new_code_for_device(device_id, user_input_code, user_context)
 
     async def consume_code(self,
@@ -195,34 +204,48 @@ class RecipeImplementation(RecipeInterface):
                            user_input_code: Union[str, None],
                            device_id: Union[str, None],
                            link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -&gt; ConsumeCodeResult:
+                           user_context: Dict[str, Any]) -&gt; Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeExpiredUserInputCodeError, ConsumeCodeRestartFlowError]:
         result = await self.pless_consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
-
-        if result.is_ok:
-            if result.user is None or result.created_new_user is None:
-                raise Exception(&#34;Should never come here&#34;)
-            return ConsumeCodeOkResult(result.created_new_user, User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined))
-        if result.is_expired_user_input_code_error:
-            if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
-                raise Exception(&#34;Should never come here&#34;)
-            return ConsumeCodeExpiredUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
-        if result.is_incorrect_user_input_code_error:
-            if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
-                raise Exception(&#34;Should never come here&#34;)
-            return ConsumeCodeIncorrectUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
-
-        # restart flow error
-        return ConsumeCodeRestartFlowErrorResult()
+        if isinstance(result, PasswordlessConsumeCodeOkResult):
+            return ConsumeCodeOkResult(
+                result.created_new_user,
+                User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined)
+            )
+        return result
 
     async def update_passwordless_user(self, user_id: str,
-                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; UpdateUserResult:
+                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError, UpdateUserEmailAlreadyExistsError, UpdateUserPhoneNumberAlreadyExistsError]:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return UpdateUserUnknownUserIdError()
+        if user.third_party_info is not None:
+            raise Exception(
+                &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
         return await self.pless_update_user(user_id, email, phone_number, user_context)
 
+    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return DeleteUserInfoUnknownUserIdError()
+        if user.third_party_info is not None:
+            raise Exception(
+                &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
+        return await self.pless_delete_email_for_user(user_id, user_context)
+
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return DeleteUserInfoUnknownUserIdError()
+        if user.third_party_info is not None:
+            raise Exception(
+                &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
+        return await self.pless_delete_phone_number_for_user(user_id, user_context)
+
     async def revoke_all_codes(self,
-                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesResult:
+                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesOkResult:
         return await self.pless_revoke_all_codes(email, phone_number, user_context)
 
-    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeResult:
+    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeOkResult:
         return await self.pless_revoke_code(code_id, user_context)
 
     async def list_codes_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[DeviceType]:
@@ -279,6 +302,8 @@ inheritance.</p></div>
         self.pless_revoke_all_codes = passwordless_implementation.revoke_all_codes
         self.pless_revoke_code = passwordless_implementation.revoke_code
         self.pless_update_user = passwordless_implementation.update_user
+        self.pless_delete_email_for_user = passwordless_implementation.delete_email_for_user
+        self.pless_delete_phone_number_for_user = passwordless_implementation.delete_phone_number_for_user
 
         derived_pless = DerivedPasswordlessImplementation(self)
         passwordless_implementation.get_user_by_id = derived_pless.get_user_by_id
@@ -294,6 +319,8 @@ inheritance.</p></div>
         passwordless_implementation.revoke_all_codes = derived_pless.revoke_all_codes
         passwordless_implementation.revoke_code = derived_pless.revoke_code
         passwordless_implementation.update_user = derived_pless.update_user
+        passwordless_implementation.delete_email_for_user = derived_pless.delete_email_for_user
+        passwordless_implementation.delete_phone_number_for_user = derived_pless.delete_phone_number_for_user
 
         self.tp_get_user_by_id = None
         self.tp_get_users_by_email = None
@@ -355,7 +382,7 @@ inheritance.</p></div>
         return User(user_id=tp_user.user_id, email=tp_user.email, time_joined=tp_user.time_joined, third_party_info=tp_user.third_party_info, phone_number=None)
 
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpResult:
+                                    email_verified: bool, user_context: Dict[str, Any]) -&gt; Union[SignInUpOkResult, SignInUpFieldError]:
         if self.tp_sign_in_up is None:
             raise Exception(&#34;No thirdparty provider configured&#34;)
         return await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
@@ -371,13 +398,13 @@ inheritance.</p></div>
                           email: Union[None, str],
                           phone_number: Union[None, str],
                           user_input_code: Union[None, str],
-                          user_context: Dict[str, Any]) -&gt; CreateCodeResult:
+                          user_context: Dict[str, Any]) -&gt; CreateCodeOkResult:
         return await self.pless_create_code(email, phone_number, user_input_code, user_context)
 
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -&gt; CreateNewCodeForDeviceResult:
+                                         user_context: Dict[str, Any]) -&gt; Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
         return await self.pless_create_new_code_for_device(device_id, user_input_code, user_context)
 
     async def consume_code(self,
@@ -385,34 +412,48 @@ inheritance.</p></div>
                            user_input_code: Union[str, None],
                            device_id: Union[str, None],
                            link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -&gt; ConsumeCodeResult:
+                           user_context: Dict[str, Any]) -&gt; Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeExpiredUserInputCodeError, ConsumeCodeRestartFlowError]:
         result = await self.pless_consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
-
-        if result.is_ok:
-            if result.user is None or result.created_new_user is None:
-                raise Exception(&#34;Should never come here&#34;)
-            return ConsumeCodeOkResult(result.created_new_user, User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined))
-        if result.is_expired_user_input_code_error:
-            if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
-                raise Exception(&#34;Should never come here&#34;)
-            return ConsumeCodeExpiredUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
-        if result.is_incorrect_user_input_code_error:
-            if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
-                raise Exception(&#34;Should never come here&#34;)
-            return ConsumeCodeIncorrectUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
-
-        # restart flow error
-        return ConsumeCodeRestartFlowErrorResult()
+        if isinstance(result, PasswordlessConsumeCodeOkResult):
+            return ConsumeCodeOkResult(
+                result.created_new_user,
+                User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined)
+            )
+        return result
 
     async def update_passwordless_user(self, user_id: str,
-                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; UpdateUserResult:
+                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError, UpdateUserEmailAlreadyExistsError, UpdateUserPhoneNumberAlreadyExistsError]:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return UpdateUserUnknownUserIdError()
+        if user.third_party_info is not None:
+            raise Exception(
+                &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
         return await self.pless_update_user(user_id, email, phone_number, user_context)
 
+    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return DeleteUserInfoUnknownUserIdError()
+        if user.third_party_info is not None:
+            raise Exception(
+                &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
+        return await self.pless_delete_email_for_user(user_id, user_context)
+
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+        user = await self.get_user_by_id(user_id, user_context)
+        if user is None:
+            return DeleteUserInfoUnknownUserIdError()
+        if user.third_party_info is not None:
+            raise Exception(
+                &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
+        return await self.pless_delete_phone_number_for_user(user_id, user_context)
+
     async def revoke_all_codes(self,
-                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesResult:
+                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesOkResult:
         return await self.pless_revoke_all_codes(email, phone_number, user_context)
 
-    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeResult:
+    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeOkResult:
         return await self.pless_revoke_code(code_id, user_context)
 
     async def list_codes_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[DeviceType]:
@@ -436,7 +477,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.consume_code"><code class="name flex">
-<span>async def <span class="ident">consume_code</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Union[str, None], device_id: Union[str, None], link_code: Union[str, None], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.ConsumeCodeResult" href="../interfaces.html#supertokens_python.recipe.thirdpartypasswordless.interfaces.ConsumeCodeResult">ConsumeCodeResult</a></span>
+<span>async def <span class="ident">consume_code</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Union[str, None], device_id: Union[str, None], link_code: Union[str, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.ConsumeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.thirdpartypasswordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -449,28 +490,18 @@ inheritance.</p></div>
                        user_input_code: Union[str, None],
                        device_id: Union[str, None],
                        link_code: Union[str, None],
-                       user_context: Dict[str, Any]) -&gt; ConsumeCodeResult:
+                       user_context: Dict[str, Any]) -&gt; Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeExpiredUserInputCodeError, ConsumeCodeRestartFlowError]:
     result = await self.pless_consume_code(pre_auth_session_id, user_input_code, device_id, link_code, user_context)
-
-    if result.is_ok:
-        if result.user is None or result.created_new_user is None:
-            raise Exception(&#34;Should never come here&#34;)
-        return ConsumeCodeOkResult(result.created_new_user, User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined))
-    if result.is_expired_user_input_code_error:
-        if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
-            raise Exception(&#34;Should never come here&#34;)
-        return ConsumeCodeExpiredUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
-    if result.is_incorrect_user_input_code_error:
-        if result.failed_code_input_attempt_count is None or result.maximum_code_input_attempts is None:
-            raise Exception(&#34;Should never come here&#34;)
-        return ConsumeCodeIncorrectUserInputCodeErrorResult(result.failed_code_input_attempt_count, result.maximum_code_input_attempts)
-
-    # restart flow error
-    return ConsumeCodeRestartFlowErrorResult()</code></pre>
+    if isinstance(result, PasswordlessConsumeCodeOkResult):
+        return ConsumeCodeOkResult(
+            result.created_new_user,
+            User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined)
+        )
+    return result</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.create_code"><code class="name flex">
-<span>async def <span class="ident">create_code</span></span>(<span>self, email: Union[None, str], phone_number: Union[None, str], user_input_code: Union[None, str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodeResult">CreateCodeResult</a></span>
+<span>async def <span class="ident">create_code</span></span>(<span>self, email: Union[None, str], phone_number: Union[None, str], user_input_code: Union[None, str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult">CreateCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -482,12 +513,12 @@ inheritance.</p></div>
                       email: Union[None, str],
                       phone_number: Union[None, str],
                       user_input_code: Union[None, str],
-                      user_context: Dict[str, Any]) -&gt; CreateCodeResult:
+                      user_context: Dict[str, Any]) -&gt; CreateCodeOkResult:
     return await self.pless_create_code(email, phone_number, user_input_code, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.create_new_code_for_device"><code class="name flex">
-<span>async def <span class="ident">create_new_code_for_device</span></span>(<span>self, device_id: str, user_input_code: Union[str, None], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceResult">CreateNewCodeForDeviceResult</a></span>
+<span>async def <span class="ident">create_new_code_for_device</span></span>(<span>self, device_id: str, user_input_code: Union[str, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult">CreateNewCodeForDeviceOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError">CreateNewCodeForDeviceRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError">CreateNewCodeForDeviceUserInputCodeAlreadyUsedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -498,8 +529,46 @@ inheritance.</p></div>
 <pre><code class="python">async def create_new_code_for_device(self,
                                      device_id: str,
                                      user_input_code: Union[str, None],
-                                     user_context: Dict[str, Any]) -&gt; CreateNewCodeForDeviceResult:
+                                     user_context: Dict[str, Any]) -&gt; Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
     return await self.pless_create_new_code_for_device(device_id, user_input_code, user_context)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.delete_email_for_passwordless_user"><code class="name flex">
+<span>async def <span class="ident">delete_email_for_passwordless_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError">DeleteUserInfoUnknownUserIdError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+    user = await self.get_user_by_id(user_id, user_context)
+    if user is None:
+        return DeleteUserInfoUnknownUserIdError()
+    if user.third_party_info is not None:
+        raise Exception(
+            &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
+    return await self.pless_delete_email_for_user(user_id, user_context)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.delete_phone_number_for_user"><code class="name flex">
+<span>async def <span class="ident">delete_phone_number_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError">DeleteUserInfoUnknownUserIdError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+    user = await self.get_user_by_id(user_id, user_context)
+    if user is None:
+        return DeleteUserInfoUnknownUserIdError()
+    if user.third_party_info is not None:
+        raise Exception(
+            &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
+    return await self.pless_delete_phone_number_for_user(user_id, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_id"><code class="name flex">
@@ -644,7 +713,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.revoke_all_codes"><code class="name flex">
-<span>async def <span class="ident">revoke_all_codes</span></span>(<span>self, email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesResult">RevokeAllCodesResult</a></span>
+<span>async def <span class="ident">revoke_all_codes</span></span>(<span>self, email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult">RevokeAllCodesOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -653,12 +722,12 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def revoke_all_codes(self,
-                           email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesResult:
+                           email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesOkResult:
     return await self.pless_revoke_all_codes(email, phone_number, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.revoke_code"><code class="name flex">
-<span>async def <span class="ident">revoke_code</span></span>(<span>self, code_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeCodeResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeCodeResult">RevokeCodeResult</a></span>
+<span>async def <span class="ident">revoke_code</span></span>(<span>self, code_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult">RevokeCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -666,12 +735,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeResult:
+<pre><code class="python">async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeOkResult:
     return await self.pless_revoke_code(code_id, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.thirdparty_sign_in_up"><code class="name flex">
-<span>async def <span class="ident">thirdparty_sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpResult">SignInUpResult</a></span>
+<span>async def <span class="ident">thirdparty_sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpFieldError" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpFieldError">SignInUpFieldError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -680,14 +749,14 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpResult:
+                                email_verified: bool, user_context: Dict[str, Any]) -&gt; Union[SignInUpOkResult, SignInUpFieldError]:
     if self.tp_sign_in_up is None:
         raise Exception(&#34;No thirdparty provider configured&#34;)
     return await self.tp_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.update_passwordless_user"><code class="name flex">
-<span>async def <span class="ident">update_passwordless_user</span></span>(<span>self, user_id: str, email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserResult">UpdateUserResult</a></span>
+<span>async def <span class="ident">update_passwordless_user</span></span>(<span>self, user_id: str, email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError">UpdateUserEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError" href="../../passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError">UpdateUserPhoneNumberAlreadyExistsError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -696,7 +765,13 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def update_passwordless_user(self, user_id: str,
-                                   email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; UpdateUserResult:
+                                   email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError, UpdateUserEmailAlreadyExistsError, UpdateUserPhoneNumberAlreadyExistsError]:
+    user = await self.get_user_by_id(user_id, user_context)
+    if user is None:
+        return UpdateUserUnknownUserIdError()
+    if user.third_party_info is not None:
+        raise Exception(
+            &#34;Cannot update passwordless user info of a user who signed up using third party login.&#34;)
     return await self.pless_update_user(user_id, email, phone_number, user_context)</code></pre>
 </details>
 </dd>
@@ -724,6 +799,8 @@ inheritance.</p></div>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.consume_code" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.consume_code">consume_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.create_code" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.create_code">create_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.create_new_code_for_device" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.create_new_code_for_device">create_new_code_for_device</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.delete_email_for_passwordless_user" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.delete_email_for_passwordless_user">delete_email_for_passwordless_user</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.delete_phone_number_for_user" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.delete_phone_number_for_user">delete_phone_number_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_id" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_id">get_user_by_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_phone_number" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_phone_number">get_user_by_phone_number</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_thirdparty_info" href="#supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation.RecipeImplementation.get_user_by_thirdparty_info">get_user_by_thirdparty_info</a></code></li>

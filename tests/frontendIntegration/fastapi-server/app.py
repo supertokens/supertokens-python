@@ -36,6 +36,8 @@ from supertokens_python.recipe.session.interfaces import (APIInterface,
                                                           RecipeInterface)
 from typing_extensions import Literal
 
+from supertokens_python.recipe.session.asyncio import update_access_token_payload
+
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
 index_file.close()
@@ -259,6 +261,14 @@ async def update_jwt(sess: SessionContainer = Depends(verify_session())):
 async def update_jwt_post(request: Request, _session: SessionContainer = Depends(verify_session())):
     await _session.update_access_token_payload(await request.json())
     Test.increment_get_session()
+    return JSONResponse(content=_session.get_access_token_payload(), headers={
+        'Cache-Control': 'no-cache, private'
+    })
+
+
+@app.post('/update-jwt-with-handle')
+async def update_jwt_with_handle_post(request: Request, _session: SessionContainer = Depends(verify_session())):
+    await update_access_token_payload(_session.get_handle(), await request.json())
     return JSONResponse(content=_session.get_access_token_payload(), headers={
         'Cache-Control': 'no-cache, private'
     })

@@ -102,8 +102,11 @@ async def get_session(recipe_implementation: RecipeImplementation, access_token:
                 break
 
     if not found_a_sign_key_that_is_older_than_the_access_token:
+        log_debug_message(
+            "getSession: Returning TRY_REFRESH_TOKEN because signing key in handshake info is not up to date."
+        )
         raise_try_refresh_token_exception(
-            'anti-csrf check failed')
+            'access token has expired. Please call the refresh API')
 
     if handshake_info.anti_csrf == 'VIA_TOKEN' and do_anti_csrf_check:
         if access_token_info is not None:
@@ -254,5 +257,5 @@ async def get_session_information(recipe_implementation: RecipeImplementation, s
         'sessionHandle': session_handle
     })
     if response['status'] == 'OK':
-        return SessionInformationResult('OK', response['sessionHandle'], response['userId'], response['userDataInDatabase'], response['expiry'], response['userDataInJWT'], response['timeCreated'])
+        return SessionInformationResult(response['sessionHandle'], response['userId'], response['userDataInDatabase'], response['expiry'], response['userDataInJWT'], response['timeCreated'])
     raise_unauthorised_exception(response['message'])
