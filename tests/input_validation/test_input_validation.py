@@ -1,7 +1,7 @@
 import pytest
 from typing import Dict, Any
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.recipe import emailpassword, emailverification, jwt, openid, passwordless
+from supertokens_python.recipe import emailpassword, emailverification, jwt, openid, passwordless, session
 
 
 @pytest.mark.asyncio
@@ -273,3 +273,78 @@ async def test_init_validation_passwordless():
             ]
         )
     assert 'override must be of type OverrideConfig' == str(ex.value)
+
+
+@pytest.mark.asyncio
+async def test_init_validation_session():
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                session.init(
+                    anti_csrf='ABCDE'  # type: ignore
+                )
+            ]
+        )
+    assert 'anti_csrf must be one of VIA_TOKEN, VIA_CUSTOM_HEADER, NONE or None' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                session.init(
+                    error_handlers='error handlers'  # type: ignore
+                )
+            ]
+        )
+    assert 'error_handlers must be an instance of ErrorHandlers or None' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                session.init(
+                    override='override'  # type: ignore
+                )
+            ]
+        )
+    assert 'override must be an instance of InputOverrideConfig or None' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                session.init(
+                    jwt='jwt'  # type: ignore
+                )
+            ]
+        )
+    assert 'jwt must be an instance of JWTConfig or None' == str(ex.value)
