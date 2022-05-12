@@ -2,7 +2,7 @@ import pytest
 import os
 from typing import Dict, Any, List
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.recipe import emailpassword, emailverification, jwt, openid, passwordless, session, thirdparty, thirdpartyemailpassword, thirdpartypasswordless
+from supertokens_python.recipe import emailpassword, emailverification, jwt, openid, passwordless, session, thirdparty, thirdpartyemailpassword, thirdpartypasswordless, usermetadata
 from supertokens_python.recipe.passwordless.utils import ContactEmailOrPhoneConfig
 from supertokens_python.recipe.thirdparty.provider import Provider
 
@@ -660,3 +660,24 @@ async def test_init_validation_thirdpartypasswordless():
             ]
         )
     assert 'providers must be of type List[Provider] or None' == str(ex.value)
+
+
+@pytest.mark.asyncio
+async def test_init_validation_usermetadata():
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                usermetadata.init(
+                    override='override'  # type: ignore
+                )
+            ]
+        )
+    assert 'override must be an instance of InputOverrideConfig or None' == str(ex.value)
