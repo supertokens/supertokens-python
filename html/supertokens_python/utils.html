@@ -43,6 +43,7 @@
 from __future__ import annotations
 
 import asyncio
+import warnings
 from base64 import b64decode, b64encode
 from re import fullmatch
 from time import time
@@ -182,7 +183,17 @@ def find_first_occurrence_in_list(
 
 
 def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
-    if mode == &#39;wsgi&#39;:
+    real_mode = None
+    try:
+        asyncio.get_running_loop()
+        real_mode = &#39;asgi&#39;
+    except RuntimeError:
+        real_mode = &#39;wsgi&#39;
+
+    if mode != real_mode:
+        warnings.warn(&#39;Inconsistent mode detected, check if you are using the right asgi / wsgi mode&#39;, category=RuntimeWarning)
+
+    if real_mode == &#39;wsgi&#39;:
         asyncio.run(func())
     else:
         check_event_loop()
@@ -211,7 +222,17 @@ def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
-    if mode == &#39;wsgi&#39;:
+    real_mode = None
+    try:
+        asyncio.get_running_loop()
+        real_mode = &#39;asgi&#39;
+    except RuntimeError:
+        real_mode = &#39;wsgi&#39;
+
+    if mode != real_mode:
+        warnings.warn(&#39;Inconsistent mode detected, check if you are using the right asgi / wsgi mode&#39;, category=RuntimeWarning)
+
+    if real_mode == &#39;wsgi&#39;:
         asyncio.run(func())
     else:
         check_event_loop()
