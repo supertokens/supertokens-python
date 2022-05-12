@@ -16,10 +16,12 @@ import pytest
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.recipe import session
 import asyncio
+from tests.utils import reset
 
 
 @pytest.mark.asyncio
 async def test_asgi_telemetry():
+    reset()
     with pytest.warns(None) as record:
         init(
             supertokens_config=SupertokensConfig('http://localhost:3567'),
@@ -47,7 +49,38 @@ async def test_asgi_telemetry():
     assert Supertokens.get_instance()._telemetry_status == 'SKIPPED'  # type: ignore pylint: disable=W0212
 
 
+@pytest.mark.asyncio
+async def test_asgi_telemetry_with_wrong_mode():
+    reset()
+    with pytest.warns(None) as record:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            mode='wsgi',
+            recipe_list=[session.init(
+                anti_csrf='VIA_TOKEN',
+                cookie_domain='supertokens.io',
+                override=session.InputOverrideConfig()
+            )],
+            telemetry=True
+        )
+        await asyncio.sleep(1)
+
+    for warn in record:
+        if warn.category is RuntimeWarning:
+            assert 'Inconsistent mode detected' in str(warn.message), 'Asyncio error'
+
+    assert Supertokens.get_instance()._telemetry_status == 'SKIPPED'  # type: ignore pylint: disable=W0212
+
+
 def test_wsgi_telemetry():
+    reset()
     with pytest.warns(None) as record:
         init(
             supertokens_config=SupertokensConfig('http://localhost:3567'),
@@ -70,5 +103,33 @@ def test_wsgi_telemetry():
     for warn in record:
         if warn.category is RuntimeWarning:
             assert False, 'Asyncio error'
+
+    assert Supertokens.get_instance()._telemetry_status == 'SKIPPED'  # type: ignore pylint: disable=W0212
+
+
+def test_wsgi_telemetry_with_wrong_mode():
+    reset()
+    with pytest.warns(None) as record:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='flask',
+            mode='asgi',
+            recipe_list=[session.init(
+                anti_csrf='VIA_TOKEN',
+                cookie_domain='supertokens.io',
+                override=session.InputOverrideConfig()
+            )],
+            telemetry=True
+        )
+
+    for warn in record:
+        if warn.category is RuntimeWarning:
+            assert 'Inconsistent mode detected' in str(warn.message), 'Asyncio error'
 
     assert Supertokens.get_instance()._telemetry_status == 'SKIPPED'  # type: ignore pylint: disable=W0212
