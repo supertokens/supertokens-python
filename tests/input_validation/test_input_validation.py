@@ -2,7 +2,8 @@ import pytest
 import os
 from typing import Dict, Any, List
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.recipe import emailpassword, emailverification, jwt, openid, passwordless, session, thirdparty, thirdpartyemailpassword
+from supertokens_python.recipe import emailpassword, emailverification, jwt, openid, passwordless, session, thirdparty, thirdpartyemailpassword, thirdpartypasswordless
+from supertokens_python.recipe.passwordless.utils import ContactEmailOrPhoneConfig
 from supertokens_python.recipe.thirdparty.provider import Provider
 
 
@@ -510,6 +511,150 @@ async def test_init_validation_thirdpartyemailpassword():
             framework='fastapi',
             recipe_list=[
                 thirdpartyemailpassword.init(
+                    providers=['providers']  # type: ignore
+                )
+            ]
+        )
+    assert 'providers must be of type List[Provider] or None' == str(ex.value)
+
+
+async def save_code_text(_param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
+    pass
+
+
+async def save_code_email(_param: passwordless.CreateAndSendCustomEmailParameters, _: Dict[str, Any]):
+    pass
+
+
+@pytest.mark.asyncio
+async def test_init_validation_thirdpartypasswordless():
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdpartypasswordless.init(
+                    contact_config='contact config',  # type: ignore
+                    flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
+                )
+            ]
+        )
+    assert 'contact_config must be an instance of ContactConfig' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdpartypasswordless.init(
+                    contact_config=ContactEmailOrPhoneConfig(
+                        create_and_send_custom_text_message=save_code_text,
+                        create_and_send_custom_email=save_code_email,
+                    ),
+                    flow_type='CUSTOM',  # type: ignore
+                )
+            ]
+        )
+    assert 'flow_type must be one of USER_INPUT_CODE, MAGIC_LINK, USER_INPUT_CODE_AND_MAGIC_LINK' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdpartypasswordless.init(
+                    contact_config=ContactEmailOrPhoneConfig(
+                        create_and_send_custom_text_message=save_code_text,
+                        create_and_send_custom_email=save_code_email,
+                    ),
+                    flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
+                    email_verification_feature='email verify'  # type: ignore
+                )
+            ]
+        )
+    assert 'email_verification_feature must be an instance of InputEmailVerificationConfig or None' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdpartypasswordless.init(
+                    contact_config=ContactEmailOrPhoneConfig(
+                        create_and_send_custom_text_message=save_code_text,
+                        create_and_send_custom_email=save_code_email,
+                    ),
+                    flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
+                    override='override'  # type: ignore
+                )
+            ]
+        )
+    assert 'override must be an instance of InputOverrideConfig or None' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdpartypasswordless.init(
+                    contact_config=ContactEmailOrPhoneConfig(
+                        create_and_send_custom_text_message=save_code_text,
+                        create_and_send_custom_email=save_code_email,
+                    ),
+                    flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
+                    providers='providers'  # type: ignore
+                )
+            ]
+        )
+    assert 'providers must be of type List[Provider] or None' == str(ex.value)
+
+    with pytest.raises(ValueError) as ex:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name="SuperTokens Demo",
+                api_domain="http://api.supertokens.io",
+                website_domain="http://supertokens.io",
+                api_base_path="/auth"
+            ),
+            framework='fastapi',
+            recipe_list=[
+                thirdpartypasswordless.init(
+                    contact_config=ContactEmailOrPhoneConfig(
+                        create_and_send_custom_text_message=save_code_text,
+                        create_and_send_custom_email=save_code_email,
+                    ),
+                    flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
                     providers=['providers']  # type: ignore
                 )
             ]
