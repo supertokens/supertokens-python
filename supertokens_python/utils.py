@@ -27,7 +27,7 @@ from supertokens_python.framework.fastapi.framework import FastapiFramework
 from supertokens_python.framework.flask.framework import FlaskFramework
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.framework.response import BaseResponse
-from supertokens_python.logger import log_debug_message
+from supertokens_python.logger import log_debug_message, log_warning_message
 
 from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER
 from .exceptions import raise_general_exception
@@ -154,7 +154,17 @@ def find_first_occurrence_in_list(
 
 
 def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
-    if mode == 'wsgi':
+    real_mode = None
+    try:
+        asyncio.get_running_loop()
+        real_mode = 'asgi'
+    except RuntimeError:
+        real_mode = 'wsgi'
+
+    if mode != real_mode:
+        log_warning_message('Inconsistent mode detected, check if you are using the right mode')
+
+    if real_mode == 'wsgi':
         asyncio.run(func())
     else:
         check_event_loop()
