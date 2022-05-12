@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import asyncio
+import warnings
 from base64 import b64decode, b64encode
 from re import fullmatch
 from time import time
@@ -154,7 +155,17 @@ def find_first_occurrence_in_list(
 
 
 def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
-    if mode == 'wsgi':
+    real_mode = None
+    try:
+        asyncio.get_running_loop()
+        real_mode = 'asgi'
+    except RuntimeError:
+        real_mode = 'wsgi'
+
+    if mode != real_mode:
+        warnings.warn('Inconsistent mode detected, check if you are using the right mode', category=RuntimeWarning)
+
+    if real_mode == 'wsgi':
         asyncio.run(func())
     else:
         check_event_loop()
