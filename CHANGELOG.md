@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.7.3] - 2022-05-12
+- Fixed execute_async to check and use asyncio mode.
+- Ignores any exception from send_telemetry, not to prevent the app from starting up.
+
 ## [0.7.2] - 2022-05-08
 - Bug fix in telemetry data API
 
