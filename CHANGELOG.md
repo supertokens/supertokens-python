@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adds type checks to the parameters of the passwordless init funtion.
 - Adds type checks to the parameters of the thirdparty init funtion.
 - Adds type checks to the parameters of the thirdpartyemailpassword init funtion.
+- Adds type checks to the parameters of the thirdpartypasswordless init funtion.
 
 ## [0.7.2] - 2022-05-08
 - Bug fix in telemetry data API
