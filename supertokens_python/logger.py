@@ -64,7 +64,6 @@ _logger.addHandler(streamHandler)
 
 # Export logger.debug as log_debug_message function
 log_debug_message = _logger.debug
-log_warning_message = _logger.warning
 
 
 def get_maybe_none_as_str(o: Union[str, None]) -> str:
