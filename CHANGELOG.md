@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adds type checks to the parameters of the emailverification init funtion.
 - Adds type checks to the parameters of the jwt init funtion.
 - Adds type checks to the parameters of the openid init funtion.
+- Adds type checks to the parameters of the session init funtion.
 - Adds type checks to the parameters of the passwordless init funtion.
 
 ## [0.7.2] - 2022-05-08
