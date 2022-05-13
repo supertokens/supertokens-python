@@ -29,20 +29,14 @@
 <pre><code class="python">from abc import ABC, abstractmethod
 from typing import Any, Dict
 
-from typing_extensions import Literal
-
 
 class MetadataResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;], metadata: Dict[str, Any]):
-        self.status = status
-        self.is_ok = status == &#39;OK&#39;
+    def __init__(self, metadata: Dict[str, Any]):
         self.metadata = metadata
 
 
-class ClearUserMetadataResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;]):
-        self.status = status
-        self.is_ok = status == &#39;OK&#39;
+class ClearUserMetadataResult():
+    pass
 
 
 class RecipeInterface(ABC):
@@ -92,28 +86,20 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.usermetadata.interfaces.ClearUserMetadataResult"><code class="flex name class">
 <span>class <span class="ident">ClearUserMetadataResult</span></span>
-<span>(</span><span>status: Literal['OK'])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ClearUserMetadataResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;]):
-        self.status = status
-        self.is_ok = status == &#39;OK&#39;</code></pre>
+<pre><code class="python">class ClearUserMetadataResult():
+    pass</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
 </dd>
 <dt id="supertokens_python.recipe.usermetadata.interfaces.MetadataResult"><code class="flex name class">
 <span>class <span class="ident">MetadataResult</span></span>
-<span>(</span><span>status: Literal['OK'], metadata: Dict[str, Any])</span>
+<span>(</span><span>metadata: Dict[str, Any])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -123,9 +109,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class MetadataResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;], metadata: Dict[str, Any]):
-        self.status = status
-        self.is_ok = status == &#39;OK&#39;
+    def __init__(self, metadata: Dict[str, Any]):
         self.metadata = metadata</code></pre>
 </details>
 <h3>Ancestors</h3>

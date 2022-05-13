@@ -46,7 +46,7 @@ from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.openid.interfaces import \
     GetOpenIdDiscoveryConfigurationResult
 
-from ...jwt.interfaces import CreateJwtResult, GetJWKSResult
+from ...jwt.interfaces import CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult
 from ..interfaces import SessionContainer, SessionInformationResult
 
 
@@ -115,7 +115,7 @@ def update_access_token_payload(session_handle: str, new_access_token_payload: D
         session_handle, new_access_token_payload, user_context))
 
 
-def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -&gt; CreateJwtResult:
+def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     from supertokens_python.recipe.session.asyncio import \
         create_jwt as async_create_jwt
     return sync(async_create_jwt(payload, validity_seconds, user_context))
@@ -149,7 +149,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.syncio.create_jwt"><code class="name flex">
-<span>def <span class="ident">create_jwt</span></span>(<span>payload: Dict[str, Any], validity_seconds: Optional[int] = None, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResult">CreateJwtResult</a></span>
+<span>def <span class="ident">create_jwt</span></span>(<span>payload: Dict[str, Any], validity_seconds: Optional[int] = None, user_context: Optional[None] = None) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -157,7 +157,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -&gt; CreateJwtResult:
+<pre><code class="python">def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     from supertokens_python.recipe.session.asyncio import \
         create_jwt as async_create_jwt
     return sync(async_create_jwt(payload, validity_seconds, user_context))</code></pre>

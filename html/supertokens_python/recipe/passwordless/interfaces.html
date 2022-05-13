@@ -46,51 +46,15 @@ from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe.session import SessionContainer
 from typing_extensions import Literal
 
+from supertokens_python.types import APIResponse
+
 from .types import DeviceType, User
 from .utils import PasswordlessConfig
 
 
-class CreateCodeResult(ABC):
-    def __init__(
-            self,
-            status: Literal[&#39;OK&#39;],
-            pre_auth_session_id: str,
-            code_id: str,
-            device_id: str,
-            user_input_code: str,
-            link_code: str,
-            code_life_time: int,
-            time_created: int
-    ):
-        self.status = status
-        self.pre_auth_session_id = pre_auth_session_id
-        self.code_id = code_id
-        self.device_id = device_id
-        self.user_input_code = user_input_code
-        self.link_code = link_code
-        self.code_life_time = code_life_time
-        self.time_created = time_created
-
-
-class CreateCodeOkResult(CreateCodeResult):
+class CreateCodeOkResult():
     def __init__(self, pre_auth_session_id: str, code_id: str, device_id: str,
                  user_input_code: str, link_code: str, code_life_time: int, time_created: int):
-        super().__init__(&#39;OK&#39;, pre_auth_session_id, code_id, device_id, user_input_code, link_code, code_life_time,
-                         time_created)
-
-
-class CreateNewCodeForDeviceResult(ABC):
-    def __init__(self,
-                 status: Literal[&#39;OK&#39;, &#39;RESTART_FLOW_ERROR&#39;, &#39;USER_INPUT_CODE_ALREADY_USED_ERROR&#39;],
-                 pre_auth_session_id: Union[str, None] = None,
-                 code_id: Union[str, None] = None,
-                 device_id: Union[str, None] = None,
-                 user_input_code: Union[str, None] = None,
-                 link_code: Union[str, None] = None,
-                 code_life_time: Union[int, None] = None,
-                 time_created: Union[int, None] = None
-                 ):
-        self.status = status
         self.pre_auth_session_id = pre_auth_session_id
         self.code_id = code_id
         self.device_id = device_id
@@ -98,12 +62,9 @@ class CreateNewCodeForDeviceResult(ABC):
         self.link_code = link_code
         self.code_life_time = code_life_time
         self.time_created = time_created
-        self.is_ok = False
-        self.is_restart_flow_error = False
-        self.is_user_input_code_already_used_error = False
 
 
-class CreateNewCodeForDeviceOkResult(CreateNewCodeForDeviceResult):
+class CreateNewCodeForDeviceOkResult():
     def __init__(self,
                  pre_auth_session_id: str,
                  code_id: str,
@@ -113,151 +74,77 @@ class CreateNewCodeForDeviceOkResult(CreateNewCodeForDeviceResult):
                  code_life_time: int,
                  time_created: int
                  ):
-        super().__init__(
-            &#39;OK&#39;,
-            pre_auth_session_id,
-            code_id,
-            device_id,
-            user_input_code,
-            link_code,
-            code_life_time,
-            time_created
-        )
-        self.is_ok = True
+        self.pre_auth_session_id = pre_auth_session_id
+        self.code_id = code_id
+        self.device_id = device_id
+        self.user_input_code = user_input_code
+        self.link_code = link_code
+        self.code_life_time = code_life_time
+        self.time_created = time_created
 
 
-class CreateNewCodeForDeviceRestartFlowErrorResult(
-        CreateNewCodeForDeviceResult):
-    def __init__(self):
-        super().__init__(&#39;RESTART_FLOW_ERROR&#39;)
-        self.is_restart_flow_error = True
+class CreateNewCodeForDeviceRestartFlowError():
+    pass
 
 
-class CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult(
-        CreateNewCodeForDeviceResult):
-    def __init__(self):
-        super().__init__(&#39;USER_INPUT_CODE_ALREADY_USED_ERROR&#39;)
-        self.is_user_input_code_already_used_error = True
+class CreateNewCodeForDeviceUserInputCodeAlreadyUsedError():
+    pass
 
 
-class ConsumeCodeResult(ABC):
-    def __init__(self,
-                 status: Literal[&#39;OK&#39;,
-                                 &#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;,
-                                 &#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;,
-                                 &#39;RESTART_FLOW_ERROR&#39;],
-                 created_new_user: Union[bool, None] = None,
-                 user: Union[User, None] = None,
-                 failed_code_input_attempt_count: Union[int, None] = None,
-                 maximum_code_input_attempts: Union[int, None] = None
-                 ):
-        self.status: Literal[&#39;OK&#39;,
-                             &#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;,
-                             &#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;,
-                             &#39;RESTART_FLOW_ERROR&#39;] = status
-        self.created_new_user: Union[bool, None] = created_new_user
-        self.user: Union[User, None] = user
-        self.failed_code_input_attempt_count: Union[int, None] = failed_code_input_attempt_count
-        self.maximum_code_input_attempts: Union[int, None] = maximum_code_input_attempts
-        self.is_ok: bool = False
-        self.is_incorrect_user_input_code_error: bool = False
-        self.is_expired_user_input_code_error: bool = False
-        self.is_restart_flow_error: bool = False
-
-
-class ConsumeCodeOkResult(ConsumeCodeResult):
+class ConsumeCodeOkResult():
     def __init__(self, created_new_user: bool, user: User):
-        super().__init__(&#39;OK&#39;, created_new_user=created_new_user, user=user)
-        self.is_ok = True
+        self.created_new_user = created_new_user
+        self.user = user
 
 
-class ConsumeCodeIncorrectUserInputCodeErrorResult(ConsumeCodeResult):
+class ConsumeCodeIncorrectUserInputCodeError():
     def __init__(self, failed_code_input_attempt_count: int,
                  maximum_code_input_attempts: int):
-        super().__init__(&#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;,
-                         failed_code_input_attempt_count=failed_code_input_attempt_count,
-                         maximum_code_input_attempts=maximum_code_input_attempts)
-        self.is_incorrect_user_input_code_error = True
+        self.failed_code_input_attempt_count = failed_code_input_attempt_count
+        self.maximum_code_input_attempts = maximum_code_input_attempts
 
 
-class ConsumeCodeExpiredUserInputCodeErrorResult(ConsumeCodeResult):
+class ConsumeCodeExpiredUserInputCodeError():
     def __init__(self, failed_code_input_attempt_count: int,
                  maximum_code_input_attempts: int):
-        super().__init__(&#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;,
-                         failed_code_input_attempt_count=failed_code_input_attempt_count,
-                         maximum_code_input_attempts=maximum_code_input_attempts)
-        self.is_expired_user_input_code_error = True
+        self.failed_code_input_attempt_count = failed_code_input_attempt_count
+        self.maximum_code_input_attempts = maximum_code_input_attempts
 
 
-class ConsumeCodeRestartFlowErrorResult(ConsumeCodeResult):
-    def __init__(self):
-        super().__init__(&#39;RESTART_FLOW_ERROR&#39;)
-        self.is_restart_flow_error = True
+class ConsumeCodeRestartFlowError():
+    pass
 
 
-class UpdateUserResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;, &#39;UNKNOWN_USER_ID_ERROR&#39;,
-                 &#39;EMAIL_ALREADY_EXISTS_ERROR&#39;, &#39;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#39;]):
-        self.status = status
+class UpdateUserOkResult():
+    pass
 
 
-class DeleteUserInfoResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;, &#39;UNKNOWN_USER_ID_ERROR&#39;]):
-        self.status = status
-        self.is_ok = False
-        self.is_unknown_user_id_error = False
+class UpdateUserUnknownUserIdError():
+    pass
 
 
-class DeleteUserInfoOkResult(DeleteUserInfoResult):
-    def __init__(self):
-        super().__init__(&#39;OK&#39;)
-        self.is_ok = True
+class UpdateUserEmailAlreadyExistsError():
+    pass
 
 
-class DeleteUserInfoUnknownUserIdErrorResult(DeleteUserInfoResult):
-    def __init__(self):
-        super().__init__(&#39;UNKNOWN_USER_ID_ERROR&#39;)
-        self.is_unknown_user_id_error = True
+class UpdateUserPhoneNumberAlreadyExistsError():
+    pass
 
 
-class UpdateUserOkResult(UpdateUserResult):
-    def __init__(self):
-        super().__init__(&#39;OK&#39;)
+class DeleteUserInfoOkResult():
+    pass
 
 
-class UpdateUserUnknownUserIdErrorResult(UpdateUserResult):
-    def __init__(self):
-        super().__init__(&#39;UNKNOWN_USER_ID_ERROR&#39;)
+class DeleteUserInfoUnknownUserIdError():
+    pass
 
 
-class UpdateUserEmailAlreadyExistsErrorResult(UpdateUserResult):
-    def __init__(self):
-        super().__init__(&#39;EMAIL_ALREADY_EXISTS_ERROR&#39;)
+class RevokeAllCodesOkResult():
+    pass
 
 
-class UpdateUserPhoneNumberAlreadyExistsErrorResult(UpdateUserResult):
-    def __init__(self):
-        super().__init__(&#39;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#39;)
-
-
-class RevokeAllCodesResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;]):
-        self.status = status
-
-
-class RevokeAllCodesOkResult(RevokeAllCodesResult):
-    def __init__(self):
-        super().__init__(&#39;OK&#39;)
-
-
-class RevokeCodeResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;]):
-        self.status = status
-
-
-class RevokeCodeOkResult(RevokeCodeResult):
-    def __init__(self):
-        super().__init__(&#39;OK&#39;)
+class RevokeCodeOkResult():
+    pass
 
 
 class RecipeInterface(ABC):
@@ -269,14 +156,14 @@ class RecipeInterface(ABC):
                           email: Union[None, str],
                           phone_number: Union[None, str],
                           user_input_code: Union[None, str],
-                          user_context: Dict[str, Any]) -&gt; CreateCodeResult:
+                          user_context: Dict[str, Any]) -&gt; CreateCodeOkResult:
         pass
 
     @abstractmethod
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -&gt; CreateNewCodeForDeviceResult:
+                                         user_context: Dict[str, Any]) -&gt; Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
         pass
 
     @abstractmethod
@@ -285,7 +172,7 @@ class RecipeInterface(ABC):
                            user_input_code: Union[str, None],
                            device_id: Union[str, None],
                            link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -&gt; ConsumeCodeResult:
+                           user_context: Dict[str, Any]) -&gt; Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeExpiredUserInputCodeError, ConsumeCodeRestartFlowError]:
         pass
 
     @abstractmethod
@@ -302,24 +189,24 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def update_user(self, user_id: str,
-                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; UpdateUserResult:
+                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError, UpdateUserEmailAlreadyExistsError, UpdateUserPhoneNumberAlreadyExistsError]:
         pass
 
     @abstractmethod
-    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         pass
 
     @abstractmethod
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         pass
 
     @abstractmethod
     async def revoke_all_codes(self,
-                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesResult:
+                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesOkResult:
         pass
 
     @abstractmethod
-    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeResult:
+    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeOkResult:
         pass
 
     @abstractmethod
@@ -350,42 +237,17 @@ class APIOptions:
         self.recipe_implementation = recipe_implementation
 
 
-class CreateCodePostResponse(ABC):
-    def __init__(
-        self,
-        status: Literal[&#39;OK&#39;, &#39;GENERAL_ERROR&#39;],
-        device_id: Union[str, None] = None,
-        pre_auth_session_id: Union[str, None] = None,
-        flow_type: Union[None, Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;,
-                                       &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;]] = None,
-        message: Union[str, None] = None
-    ):
-        self.status = status
-        self.device_id = device_id
-        self.pre_auth_session_id = pre_auth_session_id
-        self.flow_type = flow_type
-        self.message = message
-        self.is_ok = False
-        self.is_general_error = False
+class CreateCodePostOkResult(APIResponse):
+    status: str = &#39;OK&#39;
 
-    @abstractmethod
-    def to_json(self) -&gt; Dict[str, Any]:
-        pass
-
-
-class CreateCodePostOkResponse(CreateCodePostResponse):
     def __init__(
             self,
             device_id: str,
             pre_auth_session_id: str,
             flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;]):
-        super().__init__(
-            status=&#39;OK&#39;,
-            device_id=device_id,
-            pre_auth_session_id=pre_auth_session_id,
-            flow_type=flow_type
-        )
-        self.is_ok = True
+        self.device_id = device_id
+        self.pre_auth_session_id = pre_auth_session_id
+        self.flow_type = flow_type
 
     def to_json(self):
         return {
@@ -396,68 +258,13 @@ class CreateCodePostOkResponse(CreateCodePostResponse):
         }
 
 
-class CreateCodePostGeneralErrorResponse(CreateCodePostResponse):
+class CreateCodePostGeneralError(APIResponse):
+    status: str = &#39;GENERAL_ERROR&#39;
+
     def __init__(
             self,
             message: str):
-        super().__init__(
-            status=&#39;GENERAL_ERROR&#39;,
-            message=message
-        )
-        self.is_general_error = True
-
-    def to_json(self):
-        return {
-            &#39;status&#39;: self.status,
-            &#39;message&#39;: self.message
-        }
-
-
-class ResendCodePostResponse(ABC):
-    def __init__(
-        self,
-        status: Literal[&#39;OK&#39;, &#39;GENERAL_ERROR&#39;, &#39;RESTART_FLOW_ERROR&#39;],
-        message: Union[str, None] = None
-    ):
-        self.status = status
         self.message = message
-        self.is_ok = False
-        self.is_general_error = False
-        self.is_restart_flow_error = False
-
-    @abstractmethod
-    def to_json(self) -&gt; Dict[str, Any]:
-        pass
-
-
-class ResendCodePostOkResponse(ResendCodePostResponse):
-    def __init__(self):
-        super().__init__(status=&#39;OK&#39;)
-        self.is_ok = True
-
-    def to_json(self):
-        return {
-            &#39;status&#39;: self.status
-        }
-
-
-class ResendCodePostRestartFlowErrorResponse(ResendCodePostResponse):
-    def __init__(self):
-        super().__init__(
-            status=&#39;RESTART_FLOW_ERROR&#39;
-        )
-        self.is_restart_flow_error = True
-
-    def to_json(self):
-        return {
-            &#39;status&#39;: self.status
-        }
-
-
-class ResendCodePostGeneralErrorResponse(ResendCodePostResponse):
-    def __init__(self, message: str):
-        super().__init__(status=&#39;GENERAL_ERROR&#39;, message=message)
-        self.is_general_error = True
 
     def to_json(self):
         return {
@@ -466,59 +273,46 @@ class ResendCodePostGeneralErrorResponse(ResendCodePostResponse):
         }
 
 
-class ConsumeCodePostResponse(ABC):
-    def __init__(
-        self,
-        status: Literal[
-            &#39;OK&#39;,
-            &#39;GENERAL_ERROR&#39;,
-            &#39;RESTART_FLOW_ERROR&#39;,
-            &#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;,
-            &#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;
-        ],
-        created_new_user: Union[bool, None] = None,
-        user: Union[User, None] = None,
-        session: Union[SessionContainer, None] = None,
-        message: Union[str, None] = None,
-        failed_code_input_attempt_count: Union[int, None] = None,
-        maximum_code_input_attempts: Union[int, None] = None
-    ):
-        self.status: Literal[
-            &#39;OK&#39;,
-            &#39;GENERAL_ERROR&#39;,
-            &#39;RESTART_FLOW_ERROR&#39;,
-            &#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;,
-            &#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;
-        ] = status
-        self.session: Union[SessionContainer, None] = session
-        self.created_new_user: Union[bool, None] = created_new_user
-        self.user: Union[User, None] = user
-        self.failed_code_input_attempt_count: Union[int, None] = failed_code_input_attempt_count
-        self.maximum_code_input_attempts: Union[int, None] = maximum_code_input_attempts
-        self.message: Union[str, None] = message
-        self.is_ok: bool = False
-        self.is_general_error: bool = False
-        self.is_restart_flow_error: bool = False
-        self.is_incorrect_user_input_code_error: bool = False
-        self.is_expired_user_input_code_error: bool = False
-
-    @abstractmethod
-    def to_json(self) -&gt; Dict[str, Any]:
-        pass
-
-
-class ConsumeCodePostOkResponse(ConsumeCodePostResponse):
-    def __init__(self, created_new_user: bool, user: User, session: SessionContainer):
-        super().__init__(
-            status=&#39;OK&#39;,
-            created_new_user=created_new_user,
-            user=user,
-            session=session)
-        self.is_ok = True
+class ResendCodePostOkResult(APIResponse):
+    status: str = &#39;OK&#39;
 
     def to_json(self):
-        if self.user is None:
-            raise Exception(&#34;Should never come here&#34;)
+        return {
+            &#39;status&#39;: self.status
+        }
+
+
+class ResendCodePostRestartFlowError(APIResponse):
+    status: str = &#39;RESTART_FLOW_ERROR&#39;
+
+    def to_json(self):
+        return {
+            &#39;status&#39;: self.status
+        }
+
+
+class ResendCodePostGeneralError(APIResponse):
+    status: str = &#39;GENERAL_ERROR&#39;
+
+    def __init__(self, message: str):
+        self.message = message
+
+    def to_json(self):
+        return {
+            &#39;status&#39;: self.status,
+            &#39;message&#39;: self.message
+        }
+
+
+class ConsumeCodePostOkResult(APIResponse):
+    status: str = &#39;OK&#39;
+
+    def __init__(self, created_new_user: bool, user: User, session: SessionContainer):
+        self.created_new_user = created_new_user
+        self.user = user
+        self.session = session
+
+    def to_json(self):
         user = {
             &#39;id&#39;: self.user.user_id,
             &#39;time_joined&#39;: self.user.time_joined
@@ -540,12 +334,8 @@ class ConsumeCodePostOkResponse(ConsumeCodePostResponse):
         }
 
 
-class ConsumeCodePostRestartFlowErrorResponse(ConsumeCodePostResponse):
-    def __init__(self):
-        super().__init__(
-            status=&#39;RESTART_FLOW_ERROR&#39;
-        )
-        self.is_restart_flow_error = True
+class ConsumeCodePostRestartFlowError(APIResponse):
+    status: str = &#39;RESTART_FLOW_ERROR&#39;
 
     def to_json(self):
         return {
@@ -553,15 +343,13 @@ class ConsumeCodePostRestartFlowErrorResponse(ConsumeCodePostResponse):
         }
 
 
-class ConsumeCodePostGeneralErrorResponse(ConsumeCodePostResponse):
+class ConsumeCodePostGeneralError(APIResponse):
+    status: str = &#39;GENERAL_ERROR&#39;
+
     def __init__(
             self,
             message: str):
-        super().__init__(
-            status=&#39;GENERAL_ERROR&#39;,
-            message=message
-        )
-        self.is_general_error = True
+        self.message = message
 
     def to_json(self):
         return {
@@ -570,18 +358,16 @@ class ConsumeCodePostGeneralErrorResponse(ConsumeCodePostResponse):
         }
 
 
-class ConsumeCodePostIncorrectUserInputCodeErrorResponse(
-        ConsumeCodePostResponse):
+class ConsumeCodePostIncorrectUserInputCodeError(
+        APIResponse):
+    status: str = &#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;
+
     def __init__(
             self,
             failed_code_input_attempt_count: int,
             maximum_code_input_attempts: int):
-        super().__init__(
-            status=&#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;,
-            failed_code_input_attempt_count=failed_code_input_attempt_count,
-            maximum_code_input_attempts=maximum_code_input_attempts
-        )
-        self.is_incorrect_user_input_code_error = True
+        self.failed_code_input_attempt_count = failed_code_input_attempt_count
+        self.maximum_code_input_attempts = maximum_code_input_attempts
 
     def to_json(self):
         return {
@@ -591,18 +377,16 @@ class ConsumeCodePostIncorrectUserInputCodeErrorResponse(
         }
 
 
-class ConsumeCodePostExpiredUserInputCodeErrorResponse(
-        ConsumeCodePostResponse):
+class ConsumeCodePostExpiredUserInputCodeError(
+        APIResponse):
+    status: str = &#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;
+
     def __init__(
             self,
             failed_code_input_attempt_count: int,
             maximum_code_input_attempts: int):
-        super().__init__(
-            status=&#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;,
-            failed_code_input_attempt_count=failed_code_input_attempt_count,
-            maximum_code_input_attempts=maximum_code_input_attempts
-        )
-        self.is_expired_user_input_code_error = True
+        self.failed_code_input_attempt_count = failed_code_input_attempt_count
+        self.maximum_code_input_attempts = maximum_code_input_attempts
 
     def to_json(self):
         return {
@@ -612,13 +396,10 @@ class ConsumeCodePostExpiredUserInputCodeErrorResponse(
         }
 
 
-class PhoneNumberExistsGetResponse(ABC):
-    def __init__(
-        self,
-        status: Literal[&#39;OK&#39;],
-        exists: bool
-    ):
-        self.status = status
+class PhoneNumberExistsGetOkResult(APIResponse):
+    status: str = &#39;OK&#39;
+
+    def __init__(self, exists: bool):
         self.exists = exists
 
     def to_json(self):
@@ -628,18 +409,10 @@ class PhoneNumberExistsGetResponse(ABC):
         }
 
 
-class PhoneNumberExistsGetOkResponse(PhoneNumberExistsGetResponse):
+class EmailExistsGetOkResult(APIResponse):
+    status: str = &#39;OK&#39;
+
     def __init__(self, exists: bool):
-        super().__init__(status=&#39;OK&#39;, exists=exists)
-
-
-class EmailExistsGetResponse(ABC):
-    def __init__(
-        self,
-        status: Literal[&#39;OK&#39;],
-        exists: bool
-    ):
-        self.status = status
         self.exists = exists
 
     def to_json(self):
@@ -647,11 +420,6 @@ class EmailExistsGetResponse(ABC):
             &#39;status&#39;: self.status,
             &#39;exists&#39;: self.exists
         }
-
-
-class EmailExistsGetOkResponse(EmailExistsGetResponse):
-    def __init__(self, exists: bool):
-        super().__init__(status=&#39;OK&#39;, exists=exists)
 
 
 class APIInterface:
@@ -667,7 +435,7 @@ class APIInterface:
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -&gt; CreateCodePostResponse:
+                               user_context: Dict[str, Any]) -&gt; Union[CreateCodePostOkResult, CreateCodePostGeneralError]:
         pass
 
     @abstractmethod
@@ -675,7 +443,7 @@ class APIInterface:
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -&gt; ResendCodePostResponse:
+                               user_context: Dict[str, Any]) -&gt; Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, ResendCodePostGeneralError]:
         pass
 
     @abstractmethod
@@ -685,21 +453,21 @@ class APIInterface:
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
                                 api_options: APIOptions,
-                                user_context: Dict[str, Any]) -&gt; ConsumeCodePostResponse:
+                                user_context: Dict[str, Any]) -&gt; Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostGeneralError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
         pass
 
     @abstractmethod
     async def email_exists_get(self,
                                email: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -&gt; EmailExistsGetResponse:
+                               user_context: Dict[str, Any]) -&gt; EmailExistsGetOkResult:
         pass
 
     @abstractmethod
     async def phone_number_exists_get(self,
                                       phone_number: str,
                                       api_options: APIOptions,
-                                      user_context: Dict[str, Any]) -&gt; PhoneNumberExistsGetResponse:
+                                      user_context: Dict[str, Any]) -&gt; PhoneNumberExistsGetOkResult:
         pass</code></pre>
 </details>
 </section>
@@ -734,7 +502,7 @@ class APIInterface:
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -&gt; CreateCodePostResponse:
+                               user_context: Dict[str, Any]) -&gt; Union[CreateCodePostOkResult, CreateCodePostGeneralError]:
         pass
 
     @abstractmethod
@@ -742,7 +510,7 @@ class APIInterface:
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -&gt; ResendCodePostResponse:
+                               user_context: Dict[str, Any]) -&gt; Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, ResendCodePostGeneralError]:
         pass
 
     @abstractmethod
@@ -752,21 +520,21 @@ class APIInterface:
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
                                 api_options: APIOptions,
-                                user_context: Dict[str, Any]) -&gt; ConsumeCodePostResponse:
+                                user_context: Dict[str, Any]) -&gt; Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostGeneralError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
         pass
 
     @abstractmethod
     async def email_exists_get(self,
                                email: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -&gt; EmailExistsGetResponse:
+                               user_context: Dict[str, Any]) -&gt; EmailExistsGetOkResult:
         pass
 
     @abstractmethod
     async def phone_number_exists_get(self,
                                       phone_number: str,
                                       api_options: APIOptions,
-                                      user_context: Dict[str, Any]) -&gt; PhoneNumberExistsGetResponse:
+                                      user_context: Dict[str, Any]) -&gt; PhoneNumberExistsGetOkResult:
         pass</code></pre>
 </details>
 <h3>Subclasses</h3>
@@ -776,7 +544,7 @@ class APIInterface:
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.interfaces.APIInterface.consume_code_post"><code class="name flex">
-<span>async def <span class="ident">consume_code_post</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Optional[str], device_id: Optional[str], link_code: Optional[str], api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse">ConsumeCodePostResponse</a></span>
+<span>async def <span class="ident">consume_code_post</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Optional[str], device_id: Optional[str], link_code: Optional[str], api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError">ConsumeCodePostRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError">ConsumeCodePostGeneralError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -791,12 +559,12 @@ async def consume_code_post(self,
                             device_id: Union[str, None],
                             link_code: Union[str, None],
                             api_options: APIOptions,
-                            user_context: Dict[str, Any]) -&gt; ConsumeCodePostResponse:
+                            user_context: Dict[str, Any]) -&gt; Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostGeneralError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.APIInterface.create_code_post"><code class="name flex">
-<span>async def <span class="ident">create_code_post</span></span>(<span>self, email: Optional[str], phone_number: Optional[str], api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostResponse">CreateCodePostResponse</a></span>
+<span>async def <span class="ident">create_code_post</span></span>(<span>self, email: Optional[str], phone_number: Optional[str], api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult">CreateCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError">CreateCodePostGeneralError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -809,12 +577,12 @@ async def create_code_post(self,
                            email: Union[str, None],
                            phone_number: Union[str, None],
                            api_options: APIOptions,
-                           user_context: Dict[str, Any]) -&gt; CreateCodePostResponse:
+                           user_context: Dict[str, Any]) -&gt; Union[CreateCodePostOkResult, CreateCodePostGeneralError]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.APIInterface.email_exists_get"><code class="name flex">
-<span>async def <span class="ident">email_exists_get</span></span>(<span>self, email: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetResponse" href="#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetResponse">EmailExistsGetResponse</a></span>
+<span>async def <span class="ident">email_exists_get</span></span>(<span>self, email: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult" href="#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -826,12 +594,12 @@ async def create_code_post(self,
 async def email_exists_get(self,
                            email: str,
                            api_options: APIOptions,
-                           user_context: Dict[str, Any]) -&gt; EmailExistsGetResponse:
+                           user_context: Dict[str, Any]) -&gt; EmailExistsGetOkResult:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.APIInterface.phone_number_exists_get"><code class="name flex">
-<span>async def <span class="ident">phone_number_exists_get</span></span>(<span>self, phone_number: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetResponse" href="#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetResponse">PhoneNumberExistsGetResponse</a></span>
+<span>async def <span class="ident">phone_number_exists_get</span></span>(<span>self, phone_number: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult" href="#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult">PhoneNumberExistsGetOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -843,12 +611,12 @@ async def email_exists_get(self,
 async def phone_number_exists_get(self,
                                   phone_number: str,
                                   api_options: APIOptions,
-                                  user_context: Dict[str, Any]) -&gt; PhoneNumberExistsGetResponse:
+                                  user_context: Dict[str, Any]) -&gt; PhoneNumberExistsGetOkResult:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.APIInterface.resend_code_post"><code class="name flex">
-<span>async def <span class="ident">resend_code_post</span></span>(<span>self, device_id: str, pre_auth_session_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse">ResendCodePostResponse</a></span>
+<span>async def <span class="ident">resend_code_post</span></span>(<span>self, device_id: str, pre_auth_session_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult">ResendCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError">ResendCodePostRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError">ResendCodePostGeneralError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -861,7 +629,7 @@ async def resend_code_post(self,
                            device_id: str,
                            pre_auth_session_id: str,
                            api_options: APIOptions,
-                           user_context: Dict[str, Any]) -&gt; ResendCodePostResponse:
+                           user_context: Dict[str, Any]) -&gt; Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, ResendCodePostGeneralError]:
     pass</code></pre>
 </details>
 </dd>
@@ -887,80 +655,58 @@ async def resend_code_post(self,
         self.recipe_implementation = recipe_implementation</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeErrorResult"><code class="flex name class">
-<span>class <span class="ident">ConsumeCodeExpiredUserInputCodeErrorResult</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError"><code class="flex name class">
+<span>class <span class="ident">ConsumeCodeExpiredUserInputCodeError</span></span>
 <span>(</span><span>failed_code_input_attempt_count: int, maximum_code_input_attempts: int)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ConsumeCodeExpiredUserInputCodeErrorResult(ConsumeCodeResult):
+<pre><code class="python">class ConsumeCodeExpiredUserInputCodeError():
     def __init__(self, failed_code_input_attempt_count: int,
                  maximum_code_input_attempts: int):
-        super().__init__(&#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;,
-                         failed_code_input_attempt_count=failed_code_input_attempt_count,
-                         maximum_code_input_attempts=maximum_code_input_attempts)
-        self.is_expired_user_input_code_error = True</code></pre>
+        self.failed_code_input_attempt_count = failed_code_input_attempt_count
+        self.maximum_code_input_attempts = maximum_code_input_attempts</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeResult">ConsumeCodeResult</a></li>
-<li>abc.ABC</li>
-</ul>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeErrorResult"><code class="flex name class">
-<span>class <span class="ident">ConsumeCodeIncorrectUserInputCodeErrorResult</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError"><code class="flex name class">
+<span>class <span class="ident">ConsumeCodeIncorrectUserInputCodeError</span></span>
 <span>(</span><span>failed_code_input_attempt_count: int, maximum_code_input_attempts: int)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ConsumeCodeIncorrectUserInputCodeErrorResult(ConsumeCodeResult):
+<pre><code class="python">class ConsumeCodeIncorrectUserInputCodeError():
     def __init__(self, failed_code_input_attempt_count: int,
                  maximum_code_input_attempts: int):
-        super().__init__(&#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;,
-                         failed_code_input_attempt_count=failed_code_input_attempt_count,
-                         maximum_code_input_attempts=maximum_code_input_attempts)
-        self.is_incorrect_user_input_code_error = True</code></pre>
+        self.failed_code_input_attempt_count = failed_code_input_attempt_count
+        self.maximum_code_input_attempts = maximum_code_input_attempts</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeResult">ConsumeCodeResult</a></li>
-<li>abc.ABC</li>
-</ul>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult"><code class="flex name class">
 <span>class <span class="ident">ConsumeCodeOkResult</span></span>
 <span>(</span><span>created_new_user: bool, user: <a title="supertokens_python.recipe.passwordless.types.User" href="types.html#supertokens_python.recipe.passwordless.types.User">User</a>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ConsumeCodeOkResult(ConsumeCodeResult):
+<pre><code class="python">class ConsumeCodeOkResult():
     def __init__(self, created_new_user: bool, user: User):
-        super().__init__(&#39;OK&#39;, created_new_user=created_new_user, user=user)
-        self.is_ok = True</code></pre>
+        self.created_new_user = created_new_user
+        self.user = user</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeResult">ConsumeCodeResult</a></li>
-<li>abc.ABC</li>
-</ul>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeErrorResponse"><code class="flex name class">
-<span>class <span class="ident">ConsumeCodePostExpiredUserInputCodeErrorResponse</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError"><code class="flex name class">
+<span>class <span class="ident">ConsumeCodePostExpiredUserInputCodeError</span></span>
 <span>(</span><span>failed_code_input_attempt_count: int, maximum_code_input_attempts: int)</span>
 </code></dt>
 <dd>
@@ -970,18 +716,16 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ConsumeCodePostExpiredUserInputCodeErrorResponse(
-        ConsumeCodePostResponse):
+<pre><code class="python">class ConsumeCodePostExpiredUserInputCodeError(
+        APIResponse):
+    status: str = &#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;
+
     def __init__(
             self,
             failed_code_input_attempt_count: int,
             maximum_code_input_attempts: int):
-        super().__init__(
-            status=&#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;,
-            failed_code_input_attempt_count=failed_code_input_attempt_count,
-            maximum_code_input_attempts=maximum_code_input_attempts
-        )
-        self.is_expired_user_input_code_error = True
+        self.failed_code_input_attempt_count = failed_code_input_attempt_count
+        self.maximum_code_input_attempts = maximum_code_input_attempts
 
     def to_json(self):
         return {
@@ -992,12 +736,19 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse">ConsumeCodePostResponse</a></li>
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeErrorResponse.to_json"><code class="name flex">
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1016,8 +767,8 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralErrorResponse"><code class="flex name class">
-<span>class <span class="ident">ConsumeCodePostGeneralErrorResponse</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError"><code class="flex name class">
+<span>class <span class="ident">ConsumeCodePostGeneralError</span></span>
 <span>(</span><span>message: str)</span>
 </code></dt>
 <dd>
@@ -1027,15 +778,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ConsumeCodePostGeneralErrorResponse(ConsumeCodePostResponse):
+<pre><code class="python">class ConsumeCodePostGeneralError(APIResponse):
+    status: str = &#39;GENERAL_ERROR&#39;
+
     def __init__(
             self,
             message: str):
-        super().__init__(
-            status=&#39;GENERAL_ERROR&#39;,
-            message=message
-        )
-        self.is_general_error = True
+        self.message = message
 
     def to_json(self):
         return {
@@ -1045,12 +794,19 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse">ConsumeCodePostResponse</a></li>
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralErrorResponse.to_json"><code class="name flex">
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1068,8 +824,8 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeErrorResponse"><code class="flex name class">
-<span>class <span class="ident">ConsumeCodePostIncorrectUserInputCodeErrorResponse</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError"><code class="flex name class">
+<span>class <span class="ident">ConsumeCodePostIncorrectUserInputCodeError</span></span>
 <span>(</span><span>failed_code_input_attempt_count: int, maximum_code_input_attempts: int)</span>
 </code></dt>
 <dd>
@@ -1079,18 +835,16 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ConsumeCodePostIncorrectUserInputCodeErrorResponse(
-        ConsumeCodePostResponse):
+<pre><code class="python">class ConsumeCodePostIncorrectUserInputCodeError(
+        APIResponse):
+    status: str = &#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;
+
     def __init__(
             self,
             failed_code_input_attempt_count: int,
             maximum_code_input_attempts: int):
-        super().__init__(
-            status=&#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;,
-            failed_code_input_attempt_count=failed_code_input_attempt_count,
-            maximum_code_input_attempts=maximum_code_input_attempts
-        )
-        self.is_incorrect_user_input_code_error = True
+        self.failed_code_input_attempt_count = failed_code_input_attempt_count
+        self.maximum_code_input_attempts = maximum_code_input_attempts
 
     def to_json(self):
         return {
@@ -1101,12 +855,19 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse">ConsumeCodePostResponse</a></li>
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeErrorResponse.to_json"><code class="name flex">
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1125,8 +886,8 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResponse"><code class="flex name class">
-<span>class <span class="ident">ConsumeCodePostOkResponse</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult"><code class="flex name class">
+<span>class <span class="ident">ConsumeCodePostOkResult</span></span>
 <span>(</span><span>created_new_user: bool, user: <a title="supertokens_python.recipe.passwordless.types.User" href="types.html#supertokens_python.recipe.passwordless.types.User">User</a>, session: <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>)</span>
 </code></dt>
 <dd>
@@ -1136,18 +897,15 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ConsumeCodePostOkResponse(ConsumeCodePostResponse):
+<pre><code class="python">class ConsumeCodePostOkResult(APIResponse):
+    status: str = &#39;OK&#39;
+
     def __init__(self, created_new_user: bool, user: User, session: SessionContainer):
-        super().__init__(
-            status=&#39;OK&#39;,
-            created_new_user=created_new_user,
-            user=user,
-            session=session)
-        self.is_ok = True
+        self.created_new_user = created_new_user
+        self.user = user
+        self.session = session
 
     def to_json(self):
-        if self.user is None:
-            raise Exception(&#34;Should never come here&#34;)
         user = {
             &#39;id&#39;: self.user.user_id,
             &#39;time_joined&#39;: self.user.time_joined
@@ -1170,12 +928,19 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse">ConsumeCodePostResponse</a></li>
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResponse.to_json"><code class="name flex">
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1185,8 +950,6 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_json(self):
-    if self.user is None:
-        raise Exception(&#34;Should never come here&#34;)
     user = {
         &#39;id&#39;: self.user.user_id,
         &#39;time_joined&#39;: self.user.time_joined
@@ -1210,9 +973,8 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse"><code class="flex name class">
-<span>class <span class="ident">ConsumeCodePostResponse</span></span>
-<span>(</span><span>status: Literal['OK', 'GENERAL_ERROR', 'RESTART_FLOW_ERROR', 'INCORRECT_USER_INPUT_CODE_ERROR', 'EXPIRED_USER_INPUT_CODE_ERROR'], created_new_user: Optional[bool] = None, user: Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="types.html#supertokens_python.recipe.passwordless.types.User">User</a>] = None, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>] = None, message: Optional[str] = None, failed_code_input_attempt_count: Optional[int] = None, maximum_code_input_attempts: Optional[int] = None)</span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError"><code class="flex name class">
+<span>class <span class="ident">ConsumeCodePostRestartFlowError</span></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1221,92 +983,8 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ConsumeCodePostResponse(ABC):
-    def __init__(
-        self,
-        status: Literal[
-            &#39;OK&#39;,
-            &#39;GENERAL_ERROR&#39;,
-            &#39;RESTART_FLOW_ERROR&#39;,
-            &#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;,
-            &#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;
-        ],
-        created_new_user: Union[bool, None] = None,
-        user: Union[User, None] = None,
-        session: Union[SessionContainer, None] = None,
-        message: Union[str, None] = None,
-        failed_code_input_attempt_count: Union[int, None] = None,
-        maximum_code_input_attempts: Union[int, None] = None
-    ):
-        self.status: Literal[
-            &#39;OK&#39;,
-            &#39;GENERAL_ERROR&#39;,
-            &#39;RESTART_FLOW_ERROR&#39;,
-            &#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;,
-            &#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;
-        ] = status
-        self.session: Union[SessionContainer, None] = session
-        self.created_new_user: Union[bool, None] = created_new_user
-        self.user: Union[User, None] = user
-        self.failed_code_input_attempt_count: Union[int, None] = failed_code_input_attempt_count
-        self.maximum_code_input_attempts: Union[int, None] = maximum_code_input_attempts
-        self.message: Union[str, None] = message
-        self.is_ok: bool = False
-        self.is_general_error: bool = False
-        self.is_restart_flow_error: bool = False
-        self.is_incorrect_user_input_code_error: bool = False
-        self.is_expired_user_input_code_error: bool = False
-
-    @abstractmethod
-    def to_json(self) -&gt; Dict[str, Any]:
-        pass</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeErrorResponse">ConsumeCodePostExpiredUserInputCodeErrorResponse</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralErrorResponse">ConsumeCodePostGeneralErrorResponse</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeErrorResponse">ConsumeCodePostIncorrectUserInputCodeErrorResponse</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResponse">ConsumeCodePostOkResponse</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowErrorResponse">ConsumeCodePostRestartFlowErrorResponse</a></li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def to_json(self) -&gt; Dict[str, Any]:
-    pass</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowErrorResponse"><code class="flex name class">
-<span>class <span class="ident">ConsumeCodePostRestartFlowErrorResponse</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class ConsumeCodePostRestartFlowErrorResponse(ConsumeCodePostResponse):
-    def __init__(self):
-        super().__init__(
-            status=&#39;RESTART_FLOW_ERROR&#39;
-        )
-        self.is_restart_flow_error = True
+<pre><code class="python">class ConsumeCodePostRestartFlowError(APIResponse):
+    status: str = &#39;RESTART_FLOW_ERROR&#39;
 
     def to_json(self):
         return {
@@ -1315,12 +993,19 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse">ConsumeCodePostResponse</a></li>
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowErrorResponse.to_json"><code class="name flex">
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1337,99 +1022,43 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowErrorResult"><code class="flex name class">
-<span>class <span class="ident">ConsumeCodeRestartFlowErrorResult</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError"><code class="flex name class">
+<span>class <span class="ident">ConsumeCodeRestartFlowError</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ConsumeCodeRestartFlowErrorResult(ConsumeCodeResult):
-    def __init__(self):
-        super().__init__(&#39;RESTART_FLOW_ERROR&#39;)
-        self.is_restart_flow_error = True</code></pre>
+<pre><code class="python">class ConsumeCodeRestartFlowError():
+    pass</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeResult">ConsumeCodeResult</a></li>
-<li>abc.ABC</li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeResult"><code class="flex name class">
-<span>class <span class="ident">ConsumeCodeResult</span></span>
-<span>(</span><span>status: Literal['OK', 'INCORRECT_USER_INPUT_CODE_ERROR', 'EXPIRED_USER_INPUT_CODE_ERROR', 'RESTART_FLOW_ERROR'], created_new_user: Optional[bool] = None, user: Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="types.html#supertokens_python.recipe.passwordless.types.User">User</a>] = None, failed_code_input_attempt_count: Optional[int] = None, maximum_code_input_attempts: Optional[int] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class ConsumeCodeResult(ABC):
-    def __init__(self,
-                 status: Literal[&#39;OK&#39;,
-                                 &#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;,
-                                 &#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;,
-                                 &#39;RESTART_FLOW_ERROR&#39;],
-                 created_new_user: Union[bool, None] = None,
-                 user: Union[User, None] = None,
-                 failed_code_input_attempt_count: Union[int, None] = None,
-                 maximum_code_input_attempts: Union[int, None] = None
-                 ):
-        self.status: Literal[&#39;OK&#39;,
-                             &#39;INCORRECT_USER_INPUT_CODE_ERROR&#39;,
-                             &#39;EXPIRED_USER_INPUT_CODE_ERROR&#39;,
-                             &#39;RESTART_FLOW_ERROR&#39;] = status
-        self.created_new_user: Union[bool, None] = created_new_user
-        self.user: Union[User, None] = user
-        self.failed_code_input_attempt_count: Union[int, None] = failed_code_input_attempt_count
-        self.maximum_code_input_attempts: Union[int, None] = maximum_code_input_attempts
-        self.is_ok: bool = False
-        self.is_incorrect_user_input_code_error: bool = False
-        self.is_expired_user_input_code_error: bool = False
-        self.is_restart_flow_error: bool = False</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeErrorResult">ConsumeCodeExpiredUserInputCodeErrorResult</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeErrorResult">ConsumeCodeIncorrectUserInputCodeErrorResult</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowErrorResult">ConsumeCodeRestartFlowErrorResult</a></li>
-</ul>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult"><code class="flex name class">
 <span>class <span class="ident">CreateCodeOkResult</span></span>
 <span>(</span><span>pre_auth_session_id: str, code_id: str, device_id: str, user_input_code: str, link_code: str, code_life_time: int, time_created: int)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CreateCodeOkResult(CreateCodeResult):
+<pre><code class="python">class CreateCodeOkResult():
     def __init__(self, pre_auth_session_id: str, code_id: str, device_id: str,
                  user_input_code: str, link_code: str, code_life_time: int, time_created: int):
-        super().__init__(&#39;OK&#39;, pre_auth_session_id, code_id, device_id, user_input_code, link_code, code_life_time,
-                         time_created)</code></pre>
+        self.pre_auth_session_id = pre_auth_session_id
+        self.code_id = code_id
+        self.device_id = device_id
+        self.user_input_code = user_input_code
+        self.link_code = link_code
+        self.code_life_time = code_life_time
+        self.time_created = time_created</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodeResult">CreateCodeResult</a></li>
-<li>abc.ABC</li>
-</ul>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralErrorResponse"><code class="flex name class">
-<span>class <span class="ident">CreateCodePostGeneralErrorResponse</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError"><code class="flex name class">
+<span>class <span class="ident">CreateCodePostGeneralError</span></span>
 <span>(</span><span>message: str)</span>
 </code></dt>
 <dd>
@@ -1439,15 +1068,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CreateCodePostGeneralErrorResponse(CreateCodePostResponse):
+<pre><code class="python">class CreateCodePostGeneralError(APIResponse):
+    status: str = &#39;GENERAL_ERROR&#39;
+
     def __init__(
             self,
             message: str):
-        super().__init__(
-            status=&#39;GENERAL_ERROR&#39;,
-            message=message
-        )
-        self.is_general_error = True
+        self.message = message
 
     def to_json(self):
         return {
@@ -1457,12 +1084,19 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostResponse">CreateCodePostResponse</a></li>
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralErrorResponse.to_json"><code class="name flex">
+<dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1480,8 +1114,8 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResponse"><code class="flex name class">
-<span>class <span class="ident">CreateCodePostOkResponse</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult"><code class="flex name class">
+<span>class <span class="ident">CreateCodePostOkResult</span></span>
 <span>(</span><span>device_id: str, pre_auth_session_id: str, flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'])</span>
 </code></dt>
 <dd>
@@ -1491,19 +1125,17 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CreateCodePostOkResponse(CreateCodePostResponse):
+<pre><code class="python">class CreateCodePostOkResult(APIResponse):
+    status: str = &#39;OK&#39;
+
     def __init__(
             self,
             device_id: str,
             pre_auth_session_id: str,
             flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;]):
-        super().__init__(
-            status=&#39;OK&#39;,
-            device_id=device_id,
-            pre_auth_session_id=pre_auth_session_id,
-            flow_type=flow_type
-        )
-        self.is_ok = True
+        self.device_id = device_id
+        self.pre_auth_session_id = pre_auth_session_id
+        self.flow_type = flow_type
 
     def to_json(self):
         return {
@@ -1515,12 +1147,19 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostResponse">CreateCodePostResponse</a></li>
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResponse.to_json"><code class="name flex">
+<dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1540,52 +1179,9 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodePostResponse"><code class="flex name class">
-<span>class <span class="ident">CreateCodePostResponse</span></span>
-<span>(</span><span>status: Literal['OK', 'GENERAL_ERROR'], device_id: Optional[str] = None, pre_auth_session_id: Optional[str] = None, flow_type: Optional[None] = None, message: Optional[str] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CreateCodePostResponse(ABC):
-    def __init__(
-        self,
-        status: Literal[&#39;OK&#39;, &#39;GENERAL_ERROR&#39;],
-        device_id: Union[str, None] = None,
-        pre_auth_session_id: Union[str, None] = None,
-        flow_type: Union[None, Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;,
-                                       &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;]] = None,
-        message: Union[str, None] = None
-    ):
-        self.status = status
-        self.device_id = device_id
-        self.pre_auth_session_id = pre_auth_session_id
-        self.flow_type = flow_type
-        self.message = message
-        self.is_ok = False
-        self.is_general_error = False
-
-    @abstractmethod
-    def to_json(self) -&gt; Dict[str, Any]:
-        pass</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralErrorResponse">CreateCodePostGeneralErrorResponse</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResponse" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResponse">CreateCodePostOkResponse</a></li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodePostResponse.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult"><code class="flex name class">
+<span>class <span class="ident">CreateNewCodeForDeviceOkResult</span></span>
+<span>(</span><span>pre_auth_session_id: str, code_id: str, device_id: str, user_input_code: str, link_code: str, code_life_time: int, time_created: int)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1593,66 +1189,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@abstractmethod
-def to_json(self) -&gt; Dict[str, Any]:
-    pass</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.CreateCodeResult"><code class="flex name class">
-<span>class <span class="ident">CreateCodeResult</span></span>
-<span>(</span><span>status: Literal['OK'], pre_auth_session_id: str, code_id: str, device_id: str, user_input_code: str, link_code: str, code_life_time: int, time_created: int)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CreateCodeResult(ABC):
-    def __init__(
-            self,
-            status: Literal[&#39;OK&#39;],
-            pre_auth_session_id: str,
-            code_id: str,
-            device_id: str,
-            user_input_code: str,
-            link_code: str,
-            code_life_time: int,
-            time_created: int
-    ):
-        self.status = status
-        self.pre_auth_session_id = pre_auth_session_id
-        self.code_id = code_id
-        self.device_id = device_id
-        self.user_input_code = user_input_code
-        self.link_code = link_code
-        self.code_life_time = code_life_time
-        self.time_created = time_created</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult">CreateCodeOkResult</a></li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult"><code class="flex name class">
-<span>class <span class="ident">CreateNewCodeForDeviceOkResult</span></span>
-<span>(</span><span>pre_auth_session_id: str, code_id: str, device_id: str, user_input_code: str, link_code: str, code_life_time: int, time_created: int)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CreateNewCodeForDeviceOkResult(CreateNewCodeForDeviceResult):
+<pre><code class="python">class CreateNewCodeForDeviceOkResult():
     def __init__(self,
                  pre_auth_session_id: str,
                  code_id: str,
@@ -1662,184 +1199,69 @@ inheritance.</p></div>
                  code_life_time: int,
                  time_created: int
                  ):
-        super().__init__(
-            &#39;OK&#39;,
-            pre_auth_session_id,
-            code_id,
-            device_id,
-            user_input_code,
-            link_code,
-            code_life_time,
-            time_created
-        )
-        self.is_ok = True</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceResult">CreateNewCodeForDeviceResult</a></li>
-<li>abc.ABC</li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowErrorResult"><code class="flex name class">
-<span>class <span class="ident">CreateNewCodeForDeviceRestartFlowErrorResult</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CreateNewCodeForDeviceRestartFlowErrorResult(
-        CreateNewCodeForDeviceResult):
-    def __init__(self):
-        super().__init__(&#39;RESTART_FLOW_ERROR&#39;)
-        self.is_restart_flow_error = True</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceResult">CreateNewCodeForDeviceResult</a></li>
-<li>abc.ABC</li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceResult"><code class="flex name class">
-<span>class <span class="ident">CreateNewCodeForDeviceResult</span></span>
-<span>(</span><span>status: Literal['OK', 'RESTART_FLOW_ERROR', 'USER_INPUT_CODE_ALREADY_USED_ERROR'], pre_auth_session_id: Optional[str] = None, code_id: Optional[str] = None, device_id: Optional[str] = None, user_input_code: Optional[str] = None, link_code: Optional[str] = None, code_life_time: Optional[int] = None, time_created: Optional[int] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CreateNewCodeForDeviceResult(ABC):
-    def __init__(self,
-                 status: Literal[&#39;OK&#39;, &#39;RESTART_FLOW_ERROR&#39;, &#39;USER_INPUT_CODE_ALREADY_USED_ERROR&#39;],
-                 pre_auth_session_id: Union[str, None] = None,
-                 code_id: Union[str, None] = None,
-                 device_id: Union[str, None] = None,
-                 user_input_code: Union[str, None] = None,
-                 link_code: Union[str, None] = None,
-                 code_life_time: Union[int, None] = None,
-                 time_created: Union[int, None] = None
-                 ):
-        self.status = status
         self.pre_auth_session_id = pre_auth_session_id
         self.code_id = code_id
         self.device_id = device_id
         self.user_input_code = user_input_code
         self.link_code = link_code
         self.code_life_time = code_life_time
-        self.time_created = time_created
-        self.is_ok = False
-        self.is_restart_flow_error = False
-        self.is_user_input_code_already_used_error = False</code></pre>
+        self.time_created = time_created</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult">CreateNewCodeForDeviceOkResult</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowErrorResult">CreateNewCodeForDeviceRestartFlowErrorResult</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult">CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult</a></li>
-</ul>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult"><code class="flex name class">
-<span>class <span class="ident">CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError"><code class="flex name class">
+<span>class <span class="ident">CreateNewCodeForDeviceRestartFlowError</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult(
-        CreateNewCodeForDeviceResult):
-    def __init__(self):
-        super().__init__(&#39;USER_INPUT_CODE_ALREADY_USED_ERROR&#39;)
-        self.is_user_input_code_already_used_error = True</code></pre>
+<pre><code class="python">class CreateNewCodeForDeviceRestartFlowError():
+    pass</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceResult">CreateNewCodeForDeviceResult</a></li>
-<li>abc.ABC</li>
-</ul>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError"><code class="flex name class">
+<span>class <span class="ident">CreateNewCodeForDeviceUserInputCodeAlreadyUsedError</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CreateNewCodeForDeviceUserInputCodeAlreadyUsedError():
+    pass</code></pre>
+</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult"><code class="flex name class">
 <span>class <span class="ident">DeleteUserInfoOkResult</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class DeleteUserInfoOkResult(DeleteUserInfoResult):
-    def __init__(self):
-        super().__init__(&#39;OK&#39;)
-        self.is_ok = True</code></pre>
+<pre><code class="python">class DeleteUserInfoOkResult():
+    pass</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></li>
-<li>abc.ABC</li>
-</ul>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult"><code class="flex name class">
-<span>class <span class="ident">DeleteUserInfoResult</span></span>
-<span>(</span><span>status: Literal['OK', 'UNKNOWN_USER_ID_ERROR'])</span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError"><code class="flex name class">
+<span>class <span class="ident">DeleteUserInfoUnknownUserIdError</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class DeleteUserInfoResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;, &#39;UNKNOWN_USER_ID_ERROR&#39;]):
-        self.status = status
-        self.is_ok = False
-        self.is_unknown_user_id_error = False</code></pre>
+<pre><code class="python">class DeleteUserInfoUnknownUserIdError():
+    pass</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdErrorResult">DeleteUserInfoUnknownUserIdErrorResult</a></li>
-</ul>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdErrorResult"><code class="flex name class">
-<span>class <span class="ident">DeleteUserInfoUnknownUserIdErrorResult</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class DeleteUserInfoUnknownUserIdErrorResult(DeleteUserInfoResult):
-    def __init__(self):
-        super().__init__(&#39;UNKNOWN_USER_ID_ERROR&#39;)
-        self.is_unknown_user_id_error = True</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></li>
-<li>abc.ABC</li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResponse"><code class="flex name class">
-<span>class <span class="ident">EmailExistsGetOkResponse</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult"><code class="flex name class">
+<span>class <span class="ident">EmailExistsGetOkResult</span></span>
 <span>(</span><span>exists: bool)</span>
 </code></dt>
 <dd>
@@ -1849,34 +1271,10 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class EmailExistsGetOkResponse(EmailExistsGetResponse):
+<pre><code class="python">class EmailExistsGetOkResult(APIResponse):
+    status: str = &#39;OK&#39;
+
     def __init__(self, exists: bool):
-        super().__init__(status=&#39;OK&#39;, exists=exists)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetResponse" href="#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetResponse">EmailExistsGetResponse</a></li>
-<li>abc.ABC</li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetResponse"><code class="flex name class">
-<span>class <span class="ident">EmailExistsGetResponse</span></span>
-<span>(</span><span>status: Literal['OK'], exists: bool)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class EmailExistsGetResponse(ABC):
-    def __init__(
-        self,
-        status: Literal[&#39;OK&#39;],
-        exists: bool
-    ):
-        self.status = status
         self.exists = exists
 
     def to_json(self):
@@ -1887,15 +1285,19 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResponse" href="#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResponse">EmailExistsGetOkResponse</a></li>
-</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetResponse.to_json"><code class="name flex">
+<dt id="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1913,8 +1315,8 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResponse"><code class="flex name class">
-<span>class <span class="ident">PhoneNumberExistsGetOkResponse</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult"><code class="flex name class">
+<span>class <span class="ident">PhoneNumberExistsGetOkResult</span></span>
 <span>(</span><span>exists: bool)</span>
 </code></dt>
 <dd>
@@ -1924,34 +1326,10 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PhoneNumberExistsGetOkResponse(PhoneNumberExistsGetResponse):
+<pre><code class="python">class PhoneNumberExistsGetOkResult(APIResponse):
+    status: str = &#39;OK&#39;
+
     def __init__(self, exists: bool):
-        super().__init__(status=&#39;OK&#39;, exists=exists)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetResponse" href="#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetResponse">PhoneNumberExistsGetResponse</a></li>
-<li>abc.ABC</li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetResponse"><code class="flex name class">
-<span>class <span class="ident">PhoneNumberExistsGetResponse</span></span>
-<span>(</span><span>status: Literal['OK'], exists: bool)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class PhoneNumberExistsGetResponse(ABC):
-    def __init__(
-        self,
-        status: Literal[&#39;OK&#39;],
-        exists: bool
-    ):
-        self.status = status
         self.exists = exists
 
     def to_json(self):
@@ -1962,15 +1340,19 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResponse" href="#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResponse">PhoneNumberExistsGetOkResponse</a></li>
-</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetResponse.to_json"><code class="name flex">
+<dt id="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -2007,14 +1389,14 @@ inheritance.</p></div>
                           email: Union[None, str],
                           phone_number: Union[None, str],
                           user_input_code: Union[None, str],
-                          user_context: Dict[str, Any]) -&gt; CreateCodeResult:
+                          user_context: Dict[str, Any]) -&gt; CreateCodeOkResult:
         pass
 
     @abstractmethod
     async def create_new_code_for_device(self,
                                          device_id: str,
                                          user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -&gt; CreateNewCodeForDeviceResult:
+                                         user_context: Dict[str, Any]) -&gt; Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
         pass
 
     @abstractmethod
@@ -2023,7 +1405,7 @@ inheritance.</p></div>
                            user_input_code: Union[str, None],
                            device_id: Union[str, None],
                            link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -&gt; ConsumeCodeResult:
+                           user_context: Dict[str, Any]) -&gt; Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeExpiredUserInputCodeError, ConsumeCodeRestartFlowError]:
         pass
 
     @abstractmethod
@@ -2040,24 +1422,24 @@ inheritance.</p></div>
 
     @abstractmethod
     async def update_user(self, user_id: str,
-                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; UpdateUserResult:
+                          email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError, UpdateUserEmailAlreadyExistsError, UpdateUserPhoneNumberAlreadyExistsError]:
         pass
 
     @abstractmethod
-    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+    async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         pass
 
     @abstractmethod
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
         pass
 
     @abstractmethod
     async def revoke_all_codes(self,
-                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesResult:
+                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesOkResult:
         pass
 
     @abstractmethod
-    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeResult:
+    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeOkResult:
         pass
 
     @abstractmethod
@@ -2089,7 +1471,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.consume_code"><code class="name flex">
-<span>async def <span class="ident">consume_code</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Optional[str], device_id: Optional[str], link_code: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeResult">ConsumeCodeResult</a></span>
+<span>async def <span class="ident">consume_code</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Optional[str], device_id: Optional[str], link_code: Optional[str], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2103,12 +1485,12 @@ async def consume_code(self,
                        user_input_code: Union[str, None],
                        device_id: Union[str, None],
                        link_code: Union[str, None],
-                       user_context: Dict[str, Any]) -&gt; ConsumeCodeResult:
+                       user_context: Dict[str, Any]) -&gt; Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeExpiredUserInputCodeError, ConsumeCodeRestartFlowError]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.create_code"><code class="name flex">
-<span>async def <span class="ident">create_code</span></span>(<span>self, email: Optional[str], phone_number: Optional[str], user_input_code: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodeResult">CreateCodeResult</a></span>
+<span>async def <span class="ident">create_code</span></span>(<span>self, email: Optional[str], phone_number: Optional[str], user_input_code: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult">CreateCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2121,12 +1503,12 @@ async def create_code(self,
                       email: Union[None, str],
                       phone_number: Union[None, str],
                       user_input_code: Union[None, str],
-                      user_context: Dict[str, Any]) -&gt; CreateCodeResult:
+                      user_context: Dict[str, Any]) -&gt; CreateCodeOkResult:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.create_new_code_for_device"><code class="name flex">
-<span>async def <span class="ident">create_new_code_for_device</span></span>(<span>self, device_id: str, user_input_code: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceResult">CreateNewCodeForDeviceResult</a></span>
+<span>async def <span class="ident">create_new_code_for_device</span></span>(<span>self, device_id: str, user_input_code: Optional[str], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult">CreateNewCodeForDeviceOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError">CreateNewCodeForDeviceRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError">CreateNewCodeForDeviceUserInputCodeAlreadyUsedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2138,12 +1520,12 @@ async def create_code(self,
 async def create_new_code_for_device(self,
                                      device_id: str,
                                      user_input_code: Union[str, None],
-                                     user_context: Dict[str, Any]) -&gt; CreateNewCodeForDeviceResult:
+                                     user_context: Dict[str, Any]) -&gt; Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.delete_email_for_user"><code class="name flex">
-<span>async def <span class="ident">delete_email_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></span>
+<span>async def <span class="ident">delete_email_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError">DeleteUserInfoUnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2152,12 +1534,12 @@ async def create_new_code_for_device(self,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.delete_phone_number_for_user"><code class="name flex">
-<span>async def <span class="ident">delete_phone_number_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></span>
+<span>async def <span class="ident">delete_phone_number_for_user</span></span>(<span>self, user_id: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError">DeleteUserInfoUnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2166,7 +1548,7 @@ async def delete_email_for_user(self, user_id: str, user_context: Dict[str, Any]
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; DeleteUserInfoResult:
+async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
     pass</code></pre>
 </details>
 </dd>
@@ -2270,7 +1652,7 @@ async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.revoke_all_codes"><code class="name flex">
-<span>async def <span class="ident">revoke_all_codes</span></span>(<span>self, email: Optional[str], phone_number: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesResult" href="#supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesResult">RevokeAllCodesResult</a></span>
+<span>async def <span class="ident">revoke_all_codes</span></span>(<span>self, email: Optional[str], phone_number: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult" href="#supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult">RevokeAllCodesOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2280,12 +1662,12 @@ async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str,
 </summary>
 <pre><code class="python">@abstractmethod
 async def revoke_all_codes(self,
-                           email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesResult:
+                           email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesOkResult:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.revoke_code"><code class="name flex">
-<span>async def <span class="ident">revoke_code</span></span>(<span>self, code_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeCodeResult" href="#supertokens_python.recipe.passwordless.interfaces.RevokeCodeResult">RevokeCodeResult</a></span>
+<span>async def <span class="ident">revoke_code</span></span>(<span>self, code_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult" href="#supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult">RevokeCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2294,12 +1676,12 @@ async def revoke_all_codes(self,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeResult:
+async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeOkResult:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.RecipeInterface.update_user"><code class="name flex">
-<span>async def <span class="ident">update_user</span></span>(<span>self, user_id: str, email: Optional[str], phone_number: Optional[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserResult">UpdateUserResult</a></span>
+<span>async def <span class="ident">update_user</span></span>(<span>self, user_id: str, email: Optional[str], phone_number: Optional[str], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError">UpdateUserEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError">UpdateUserPhoneNumberAlreadyExistsError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2309,14 +1691,14 @@ async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; Re
 </summary>
 <pre><code class="python">@abstractmethod
 async def update_user(self, user_id: str,
-                      email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; UpdateUserResult:
+                      email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; Union[UpdateUserOkResult, UpdateUserUnknownUserIdError, UpdateUserEmailAlreadyExistsError, UpdateUserPhoneNumberAlreadyExistsError]:
     pass</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralErrorResponse"><code class="flex name class">
-<span>class <span class="ident">ResendCodePostGeneralErrorResponse</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError"><code class="flex name class">
+<span>class <span class="ident">ResendCodePostGeneralError</span></span>
 <span>(</span><span>message: str)</span>
 </code></dt>
 <dd>
@@ -2326,10 +1708,11 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ResendCodePostGeneralErrorResponse(ResendCodePostResponse):
+<pre><code class="python">class ResendCodePostGeneralError(APIResponse):
+    status: str = &#39;GENERAL_ERROR&#39;
+
     def __init__(self, message: str):
-        super().__init__(status=&#39;GENERAL_ERROR&#39;, message=message)
-        self.is_general_error = True
+        self.message = message
 
     def to_json(self):
         return {
@@ -2339,12 +1722,19 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse">ResendCodePostResponse</a></li>
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralErrorResponse.to_json"><code class="name flex">
+<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -2362,8 +1752,8 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResponse"><code class="flex name class">
-<span>class <span class="ident">ResendCodePostOkResponse</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult"><code class="flex name class">
+<span>class <span class="ident">ResendCodePostOkResult</span></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -2372,10 +1762,8 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ResendCodePostOkResponse(ResendCodePostResponse):
-    def __init__(self):
-        super().__init__(status=&#39;OK&#39;)
-        self.is_ok = True
+<pre><code class="python">class ResendCodePostOkResult(APIResponse):
+    status: str = &#39;OK&#39;
 
     def to_json(self):
         return {
@@ -2384,12 +1772,19 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse">ResendCodePostResponse</a></li>
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResponse.to_json"><code class="name flex">
+<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -2406,9 +1801,8 @@ inheritance.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse"><code class="flex name class">
-<span>class <span class="ident">ResendCodePostResponse</span></span>
-<span>(</span><span>status: Literal['OK', 'GENERAL_ERROR', 'RESTART_FLOW_ERROR'], message: Optional[str] = None)</span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError"><code class="flex name class">
+<span>class <span class="ident">ResendCodePostRestartFlowError</span></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -2417,66 +1811,8 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ResendCodePostResponse(ABC):
-    def __init__(
-        self,
-        status: Literal[&#39;OK&#39;, &#39;GENERAL_ERROR&#39;, &#39;RESTART_FLOW_ERROR&#39;],
-        message: Union[str, None] = None
-    ):
-        self.status = status
-        self.message = message
-        self.is_ok = False
-        self.is_general_error = False
-        self.is_restart_flow_error = False
-
-    @abstractmethod
-    def to_json(self) -&gt; Dict[str, Any]:
-        pass</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralErrorResponse">ResendCodePostGeneralErrorResponse</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResponse" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResponse">ResendCodePostOkResponse</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowErrorResponse">ResendCodePostRestartFlowErrorResponse</a></li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def to_json(self) -&gt; Dict[str, Any]:
-    pass</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowErrorResponse"><code class="flex name class">
-<span>class <span class="ident">ResendCodePostRestartFlowErrorResponse</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class ResendCodePostRestartFlowErrorResponse(ResendCodePostResponse):
-    def __init__(self):
-        super().__init__(
-            status=&#39;RESTART_FLOW_ERROR&#39;
-        )
-        self.is_restart_flow_error = True
+<pre><code class="python">class ResendCodePostRestartFlowError(APIResponse):
+    status: str = &#39;RESTART_FLOW_ERROR&#39;
 
     def to_json(self):
         return {
@@ -2485,12 +1821,19 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse">ResendCodePostResponse</a></li>
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowErrorResponse.to_json"><code class="name flex">
+<dt id="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError.to_json"><code class="name flex">
 <span>def <span class="ident">to_json</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -2511,197 +1854,79 @@ inheritance.</p></div>
 <span>class <span class="ident">RevokeAllCodesOkResult</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RevokeAllCodesOkResult(RevokeAllCodesResult):
-    def __init__(self):
-        super().__init__(&#39;OK&#39;)</code></pre>
+<pre><code class="python">class RevokeAllCodesOkResult():
+    pass</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesResult" href="#supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesResult">RevokeAllCodesResult</a></li>
-<li>abc.ABC</li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesResult"><code class="flex name class">
-<span>class <span class="ident">RevokeAllCodesResult</span></span>
-<span>(</span><span>status: Literal['OK'])</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class RevokeAllCodesResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;]):
-        self.status = status</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult" href="#supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult">RevokeAllCodesOkResult</a></li>
-</ul>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult"><code class="flex name class">
 <span>class <span class="ident">RevokeCodeOkResult</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RevokeCodeOkResult(RevokeCodeResult):
-    def __init__(self):
-        super().__init__(&#39;OK&#39;)</code></pre>
+<pre><code class="python">class RevokeCodeOkResult():
+    pass</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.RevokeCodeResult" href="#supertokens_python.recipe.passwordless.interfaces.RevokeCodeResult">RevokeCodeResult</a></li>
-<li>abc.ABC</li>
-</ul>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.RevokeCodeResult"><code class="flex name class">
-<span>class <span class="ident">RevokeCodeResult</span></span>
-<span>(</span><span>status: Literal['OK'])</span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError"><code class="flex name class">
+<span>class <span class="ident">UpdateUserEmailAlreadyExistsError</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RevokeCodeResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;]):
-        self.status = status</code></pre>
+<pre><code class="python">class UpdateUserEmailAlreadyExistsError():
+    pass</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult" href="#supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult">RevokeCodeOkResult</a></li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsErrorResult"><code class="flex name class">
-<span>class <span class="ident">UpdateUserEmailAlreadyExistsErrorResult</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class UpdateUserEmailAlreadyExistsErrorResult(UpdateUserResult):
-    def __init__(self):
-        super().__init__(&#39;EMAIL_ALREADY_EXISTS_ERROR&#39;)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserResult">UpdateUserResult</a></li>
-<li>abc.ABC</li>
-</ul>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult"><code class="flex name class">
 <span>class <span class="ident">UpdateUserOkResult</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class UpdateUserOkResult(UpdateUserResult):
-    def __init__(self):
-        super().__init__(&#39;OK&#39;)</code></pre>
+<pre><code class="python">class UpdateUserOkResult():
+    pass</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserResult">UpdateUserResult</a></li>
-<li>abc.ABC</li>
-</ul>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsErrorResult"><code class="flex name class">
-<span>class <span class="ident">UpdateUserPhoneNumberAlreadyExistsErrorResult</span></span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError"><code class="flex name class">
+<span>class <span class="ident">UpdateUserPhoneNumberAlreadyExistsError</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class UpdateUserPhoneNumberAlreadyExistsErrorResult(UpdateUserResult):
-    def __init__(self):
-        super().__init__(&#39;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#39;)</code></pre>
+<pre><code class="python">class UpdateUserPhoneNumberAlreadyExistsError():
+    pass</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserResult">UpdateUserResult</a></li>
-<li>abc.ABC</li>
-</ul>
 </dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.UpdateUserResult"><code class="flex name class">
-<span>class <span class="ident">UpdateUserResult</span></span>
-<span>(</span><span>status: Literal['OK', 'UNKNOWN_USER_ID_ERROR', 'EMAIL_ALREADY_EXISTS_ERROR', 'PHONE_NUMBER_ALREADY_EXISTS_ERROR'])</span>
+<dt id="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError"><code class="flex name class">
+<span>class <span class="ident">UpdateUserUnknownUserIdError</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class UpdateUserResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;, &#39;UNKNOWN_USER_ID_ERROR&#39;,
-                 &#39;EMAIL_ALREADY_EXISTS_ERROR&#39;, &#39;PHONE_NUMBER_ALREADY_EXISTS_ERROR&#39;]):
-        self.status = status</code></pre>
+<pre><code class="python">class UpdateUserUnknownUserIdError():
+    pass</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsErrorResult">UpdateUserEmailAlreadyExistsErrorResult</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsErrorResult">UpdateUserPhoneNumberAlreadyExistsErrorResult</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdErrorResult">UpdateUserUnknownUserIdErrorResult</a></li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdErrorResult"><code class="flex name class">
-<span>class <span class="ident">UpdateUserUnknownUserIdErrorResult</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class UpdateUserUnknownUserIdErrorResult(UpdateUserResult):
-    def __init__(self):
-        super().__init__(&#39;UNKNOWN_USER_ID_ERROR&#39;)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserResult">UpdateUserResult</a></li>
-<li>abc.ABC</li>
-</ul>
 </dd>
 </dl>
 </section>
@@ -2733,117 +1958,96 @@ inheritance.</p></div>
 <h4><code><a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeErrorResult">ConsumeCodeExpiredUserInputCodeErrorResult</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeErrorResult">ConsumeCodeIncorrectUserInputCodeErrorResult</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeErrorResponse">ConsumeCodePostExpiredUserInputCodeErrorResponse</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeErrorResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeErrorResponse.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError.status" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralErrorResponse">ConsumeCodePostGeneralErrorResponse</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError">ConsumeCodePostGeneralError</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralErrorResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralErrorResponse.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError.status" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeErrorResponse">ConsumeCodePostIncorrectUserInputCodeErrorResponse</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeErrorResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeErrorResponse.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError.status" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResponse">ConsumeCodePostOkResponse</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResponse.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult.status" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse">ConsumeCodePostResponse</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError">ConsumeCodePostRestartFlowError</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostResponse.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError.status" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowErrorResponse">ConsumeCodePostRestartFlowErrorResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowErrorResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowErrorResponse.to_json">to_json</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowErrorResult">ConsumeCodeRestartFlowErrorResult</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeResult" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeResult">ConsumeCodeResult</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult">CreateCodeOkResult</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralErrorResponse">CreateCodePostGeneralErrorResponse</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError">CreateCodePostGeneralError</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralErrorResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralErrorResponse.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError.status" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError.to_json" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResponse" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResponse">CreateCodePostOkResponse</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult">CreateCodePostOkResult</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResponse.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult.status" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult.to_json" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult.to_json">to_json</a></code></li>
 </ul>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostResponse">CreateCodePostResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodePostResponse.to_json">to_json</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateCodeResult">CreateCodeResult</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult">CreateNewCodeForDeviceOkResult</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowErrorResult">CreateNewCodeForDeviceRestartFlowErrorResult</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError">CreateNewCodeForDeviceRestartFlowError</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceResult">CreateNewCodeForDeviceResult</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult">CreateNewCodeForDeviceUserInputCodeAlreadyUsedErrorResult</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError" href="#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError">CreateNewCodeForDeviceUserInputCodeAlreadyUsedError</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoResult">DeleteUserInfoResult</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError">DeleteUserInfoUnknownUserIdError</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdErrorResult">DeleteUserInfoUnknownUserIdErrorResult</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResponse" href="#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResponse">EmailExistsGetOkResponse</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetResponse" href="#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetResponse">EmailExistsGetResponse</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult" href="#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetResponse.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult.status" href="#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult.to_json" href="#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResponse" href="#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResponse">PhoneNumberExistsGetOkResponse</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetResponse" href="#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetResponse">PhoneNumberExistsGetResponse</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult" href="#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult">PhoneNumberExistsGetOkResult</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetResponse.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult.status" href="#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult.to_json" href="#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>
@@ -2867,55 +2071,43 @@ inheritance.</p></div>
 </ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralErrorResponse">ResendCodePostGeneralErrorResponse</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError">ResendCodePostGeneralError</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralErrorResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralErrorResponse.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError.status" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResponse" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResponse">ResendCodePostOkResponse</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult">ResendCodePostOkResult</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResponse.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult.status" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse">ResendCodePostResponse</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError">ResendCodePostRestartFlowError</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostResponse.to_json">to_json</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowErrorResponse" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowErrorResponse">ResendCodePostRestartFlowErrorResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowErrorResponse.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowErrorResponse.to_json">to_json</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError.status" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError.to_json" href="#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult" href="#supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult">RevokeAllCodesOkResult</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesResult" href="#supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesResult">RevokeAllCodesResult</a></code></h4>
-</li>
-<li>
 <h4><code><a title="supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult" href="#supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult">RevokeCodeOkResult</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.RevokeCodeResult" href="#supertokens_python.recipe.passwordless.interfaces.RevokeCodeResult">RevokeCodeResult</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsErrorResult">UpdateUserEmailAlreadyExistsErrorResult</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError">UpdateUserEmailAlreadyExistsError</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsErrorResult">UpdateUserPhoneNumberAlreadyExistsErrorResult</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError">UpdateUserPhoneNumberAlreadyExistsError</a></code></h4>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserResult">UpdateUserResult</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdErrorResult" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdErrorResult">UpdateUserUnknownUserIdErrorResult</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a></code></h4>
 </li>
 </ul>
 </li>

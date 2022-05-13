@@ -36,6 +36,7 @@ from supertokens_python.recipe.session.asyncio import (
     create_new_session, get_session, revoke_all_sessions_for_user)
 from supertokens_python.recipe.session.framework.django.asyncio import \
     verify_session
+from supertokens_python.recipe.session.asyncio import update_access_token_payload
 
 module_dir = os.path.dirname(__file__)  # get current directory
 file_path = os.path.join(module_dir, '../templates/index.html')
@@ -94,6 +95,26 @@ def custom_decorator_for_update_jwt():  # type: ignore
                     resp = JsonResponse(session.get_access_token_payload())
                     resp['Cache-Control'] = 'no-cache, private'
                     return resp
+            return send_options_api_response()
+
+        return wrapped_function  # type: ignore
+
+    return session_verify_custom_test  # type: ignore
+
+
+def custom_decorator_for_update_jwt_with_handle():  # type: ignore
+    def session_verify_custom_test(f):  # type: ignore
+        @wraps(f)  # type: ignore
+        async def wrapped_function(request: HttpRequest, *args, **kwargs):  # type: ignore
+            if request.method == 'POST':
+                value: HttpResponse = await f(request, *args, **kwargs)
+                if value is not None and value.status_code != 200:
+                    return value
+                session: SessionContainer = request.supertokens  # type: ignore
+                await update_access_token_payload(session.get_handle(), json.loads(request.body))
+                resp = JsonResponse(session.get_access_token_payload())
+                resp['Cache-Control'] = 'no-cache, private'
+                return resp
             return send_options_api_response()
 
         return wrapped_function  # type: ignore
@@ -327,6 +348,12 @@ async def get_info(request: HttpRequest):
 @custom_decorator_for_update_jwt()
 @verify_session()
 async def update_jwt(request: HttpRequest):
+    return HttpResponse('')
+
+
+@custom_decorator_for_update_jwt_with_handle()
+@verify_session()
+async def update_jwt_with_handle(request: HttpRequest):
     return HttpResponse('')
 
 

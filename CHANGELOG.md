@@ -16,6 +16,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adds type checks to the parameters of the thirdpartypasswordless init funtion.
 - Adds type checks to the parameters of the usermetadata init funtion.
 
+## [0.8.1]
+- Fixed execute_async to check and use asyncio mode.
+- Ignores any exception from send_telemetry, not to prevent the app from starting up.
+
+## [0.8.0]
+- Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the emailpassword recipe.
+- Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the thirdparty recipe.
+- Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the passwordless recipe.
+- Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the openid recipe.
+- Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the JWT recipe.
+- Updates `RecipeInterface` and `APIInterface` methods to return exact return types instead of abstract base types, for the session recipe.
+- Updates `RecipeInterface` methods to return exact return types instead of abstract base types, for the usermetadata recipe.
+- Adds `EmailPasswordSignInOkResult`, `EmailPasswordSignUpOkResult` and `ThirdPartySignInUpOkResult` to use the thirdpartyemailpassword recipe's `User` class.
+- Adds `ThirdPartySignInUpPostOkResult`, `EmailPasswordSignInPostOkResult` and `EmailPasswordSignUpPostOkResult` to use the thirdpartyemailpassword recipe's `User` class.
+- Renames wrongly named `ResetPasswordUsingTokenWrongUserIdErrorResult` to `ResetPasswordUsingTokenInvalidTokenError`, one of the return types of `reset_password_using_token` method in the `RecipeInterface`.
+- Removes unused classes `GeneratePasswordResetTokenResponse`, `EmailExistsResponse` and `PasswordResetResponse`.
+- Removed `third_party_info` from emailpassword `User` class.
+- Exports re-used Result and Response classes from `thirdparty` & `emailpassword` recipe interfaces in the `thirdpartyemailpassword` recipe interfaces.
+- Exports re-used Result and Response classes from `thirdparty` & `passwordless` recipe interfaces in the `thirdpartypasswordless` recipe interfaces.
+- Renames `*ErrorResult` classes to `*Error`.
+- Renames `*ErrorResponse` classes to `*Error`.
+- Renames `*OkResponse` classes to `*OkResult`.
+- Renames `*ResultOk` classes to `*OkResult`.
+
+## [0.7.3] - 2022-05-12
+- Fixed execute_async to check and use asyncio mode.
+- Ignores any exception from send_telemetry, not to prevent the app from starting up.
+
 ## [0.7.2] - 2022-05-08
 - Bug fix in telemetry data API
 

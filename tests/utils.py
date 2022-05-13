@@ -164,7 +164,7 @@ def __get_list_of_process_ids() -> List[str]:
         processes = scandir(SUPERTOKENS_PROCESS_DIR)
         for process in processes:
             f = open(SUPERTOKENS_PROCESS_DIR + '/' + process.name, 'r')
-            process_ids.append(f.read())
+            process_ids.append(f.readline())
             f.close()
     except FileNotFoundError:
         pass

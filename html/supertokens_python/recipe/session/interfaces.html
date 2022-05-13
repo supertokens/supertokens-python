@@ -48,7 +48,6 @@ from supertokens_python.async_to_sync_wrapper import sync
 
 from .utils import SessionConfig
 
-from typing_extensions import Literal
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
 
@@ -67,23 +66,15 @@ class AccessTokenObj:
         self.created_time = created_time
 
 
-class RegenerateAccessTokenResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;], session: SessionObj,
+class RegenerateAccessTokenOkResult():
+    def __init__(self, session: SessionObj,
                  access_token: Union[AccessTokenObj, None]):
-        self.status = status
         self.session = session
         self.access_token = access_token
 
 
-class RegenerateAccessTokenOkResult(RegenerateAccessTokenResult):
-    def __init__(self, session: SessionObj,
-                 access_token: Union[AccessTokenObj, None]):
-        super().__init__(&#39;OK&#39;, session, access_token)
-
-
-class SessionInformationResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;], session_handle: str, user_id: str, session_data: Dict[str, Any], expiry: int, access_token_payload: Dict[str, Any], time_created: int):
-        self.status: Literal[&#39;OK&#39;] = status
+class SessionInformationResult():
+    def __init__(self, session_handle: str, user_id: str, session_data: Dict[str, Any], expiry: int, access_token_payload: Dict[str, Any], time_created: int):
         self.session_handle: str = session_handle
         self.user_id: str = user_id
         self.session_data: Dict[str, Any] = session_data
@@ -151,7 +142,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def regenerate_access_token(self,
                                       access_token: str,
-                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenResult:
+                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenOkResult:
         pass
 
 
@@ -487,7 +478,7 @@ inheritance.</p></div>
     @abstractmethod
     async def regenerate_access_token(self,
                                       access_token: str,
-                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenResult:
+                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenOkResult:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -602,7 +593,7 @@ async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.regenerate_access_token"><code class="name flex">
-<span>async def <span class="ident">regenerate_access_token</span></span>(<span>self, access_token: str, new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.RegenerateAccessTokenResult" href="#supertokens_python.recipe.session.interfaces.RegenerateAccessTokenResult">RegenerateAccessTokenResult</a></span>
+<span>async def <span class="ident">regenerate_access_token</span></span>(<span>self, access_token: str, new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult" href="#supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult">RegenerateAccessTokenOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -613,7 +604,7 @@ async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt
 <pre><code class="python">@abstractmethod
 async def regenerate_access_token(self,
                                   access_token: str,
-                                  new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenResult:
+                                  new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenOkResult:
     pass</code></pre>
 </details>
 </dd>
@@ -695,49 +686,17 @@ async def update_session_data(self, session_handle: str, new_session_data: Dict[
 <span>(</span><span>session: <a title="supertokens_python.recipe.session.interfaces.SessionObj" href="#supertokens_python.recipe.session.interfaces.SessionObj">SessionObj</a>, access_token: Union[<a title="supertokens_python.recipe.session.interfaces.AccessTokenObj" href="#supertokens_python.recipe.session.interfaces.AccessTokenObj">AccessTokenObj</a>, None])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RegenerateAccessTokenOkResult(RegenerateAccessTokenResult):
+<pre><code class="python">class RegenerateAccessTokenOkResult():
     def __init__(self, session: SessionObj,
                  access_token: Union[AccessTokenObj, None]):
-        super().__init__(&#39;OK&#39;, session, access_token)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.session.interfaces.RegenerateAccessTokenResult" href="#supertokens_python.recipe.session.interfaces.RegenerateAccessTokenResult">RegenerateAccessTokenResult</a></li>
-<li>abc.ABC</li>
-</ul>
-</dd>
-<dt id="supertokens_python.recipe.session.interfaces.RegenerateAccessTokenResult"><code class="flex name class">
-<span>class <span class="ident">RegenerateAccessTokenResult</span></span>
-<span>(</span><span>status: "Literal['OK']", session: <a title="supertokens_python.recipe.session.interfaces.SessionObj" href="#supertokens_python.recipe.session.interfaces.SessionObj">SessionObj</a>, access_token: Union[<a title="supertokens_python.recipe.session.interfaces.AccessTokenObj" href="#supertokens_python.recipe.session.interfaces.AccessTokenObj">AccessTokenObj</a>, None])</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class RegenerateAccessTokenResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;], session: SessionObj,
-                 access_token: Union[AccessTokenObj, None]):
-        self.status = status
         self.session = session
         self.access_token = access_token</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult" href="#supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult">RegenerateAccessTokenOkResult</a></li>
-</ul>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer"><code class="flex name class">
 <span>class <span class="ident">SessionContainer</span></span>
@@ -1069,18 +1028,16 @@ async def update_session_data(self, new_session_data: Dict[str, Any], user_conte
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionInformationResult"><code class="flex name class">
 <span>class <span class="ident">SessionInformationResult</span></span>
-<span>(</span><span>status: "Literal['OK']", session_handle: str, user_id: str, session_data: Dict[str, Any], expiry: int, access_token_payload: Dict[str, Any], time_created: int)</span>
+<span>(</span><span>session_handle: str, user_id: str, session_data: Dict[str, Any], expiry: int, access_token_payload: Dict[str, Any], time_created: int)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SessionInformationResult(ABC):
-    def __init__(self, status: Literal[&#39;OK&#39;], session_handle: str, user_id: str, session_data: Dict[str, Any], expiry: int, access_token_payload: Dict[str, Any], time_created: int):
-        self.status: Literal[&#39;OK&#39;] = status
+<pre><code class="python">class SessionInformationResult():
+    def __init__(self, session_handle: str, user_id: str, session_data: Dict[str, Any], expiry: int, access_token_payload: Dict[str, Any], time_created: int):
         self.session_handle: str = session_handle
         self.user_id: str = user_id
         self.session_data: Dict[str, Any] = session_data
@@ -1088,10 +1045,6 @@ inheritance.</p></div>
         self.access_token_payload: Dict[str, Any] = access_token_payload
         self.time_created: int = time_created</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionObj"><code class="flex name class">
 <span>class <span class="ident">SessionObj</span></span>
@@ -1241,9 +1194,6 @@ def to_json(self) -&gt; Dict[str, Any]:
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult" href="#supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult">RegenerateAccessTokenOkResult</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.session.interfaces.RegenerateAccessTokenResult" href="#supertokens_python.recipe.session.interfaces.RegenerateAccessTokenResult">RegenerateAccessTokenResult</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></code></h4>

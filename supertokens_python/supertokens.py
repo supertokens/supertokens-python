@@ -199,7 +199,10 @@ class Supertokens:
                 environ['SUPERTOKENS_ENV'] != 'testing')
 
         if telemetry:
-            execute_async(self.app_info.mode, self.send_telemetry)
+            try:
+                execute_async(self.app_info.mode, self.send_telemetry)
+            except Exception:
+                pass  # Do not stop app startup if telemetry fails
 
     async def send_telemetry(self):
         # If telemetry is enabled manually and the app is running in testing mode,

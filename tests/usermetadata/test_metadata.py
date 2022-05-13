@@ -20,7 +20,7 @@ from supertokens_python.querier import Querier
 from supertokens_python.recipe import usermetadata
 from supertokens_python.recipe.usermetadata.asyncio import (
     clear_user_metadata, get_user_metadata, update_user_metadata)
-from supertokens_python.recipe.usermetadata.interfaces import RecipeInterface
+from supertokens_python.recipe.usermetadata.interfaces import ClearUserMetadataResult, RecipeInterface
 from supertokens_python.recipe.usermetadata.utils import InputOverrideConfig
 from supertokens_python.utils import is_version_gte
 from tests.utils import clean_st, reset, setup_st, start_st
@@ -82,7 +82,7 @@ async def test_that_usermetadata_recipe_works_as_expected():
     assert get_metadata_res.metadata == TEST_METADATA
 
     clear_metadata_res = await clear_user_metadata(TEST_USER_ID)
-    assert clear_metadata_res.status == 'OK'
+    assert isinstance(clear_metadata_res, ClearUserMetadataResult)
 
     get_metadata_res = await get_user_metadata(TEST_USER_ID)
     assert get_metadata_res.metadata == {}
