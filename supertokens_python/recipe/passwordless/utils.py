@@ -18,9 +18,10 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
 from typing_extensions import Literal
 
+
 if TYPE_CHECKING:
-    from .interfaces import RecipeInterface, APIInterface
     from supertokens_python import AppInfo
+    from .interfaces import RecipeInterface, APIInterface
 
 from re import fullmatch
 
@@ -208,6 +209,15 @@ def validate_and_normalise_user_input(
 
     if get_link_domain_and_path is None:
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)
+
+    if not isinstance(contact_config, ContactConfig):  # type: ignore user might not have linter enabled
+        raise ValueError('contact_config must be of type ContactConfig')
+
+    if flow_type not in ['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']:
+        raise ValueError('flow_type must be one of USER_INPUT_CODE, MAGIC_LINK, USER_INPUT_CODE_AND_MAGIC_LINK')
+
+    if not isinstance(override, OverrideConfig):  # type: ignore user might not have linter enabled
+        raise ValueError('override must be of type OverrideConfig')
 
     return PasswordlessConfig(
         contact_config=contact_config,

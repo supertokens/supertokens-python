@@ -130,6 +130,25 @@ def validate_and_normalise_user_input(
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[Provider], None] = None
 ) -> ThirdPartyEmailPasswordConfig:
+    if sign_up_feature is not None and not isinstance(sign_up_feature, InputSignUpFeature):  # type: ignore
+        raise ValueError('sign_up_feature must be of type InputSignUpFeature or None')
+
+    if reset_password_using_token_feature is not None and not isinstance(reset_password_using_token_feature, InputResetPasswordUsingTokenFeature):  # type: ignore
+        raise ValueError('reset_password_using_token_feature must be of type InputResetPasswordUsingTokenFeature or None')
+
+    if email_verification_feature is not None and not isinstance(email_verification_feature, InputEmailVerificationConfig):  # type: ignore
+        raise ValueError('email_verification_feature must be of type InputEmailVerificationConfig or None')
+
+    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
+        raise ValueError('override must be of type InputOverrideConfig or None')
+
+    if providers is not None and not isinstance(providers, List):  # type: ignore
+        raise ValueError('providers must be of type List[Provider] or None')
+
+    for provider in providers or []:
+        if not isinstance(provider, Provider):  # type: ignore
+            raise ValueError('providers must be of type List[Provider] or None')
+
     if providers is None:
         providers = []
     if override is None:
