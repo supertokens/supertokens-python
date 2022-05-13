@@ -5,8 +5,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
-
-## [0.8.2]
 - Adds type checks to the parameters of the emailpassword init funtion.
 - Adds type checks to the parameters of the emailverification init funtion.
 - Adds type checks to the parameters of the jwt init funtion.
