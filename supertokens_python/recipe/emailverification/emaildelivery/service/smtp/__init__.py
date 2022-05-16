@@ -30,14 +30,14 @@ class SMTPService(EmailDeliveryInterface[TypeEmailVerificationEmailDeliveryInput
 
     def __init__(self, config: EmailDeliverySMTPConfig[TypeEmailVerificationEmailDeliveryInput]) -> None:
         self.config = config
-        self.transporter = Transporter(config.smtpSettings)
+        self.transporter = Transporter(config.smtp_settings)
         oi = ServiceImplementation(self.transporter)
         self.serviceImpl = oi if config.override is None else config.override(oi)
 
     async def send_email(self, email_input: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
         content = await self.serviceImpl.get_content(email_input, user_context)
         send_raw_email_from = SMTPServiceConfigFrom(
-            self.config.smtpSettings.email_from.name,
-            self.config.smtpSettings.email_from.email
+            self.config.smtp_settings.email_from.name,
+            self.config.smtp_settings.email_from.email
         )
         await self.serviceImpl.send_raw_email(content, send_raw_email_from, user_context)

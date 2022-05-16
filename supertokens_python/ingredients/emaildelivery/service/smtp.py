@@ -70,25 +70,25 @@ class ServiceInterface(ABC, Generic[_T]):
 
 class EmailDeliverySMTPConfig(Generic[_T]):
     def __init__(self,
-                 smtpSettings: SMTPServiceConfig,
+                 smtp_settings: SMTPServiceConfig,
                  override: Union[Callable[[ServiceInterface[_T]], ServiceInterface[_T]], None] = None
                  ) -> None:
-        self.smtpSettings = smtpSettings
+        self.smtp_settings = smtp_settings
         self.override = override
 
 
 class Transporter:
-    def __init__(self, smtpSettings: SMTPServiceConfig) -> None:
-        self.smtpSettings = smtpSettings
+    def __init__(self, smtp_settings: SMTPServiceConfig) -> None:
+        self.smtp_settings = smtp_settings
 
     async def send_email(self, config_from: SMTPServiceConfigFrom, get_content_result: GetContentResult,
                          _: Dict[str, Any]) -> None:
-        smtp = smtplib.SMTP(self.smtpSettings.host, self.smtpSettings.port)
+        smtp = smtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port)
         try:
-            if self.smtpSettings.secure:
+            if self.smtp_settings.secure:
                 smtp.starttls()
-            if self.smtpSettings.auth:
-                smtp.login(self.smtpSettings.auth.user, self.smtpSettings.auth.password)
+            if self.smtp_settings.auth:
+                smtp.login(self.smtp_settings.auth.user, self.smtp_settings.auth.password)
 
             smtp.sendmail(config_from.email, get_content_result.to_email, get_content_result.body)
         except Exception as e:

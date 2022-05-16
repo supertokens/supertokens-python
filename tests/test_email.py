@@ -58,7 +58,7 @@ async def driver_config_client():
 @mark.asyncio
 async def test_email_verification_email_delivery_backward_compatibility(driver_config_client: TestClient):
     mock_create_and_send_custom_email = MagicMock()
-    mock_default_create_and_send_custom_email = patch("supertokens_python.recipe.emailverification.emaildelivery.service.backwardCompatibility.default_create_and_send_custom_email", return_value=mock_create_and_send_custom_email)
+    mock_default_create_and_send_custom_email = patch("supertokens_python.recipe.emailverification.emaildelivery.service.backward_compatibility.default_create_and_send_custom_email", return_value=mock_create_and_send_custom_email)
     mock_default_create_and_send_custom_email.start()
 
     init(
@@ -104,7 +104,7 @@ async def test_email_verification_email_delivery_backward_compatibility(driver_c
 @mark.asyncio
 async def test_email_password_email_delivery_backward_compatibility(driver_config_client: TestClient):
     mock_create_and_send_custom_email = MagicMock()
-    mock_default_create_and_send_custom_email = patch("supertokens_python.recipe.emailpassword.emaildelivery.service.backwardCompatibility.default_create_and_send_custom_email", return_value=mock_create_and_send_custom_email)
+    mock_default_create_and_send_custom_email = patch("supertokens_python.recipe.emailpassword.emaildelivery.service.backward_compatibility.default_create_and_send_custom_email", return_value=mock_create_and_send_custom_email)
     mock_default_create_and_send_custom_email.start()
 
     init(
@@ -152,7 +152,7 @@ async def test_email_password_email_delivery_smtp(
 
     service = SMTPService(
         EmailDeliverySMTPConfig(
-            smtpSettings=SMTPServiceConfig(
+            smtp_settings=SMTPServiceConfig(
                 host='localhost',
                 email_from=SMTPServiceConfigFrom(
                     'Foo bar',
@@ -215,7 +215,7 @@ async def test_email_verification_email_delivery_smtp(
 
     service = SMTPService(
         EmailDeliverySMTPConfig(
-            smtpSettings=SMTPServiceConfig(
+            smtp_settings=SMTPServiceConfig(
                 host='localhost',
                 email_from=SMTPServiceConfigFrom(
                     'Foo bar',

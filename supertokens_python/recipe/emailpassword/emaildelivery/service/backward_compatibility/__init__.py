@@ -24,7 +24,7 @@ from supertokens_python.recipe.emailpassword.interfaces import \
 from supertokens_python.recipe.emailpassword.recipe_implementation import \
     RecipeImplementation
 from supertokens_python.recipe.emailpassword.types import User
-from supertokens_python.recipe.emailverification.emaildelivery.service.backwardCompatibility import \
+from supertokens_python.recipe.emailverification.emaildelivery.service.backward_compatibility import \
     BackwardCompatibilityService as \
     EmailVerificationBackwardCompatibilityService
 from supertokens_python.recipe.emailverification.interfaces import \
