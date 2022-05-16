@@ -24,7 +24,6 @@ class User:
         self.user_id: str = user_id
         self.email: str = email
         self.time_joined: int = time_joined
-        self.third_party_info: None = None
 
 
 class UsersResponse:

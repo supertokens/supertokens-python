@@ -26,7 +26,7 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.asyncio import create_jwt
 from supertokens_python.recipe.jwt.interfaces import (APIInterface, APIOptions,
-                                                      RecipeInterface)
+                                                      CreateJwtOkResult, RecipeInterface)
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
@@ -66,16 +66,13 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
         async def get_jwks(user_context: Dict[str, Any]):
             response_ = await temp(user_context)
 
-            if response_.status == "OK":
-                nonlocal jwt_keys
-
-                for key in response_.keys:
-                    jwt_keys.append({'kty': key.kty,
-                                     'kid': key.kid,
-                                     'n': key.n,
-                                     'e': key.e,
-                                     'alg': key.alg,
-                                     'use': key.use})
+            for key in response_.keys:
+                jwt_keys.append({'kty': key.kty,
+                                 'kid': key.kid,
+                                 'n': key.n,
+                                 'e': key.e,
+                                 'alg': key.alg,
+                                 'use': key.use})
 
             return response_
 
@@ -84,7 +81,7 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
         async def create_jwt_(payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]):
             response_ = await temp1(payload, validity_seconds, user_context)
 
-            if response_.status == "OK":
+            if isinstance(response_, CreateJwtOkResult):
                 nonlocal created_jwt
                 created_jwt = response_.jwt
 

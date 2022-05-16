@@ -41,12 +41,13 @@
 # under the License.
 from typing import Any, Dict, Union
 
-from supertokens_python.recipe.jwt.interfaces import (CreateJwtResult,
+from supertokens_python.recipe.jwt.interfaces import (CreateJwtOkResult,
+                                                      CreateJwtResultUnsupportedAlgorithm,
                                                       GetJWKSResult)
 from supertokens_python.recipe.jwt.recipe import JWTRecipe
 
 
-async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -&gt; CreateJwtResult:
+async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if user_context is None:
         user_context = {}
     if payload is None:
@@ -69,7 +70,7 @@ async def get_jwks(user_context: Union[Dict[str, Any], None] = None) -&gt; GetJW
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.jwt.asyncio.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>payload: Optional[None] = None, validity_seconds: Optional[int] = None, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResult" href="../interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResult">CreateJwtResult</a></span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>payload: Optional[None] = None, validity_seconds: Optional[int] = None, user_context: Optional[None] = None) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="../interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="../interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -77,7 +78,7 @@ async def get_jwks(user_context: Union[Dict[str, Any], None] = None) -&gt; GetJW
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -&gt; CreateJwtResult:
+<pre><code class="python">async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if user_context is None:
         user_context = {}
     if payload is None:

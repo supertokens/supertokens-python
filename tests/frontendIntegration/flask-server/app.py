@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from typing import Any, Dict
+from supertokens_python.recipe.session.syncio import update_access_token_payload
 from supertokens_python.recipe.session.interfaces import (APIInterface,
                                                           RecipeInterface)
 from supertokens_python.framework import BaseRequest, BaseResponse
@@ -295,6 +296,16 @@ def update_jwt_post():
     _session = g.supertokens
     _session.sync_update_access_token_payload(request.get_json())
     Test.increment_get_session()
+    resp = make_response(_session.get_access_token_payload())
+    resp.headers['Cache-Control'] = 'no-cache, private'
+    return resp
+
+
+@app.route("/update-jwt-with-handle", methods=['POST'])  # type: ignore
+@verify_session()
+def update_jwt_with_handle_post():
+    _session = g.supertokens
+    update_access_token_payload(_session.get_handle(), request.get_json())
     resp = make_response(_session.get_access_token_payload())
     resp.headers['Cache-Control'] = 'no-cache, private'
     return resp

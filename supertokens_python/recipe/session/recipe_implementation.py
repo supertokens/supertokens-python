@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, Dict
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
-from supertokens_python.utils import (FRAMEWORKS, execute_in_background,
+from supertokens_python.utils import (FRAMEWORKS, execute_async,
                                       frontend_has_interceptor,
                                       get_timestamp_ms, normalise_http_method)
 
@@ -39,7 +39,6 @@ if TYPE_CHECKING:
 
     from supertokens_python.querier import Querier
 
-    from .interfaces import RegenerateAccessTokenResult
     from .utils import SessionConfig
 
 from .interfaces import SessionContainer
@@ -77,7 +76,7 @@ class RecipeImplementation(RecipeInterface):
                 pass
 
         try:
-            execute_in_background(config.mode, call_get_handshake_info)
+            execute_async(config.mode, call_get_handshake_info)
         except Exception:
             pass
 
@@ -239,7 +238,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def regenerate_access_token(self,
                                       access_token: str,
-                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -> RegenerateAccessTokenResult:
+                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -> RegenerateAccessTokenOkResult:
         if new_access_token_payload is None:
             new_access_token_payload = {}
         response: Dict[str, Any] = await self.querier.send_post_request(NormalisedURLPath("/recipe/session/regenerate"), {

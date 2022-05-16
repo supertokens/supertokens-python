@@ -83,7 +83,6 @@ def normalise_url_path_or_throw_error(input_str: str) -> str:
             'http://example.com' + input_str)
     except Exception:
         raise_general_exception('Please provide a valid URL path')
-    raise Exception("Should never come here")
 
 
 def domain_given(input_str: str) -> bool:

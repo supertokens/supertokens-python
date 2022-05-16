@@ -45,10 +45,10 @@ from supertokens_python.recipe.openid.interfaces import \
     GetOpenIdDiscoveryConfigurationResult
 from supertokens_python.recipe.openid.recipe import OpenIdRecipe
 
-from ...jwt.interfaces import CreateJwtResult, GetJWKSResult
+from ...jwt.interfaces import CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult
 
 
-async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -&gt; CreateJwtResult:
+async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if user_context is None:
         user_context = {}
     if payload is None:
@@ -77,7 +77,7 @@ async def get_open_id_discovery_configuration(user_context: Union[Dict[str, Any]
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.openid.asyncio.create_jwt"><code class="name flex">
-<span>async def <span class="ident">create_jwt</span></span>(<span>payload: Optional[None] = None, validity_seconds: Optional[int] = None, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResult">CreateJwtResult</a></span>
+<span>async def <span class="ident">create_jwt</span></span>(<span>payload: Optional[None] = None, validity_seconds: Optional[int] = None, user_context: Optional[None] = None) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -85,7 +85,7 @@ async def get_open_id_discovery_configuration(user_context: Union[Dict[str, Any]
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -&gt; CreateJwtResult:
+<pre><code class="python">async def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if user_context is None:
         user_context = {}
     if payload is None:

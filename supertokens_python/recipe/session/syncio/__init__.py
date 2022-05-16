@@ -18,7 +18,7 @@ from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.openid.interfaces import \
     GetOpenIdDiscoveryConfigurationResult
 
-from ...jwt.interfaces import CreateJwtResult, GetJWKSResult
+from ...jwt.interfaces import CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult
 from ..interfaces import SessionContainer, SessionInformationResult
 
 
@@ -87,7 +87,7 @@ def update_access_token_payload(session_handle: str, new_access_token_payload: D
         session_handle, new_access_token_payload, user_context))
 
 
-def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -> CreateJwtResult:
+def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     from supertokens_python.recipe.session.asyncio import \
         create_jwt as async_create_jwt
     return sync(async_create_jwt(payload, validity_seconds, user_context))

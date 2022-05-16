@@ -27,11 +27,12 @@ if TYPE_CHECKING:
 class Facebook(Provider):
     def __init__(self, client_id: str, client_secret: str,
                  scope: Union[None, List[str]] = None, is_default: bool = False):
-        super().__init__('facebook', client_id, is_default)
+        super().__init__('facebook', is_default)
         default_scopes = ['email']
 
         if scope is None:
             scope = default_scopes
+        self.client_id = client_id
         self.client_secret = client_secret
         self.scopes = list(set(scope))
         self.access_token_api_url = 'https://graph.facebook.com/v9.0/oauth/access_token'
@@ -74,3 +75,6 @@ class Facebook(Provider):
 
     def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
         return None
+
+    def get_client_id(self, user_context: Dict[str, Any]) -> str:
+        return self.client_id
