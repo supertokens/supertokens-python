@@ -15,6 +15,7 @@
 
 import smtplib
 from abc import ABC, abstractmethod
+from email.mime.text import MIMEText
 from typing import Any, Callable, Dict, Generic, TypeVar, Union
 
 from supertokens_python.logger import log_debug_message
@@ -90,7 +91,12 @@ class Transporter:
             if self.smtp_settings.auth:
                 smtp.login(self.smtp_settings.auth.user, self.smtp_settings.auth.password)
 
-            smtp.sendmail(config_from.email, get_content_result.to_email, get_content_result.body)
+            email_content = MIMEText(get_content_result.body, "html")
+            email_content["From"] = config_from.email
+            email_content["To"] = get_content_result.to_email
+            email_content["Subject"] = get_content_result.subject
+
+            smtp.sendmail(config_from.email, get_content_result.to_email, email_content.as_string())
         except Exception as e:
             log_debug_message('Error sending email: %s', e)
         finally:

@@ -66,7 +66,7 @@ class APIImplementation(APIInterface):
         user = User(user_id, email)
 
         email_verify_link = (await api_options.config.get_email_verification_url(
-            user, user_context)) + '?token=' + token_result.token + '&rid' + api_options.recipe_id
+            user, user_context)) + '?token=' + token_result.token + '&rid=' + api_options.recipe_id
 
         email_delivery_user = TypeEmailVerificationEmailDeliveryInputUser(user.user_id, user.email)
         email_verification_email_delivery_input = TypeEmailVerificationEmailDeliveryInput(
