@@ -42,7 +42,7 @@ class ServiceImplementation(ServiceInterface[TypeEmailPasswordEmailDeliveryInput
         email_verification_service_implementation.get_content = derived_ev_service_implementation.get_content
 
     async def send_raw_email(self, get_content_result: GetContentResult, config_from: SMTPServiceConfigFrom, user_context: Dict[str, Any]) -> None:
-        self.transporter.send_email(config_from, get_content_result, user_context)
+        await self.transporter.send_email(config_from, get_content_result, user_context)
 
     async def get_content(self, email_input: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
         if isinstance(email_input, TypeEmailVerificationEmailDeliveryInput):

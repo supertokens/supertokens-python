@@ -20,7 +20,6 @@ from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.recipe.emailpassword.types import \
     TypeEmailPasswordEmailDeliveryInput
-from typing_extensions import Literal
 
 from ...types import APIResponse
 from ..emailverification.interfaces import \

@@ -17,6 +17,8 @@ import smtplib
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Generic, TypeVar, Union
 
+from supertokens_python.logger import log_debug_message
+
 _T = TypeVar('_T')
 
 
@@ -79,16 +81,17 @@ class Transporter:
     def __init__(self, smtpSettings: SMTPServiceConfig) -> None:
         self.smtpSettings = smtpSettings
 
-    def send_email(self, config_from: SMTPServiceConfigFrom, get_content_result: GetContentResult,
-                   _: Dict[str, Any]) -> None:
+    async def send_email(self, config_from: SMTPServiceConfigFrom, get_content_result: GetContentResult,
+                         _: Dict[str, Any]) -> None:
+        smtp = smtplib.SMTP(self.smtpSettings.host, self.smtpSettings.port)
         try:
-            smtp = smtplib.SMTP(self.smtpSettings.host, self.smtpSettings.port)
             if self.smtpSettings.secure:
                 smtp.starttls()
             if self.smtpSettings.auth:
                 smtp.login(self.smtpSettings.auth.user, self.smtpSettings.auth.password)
 
             smtp.sendmail(config_from.email, get_content_result.to_email, get_content_result.body)
+        except Exception as e:
+            log_debug_message('Error sending email: %s', e)
+        finally:
             smtp.quit()
-        except Exception:
-            pass

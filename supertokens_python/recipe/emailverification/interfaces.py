@@ -18,7 +18,6 @@ from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
-from typing_extensions import Literal
 from supertokens_python.types import APIResponse
 
 if TYPE_CHECKING:
