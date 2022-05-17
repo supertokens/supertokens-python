@@ -63,7 +63,10 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/supertokens/supertokens-python",
     packages=find_packages(exclude=exclude_list),
-    package_data = {'supertokens_python': ['py.typed']},
+    package_data = {'supertokens_python': [
+        'py.typed',
+        'supertokens_python/recipe/*/emaildelivery/service/smtp/*.html',
+    ]},
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
