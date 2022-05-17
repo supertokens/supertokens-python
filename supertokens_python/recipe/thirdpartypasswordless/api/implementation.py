@@ -103,6 +103,8 @@ class APIImplementation(APIInterface):
                                phone_number: Union[str, None],
                                api_options: PasswordlessAPIOptions,
                                user_context: Dict[str, Any]) -> Union[CreateCodePostOkResult, CreateCodePostGeneralError]:
+        # TODO: Use email delivery ingredient
+        # return await api_options.email_delivery.ingredient_interface_impl.send_email()
         return await self.pless_create_code_post(email, phone_number, api_options, user_context)
 
     async def resend_code_post(self,

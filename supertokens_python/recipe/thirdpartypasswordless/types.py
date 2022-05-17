@@ -11,7 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Union
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
+from typing import TypeVar, Union
 
 from ..thirdparty.types import ThirdPartyInfo
 
@@ -24,3 +26,16 @@ class User:
         self.phone_number: Union[str, None] = phone_number
         self.time_joined: int = time_joined
         self.third_party_info: Union[ThirdPartyInfo, None] = third_party_info
+
+
+_T = TypeVar('_T')
+
+
+class TypeThirdPartyPasswordlessEmailDeliveryInput:
+    pass
+
+
+class ThirdPartyPasswordlessIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None) -> None:
+        self.email_delivery = email_delivery

@@ -11,15 +11,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from __future__ import annotations
 
 from abc import ABC
+from distutils.log import warn
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig, EmailDeliveryConfigWithService)
+from supertokens_python.recipe.passwordless.emaildelivery.service.backward_compatibility import (
+    BackwardCompatibilityService, default_create_and_send_custom_email)
 from typing_extensions import Literal
 
 if TYPE_CHECKING:
-    from .interfaces import RecipeInterface, APIInterface
+    from .interfaces import RecipeInterface, APIInterface, TypePasswordlessEmailDeliveryInput
     from supertokens_python import AppInfo
 
 from re import fullmatch
@@ -51,14 +57,6 @@ async def default_validate_email(value: str):
 
 async def default_create_and_send_custom_text_message(
     _: CreateAndSendCustomTextMessageParameters,
-    __: Dict[str, Any]
-) -> None:
-    # TODO
-    pass
-
-
-async def default_create_and_send_custom_email(
-    _: CreateAndSendCustomEmailParameters,
     __: Dict[str, Any]
 ) -> None:
     # TODO
@@ -104,6 +102,7 @@ class ContactConfig(ABC):
     def __init__(
             self, contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']):
         self.contact_method = contact_method
+        self.create_and_send_custom_email = None  # TODO: NOT SURE IF THIS IS CORRECT
 
 
 class ContactPhoneOnlyConfig(ContactConfig):
@@ -129,12 +128,15 @@ class ContactEmailOnlyConfig(ContactConfig):
                  create_and_send_custom_email: Callable[
                      [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]],
                  validate_email_address: Union[Callable[[
-                     str], Awaitable[Union[str, None]]], None] = None
+                     str], Awaitable[Union[str, None]]], None] = None,
+                 email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None
                  ):
         super().__init__('EMAIL')
+        self.email_delivery = email_delivery
         if create_and_send_custom_email is None:
             self.create_and_send_custom_email = default_create_and_send_custom_email
         else:
+            warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
             self.create_and_send_custom_email = create_and_send_custom_email
         if validate_email_address is None:
             self.validate_email_address = default_validate_email
@@ -152,9 +154,12 @@ class ContactEmailOrPhoneConfig(ContactConfig):
                      str], Awaitable[Union[str, None]]], None] = None,
                  validate_phone_number: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
+                 email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None
                  ):
         super().__init__('EMAIL_OR_PHONE')
+        self.email_delivery = email_delivery
         if create_and_send_custom_email is None:
+            warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
             self.create_and_send_custom_email = default_create_and_send_custom_email
         else:
             self.create_and_send_custom_email = create_and_send_custom_email
@@ -184,14 +189,16 @@ class PasswordlessConfig:
                  override: OverrideConfig,
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
                  get_link_domain_and_path: Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]],
+                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]],
                  get_custom_user_input_code: Union[Callable[[
-                     Dict[str, Any]], Awaitable[str]], None] = None
+                     Dict[str, Any]], Awaitable[str]], None] = None,
                  ):
         self.contact_config = contact_config
         self.override = override
         self.flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = flow_type
         self.get_custom_user_input_code = get_custom_user_input_code
         self.get_link_domain_and_path = get_link_domain_and_path
+        self.get_email_delivery_config = get_email_delivery_config
 
 
 def validate_and_normalise_user_input(
@@ -201,13 +208,20 @@ def validate_and_normalise_user_input(
         override: Union[OverrideConfig, None] = None,
         get_link_domain_and_path: Union[Callable[[
             PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
-        get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None):
+        get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None) -> PasswordlessConfig:
 
     if override is None:
         override = OverrideConfig()
 
     if get_link_domain_and_path is None:
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)
+
+    def get_email_delivery_config() -> EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]:
+        # if email_service is None:
+        # email_service = config.email_delivery.service if config.email_delivery is not None else None
+        email_service = BackwardCompatibilityService(app_info)
+
+        return EmailDeliveryConfigWithService(email_service, override=None)
 
     return PasswordlessConfig(
         contact_config=contact_config,
@@ -216,5 +230,6 @@ def validate_and_normalise_user_input(
             apis=override.apis),
         flow_type=flow_type,
         get_link_domain_and_path=get_link_domain_and_path,
+        get_email_delivery_config=get_email_delivery_config,
         get_custom_user_input_code=get_custom_user_input_code
     )
