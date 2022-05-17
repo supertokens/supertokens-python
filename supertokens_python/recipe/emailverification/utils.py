@@ -60,7 +60,7 @@ class ParentRecipeEmailVerificationConfig:
         self.get_email_verification_url = get_email_verification_url
         self.get_email_for_user_id = get_email_for_user_id
         self.email_delivery = email_delivery
-        self.create_and_send_custom_email = None
+        self.create_and_send_custom_email = create_and_send_custom_email
 
         if create_and_send_custom_email:
             warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
@@ -78,7 +78,7 @@ class EmailVerificationConfig:
         self.get_email_verification_url = get_email_verification_url
         self.override = override
         self.get_email_delivery_config = get_email_delivery_config
-        self.create_and_send_custom_email = None
+        self.create_and_send_custom_email = create_and_send_custom_email
         if create_and_send_custom_email:
             warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
 

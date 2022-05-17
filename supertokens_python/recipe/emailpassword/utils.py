@@ -176,7 +176,7 @@ class ResetPasswordUsingTokenFeature:
         self.form_fields_for_password_reset_form = form_fields_for_password_reset_form
         self.form_fields_for_generate_token_form = form_fields_for_generate_token_form
         self.get_reset_password_url = get_reset_password_url
-        self.create_and_send_custom_email = None
+        self.create_and_send_custom_email = create_and_send_custom_email
         if create_and_send_custom_email:
             warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
 
