@@ -17,8 +17,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict
 from warnings import warn
 
-from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryConfig
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig, EmailDeliveryConfigWithService)
 from supertokens_python.recipe.emailverification.emaildelivery.service.backward_compatibility import \
     BackwardCompatibilityService
 from supertokens_python.recipe.emailverification.interfaces import \
@@ -71,7 +71,7 @@ class EmailVerificationConfig:
                  override: OverrideConfig,
                  get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
                  get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
-                 get_email_delivery_config: Callable[[], EmailDeliveryConfig[TypeEmailVerificationEmailDeliveryInput]],
+                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[TypeEmailVerificationEmailDeliveryInput]],
                  create_and_send_custom_email: Union[Callable[[User, str, Dict[str, Any]], Awaitable[None]], None] = None,
                  ):
         self.get_email_for_user_id = get_email_for_user_id
@@ -88,12 +88,12 @@ def validate_and_normalise_user_input(
     get_email_verification_url = config.get_email_verification_url if config.get_email_verification_url is not None \
         else default_get_email_verification_url(app_info)
 
-    def get_email_delivery_config() -> EmailDeliveryConfig[TypeEmailVerificationEmailDeliveryInput]:
+    def get_email_delivery_config() -> EmailDeliveryConfigWithService[TypeEmailVerificationEmailDeliveryInput]:
         email_service = config.email_delivery.service if config.email_delivery is not None else None
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info, config.create_and_send_custom_email)
 
-        return EmailDeliveryConfig(email_service, override=None)
+        return EmailDeliveryConfigWithService(email_service, override=None)
 
     override = config.override
     if override is None:

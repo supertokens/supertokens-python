@@ -17,8 +17,8 @@ from re import fullmatch
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, Union
 from warnings import warn
 
-from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryConfig
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig, EmailDeliveryConfigWithService)
 from supertokens_python.recipe.emailpassword.emaildelivery.service.backward_compatibility import (
     BackwardCompatibilityService, default_create_and_send_custom_email)
 from supertokens_python.recipe.emailpassword.recipe_implementation import \
@@ -280,7 +280,7 @@ class EmailPasswordConfig:
                  reset_password_using_token_feature: ResetPasswordUsingTokenFeature,
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
                  override: OverrideConfig,
-                 get_email_delivery_config: Callable[[RecipeImplementation], EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput]]
+                 get_email_delivery_config: Callable[[RecipeImplementation], EmailDeliveryConfigWithService[TypeEmailPasswordEmailDeliveryInput]]
                  ):
         self.sign_up_feature = sign_up_feature
         self.sign_in_feature = sign_in_feature
@@ -309,9 +309,12 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
 
     def get_email_delivery_config(
         ep_recipe: RecipeImplementation,
-    ) -> EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput]:
-        if email_delivery_config:
-            return email_delivery_config
+    ) -> EmailDeliveryConfigWithService[TypeEmailPasswordEmailDeliveryInput]:
+        if email_delivery_config and email_delivery_config.service:
+            return EmailDeliveryConfigWithService(
+                service=email_delivery_config.service,
+                override=email_delivery_config.override
+            )
 
         email_service = BackwardCompatibilityService(
             app_info=app_info,
@@ -319,7 +322,7 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
             reset_password_using_token_feature=reset_password_using_token_feature,
             email_verification_feature=email_verification_feature,
         )
-        return EmailDeliveryConfig(email_service, override=None)
+        return EmailDeliveryConfigWithService(email_service, override=None)
 
     return EmailPasswordConfig(
         SignUpFeature(sign_up_feature.form_fields),

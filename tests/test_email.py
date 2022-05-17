@@ -163,7 +163,7 @@ async def test_email_password_email_delivery_smtp(
             )
         )
     )
-    emc = EmailDeliveryConfig(service, override=None)
+    emc = EmailDeliveryConfig(service)
 
     init(
         supertokens_config=SupertokensConfig('http://localhost:3567'),
@@ -226,7 +226,7 @@ async def test_email_verification_email_delivery_smtp(
             )
         )
     )
-    emc = EmailDeliveryConfig(service, override=None)
+    emc = EmailDeliveryConfig(service)
     init(
         supertokens_config=SupertokensConfig('http://localhost:3567'),
         app_info=InputAppInfo(

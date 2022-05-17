@@ -15,13 +15,13 @@
 from typing import Any, Dict, Generic, TypeVar
 
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryConfig, EmailDeliveryInterface)
+    EmailDeliveryConfigWithService, EmailDeliveryInterface)
 
 _T = TypeVar('_T')
 
 
 class DefaultEmailDeliveryIngredientImp(EmailDeliveryInterface[_T]):
-    def __init__(self, config: EmailDeliveryConfig[_T]) -> None:
+    def __init__(self, config: EmailDeliveryConfigWithService[_T]) -> None:
         self.config = config
 
     async def send_email(self, email_input: _T, user_context: Dict[str, Any]) -> Any:
@@ -31,6 +31,6 @@ class DefaultEmailDeliveryIngredientImp(EmailDeliveryInterface[_T]):
 class EmailDeliveryIngredient(Generic[_T]):
     ingredient_interface_impl: EmailDeliveryInterface[_T]
 
-    def __init__(self, config: EmailDeliveryConfig[_T]) -> None:
+    def __init__(self, config: EmailDeliveryConfigWithService[_T]) -> None:
         oi = DefaultEmailDeliveryIngredientImp[_T](config)
         self.ingredient_interface_impl = oi if config.override is None else config.override(oi)
