@@ -11,15 +11,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Union
 
-from . import exceptions as ex
-from . import providers
-from .recipe import ThirdPartyRecipe
+from supertokens_python.ingredients.emaildelivery.types import \
+    EmailDeliveryConfig
 
-from . import utils
+from . import exceptions as ex
+from . import providers, utils
+from .recipe import ThirdPartyRecipe
+from .types import TypeThirdPartyEmailDeliveryInput
+
 InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputOverrideConfig = utils.InputOverrideConfig
 SignInAndUpFeature = utils.SignInAndUpFeature
@@ -39,6 +43,11 @@ if TYPE_CHECKING:
 
 def init(sign_in_and_up_feature: SignInAndUpFeature,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[InputOverrideConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
+         override: Union[InputOverrideConfig, None] = None,
+         email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None
+         ) -> Callable[[AppInfo], RecipeModule]:
     return ThirdPartyRecipe.init(
-        sign_in_and_up_feature, email_verification_feature, override)
+        sign_in_and_up_feature, email_verification_feature, override, email_delivery)
+
+# async def send_email(input: TypeThirdPartyEmailDeliveryInput, user_context: Dict[str, Any]):
+#     return await ThirdPartyRecipe.get_instance().email_delivery_ingredient.send_email(input, user_context)

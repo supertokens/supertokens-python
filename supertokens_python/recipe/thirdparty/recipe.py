@@ -14,8 +14,10 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union, cast
 
+from supertokens_python.ingredients.emaildelivery.types import \
+    EmailDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.emailverification.types import \
@@ -35,12 +37,15 @@ if TYPE_CHECKING:
 
 from supertokens_python.exceptions import (SuperTokensError,
                                            raise_general_exception)
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 
 from .api import (handle_apple_redirect_api, handle_authorisation_url_api,
                   handle_sign_in_up_api)
 from .constants import APPLE_REDIRECT_HANDLER, AUTHORISATIONURL, SIGNINUP
 from .exceptions import SuperTokensThirdPartyError
+from .types import ThirdPartyIngredients, TypeThirdPartyEmailDeliveryInput
 from .utils import (InputEmailVerificationConfig,
                     validate_and_normalise_user_input)
 
@@ -48,6 +53,7 @@ from .utils import (InputEmailVerificationConfig,
 class ThirdPartyRecipe(RecipeModule):
     recipe_id = 'thirdparty'
     __instance = None
+    email_delivery_ingredient: EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  sign_in_and_up_feature: SignInAndUpFeature,
@@ -72,6 +78,20 @@ class ThirdPartyRecipe(RecipeModule):
         api_implementation = APIImplementation()
         self.api_implementation: APIInterface = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
+
+        email_delivery_ingredient = ingredients.email_delivery if ingredients is not None else None
+        self.email_delivery = EmailDeliveryIngredient(self.config.get_email_delivery_config(recipe_implementation)) if email_delivery_ingredient is None else email_delivery_ingredient
+
+        if email_verification_recipe is not None:
+            self.email_verification_recipe = email_verification_recipe
+        else:
+            ev_email_delivery_ingredient = cast(
+                EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput],
+                self.email_delivery_ingredient
+            )
+            email_verification_ingredients = EmailVerificationIngredients(email_delivery=ev_email_delivery_ingredient)
+            self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
+                                                                     self.config.email_verification_feature, ingredients=email_verification_ingredients)
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -> bool:
@@ -114,7 +134,9 @@ class ThirdPartyRecipe(RecipeModule):
     @staticmethod
     def init(sign_in_and_up_feature: SignInAndUpFeature,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-             override: Union[InputOverrideConfig, None] = None):
+             override: Union[InputOverrideConfig, None] = None,
+             email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None
+             ):
         def func(app_info: AppInfo):
             if ThirdPartyRecipe.__instance is None:
                 ingredients = ThirdPartyIngredients(None)
