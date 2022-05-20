@@ -11,15 +11,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+from __future__ import annotations
 from os import path
 from string import Template
+from typing import TYPE_CHECKING
 
 from supertokens_python.ingredients.emaildelivery.service.smtp import \
     GetContentResult
-from supertokens_python.recipe.passwordless.interfaces import \
-    TypePasswordlessEmailDeliveryInput
+
 from supertokens_python.supertokens import Supertokens
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.passwordless.interfaces import TypePasswordlessEmailDeliveryInput
 
 
 def pless_email_content(email_input: TypePasswordlessEmailDeliveryInput) -> GetContentResult:

@@ -20,8 +20,6 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryConfigWithService)
-from supertokens_python.recipe.passwordless.emaildelivery.service.backward_compatibility import (
-    BackwardCompatibilityService, default_create_and_send_custom_email)
 from typing_extensions import Literal
 
 if TYPE_CHECKING:
@@ -31,6 +29,8 @@ if TYPE_CHECKING:
 from re import fullmatch
 
 from phonenumbers import is_valid_number, parse  # type: ignore
+from supertokens_python.recipe.passwordless.emaildelivery.service.backward_compatibility import (
+    BackwardCompatibilityService, default_create_and_send_custom_email)
 
 
 async def default_validate_phone_number(value: str):
@@ -125,8 +125,8 @@ class ContactPhoneOnlyConfig(ContactConfig):
 
 class ContactEmailOnlyConfig(ContactConfig):
     def __init__(self,
-                 create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]],
+                 create_and_send_custom_email: Union[Callable[
+                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]], None] = None,
                  validate_email_address: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None
@@ -202,13 +202,15 @@ class PasswordlessConfig:
 
 
 def validate_and_normalise_user_input(
-        app_info: AppInfo,
-        contact_config: ContactConfig,
-        flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
-        override: Union[OverrideConfig, None] = None,
-        get_link_domain_and_path: Union[Callable[[
-            PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
-        get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None) -> PasswordlessConfig:
+    app_info: AppInfo,
+    contact_config: ContactConfig,
+    flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
+    override: Union[OverrideConfig, None] = None,
+    get_link_domain_and_path: Union[Callable[[
+        PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
+    get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
+    email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
+) -> PasswordlessConfig:
 
     if override is None:
         override = OverrideConfig()
@@ -217,9 +219,9 @@ def validate_and_normalise_user_input(
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)
 
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]:
-        # if email_service is None:
-        # email_service = config.email_delivery.service if config.email_delivery is not None else None
-        email_service = BackwardCompatibilityService(app_info)
+        email_service = email_delivery.service if email_delivery is not None else None
+        if email_service is None:
+            email_service = BackwardCompatibilityService(app_info)
 
         return EmailDeliveryConfigWithService(email_service, override=None)
 

@@ -14,22 +14,37 @@
 
 from __future__ import annotations
 
+from os import environ
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
+from httpx import AsyncClient
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
-from supertokens_python.supertokens import AppInfo
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.passwordless.interfaces import \
-        TypePasswordlessEmailDeliveryInput
+    from supertokens_python.recipe.passwordless.utils import \
+        CreateAndSendCustomEmailParameters as TypePasswordlessEmailDeliveryInput
+
+from supertokens_python.supertokens import AppInfo
 
 
-async def default_create_and_send_custom_email(
-    _: TypePasswordlessEmailDeliveryInput,
-    __: Dict[str, Any]
-) -> None:
-    # TODO
-    pass
+def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[TypePasswordlessEmailDeliveryInput, Dict[str, Any]], Awaitable[None]]:
+    async def func(email_input: TypePasswordlessEmailDeliveryInput, _: Dict[str, Any]):
+        if ('SUPERTOKENS_ENV' in environ) and (environ['SUPERTOKENS_ENV'] == 'testing'):
+            return
+        try:
+            data = {
+                "email": email_input.email,
+                "appName": app_info.app_name,
+                "codeLifetime": email_input.code_life_time,
+                "urlWithLinkCode": email_input.url_with_link_code,  # TODO: FIXME Must be valid (non-empty) url or we get error
+                "userInputCode": email_input.user_input_code or "",  # TODO: FIXME
+            }
+            async with AsyncClient() as client:
+                await client.post('https://api.supertokens.io/0/st/auth/passwordless/login', json=data, headers={'api-version': '0'})  # type: ignore
+        except Exception:
+            pass
+
+    return func
 
 
 class BackwardCompatibilityService(EmailDeliveryInterface[TypePasswordlessEmailDeliveryInput]):
@@ -41,7 +56,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypePasswordlessEmailD
                  ] = None
                  ) -> None:
         self.app_info = app_info
-        self.create_and_send_custom_email = create_and_send_custom_email if create_and_send_custom_email is not None else default_create_and_send_custom_email
+        self.create_and_send_custom_email = create_and_send_custom_email if create_and_send_custom_email is not None else default_create_and_send_custom_email(app_info)
 
     async def send_email(self, email_input: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
         try:

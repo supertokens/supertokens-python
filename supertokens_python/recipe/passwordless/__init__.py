@@ -16,10 +16,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
+from supertokens_python.ingredients.emaildelivery.types import \
+    EmailDeliveryConfig
+from supertokens_python.recipe.passwordless.interfaces import \
+    TypePasswordlessEmailDeliveryInput
 from typing_extensions import Literal
 
-from .recipe import PasswordlessRecipe
 from . import utils
+from .recipe import PasswordlessRecipe
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
@@ -41,9 +45,12 @@ def init(contact_config: ContactConfig,
          override: Union[InputOverrideConfig, None] = None,
          get_link_domain_and_path: Union[Callable[[
              PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
-         get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None) -> Callable[[AppInfo], RecipeModule]:
+         get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
+         email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
+         ) -> Callable[[AppInfo], RecipeModule]:
     return PasswordlessRecipe.init(contact_config,
                                    flow_type,
                                    override,
                                    get_link_domain_and_path,
-                                   get_custom_user_input_code)
+                                   get_custom_user_input_code,
+                                   email_delivery)

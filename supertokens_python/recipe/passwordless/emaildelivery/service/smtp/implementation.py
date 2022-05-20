@@ -12,14 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from __future__ import annotations
+
 from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.service.smtp import (
     GetContentResult, ServiceInterface, SMTPServiceConfigFrom, Transporter)
 from supertokens_python.recipe.passwordless.emaildelivery.service.smtp.pless_email import \
     pless_email_content
-from supertokens_python.recipe.passwordless.interfaces import \
-    TypePasswordlessEmailDeliveryInput
+from supertokens_python.recipe.passwordless.utils import \
+    CreateAndSendCustomEmailParameters as TypePasswordlessEmailDeliveryInput
 
 
 class ServiceImplementation(ServiceInterface[TypePasswordlessEmailDeliveryInput]):

@@ -38,8 +38,7 @@ if TYPE_CHECKING:
         InputEmailVerificationConfig, InputResetPasswordUsingTokenFeature)
 
 
-def default_create_and_send_custom_email(
-        app_info: AppInfo) -> Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
+def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
     async def func(user: User, password_reset_url_with_token: str, _: Dict[str, Any]):
         if ('SUPERTOKENS_ENV' in environ) and (environ['SUPERTOKENS_ENV'] == 'testing'):
             return

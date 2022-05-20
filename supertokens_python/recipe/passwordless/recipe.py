@@ -18,6 +18,8 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
+from supertokens_python.ingredients.emaildelivery.types import \
+    EmailDeliveryConfig
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.passwordless.types import \
     PasswordlessIngredients
@@ -58,11 +60,12 @@ class PasswordlessRecipe(RecipeModule):
                  get_link_domain_and_path: Union[Callable[[
                      PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
                  get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
+                 email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
                  ingredients: Union[PasswordlessIngredients, None] = None,
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, contact_config, flow_type, override,
-                                                        get_link_domain_and_path, get_custom_user_input_code)
+                                                        get_link_domain_and_path, get_custom_user_input_code, email_delivery)
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id))
@@ -131,7 +134,9 @@ class PasswordlessRecipe(RecipeModule):
              override: Union[OverrideConfig, None] = None,
              get_link_domain_and_path: Union[Callable[[
                  PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
-             get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None):
+             get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
+             email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None
+             ):
         def func(app_info: AppInfo):
             if PasswordlessRecipe.__instance is None:
                 PasswordlessRecipe.__instance = PasswordlessRecipe(
@@ -139,6 +144,7 @@ class PasswordlessRecipe(RecipeModule):
                     app_info,
                     contact_config, flow_type, override,
                     get_link_domain_and_path, get_custom_user_input_code,
+                    email_delivery,
                     ingredients=None
                 )
                 return PasswordlessRecipe.__instance

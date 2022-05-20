@@ -29,8 +29,7 @@ if TYPE_CHECKING:
     from .types import DeviceType, User
 
 
-class TypePasswordlessEmailDeliveryInput(CreateAndSendCustomEmailParameters):
-    pass
+TypePasswordlessEmailDeliveryInput = CreateAndSendCustomEmailParameters
 
 
 class CreateCodeOkResult():
