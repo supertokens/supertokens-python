@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from .recipeimplementation.implementation import RecipeImplementation
 
 from distutils.log import warn
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
@@ -27,6 +26,7 @@ from ..emailverification.types import User as EmailVerificationUser
 from .email_delivery.services.backward_compatibility import \
     BackwardCompatibilityService
 from .interfaces import APIInterface, RecipeInterface
+from .recipeimplementation.implementation import RecipeImplementation
 from .types import TypeThirdPartyEmailPasswordEmailDeliveryInput, User
 
 if TYPE_CHECKING:
@@ -147,7 +147,7 @@ def validate_and_normalise_user_input(
     if override is None:
         override = InputOverrideConfig()
 
-    def get_email_delivery_config(recipeInterfaceImp: RecipeImplementation):
+    def get_email_delivery_config(recipe_interface_impl: RecipeImplementation):
         if email_delivery_config and email_delivery_config.service:
             return EmailDeliveryConfigWithService(
                 service=email_delivery_config.service,
@@ -156,7 +156,7 @@ def validate_and_normalise_user_input(
 
         email_service = BackwardCompatibilityService(
             app_info=recipe.app_info,
-            recipeInterfaceImpl=recipeInterfaceImp,
+            recipe_interface_impl=recipe_interface_impl,
             reset_password_using_token_feature=reset_password_using_token_feature,
             email_verification_feature=email_verification_feature,
         )

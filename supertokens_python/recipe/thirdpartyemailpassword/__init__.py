@@ -15,7 +15,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, List, Union
 
+from supertokens_python.ingredients.emaildelivery.types import \
+    EmailDeliveryConfig
 from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdpartyemailpassword.types import \
+    TypeThirdPartyEmailPasswordEmailDeliveryInput
 
 from .. import emailpassword, thirdparty
 from . import exceptions as ex
@@ -44,7 +48,9 @@ def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
          reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
          override: Union[InputOverrideConfig, None] = None,
-         providers: Union[List[Provider], None] = None) -> Callable[[AppInfo], RecipeModule]:
+         providers: Union[List[Provider], None] = None,
+         email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None
+         ) -> Callable[[AppInfo], RecipeModule]:
     return ThirdPartyEmailPasswordRecipe.init(sign_up_feature, reset_password_using_token_feature,
                                               email_verification_feature,
-                                              override, providers)
+                                              override, providers, email_delivery)
