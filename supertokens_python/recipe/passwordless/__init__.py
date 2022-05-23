@@ -23,6 +23,7 @@ from supertokens_python.recipe.passwordless.interfaces import \
 from typing_extensions import Literal
 
 from . import utils
+from . import types
 from .recipe import PasswordlessRecipe
 
 if TYPE_CHECKING:
@@ -35,7 +36,7 @@ ContactEmailOnlyConfig = utils.ContactEmailOnlyConfig
 ContactConfig = utils.ContactConfig
 PhoneOrEmailInput = utils.PhoneOrEmailInput
 CreateAndSendCustomTextMessageParameters = utils.CreateAndSendCustomTextMessageParameters
-CreateAndSendCustomEmailParameters = utils.CreateAndSendCustomEmailParameters
+CreateAndSendCustomEmailParameters = types.CreateAndSendCustomEmailParameters
 ContactPhoneOnlyConfig = utils.ContactPhoneOnlyConfig
 ContactEmailOrPhoneConfig = utils.ContactEmailOrPhoneConfig
 

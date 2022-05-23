@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import Any, Dict, List, Union
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.ingredients.emaildelivery import \
@@ -23,13 +23,9 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import APIResponse
 from typing_extensions import Literal
 
-from .utils import CreateAndSendCustomEmailParameters, PasswordlessConfig
-
-if TYPE_CHECKING:
-    from .types import DeviceType, User
-
-
-TypePasswordlessEmailDeliveryInput = CreateAndSendCustomEmailParameters
+# if TYPE_CHECKING:
+from .types import DeviceType, TypePasswordlessEmailDeliveryInput, User
+from .utils import PasswordlessConfig
 
 
 class CreateCodeOkResult():

@@ -159,6 +159,12 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                      self.config.email_verification_feature, EmailVerificationIngredients(None))
 
+        email_delivery_ingredient = ingredients.email_delivery if ingredients else None
+        if email_delivery_ingredient is None:
+            self.email_delivery_ingredient = EmailDeliveryIngredient(self.config.get_email_delivery_config(recipe_implementation))
+        else:
+            self.email_delivery_ingredient = email_delivery_ingredient
+
         def func_override_passwordless(_: PasswordlessRecipeInterface) -> PasswordlessRecipeInterface:
             return PasswordlessRecipeImplementation(
                 self.recipe_implementation)
@@ -208,12 +214,6 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                     self.email_verification_recipe,
                     # ThirdPartyIngredient(cast(EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput], self.email_delivery))
                 )
-
-        email_delivery_ingredient = ingredients.email_delivery if ingredients else None
-        if email_delivery_ingredient is None:
-            self.email_delivery_ingredient = EmailDeliveryIngredient(self.config.get_email_delivery_config(recipe_implementation))
-        else:
-            self.email_delivery_ingredient = email_delivery_ingredient
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -> bool:

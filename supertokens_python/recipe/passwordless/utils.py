@@ -20,6 +20,8 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryConfigWithService)
+from supertokens_python.recipe.passwordless.types import \
+    CreateAndSendCustomEmailParameters
 from typing_extensions import Literal
 
 if TYPE_CHECKING:
@@ -61,20 +63,6 @@ async def default_create_and_send_custom_text_message(
 ) -> None:
     # TODO
     pass
-
-
-class CreateAndSendCustomEmailParameters:
-    def __init__(self,
-                 code_life_time: int,
-                 pre_auth_session_id: str,
-                 email: str,
-                 user_input_code: Union[str, None] = None,
-                 url_with_link_code: Union[str, None] = None):
-        self.email: str = email
-        self.code_life_time: int = code_life_time
-        self.pre_auth_session_id: str = pre_auth_session_id
-        self.user_input_code: Union[str, None] = user_input_code
-        self.url_with_link_code: Union[str, None] = url_with_link_code
 
 
 class CreateAndSendCustomTextMessageParameters:
@@ -146,10 +134,10 @@ class ContactEmailOnlyConfig(ContactConfig):
 
 class ContactEmailOrPhoneConfig(ContactConfig):
     def __init__(self,
-                 create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]],
-                 create_and_send_custom_text_message: Callable[
-                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]],
+                 create_and_send_custom_email: Union[Callable[
+                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]], None] = None,
+                 create_and_send_custom_text_message: Union[Callable[
+                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]], None] = None,
                  validate_email_address: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  validate_phone_number: Union[Callable[[
@@ -158,11 +146,7 @@ class ContactEmailOrPhoneConfig(ContactConfig):
                  ):
         super().__init__('EMAIL_OR_PHONE')
         self.email_delivery = email_delivery
-        if create_and_send_custom_email is None:
-            warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
-            self.create_and_send_custom_email = default_create_and_send_custom_email
-        else:
-            self.create_and_send_custom_email = create_and_send_custom_email
+        self.create_and_send_custom_email = create_and_send_custom_email
         if validate_email_address is None:
             self.validate_email_address = default_validate_email
         else:

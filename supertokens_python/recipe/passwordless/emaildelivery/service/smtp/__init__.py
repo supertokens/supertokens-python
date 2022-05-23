@@ -21,8 +21,7 @@ from supertokens_python.ingredients.emaildelivery.service.smtp import (
     Transporter)
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
-from supertokens_python.recipe.passwordless.utils import \
-    CreateAndSendCustomEmailParameters as TypePasswordlessEmailDeliveryInput
+from supertokens_python.recipe.passwordless.types import TypePasswordlessEmailDeliveryInput
 
 from .implementation import ServiceImplementation
 

@@ -15,15 +15,12 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
+from typing import Any, Awaitable, Callable, Dict, Union
 
 from httpx import AsyncClient
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
-
-if TYPE_CHECKING:
-    from supertokens_python.recipe.passwordless.utils import \
-        CreateAndSendCustomEmailParameters as TypePasswordlessEmailDeliveryInput
-
+from supertokens_python.recipe.passwordless.types import \
+    TypePasswordlessEmailDeliveryInput
 from supertokens_python.supertokens import AppInfo
 
 
@@ -61,5 +58,5 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypePasswordlessEmailD
     async def send_email(self, email_input: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
         try:
             await self.create_and_send_custom_email(email_input, user_context)
-        except Exception:
+        except Exception as _:
             pass

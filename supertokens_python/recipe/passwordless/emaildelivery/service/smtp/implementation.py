@@ -20,8 +20,7 @@ from supertokens_python.ingredients.emaildelivery.service.smtp import (
     GetContentResult, ServiceInterface, SMTPServiceConfigFrom, Transporter)
 from supertokens_python.recipe.passwordless.emaildelivery.service.smtp.pless_email import \
     pless_email_content
-from supertokens_python.recipe.passwordless.utils import \
-    CreateAndSendCustomEmailParameters as TypePasswordlessEmailDeliveryInput
+from supertokens_python.recipe.passwordless.types import TypePasswordlessEmailDeliveryInput
 
 
 class ServiceImplementation(ServiceInterface[TypePasswordlessEmailDeliveryInput]):
