@@ -18,6 +18,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.emailverification.types import \
+    EmailVerificationIngredients
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api.implementation import APIImplementation
@@ -58,7 +60,7 @@ class ThirdPartyRecipe(RecipeModule):
             self.email_verification_recipe = email_verification_recipe
         else:
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
-                                                                     self.config.email_verification_feature)
+                                                                     self.config.email_verification_feature, EmailVerificationIngredients(None))
         self.providers = self.config.sign_in_and_up_feature.providers
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id))

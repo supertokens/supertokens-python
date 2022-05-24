@@ -30,9 +30,9 @@ def get_password_reset_email_content(email_input: TypeEmailPasswordPasswordReset
     return content_result
 
 
-def get_password_reset_email_html(appName: str, email: str, resetLink: str):
+def get_password_reset_email_html(app_name: str, email: str, reset_link: str):
     current_dir = path.dirname(__file__)
     template_path = path.join(current_dir, "password_reset_email.html")
-    template = open(template_path, "r").read()
-
-    return Template(template).substitute(appName=appName, email=email, resetLink=resetLink)
+    with open(template_path, "r") as f:
+        template = f.read()
+    return Template(template).substitute(appName=app_name, email=email, resetLink=reset_link)

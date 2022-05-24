@@ -49,33 +49,11 @@ class SMTPServiceConfig:
 
 
 class GetContentResult:
-    def __init__(self, body: str, subject: str, to_email: str) -> None:
+    def __init__(self, body: str, subject: str, to_email: str, is_html: bool = True) -> None:
         self.body = body
         self.subject = subject
         self.to_email = to_email
-
-
-class ServiceInterface(ABC, Generic[_T]):
-    @abstractmethod
-    async def send_raw_email(self,
-                             get_content_result: GetContentResult,
-                             config_from: SMTPServiceConfigFrom,
-                             user_context: Dict[str, Any]
-                             ) -> None:
-        pass
-
-    @abstractmethod
-    async def get_content(self, email_input: _T, user_context: Dict[str, Any]) -> GetContentResult:
-        pass
-
-
-class EmailDeliverySMTPConfig(Generic[_T]):
-    def __init__(self,
-                 smtp_settings: SMTPServiceConfig,
-                 override: Union[Callable[[ServiceInterface[_T]], ServiceInterface[_T]], None] = None
-                 ) -> None:
-        self.smtp_settings = smtp_settings
-        self.override = override
+        self.is_html = is_html
 
 
 class Transporter:
@@ -91,13 +69,42 @@ class Transporter:
             if self.smtp_settings.auth:
                 smtp.login(self.smtp_settings.auth.user, self.smtp_settings.auth.password)
 
-            email_content = MIMEText(get_content_result.body, "html")
-            email_content["From"] = config_from.email
-            email_content["To"] = get_content_result.to_email
-            email_content["Subject"] = get_content_result.subject
+            if get_content_result.is_html:
+                email_content = MIMEText(get_content_result.body, "html")
+                email_content["From"] = config_from.email
+                email_content["To"] = get_content_result.to_email
+                email_content["Subject"] = get_content_result.subject
+                smtp.sendmail(config_from.email, get_content_result.to_email, email_content.as_string())
+            else:
+                smtp.sendmail(config_from.email, get_content_result.to_email, get_content_result.body)
 
-            smtp.sendmail(config_from.email, get_content_result.to_email, email_content.as_string())
         except Exception as e:
             log_debug_message('Error sending email: %s', e)
         finally:
             smtp.quit()
+
+
+class ServiceInterface(ABC, Generic[_T]):
+    def __init__(self, transporter: Transporter, config_from: SMTPServiceConfigFrom) -> None:
+        self.transporter = transporter
+        self.config_from = config_from
+
+    @abstractmethod
+    async def send_raw_email(self,
+                             get_content_result: GetContentResult,
+                             user_context: Dict[str, Any]
+                             ) -> None:
+        pass
+
+    @abstractmethod
+    async def get_content(self, email_input: _T) -> GetContentResult:
+        pass
+
+
+class EmailDeliverySMTPConfig(Generic[_T]):
+    def __init__(self,
+                 smtp_settings: SMTPServiceConfig,
+                 override: Union[Callable[[ServiceInterface[_T]], ServiceInterface[_T]], None] = None
+                 ) -> None:
+        self.smtp_settings = smtp_settings
+        self.override = override

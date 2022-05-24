@@ -53,14 +53,16 @@ class EmailVerificationRecipe(RecipeModule):
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  config: ParentRecipeEmailVerificationConfig,
-                 ingredients: Union[EmailVerificationIngredients, None] = None
+                 ingredients: EmailVerificationIngredients,
                  ) -> None:
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, config)
+
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config)
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
+
         api_implementation = APIImplementation()
         self.api_implementation = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
@@ -108,7 +110,8 @@ class EmailVerificationRecipe(RecipeModule):
     def init(config: ParentRecipeEmailVerificationConfig):
         def func(app_info: AppInfo):
             if EmailVerificationRecipe.__instance is None:
-                EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id, app_info, config, ingredients=None)
+                ingredients = EmailVerificationIngredients(email_delivery=None)
+                EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id, app_info, config, ingredients=ingredients)
                 return EmailVerificationRecipe.__instance
             raise_general_exception('Emailverification recipe has already been initialised. Please check your code for bugs.')
 

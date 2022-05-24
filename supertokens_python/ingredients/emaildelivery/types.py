@@ -25,20 +25,18 @@ class EmailDeliveryInterface(ABC, Generic[_T]):
         pass
 
 
-class EmailDeliveryConfigWithService(ABC, Generic[_T]):
+class EmailDeliveryConfig(ABC, Generic[_T]):
     def __init__(
-        self,
-        service: EmailDeliveryInterface[_T],
+        self, service: Union[EmailDeliveryInterface[_T], None],
         override: Union[Callable[[EmailDeliveryInterface[_T]], EmailDeliveryInterface[_T]], None] = None,
     ) -> None:
         self.service = service
         self.override = override
 
 
-class EmailDeliveryConfig(ABC, Generic[_T]):
+class EmailDeliveryConfigWithService(ABC, Generic[_T]):
     def __init__(
-        self,
-        service: Union[EmailDeliveryInterface[_T], None],
+        self, service: EmailDeliveryInterface[_T],
         override: Union[Callable[[EmailDeliveryInterface[_T]], EmailDeliveryInterface[_T]], None] = None,
     ) -> None:
         self.service = service

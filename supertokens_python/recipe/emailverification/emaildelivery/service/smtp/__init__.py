@@ -15,8 +15,7 @@
 from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.service.smtp import (
-    EmailDeliverySMTPConfig, ServiceInterface, SMTPServiceConfigFrom,
-    Transporter)
+    EmailDeliverySMTPConfig, ServiceInterface, Transporter)
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.recipe.emailverification.recipe import \
@@ -26,18 +25,14 @@ from .implementation import ServiceImplementation
 
 
 class SMTPService(EmailDeliveryInterface[TypeEmailVerificationEmailDeliveryInput]):
-    serviceImpl: ServiceInterface[TypeEmailVerificationEmailDeliveryInput]
+    service_implementation: ServiceInterface[TypeEmailVerificationEmailDeliveryInput]
 
     def __init__(self, config: EmailDeliverySMTPConfig[TypeEmailVerificationEmailDeliveryInput]) -> None:
         self.config = config
-        self.transporter = Transporter(config.smtp_settings)
-        oi = ServiceImplementation(self.transporter)
-        self.serviceImpl = oi if config.override is None else config.override(oi)
+        transporter = Transporter(config.smtp_settings)
+        oi = ServiceImplementation(transporter, config.smtp_settings.email_from)
+        self.service_implementation = oi if config.override is None else config.override(oi)
 
     async def send_email(self, email_input: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        content = await self.serviceImpl.get_content(email_input, user_context)
-        send_raw_email_from = SMTPServiceConfigFrom(
-            self.config.smtp_settings.email_from.name,
-            self.config.smtp_settings.email_from.email
-        )
-        await self.serviceImpl.send_raw_email(content, send_raw_email_from, user_context)
+        content = await self.service_implementation.get_content(email_input)
+        await self.service_implementation.send_raw_email(content, user_context)

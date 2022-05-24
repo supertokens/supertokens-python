@@ -30,10 +30,10 @@ from .email_verification_implementation import \
 
 
 class ServiceImplementation(ServiceInterface[TypeEmailPasswordEmailDeliveryInput]):
-    def __init__(self, transporter: Transporter) -> None:
-        self.transporter = transporter
+    def __init__(self, transporter: Transporter, config_from: SMTPServiceConfigFrom) -> None:
+        super().__init__(transporter, config_from)
 
-        email_verification_service_implementation = EVServiceImplementation(transporter)
+        email_verification_service_implementation = EVServiceImplementation(transporter, config_from)
         self.ev_send_raw_email = email_verification_service_implementation.send_raw_email
         self.ev_get_content = email_verification_service_implementation.get_content
 
@@ -41,10 +41,10 @@ class ServiceImplementation(ServiceInterface[TypeEmailPasswordEmailDeliveryInput
         email_verification_service_implementation.send_raw_email = derived_ev_service_implementation.send_raw_email
         email_verification_service_implementation.get_content = derived_ev_service_implementation.get_content
 
-    async def send_raw_email(self, get_content_result: GetContentResult, config_from: SMTPServiceConfigFrom, user_context: Dict[str, Any]) -> None:
-        await self.transporter.send_email(config_from, get_content_result, user_context)
+    async def send_raw_email(self, get_content_result: GetContentResult, user_context: Dict[str, Any]) -> None:
+        await self.transporter.send_email(self.config_from, get_content_result, user_context)
 
-    async def get_content(self, email_input: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
+    async def get_content(self, email_input: TypeEmailPasswordEmailDeliveryInput) -> GetContentResult:
         if isinstance(email_input, TypeEmailVerificationEmailDeliveryInput):
-            return await self.ev_get_content(email_input, user_context)
+            return await self.ev_get_content(email_input)
         return get_password_reset_email_content(email_input)

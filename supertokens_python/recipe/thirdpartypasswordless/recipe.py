@@ -19,6 +19,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.emailverification.types import \
+    EmailVerificationIngredients
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
@@ -138,7 +140,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             else:
                 self.config.email_verification_feature.override.functions = email_verification_override
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
-                                                                     self.config.email_verification_feature)
+                                                                     self.config.email_verification_feature, EmailVerificationIngredients(None))
 
         def func_override_passwordless(_: PasswordlessRecipeInterface) -> PasswordlessRecipeInterface:
             return PasswordlessRecipeImplementation(

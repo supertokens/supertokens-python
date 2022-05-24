@@ -26,13 +26,12 @@ def get_email_verify_email_content(email_input: TypeEmailVerificationEmailDelive
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
     body = get_email_verify_email_html(app_name, email_input.user.email, email_input.email_verify_link)
-    content_result = GetContentResult(body, "Email verification instructions", email_input.user.email)
-    return content_result
+    return GetContentResult(body, "Email verification instructions", email_input.user.email)
 
 
-def get_email_verify_email_html(appName: str, email: str, verificationLink: str):
+def get_email_verify_email_html(app_name: str, email: str, verification_link: str):
     current_dir = path.dirname(__file__)
     template_path = path.join(current_dir, "email_verify_email.html")
-    template = open(template_path, "r").read()
-
-    return Template(template).substitute(appName=appName, verificationLink=verificationLink, email=email)
+    with open(template_path, "r") as f:
+        template = f.read()
+    return Template(template).substitute(appName=app_name, verificationLink=verification_link, email=email)

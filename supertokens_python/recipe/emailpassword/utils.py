@@ -178,7 +178,7 @@ class ResetPasswordUsingTokenFeature:
         self.get_reset_password_url = get_reset_password_url
         self.create_and_send_custom_email = create_and_send_custom_email
         if create_and_send_custom_email:
-            warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
+            warn("create_and_send_custom_email is deprecated. Please use email delivery config instead")
 
 
 class InputEmailVerificationConfig:
@@ -318,7 +318,7 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
 
         email_service = BackwardCompatibilityService(
             app_info=app_info,
-            recipeInterfaceImpl=ep_recipe,
+            recipe_interface_impl=ep_recipe,
             reset_password_using_token_feature=reset_password_using_token_feature,
             email_verification_feature=email_verification_feature,
         )

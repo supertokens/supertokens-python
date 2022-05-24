@@ -59,16 +59,16 @@ def default_create_and_send_custom_email(
 
 class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
     app_info: AppInfo
-    emailVerificationBackwardCompatibilityService: EmailVerificationBackwardCompatibilityService
+    ev_backward_compatibility_service: EmailVerificationBackwardCompatibilityService
 
     def __init__(self,
                  app_info: AppInfo,
-                 recipeInterfaceImpl: RecipeImplementation,
+                 recipe_interface_impl: RecipeImplementation,
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  ) -> None:
         self.app_info = app_info
-        self.recipeInterfaceImpl = recipeInterfaceImpl
+        self.recipe_interface_impl = recipe_interface_impl
 
         reset_password_feature_send_email_func = default_create_and_send_custom_email(self.app_info)
         if reset_password_using_token_feature and reset_password_using_token_feature.create_and_send_custom_email is not None:
@@ -86,7 +86,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
                 async def create_and_send_custom_email_wrapper(
                     user: EmailVerificationUser, link: str, user_context: Dict[str, Any]
                 ):
-                    user_info = await self.recipeInterfaceImpl.get_user_by_id(user.user_id, user_context)
+                    user_info = await self.recipe_interface_impl.get_user_by_id(user.user_id, user_context)
                     if user_info is None:
                         raise Exception("Unknown User ID provided")
 
@@ -96,15 +96,15 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
 
             self.email_verification_feature = email_verification_feature
 
-        self.emailVerificationBackwardCompatibilityService = EmailVerificationBackwardCompatibilityService(
+        self.ev_backward_compatibility_service = EmailVerificationBackwardCompatibilityService(
             app_info, create_and_send_custom_email=create_and_send_custom_email
         )
 
     async def send_email(self, email_input: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> Any:
         if isinstance(email_input, TypeEmailVerificationEmailDeliveryInput):
-            await self.emailVerificationBackwardCompatibilityService.send_email(email_input, user_context)
+            await self.ev_backward_compatibility_service.send_email(email_input, user_context)
         else:
-            user = await self.recipeInterfaceImpl.get_user_by_id(
+            user = await self.recipe_interface_impl.get_user_by_id(
                 user_id=email_input.user.user_id,
                 user_context=user_context
             )

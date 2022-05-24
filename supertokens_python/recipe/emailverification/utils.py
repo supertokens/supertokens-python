@@ -54,7 +54,7 @@ class ParentRecipeEmailVerificationConfig:
                  override: Union[OverrideConfig, None] = None,
                  get_email_verification_url: Union[Callable[[User, Dict[str, Any]], Awaitable[str]], None] = None,
                  create_and_send_custom_email: Union[Callable[[User, str, Dict[str, Any]], Awaitable[None]], None] = None,
-                 email_delivery: Union[EmailDeliveryConfig[TypeEmailVerificationEmailDeliveryInput], None] = None
+                 email_delivery: Union[EmailDeliveryConfig[TypeEmailVerificationEmailDeliveryInput], None] = None,
                  ):
         self.override = override
         self.get_email_verification_url = get_email_verification_url
@@ -72,15 +72,11 @@ class EmailVerificationConfig:
                  get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
                  get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
                  get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[TypeEmailVerificationEmailDeliveryInput]],
-                 create_and_send_custom_email: Union[Callable[[User, str, Dict[str, Any]], Awaitable[None]], None] = None,
                  ):
         self.get_email_for_user_id = get_email_for_user_id
         self.get_email_verification_url = get_email_verification_url
         self.override = override
         self.get_email_delivery_config = get_email_delivery_config
-        self.create_and_send_custom_email = create_and_send_custom_email
-        if create_and_send_custom_email:
-            warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
 
 
 def validate_and_normalise_user_input(

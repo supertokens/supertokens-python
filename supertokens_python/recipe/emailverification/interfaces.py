@@ -159,10 +159,12 @@ class TypeEmailVerificationEmailDeliveryInput:
     def __init__(
         self,
         user: TypeEmailVerificationEmailDeliveryInputUser,
-        email_verify_link: str
+        email_verify_link: str,
+        user_context: Dict[str, Any],
     ) -> None:
         self.user = user
         self.email_verify_link = email_verify_link
+        self.user_context = user_context
 
 
 class APIInterface(ABC):
