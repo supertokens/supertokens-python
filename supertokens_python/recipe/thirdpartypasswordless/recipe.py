@@ -23,8 +23,8 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.emailverification.types import \
     EmailVerificationIngredients
-from supertokens_python.recipe.passwordless.types import \
-    PasswordlessIngredients
+from supertokens_python.recipe.passwordless.types import (
+    PasswordlessIngredients, TypePasswordlessSmsDeliveryInput)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import (
     ThirdPartyIngredients, TypeThirdPartyEmailDeliveryInput)
@@ -55,6 +55,7 @@ from typing import Awaitable, Callable
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
+from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdparty.utils import \
@@ -80,7 +81,8 @@ from ..thirdparty.interfaces import \
     RecipeInterface as ThirdPartyRecipeInterface
 from .exceptions import SupertokensThirdPartyPasswordlessError
 from .interfaces import APIInterface, RecipeInterface
-from .types import TypeThirdPartyPasswordlessEmailDeliveryInput
+from .types import (TypeThirdPartyPasswordlessEmailDeliveryInput,
+                    TypeThirdPartyPasswordlessSmsDeliveryInput)
 from .utils import InputOverrideConfig, validate_and_normalise_user_input
 
 
@@ -88,6 +90,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
     recipe_id = 'thirdpartypasswordless'
     __instance = None
     email_delivery: EmailDeliveryIngredient[TypeThirdPartyPasswordlessEmailDeliveryInput]
+    sms_delivery: SMSDeliveryIngredient[TypeThirdPartyPasswordlessSmsDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  contact_config: ContactConfig,
@@ -128,6 +131,12 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             self.email_delivery = EmailDeliveryIngredient(self.config.get_email_delivery_config(recipe_implementation))
         else:
             self.email_delivery = email_delivery_ingredient
+
+        sms_delivery_ingredient = ingredients.sms_delivery
+        if sms_delivery_ingredient is None:
+            self.sms_delivery_ingredient = SMSDeliveryIngredient(self.config.get_sms_delivery_config())
+        else:
+            self.sms_delivery_ingredient = sms_delivery_ingredient
 
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
@@ -185,7 +194,11 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                 EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput],
                 self.email_delivery
             )
-            pless_ingredients = PasswordlessIngredients(pless_email_delivery)
+            pless_sms_delivery = cast(
+                SMSDeliveryIngredient[TypePasswordlessSmsDeliveryInput],
+                self.email_delivery
+            )
+            pless_ingredients = PasswordlessIngredients(pless_email_delivery, pless_sms_delivery)
             self.passwordless_recipe = PasswordlessRecipe(recipe_id, app_info,
                                                           self.config.contact_config,
                                                           self.config.flow_type,
@@ -291,7 +304,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
              providers: Union[List[Provider], None] = None):
         def func(app_info: AppInfo):
             if ThirdPartyPasswordlessRecipe.__instance is None:
-                ingredients = ThirdPartyPasswordlessIngredients(None)
+                ingredients = ThirdPartyPasswordlessIngredients(None, None)
                 ThirdPartyPasswordlessRecipe.__instance = ThirdPartyPasswordlessRecipe(
                     ThirdPartyPasswordlessRecipe.recipe_id, app_info, contact_config, flow_type, ingredients, get_link_domain_and_path, get_custom_user_input_code,
                     email_verification_feature,

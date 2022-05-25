@@ -18,9 +18,13 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryConfigWithService)
+from supertokens_python.ingredients.smsdelivery.types import (
+    SMSDeliveryConfig, SMSDeliveryConfigWithService)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.service.backward_compatibility import \
     BackwardCompatibilityService
+from supertokens_python.recipe.thirdpartypasswordless.types import \
+    TypeThirdPartyPasswordlessSmsDeliveryInput
 from typing_extensions import Literal
 
 from ..emailverification.types import User as EmailVerificationUser
@@ -37,6 +41,9 @@ from supertokens_python.recipe.emailverification.utils import \
     OverrideConfig as EmailVerificationOverrideConfig
 from supertokens_python.recipe.emailverification.utils import \
     ParentRecipeEmailVerificationConfig
+
+from .smsdelivery.service.backward_compatibility import \
+    BackwardCompatibilityService as SMSBackwardCompatibilityService
 
 
 class InputEmailVerificationConfig:
@@ -126,6 +133,9 @@ class ThirdPartyPasswordlessConfig:
                  get_email_delivery_config: Callable[
                      [RecipeInterface], EmailDeliveryConfigWithService[TypeThirdPartyPasswordlessEmailDeliveryInput]
                  ],
+                 get_sms_delivery_config: Callable[
+                     [], SMSDeliveryConfigWithService[TypeThirdPartyPasswordlessSmsDeliveryInput]
+                 ],
                  get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None
                  ):
         self.email_verification_feature = email_verification_feature
@@ -135,6 +145,7 @@ class ThirdPartyPasswordlessConfig:
         self.get_link_domain_and_path = get_link_domain_and_path
         self.get_custom_user_input_code = get_custom_user_input_code
         self.get_email_delivery_config = get_email_delivery_config
+        self.get_sms_delivery_config = get_sms_delivery_config
         self.override = override
 
 
@@ -149,6 +160,7 @@ def validate_and_normalise_user_input(
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[Provider], None] = None,
         email_delivery_config: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
+        sms_delivery_config: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
 ) -> ThirdPartyPasswordlessConfig:
     if providers is None:
         providers = []
@@ -178,5 +190,28 @@ def validate_and_normalise_user_input(
 
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    return ThirdPartyPasswordlessConfig(override=OverrideConfig(functions=override.functions, apis=override.apis), providers=providers, contact_config=contact_config, flow_type=flow_type, get_link_domain_and_path=get_link_domain_and_path, get_custom_user_input_code=get_custom_user_input_code, email_verification_feature=validate_and_normalise_email_verification_config(recipe, email_verification_feature, override),
-                                        get_email_delivery_config=get_email_delivery_config)
+    def get_sms_delivery_config() -> SMSDeliveryConfigWithService[TypeThirdPartyPasswordlessSmsDeliveryInput]:
+        if sms_delivery_config and sms_delivery_config.service:
+            return SMSDeliveryConfigWithService(
+                service=sms_delivery_config.service,
+                override=sms_delivery_config.override
+            )
+
+        if contact_config.contact_method != "PHONE":
+            pless_create_and_send_custom_text_message = contact_config.create_and_send_custom_email
+        else:
+            pless_create_and_send_custom_text_message = None
+
+        sms_service = SMSBackwardCompatibilityService(
+            recipe.app_info,
+            pless_create_and_send_custom_text_message,
+        )
+        return SMSDeliveryConfigWithService(sms_service, override=None)
+
+    return ThirdPartyPasswordlessConfig(
+        override=OverrideConfig(functions=override.functions, apis=override.apis), providers=providers, contact_config=contact_config, flow_type=flow_type, get_link_domain_and_path=get_link_domain_and_path, get_custom_user_input_code=get_custom_user_input_code, email_verification_feature=validate_and_normalise_email_verification_config(
+            recipe, email_verification_feature, override
+        ),
+        get_email_delivery_config=get_email_delivery_config,
+        get_sms_delivery_config=get_sms_delivery_config,
+    )
