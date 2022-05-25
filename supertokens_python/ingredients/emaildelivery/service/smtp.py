@@ -14,11 +14,13 @@
 
 
 import smtplib
+import ssl
 from abc import ABC, abstractmethod
 from email.mime.text import MIMEText
 from typing import Any, Callable, Dict, Generic, TypeVar, Union
 
 from supertokens_python.logger import log_debug_message
+from typing_extensions import Literal
 
 _T = TypeVar('_T')
 
@@ -39,13 +41,15 @@ class SMTPServiceConfig:
     def __init__(
         self, host: str, email_from: SMTPServiceConfigFrom,
         port: int, secure: Union[bool, None] = None,
-        auth: Union[SMTPServiceConfigAuth, None] = None
+        auth: Union[SMTPServiceConfigAuth, None] = None,
+        encryption: Literal['NONE', 'SSL', 'TLS_STARTTLS'] = 'NONE',
     ) -> None:
         self.host = host
         self.email_from = email_from
         self.port = port
         self.secure = secure
         self.auth = auth
+        self.encryption = encryption
 
 
 class GetContentResult:
@@ -60,28 +64,46 @@ class Transporter:
     def __init__(self, smtp_settings: SMTPServiceConfig) -> None:
         self.smtp_settings = smtp_settings
 
+    def connect(self):
+        try:
+            if self.smtp_settings.secure and self.smtp_settings.encryption == "SSL":
+                mail = smtplib.SMTP_SSL(self.smtp_settings.host, self.smtp_settings.port)
+                context = ssl.create_default_context()
+                mail.starttls(context=context)
+            else:
+                mail = smtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port)
+
+            # only attempt TLS over non-secure connections
+            if not self.smtp_settings.secure and self.smtp_settings.encryption == "TLS_STARTTLS":
+                mail.starttls()
+
+            if self.smtp_settings.auth:
+                mail.login(self.smtp_settings.auth.user, self.smtp_settings.auth.password)
+
+            mail.ehlo_or_helo_if_needed()
+            return mail
+        except Exception as e:
+            log_debug_message("Couldn't connect to the SMTP server: %s", e)
+
     async def send_email(self, config_from: SMTPServiceConfigFrom, get_content_result: GetContentResult,
                          _: Dict[str, Any]) -> None:
-        smtp = smtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port)
-        try:
-            if self.smtp_settings.secure:
-                smtp.starttls()
-            if self.smtp_settings.auth:
-                smtp.login(self.smtp_settings.auth.user, self.smtp_settings.auth.password)
+        connection = self.connect()
+        if connection is None:
+            return
 
+        try:
             if get_content_result.is_html:
                 email_content = MIMEText(get_content_result.body, "html")
                 email_content["From"] = config_from.email
                 email_content["To"] = get_content_result.to_email
                 email_content["Subject"] = get_content_result.subject
-                smtp.sendmail(config_from.email, get_content_result.to_email, email_content.as_string())
+                connection.sendmail(config_from.email, get_content_result.to_email, email_content.as_string())
             else:
-                smtp.sendmail(config_from.email, get_content_result.to_email, get_content_result.body)
-
+                connection.sendmail(config_from.email, get_content_result.to_email, get_content_result.body)
         except Exception as e:
-            log_debug_message('Error sending email: %s', e)
+            log_debug_message('Error in sending email: %s', e)
         finally:
-            smtp.quit()
+            connection.quit()
 
 
 class ServiceInterface(ABC, Generic[_T]):
