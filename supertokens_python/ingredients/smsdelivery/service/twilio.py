@@ -42,16 +42,16 @@ class ServiceInterface(ABC, Generic[_T]):
     # TODO: Might have to define __init__ later on
 
     @abstractmethod
-    async def send_raw_email(self,
-                             get_content_result: GetContentResult,
-                             input_from: str,
-                             sid: str,
-                             user_context: Dict[str, Any],
-                             ) -> None:
+    async def send_raw_sms(self,
+                           get_content_result: GetContentResult,
+                           user_context: Dict[str, Any],
+                           input_from: Union[str, None] = None,
+                           sid: Union[str, None] = None,
+                           ) -> None:
         pass
 
     @abstractmethod
-    async def get_content(self, email_input: _T, user_context: Dict[str, Any]) -> GetContentResult:
+    async def get_content(self, sms_input: _T) -> GetContentResult:
         pass
 
 

@@ -13,14 +13,14 @@
 # under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Generic, TypeVar, Union
+from typing import Callable, Generic, TypeVar, Union
 
 _T = TypeVar('_T')
 
 
 class SMSDeliveryInterface(ABC, Generic[_T]):
     @abstractmethod
-    async def send_sms(self, sms_input: _T, user_context: Dict[str, Any]) -> None:
+    async def send_sms(self, sms_input: _T) -> None:
         pass
 
 

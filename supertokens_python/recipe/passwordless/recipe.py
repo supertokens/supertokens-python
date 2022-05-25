@@ -20,9 +20,10 @@ from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
+from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.passwordless.types import \
-    PasswordlessIngredients
+from supertokens_python.recipe.passwordless.types import (
+    PasswordlessIngredients, TypePasswordlessSmsDeliveryInput)
 from typing_extensions import Literal
 
 from .api import (consume_code, create_code, email_exists, phone_number_exists,
@@ -53,6 +54,7 @@ class PasswordlessRecipe(RecipeModule):
     recipe_id = 'passwordless'
     __instance = None
     email_delivery: EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput]
+    sms_delivery: SMSDeliveryIngredient[TypePasswordlessSmsDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo, contact_config: ContactConfig,
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
@@ -81,6 +83,9 @@ class PasswordlessRecipe(RecipeModule):
         else:
             self.email_delivery = email_delivery_ingredient
 
+        sms_delivery_ingredient = ingredients.sms_delivery if ingredients is not None else None
+        self.sms_delivery = SMSDeliveryIngredient(self.config.get_sms_delivery_config()) if sms_delivery_ingredient is None else sms_delivery_ingredient
+
     def get_apis_handled(self) -> List[APIHandled]:
         return [
             APIHandled(method='post', path_without_api_base_path=NormalisedURLPath(CONSUME_CODE_API),
@@ -108,7 +113,8 @@ class PasswordlessRecipe(RecipeModule):
             self.get_recipe_id(),
             self.config,
             self.recipe_implementation,
-            self.email_delivery
+            self.email_delivery,
+            self.sms_delivery
         )
         if request_id == CONSUME_CODE_API:
             return await consume_code(self.api_implementation, options)

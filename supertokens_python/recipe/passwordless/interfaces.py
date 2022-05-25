@@ -23,7 +23,10 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import APIResponse
 from typing_extensions import Literal
 
-from .types import DeviceType, TypePasswordlessEmailDeliveryInput, User
+# if TYPE_CHECKING:
+from .types import (DeviceType, SMSDeliveryIngredient,
+                    TypePasswordlessEmailDeliveryInput,
+                    TypePasswordlessSmsDeliveryInput, User)
 from .utils import PasswordlessConfig
 
 
@@ -205,7 +208,8 @@ class RecipeInterface(ABC):
 class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: PasswordlessConfig, recipe_implementation: RecipeInterface,
-                 email_delivery: EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput]
+                 email_delivery: EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput],
+                 sms_delivery: SMSDeliveryIngredient[TypePasswordlessSmsDeliveryInput]
                  ):
         self.request = request
         self.response = response
@@ -213,6 +217,7 @@ class APIOptions:
         self.config = config
         self.recipe_implementation = recipe_implementation
         self.email_delivery = email_delivery
+        self.sms_delivery = sms_delivery
 
 
 class CreateCodePostOkResult(APIResponse):
