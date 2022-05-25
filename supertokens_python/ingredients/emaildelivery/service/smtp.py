@@ -42,7 +42,7 @@ class SMTPServiceConfig:
         self, host: str, email_from: SMTPServiceConfigFrom,
         port: int, secure: Union[bool, None] = None,
         auth: Union[SMTPServiceConfigAuth, None] = None,
-        encryption: Literal['NONE', 'SSL', 'TLS_STARTTLS'] = 'NONE',
+        encryption: Literal['NONE', 'SSL', 'TLS'] = 'NONE',
     ) -> None:
         self.host = host
         self.email_from = email_from
@@ -74,7 +74,7 @@ class Transporter:
                 mail = smtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port)
 
             # only attempt TLS over non-secure connections
-            if not self.smtp_settings.secure and self.smtp_settings.encryption == "TLS_STARTTLS":
+            if not self.smtp_settings.secure and self.smtp_settings.encryption == "TLS":
                 mail.starttls()
 
             if self.smtp_settings.auth:
