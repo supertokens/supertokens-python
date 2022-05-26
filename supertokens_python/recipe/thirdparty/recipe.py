@@ -20,6 +20,8 @@ from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.emailverification.interfaces import \
+    TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.recipe.emailverification.types import \
     EmailVerificationIngredients
 from supertokens_python.recipe.thirdparty.types import ThirdPartyIngredients
@@ -64,7 +66,7 @@ class ThirdPartyRecipe(RecipeModule):
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, sign_in_and_up_feature,
-                                                        email_verification_feature, override)
+                                                        email_verification_feature, override, email_delivery)
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
         else:

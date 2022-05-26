@@ -121,14 +121,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             ingredient = cast(EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput], self.email_delivery_ingredient)
             ev_ingredients = EmailVerificationIngredients(ingredient)
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
-                                                                     self.config.email_verification_feature, EmailVerificationIngredients(None))
-
-        def func_override_email_password(_: EmailPasswordRecipeInterface) -> EmailPasswordRecipeInterface:
-            return EmailPasswordRecipeImplementation(
-                self.recipe_implementation)
-
-        def apis_override_email_password(_: EmailPasswordAPIInterface) -> EmailPasswordAPIInterface:
-            return get_email_password_interface_impl(self.api_implementation)
+                                                                     self.config.email_verification_feature, ev_ingredients)
 
         if email_password_recipe is not None:
             self.email_password_recipe = email_password_recipe
