@@ -183,13 +183,14 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             self.passwordless_recipe = PasswordlessRecipe(recipe_id, app_info,
                                                           self.config.contact_config,
                                                           self.config.flow_type,
+                                                          pless_ingredients,
                                                           PlessOverrideConfig(
                                                               func_override_passwordless,
                                                               apis_override_passwordless
                                                           ),
                                                           self.config.get_link_domain_and_path,
                                                           self.config.get_custom_user_input_code,
-                                                          ingredients=pless_ingredients)
+                                                          )
 
         def func_override_third_party(_: ThirdPartyRecipeInterface) -> ThirdPartyRecipeInterface:
             return ThirdPartyRecipeImplementation(self.recipe_implementation)

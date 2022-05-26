@@ -23,7 +23,6 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.types import APIResponse
 from typing_extensions import Literal
 
-# if TYPE_CHECKING:
 from .types import DeviceType, TypePasswordlessEmailDeliveryInput, User
 from .utils import PasswordlessConfig
 

@@ -56,27 +56,30 @@ class PasswordlessRecipe(RecipeModule):
 
     def __init__(self, recipe_id: str, app_info: AppInfo, contact_config: ContactConfig,
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
+                 ingredients: PasswordlessIngredients,
                  override: Union[OverrideConfig, None] = None,
                  get_link_domain_and_path: Union[Callable[[
                      PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
                  get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
                  email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
-                 ingredients: Union[PasswordlessIngredients, None] = None,
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, contact_config, flow_type, override,
                                                         get_link_domain_and_path, get_custom_user_input_code, email_delivery)
 
-        recipe_implementation = RecipeImplementation(
-            Querier.get_instance(recipe_id))
+        recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
         self.recipe_implementation: RecipeInterface = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
+
         api_implementation = APIImplementation()
         self.api_implementation = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
 
-        email_delivery_ingredient = ingredients.email_delivery if ingredients is not None else None
-        self.email_delivery = EmailDeliveryIngredient(self.config.get_email_delivery_config()) if email_delivery_ingredient is None else email_delivery_ingredient
+        email_delivery_ingredient = ingredients.email_delivery
+        if email_delivery_ingredient is None:
+            self.email_delivery = EmailDeliveryIngredient(self.config.get_email_delivery_config())
+        else:
+            self.email_delivery = email_delivery_ingredient
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [
@@ -139,13 +142,15 @@ class PasswordlessRecipe(RecipeModule):
              ):
         def func(app_info: AppInfo):
             if PasswordlessRecipe.__instance is None:
+                ingredients = PasswordlessIngredients(None)
                 PasswordlessRecipe.__instance = PasswordlessRecipe(
                     PasswordlessRecipe.recipe_id,
                     app_info,
-                    contact_config, flow_type, override,
+                    contact_config, flow_type,
+                    ingredients,
+                    override,
                     get_link_domain_and_path, get_custom_user_input_code,
                     email_delivery,
-                    ingredients=None
                 )
                 return PasswordlessRecipe.__instance
             raise_general_exception('Passwordless recipe has already been initialised. Please check '

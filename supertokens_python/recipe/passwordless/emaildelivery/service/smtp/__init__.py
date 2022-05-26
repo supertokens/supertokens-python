@@ -16,12 +16,12 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.service.smtp import (
-    EmailDeliverySMTPConfig, ServiceInterface, SMTPServiceConfigFrom,
-    Transporter)
+from supertokens_python.ingredients.emaildelivery.services.smtp import (
+    EmailDeliverySMTPConfig, ServiceInterface, Transporter)
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
-from supertokens_python.recipe.passwordless.types import TypePasswordlessEmailDeliveryInput
+from supertokens_python.recipe.passwordless.types import \
+    TypePasswordlessEmailDeliveryInput
 
 from .implementation import ServiceImplementation
 
@@ -35,10 +35,6 @@ class SMTPService(EmailDeliveryInterface[TypePasswordlessEmailDeliveryInput]):
         oi = ServiceImplementation(self.transporter)
         self.service_implementation = oi if config.override is None else config.override(oi)
 
-    async def send_email(self, email_input: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        content = await self.service_implementation.get_content(email_input, user_context)
-        send_raw_email_from = SMTPServiceConfigFrom(
-            self.config.smtp_settings.email_from.name,
-            self.config.smtp_settings.email_from.email
-        )
-        await self.service_implementation.send_raw_email(content, send_raw_email_from, user_context)
+    async def send_email(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+        content = await self.service_implementation.get_content(input_)
+        await self.service_implementation.send_raw_email(content, user_context)

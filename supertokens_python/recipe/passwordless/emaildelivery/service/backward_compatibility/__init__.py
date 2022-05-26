@@ -19,27 +19,33 @@ from typing import Any, Awaitable, Callable, Dict, Union
 
 from httpx import AsyncClient
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
+from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.passwordless.types import \
     TypePasswordlessEmailDeliveryInput
 from supertokens_python.supertokens import AppInfo
+from supertokens_python.utils import handle_httpx_client_exceptions
 
 
 def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[TypePasswordlessEmailDeliveryInput, Dict[str, Any]], Awaitable[None]]:
-    async def func(email_input: TypePasswordlessEmailDeliveryInput, _: Dict[str, Any]):
+    async def func(input_: TypePasswordlessEmailDeliveryInput, _: Dict[str, Any]):
         if ('SUPERTOKENS_ENV' in environ) and (environ['SUPERTOKENS_ENV'] == 'testing'):
             return
+        data = {}
         try:
             data = {
-                "email": email_input.email,
+                "email": input_.email,
                 "appName": app_info.app_name,
-                "codeLifetime": email_input.code_life_time,
-                "urlWithLinkCode": email_input.url_with_link_code,  # TODO: FIXME Must be valid (non-empty) url or we get error
-                "userInputCode": email_input.user_input_code or "",  # TODO: FIXME
+                "codeLifetime": input_.code_life_time,
+                "urlWithLinkCode": input_.url_with_link_code,  # TODO: FIXME Must be valid (non-empty) url or we get error
+                "userInputCode": input_.user_input_code or "",  # TODO: FIXME
             }
             async with AsyncClient() as client:
-                await client.post('https://api.supertokens.io/0/st/auth/passwordless/login', json=data, headers={'api-version': '0'})  # type: ignore
-        except Exception:
-            pass
+                resp = await client.post('https://api.supertokens.io/0/st/auth/passwordless/login', json=data, headers={'api-version': '0'})  # type: ignore
+                resp.raise_for_status()
+                log_debug_message("Passwordless login email sent to %s", input_.email)
+        except Exception as e:
+            log_debug_message("Error sending passwordless login email")
+            handle_httpx_client_exceptions(e, data)
 
     return func
 
@@ -52,11 +58,10 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypePasswordlessEmailD
                      None
                  ] = None
                  ) -> None:
-        self.app_info = app_info
         self.create_and_send_custom_email = create_and_send_custom_email if create_and_send_custom_email is not None else default_create_and_send_custom_email(app_info)
 
-    async def send_email(self, email_input: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+    async def send_email(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
         try:
-            await self.create_and_send_custom_email(email_input, user_context)
-        except Exception as _:
-            pass
+            await self.create_and_send_custom_email(input_, user_context)
+        except Exception as e:
+            log_debug_message("Error while sending email %s", str(e))

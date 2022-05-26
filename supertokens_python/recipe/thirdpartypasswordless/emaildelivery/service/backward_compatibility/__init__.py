@@ -17,7 +17,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
-from supertokens_python.recipe.emailverification.emaildelivery.service.backward_compatibility import \
+from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService as EVBackwardCompatibilityService
 from supertokens_python.recipe.emailverification.types import \
     TypeEmailVerificationEmailDeliveryInput
@@ -25,8 +25,8 @@ from supertokens_python.recipe.passwordless.emaildelivery.service.backward_compa
     BackwardCompatibilityService as PlessBackwardCompatibilityService
 from supertokens_python.recipe.passwordless.types import \
     TypePasswordlessEmailDeliveryInput
-from supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation import \
-    RecipeImplementation
+from supertokens_python.recipe.thirdpartypasswordless.interfaces import \
+    RecipeInterface
 from supertokens_python.recipe.thirdpartypasswordless.types import \
     TypeThirdPartyPasswordlessEmailDeliveryInput
 from supertokens_python.supertokens import AppInfo
@@ -36,14 +36,6 @@ if TYPE_CHECKING:
         InputEmailVerificationConfig, InputPasswordlessConfig)
 
 
-async def default_create_and_send_custom_email(
-    _: TypeThirdPartyPasswordlessEmailDeliveryInput,
-    __: Dict[str, Any]
-) -> None:
-    # TODO
-    pass
-
-
 class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
     app_info: AppInfo
     pless_backward_compatiblity_service: PlessBackwardCompatibilityService
@@ -51,7 +43,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyPassword
 
     def __init__(self,
                  app_info: AppInfo,
-                 recipeInterfaceImpl: RecipeImplementation,
+                 recipeInterfaceImpl: RecipeInterface,
                  ev_feature: Union[InputEmailVerificationConfig, None] = None,
                  pless_feature: Union[InputPasswordlessConfig, None] = None,
                  ) -> None:
@@ -74,8 +66,8 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyPassword
             pless_feature.create_and_send_custom_email if pless_feature is not None else None
         )
 
-    async def send_email(self, email_input: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        if isinstance(email_input, TypeEmailVerificationEmailDeliveryInput):
-            await self.ev_backward_compatiblity_service.send_email(email_input, user_context)
-        elif isinstance(email_input, TypePasswordlessEmailDeliveryInput):
-            await self.pless_backward_compatiblity_service.send_email(email_input, user_context)
+    async def send_email(self, input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
+            await self.ev_backward_compatiblity_service.send_email(input_, user_context)
+        elif isinstance(input_, TypePasswordlessEmailDeliveryInput):
+            await self.pless_backward_compatiblity_service.send_email(input_, user_context)

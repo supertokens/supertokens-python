@@ -19,15 +19,14 @@ from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeOkResult,
     ConsumeCodeRestartFlowError, CreateCodeOkResult,
-    CreateNewCodeForDeviceOkResult,
-    CreateNewCodeForDeviceRestartFlowError,
+    CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
     DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError,
     RevokeAllCodesOkResult, RevokeCodeOkResult,
     UpdateUserEmailAlreadyExistsError, UpdateUserOkResult,
-    UpdateUserPhoneNumberAlreadyExistsError,
-    UpdateUserUnknownUserIdError)
-from supertokens_python.recipe.passwordless.types import DeviceType, User
+    UpdateUserPhoneNumberAlreadyExistsError, UpdateUserUnknownUserIdError)
+from supertokens_python.recipe.passwordless.types import (
+    DeviceType, TypePasswordlessEmailDeliveryInput, User)
 
 
 def create_code(email: Union[None, str] = None,
@@ -130,3 +129,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
              None], user_context: Union[None, Dict[str, Any]] = None) -> ConsumeCodeOkResult:
     return sync(asyncio.signinup(
         email=email, phone_number=phone_number, user_context=user_context))
+
+
+def send_email(input_: TypePasswordlessEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None) -> None:
+    return sync(asyncio.send_email(input_, user_context))

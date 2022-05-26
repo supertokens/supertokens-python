@@ -15,13 +15,13 @@
 from __future__ import annotations
 
 from abc import ABC
-from distutils.log import warn
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryConfigWithService)
 from supertokens_python.recipe.passwordless.types import \
     CreateAndSendCustomEmailParameters
+from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
 if TYPE_CHECKING:
@@ -31,8 +31,8 @@ if TYPE_CHECKING:
 from re import fullmatch
 
 from phonenumbers import is_valid_number, parse  # type: ignore
-from supertokens_python.recipe.passwordless.emaildelivery.service.backward_compatibility import (
-    BackwardCompatibilityService, default_create_and_send_custom_email)
+from supertokens_python.recipe.passwordless.emaildelivery.service.backward_compatibility import \
+    BackwardCompatibilityService
 
 
 async def default_validate_phone_number(value: str):
@@ -117,15 +117,13 @@ class ContactEmailOnlyConfig(ContactConfig):
                      [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]], None] = None,
                  validate_email_address: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
-                 email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None
                  ):
         super().__init__('EMAIL')
-        self.email_delivery = email_delivery
-        if create_and_send_custom_email is None:
-            self.create_and_send_custom_email = default_create_and_send_custom_email
-        else:
-            warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
-            self.create_and_send_custom_email = create_and_send_custom_email
+
+        self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email is not None:
+            deprecated_warn("create_and_send_custom_email is deprecated. Please use email delivery config instead")
+
         if validate_email_address is None:
             self.validate_email_address = default_validate_email
         else:
@@ -142,11 +140,13 @@ class ContactEmailOrPhoneConfig(ContactConfig):
                      str], Awaitable[Union[str, None]]], None] = None,
                  validate_phone_number: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
-                 email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None
                  ):
         super().__init__('EMAIL_OR_PHONE')
-        self.email_delivery = email_delivery
+
         self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email is not None:
+            deprecated_warn("create_and_send_custom_email is deprecated. Please use email delivery config instead")
+
         if validate_email_address is None:
             self.validate_email_address = default_validate_email
         else:
@@ -175,7 +175,7 @@ class PasswordlessConfig:
                  get_link_domain_and_path: Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]],
                  get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]],
                  get_custom_user_input_code: Union[Callable[[
-                     Dict[str, Any]], Awaitable[str]], None] = None,
+                     Dict[str, Any]], Awaitable[str]], None] = None
                  ):
         self.contact_config = contact_config
         self.override = override
@@ -186,14 +186,14 @@ class PasswordlessConfig:
 
 
 def validate_and_normalise_user_input(
-    app_info: AppInfo,
-    contact_config: ContactConfig,
-    flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
-    override: Union[OverrideConfig, None] = None,
-    get_link_domain_and_path: Union[Callable[[
-        PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
-    get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
-    email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
+        app_info: AppInfo,
+        contact_config: ContactConfig,
+        flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
+        override: Union[OverrideConfig, None] = None,
+        get_link_domain_and_path: Union[Callable[[
+            PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
+        get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
+        email_delivery_config: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
 ) -> PasswordlessConfig:
 
     if override is None:
@@ -203,11 +203,21 @@ def validate_and_normalise_user_input(
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)
 
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]:
-        email_service = email_delivery.service if email_delivery is not None else None
-        if email_service is None:
-            email_service = BackwardCompatibilityService(app_info)
+        email_service = email_delivery_config.service if email_delivery_config is not None else None
+        if contact_config.contact_method == "PHONE":
+            create_and_send_custom_email = None
+        else:
+            create_and_send_custom_email = contact_config.create_and_send_custom_email
 
-        return EmailDeliveryConfigWithService(email_service, override=None)
+        if email_service is None:
+            email_service = BackwardCompatibilityService(app_info, create_and_send_custom_email)
+
+        if email_delivery_config is not None and email_delivery_config.override is not None:
+            override = email_delivery_config.override
+        else:
+            override = None
+
+        return EmailDeliveryConfigWithService(email_service, override=override)
 
     return PasswordlessConfig(
         contact_config=contact_config,

@@ -22,8 +22,7 @@ from supertokens_python.recipe.passwordless.interfaces import \
     TypePasswordlessEmailDeliveryInput
 from typing_extensions import Literal
 
-from . import utils
-from . import types
+from . import types, utils
 from .recipe import PasswordlessRecipe
 
 if TYPE_CHECKING:

@@ -16,19 +16,17 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.service.smtp import (
-    GetContentResult, ServiceInterface, SMTPServiceConfigFrom, Transporter)
-from supertokens_python.recipe.passwordless.emaildelivery.service.smtp.pless_email import \
+from supertokens_python.ingredients.emaildelivery.services.smtp import (
+    GetContentResult, ServiceInterface)
+from supertokens_python.recipe.passwordless.emaildelivery.service.smtp.pless_login import \
     pless_email_content
-from supertokens_python.recipe.passwordless.types import TypePasswordlessEmailDeliveryInput
+from supertokens_python.recipe.passwordless.types import \
+    TypePasswordlessEmailDeliveryInput
 
 
 class ServiceImplementation(ServiceInterface[TypePasswordlessEmailDeliveryInput]):
-    def __init__(self, transporter: Transporter) -> None:
-        self.transporter = transporter
+    async def send_raw_email(self, input_: GetContentResult, user_context: Dict[str, Any]) -> None:
+        await self.transporter.send_email(input_, user_context)
 
-    async def send_raw_email(self, get_content_result: GetContentResult, config_from: SMTPServiceConfigFrom, user_context: Dict[str, Any]) -> None:
-        await self.transporter.send_email(config_from, get_content_result, user_context)
-
-    async def get_content(self, email_input: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
-        return pless_email_content(email_input)
+    async def get_content(self, input_: TypePasswordlessEmailDeliveryInput) -> GetContentResult:
+        return pless_email_content(input_)
