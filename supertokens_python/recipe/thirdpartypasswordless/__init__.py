@@ -12,12 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from .types import TypeThirdPartyPasswordlessEmailDeliveryInput
-from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryConfig
 
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
+from supertokens_python.ingredients.emaildelivery.types import \
+    EmailDeliveryConfig
+from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.recipe.thirdparty.provider import Provider
 from typing_extensions import Literal
 
@@ -25,6 +25,8 @@ from .. import passwordless, thirdparty
 from . import exceptions as ex
 from . import utils
 from .recipe import ThirdPartyPasswordlessRecipe
+from .types import (TypeThirdPartyPasswordlessEmailDeliveryInput,
+                    TypeThirdPartyPasswordlessSmsDeliveryInput)
 
 InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputOverrideConfig = utils.InputOverrideConfig
@@ -51,6 +53,7 @@ def init(contact_config: ContactConfig,
          get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
          email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
+         sms_delivery: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
          override: Union[InputOverrideConfig, None] = None,
          providers: Union[List[Provider], None] = None) -> Callable[[AppInfo], RecipeModule]:
-    return ThirdPartyPasswordlessRecipe.init(contact_config, flow_type, get_link_domain_and_path, get_custom_user_input_code, email_verification_feature, email_delivery, override, providers)
+    return ThirdPartyPasswordlessRecipe.init(contact_config, flow_type, get_link_domain_and_path, get_custom_user_input_code, email_verification_feature, email_delivery, sms_delivery, override, providers)

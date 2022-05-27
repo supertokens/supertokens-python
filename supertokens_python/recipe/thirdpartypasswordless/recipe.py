@@ -56,6 +56,7 @@ from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
+from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdparty.utils import \
@@ -105,6 +106,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                  third_party_recipe: Union[ThirdPartyRecipe, None] = None,
                  passwordless_recipe: Union[PasswordlessRecipe, None] = None,
                  email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
+                 sms_delivery: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self,
@@ -115,7 +117,8 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                                                         get_link_domain_and_path=get_link_domain_and_path,
                                                         override=override,
                                                         providers=providers,
-                                                        email_delivery_config=email_delivery
+                                                        email_delivery_config=email_delivery,
+                                                        sms_delivery_config=sms_delivery,
                                                         )
 
         recipe_implementation = RecipeImplementation(Querier.get_instance(PasswordlessRecipe.recipe_id), Querier.get_instance(ThirdPartyRecipe.recipe_id))
@@ -300,6 +303,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
              get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
              email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
+             sms_delivery: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
              override: Union[InputOverrideConfig, None] = None,
              providers: Union[List[Provider], None] = None):
         def func(app_info: AppInfo):
@@ -311,6 +315,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                     override,
                     providers,
                     email_delivery=email_delivery,
+                    sms_delivery=sms_delivery,
                 )
                 return ThirdPartyPasswordlessRecipe.__instance
             raise Exception(None, 'ThirdPartyPasswordlessRecipe recipe has already been initialised. Please check your code for bugs.')

@@ -25,6 +25,7 @@ from supertokens_python.recipe.passwordless.types import (
     CreateAndSendCustomEmailParameters, TypePasswordlessSmsDeliveryInput)
 from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
+from .types import CreateAndSendCustomTextMessageParameters
 
 if TYPE_CHECKING:
     from .interfaces import RecipeInterface, APIInterface, TypePasswordlessEmailDeliveryInput
@@ -61,28 +62,6 @@ async def default_validate_email(value: str):
         return 'Email is invalid'
 
 
-async def default_create_and_send_custom_text_message(
-    _: CreateAndSendCustomTextMessageParameters,
-    __: Dict[str, Any]
-) -> None:
-    # TODO
-    pass
-
-
-class CreateAndSendCustomTextMessageParameters:
-    def __init__(self,
-                 code_life_time: int,
-                 pre_auth_session_id: str,
-                 phone_number: str,
-                 user_input_code: Union[str, None] = None,
-                 url_with_link_code: Union[str, None] = None):
-        self.phone_number: str = phone_number
-        self.code_life_time: int = code_life_time
-        self.pre_auth_session_id: str = pre_auth_session_id
-        self.user_input_code: Union[str, None] = user_input_code
-        self.url_with_link_code: Union[str, None] = url_with_link_code
-
-
 class OverrideConfig:
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
                                         None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
@@ -105,11 +84,11 @@ class ContactPhoneOnlyConfig(ContactConfig):
                      str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__('PHONE')
-        if create_and_send_custom_text_message is None:
-            self.create_and_send_custom_text_message = default_create_and_send_custom_text_message
-        else:
-            warn("create_and_send_custom_text_message is deprecated. Please use email delivery config instead")
-            self.create_and_send_custom_text_message = create_and_send_custom_text_message
+
+        self.create_and_send_custom_text_message = create_and_send_custom_text_message
+        if create_and_send_custom_text_message:
+            warn("create_and_send_custom_text_message is deprecated. Please use sms delivery config instead")
+
         if validate_phone_number is None:
             self.validate_phone_number = default_validate_phone_number
         else:
@@ -157,11 +136,9 @@ class ContactEmailOrPhoneConfig(ContactConfig):
         else:
             self.validate_email_address = validate_email_address
 
-        if create_and_send_custom_text_message is None:
-            self.create_and_send_custom_text_message = default_create_and_send_custom_text_message
-        else:
-            warn("create_and_send_custom_text_message is deprecated. Please use email delivery config instead")
-            self.create_and_send_custom_text_message = create_and_send_custom_text_message
+        self.create_and_send_custom_text_message = create_and_send_custom_text_message
+        if create_and_send_custom_text_message:
+            warn("create_and_send_custom_text_message is deprecated. Please use sms delivery config instead")
 
         if validate_phone_number is None:
             self.validate_phone_number = default_validate_phone_number

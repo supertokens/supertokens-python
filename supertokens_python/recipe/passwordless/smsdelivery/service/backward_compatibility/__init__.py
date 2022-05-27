@@ -27,6 +27,10 @@ from supertokens_python.supertokens import AppInfo
 from ....types import TypePasswordlessSmsDeliveryInput
 
 
+class InvalidSendCustomSmsResponse(Exception):
+    pass
+
+
 def default_create_and_send_custom_sms(app_info: AppInfo) -> Callable[[TypePasswordlessSmsDeliveryInput], Awaitable[None]]:
     async def func(sms_input: TypePasswordlessSmsDeliveryInput):
         if ('SUPERTOKENS_ENV' in environ) and (environ['SUPERTOKENS_ENV'] == 'testing'):
@@ -35,23 +39,31 @@ def default_create_and_send_custom_sms(app_info: AppInfo) -> Callable[[TypePassw
             'appName': app_info.app_name,
             'type': 'PASSWORDLESS_LOGIN',
             'phoneNumber': sms_input.phone_number,
-            'userInputCode': sms_input.user_input_code,
-            'urlWithLinkCode': sms_input.url_with_link_code,
             'codeLifetime': sms_input.code_life_time,
         }
+        if sms_input.user_input_code:
+            sms_input_json['userInputCode'] = sms_input.user_input_code
+        if sms_input.url_with_link_code:
+            sms_input_json['urlWithLinkCode'] = sms_input.url_with_link_code
+
         try:
             async with AsyncClient() as client:
-                await client.post(  # type: ignore
+                res = await client.post(  # type: ignore
                     SUPERTOKENS_SMS_SERVICE_URL,
                     json={
                         "smsInput": sms_input_json,
                     },
                     headers={'api-version': '0'}
                 )
-                # TODO: Handle 429 and undefined response?
+                # TODO: Do we need an equivalent of "err.response === undefined"?
+                if res.status_code == 429:
+                    raise InvalidSendCustomSmsResponse(res.text)
                 return
+        except InvalidSendCustomSmsResponse as e:
+            raise e
         except Exception:
             pass
+
         print("Free daily SMS quota reached. If using our managed service, please create a production environment to get dedicated API keys for SMS sending, or define your own method for sending SMS. For now, we are logging it below:")
         log_debug_message("SMS content: %s", json.dumps(sms_input_json))
     return func

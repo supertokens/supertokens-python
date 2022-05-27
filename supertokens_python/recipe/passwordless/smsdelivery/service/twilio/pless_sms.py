@@ -35,9 +35,9 @@ def get_pless_sms_body(
     user_input_code: Union[str, None] = None
 ):
 
-    if (not url_with_link_code) and (not user_input_code):
+    if url_with_link_code and user_input_code:
         template = "Enter OTP: ${userInputCode} OR click this link: ${urlWithLinkCode} to login."
-    elif not url_with_link_code:
+    elif url_with_link_code:
         template = "Click this link: ${urlWithLinkCode} to login."
     else:
         template = "Enter OTP: ${userInputCode} to login."

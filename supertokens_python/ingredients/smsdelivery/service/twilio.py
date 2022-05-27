@@ -23,7 +23,7 @@ class TwilioServiceConfig:
                  auth_token: str,
                  input_from: str,
                  sid: Union[str, None] = None,
-                 opts: Union[Dict[str, Any], None] = None,
+                 opts: Union[Dict[str, Any], None] = None,  # TODO: Twilio python sdk doesn't provide a type for this.
                  ) -> None:
         self.account_sid = account_sid
         self.auth_token = auth_token

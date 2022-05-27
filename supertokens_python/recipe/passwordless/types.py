@@ -66,21 +66,26 @@ class CreateAndSendCustomEmailParameters:
 TypePasswordlessEmailDeliveryInput = CreateAndSendCustomEmailParameters
 
 
-class TypePasswordlessSmsDeliveryInput:
+class CreateAndSendCustomTextMessageParameters:
     def __init__(self,
-                 phone_number: str,
-                 user_input_code: str,
-                 url_with_link_code: str,
                  code_life_time: int,
-                 preauth_session_id: str,
-                 user_context: Dict[str, Any],
-                 ) -> None:
-        self.phone_number = phone_number
-        self.user_input_code = user_input_code
-        self.url_with_link_code = url_with_link_code
-        self.code_life_time = code_life_time
-        self.preauth_session_id = preauth_session_id
+                 pre_auth_session_id: str,
+                 phone_number: str,
+                 user_input_code: Union[str, None] = None,
+                 url_with_link_code: Union[str, None] = None,
+                 user_context: Union[Dict[str, Any], None] = None
+                 ):
+        self.phone_number: str = phone_number
+        self.code_life_time: int = code_life_time
+        self.pre_auth_session_id: str = pre_auth_session_id
+        self.user_input_code: Union[str, None] = user_input_code
+        self.url_with_link_code: Union[str, None] = url_with_link_code
+        if user_context is None:  # TODO: Did this to avoid errors for users who have already used CreateAndSendCustomTextMessageParameters while updating. Is this okay?
+            user_context = {}
         self.user_context = user_context
+
+
+TypePasswordlessSmsDeliveryInput = CreateAndSendCustomTextMessageParameters
 
 
 class PasswordlessIngredients:
