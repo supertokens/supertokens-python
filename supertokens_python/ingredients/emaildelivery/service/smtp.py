@@ -69,7 +69,8 @@ class Transporter:
             if self.smtp_settings.secure and self.smtp_settings.encryption == "SSL":
                 mail = smtplib.SMTP_SSL(self.smtp_settings.host, self.smtp_settings.port)
                 context = ssl.create_default_context()
-                mail.starttls(context=context)
+                if mail.has_extn("starttls"):
+                    mail.starttls(context=context)
             else:
                 mail = smtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port)
 
