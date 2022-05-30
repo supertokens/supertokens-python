@@ -167,6 +167,25 @@ def validate_and_normalise_user_input(
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[Provider], None] = None
 ) -&gt; ThirdPartyPasswordlessConfig:
+    if not isinstance(contact_config, ContactConfig):  # type: ignore
+        raise ValueError(&#39;contact_config must be an instance of ContactConfig&#39;)
+
+    if flow_type not in {&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;}:  # type: ignore
+        raise ValueError(&#34;flow_type must be one of USER_INPUT_CODE, MAGIC_LINK, USER_INPUT_CODE_AND_MAGIC_LINK&#34;)
+
+    if email_verification_feature is not None and not isinstance(email_verification_feature, InputEmailVerificationConfig):  # type: ignore
+        raise ValueError(&#39;email_verification_feature must be an instance of InputEmailVerificationConfig or None&#39;)
+
+    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
+        raise ValueError(&#39;override must be an instance of InputOverrideConfig or None&#39;)
+
+    if providers is not None and not isinstance(providers, List):  # type: ignore
+        raise ValueError(&#39;providers must be of type List[Provider] or None&#39;)
+
+    for provider in providers or []:
+        if not isinstance(provider, Provider):  # type: ignore
+            raise ValueError(&#39;providers must be of type List[Provider] or None&#39;)
+
     if providers is None:
         providers = []
     if override is None:
@@ -280,6 +299,25 @@ def validate_and_normalise_user_input(
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[Provider], None] = None
 ) -&gt; ThirdPartyPasswordlessConfig:
+    if not isinstance(contact_config, ContactConfig):  # type: ignore
+        raise ValueError(&#39;contact_config must be an instance of ContactConfig&#39;)
+
+    if flow_type not in {&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;}:  # type: ignore
+        raise ValueError(&#34;flow_type must be one of USER_INPUT_CODE, MAGIC_LINK, USER_INPUT_CODE_AND_MAGIC_LINK&#34;)
+
+    if email_verification_feature is not None and not isinstance(email_verification_feature, InputEmailVerificationConfig):  # type: ignore
+        raise ValueError(&#39;email_verification_feature must be an instance of InputEmailVerificationConfig or None&#39;)
+
+    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
+        raise ValueError(&#39;override must be an instance of InputOverrideConfig or None&#39;)
+
+    if providers is not None and not isinstance(providers, List):  # type: ignore
+        raise ValueError(&#39;providers must be of type List[Provider] or None&#39;)
+
+    for provider in providers or []:
+        if not isinstance(provider, Provider):  # type: ignore
+            raise ValueError(&#39;providers must be of type List[Provider] or None&#39;)
+
     if providers is None:
         providers = []
     if override is None:

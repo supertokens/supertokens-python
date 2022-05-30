@@ -44,7 +44,8 @@ async def test_asgi_telemetry():
 
     for warn in record:
         if warn.category is RuntimeWarning:
-            assert False, 'Asyncio error'
+            if 'telemetry' in str(warn.message) and 'was never awaited' in str(warn.message):
+                assert False, 'Asyncio error'
 
     assert Supertokens.get_instance()._telemetry_status == 'SKIPPED'  # type: ignore pylint: disable=W0212
 
@@ -72,9 +73,12 @@ async def test_asgi_telemetry_with_wrong_mode():
         )
         await asyncio.sleep(1)
 
+    found_warning = False
     for warn in record:
         if warn.category is RuntimeWarning:
-            assert 'Inconsistent mode detected' in str(warn.message), 'Asyncio error'
+            found_warning = found_warning or 'Inconsistent mode detected' in str(warn.message)
+
+    assert found_warning, 'Asyncio error'
 
     assert Supertokens.get_instance()._telemetry_status == 'SKIPPED'  # type: ignore pylint: disable=W0212
 
@@ -102,7 +106,8 @@ def test_wsgi_telemetry():
 
     for warn in record:
         if warn.category is RuntimeWarning:
-            assert False, 'Asyncio error'
+            if 'telemetry' in str(warn.message) and 'was never awaited' in str(warn.message):
+                assert False, 'Asyncio error'
 
     assert Supertokens.get_instance()._telemetry_status == 'SKIPPED'  # type: ignore pylint: disable=W0212
 
@@ -128,8 +133,11 @@ def test_wsgi_telemetry_with_wrong_mode():
             telemetry=True
         )
 
+    found_warning = False
     for warn in record:
         if warn.category is RuntimeWarning:
-            assert 'Inconsistent mode detected' in str(warn.message), 'Asyncio error'
+            found_warning = found_warning or 'Inconsistent mode detected' in str(warn.message)
+
+    assert found_warning, 'Asyncio error'
 
     assert Supertokens.get_instance()._telemetry_status == 'SKIPPED'  # type: ignore pylint: disable=W0212
