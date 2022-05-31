@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adds type checks to the parameters of the thirdpartyemailpassword init funtion.
 - Adds type checks to the parameters of the thirdpartypasswordless init funtion.
 - Adds type checks to the parameters of the usermetadata init funtion.
+- Adds django with thirdpartyemailpassword example.
 
 ## [0.8.1]
 - Fixed execute_async to check and use asyncio mode.
