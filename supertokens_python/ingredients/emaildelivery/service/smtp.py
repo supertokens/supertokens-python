@@ -39,13 +39,13 @@ class SMTPServiceConfigFrom:
 
 class SMTPServiceConfig:
     def __init__(
-        self, host: str, email_from: SMTPServiceConfigFrom,
+        self, host: str, from_: SMTPServiceConfigFrom,
         port: int, secure: Union[bool, None] = None,
         auth: Union[SMTPServiceConfigAuth, None] = None,
         encryption: Literal['NONE', 'SSL', 'TLS'] = 'NONE',
     ) -> None:
         self.host = host
-        self.email_from = email_from
+        self.from_ = from_
         self.port = port
         self.secure = secure
         self.auth = auth
@@ -53,7 +53,7 @@ class SMTPServiceConfig:
 
 
 class GetContentResult:
-    def __init__(self, body: str, subject: str, to_email: str, is_html: bool = True) -> None:
+    def __init__(self, body: str, subject: str, to_email: str, is_html: bool = False) -> None:
         self.body = body
         self.subject = subject
         self.to_email = to_email
@@ -85,42 +85,45 @@ class Transporter:
             return mail
         except Exception as e:
             log_debug_message("Couldn't connect to the SMTP server: %s", e)
+            raise e
 
-    async def send_email(self, config_from: SMTPServiceConfigFrom, get_content_result: GetContentResult,
+    async def send_email(self, from_: SMTPServiceConfigFrom, input_: GetContentResult,
                          _: Dict[str, Any]) -> None:
         connection = self.connect()
         if connection is None:
-            return
+            raise Exception("Couldn't connect to the SMTP server.")
 
         try:
-            if get_content_result.is_html:
-                email_content = MIMEText(get_content_result.body, "html")
-                email_content["From"] = config_from.email
-                email_content["To"] = get_content_result.to_email
-                email_content["Subject"] = get_content_result.subject
-                connection.sendmail(config_from.email, get_content_result.to_email, email_content.as_string())
+            from_addr = f"{from_.name} <{from_.email}>"
+            if input_.is_html:
+                email_content = MIMEText(input_.body, "html")
+                email_content["From"] = from_addr
+                email_content["To"] = input_.to_email
+                email_content["Subject"] = input_.subject
+                connection.sendmail(from_.email, input_.to_email, email_content.as_string())
             else:
-                connection.sendmail(config_from.email, get_content_result.to_email, get_content_result.body)
+                connection.sendmail(from_addr, input_.to_email, input_.body)
         except Exception as e:
             log_debug_message('Error in sending email: %s', e)
+            raise e
         finally:
             connection.quit()
 
 
 class ServiceInterface(ABC, Generic[_T]):
-    def __init__(self, transporter: Transporter, config_from: SMTPServiceConfigFrom) -> None:
+    def __init__(self, transporter: Transporter, from_: SMTPServiceConfigFrom) -> None:
         self.transporter = transporter
-        self.config_from = config_from
+        self.config_from = from_
 
     @abstractmethod
     async def send_raw_email(self,
-                             get_content_result: GetContentResult,
+                             input_: GetContentResult,
                              user_context: Dict[str, Any]
                              ) -> None:
         pass
 
     @abstractmethod
-    async def get_content(self, email_input: _T) -> GetContentResult:
+    async def get_content(self, input_: _T) -> GetContentResult:
         pass
 
 

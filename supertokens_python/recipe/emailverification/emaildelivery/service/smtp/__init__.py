@@ -21,7 +21,7 @@ from supertokens_python.ingredients.emaildelivery.types import \
 from supertokens_python.recipe.emailverification.recipe import \
     TypeEmailVerificationEmailDeliveryInput
 
-from .implementation import ServiceImplementation
+from .service_implementation import ServiceImplementation
 
 
 class SMTPService(EmailDeliveryInterface[TypeEmailVerificationEmailDeliveryInput]):
@@ -30,9 +30,9 @@ class SMTPService(EmailDeliveryInterface[TypeEmailVerificationEmailDeliveryInput
     def __init__(self, config: EmailDeliverySMTPConfig[TypeEmailVerificationEmailDeliveryInput]) -> None:
         self.config = config
         transporter = Transporter(config.smtp_settings)
-        oi = ServiceImplementation(transporter, config.smtp_settings.email_from)
+        oi = ServiceImplementation(transporter, config.smtp_settings.from_)
         self.service_implementation = oi if config.override is None else config.override(oi)
 
-    async def send_email(self, email_input: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        content = await self.service_implementation.get_content(email_input)
+    async def send_email(self, input_: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+        content = await self.service_implementation.get_content(input_)
         await self.service_implementation.send_raw_email(content, user_context)

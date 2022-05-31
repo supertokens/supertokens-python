@@ -23,8 +23,8 @@ from supertokens_python.recipe.emailverification.interfaces import \
 
 
 class ServiceImplementation(ServiceInterface[TypeEmailVerificationEmailDeliveryInput]):
-    async def send_raw_email(self, get_content_result: GetContentResult, user_context: Dict[str, Any]) -> None:
-        await self.transporter.send_email(self.config_from, get_content_result, user_context)
+    async def send_raw_email(self, input_: GetContentResult, user_context: Dict[str, Any]) -> None:
+        await self.transporter.send_email(self.config_from, input_, user_context)
 
-    async def get_content(self, email_input: TypeEmailVerificationEmailDeliveryInput) -> GetContentResult:
-        return get_email_verify_email_content(email_input)
+    async def get_content(self, input_: TypeEmailVerificationEmailDeliveryInput) -> GetContentResult:
+        return get_email_verify_email_content(input_)

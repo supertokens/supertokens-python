@@ -19,6 +19,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.emailpassword.types import \
+    EmailPasswordIngredients
 from supertokens_python.recipe.emailverification.types import \
     EmailVerificationIngredients
 from supertokens_python.recipe.thirdparty.provider import Provider
@@ -111,6 +113,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             self.email_password_recipe = email_password_recipe
         else:
             self.email_password_recipe = EmailPasswordRecipe(recipe_id, app_info,
+                                                             EmailPasswordIngredients(None),
                                                              self.config.sign_up_feature,
                                                              self.config.reset_password_using_token_feature,
                                                              None,

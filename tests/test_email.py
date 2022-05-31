@@ -158,7 +158,7 @@ async def test_email_password_email_delivery_smtp(
         EmailDeliverySMTPConfig(
             smtp_settings=SMTPServiceConfig(
                 host='localhost',
-                email_from=SMTPServiceConfigFrom(
+                from_=SMTPServiceConfigFrom(
                     'Foo bar',
                     "foo@bar.com"
                 ),
@@ -221,7 +221,7 @@ async def test_email_verification_email_delivery_smtp(
         EmailDeliverySMTPConfig(
             smtp_settings=SMTPServiceConfig(
                 host='localhost',
-                email_from=SMTPServiceConfigFrom(
+                from_=SMTPServiceConfigFrom(
                     'Foo bar',
                     "foo@bar.com"
                 ),
@@ -291,7 +291,7 @@ async def test_email_password_email_delivery_smtp_override(
         EmailDeliverySMTPConfig(
             smtp_settings=SMTPServiceConfig(
                 host='localhost',
-                email_from=SMTPServiceConfigFrom(
+                from_=SMTPServiceConfigFrom(
                     'Foo bar',
                     "foo@bar.com"
                 ),
@@ -304,8 +304,8 @@ async def test_email_password_email_delivery_smtp_override(
     def edc_override(oi: EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
         oi_send_email = oi.send_email
 
-        async def override_send_email(email_input: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]):
-            await oi_send_email(email_input, user_context)
+        async def override_send_email(input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]):
+            await oi_send_email(input_, user_context)
             nonlocal override_send_email_called
             override_send_email_called = True
 

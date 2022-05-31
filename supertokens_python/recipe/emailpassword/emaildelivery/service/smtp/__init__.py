@@ -37,7 +37,7 @@ class SMTPService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
         self.config = config
         self.transporter = Transporter(config.smtp_settings)
 
-        oi = ServiceImplementation(self.transporter, config.smtp_settings.email_from)
+        oi = ServiceImplementation(self.transporter, config.smtp_settings.from_)
         self.service_implementation = oi if config.override is None else config.override(oi)
 
         ev_config = EmailDeliverySMTPConfig[TypeEmailVerificationEmailDeliveryInput](
@@ -46,9 +46,9 @@ class SMTPService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
         )
         self.email_verification_smtp_service = EmailVerificationSMTPService(ev_config)
 
-    async def send_email(self, email_input: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        if isinstance(email_input, TypeEmailVerificationEmailDeliveryInput):
-            return await self.email_verification_smtp_service.send_email(email_input, user_context)
+    async def send_email(self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
+            return await self.email_verification_smtp_service.send_email(input_, user_context)
 
-        content = await self.service_implementation.get_content(email_input)
+        content = await self.service_implementation.get_content(input_)
         await self.service_implementation.send_raw_email(content, user_context)

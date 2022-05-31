@@ -89,7 +89,11 @@ def validate_and_normalise_user_input(
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info, config.create_and_send_custom_email)
 
-        return EmailDeliveryConfigWithService(email_service, override=None)
+        if config.email_delivery is not None and config.email_delivery.override is not None:
+            override = config.email_delivery.override
+        else:
+            override = None
+        return EmailDeliveryConfigWithService(email_service, override=override)
 
     override = config.override
     if override is None:

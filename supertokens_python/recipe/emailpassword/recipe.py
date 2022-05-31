@@ -62,13 +62,13 @@ class EmailPasswordRecipe(RecipeModule):
     email_delivery_ingredient: EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
+                 ingredients: EmailPasswordIngredients,
                  sign_up_feature: Union[InputSignUpFeature, None] = None,
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
                  email_delivery: Union[EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput], None] = None,
-                 ingredients: Union[EmailPasswordIngredients, None] = None
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, app_info, sign_up_feature,
@@ -78,7 +78,8 @@ class EmailPasswordRecipe(RecipeModule):
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
 
-        self.recipe_implementation = cast(RecipeImplementation, self.recipe_implementation)
+        if not isinstance(self.recipe_implementation, RecipeImplementation):
+            raise Exception("Should never come here")
 
         email_delivery_ingredient = ingredients.email_delivery if ingredients else None
         if email_delivery_ingredient is None:
@@ -93,6 +94,7 @@ class EmailPasswordRecipe(RecipeModule):
                 EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput],
                 self.email_delivery_ingredient
             )
+
             email_verification_ingredients = EmailVerificationIngredients(email_delivery=ev_email_delivery_ingredient)
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                      self.config.email_verification_feature,
@@ -165,7 +167,8 @@ class EmailPasswordRecipe(RecipeModule):
              email_delivery: Union[EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput], None] = None):
         def func(app_info: AppInfo):
             if EmailPasswordRecipe.__instance is None:
-                EmailPasswordRecipe.__instance = EmailPasswordRecipe(EmailPasswordRecipe.recipe_id, app_info, sign_up_feature, reset_password_using_token_feature, email_verification_feature, override, email_delivery=email_delivery)
+                ingredients = EmailPasswordIngredients(None)
+                EmailPasswordRecipe.__instance = EmailPasswordRecipe(EmailPasswordRecipe.recipe_id, app_info, ingredients, sign_up_feature, reset_password_using_token_feature, email_verification_feature, override, email_delivery=email_delivery)
                 return EmailPasswordRecipe.__instance
             raise Exception(None, 'Emailpassword recipe has already been initialised. Please check your code for bugs.')
 

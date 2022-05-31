@@ -20,7 +20,7 @@ from supertokens_python.recipe.emailpassword.emaildelivery.service.smtp.password
     get_password_reset_email_content
 from supertokens_python.recipe.emailpassword.types import \
     TypeEmailPasswordEmailDeliveryInput
-from supertokens_python.recipe.emailverification.emaildelivery.service.smtp.implementation import \
+from supertokens_python.recipe.emailverification.emaildelivery.service.smtp.service_implementation import \
     ServiceImplementation as EVServiceImplementation
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
@@ -41,10 +41,10 @@ class ServiceImplementation(ServiceInterface[TypeEmailPasswordEmailDeliveryInput
         email_verification_service_implementation.send_raw_email = derived_ev_service_implementation.send_raw_email
         email_verification_service_implementation.get_content = derived_ev_service_implementation.get_content
 
-    async def send_raw_email(self, get_content_result: GetContentResult, user_context: Dict[str, Any]) -> None:
-        await self.transporter.send_email(self.config_from, get_content_result, user_context)
+    async def send_raw_email(self, input_: GetContentResult, user_context: Dict[str, Any]) -> None:
+        await self.transporter.send_email(self.config_from, input_, user_context)
 
-    async def get_content(self, email_input: TypeEmailPasswordEmailDeliveryInput) -> GetContentResult:
-        if isinstance(email_input, TypeEmailVerificationEmailDeliveryInput):
-            return await self.ev_get_content(email_input)
-        return get_password_reset_email_content(email_input)
+    async def get_content(self, input_: TypeEmailPasswordEmailDeliveryInput) -> GetContentResult:
+        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
+            return await self.ev_get_content(input_)
+        return get_password_reset_email_content(input_)

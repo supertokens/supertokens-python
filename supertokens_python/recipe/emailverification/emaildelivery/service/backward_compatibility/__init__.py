@@ -44,9 +44,9 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailVerificationE
         self.app_info = app_info
         self.create_and_send_custom_email = default_create_and_send_custom_email(self.app_info) if create_and_send_custom_email is None else create_and_send_custom_email
 
-    async def send_email(self, email_input: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+    async def send_email(self, input_: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
         try:
-            email_user = User(email_input.user.id, email_input.user.email)
-            await self.create_and_send_custom_email(email_user, email_input.email_verify_link, user_context)
+            email_user = User(input_.user.id, input_.user.email)
+            await self.create_and_send_custom_email(email_user, input_.email_verify_link, user_context)
         except Exception as _:
             pass

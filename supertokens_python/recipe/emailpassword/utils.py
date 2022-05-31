@@ -202,10 +202,8 @@ def validate_and_normalise_reset_password_using_token_config(app_info: AppInfo, 
                                                                      sign_up_config.form_fields)))
     get_reset_password_url = config.get_reset_password_url if config.get_reset_password_url is not None else default_get_reset_password_url(
         app_info)
-    if config.create_and_send_custom_email is not None:
-        create_and_send_custom_email = config.create_and_send_custom_email
-    else:
-        create_and_send_custom_email = default_create_and_send_custom_email(app_info)
+
+    create_and_send_custom_email = config.create_and_send_custom_email if config.create_and_send_custom_email is not None else default_create_and_send_custom_email(app_info)
     return ResetPasswordUsingTokenFeature(form_fields_for_password_reset_form, form_fields_for_generate_token_form,
                                           get_reset_password_url, create_and_send_custom_email)
 
@@ -308,7 +306,7 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
         sign_up_feature = InputSignUpFeature()
 
     def get_email_delivery_config(
-        ep_recipe: RecipeImplementation,
+        ep_recipe: RecipeInterface,
     ) -> EmailDeliveryConfigWithService[TypeEmailPasswordEmailDeliveryInput]:
         if email_delivery_config and email_delivery_config.service:
             return EmailDeliveryConfigWithService(
@@ -322,7 +320,11 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
             reset_password_using_token_feature=reset_password_using_token_feature,
             email_verification_feature=email_verification_feature,
         )
-        return EmailDeliveryConfigWithService(email_service, override=None)
+        if email_delivery_config is not None and email_delivery_config.override is not None:
+            override = email_delivery_config.override
+        else:
+            override = None
+        return EmailDeliveryConfigWithService(email_service, override=override)
 
     return EmailPasswordConfig(
         SignUpFeature(sign_up_feature.form_fields),

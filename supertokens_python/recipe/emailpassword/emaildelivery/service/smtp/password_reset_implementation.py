@@ -26,7 +26,7 @@ def get_password_reset_email_content(email_input: TypeEmailPasswordPasswordReset
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
     body = get_password_reset_email_html(app_name, email_input.user.email, email_input.password_reset_link)
-    content_result = GetContentResult(body, "Password reset instructions", email_input.user.email)
+    content_result = GetContentResult(body, "Password reset instructions", email_input.user.email, is_html=True)
     return content_result
 
 

@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfigWithService, EmailDeliveryInterface)
@@ -20,17 +20,8 @@ from supertokens_python.ingredients.emaildelivery.types import (
 _T = TypeVar('_T')
 
 
-class DefaultEmailDeliveryIngredientImp(EmailDeliveryInterface[_T]):
-    def __init__(self, config: EmailDeliveryConfigWithService[_T]) -> None:
-        self.config = config
-
-    async def send_email(self, email_input: _T, user_context: Dict[str, Any]) -> Any:
-        await self.config.service.send_email(email_input, user_context)
-
-
 class EmailDeliveryIngredient(Generic[_T]):
     ingredient_interface_impl: EmailDeliveryInterface[_T]
 
     def __init__(self, config: EmailDeliveryConfigWithService[_T]) -> None:
-        oi = DefaultEmailDeliveryIngredientImp[_T](config)
-        self.ingredient_interface_impl = oi if config.override is None else config.override(oi)
+        self.ingredient_interface_impl = config.service if config.override is None else config.override(config.service)

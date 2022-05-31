@@ -26,8 +26,8 @@ class ServiceImplementation(ServiceInterface[TypeEmailVerificationEmailDeliveryI
         super().__init__(email_password_service_implementation.transporter, email_password_service_implementation.config_from)
         self.email_password_service_implementation = email_password_service_implementation
 
-    async def send_raw_email(self, get_content_result: GetContentResult, user_context: Dict[str, Any]) -> None:
-        return await self.email_password_service_implementation.send_raw_email(get_content_result, user_context)
+    async def send_raw_email(self, input_: GetContentResult, user_context: Dict[str, Any]) -> None:
+        return await self.email_password_service_implementation.send_raw_email(input_, user_context)
 
-    async def get_content(self, email_input: TypeEmailVerificationEmailDeliveryInput) -> GetContentResult:
-        return await self.email_password_service_implementation.get_content(email_input)
+    async def get_content(self, input_: TypeEmailVerificationEmailDeliveryInput) -> GetContentResult:
+        return await self.email_password_service_implementation.get_content(input_)

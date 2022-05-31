@@ -26,7 +26,7 @@ def get_email_verify_email_content(email_input: TypeEmailVerificationEmailDelive
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
     body = get_email_verify_email_html(app_name, email_input.user.email, email_input.email_verify_link)
-    return GetContentResult(body, "Email verification instructions", email_input.user.email)
+    return GetContentResult(body, "Email verification instructions", email_input.user.email, is_html=True)
 
 
 def get_email_verify_email_html(app_name: str, email: str, verification_link: str):
