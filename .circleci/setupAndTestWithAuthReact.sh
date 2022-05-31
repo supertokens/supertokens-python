@@ -51,8 +51,8 @@ git checkout $2
 npm run init > /dev/null
 (cd ./examples/for-tests && npm run link) # this is there because in linux machine, postinstall in npm doesn't work..
 cd ./test/server/
-npm i -d --quiet 
-npm i git+https://github.com:supertokens/supertokens-node.git#$3 --quiet 
+npm i -d  
+npm i git+https://github.com:supertokens/supertokens-node.git#$3  
 cd ../../../project/tests/auth-react/fastapi-server
 export PYTHONPATH="${PYTHONPATH}:/root/project"
 uvicorn app:app --host 0.0.0.0 --port 8083 &
