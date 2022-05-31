@@ -4,6 +4,13 @@
 
 This is an example to show how to use supertokens-python library with FastAPI framework and ThirdpartyEmailpassword recipe. 
 
+This server code can be used to implement social auth using:
+- Google
+- Google Workspaces
+- Github
+- Apple
+- Discord
+
 ## Installation
 
 Before installing, use the script to create a virtual environment and to install all the required packages.
