@@ -1,3 +1,5 @@
+![SuperTokens banner](https://raw.githubusercontent.com/supertokens/supertokens-logo/master/images/Artboard%20%E2%80%93%2027%402x.png)
+
 # Django example
 
 This is an example to show how to use supertokens-python library with Django framework and ThirdpartyEmailpassword recipe. 
@@ -15,3 +17,11 @@ source create_env.sh
 python manage.py migrate
 python manage.py runserver
 ```
+
+## Author
+
+Created with :heart: by the folks at supertokens.com.
+
+## License
+
+This project is licensed under the Apache 2.0 license.
