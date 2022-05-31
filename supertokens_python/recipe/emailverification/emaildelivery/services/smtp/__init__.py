@@ -14,7 +14,7 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.service.smtp import (
+from supertokens_python.ingredients.emaildelivery.services.smtp import (
     EmailDeliverySMTPConfig, ServiceInterface, Transporter)
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface

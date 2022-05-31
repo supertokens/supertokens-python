@@ -14,13 +14,13 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.service.smtp import (
+from supertokens_python.ingredients.emaildelivery.services.smtp import (
     GetContentResult, ServiceInterface, SMTPServiceConfigFrom, Transporter)
-from supertokens_python.recipe.emailpassword.emaildelivery.service.smtp.password_reset_implementation import \
+from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.password_reset_implementation import \
     get_password_reset_email_content
 from supertokens_python.recipe.emailpassword.types import \
     TypeEmailPasswordEmailDeliveryInput
-from supertokens_python.recipe.emailverification.emaildelivery.service.smtp.service_implementation import \
+from supertokens_python.recipe.emailverification.emaildelivery.services.smtp.service_implementation import \
     ServiceImplementation as EVServiceImplementation
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput

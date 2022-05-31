@@ -22,7 +22,7 @@ from supertokens_python.ingredients.emaildelivery.types import \
 from supertokens_python.recipe.emailpassword.interfaces import (
     RecipeInterface, TypeEmailPasswordEmailDeliveryInput)
 from supertokens_python.recipe.emailpassword.types import User
-from supertokens_python.recipe.emailverification.emaildelivery.service.backward_compatibility import \
+from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService as \
     EmailVerificationBackwardCompatibilityService
 from supertokens_python.recipe.emailverification.interfaces import \

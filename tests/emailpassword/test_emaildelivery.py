@@ -25,7 +25,7 @@ from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
-from supertokens_python.ingredients.emaildelivery.service.smtp import (
+from supertokens_python.ingredients.emaildelivery.services.smtp import (
     GetContentResult, ServiceInterface, SMTPServiceConfig,
     SMTPServiceConfigAuth, SMTPServiceConfigFrom)
 from supertokens_python.ingredients.emaildelivery.types import \

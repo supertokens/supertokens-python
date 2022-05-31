@@ -19,7 +19,7 @@ from warnings import warn
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryConfigWithService)
-from supertokens_python.recipe.emailpassword.emaildelivery.service.backward_compatibility import (
+from supertokens_python.recipe.emailpassword.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService, default_create_and_send_custom_email)
 from supertokens_python.recipe.emailpassword.recipe_implementation import \
     RecipeImplementation

@@ -15,24 +15,23 @@
 from os import path
 from string import Template
 
-from supertokens_python.ingredients.emaildelivery.service.smtp import \
+from supertokens_python.ingredients.emaildelivery.services.smtp import \
     GetContentResult
-from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordPasswordResetEmailDeliveryInput
+from supertokens_python.recipe.emailverification.interfaces import \
+    TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.supertokens import Supertokens
 
 
-def get_password_reset_email_content(email_input: TypeEmailPasswordPasswordResetEmailDeliveryInput) -> GetContentResult:
+def get_email_verify_email_content(email_input: TypeEmailVerificationEmailDeliveryInput) -> GetContentResult:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
-    body = get_password_reset_email_html(app_name, email_input.user.email, email_input.password_reset_link)
-    content_result = GetContentResult(body, "Password reset instructions", email_input.user.email, is_html=True)
-    return content_result
+    body = get_email_verify_email_html(app_name, email_input.user.email, email_input.email_verify_link)
+    return GetContentResult(body, "Email verification instructions", email_input.user.email, is_html=True)
 
 
-def get_password_reset_email_html(app_name: str, email: str, reset_link: str):
+def get_email_verify_email_html(app_name: str, email: str, verification_link: str):
     current_dir = path.dirname(__file__)
-    template_path = path.join(current_dir, "password_reset_email.html")
+    template_path = path.join(current_dir, "email_verify_email.html")
     with open(template_path, "r") as f:
         template = f.read()
-    return Template(template).substitute(appName=app_name, email=email, resetLink=reset_link)
+    return Template(template).substitute(appName=app_name, verificationLink=verification_link, email=email)
