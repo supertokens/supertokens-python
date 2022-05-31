@@ -48,8 +48,7 @@ def default_create_and_send_custom_email(
                 'passwordResetURL': password_reset_url_with_token
             }
             async with AsyncClient() as client:
-                x = await client.post('https://api.supertokens.io/0/st/auth/password/reset', json=data, headers={'api-version': '0'})  # type: ignore
-                print(x)
+                await client.post('https://api.supertokens.io/0/st/auth/password/reset', json=data, headers={'api-version': '0'})  # type: ignore
         except Exception:
             pass
 
