@@ -16,7 +16,6 @@ import json
 from typing import Any, Dict
 
 import httpx
-import nest_asyncio  # type: ignore
 import respx
 from fastapi import FastAPI
 from fastapi.requests import Request
@@ -49,9 +48,6 @@ from supertokens_python.recipe.session.session_functions import \
 from tests.utils import (clean_st, email_verify_token_request, reset,
                          reset_password_request, setup_st, sign_up_request,
                          start_st)
-
-nest_asyncio.apply()  # type: ignore
-
 
 respx_mock = respx.MockRouter
 
@@ -279,6 +275,7 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
             assert input_.subject == "custom subject"
             assert input_.to_email == "test@example.com"
             email = input_.to_email
+            # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
         async def get_content_override(input_: TypeEmailPasswordEmailDeliveryInput) -> GetContentResult:
             nonlocal get_content_called, password_reset_url
@@ -614,6 +611,7 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
             assert input_.subject == "custom subject"
             assert input_.to_email == "test@example.com"
             email = input_.to_email
+            # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
         async def get_content_override(input_: TypeEmailPasswordEmailDeliveryInput) -> GetContentResult:
             nonlocal get_content_called, email_verify_url
