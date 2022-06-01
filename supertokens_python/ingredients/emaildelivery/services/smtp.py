@@ -20,15 +20,8 @@ from email.mime.text import MIMEText
 from typing import Any, Callable, Dict, Generic, TypeVar, Union
 
 from supertokens_python.logger import log_debug_message
-from typing_extensions import Literal
 
 _T = TypeVar('_T')
-
-
-class SMTPServiceConfigAuth:
-    def __init__(self, user: str, password: str) -> None:
-        self.user = user
-        self.password = password
 
 
 class SMTPServiceConfigFrom:
@@ -40,16 +33,15 @@ class SMTPServiceConfigFrom:
 class SMTPServiceConfig:
     def __init__(
         self, host: str, from_: SMTPServiceConfigFrom,
-        port: int, secure: Union[bool, None] = None,
-        auth: Union[SMTPServiceConfigAuth, None] = None,
-        encryption: Literal['NONE', 'SSL', 'TLS'] = 'NONE',
+        password: str,
+        port: int,
+        secure: Union[bool, None] = None,
     ) -> None:
         self.host = host
         self.from_ = from_
+        self.password = password
         self.port = port
         self.secure = secure
-        self.auth = auth
-        self.encryption = encryption
 
 
 class GetContentResult:
@@ -66,7 +58,7 @@ class Transporter:
 
     def connect(self):
         try:
-            if self.smtp_settings.secure and self.smtp_settings.encryption == "SSL":
+            if self.smtp_settings.secure:
                 mail = smtplib.SMTP_SSL(self.smtp_settings.host, self.smtp_settings.port)
                 context = ssl.create_default_context()
                 if mail.has_extn("starttls"):
@@ -74,12 +66,8 @@ class Transporter:
             else:
                 mail = smtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port)
 
-            # only attempt TLS over non-secure connections
-            if not self.smtp_settings.secure and self.smtp_settings.encryption == "TLS":
-                mail.starttls()
-
-            if self.smtp_settings.auth:
-                mail.login(self.smtp_settings.auth.user, self.smtp_settings.auth.password)
+            if self.smtp_settings.password:
+                mail.login(self.smtp_settings.from_.email, self.smtp_settings.password)
 
             mail.ehlo_or_helo_if_needed()
             return mail

@@ -157,14 +157,12 @@ async def test_email_password_email_delivery_smtp(
     service = SMTPService(
         EmailDeliverySMTPConfig(
             smtp_settings=SMTPServiceConfig(
-                host='localhost',
-                from_=SMTPServiceConfigFrom(
-                    'Foo bar',
-                    "foo@bar.com"
-                ),
-                port=1025,
-                secure=False,
-            )
+                host="",
+                from_=SMTPServiceConfigFrom("", ""),
+                password="",
+                port=465,
+                secure=True,
+            ),
         )
     )
     emc = EmailDeliveryConfig(service)
@@ -220,14 +218,12 @@ async def test_email_verification_email_delivery_smtp(
     service = SMTPService(
         EmailDeliverySMTPConfig(
             smtp_settings=SMTPServiceConfig(
-                host='localhost',
-                from_=SMTPServiceConfigFrom(
-                    'Foo bar',
-                    "foo@bar.com"
-                ),
-                secure=False,
-                port=1025,
-            )
+                host="",
+                from_=SMTPServiceConfigFrom("", ""),
+                password="",
+                port=465,
+                secure=True,
+            ),
         )
     )
     emc = EmailDeliveryConfig(service)
@@ -290,14 +286,12 @@ async def test_email_password_email_delivery_smtp_override(
     service = SMTPService(
         EmailDeliverySMTPConfig(
             smtp_settings=SMTPServiceConfig(
-                host='localhost',
-                from_=SMTPServiceConfigFrom(
-                    'Foo bar',
-                    "foo@bar.com"
-                ),
-                port=1025,
-                secure=False,
-            )
+                host="",
+                from_=SMTPServiceConfigFrom("", ""),
+                password="",
+                port=465,
+                secure=True,
+            ),
         )
     )
 

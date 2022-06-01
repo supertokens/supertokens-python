@@ -27,7 +27,7 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
     GetContentResult, ServiceInterface, SMTPServiceConfig,
-    SMTPServiceConfigAuth, SMTPServiceConfigFrom)
+    SMTPServiceConfigFrom)
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.recipe import emailpassword, session
@@ -304,9 +304,9 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
             smtp_settings=SMTPServiceConfig(
                 host="",
                 from_=SMTPServiceConfigFrom("", ""),
-                auth=SMTPServiceConfigAuth("", ""),
+                password="",
                 port=465,
-                secure=True
+                secure=True,
             ),
             override=smtp_service_override,
         )
@@ -639,9 +639,9 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
             smtp_settings=SMTPServiceConfig(
                 host="",
                 from_=SMTPServiceConfigFrom("", ""),
-                auth=SMTPServiceConfigAuth("", ""),
+                password="",
                 port=465,
-                secure=True
+                secure=True,
             ),
             override=smtp_service_override,
         )
