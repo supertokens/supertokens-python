@@ -87,12 +87,13 @@ class Transporter:
             log_debug_message("Couldn't connect to the SMTP server: %s", e)
             raise e
 
-    async def send_email(self, from_: SMTPServiceConfigFrom, input_: GetContentResult,
+    async def send_email(self, input_: GetContentResult,
                          _: Dict[str, Any]) -> None:
         connection = self.connect()
         if connection is None:
             raise Exception("Couldn't connect to the SMTP server.")
 
+        from_ = self.smtp_settings.from_
         try:
             from_addr = f"{from_.name} <{from_.email}>"
             if input_.is_html:

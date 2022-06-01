@@ -96,7 +96,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
             app_info, create_and_send_custom_email=create_and_send_custom_email
         )
 
-    async def send_email(self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> Any:
+    async def send_email(self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
         if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
             await self.ev_backward_compatibility_service.send_email(input_, user_context)
         else:
