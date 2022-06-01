@@ -37,7 +37,7 @@ class SMTPService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
         self.config = config
         self.transporter = Transporter(config.smtp_settings)
 
-        oi = ServiceImplementation(self.transporter, config.smtp_settings.from_)
+        oi = ServiceImplementation(self.transporter)
         self.service_implementation = oi if config.override is None else config.override(oi)
 
         ev_config = EmailDeliverySMTPConfig[TypeEmailVerificationEmailDeliveryInput](

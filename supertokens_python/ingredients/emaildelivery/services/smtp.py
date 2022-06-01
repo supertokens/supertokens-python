@@ -32,9 +32,10 @@ class SMTPServiceConfigFrom:
 
 class SMTPServiceConfig:
     def __init__(
-        self, host: str, from_: SMTPServiceConfigFrom,
-        password: str,
+        self, host: str,
         port: int,
+        from_: SMTPServiceConfigFrom,
+        password: Union[str, None] = None,
         secure: Union[bool, None] = None,
     ) -> None:
         self.host = host
@@ -56,20 +57,16 @@ class Transporter:
     def __init__(self, smtp_settings: SMTPServiceConfig) -> None:
         self.smtp_settings = smtp_settings
 
-    def connect(self):
+    def _connect(self):
         try:
+            mail = smtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port)
             if self.smtp_settings.secure:
-                mail = smtplib.SMTP_SSL(self.smtp_settings.host, self.smtp_settings.port)
                 context = ssl.create_default_context()
-                if mail.has_extn("starttls"):
-                    mail.starttls(context=context)
-            else:
-                mail = smtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port)
+                mail.starttls(context=context)
 
             if self.smtp_settings.password:
                 mail.login(self.smtp_settings.from_.email, self.smtp_settings.password)
 
-            mail.ehlo_or_helo_if_needed()
             return mail
         except Exception as e:
             log_debug_message("Couldn't connect to the SMTP server: %s", e)
@@ -77,7 +74,7 @@ class Transporter:
 
     async def send_email(self, input_: GetContentResult,
                          _: Dict[str, Any]) -> None:
-        connection = self.connect()
+        connection = self._connect()
         if connection is None:
             raise Exception("Couldn't connect to the SMTP server.")
 
@@ -100,9 +97,8 @@ class Transporter:
 
 
 class ServiceInterface(ABC, Generic[_T]):
-    def __init__(self, transporter: Transporter, from_: SMTPServiceConfigFrom) -> None:
+    def __init__(self, transporter: Transporter) -> None:
         self.transporter = transporter
-        self.config_from = from_
 
     @abstractmethod
     async def send_raw_email(self,

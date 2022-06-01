@@ -23,7 +23,7 @@ from supertokens_python.recipe.emailpassword.types import (
 
 class ServiceImplementation(ServiceInterface[TypeEmailVerificationEmailDeliveryInput]):
     def __init__(self, email_password_service_implementation: ServiceInterface[TypeEmailPasswordEmailDeliveryInput]) -> None:
-        super().__init__(email_password_service_implementation.transporter, email_password_service_implementation.config_from)
+        super().__init__(email_password_service_implementation.transporter)
         self.email_password_service_implementation = email_password_service_implementation
 
     async def send_raw_email(self, input_: GetContentResult, user_context: Dict[str, Any]) -> None:

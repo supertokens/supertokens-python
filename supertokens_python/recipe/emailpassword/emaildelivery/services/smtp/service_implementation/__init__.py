@@ -15,7 +15,7 @@
 from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    GetContentResult, ServiceInterface, SMTPServiceConfigFrom, Transporter)
+    GetContentResult, ServiceInterface, Transporter)
 from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.password_reset_implementation import \
     get_password_reset_email_content
 from supertokens_python.recipe.emailpassword.types import \
@@ -30,10 +30,10 @@ from .email_verification_implementation import \
 
 
 class ServiceImplementation(ServiceInterface[TypeEmailPasswordEmailDeliveryInput]):
-    def __init__(self, transporter: Transporter, config_from: SMTPServiceConfigFrom) -> None:
-        super().__init__(transporter, config_from)
+    def __init__(self, transporter: Transporter) -> None:
+        super().__init__(transporter)
 
-        email_verification_service_implementation = EVServiceImplementation(transporter, config_from)
+        email_verification_service_implementation = EVServiceImplementation(transporter)
         self.ev_send_raw_email = email_verification_service_implementation.send_raw_email
         self.ev_get_content = email_verification_service_implementation.get_content
 
