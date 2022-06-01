@@ -21,8 +21,6 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryConfigWithService)
 from supertokens_python.recipe.emailpassword.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService, default_create_and_send_custom_email)
-from supertokens_python.recipe.emailpassword.recipe_implementation import \
-    RecipeImplementation
 
 from ..emailverification.types import User as EmailVerificationUser
 from .interfaces import APIInterface, RecipeInterface
@@ -278,7 +276,7 @@ class EmailPasswordConfig:
                  reset_password_using_token_feature: ResetPasswordUsingTokenFeature,
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
                  override: OverrideConfig,
-                 get_email_delivery_config: Callable[[RecipeImplementation], EmailDeliveryConfigWithService[TypeEmailPasswordEmailDeliveryInput]]
+                 get_email_delivery_config: Callable[[RecipeInterface], EmailDeliveryConfigWithService[TypeEmailPasswordEmailDeliveryInput]]
                  ):
         self.sign_up_feature = sign_up_feature
         self.sign_in_feature = sign_in_feature

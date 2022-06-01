@@ -78,9 +78,6 @@ class EmailPasswordRecipe(RecipeModule):
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
 
-        if not isinstance(self.recipe_implementation, RecipeImplementation):
-            raise Exception("Should never come here")
-
         email_delivery_ingredient = ingredients.email_delivery if ingredients else None
         if email_delivery_ingredient is None:
             self.email_delivery_ingredient = EmailDeliveryIngredient(self.config.get_email_delivery_config(self.recipe_implementation))
