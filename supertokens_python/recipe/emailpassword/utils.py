@@ -15,7 +15,6 @@ from __future__ import annotations
 
 from re import fullmatch
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, Union
-from warnings import warn
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryConfigWithService)
@@ -37,7 +36,7 @@ from supertokens_python.recipe.emailverification.utils import \
     OverrideConfig as EmailVerificationOverrideConfig
 from supertokens_python.recipe.emailverification.utils import \
     ParentRecipeEmailVerificationConfig
-from supertokens_python.utils import get_filtered_list
+from supertokens_python.utils import deprecated_warn, get_filtered_list
 
 from ..emailverification.utils import ParentRecipeEmailVerificationConfig
 from .constants import (FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID,
@@ -175,8 +174,9 @@ class ResetPasswordUsingTokenFeature:
         self.form_fields_for_generate_token_form = form_fields_for_generate_token_form
         self.get_reset_password_url = get_reset_password_url
         self.create_and_send_custom_email = create_and_send_custom_email
+
         if create_and_send_custom_email:
-            warn("create_and_send_custom_email is deprecated. Please use email delivery config instead")
+            deprecated_warn("create_and_send_custom_email is deprecated. Please use email delivery config instead")
 
 
 class InputEmailVerificationConfig:

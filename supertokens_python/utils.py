@@ -175,3 +175,7 @@ def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
 
 def frontend_has_interceptor(request: BaseRequest) -> bool:
     return get_rid_from_request(request) is not None
+
+
+def deprecated_warn(msg: str):
+    warnings.warn(msg, DeprecationWarning, stacklevel=2)

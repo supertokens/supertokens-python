@@ -15,7 +15,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
-from warnings import warn
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryConfigWithService)
@@ -23,6 +22,7 @@ from supertokens_python.recipe.emailverification.emaildelivery.services.backward
     BackwardCompatibilityService
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.utils import deprecated_warn
 
 if TYPE_CHECKING:
     from typing import Awaitable, Callable, Union
@@ -63,7 +63,7 @@ class ParentRecipeEmailVerificationConfig:
         self.create_and_send_custom_email = create_and_send_custom_email
 
         if create_and_send_custom_email:
-            warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
+            deprecated_warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
 
 
 class EmailVerificationConfig:
