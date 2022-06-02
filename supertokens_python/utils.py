@@ -15,12 +15,15 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import warnings
 from base64 import b64decode, b64encode
 from re import fullmatch
 from time import time
 from typing import (TYPE_CHECKING, Any, Callable, Coroutine, Dict, List,
                     TypeVar, Union)
+
+from httpx import HTTPStatusError, Response
 
 from supertokens_python.async_to_sync_wrapper import check_event_loop
 from supertokens_python.framework.django.framework import DjangoFramework
@@ -179,3 +182,14 @@ def frontend_has_interceptor(request: BaseRequest) -> bool:
 
 def deprecated_warn(msg: str):
     warnings.warn(msg, DeprecationWarning, stacklevel=2)
+
+
+def handle_httpx_client_exceptions(e: Exception, input_: Dict[str, Any]):
+    if isinstance(e, HTTPStatusError):
+        res: Response = e.response  # type: ignore
+        log_debug_message("Error status: %s", res.status_code)  # type: ignore
+        log_debug_message("Error response: %s", res.json())
+    else:
+        log_debug_message("Error: %s", e)
+        log_debug_message("Logging the input:")
+        log_debug_message("%s", json.dumps(input_))

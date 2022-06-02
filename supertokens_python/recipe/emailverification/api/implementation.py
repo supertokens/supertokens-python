@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Union
 
+from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface, CreateEmailVerificationTokenEmailAlreadyVerifiedError,
     EmailVerifyPostInvalidTokenError, EmailVerifyPostOkResult,
@@ -60,6 +61,7 @@ class APIImplementation(APIInterface):
 
         token_result = await api_options.recipe_implementation.create_email_verification_token(user_id, email, user_context)
         if isinstance(token_result, CreateEmailVerificationTokenEmailAlreadyVerifiedError):
+            log_debug_message("Email verification email not sent to %s because it is already verified", email)
             return GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError()
 
         user = User(user_id, email)
@@ -67,6 +69,7 @@ class APIImplementation(APIInterface):
         email_verify_link = (await api_options.config.get_email_verification_url(
             user, user_context)) + '?token=' + token_result.token + '&rid=' + api_options.recipe_id
 
+        log_debug_message("Sending email verification email to %s", email)
         email_delivery_user = TypeEmailVerificationEmailDeliveryInputUser(user.user_id, user.email)
         email_verification_email_delivery_input = TypeEmailVerificationEmailDeliveryInput(
             user=email_delivery_user,

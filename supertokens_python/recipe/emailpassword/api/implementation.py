@@ -15,16 +15,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
+from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.emailpassword.constants import (
     FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID)
 from supertokens_python.recipe.emailpassword.interfaces import (
-    APIInterface, CreateResetPasswordWrongUserIdError,
-    EmailExistsGetOkResult, GeneratePasswordResetTokenPostOkResult,
+    APIInterface, CreateResetPasswordWrongUserIdError, EmailExistsGetOkResult,
+    GeneratePasswordResetTokenPostOkResult,
     PasswordResetPostInvalidTokenResponse, PasswordResetPostOkResult,
     ResetPasswordUsingTokenInvalidTokenError, SignInPostOkResult,
     SignInPostWrongCredentialsError, SignInWrongCredentialsError,
-    SignUpEmailAlreadyExistsError,
-    SignUpPostEmailAlreadyExistsError, SignUpPostOkResult)
+    SignUpEmailAlreadyExistsError, SignUpPostEmailAlreadyExistsError,
+    SignUpPostOkResult)
 from supertokens_python.recipe.emailpassword.types import (
     FormField, TypeEmailPasswordPasswordResetEmailDeliveryInput,
     TypeEmailPasswordPasswordResetEmailDeliveryInputUser)
@@ -56,12 +57,14 @@ class APIImplementation(APIInterface):
         token_result = await api_options.recipe_implementation.create_reset_password_token(user.user_id, user_context)
 
         if isinstance(token_result, CreateResetPasswordWrongUserIdError):
+            log_debug_message("Password reset email not sent, unknown user id: %s", user.user_id)
             return GeneratePasswordResetTokenPostOkResult()
 
         token = token_result.token
         password_reset_link = await api_options.config.reset_password_using_token_feature.get_reset_password_url(
             user, user_context) + '?token=' + token + '&rid=' + api_options.recipe_id
 
+        log_debug_message("Sending password reset email to %s", email)
         send_email_input = TypeEmailPasswordPasswordResetEmailDeliveryInput(
             user=TypeEmailPasswordPasswordResetEmailDeliveryInputUser(user.user_id, user.email),
             password_reset_link=password_reset_link

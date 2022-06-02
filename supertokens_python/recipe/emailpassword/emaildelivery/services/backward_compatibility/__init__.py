@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 from httpx import AsyncClient
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
+from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.emailpassword.interfaces import (
     RecipeInterface, TypeEmailPasswordEmailDeliveryInput)
 from supertokens_python.recipe.emailpassword.types import User
@@ -30,6 +31,7 @@ from supertokens_python.recipe.emailverification.interfaces import \
 from supertokens_python.recipe.emailverification.types import \
     User as EmailVerificationUser
 from supertokens_python.supertokens import AppInfo
+from supertokens_python.utils import handle_httpx_client_exceptions
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.utils import (
@@ -41,6 +43,7 @@ def default_create_and_send_custom_email(
     async def func(user: User, password_reset_url_with_token: str, _: Dict[str, Any]):
         if ('SUPERTOKENS_ENV' in environ) and (environ['SUPERTOKENS_ENV'] == 'testing'):
             return
+        data = {}
         try:
             data = {
                 'email': user.email,
@@ -48,9 +51,12 @@ def default_create_and_send_custom_email(
                 'passwordResetURL': password_reset_url_with_token
             }
             async with AsyncClient() as client:
-                await client.post('https://api.supertokens.io/0/st/auth/password/reset', json=data, headers={'api-version': '0'})  # type: ignore
-        except Exception:
-            pass
+                resp = await client.post('https://api.supertokens.io/0/st/auth/password/reset', json=data, headers={'api-version': '0'})  # type: ignore
+                resp.raise_for_status()
+                log_debug_message("Password reset email sent to %s", user.email)
+        except Exception as e:
+            log_debug_message("Error sending password reset email")
+            handle_httpx_client_exceptions(e, data)
 
     return func
 
