@@ -65,7 +65,6 @@ setup(
     packages=find_packages(exclude=exclude_list),
     package_data = {'supertokens_python': [
         'py.typed',
-        'supertokens_python/recipe/*/emaildelivery/service/smtp/*.html',
     ]},
     classifiers=[
         "Programming Language :: Python :: 3",

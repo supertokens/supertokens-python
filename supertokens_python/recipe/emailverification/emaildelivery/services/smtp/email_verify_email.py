@@ -1,3 +1,4 @@
+html_template = """
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
     xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -837,15 +838,15 @@
 
                                                                     <p
                                                                         style="font-family: Rubik; font-size: 16px; line-height: 26px; font-weight:500; text-align: center; padding-top: 24px; padding-bottom: 24px; padding-left: 10%; padding-right: 10%; ">
-                                                                        A password reset request for your account on
-                                                                        ${appName} has been received.</p>
+                                                                        Please verify your email address by clicking the
+                                                                        button below.</p>
 
                                                                     <div class="button-td button-td-primary"
                                                                         style="border-radius: 6px; margin-bottom: 40px; display: flex; flex-direction: row; justify-content: center;">
                                                                         <a class="button-a button-a-primary"
-                                                                            href="${resetLink}" target="_blank"
-                                                                            style="background: #52B56E;font-size: 17px;line-height: 24px;font-weight: 500;font-family: 'Rubik', sans-serif;text-decoration: none;padding: 9px 25px 9px 25px;color: #ffffff;display: block;border-radius: 6px;">Reset
-                                                                            Password</a>
+                                                                            href="${verificationLink}" target="_blank"
+                                                                            style="background: #52B56E;font-size: 17px;line-height: 24px;font-weight: 500;font-family: 'Rubik', sans-serif;text-decoration: none;padding: 9px 25px 9px 25px;color: #ffffff;display: block;border-radius: 6px;">Verify
+                                                                            My Email</a>
                                                                     </div>
                                                                 </div>
 
@@ -938,3 +939,4 @@
 </body>
 
 </html>
+"""

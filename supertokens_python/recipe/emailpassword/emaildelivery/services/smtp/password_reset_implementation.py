@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from os import path
 from string import Template
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import \
@@ -20,6 +19,8 @@ from supertokens_python.ingredients.emaildelivery.services.smtp import \
 from supertokens_python.recipe.emailpassword.types import \
     TypeEmailPasswordPasswordResetEmailDeliveryInput
 from supertokens_python.supertokens import Supertokens
+
+from .password_reset_email import html_template
 
 
 def get_password_reset_email_content(email_input: TypeEmailPasswordPasswordResetEmailDeliveryInput) -> GetContentResult:
@@ -31,8 +32,4 @@ def get_password_reset_email_content(email_input: TypeEmailPasswordPasswordReset
 
 
 def get_password_reset_email_html(app_name: str, email: str, reset_link: str):
-    current_dir = path.dirname(__file__)
-    template_path = path.join(current_dir, "password_reset_email.html")
-    with open(template_path, "r") as f:
-        template = f.read()
-    return Template(template).substitute(appName=app_name, email=email, resetLink=reset_link)
+    return Template(html_template).substitute(appName=app_name, email=email, resetLink=reset_link)

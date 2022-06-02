@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from os import path
 from string import Template
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import \
@@ -20,6 +19,8 @@ from supertokens_python.ingredients.emaildelivery.services.smtp import \
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.supertokens import Supertokens
+
+from .email_verify_email import html_template
 
 
 def get_email_verify_email_content(email_input: TypeEmailVerificationEmailDeliveryInput) -> GetContentResult:
@@ -30,8 +31,4 @@ def get_email_verify_email_content(email_input: TypeEmailVerificationEmailDelive
 
 
 def get_email_verify_email_html(app_name: str, email: str, verification_link: str):
-    current_dir = path.dirname(__file__)
-    template_path = path.join(current_dir, "email_verify_email.html")
-    with open(template_path, "r") as f:
-        template = f.read()
-    return Template(template).substitute(appName=app_name, verificationLink=verification_link, email=email)
+    return Template(html_template).substitute(appName=app_name, verificationLink=verification_link, email=email)
