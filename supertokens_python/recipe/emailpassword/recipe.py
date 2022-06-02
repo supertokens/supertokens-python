@@ -59,7 +59,7 @@ from .utils import (InputEmailVerificationConfig, InputOverrideConfig,
 class EmailPasswordRecipe(RecipeModule):
     recipe_id = 'emailpassword'
     __instance = None
-    email_delivery_ingredient: EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput]
+    email_delivery: EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  ingredients: EmailPasswordIngredients,
@@ -80,16 +80,16 @@ class EmailPasswordRecipe(RecipeModule):
 
         email_delivery_ingredient = ingredients.email_delivery if ingredients else None
         if email_delivery_ingredient is None:
-            self.email_delivery_ingredient = EmailDeliveryIngredient(self.config.get_email_delivery_config(self.recipe_implementation))
+            self.email_delivery = EmailDeliveryIngredient(self.config.get_email_delivery_config(self.recipe_implementation))
         else:
-            self.email_delivery_ingredient = email_delivery_ingredient
+            self.email_delivery = email_delivery_ingredient
 
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
         else:
             ev_email_delivery_ingredient = cast(
                 EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput],
-                self.email_delivery_ingredient
+                self.email_delivery
             )
 
             email_verification_ingredients = EmailVerificationIngredients(email_delivery=ev_email_delivery_ingredient)
@@ -127,7 +127,7 @@ class EmailPasswordRecipe(RecipeModule):
 
     async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str,
                                  response: BaseResponse):
-        api_options = APIOptions(request, response, self.recipe_id, self.config, self.recipe_implementation, self.email_verification_recipe.recipe_implementation, self.email_delivery_ingredient)
+        api_options = APIOptions(request, response, self.recipe_id, self.config, self.recipe_implementation, self.email_verification_recipe.recipe_implementation, self.email_delivery)
         if request_id == SIGNUP:
             return await handle_sign_up_api(self.api_implementation,
                                             api_options)
