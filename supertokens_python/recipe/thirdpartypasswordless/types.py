@@ -11,11 +11,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from supertokens_python.ingredients.emaildelivery import \
-    EmailDeliveryIngredient
 from typing import TypeVar, Union
 
-from ..thirdparty.types import ThirdPartyInfo
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
+from supertokens_python.recipe.passwordless.types import \
+    TypePasswordlessEmailDeliveryInput
+
+from ..thirdparty.types import ThirdPartyInfo, TypeThirdPartyEmailDeliveryInput
 
 
 class User:
@@ -31,8 +34,7 @@ class User:
 _T = TypeVar('_T')
 
 
-class TypeThirdPartyPasswordlessEmailDeliveryInput:
-    pass
+TypeThirdPartyPasswordlessEmailDeliveryInput = Union[TypeThirdPartyEmailDeliveryInput, TypePasswordlessEmailDeliveryInput]
 
 
 class ThirdPartyPasswordlessIngredients:

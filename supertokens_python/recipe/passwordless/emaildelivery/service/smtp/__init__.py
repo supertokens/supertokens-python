@@ -23,14 +23,13 @@ from supertokens_python.ingredients.emaildelivery.types import \
 from supertokens_python.recipe.passwordless.types import \
     TypePasswordlessEmailDeliveryInput
 
-from .implementation import ServiceImplementation
+from .service_implementation import ServiceImplementation
 
 
 class SMTPService(EmailDeliveryInterface[TypePasswordlessEmailDeliveryInput]):
     service_implementation: ServiceInterface[TypePasswordlessEmailDeliveryInput]
 
     def __init__(self, config: EmailDeliverySMTPConfig[TypePasswordlessEmailDeliveryInput]) -> None:
-        self.config = config
         self.transporter = Transporter(config.smtp_settings)
         oi = ServiceImplementation(self.transporter)
         self.service_implementation = oi if config.override is None else config.override(oi)

@@ -173,23 +173,23 @@ def validate_and_normalise_user_input(
     def get_email_delivery_config(
         tppless_recipe: RecipeInterface,
     ) -> EmailDeliveryConfigWithService[TypeThirdPartyPasswordlessEmailDeliveryInput]:
-        if email_delivery_config and email_delivery_config.service:
-            return EmailDeliveryConfigWithService(
-                service=email_delivery_config.service,
-                override=email_delivery_config.override
-            )
+        email_service = email_delivery_config.service if email_delivery_config is not None else None
+        if contact_config.contact_method == "PHONE":
+            create_and_send_custom_email = None
+        else:
+            create_and_send_custom_email = contact_config.create_and_send_custom_email
 
-        passwordless_feature = InputPasswordlessConfig(
-            contact_config.create_and_send_custom_email if contact_config.contact_method != "PHONE" else None
-        )
-        email_service = BackwardCompatibilityService(
-            recipe.app_info,
-            tppless_recipe,
-            email_verification_feature,
-            passwordless_feature
-        )
+        if email_service is None:
+            ev_feature = email_verification_feature
+            pless_feature = InputPasswordlessConfig(create_and_send_custom_email)
+            email_service = BackwardCompatibilityService(recipe.app_info, tppless_recipe, pless_feature, ev_feature)
 
-        return EmailDeliveryConfigWithService(email_service, override=None)  # FIXME: Can override=None be bad?
+        if email_delivery_config is not None and email_delivery_config.override is not None:
+            override = email_delivery_config.override
+        else:
+            override = None
+
+        return EmailDeliveryConfigWithService(email_service, override=override)
 
     return ThirdPartyPasswordlessConfig(override=OverrideConfig(functions=override.functions, apis=override.apis), providers=providers, contact_config=contact_config, flow_type=flow_type, get_link_domain_and_path=get_link_domain_and_path, get_custom_user_input_code=get_custom_user_input_code, email_verification_feature=validate_and_normalise_email_verification_config(recipe, email_verification_feature, override),
                                         get_email_delivery_config=get_email_delivery_config)

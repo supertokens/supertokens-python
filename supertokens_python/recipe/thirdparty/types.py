@@ -14,6 +14,10 @@
 from typing import Callable, Dict, List, Union
 
 from supertokens_python.framework.request import BaseRequest
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
+from supertokens_python.recipe.emailverification.types import \
+    TypeEmailVerificationEmailDeliveryInput
 
 
 class ThirdPartyInfo:
@@ -67,3 +71,13 @@ class UsersResponse:
                  next_pagination_token: Union[str, None]):
         self.users = users
         self.next_pagination_token = next_pagination_token
+
+
+TypeThirdPartyEmailDeliveryInput = TypeEmailVerificationEmailDeliveryInput
+
+
+class ThirdPartyIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput], None] = None
+                 ) -> None:
+        self.email_delivery = email_delivery

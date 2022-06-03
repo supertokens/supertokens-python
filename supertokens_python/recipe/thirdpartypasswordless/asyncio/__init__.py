@@ -19,7 +19,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
 
 from .. import interfaces
 from ..recipe import ThirdPartyPasswordlessRecipe
-from ..types import User
+from ..types import TypeThirdPartyPasswordlessEmailDeliveryInput, User
 
 
 async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -191,3 +191,9 @@ async def passwordlessSigninup(email: Union[str, None], phone_number: Union[str,
         result.created_new_user,
         User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined)
     )
+
+
+async def send_email(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(input_, user_context)

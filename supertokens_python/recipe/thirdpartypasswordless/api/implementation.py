@@ -18,35 +18,29 @@ from typing import Any, Dict, Union
 import supertokens_python.recipe.passwordless.interfaces as PlessInterfaces
 import supertokens_python.recipe.thirdparty.interfaces as ThirdPartyInterfaces
 
-from ...passwordless.api.implementation import APIImplementation as PasswordlessImplementation
+from ...passwordless.api.implementation import \
+    APIImplementation as PasswordlessImplementation
 from ...passwordless.interfaces import APIInterface
 from ...passwordless.interfaces import APIOptions as PasswordlessAPIOptions
-
-from ...thirdparty.api.implementation import APIImplementation as ThirdPartyImplementation
+from ...thirdparty.api.implementation import \
+    APIImplementation as ThirdPartyImplementation
 from ...thirdparty.interfaces import APIOptions as ThirdPartyAPIOptions
 from ...thirdparty.provider import Provider
-
-from ..interfaces import (
-    APIInterface,
-    ConsumeCodePostOkResult,
-    ConsumeCodePostExpiredUserInputCodeError,
-    ConsumeCodePostGeneralError,
-    ConsumeCodePostIncorrectUserInputCodeError,
-    CreateCodePostOkResult,
-    CreateCodePostGeneralError,
-    PasswordlessEmailExistsGetOkResult,
-    PasswordlessPhoneNumberExistsGetOkResult,
-    ConsumeCodePostRestartFlowError,
-    ResendCodePostOkResult,
-    ResendCodePostRestartFlowError,
-    ResendCodePostGeneralError,
-    AuthorisationUrlGetOkResult,
-    ThirdPartySignInUpPostOkResult,
-    ThirdPartySignInUpPostNoEmailGivenByProviderResponse,
-    ThirdPartySignInUpPostFieldError
-)
+from ..interfaces import (APIInterface, AuthorisationUrlGetOkResult,
+                          ConsumeCodePostExpiredUserInputCodeError,
+                          ConsumeCodePostGeneralError,
+                          ConsumeCodePostIncorrectUserInputCodeError,
+                          ConsumeCodePostOkResult,
+                          ConsumeCodePostRestartFlowError,
+                          CreateCodePostGeneralError, CreateCodePostOkResult,
+                          PasswordlessEmailExistsGetOkResult,
+                          PasswordlessPhoneNumberExistsGetOkResult,
+                          ResendCodePostGeneralError, ResendCodePostOkResult,
+                          ResendCodePostRestartFlowError,
+                          ThirdPartySignInUpPostFieldError,
+                          ThirdPartySignInUpPostNoEmailGivenByProviderResponse,
+                          ThirdPartySignInUpPostOkResult)
 from ..types import User
-
 from .passwordless_api_impementation import \
     get_interface_impl as get_pless_interface_impl
 from .thirdparty_api_implementation import \
@@ -103,8 +97,6 @@ class APIImplementation(APIInterface):
                                phone_number: Union[str, None],
                                api_options: PasswordlessAPIOptions,
                                user_context: Dict[str, Any]) -> Union[CreateCodePostOkResult, CreateCodePostGeneralError]:
-        # TODO: Use email delivery ingredient
-        # return await api_options.email_delivery.ingredient_interface_impl.send_email()
         return await self.pless_create_code_post(email, phone_number, api_options, user_context)
 
     async def resend_code_post(self,

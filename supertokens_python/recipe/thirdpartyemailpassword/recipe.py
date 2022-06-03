@@ -24,6 +24,7 @@ from supertokens_python.recipe.emailpassword.types import \
 from supertokens_python.recipe.emailverification.types import \
     EmailVerificationIngredients
 from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.types import ThirdPartyIngredients
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from ..emailpassword.utils import (InputResetPasswordUsingTokenFeature,
@@ -134,10 +135,12 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         else:
             self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
             if len(self.config.providers) != 0:
+                ingredients = ThirdPartyIngredients(None)
                 self.third_party_recipe = ThirdPartyRecipe(
                     recipe_id,
                     app_info,
                     SignInAndUpFeature(self.config.providers),
+                    ingredients,
                     None,
                     TPOverrideConfig(
                         func_override_third_party,
