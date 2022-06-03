@@ -115,7 +115,7 @@ async def test_pless_login_default_backward_compatibility(driver_config_client: 
 
 
 @mark.asyncio
-async def test_pless_login_default_backward_compatibility_suppress_error(driver_config_client: TestClient):
+async def test_pless_login_default_backward_compatibility_no_suppress_error(driver_config_client: TestClient):
     "Passwordless login: test default backward compatibility api being called, error message sent back to user"
     app_name = ""
     email = ""
