@@ -27,8 +27,6 @@ from supertokens_python.recipe.passwordless.interfaces import \
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.service.backward_compatibility import \
     BackwardCompatibilityService
-from supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.implementation import \
-    RecipeImplementation
 from typing_extensions import Literal
 
 from ..emailverification.types import User as EmailVerificationUser
@@ -138,7 +136,7 @@ class ThirdPartyPasswordlessConfig:
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
                  get_link_domain_and_path: Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]],
                  get_email_delivery_config: Callable[
-                     [RecipeImplementation], EmailDeliveryConfigWithService[TypeThirdPartyPasswordlessEmailDeliveryInput]
+                     [RecipeInterface], EmailDeliveryConfigWithService[TypeThirdPartyPasswordlessEmailDeliveryInput]
                  ],
                  get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None
                  ):
@@ -173,7 +171,7 @@ def validate_and_normalise_user_input(
         get_link_domain_and_path = default_get_link_domain_and_path(recipe.app_info)
 
     def get_email_delivery_config(
-        tppless_recipe: RecipeImplementation
+        tppless_recipe: RecipeInterface,
     ) -> EmailDeliveryConfigWithService[TypeThirdPartyPasswordlessEmailDeliveryInput]:
         if email_delivery_config and email_delivery_config.service:
             return EmailDeliveryConfigWithService(

@@ -14,10 +14,11 @@
 
 from __future__ import annotations
 
+import json
 from os import environ
 from typing import Any, Awaitable, Callable, Dict, Union
 
-from httpx import AsyncClient
+from httpx import AsyncClient, HTTPStatusError
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.passwordless.types import \
@@ -46,6 +47,17 @@ def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[TypePas
         except Exception as e:
             log_debug_message("Error sending passwordless login email")
             handle_httpx_client_exceptions(e, data)
+            # If the error is thrown from the API:
+            if isinstance(e, HTTPStatusError):
+                body: Dict[str, Any] = e.response.json()  # type: ignore
+                if body.get("err"):
+                    msg = body["err"]
+                else:
+                    msg = json.dumps(body)
+
+                raise Exception(msg)
+
+            raise e
 
     return func
 
@@ -61,7 +73,4 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypePasswordlessEmailD
         self.create_and_send_custom_email = create_and_send_custom_email if create_and_send_custom_email is not None else default_create_and_send_custom_email(app_info)
 
     async def send_email(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        try:
-            await self.create_and_send_custom_email(input_, user_context)
-        except Exception as e:
-            log_debug_message("Error while sending email %s", str(e))
+        await self.create_and_send_custom_email(input_, user_context)  # Note: intentionally not using try-except (unlike other recipes)
