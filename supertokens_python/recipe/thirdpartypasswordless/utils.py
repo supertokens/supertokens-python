@@ -18,10 +18,6 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryConfigWithService)
-# from supertokens_python.recipe.emailverification.emaildelivery.service.backward_compatibility import \
-#     BackwardCompatibilityService as EVBackwardCompatibilityService
-# from supertokens_python.recipe.passwordless.emaildelivery.service.backward_compatibility import \
-#     BackwardCompatibilityService as PlessBackwardCompatibilityService
 from supertokens_python.recipe.passwordless.interfaces import \
     TypePasswordlessEmailDeliveryInput
 from supertokens_python.recipe.thirdparty.provider import Provider

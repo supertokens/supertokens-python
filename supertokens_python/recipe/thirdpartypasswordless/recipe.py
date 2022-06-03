@@ -26,7 +26,8 @@ from supertokens_python.recipe.emailverification.types import \
 from supertokens_python.recipe.passwordless.types import \
     PasswordlessIngredients
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import ThirdPartyIngredients
+from supertokens_python.recipe.thirdparty.types import (
+    ThirdPartyIngredients, TypeThirdPartyEmailDeliveryInput)
 from supertokens_python.recipe.thirdpartypasswordless.types import (
     ThirdPartyPasswordlessIngredients,
     TypeThirdPartyPasswordlessEmailDeliveryInput)
@@ -209,7 +210,8 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
 
             if len(self.config.providers) != 0:
-                tp_ingredients = ThirdPartyIngredients(None)
+                tp_email_delivery = cast(EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput], self.email_delivery)
+                tp_ingredients = ThirdPartyIngredients(tp_email_delivery)
                 self.third_party_recipe = ThirdPartyRecipe(
                     recipe_id,
                     app_info,
