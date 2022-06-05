@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
@@ -21,8 +21,6 @@ from supertokens_python.recipe.emailpassword.emaildelivery.service.backward_comp
     BackwardCompatibilityService as EmailPasswordBackwardCompatibilityService
 from supertokens_python.recipe.emailpassword.interfaces import \
     TypeEmailPasswordEmailDeliveryInput
-from supertokens_python.recipe.emailpassword.recipe_implementation import \
-    RecipeImplementation as EPRecipeImplementation
 from supertokens_python.recipe.emailpassword.types import User as EPUser
 from supertokens_python.recipe.emailpassword.utils import \
     InputEmailVerificationConfig as EPInputEmailVerificationConfig
@@ -47,8 +45,7 @@ if TYPE_CHECKING:
 
 class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]):
     app_info: AppInfo
-    ev_backward_comp_service: EmailVerificationBackwardCompatibilityService
-    ep_backward_comp_service: EmailPasswordBackwardCompatibilityService
+    ep_backward_compatiblity_service: EPBackwardCompatibilityService
 
     def __init__(self,
                  app_info: AppInfo,
@@ -56,51 +53,29 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailPas
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  ) -> None:
-        self.app_info = app_info
         self.recipe_interface_impl = recipe_interface_impl
 
-        # Setup EmailVerification (EV) backward compatibility service
-        input_create_and_send_custom_email = email_verification_feature.create_and_send_custom_email if email_verification_feature is not None else None
-        if input_create_and_send_custom_email is None:
-            ev_create_and_send_custom_email = None
-        else:
-            async def create_and_send_custom_email(user: EVUser, link: str, user_context: Dict[str, Any]):
+        ep_bc_email_verification_feature = None
+        if email_verification_feature is not None and email_verification_feature.create_and_send_custom_email is not None:
+            # TODO: Shouldn't it be `user: EVUser`??
+            async def create_and_send_custom_email_wrapper(user: EPUser, link: str, user_context: Dict[str, Any]):
                 user_info = await recipe_interface_impl.get_user_by_id(user.user_id, user_context)
                 if user_info is None:
-                    raise Exception("Unknown user ID provided")
-                return await input_create_and_send_custom_email(user_info, link, user_context)
-            ev_create_and_send_custom_email = create_and_send_custom_email
+                    raise Exception("Unknown User ID provided")
 
-        self.ev_backward_comp_service = EmailVerificationBackwardCompatibilityService(
-            app_info,
-            ev_create_and_send_custom_email
-        )
+                assert email_verification_feature.create_and_send_custom_email
+                # TODO: WHY IS THE CODE NOT WORKING WITHOUT THIS ASSERT?? (UNEXPECTED BEHAVIOUR)
 
-        # Setup EmailPassword (EP) backward compatibility service
-        ep_recipeInterfaceImpl = cast(EPRecipeImplementation, recipe_interface_impl)
-        if email_verification_feature is not None:
-            async def ep_get_email_verification_url(ep_user: EPUser, user_context: Dict[str, Any]):
-                user = User(ep_user.user_id, ep_user.email, ep_user.time_joined)
-                if email_verification_feature.get_email_verification_url is None:
-                    return ""
-                return await email_verification_feature.get_email_verification_url(user, user_context)
-
-            async def ep_create_and_send_custom_email(ep_user: EPUser, link: str, user_context: Dict[str, Any]):
-                user = User(ep_user.user_id, ep_user.email, ep_user.time_joined)
-                if email_verification_feature.create_and_send_custom_email is None:
-                    return
-                await email_verification_feature.create_and_send_custom_email(user, link, user_context)
+                return await email_verification_feature.create_and_send_custom_email(user_info, link, user_context)
 
             ep_bc_email_verification_feature = EPInputEmailVerificationConfig(
-                ep_get_email_verification_url,
-                ep_create_and_send_custom_email
+                None,  # TODO: Is this okay? (Most likely no) But the node PR isn't passing get_email_verification_url
+                create_and_send_custom_email_wrapper
             )
-        else:
-            ep_bc_email_verification_feature = None
 
-        self.ep_backward_comp_service = EmailPasswordBackwardCompatibilityService(
+        self.ep_backward_compatiblity_service = EPBackwardCompatibilityService(
             app_info,
-            ep_recipeInterfaceImpl,
+            ep_recipe_interface_impl,
             reset_password_using_token_feature,
             ep_bc_email_verification_feature,
         )

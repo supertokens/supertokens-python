@@ -74,9 +74,10 @@ from .utils import InputOverrideConfig, validate_and_normalise_user_input
 class ThirdPartyEmailPasswordRecipe(RecipeModule):
     recipe_id = 'thirdpartyemailpassword'
     __instance = None
-    email_delivery_ingredient: EmailDeliveryIngredient[TypeThirdPartyEmailPasswordEmailDeliveryInput]
+    email_delivery: EmailDeliveryIngredient[TypeThirdPartyEmailPasswordEmailDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
+                 ingredients: ThirdPartyEmailPasswordIngredients,
                  sign_up_feature: Union[InputSignUpFeature, None] = None,
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
@@ -86,7 +87,6 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                  email_password_recipe: Union[EmailPasswordRecipe, None] = None,
                  third_party_recipe: Union[ThirdPartyRecipe, None] = None,
                  email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None,
-                 ingredients: Union[ThirdPartyEmailPasswordIngredients, None] = None
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self,
@@ -106,20 +106,23 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         self.api_implementation: APIInterface = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
 
-        self.recipe_implementation = cast(RecipeImplementation, self.recipe_implementation)
-        email_delivery_ingredient = ingredients.email_delivery if ingredients else None
+        ep_recipe_implementation = EmailPasswordRecipeImplementation(self.recipe_implementation)
+
+        email_delivery_ingredient = ingredients.email_delivery
         if email_delivery_ingredient is None:
-            self.email_delivery_ingredient = EmailDeliveryIngredient(
-                self.config.get_email_delivery_config(self.recipe_implementation)
+            self.email_delivery = EmailDeliveryIngredient(
+                self.config.get_email_delivery_config(self.recipe_implementation, ep_recipe_implementation)
             )
         else:
-            self.email_delivery_ingredient = email_delivery_ingredient
+            self.email_delivery = email_delivery_ingredient
 
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
         else:
-            ingredient = cast(EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput], self.email_delivery_ingredient)
-            ev_ingredients = EmailVerificationIngredients(ingredient)
+            ev_email_delivery_ingredient = cast(
+                EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput], self.email_delivery
+            )
+            ev_ingredients = EmailVerificationIngredients(ev_email_delivery_ingredient)
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                      self.config.email_verification_feature, ev_ingredients)
 
@@ -236,8 +239,10 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
              ):
         def func(app_info: AppInfo):
             if ThirdPartyEmailPasswordRecipe.__instance is None:
+                ingredients = ThirdPartyEmailPasswordIngredients(None)
                 ThirdPartyEmailPasswordRecipe.__instance = ThirdPartyEmailPasswordRecipe(
-                    ThirdPartyEmailPasswordRecipe.recipe_id, app_info, sign_up_feature,
+                    ThirdPartyEmailPasswordRecipe.recipe_id, app_info, ingredients,
+                    sign_up_feature,
                     reset_password_using_token_feature,
                     email_verification_feature,
                     override,

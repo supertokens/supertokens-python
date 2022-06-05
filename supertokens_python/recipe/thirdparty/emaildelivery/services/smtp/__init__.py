@@ -20,8 +20,6 @@ from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.recipe.emailverification.emaildelivery.service.smtp import \
     SMTPService as EmailVerificationSMTPService
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.recipe.thirdparty.types import \
     TypeThirdPartyEmailDeliveryInput
 
@@ -30,12 +28,7 @@ class SMTPService(EmailDeliveryInterface[TypeThirdPartyEmailDeliveryInput]):
     ev_smtp_service: EmailVerificationSMTPService
 
     def __init__(self, config: EmailDeliverySMTPConfig[TypeThirdPartyEmailDeliveryInput]) -> None:
-        self.config = config
-        ev_config = EmailDeliverySMTPConfig[TypeEmailVerificationEmailDeliveryInput](
-            smtp_settings=config.smtp_settings,
-            override=None,  # TODO: lambda _: EmailVerificationServiceImpl(self.ev_service_implementation)?
-        )
-        self.ev_smtp_service = EmailVerificationSMTPService(ev_config)
+        self.ev_smtp_service = EmailVerificationSMTPService(config)
 
     async def send_email(self, email_input: TypeThirdPartyEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
         await self.ev_smtp_service.send_email(email_input, user_context)

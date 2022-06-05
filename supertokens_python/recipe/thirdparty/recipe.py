@@ -55,7 +55,7 @@ from .utils import (InputEmailVerificationConfig,
 class ThirdPartyRecipe(RecipeModule):
     recipe_id = 'thirdparty'
     __instance = None
-    email_delivery_ingredient: EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput]
+    email_delivery: EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  sign_in_and_up_feature: SignInAndUpFeature,
@@ -67,11 +67,6 @@ class ThirdPartyRecipe(RecipeModule):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, sign_in_and_up_feature,
                                                         email_verification_feature, override, email_delivery)
-        if email_verification_recipe is not None:
-            self.email_verification_recipe = email_verification_recipe
-        else:
-            self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
-                                                                     self.config.email_verification_feature, EmailVerificationIngredients(None))
         self.providers = self.config.sign_in_and_up_feature.providers
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id))
@@ -81,8 +76,11 @@ class ThirdPartyRecipe(RecipeModule):
         self.api_implementation: APIInterface = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
 
-        email_delivery_ingredient = ingredients.email_delivery if ingredients is not None else None
-        self.email_delivery_ingredient = EmailDeliveryIngredient(self.config.get_email_delivery_config(recipe_implementation)) if email_delivery_ingredient is None else email_delivery_ingredient
+        email_delivery_ingredient = ingredients.email_delivery
+        if email_delivery_ingredient is None:
+            self.email_delivery = EmailDeliveryIngredient(self.config.get_email_delivery_config(recipe_implementation))
+        else:
+            self.email_delivery = email_delivery_ingredient
 
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe

@@ -13,12 +13,14 @@
 # under the License.
 from __future__ import annotations
 
-from distutils.log import warn
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryConfigWithService)
+from supertokens_python.recipe.emailpassword.interfaces import \
+    RecipeInterface as EPRecipeInterface
 from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.utils import deprecated_warn
 
 from ..emailpassword.utils import (InputResetPasswordUsingTokenFeature,
                                    InputSignUpFeature)
@@ -26,7 +28,6 @@ from ..emailverification.types import User as EmailVerificationUser
 from .email_delivery.services.backward_compatibility import \
     BackwardCompatibilityService
 from .interfaces import APIInterface, RecipeInterface
-from .recipeimplementation.implementation import RecipeImplementation
 from .types import TypeThirdPartyEmailPasswordEmailDeliveryInput, User
 
 if TYPE_CHECKING:
@@ -48,7 +49,7 @@ class InputEmailVerificationConfig:
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
         if create_and_send_custom_email:
-            warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
+            deprecated_warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
 
 
 def email_verification_create_and_send_custom_email(
@@ -122,7 +123,7 @@ class ThirdPartyEmailPasswordConfig:
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
                  sign_up_feature: Union[InputSignUpFeature, None],
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None],
-                 get_email_delivery_config: Callable[[RecipeImplementation], EmailDeliveryConfigWithService[TypeThirdPartyEmailPasswordEmailDeliveryInput]],
+                 get_email_delivery_config: Callable[[RecipeInterface, EPRecipeInterface], EmailDeliveryConfigWithService[TypeThirdPartyEmailPasswordEmailDeliveryInput]],
                  override: OverrideConfig
                  ):
         self.sign_up_feature = sign_up_feature
@@ -147,7 +148,7 @@ def validate_and_normalise_user_input(
     if override is None:
         override = InputOverrideConfig()
 
-    def get_email_delivery_config(recipe_interface_impl: RecipeImplementation):
+    def get_email_delivery_config(recipe_interface_impl: RecipeInterface, ep_recipe_interface_impl: EPRecipeInterface):
         if email_delivery_config and email_delivery_config.service:
             return EmailDeliveryConfigWithService(
                 service=email_delivery_config.service,
@@ -157,10 +158,15 @@ def validate_and_normalise_user_input(
         email_service = BackwardCompatibilityService(
             app_info=recipe.app_info,
             recipe_interface_impl=recipe_interface_impl,
+            ep_recipe_interface_impl=ep_recipe_interface_impl,
             reset_password_using_token_feature=reset_password_using_token_feature,
             email_verification_feature=email_verification_feature,
         )
-        return EmailDeliveryConfigWithService(email_service, override=None)
+        if email_delivery_config is not None and email_delivery_config.override is not None:
+            override = email_delivery_config.override
+        else:
+            override = None
+        return EmailDeliveryConfigWithService(email_service, override=override)
 
     return ThirdPartyEmailPasswordConfig(
         providers,

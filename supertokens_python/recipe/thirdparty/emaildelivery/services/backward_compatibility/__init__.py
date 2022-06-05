@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailDeliveryInput]):
     def __init__(self,
                  app_info: AppInfo,
-                 recipeInterfaceImpl: RecipeInterface,
+                 recipe_interface_impl: RecipeInterface,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  ) -> None:
         self.app_info = app_info
@@ -42,7 +42,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailDel
             email_verification_feature_config = None
         else:
             async def create_and_send_custom_email(user: User, link: str, user_context: Dict[str, Any]):
-                user_info = await recipeInterfaceImpl.get_user_by_id(user_id=user.user_id, user_context=user_context)
+                user_info = await recipe_interface_impl.get_user_by_id(user_id=user.user_id, user_context=user_context)
                 if user_info is None:
                     raise Exception("Unknown User ID provided")
                 return await input_create_and_send_custom_email(user_info, link, user_context)

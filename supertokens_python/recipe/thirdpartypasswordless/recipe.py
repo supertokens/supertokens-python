@@ -172,21 +172,15 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                      self.config.email_verification_feature, ev_ingredients)
 
-        email_delivery_ingredient = ingredients.email_delivery if ingredients else None
-        if email_delivery_ingredient is None:
-            self.email_delivery_ingredient = EmailDeliveryIngredient(self.config.get_email_delivery_config(recipe_implementation))
-        else:
-            self.email_delivery_ingredient = email_delivery_ingredient
-
-        def func_override_passwordless(_: PasswordlessRecipeInterface) -> PasswordlessRecipeInterface:
-            return PasswordlessRecipeImplementation(self.recipe_implementation)
-
-        def apis_override_passwordless(_: PasswordlessAPIInterface) -> PasswordlessAPIInterface:
-            return get_passwordless_interface_impl(self.api_implementation)
-
         if passwordless_recipe is not None:
             self.passwordless_recipe = passwordless_recipe
         else:
+            def func_override_passwordless(_: PasswordlessRecipeInterface) -> PasswordlessRecipeInterface:
+                return PasswordlessRecipeImplementation(self.recipe_implementation)
+
+            def apis_override_passwordless(_: PasswordlessAPIInterface) -> PasswordlessAPIInterface:
+                return get_passwordless_interface_impl(self.api_implementation)
+
             pless_email_delivery = cast(
                 EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput],
                 self.email_delivery
@@ -204,15 +198,15 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                                                           self.config.get_custom_user_input_code,
                                                           )
 
-        def func_override_third_party(_: ThirdPartyRecipeInterface) -> ThirdPartyRecipeInterface:
-            return ThirdPartyRecipeImplementation(self.recipe_implementation)
-
-        def apis_override_third_party(_: ThirdPartyAPIInterface) -> ThirdPartyAPIInterface:
-            return get_third_party_interface_impl(self.api_implementation)
-
         if third_party_recipe is not None:
             self.third_party_recipe: Union[ThirdPartyRecipe, None] = third_party_recipe
         else:
+            def func_override_third_party(_: ThirdPartyRecipeInterface) -> ThirdPartyRecipeInterface:
+                return ThirdPartyRecipeImplementation(self.recipe_implementation)
+
+            def apis_override_third_party(_: ThirdPartyAPIInterface) -> ThirdPartyAPIInterface:
+                return get_third_party_interface_impl(self.api_implementation)
+
             self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
 
             if len(self.config.providers) != 0:

@@ -48,6 +48,3 @@ def init(sign_in_and_up_feature: SignInAndUpFeature,
          ) -> Callable[[AppInfo], RecipeModule]:
     return ThirdPartyRecipe.init(
         sign_in_and_up_feature, email_verification_feature, override, email_delivery)
-
-# async def send_email(input: TypeThirdPartyEmailDeliveryInput, user_context: Dict[str, Any]):
-#     return await ThirdPartyRecipe.get_instance().email_delivery_ingredient.send_email(input, user_context)
