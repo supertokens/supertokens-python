@@ -25,7 +25,7 @@ from supertokens_python.utils import deprecated_warn
 from ..emailpassword.utils import (InputResetPasswordUsingTokenFeature,
                                    InputSignUpFeature)
 from ..emailverification.types import User as EmailVerificationUser
-from .email_delivery.services.backward_compatibility import \
+from .emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService
 from .interfaces import APIInterface, RecipeInterface
 from .types import TypeThirdPartyEmailPasswordEmailDeliveryInput, User
