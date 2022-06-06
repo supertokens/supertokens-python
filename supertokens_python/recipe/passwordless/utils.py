@@ -25,6 +25,7 @@ from supertokens_python.recipe.passwordless.types import (
     CreateAndSendCustomEmailParameters, TypePasswordlessSmsDeliveryInput)
 from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
+
 from .types import CreateAndSendCustomTextMessageParameters
 
 if TYPE_CHECKING:
@@ -87,7 +88,7 @@ class ContactPhoneOnlyConfig(ContactConfig):
 
         self.create_and_send_custom_text_message = create_and_send_custom_text_message
         if create_and_send_custom_text_message:
-            warn("create_and_send_custom_text_message is deprecated. Please use sms delivery config instead")
+            deprecated_warn("create_and_send_custom_text_message is deprecated. Please use sms delivery config instead")
 
         if validate_phone_number is None:
             self.validate_phone_number = default_validate_phone_number
@@ -138,7 +139,7 @@ class ContactEmailOrPhoneConfig(ContactConfig):
 
         self.create_and_send_custom_text_message = create_and_send_custom_text_message
         if create_and_send_custom_text_message:
-            warn("create_and_send_custom_text_message is deprecated. Please use sms delivery config instead")
+            deprecated_warn("create_and_send_custom_text_message is deprecated. Please use sms delivery config instead")
 
         if validate_phone_number is None:
             self.validate_phone_number = default_validate_phone_number
