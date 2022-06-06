@@ -14,7 +14,7 @@
 
 import json
 from os import environ
-from typing import Awaitable, Callable, Union
+from typing import Any, Awaitable, Callable, Dict, Union
 
 from httpx import AsyncClient
 from supertokens_python.ingredients.smsdelivery.service.supertokens import \
@@ -31,8 +31,8 @@ class InvalidSendCustomSmsResponse(Exception):
     pass
 
 
-def default_create_and_send_custom_sms(app_info: AppInfo) -> Callable[[TypePasswordlessSmsDeliveryInput], Awaitable[None]]:
-    async def func(sms_input: TypePasswordlessSmsDeliveryInput):
+def default_create_and_send_custom_sms(app_info: AppInfo):
+    async def func(sms_input: TypePasswordlessSmsDeliveryInput, _user_context: Dict[str, Any]):
         if ('SUPERTOKENS_ENV' in environ) and (environ['SUPERTOKENS_ENV'] == 'testing'):
             return
         sms_input_json = {
@@ -72,13 +72,13 @@ def default_create_and_send_custom_sms(app_info: AppInfo) -> Callable[[TypePassw
 class BackwardCompatibilityService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
     def __init__(self,
                  app_info: AppInfo,
-                 create_and_send_custom_sms: Union[Callable[[TypePasswordlessSmsDeliveryInput], Awaitable[None]], None] = None
+                 create_and_send_custom_sms: Union[Callable[[TypePasswordlessSmsDeliveryInput, Dict[str, Any]], Awaitable[None]], None] = None
                  ) -> None:
         self.app_info = app_info
         self.create_and_send_custom_sms = default_create_and_send_custom_sms(self.app_info) if create_and_send_custom_sms is None else create_and_send_custom_sms
 
-    async def send_sms(self, sms_input: TypePasswordlessSmsDeliveryInput) -> None:
+    async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput) -> None:
         try:
-            await self.create_and_send_custom_sms(sms_input)
+            await self.create_and_send_custom_sms(input_, input_.user_context)
         except Exception as _:
             pass

@@ -20,6 +20,9 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryConfigWithService)
 from supertokens_python.ingredients.smsdelivery.types import (
     SMSDeliveryConfig, SMSDeliveryConfigWithService)
+from supertokens_python.recipe.passwordless import (ContactEmailOnlyConfig,
+                                                    ContactEmailOrPhoneConfig,
+                                                    ContactPhoneOnlyConfig)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.service.backward_compatibility import \
     BackwardCompatibilityService
@@ -174,7 +177,7 @@ def validate_and_normalise_user_input(
         tppless_recipe: RecipeInterface,
     ) -> EmailDeliveryConfigWithService[TypeThirdPartyPasswordlessEmailDeliveryInput]:
         email_service = email_delivery_config.service if email_delivery_config is not None else None
-        if isinstance(contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)):
+        if isinstance(contact_config, (ContactEmailOrPhoneConfig, ContactEmailOnlyConfig)):
             create_and_send_custom_email = contact_config.create_and_send_custom_email
         else:
             create_and_send_custom_email = None
@@ -197,8 +200,8 @@ def validate_and_normalise_user_input(
                 override=sms_delivery_config.override
             )
 
-        if contact_config.contact_method != "PHONE":
-            pless_create_and_send_custom_text_message = contact_config.create_and_send_custom_email
+        if isinstance(contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)):
+            pless_create_and_send_custom_text_message = contact_config.create_and_send_custom_text_message
         else:
             pless_create_and_send_custom_text_message = None
 

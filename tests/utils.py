@@ -260,6 +260,22 @@ def sign_in_up_request(app: TestClient, email: str, use_server: bool = False):
     return response
 
 
+def sign_in_up_request_phone(app: TestClient, phone: str, use_server: bool = False):
+    if use_server:
+        environ['SUPERTOKENS_ENV'] = 'production'
+    response = app.post(
+        url="/auth/signinup/code",
+        headers={
+            "Content-Type": "application/json"
+        },
+        json={
+            "phoneNumber": phone
+        })
+    if use_server:
+        environ['SUPERTOKENS_ENV'] = 'testing'
+    return response
+
+
 def reset_password_request(app: TestClient, email: str, use_server: bool = False):
     if use_server:
         environ['SUPERTOKENS_ENV'] = 'production'

@@ -44,14 +44,14 @@ class TwilioService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
         oi = ServiceImplementation(self.twilio_client)  # type: ignore
         self.service_implementation = oi if config.override is None else config.override(oi)
 
-    async def send_sms(self, sms_input: TypePasswordlessSmsDeliveryInput) -> None:
-        content = await self.service_implementation.get_content(sms_input)
+    async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput) -> None:
+        content = await self.service_implementation.get_content(input_)
         user_context = {}
         if self.config.twilio_config.input_from:
             await self.service_implementation.send_raw_sms(
                 content,
                 user_context,  # TODO: should be part of sms_input
-                input_from=self.config.twilio_config.input_from,
+                from_=self.config.twilio_config.input_from,
             )
         else:
             await self.service_implementation.send_raw_sms(

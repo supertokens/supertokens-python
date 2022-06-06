@@ -29,5 +29,5 @@ class SuperTokensService(SMSDeliveryInterface[TypeThirdPartyPasswordlessSmsDeliv
     def __init__(self, config: SupertokensServiceConfig) -> None:
         self.pless_supertokens_service = PlessSuperTokensService(config)
 
-    async def send_sms(self, sms_input: TypeThirdPartyPasswordlessSmsDeliveryInput) -> None:
-        await self.pless_supertokens_service.send_sms(sms_input)
+    async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput) -> None:
+        await self.pless_supertokens_service.send_sms(input_)

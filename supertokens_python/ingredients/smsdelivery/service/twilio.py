@@ -45,13 +45,13 @@ class ServiceInterface(ABC, Generic[_T]):
     async def send_raw_sms(self,
                            get_content_result: GetContentResult,
                            user_context: Dict[str, Any],
-                           input_from: Union[str, None] = None,
+                           from_: Union[str, None] = None,
                            sid: Union[str, None] = None,
                            ) -> None:
         pass
 
     @abstractmethod
-    async def get_content(self, sms_input: _T) -> GetContentResult:
+    async def get_content(self, input_: _T) -> GetContentResult:
         pass
 
 

@@ -74,13 +74,12 @@ class ContactConfig(ABC):
     def __init__(
             self, contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']):
         self.contact_method = contact_method
-        self.create_and_send_custom_email = None  # TODO: NOT SURE IF THIS IS CORRECT
 
 
 class ContactPhoneOnlyConfig(ContactConfig):
     def __init__(self,
-                 create_and_send_custom_text_message: Callable[
-                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]],
+                 create_and_send_custom_text_message: Union[Callable[
+                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]], None] = None,
                  validate_phone_number: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  ):
@@ -196,6 +195,7 @@ def validate_and_normalise_user_input(
         if contact_config.contact_method == "PHONE":
             create_and_send_custom_email = None
         else:
+            assert isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig))
             create_and_send_custom_email = contact_config.create_and_send_custom_email
 
         if email_service is None:
@@ -214,12 +214,18 @@ def validate_and_normalise_user_input(
         if contact_config.contact_method == "EMAIL":
             create_and_send_custom_text_message = None
         else:
-            create_and_send_custom_text_message = contact_config.create_and_send_custom_email
+            assert isinstance(contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig))
+            create_and_send_custom_text_message = contact_config.create_and_send_custom_text_message
 
         if sms_service is None:
             sms_service = SMSBackwardCompatibilityService(app_info, create_and_send_custom_text_message)
 
-        return SMSDeliveryConfigWithService(sms_service, override=None)
+        if sms_delivery is not None and sms_delivery.override is not None:
+            override = sms_delivery.override
+        else:
+            override = None
+
+        return SMSDeliveryConfigWithService(sms_service, override=override)
 
     return PasswordlessConfig(
         contact_config=contact_config,

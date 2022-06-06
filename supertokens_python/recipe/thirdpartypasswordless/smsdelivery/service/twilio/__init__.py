@@ -32,5 +32,5 @@ class TwilioService(SMSDeliveryInterface[TypeThirdPartyPasswordlessSmsDeliveryIn
     def __init__(self, config: SMSDeliveryTwilioConfig[TypeThirdPartyPasswordlessSmsDeliveryInput]) -> None:
         self.pless_twilio_service = PlessTwilioService(config)
 
-    async def send_sms(self, sms_input: TypePasswordlessSmsDeliveryInput) -> None:
-        await self.pless_twilio_service.send_sms(sms_input)
+    async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput) -> None:
+        await self.pless_twilio_service.send_sms(input_)

@@ -29,7 +29,7 @@ class SuperTokensService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput])
                  ) -> None:
         self.config = config
 
-    async def send_sms(self, sms_input: TypePasswordlessSmsDeliveryInput) -> None:
+    async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput) -> None:
         supertokens = Supertokens.get_instance()
         app_name = supertokens.app_info.app_name
 
@@ -41,10 +41,10 @@ class SuperTokensService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput])
                         "apiKey": self.config.api_key,
                         "smsInput": {
                             'type': 'PASSWORDLESS_LOGIN',
-                            'phoneNumber': sms_input.phone_number,
-                            'userInputCode': sms_input.user_input_code,
-                            'urlWithLinkCode': sms_input.url_with_link_code,
-                            'codeLifetime': sms_input.code_life_time,
+                            'phoneNumber': input_.phone_number,
+                            'userInputCode': input_.user_input_code,
+                            'urlWithLinkCode': input_.url_with_link_code,
+                            'codeLifetime': input_.code_life_time,
                             'appName': app_name,
                         },
                     },

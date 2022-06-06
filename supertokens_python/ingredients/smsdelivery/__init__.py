@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from supertokens_python.ingredients.smsdelivery.types import (
     SMSDeliveryConfigWithService, SMSDeliveryInterface)
@@ -20,17 +20,8 @@ from supertokens_python.ingredients.smsdelivery.types import (
 _T = TypeVar('_T')
 
 
-class DefaultSMSDeliveryIngredientImp(SMSDeliveryInterface[_T]):
-    def __init__(self, config: SMSDeliveryConfigWithService[_T]) -> None:
-        self.config = config
-
-    async def send_sms(self, sms_input: _T) -> Any:
-        await self.config.service.send_sms(sms_input)
-
-
 class SMSDeliveryIngredient(Generic[_T]):
     ingredient_interface_impl: SMSDeliveryInterface[_T]
 
     def __init__(self, config: SMSDeliveryConfigWithService[_T]) -> None:
-        oi = DefaultSMSDeliveryIngredientImp[_T](config)
-        self.ingredient_interface_impl = oi if config.override is None else config.override(oi)
+        self.ingredient_interface_impl = config.service if config.override is None else config.override(config.service)

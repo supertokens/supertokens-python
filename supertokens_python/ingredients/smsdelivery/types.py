@@ -20,7 +20,7 @@ _T = TypeVar('_T')
 
 class SMSDeliveryInterface(ABC, Generic[_T]):
     @abstractmethod
-    async def send_sms(self, sms_input: _T) -> None:
+    async def send_sms(self, input_: _T) -> None:
         pass
 
 
