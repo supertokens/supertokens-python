@@ -32,10 +32,11 @@ from supertokens_python.ingredients.smsdelivery.service.twilio import (
     TwilioServiceConfig)
 from supertokens_python.ingredients.smsdelivery.types import (
     SMSDeliveryConfig, SMSDeliveryInterface)
-from supertokens_python.recipe import passwordless, session
-from supertokens_python.recipe.passwordless.smsdelivery.service.twilio import \
+from supertokens_python.recipe import (passwordless, session,
+                                       thirdpartypasswordless)
+from supertokens_python.recipe.thirdpartypasswordless.smsdelivery.service.twilio import \
     TwilioService
-from supertokens_python.recipe.passwordless.types import \
+from supertokens_python.recipe.thirdpartypasswordless.types import \
     TypePasswordlessSmsDeliveryInput
 from tests.utils import (clean_st, reset, setup_st, sign_in_up_request_phone,
                          start_st)
@@ -87,7 +88,7 @@ async def test_pless_login_default_backward_compatibility(driver_config_client: 
             api_base_path="/auth"
         ),
         framework='fastapi',
-        recipe_list=[passwordless.init(
+        recipe_list=[thirdpartypasswordless.init(
             contact_config=passwordless.ContactPhoneOnlyConfig(),
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
         ), session.init()]
@@ -143,7 +144,7 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(driv
             api_base_path="/auth"
         ),
         framework='fastapi',
-        recipe_list=[passwordless.init(
+        recipe_list=[thirdpartypasswordless.init(
             contact_config=passwordless.ContactPhoneOnlyConfig(),
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
         ), session.init()]
@@ -202,7 +203,7 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
             api_base_path="/auth"
         ),
         framework='fastapi',
-        recipe_list=[passwordless.init(
+        recipe_list=[thirdpartypasswordless.init(
             contact_config=passwordless.ContactPhoneOnlyConfig(
                 create_and_send_custom_text_message=create_and_send_custom_text_message,
             ),
@@ -253,7 +254,7 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
             api_base_path="/auth"
         ),
         framework='fastapi',
-        recipe_list=[passwordless.init(
+        recipe_list=[thirdpartypasswordless.init(
             contact_config=passwordless.ContactPhoneOnlyConfig(),
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             sms_delivery=SMSDeliveryConfig(
@@ -361,7 +362,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
             api_base_path="/auth"
         ),
         framework='fastapi',
-        recipe_list=[passwordless.init(
+        recipe_list=[thirdpartypasswordless.init(
             contact_config=passwordless.ContactPhoneOnlyConfig(),
             flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             sms_delivery=SMSDeliveryConfig(

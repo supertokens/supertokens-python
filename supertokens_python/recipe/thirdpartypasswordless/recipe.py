@@ -23,8 +23,8 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.emailverification.types import \
     EmailVerificationIngredients
-from supertokens_python.recipe.passwordless.types import (
-    PasswordlessIngredients, TypePasswordlessSmsDeliveryInput)
+from supertokens_python.recipe.passwordless.types import \
+    PasswordlessIngredients
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import (
     ThirdPartyIngredients, TypeThirdPartyEmailDeliveryInput)
@@ -137,9 +137,9 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
 
         sms_delivery_ingredient = ingredients.sms_delivery
         if sms_delivery_ingredient is None:
-            self.sms_delivery_ingredient = SMSDeliveryIngredient(self.config.get_sms_delivery_config())
+            self.sms_delivery = SMSDeliveryIngredient(self.config.get_sms_delivery_config())
         else:
-            self.sms_delivery_ingredient = sms_delivery_ingredient
+            self.sms_delivery = sms_delivery_ingredient
 
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
@@ -197,10 +197,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                 EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput],
                 self.email_delivery
             )
-            pless_sms_delivery = cast(
-                SMSDeliveryIngredient[TypePasswordlessSmsDeliveryInput],
-                self.email_delivery
-            )
+            pless_sms_delivery = self.sms_delivery
             pless_ingredients = PasswordlessIngredients(pless_email_delivery, pless_sms_delivery)
             self.passwordless_recipe = PasswordlessRecipe(recipe_id, app_info,
                                                           self.config.contact_config,

@@ -209,7 +209,13 @@ def validate_and_normalise_user_input(
             recipe.app_info,
             pless_create_and_send_custom_text_message,
         )
-        return SMSDeliveryConfigWithService(sms_service, override=None)
+
+        if sms_delivery_config is not None and sms_delivery_config.override is not None:
+            override = sms_delivery_config.override
+        else:
+            override = None
+
+        return SMSDeliveryConfigWithService(sms_service, override=override)
 
     return ThirdPartyPasswordlessConfig(
         override=OverrideConfig(functions=override.functions, apis=override.apis), providers=providers, contact_config=contact_config, flow_type=flow_type, get_link_domain_and_path=get_link_domain_and_path, get_custom_user_input_code=get_custom_user_input_code, email_verification_feature=validate_and_normalise_email_verification_config(
