@@ -12,13 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from supertokens_python.recipe.session.recipe_implementation import \
-    RecipeImplementation
 from pytest import mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session.asyncio import (
+    get_all_session_handles_for_user, get_session_information,
+    update_access_token_payload)
+from supertokens_python.recipe.session.recipe_implementation import \
+    RecipeImplementation
 from supertokens_python.recipe.session.session_functions import (
     create_new_session, get_session, refresh_session, revoke_session)
 
@@ -97,3 +100,62 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     response5 = await revoke_session(s.recipe_implementation, response4['session']['handle'])
 
     assert response5 is True
+
+
+@mark.asyncio
+async def test_creating_many_sessions_for_one_user_and_looping():
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name='SuperTokens Demo',
+            api_domain='https://api.supertokens.io',
+            website_domain='supertokens.io'
+        ),
+        framework='fastapi',
+        recipe_list=[session.init()]
+    )
+    start_st()
+
+    s = SessionRecipe.get_instance()
+    if not isinstance(s.recipe_implementation, RecipeImplementation):
+        raise Exception("Should never come here")
+
+    await create_new_session(s.recipe_implementation, "someUser", {
+        "someKey": "someValue"
+    }, {})
+    await create_new_session(s.recipe_implementation, "someUser", {
+        "someKey": "someValue"
+    }, {})
+    await create_new_session(s.recipe_implementation, "someUser", {
+        "someKey": "someValue"
+    }, {})
+    await create_new_session(s.recipe_implementation, "someUser", {
+        "someKey": "someValue"
+    }, {})
+    await create_new_session(s.recipe_implementation, "someUser", {
+        "someKey": "someValue"
+    }, {})
+    await create_new_session(s.recipe_implementation, "someUser", {
+        "someKey": "someValue"
+    }, {})
+    await create_new_session(s.recipe_implementation, "someUser", {
+        "someKey": "someValue"
+    }, {})
+
+    session_handles = await get_all_session_handles_for_user("someUser")
+
+    assert len(session_handles) == 7
+
+    for handle in session_handles:
+        info = await get_session_information(handle)
+        assert info.user_id == "someUser"
+        assert info.access_token_payload["someKey"] == "someValue"
+
+        await update_access_token_payload(handle, {
+            "someKey2": "someValue"
+        })
+
+    for handle in session_handles:
+        info = await get_session_information(handle)
+        assert info.user_id == "someUser"
+        assert info.access_token_payload["someKey2"] == "someValue"
