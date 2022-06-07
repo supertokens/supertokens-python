@@ -166,6 +166,7 @@ def validate_and_normalise_user_input(
             override = email_delivery_config.override
         else:
             override = None
+
         return EmailDeliveryConfigWithService(email_service, override=override)
 
     return ThirdPartyEmailPasswordConfig(

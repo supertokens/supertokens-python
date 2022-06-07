@@ -14,14 +14,12 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.recipe.emailverification.types import \
     EmailVerificationIngredients
 from supertokens_python.recipe.thirdparty.types import ThirdPartyIngredients
@@ -59,10 +57,11 @@ class ThirdPartyRecipe(RecipeModule):
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  sign_in_and_up_feature: SignInAndUpFeature,
-                 _ingredients: ThirdPartyIngredients,  # TODO: Use this
+                 ingredients: ThirdPartyIngredients,  # TODO: Use this
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
+                 email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None,
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, sign_in_and_up_feature,
@@ -85,10 +84,7 @@ class ThirdPartyRecipe(RecipeModule):
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
         else:
-            ev_email_delivery_ingredient = cast(
-                EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput],
-                self.email_delivery_ingredient
-            )
+            ev_email_delivery_ingredient = self.email_delivery
             email_verification_ingredients = EmailVerificationIngredients(email_delivery=ev_email_delivery_ingredient)
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                      self.config.email_verification_feature, ingredients=email_verification_ingredients)
@@ -141,7 +137,7 @@ class ThirdPartyRecipe(RecipeModule):
             if ThirdPartyRecipe.__instance is None:
                 ingredients = ThirdPartyIngredients(None)
                 ThirdPartyRecipe.__instance = ThirdPartyRecipe(
-                    ThirdPartyRecipe.recipe_id, app_info, sign_in_and_up_feature, ingredients, email_verification_feature, override)
+                    ThirdPartyRecipe.recipe_id, app_info, sign_in_and_up_feature, ingredients, email_verification_feature, override, email_delivery=email_delivery)
                 return ThirdPartyRecipe.__instance
             raise_general_exception('ThirdParty recipe has already been initialised. Please check your code for bugs.')
 

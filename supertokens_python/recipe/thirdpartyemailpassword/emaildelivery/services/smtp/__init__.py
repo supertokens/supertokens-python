@@ -14,11 +14,11 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.service.smtp import \
+from supertokens_python.ingredients.emaildelivery.services.smtp import \
     EmailDeliverySMTPConfig
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
-from supertokens_python.recipe.emailpassword.emaildelivery.service.smtp import \
+from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp import \
     SMTPService as EmailPasswordSMTPService
 from supertokens_python.recipe.emailpassword.types import \
     TypeEmailPasswordEmailDeliveryInput
@@ -39,7 +39,7 @@ class SMTPService(EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliver
         self.ep_smtp_service = EmailPasswordSMTPService(ev_config)
 
     async def send_email(self,
-                         email_input: TypeThirdPartyEmailPasswordEmailDeliveryInput,
+                         input_: TypeThirdPartyEmailPasswordEmailDeliveryInput,
                          user_context: Dict[str, Any]
                          ) -> None:
-        await self.ep_smtp_service.send_email(email_input, user_context)
+        await self.ep_smtp_service.send_email(input_, user_context)

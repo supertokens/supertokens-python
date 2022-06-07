@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
-from supertokens_python.recipe.emailverification.emaildelivery.service.backward_compatibility import \
+from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService as EVBackwardCompatibilityService
 from supertokens_python.recipe.emailverification.types import User
 from supertokens_python.recipe.thirdparty.interfaces import RecipeInterface
@@ -36,7 +36,6 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailDel
                  recipe_interface_impl: RecipeInterface,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  ) -> None:
-        self.app_info = app_info
         input_create_and_send_custom_email = email_verification_feature.create_and_send_custom_email if email_verification_feature is not None else None
         if input_create_and_send_custom_email is None:
             email_verification_feature_config = None
@@ -51,8 +50,5 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailDel
 
         self.ev_backward_compatibility_service = EVBackwardCompatibilityService(app_info, email_verification_feature_config)
 
-    async def send_email(self, email_input: TypeThirdPartyEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        try:
-            await self.ev_backward_compatibility_service.send_email(email_input, user_context)
-        except Exception as _:
-            pass
+    async def send_email(self, input_: TypeThirdPartyEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+        await self.ev_backward_compatibility_service.send_email(input_, user_context)

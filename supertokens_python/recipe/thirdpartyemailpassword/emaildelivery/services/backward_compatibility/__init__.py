@@ -17,25 +17,21 @@ from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
-from supertokens_python.recipe.emailpassword.emaildelivery.service.backward_compatibility import \
-    BackwardCompatibilityService as EmailPasswordBackwardCompatibilityService
+from supertokens_python.recipe.emailpassword.emaildelivery.services.backward_compatibility import \
+    BackwardCompatibilityService as EPBackwardCompatibilityService
 from supertokens_python.recipe.emailpassword.interfaces import \
+    RecipeInterface as EPRecipeInterface
+from supertokens_python.recipe.emailpassword.types import \
     TypeEmailPasswordEmailDeliveryInput
 from supertokens_python.recipe.emailpassword.types import User as EPUser
 from supertokens_python.recipe.emailpassword.utils import \
     InputEmailVerificationConfig as EPInputEmailVerificationConfig
 from supertokens_python.recipe.emailpassword.utils import \
     InputResetPasswordUsingTokenFeature
-from supertokens_python.recipe.emailverification.emaildelivery.service.backward_compatibility import \
-    BackwardCompatibilityService as \
-    EmailVerificationBackwardCompatibilityService
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
-from supertokens_python.recipe.emailverification.types import User as EVUser
-from supertokens_python.recipe.thirdpartyemailpassword.recipeimplementation.implementation import \
-    RecipeImplementation
-from supertokens_python.recipe.thirdpartyemailpassword.types import (
-    TypeThirdPartyEmailPasswordEmailDeliveryInput, User)
+from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
+    RecipeInterface
+from supertokens_python.recipe.thirdpartyemailpassword.types import \
+    TypeThirdPartyEmailPasswordEmailDeliveryInput
 from supertokens_python.supertokens import AppInfo
 
 if TYPE_CHECKING:
@@ -44,12 +40,12 @@ if TYPE_CHECKING:
 
 
 class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]):
-    app_info: AppInfo
     ep_backward_compatiblity_service: EPBackwardCompatibilityService
 
     def __init__(self,
                  app_info: AppInfo,
-                 recipe_interface_impl: RecipeImplementation,
+                 recipe_interface_impl: RecipeInterface,
+                 ep_recipe_interface_impl: EPRecipeInterface,
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  ) -> None:
@@ -80,8 +76,5 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailPas
             ep_bc_email_verification_feature,
         )
 
-    async def send_email(self, email_input: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> Any:
-        if isinstance(email_input, TypeEmailVerificationEmailDeliveryInput):
-            await self.ev_backward_comp_service.send_email(email_input, user_context)
-        else:
-            await self.ep_backward_comp_service.send_email(email_input, user_context)
+    async def send_email(self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> Any:
+        return await self.ep_backward_compatiblity_service.send_email(input_, user_context)
