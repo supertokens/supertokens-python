@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
 from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import \
@@ -24,6 +24,8 @@ from supertokens_python.recipe.emailverification.types import \
 from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.passwordless.emaildelivery.service.backward_compatibility import \
     BackwardCompatibilityService as PlessBackwardCompatibilityService
+from supertokens_python.recipe.passwordless.types import \
+    CreateAndSendCustomEmailParameters
 from supertokens_python.recipe.thirdpartypasswordless.interfaces import \
     RecipeInterface
 from supertokens_python.recipe.thirdpartypasswordless.types import \
@@ -31,8 +33,8 @@ from supertokens_python.recipe.thirdpartypasswordless.types import \
 from supertokens_python.supertokens import AppInfo
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.thirdpartypasswordless.utils import (
-        InputEmailVerificationConfig, InputPasswordlessConfig)
+    from supertokens_python.recipe.thirdpartypasswordless.utils import \
+        InputEmailVerificationConfig
 
 
 class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
@@ -42,11 +44,10 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyPassword
     def __init__(self,
                  app_info: AppInfo,
                  recipe_interface_impl: RecipeInterface,
-                 pless_feature: Union[InputPasswordlessConfig, None] = None,
+                 create_and_send_custom_email: Union[Callable[
+                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]], None] = None,
                  ev_feature: Union[InputEmailVerificationConfig, None] = None,
                  ) -> None:
-        self.recipe_interface_impl = recipe_interface_impl
-
         ev_create_and_send_custom_email = None
         if ev_feature:
             if ev_feature.create_and_send_custom_email is not None:
@@ -55,7 +56,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyPassword
                 async def create_and_send_custom_email_wrapper(
                     user: EVUser, link: str, user_context: Dict[str, Any]
                 ):
-                    user_info = await self.recipe_interface_impl.get_user_by_id(user.user_id, user_context)
+                    user_info = await recipe_interface_impl.get_user_by_id(user.user_id, user_context)
                     if user_info is None:
                         raise Exception("Unknown User ID provided")
 
@@ -70,7 +71,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyPassword
 
         self.pless_backward_compatiblity_service = PlessBackwardCompatibilityService(
             app_info,
-            pless_feature.create_and_send_custom_email if pless_feature is not None else None
+            create_and_send_custom_email
         )
 
     async def send_email(self, input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:

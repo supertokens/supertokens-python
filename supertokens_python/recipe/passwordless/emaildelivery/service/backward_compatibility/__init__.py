@@ -37,8 +37,8 @@ def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[TypePas
                 "email": input_.email,
                 "appName": app_info.app_name,
                 "codeLifetime": input_.code_life_time,
-                "urlWithLinkCode": input_.url_with_link_code,  # TODO: FIXME Must be valid (non-empty) url or we get error
-                "userInputCode": input_.user_input_code or "",  # TODO: FIXME
+                "urlWithLinkCode": input_.url_with_link_code,
+                "userInputCode": input_.user_input_code,
             }
             async with AsyncClient() as client:
                 resp = await client.post('https://api.supertokens.io/0/st/auth/passwordless/login', json=data, headers={'api-version': '0'})  # type: ignore
