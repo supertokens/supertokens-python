@@ -71,7 +71,6 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  ) -> None:
-        self.app_info = app_info
         self.recipe_interface_impl = recipe_interface_impl
 
         reset_password_feature_send_email_func = default_create_and_send_custom_email(self.app_info)
@@ -90,7 +89,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
                 async def create_and_send_custom_email_wrapper(
                     user: EmailVerificationUser, link: str, user_context: Dict[str, Any]
                 ):
-                    user_info = await self.recipe_interface_impl.get_user_by_id(user.user_id, user_context)
+                    user_info = await recipe_interface_impl.get_user_by_id(user.user_id, user_context)
                     if user_info is None:
                         raise Exception("Unknown User ID provided")
 

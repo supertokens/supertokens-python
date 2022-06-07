@@ -46,7 +46,7 @@ class SMTPServiceConfig:
 
 
 class GetContentResult:
-    def __init__(self, body: str, subject: str, to_email: str, is_html: bool = False) -> None:
+    def __init__(self, body: str, subject: str, to_email: str, is_html: bool) -> None:
         self.body = body
         self.subject = subject
         self.to_email = to_email
@@ -75,8 +75,6 @@ class Transporter:
     async def send_email(self, input_: GetContentResult,
                          _: Dict[str, Any]) -> None:
         connection = self._connect()
-        if connection is None:
-            raise Exception("Couldn't connect to the SMTP server.")
 
         from_ = self.smtp_settings.from_
         try:
