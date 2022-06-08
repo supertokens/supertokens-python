@@ -25,13 +25,13 @@ def create_email_verification_token(user_id: str, user_context: Union[None, Dict
     return sync(create_email_verification_token(user_id, user_context))
 
 
-async def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any]] = None):
+def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import \
         verify_email_using_token
     return sync(verify_email_using_token(token, user_context))
 
 
-def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import unverify_email
     return sync(unverify_email(user_id, user_context))
 
