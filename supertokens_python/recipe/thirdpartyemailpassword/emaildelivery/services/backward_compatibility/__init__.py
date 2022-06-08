@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, Union, cast
 
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
@@ -21,13 +21,15 @@ from supertokens_python.recipe.emailpassword.emaildelivery.services.backward_com
     BackwardCompatibilityService as EPBackwardCompatibilityService
 from supertokens_python.recipe.emailpassword.interfaces import \
     RecipeInterface as EPRecipeInterface
-from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordEmailDeliveryInput
-from supertokens_python.recipe.emailpassword.types import User as EPUser
 from supertokens_python.recipe.emailpassword.utils import \
     InputEmailVerificationConfig as EPInputEmailVerificationConfig
 from supertokens_python.recipe.emailpassword.utils import \
     InputResetPasswordUsingTokenFeature
+from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import \
+    BackwardCompatibilityService as EVBackwardCompatibilityService
+from supertokens_python.recipe.emailverification.interfaces import \
+    TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
     RecipeInterface
 from supertokens_python.recipe.thirdpartyemailpassword.types import \
@@ -41,6 +43,7 @@ if TYPE_CHECKING:
 
 class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]):
     ep_backward_compatiblity_service: EPBackwardCompatibilityService
+    ev_backward_compatiblity_service: EVBackwardCompatibilityService
 
     def __init__(self,
                  app_info: AppInfo,
@@ -51,30 +54,33 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailPas
                  ) -> None:
         self.recipe_interface_impl = recipe_interface_impl
 
-        ep_bc_email_verification_feature = None
-        if email_verification_feature is not None and email_verification_feature.create_and_send_custom_email is not None:
-            # TODO: Shouldn't it be `user: EVUser`??
-            async def create_and_send_custom_email_wrapper(user: EPUser, link: str, user_context: Dict[str, Any]):
+        create_and_send_custom_email_wrapper = None
+        input_create_and_send_custom_email = email_verification_feature.create_and_send_custom_email if email_verification_feature is not None else None
+
+        if input_create_and_send_custom_email:
+            async def create_and_send_custom_email_(user: EVUser, link: str, user_context: Dict[str, Any]):
                 user_info = await recipe_interface_impl.get_user_by_id(user.user_id, user_context)
                 if user_info is None:
                     raise Exception("Unknown User ID provided")
 
-                assert email_verification_feature.create_and_send_custom_email
-                # TODO: WHY IS THE CODE NOT WORKING WITHOUT THIS ASSERT?? (UNEXPECTED BEHAVIOUR)
+                return await input_create_and_send_custom_email(user_info, link, user_context)
 
-                return await email_verification_feature.create_and_send_custom_email(user_info, link, user_context)
+            create_and_send_custom_email_wrapper = create_and_send_custom_email_
 
-            ep_bc_email_verification_feature = EPInputEmailVerificationConfig(
-                None,  # TODO: Is this okay? (Most likely no) But the node PR isn't passing get_email_verification_url
-                create_and_send_custom_email_wrapper
-            )
+        self.ev_backward_compatiblity_service = EVBackwardCompatibilityService(
+            app_info, create_and_send_custom_email_wrapper
+        )
 
+        ep_email_verification_feature = cast(EPInputEmailVerificationConfig, email_verification_feature)
         self.ep_backward_compatiblity_service = EPBackwardCompatibilityService(
             app_info,
             ep_recipe_interface_impl,
             reset_password_using_token_feature,
-            ep_bc_email_verification_feature,
+            ep_email_verification_feature,
         )
 
-    async def send_email(self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> Any:
+    async def send_email(self, input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
+            return await self.ev_backward_compatiblity_service.send_email(input_, user_context)
+
         return await self.ep_backward_compatiblity_service.send_email(input_, user_context)

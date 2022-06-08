@@ -40,8 +40,6 @@ from supertokens_python.recipe.emailverification.utils import \
 
 
 class InputEmailVerificationConfig:
-    # TODO: FIXME
-    # FIXME: Why is this duplicate of emailpassword.utils.InputEmailVerificationConfig?
     def __init__(self,
                  get_email_verification_url: Union[Callable[[User, Any], Awaitable[str]], None] = None,
                  create_and_send_custom_email: Union[Callable[[User, str, Any], Awaitable[None]], None] = None

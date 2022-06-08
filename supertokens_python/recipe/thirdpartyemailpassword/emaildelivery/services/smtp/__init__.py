@@ -30,8 +30,6 @@ class SMTPService(EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliver
     ep_smtp_service: EmailPasswordSMTPService
 
     def __init__(self, config: EmailDeliverySMTPConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput]) -> None:
-        self.config = config
-
         ev_config = EmailDeliverySMTPConfig[TypeEmailPasswordEmailDeliveryInput](
             smtp_settings=config.smtp_settings,
             override=config.override
