@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Union
 from supertokens_python.ingredients.emaildelivery.services.smtp import \
     GetContentResult
 from supertokens_python.supertokens import Supertokens
+from supertokens_python.utils import humanize_time
 
 from .pless_login_email import (html_template, otp_body, table_body,
                                 url_link_body)
@@ -31,7 +32,7 @@ if TYPE_CHECKING:
 def pless_email_content(input_: TypePasswordlessEmailDeliveryInput) -> GetContentResult:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
-    code_lifetime = str(input_.code_life_time)  # TODO: Humanize
+    code_lifetime = humanize_time(input_.code_life_time)
     body = get_pless_email_html(app_name, code_lifetime, input_.email, input_.url_with_link_code, input_.user_input_code)
     content_result = GetContentResult(body, "Passwordless auth instructions", input_.email, True)
     return content_result

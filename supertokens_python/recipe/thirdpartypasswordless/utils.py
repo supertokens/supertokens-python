@@ -21,6 +21,7 @@ from supertokens_python.ingredients.emaildelivery.types import (
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.service.backward_compatibility import \
     BackwardCompatibilityService
+from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
 from ..emailverification.types import User as EmailVerificationUser
@@ -48,6 +49,8 @@ class InputEmailVerificationConfig:
                  ):
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email:
+            deprecated_warn("create_and_send_custom_email is deprecated. Please use email delivery config instead")
 
 
 def email_verification_create_and_send_custom_email(
