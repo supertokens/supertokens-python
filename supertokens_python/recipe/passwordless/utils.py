@@ -29,7 +29,8 @@ from typing_extensions import Literal
 from .types import CreateAndSendCustomTextMessageParameters
 
 if TYPE_CHECKING:
-    from .interfaces import RecipeInterface, APIInterface, TypePasswordlessEmailDeliveryInput
+    from .interfaces import (APIInterface, RecipeInterface,
+                             TypePasswordlessEmailDeliveryInput)
     from supertokens_python import AppInfo
 
 from re import fullmatch
@@ -192,11 +193,10 @@ def validate_and_normalise_user_input(
 
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]:
         email_service = email_delivery.service if email_delivery is not None else None
-        if contact_config.contact_method == "PHONE":
-            create_and_send_custom_email = None
-        else:
-            assert isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig))
+        if isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)):
             create_and_send_custom_email = contact_config.create_and_send_custom_email
+        else:
+            create_and_send_custom_email = None
 
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info, create_and_send_custom_email)
@@ -226,6 +226,14 @@ def validate_and_normalise_user_input(
             override = None
 
         return SMSDeliveryConfigWithService(sms_service, override=override)
+    if not isinstance(contact_config, ContactConfig):  # type: ignore user might not have linter enabled
+        raise ValueError('contact_config must be of type ContactConfig')
+
+    if flow_type not in ['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']:
+        raise ValueError('flow_type must be one of USER_INPUT_CODE, MAGIC_LINK, USER_INPUT_CODE_AND_MAGIC_LINK')
+
+    if not isinstance(override, OverrideConfig):  # type: ignore user might not have linter enabled
+        raise ValueError('override must be of type OverrideConfig')
 
     return PasswordlessConfig(
         contact_config=contact_config,

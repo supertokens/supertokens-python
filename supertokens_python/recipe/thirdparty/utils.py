@@ -174,6 +174,12 @@ def validate_and_normalise_user_input(
         override: Union[InputOverrideConfig, None] = None,
         email_delivery_config: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None
 ) -> ThirdPartyConfig:
+    if not isinstance(sign_in_and_up_feature, SignInAndUpFeature):  # type: ignore
+        raise ValueError('sign_in_and_up_feature must be an instance of SignInAndUpFeature')
+
+    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
+        raise ValueError('override must be an instance of InputOverrideConfig or None')
+
     if override is None:
         override = InputOverrideConfig()
 

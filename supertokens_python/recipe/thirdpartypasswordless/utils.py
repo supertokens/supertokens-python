@@ -28,11 +28,12 @@ from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.service.back
     BackwardCompatibilityService
 from supertokens_python.recipe.thirdpartypasswordless.types import \
     TypeThirdPartyPasswordlessSmsDeliveryInput
+from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
 from ..emailverification.types import User as EmailVerificationUser
-from ..passwordless.utils import (ContactConfig, ContactEmailOrPhoneConfig,
-                                  ContactPhoneOnlyConfig, PhoneOrEmailInput,
+from ..passwordless.utils import (ContactConfig, ContactEmailOnlyConfig,
+                                  ContactEmailOrPhoneConfig, PhoneOrEmailInput,
                                   default_get_link_domain_and_path)
 
 if TYPE_CHECKING:
@@ -58,6 +59,8 @@ class InputEmailVerificationConfig:
                  ):
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email:
+            deprecated_warn("create_and_send_custom_email is deprecated. Please use email delivery config instead")
 
 
 def email_verification_create_and_send_custom_email(
@@ -162,9 +165,28 @@ def validate_and_normalise_user_input(
         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[Provider], None] = None,
-        email_delivery_config: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
-        sms_delivery_config: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
+        email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
+        sms_delivery: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
 ) -> ThirdPartyPasswordlessConfig:
+    if not isinstance(contact_config, ContactConfig):  # type: ignore
+        raise ValueError('contact_config must be an instance of ContactConfig')
+
+    if flow_type not in {'USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'}:  # type: ignore
+        raise ValueError("flow_type must be one of USER_INPUT_CODE, MAGIC_LINK, USER_INPUT_CODE_AND_MAGIC_LINK")
+
+    if email_verification_feature is not None and not isinstance(email_verification_feature, InputEmailVerificationConfig):  # type: ignore
+        raise ValueError('email_verification_feature must be an instance of InputEmailVerificationConfig or None')
+
+    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
+        raise ValueError('override must be an instance of InputOverrideConfig or None')
+
+    if providers is not None and not isinstance(providers, List):  # type: ignore
+        raise ValueError('providers must be of type List[Provider] or None')
+
+    for provider in providers or []:
+        if not isinstance(provider, Provider):  # type: ignore
+            raise ValueError('providers must be of type List[Provider] or None')
+
     if providers is None:
         providers = []
     if override is None:
@@ -176,8 +198,8 @@ def validate_and_normalise_user_input(
     def get_email_delivery_config(
         tppless_recipe: RecipeInterface,
     ) -> EmailDeliveryConfigWithService[TypeThirdPartyPasswordlessEmailDeliveryInput]:
-        email_service = email_delivery_config.service if email_delivery_config is not None else None
-        if isinstance(contact_config, (ContactEmailOrPhoneConfig, ContactEmailOnlyConfig)):
+        email_service = email_delivery.service if email_delivery is not None else None
+        if isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)):
             create_and_send_custom_email = contact_config.create_and_send_custom_email
         else:
             create_and_send_custom_email = None
@@ -186,18 +208,18 @@ def validate_and_normalise_user_input(
             ev_feature = email_verification_feature
             email_service = BackwardCompatibilityService(recipe.app_info, tppless_recipe, create_and_send_custom_email, ev_feature)
 
-        if email_delivery_config is not None and email_delivery_config.override is not None:
-            override = email_delivery_config.override
+        if email_delivery is not None and email_delivery.override is not None:
+            override = email_delivery.override
         else:
             override = None
 
         return EmailDeliveryConfigWithService(email_service, override=override)
 
     def get_sms_delivery_config() -> SMSDeliveryConfigWithService[TypeThirdPartyPasswordlessSmsDeliveryInput]:
-        if sms_delivery_config and sms_delivery_config.service:
+        if sms_delivery and sms_delivery.service:
             return SMSDeliveryConfigWithService(
-                service=sms_delivery_config.service,
-                override=sms_delivery_config.override
+                service=sms_delivery.service,
+                override=sms_delivery.override
             )
 
         if isinstance(contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)):
@@ -210,8 +232,8 @@ def validate_and_normalise_user_input(
             pless_create_and_send_custom_text_message,
         )
 
-        if sms_delivery_config is not None and sms_delivery_config.override is not None:
-            override = sms_delivery_config.override
+        if sms_delivery is not None and sms_delivery.override is not None:
+            override = sms_delivery.override
         else:
             override = None
 

@@ -117,8 +117,8 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                                                         get_link_domain_and_path=get_link_domain_and_path,
                                                         override=override,
                                                         providers=providers,
-                                                        email_delivery_config=email_delivery,
-                                                        sms_delivery_config=sms_delivery,
+                                                        email_delivery=email_delivery,
+                                                        sms_delivery=sms_delivery,
                                                         )
 
         recipe_implementation = RecipeImplementation(Querier.get_instance(PasswordlessRecipe.recipe_id), Querier.get_instance(ThirdPartyRecipe.recipe_id))

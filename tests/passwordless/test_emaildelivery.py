@@ -294,7 +294,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
             email = input_.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypePasswordlessEmailDeliveryInput) -> GetContentResult:
+        async def get_content_override(input_: TypePasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
 

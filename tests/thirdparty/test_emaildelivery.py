@@ -378,7 +378,7 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
             email = input_.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypeThirdPartyEmailDeliveryInput) -> GetContentResult:
+        async def get_content_override(input_: TypeThirdPartyEmailDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
             nonlocal get_content_called, email_verify_url
             get_content_called = True
 

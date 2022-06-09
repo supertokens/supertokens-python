@@ -54,7 +54,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.8.1",
+    version="0.8.3",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -91,8 +91,9 @@ setup(
         'Deprecated==1.2.13',
         'cryptography==35.0',
         'phonenumbers==8.12',
-        "twilio"
-        'Werkzeug>=2.0 ,<2.1.0' # flask depends on this and flask has > '2.0' for this. However, the version before 2.1.0 breaks our lib.
+        'Werkzeug>=2.0 ,<2.1.0', # flask depends on this and flask has > '2.0' for this. However, the version before 2.1.0 breaks our lib.
+        "twilio",
+        "aiosmtplib==1.1.6",
     ],
     python_requires='>=3.7',
     include_package_data=True,

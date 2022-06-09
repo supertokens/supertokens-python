@@ -43,7 +43,6 @@ class APIImplementation(APIInterface):
         user_input_code = None
         if api_options.config.get_custom_user_input_code is not None:
             user_input_code = await api_options.config.get_custom_user_input_code(user_context)
-        log_debug_message("Generating one time code")
         response = await api_options.recipe_implementation.create_code(email, phone_number, user_input_code, user_context)
         magic_link = None
         user_input_code = None
@@ -83,7 +82,6 @@ class APIImplementation(APIInterface):
                 )
                 await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input)
         except Exception as e:
-            log_debug_message("Error while sending passwordless login email %s", str(e))
             return CreateCodePostGeneralError(str(e))
         return CreateCodePostOkResult(response.device_id, response.pre_auth_session_id, flow_type)
 
@@ -107,7 +105,6 @@ class APIImplementation(APIInterface):
             user_input_code = None
             if api_options.config.get_custom_user_input_code is not None:
                 user_input_code = await api_options.config.get_custom_user_input_code(user_context)
-            log_debug_message("Generating one time code")
             response = await api_options.recipe_implementation.create_new_code_for_device(
                 device_id=device_id,
                 user_input_code=user_input_code,
@@ -115,7 +112,6 @@ class APIImplementation(APIInterface):
             )
             if isinstance(response, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError):
                 if number_of_tries_to_create_new_code >= 3:
-                    log_debug_message("Failed to generate one time code")
                     return ResendCodePostGeneralError(
                         'Failed to generate a one time code. Please try again')
                 continue
@@ -138,7 +134,7 @@ class APIImplementation(APIInterface):
                         if device_info.email is None or response.code_life_time is None or response.pre_auth_session_id is None:
                             raise Exception("Should never come here")
 
-                        log_debug_message("(re)sending passwordless login email to %s", device_info.email)
+                        log_debug_message("Sending passwordless login email to %s", device_info.email)
                         passwordless_email_delivery_input = TypePasswordlessEmailDeliveryInput(
                             email=device_info.email,
                             user_input_code=user_input_code,
@@ -160,7 +156,6 @@ class APIImplementation(APIInterface):
                         )
                         await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input)
                 except Exception as e:
-                    log_debug_message("Error while (re)sending passwordless login email: %s", str(e))
                     return ResendCodePostGeneralError(str(e))
             return ResendCodePostOkResult()
 

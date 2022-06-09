@@ -1,4 +1,5 @@
 import asyncio
+from os import getenv
 from subprocess import STDOUT, TimeoutExpired
 from unittest import TestCase
 
@@ -67,3 +68,34 @@ b'<h1>Hello world</h1>'
 """
             except TimeoutExpired:
                 raise Exception('subprocess did not terminate in time')
+
+    def test_transporter_with_gmail(self):  # pylint: disable=no-self-use
+        email = getenv("TEST_GMAIL_EMAIL")
+        password = getenv("TEST_GMAIL_PASS")
+
+        if not (email and password):
+            # Skip test if env vars aren't provided
+            return
+
+        real_gmail_smtp_config = SMTPServiceConfig(
+            host="smtp.gmail.com",
+            from_=SMTPServiceConfigFrom("ST Demo", email),
+            password=password,
+            port=465,  # alternatively, port=587, secure=False should also work
+            secure=True,
+        )
+
+        transporter = Transporter(
+            smtp_settings=real_gmail_smtp_config,
+        )
+
+        content = GetContentResult(
+            body="<h1>Hello world</h1>",
+            subject='Greetings',
+            to_email=email,
+            is_html=True,
+        )
+
+        loop = asyncio.get_event_loop()
+        nest_asyncio.apply(loop)  # type: ignore
+        loop.run_until_complete(transporter.send_email(content, {}))

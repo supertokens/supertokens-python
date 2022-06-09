@@ -165,6 +165,9 @@ class Supertokens:
                  mode: Union[Literal['asgi', 'wsgi'], None],
                  telemetry: Union[bool, None]
                  ):
+        if not isinstance(app_info, InputAppInfo):  # type: ignore
+            raise ValueError('app_info must be an instance of InputAppInfo')
+
         self.app_info = AppInfo(
             app_info.app_name,
             app_info.api_domain,

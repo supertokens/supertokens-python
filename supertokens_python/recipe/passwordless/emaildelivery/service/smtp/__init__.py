@@ -35,5 +35,5 @@ class SMTPService(EmailDeliveryInterface[TypePasswordlessEmailDeliveryInput]):
         self.service_implementation = oi if config.override is None else config.override(oi)
 
     async def send_email(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        content = await self.service_implementation.get_content(input_)
+        content = await self.service_implementation.get_content(input_, user_context)
         await self.service_implementation.send_raw_email(content, user_context)

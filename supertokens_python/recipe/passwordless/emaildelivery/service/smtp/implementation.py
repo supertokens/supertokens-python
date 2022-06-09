@@ -26,5 +26,6 @@ class ServiceImplementation(ServiceInterface[TypePasswordlessEmailDeliveryInput]
     async def send_raw_email(self, input_: GetContentResult, user_context: Dict[str, Any]) -> None:
         await self.transporter.send_email(input_, user_context)
 
-    async def get_content(self, input_: TypePasswordlessEmailDeliveryInput) -> GetContentResult:
+    async def get_content(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
+        _ = user_context
         return pless_email_content(input_)
