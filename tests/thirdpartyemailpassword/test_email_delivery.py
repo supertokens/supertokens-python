@@ -30,11 +30,10 @@ from supertokens_python.ingredients.emaildelivery.services.smtp import (
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.recipe import session, thirdpartyemailpassword
-from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordPasswordResetEmailDeliveryInput
+from supertokens_python.recipe.emailpassword.types import (
+    TypeEmailPasswordPasswordResetEmailDeliveryInput,
+    TypeEmailVerificationEmailDeliveryInput)
 from supertokens_python.recipe.emailpassword.types import User as EPUser
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.recipe_implementation import \
     RecipeImplementation as SessionRecipeImplementation
@@ -42,6 +41,8 @@ from supertokens_python.recipe.session.session_functions import \
     create_new_session
 from supertokens_python.recipe.thirdpartyemailpassword import (
     InputEmailVerificationConfig, InputResetPasswordUsingTokenFeature)
+from supertokens_python.recipe.thirdpartyemailpassword.asyncio import \
+    thirdparty_sign_in_up
 from supertokens_python.recipe.thirdpartyemailpassword.emaildelivery import (
     EmailDeliverySMTPConfig, SMTPService)
 from supertokens_python.recipe.thirdpartyemailpassword.types import \
@@ -351,6 +352,43 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
     assert email == "test@example.com"
     assert all([outer_override_called, get_content_called, send_raw_email_called])
     assert password_reset_url != ""
+
+
+@mark.asyncio
+async def test_reset_password_backward_compatibility_non_existent_user(driver_config_client: TestClient):
+    "Reset password: test backward compatibility shouldn't send email (non-existent user)"
+    email = ""
+    password_reset_url = ""
+
+    # TODO: The type of user is EPUser (not TPEPUser). Is this okay? IMO, it's not.
+    async def custom_create_and_send_custom_email(user: EPUser, password_reset_link: str, _: Dict[str, Any]):
+        nonlocal email, password_reset_url
+        email = user.email
+        password_reset_url = password_reset_link
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[thirdpartyemailpassword.init(
+            reset_password_using_token_feature=InputResetPasswordUsingTokenFeature(
+                create_and_send_custom_email=custom_create_and_send_custom_email,
+            )
+        ), session.init()]
+    )
+    start_st()
+
+    res = reset_password_request(driver_config_client, "test@example.com")
+
+    assert res.status_code == 200
+
+    assert email == ""
+    assert password_reset_url == ""
 
 # Tests for Email Verification
 
@@ -701,3 +739,106 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
     assert email == "test@example.com"
     assert all([outer_override_called, get_content_called, send_raw_email_called])
     assert email_verify_url
+
+
+@mark.asyncio
+async def test_reset_password_backward_compatibility_thirdparty_user(driver_config_client: TestClient):
+    "Reset password: test backward compatibility shouldn't sent email (third party user)"
+    email = ""
+    password_reset_url = ""
+
+    # TODO: The type of user is EPUser (not TPEPUser). Is this okay? IMO, it's not.
+    async def custom_create_and_send_custom_email(user: EPUser, password_reset_link: str, _: Dict[str, Any]):
+        nonlocal email, password_reset_url
+        email = user.email
+        password_reset_url = password_reset_link
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[thirdpartyemailpassword.init(
+            reset_password_using_token_feature=InputResetPasswordUsingTokenFeature(
+                create_and_send_custom_email=custom_create_and_send_custom_email,
+            )
+        ), session.init()]
+    )
+    start_st()
+
+    resp = await thirdparty_sign_in_up("supertokens", "test-user-id", "test@example.com", False)
+    user_id: str = resp.user.user_id  # type: ignore
+
+    s = SessionRecipe.get_instance()
+    if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
+        raise Exception("Should never come here")
+    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+
+    res = email_verify_token_request(
+        driver_config_client,
+        response['accessToken']['token'],
+        response['idRefreshToken']['token'],
+        response.get('antiCsrf', ""),
+        user_id,
+        True,
+    )
+
+    assert res.status_code == 200
+
+    assert email == ""
+    assert password_reset_url == ""
+
+
+@mark.asyncio
+async def test_email_verification_backward_compatibility_thirdparty_user(driver_config_client: TestClient):
+    "Email verification: test backward compatibility (third party user)"
+    email = ""
+    email_verify_url = ""
+
+    async def custom_create_and_send_custom_email(user: TPEPUser, email_verification_link: str, _: Dict[str, Any]):
+        nonlocal email, email_verify_url
+        email = user.email
+        email_verify_url = email_verification_link
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[thirdpartyemailpassword.init(
+            email_verification_feature=InputEmailVerificationConfig(
+                create_and_send_custom_email=custom_create_and_send_custom_email
+            )
+        ), session.init()]
+    )
+    start_st()
+
+    resp = await thirdparty_sign_in_up("supertokens", "test-user-id", "test@example.com", False)
+    user_id: str = resp.user.user_id  # type: ignore
+
+    s = SessionRecipe.get_instance()
+    if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
+        raise Exception("Should never come here")
+    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+
+    res = email_verify_token_request(
+        driver_config_client,
+        response['accessToken']['token'],
+        response['idRefreshToken']['token'],
+        response.get('antiCsrf', ""),
+        user_id,
+        True,
+    )
+
+    assert res.status_code == 200
+
+    assert email == "test@example.com"
+    assert email_verify_url != ""
