@@ -59,7 +59,8 @@ class Transporter:
 
     async def _connect(self):
         try:
-            mail = aiosmtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port)
+            mail = aiosmtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port, use_tls=self.smtp_settings.secure)
+            await mail.connect()  # type: ignore
             if self.smtp_settings.secure:
                 context = ssl.create_default_context()
                 await mail.starttls(tls_context=context)
