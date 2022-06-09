@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.8.3] - 2022-06-09
+- Fix bugs in syncio functions across all the recipes
+
 ## [0.8.2] - 2022-05-27
 - Update phonenumbers lib dependency version
 - Adds type checks to the parameters of the emailpassword init funtion.

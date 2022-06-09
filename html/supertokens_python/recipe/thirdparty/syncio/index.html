@@ -67,7 +67,7 @@ def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = Non
     return sync(unverify_email(user_id, user_context))
 
 
-async def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.thirdparty.asyncio import \
         revoke_email_verification_tokens
     return sync(revoke_email_verification_tokens(user_id, user_context))
@@ -78,7 +78,7 @@ def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = Non
     return sync(get_user_by_id(user_id, user_context))
 
 
-async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[User]:
+def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[User]:
     from supertokens_python.recipe.thirdparty.asyncio import get_users_by_email
     return sync(get_users_by_email(email, user_context))
 
@@ -152,7 +152,7 @@ def sign_in_up(third_party_id: str, third_party_user_id: str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.syncio.get_users_by_email"><code class="name flex">
-<span>async def <span class="ident">get_users_by_email</span></span>(<span>email: str, user_context: Optional[None] = None) ‑> List[<a title="supertokens_python.recipe.thirdparty.types.User" href="../types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
+<span>def <span class="ident">get_users_by_email</span></span>(<span>email: str, user_context: Optional[None] = None) ‑> List[<a title="supertokens_python.recipe.thirdparty.types.User" href="../types.html#supertokens_python.recipe.thirdparty.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -160,7 +160,7 @@ def sign_in_up(third_party_id: str, third_party_user_id: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[User]:
+<pre><code class="python">def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[User]:
     from supertokens_python.recipe.thirdparty.asyncio import get_users_by_email
     return sync(get_users_by_email(email, user_context))</code></pre>
 </details>
@@ -180,7 +180,7 @@ def sign_in_up(third_party_id: str, third_party_user_id: str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.syncio.revoke_email_verification_tokens"><code class="name flex">
-<span>async def <span class="ident">revoke_email_verification_tokens</span></span>(<span>user_id: str, user_context: Optional[None] = None)</span>
+<span>def <span class="ident">revoke_email_verification_tokens</span></span>(<span>user_id: str, user_context: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -188,7 +188,7 @@ def sign_in_up(third_party_id: str, third_party_user_id: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.thirdparty.asyncio import \
         revoke_email_verification_tokens
     return sync(revoke_email_verification_tokens(user_id, user_context))</code></pre>

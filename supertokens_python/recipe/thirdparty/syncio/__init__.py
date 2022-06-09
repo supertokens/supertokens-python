@@ -39,7 +39,7 @@ def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = Non
     return sync(unverify_email(user_id, user_context))
 
 
-async def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.thirdparty.asyncio import \
         revoke_email_verification_tokens
     return sync(revoke_email_verification_tokens(user_id, user_context))
@@ -50,7 +50,7 @@ def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = Non
     return sync(get_user_by_id(user_id, user_context))
 
 
-async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -> List[User]:
+def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -> List[User]:
     from supertokens_python.recipe.thirdparty.asyncio import get_users_by_email
     return sync(get_users_by_email(email, user_context))
 

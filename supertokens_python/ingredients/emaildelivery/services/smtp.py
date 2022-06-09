@@ -121,7 +121,7 @@ class ServiceInterface(ABC, Generic[_T]):
         pass
 
     @abstractmethod
-    async def get_content(self, input_: _T) -> GetContentResult:
+    async def get_content(self, input_: _T, user_context: Dict[str, Any]) -> GetContentResult:
         pass
 
 
