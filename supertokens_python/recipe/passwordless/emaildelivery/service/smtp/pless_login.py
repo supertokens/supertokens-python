@@ -50,7 +50,7 @@ def get_pless_email_html(
     elif url_with_link_code is not None:
         html_template = magic_link_body
     else:
-        html_template = ""
+        raise Exception("This should never be thrown.")
 
     return Template(html_template).substitute(
         appname=app_name,
