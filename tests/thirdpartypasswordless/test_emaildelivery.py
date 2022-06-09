@@ -30,6 +30,8 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryInterface)
 from supertokens_python.recipe import (passwordless, session,
                                        thirdpartypasswordless)
+from supertokens_python.recipe.emailverification.interfaces import \
+    CreateEmailVerificationTokenEmailAlreadyVerifiedError
 from supertokens_python.recipe.passwordless import ContactEmailOnlyConfig
 from supertokens_python.recipe.passwordless.types import \
     TypePasswordlessEmailDeliveryInput
@@ -40,8 +42,9 @@ from supertokens_python.recipe.session.session_functions import \
     create_new_session
 from supertokens_python.recipe.thirdparty.types import \
     TypeThirdPartyEmailDeliveryInput
-from supertokens_python.recipe.thirdpartypasswordless.asyncio import \
-    thirdparty_sign_in_up
+from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
+    create_email_verification_token, passwordlessSigninup,
+    thirdparty_sign_in_up)
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.service.smtp import \
     SMTPService
 from supertokens_python.recipe.thirdpartypasswordless.interfaces import \
@@ -385,6 +388,87 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     assert email == "test@example.com"
     assert all([outer_override_called, get_content_called, send_raw_email_called])
     assert email_verify_url != ""
+
+
+@mark.asyncio
+async def test_email_verify_for_pless_user_no_callback():
+    "Email verify: test pless user shouldn't trigger callback"
+    get_content_called, send_raw_email_called, outer_override_called = False, False, False
+
+    def smtp_service_override(oi: ServiceInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
+        async def send_raw_email_override(_input: GetContentResult, _user_context: Dict[str, Any]):
+            nonlocal send_raw_email_called
+            send_raw_email_called = True
+
+        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput) -> GetContentResult:
+            nonlocal get_content_called
+            get_content_called = True
+
+            assert isinstance(input_, TypePasswordlessEmailDeliveryInput)
+
+            return GetContentResult(
+                body="Custom body",
+                to_email=input_.email,  # type: ignore
+                subject="custom subject",
+                is_html=False,
+            )
+
+        oi.send_raw_email = send_raw_email_override
+        oi.get_content = get_content_override
+
+        return oi
+
+    email_delivery_service = SMTPService(
+        config=EmailDeliverySMTPConfig(
+            smtp_settings=SMTPServiceConfig(
+                host="",
+                from_=SMTPServiceConfigFrom("", ""),
+                password="",
+                port=465,
+                secure=True,
+            ),
+            override=smtp_service_override,
+        )
+    )
+
+    def email_delivery_override(oi: EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]) -> EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]:
+        oi_send_email = oi.send_email
+
+        async def send_email_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
+            nonlocal outer_override_called
+            outer_override_called = True
+            await oi_send_email(input_, user_context)
+
+        oi.send_email = send_email_override
+        return oi
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[thirdpartypasswordless.init(
+            contact_config=ContactEmailOnlyConfig(),
+            flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
+            providers=[],
+            email_delivery=EmailDeliveryConfig(
+                service=email_delivery_service,
+                override=email_delivery_override,
+            )
+        ), session.init()]
+    )
+    start_st()
+
+    pless_response = await passwordlessSigninup("test@example.com", None, {})
+    create_token = await create_email_verification_token(pless_response.user.user_id, {})
+
+    assert isinstance(create_token, CreateEmailVerificationTokenEmailAlreadyVerifiedError)
+
+    assert all([outer_override_called, get_content_called, send_raw_email_called]) is False
 
 
 @mark.asyncio
