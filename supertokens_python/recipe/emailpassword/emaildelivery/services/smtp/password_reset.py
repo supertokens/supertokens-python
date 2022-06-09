@@ -32,4 +32,4 @@ def get_password_reset_email_content(email_input: TypeEmailPasswordPasswordReset
 
 
 def get_password_reset_email_html(app_name: str, email: str, reset_link: str):
-    return Template(html_template).substitute(appName=app_name, email=email, resetLink=reset_link)
+    return Template(html_template).substitute(appname=app_name, resetLink=reset_link, toEmail=email)
