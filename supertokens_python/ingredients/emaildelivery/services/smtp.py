@@ -76,7 +76,7 @@ class Transporter:
                 # Try upgrading to TLS (even if the user opted for secure=False)
                 try:
                     await mail.starttls(tls_context=tls_context)
-                except aiosmtplib.SMTPException as e:  # TLS wasn't supported by the server, so ignore.
+                except aiosmtplib.SMTPException:  # TLS wasn't supported by the server, so ignore.
                     pass
 
             if self.smtp_settings.password:
