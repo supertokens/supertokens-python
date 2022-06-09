@@ -45,7 +45,7 @@ from supertokens_python.recipe.thirdparty.types import \
 from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
     create_email_verification_token, passwordlessSigninup,
     thirdparty_sign_in_up)
-from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.service.smtp import \
+from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp import \
     SMTPService
 from supertokens_python.recipe.thirdpartypasswordless.interfaces import \
     ThirdPartySignInUpOkResult

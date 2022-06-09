@@ -22,7 +22,7 @@ from supertokens_python.recipe.emailverification.emaildelivery.services.smtp imp
     SMTPService as EmailVerificationSMTPService
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
-from supertokens_python.recipe.passwordless.emaildelivery.service.smtp import \
+from supertokens_python.recipe.passwordless.emaildelivery.services.smtp import \
     SMTPService as PlessSMTPService
 from supertokens_python.recipe.passwordless.types import \
     TypePasswordlessEmailDeliveryInput

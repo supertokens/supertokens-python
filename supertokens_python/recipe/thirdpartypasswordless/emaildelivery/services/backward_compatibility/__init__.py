@@ -22,7 +22,7 @@ from supertokens_python.recipe.emailverification.emaildelivery.services.backward
 from supertokens_python.recipe.emailverification.types import \
     TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.recipe.emailverification.types import User as EVUser
-from supertokens_python.recipe.passwordless.emaildelivery.service.backward_compatibility import \
+from supertokens_python.recipe.passwordless.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService as PlessBackwardCompatibilityService
 from supertokens_python.recipe.passwordless.types import \
     CreateAndSendCustomEmailParameters

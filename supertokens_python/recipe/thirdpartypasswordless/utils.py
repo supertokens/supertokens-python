@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryConfigWithService)
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.service.backward_compatibility import \
+from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService
 from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
