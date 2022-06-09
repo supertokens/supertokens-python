@@ -46,7 +46,7 @@ from supertokens_python.recipe.emailverification.utils import \
 from supertokens_python.recipe.emailverification.utils import \
     ParentRecipeEmailVerificationConfig
 
-from .smsdelivery.service.backward_compatibility import \
+from .smsdelivery.services.backward_compatibility import \
     BackwardCompatibilityService as SMSBackwardCompatibilityService
 
 

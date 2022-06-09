@@ -12,27 +12,24 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from __future__ import annotations
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.smsdelivery.service.twilio import \
-    SMSDeliveryTwilioConfig
+from supertokens_python.ingredients.smsdelivery.service.supertokens import \
+    SupertokensServiceConfig
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface
-from supertokens_python.recipe.passwordless.smsdelivery.service.twilio import \
-    TwilioService as PlessTwilioService
-from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessSmsDeliveryInput
+from supertokens_python.recipe.passwordless.smsdelivery.services.supertokens import \
+    SuperTokensService as PlessSuperTokensService
 
 from ....types import TypeThirdPartyPasswordlessSmsDeliveryInput
 
 
-class TwilioService(SMSDeliveryInterface[TypeThirdPartyPasswordlessSmsDeliveryInput]):
-    pless_twilio_service: PlessTwilioService
+class SuperTokensService(SMSDeliveryInterface[TypeThirdPartyPasswordlessSmsDeliveryInput]):
+    pless_supertokens_service: PlessSuperTokensService
 
-    def __init__(self, config: SMSDeliveryTwilioConfig[TypeThirdPartyPasswordlessSmsDeliveryInput]) -> None:
-        self.pless_twilio_service = PlessTwilioService(config)
+    def __init__(self, config: SupertokensServiceConfig) -> None:
+        self.pless_supertokens_service = PlessSuperTokensService(config)
 
-    async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
-        await self.pless_twilio_service.send_sms(input_, user_context)
+    async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
+        await self.pless_supertokens_service.send_sms(input_, user_context)

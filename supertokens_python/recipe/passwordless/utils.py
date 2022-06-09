@@ -38,7 +38,7 @@ from re import fullmatch
 from phonenumbers import is_valid_number, parse  # type: ignore
 from supertokens_python.recipe.passwordless.emaildelivery.service.backward_compatibility import \
     BackwardCompatibilityService
-from supertokens_python.recipe.passwordless.smsdelivery.service.backward_compatibility import \
+from supertokens_python.recipe.passwordless.smsdelivery.services.backward_compatibility import \
     BackwardCompatibilityService as SMSBackwardCompatibilityService
 
 

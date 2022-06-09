@@ -34,7 +34,7 @@ from supertokens_python.ingredients.smsdelivery.types import (
     SMSDeliveryConfig, SMSDeliveryInterface)
 from supertokens_python.recipe import (passwordless, session,
                                        thirdpartypasswordless)
-from supertokens_python.recipe.thirdpartypasswordless.smsdelivery.service.twilio import \
+from supertokens_python.recipe.thirdpartypasswordless.smsdelivery.services.twilio import \
     TwilioService
 from supertokens_python.recipe.thirdpartypasswordless.types import \
     TypePasswordlessSmsDeliveryInput

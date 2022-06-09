@@ -16,7 +16,7 @@ from typing import Any, Awaitable, Callable, Dict, Union
 
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface
-from supertokens_python.recipe.passwordless.smsdelivery.service.backward_compatibility import \
+from supertokens_python.recipe.passwordless.smsdelivery.services.backward_compatibility import \
     BackwardCompatibilityService as PlessBackwardCompatibilityService
 from supertokens_python.recipe.passwordless.types import \
     TypePasswordlessSmsDeliveryInput

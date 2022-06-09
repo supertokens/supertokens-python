@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from .service import SuperTokensService, TwilioService
+from .services import SuperTokensService, TwilioService
 
 _ = SuperTokensService
 _ = TwilioService
