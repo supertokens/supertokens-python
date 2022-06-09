@@ -78,9 +78,8 @@ class APIImplementation(APIInterface):
                     url_with_link_code=magic_link,
                     code_life_time=response.code_life_time,
                     pre_auth_session_id=response.pre_auth_session_id,
-                    user_context=user_context
                 )
-                await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input)
+                await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
         except Exception as e:
             return CreateCodePostGeneralError(str(e))
         return CreateCodePostOkResult(response.device_id, response.pre_auth_session_id, flow_type)
@@ -152,9 +151,8 @@ class APIImplementation(APIInterface):
                             url_with_link_code=magic_link,
                             code_life_time=response.code_life_time,
                             pre_auth_session_id=response.pre_auth_session_id,
-                            user_context=user_context,
                         )
-                        await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input)
+                        await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
                 except Exception as e:
                     return ResendCodePostGeneralError(str(e))
             return ResendCodePostOkResult()

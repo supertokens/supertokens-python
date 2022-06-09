@@ -14,6 +14,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Generic, TypeVar, Union
 
+from twilio.rest import Client  # type: ignore
+
 _T = TypeVar('_T')
 
 
@@ -39,7 +41,8 @@ class GetContentResult:
 
 
 class ServiceInterface(ABC, Generic[_T]):
-    # TODO: Might have to define __init__ later on
+    def __init__(self, twilio_client: Client) -> None:  # type: ignore
+        self.twilio_client = twilio_client  # type: ignore
 
     @abstractmethod
     async def send_raw_sms(self,
@@ -51,16 +54,16 @@ class ServiceInterface(ABC, Generic[_T]):
         pass
 
     @abstractmethod
-    async def get_content(self, input_: _T) -> GetContentResult:
+    async def get_content(self, input_: _T, user_context: Dict[str, Any]) -> GetContentResult:
         pass
 
 
 class SMSDeliveryTwilioConfig(Generic[_T]):
     def __init__(self,
-                 twilio_config: TwilioServiceConfig,
+                 twilio_settings: TwilioServiceConfig,
                  override: Union[Callable[[ServiceInterface[_T]], ServiceInterface[_T]], None] = None
                  ) -> None:
-        self.twilio_config = twilio_config
+        self.twilio_config = twilio_settings
         self.override = override
 
 

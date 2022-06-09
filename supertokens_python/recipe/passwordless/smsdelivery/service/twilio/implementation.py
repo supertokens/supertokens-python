@@ -23,15 +23,8 @@ from supertokens_python.recipe.passwordless.smsdelivery.service.twilio.pless_sms
 from supertokens_python.recipe.passwordless.types import \
     TypePasswordlessSmsDeliveryInput
 
-from twilio.rest import Client  # type: ignore
-
 
 class ServiceImplementation(ServiceInterface[TypePasswordlessSmsDeliveryInput]):
-    def __init__(self,
-                 twilio_client: Client  # type: ignore
-                 ) -> None:
-        self.twilio_client = twilio_client  # type: ignore
-
     async def send_raw_sms(self,
                            get_content_result: GetContentResult,
                            user_context: Dict[str, Any],
@@ -51,5 +44,6 @@ class ServiceImplementation(ServiceInterface[TypePasswordlessSmsDeliveryInput]):
                 messaging_service_sid=sid,
             )
 
-    async def get_content(self, input_: TypePasswordlessSmsDeliveryInput) -> GetContentResult:
+    async def get_content(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
+        _ = user_context
         return pless_sms_content(input_)

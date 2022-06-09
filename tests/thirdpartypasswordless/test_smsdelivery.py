@@ -233,14 +233,14 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
     def sms_delivery_override(oi: SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
         oi_send_sms = oi.send_sms
 
-        async def send_sms(input_: TypePasswordlessSmsDeliveryInput):
+        async def send_sms(input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]):
             nonlocal phone, url_with_link_code, user_input_code, code_lifetime
             phone = input_.phone_number
             url_with_link_code = input_.url_with_link_code
             user_input_code = input_.user_input_code
             code_lifetime = input_.code_life_time
 
-            await oi_send_sms(input_)
+            await oi_send_sms(input_, user_context)
 
         oi.send_sms = send_sms
         return oi
@@ -314,7 +314,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
 
             await oi_send_raw_sms(get_content_result, _user_context, from_, sid)
 
-        async def get_content_override(input_: TypePasswordlessSmsDeliveryInput) -> GetContentResult:
+        async def get_content_override(input_: TypePasswordlessSmsDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
 
@@ -333,7 +333,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
 
     twilio_sms_delivery_service = TwilioService(
         config=SMSDeliveryTwilioConfig(
-            twilio_config=TwilioServiceConfig(
+            twilio_settings=TwilioServiceConfig(
                 account_sid="ACTWILIO_ACCOUNT_SID",
                 auth_token="test-token",
                 input_from="+919909909999",
@@ -345,10 +345,10 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
     def sms_delivery_override(oi: SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]) -> SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]:
         oi_send_sms = oi.send_sms
 
-        async def send_sms_override(input_: TypePasswordlessSmsDeliveryInput):
+        async def send_sms_override(input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]):
             nonlocal outer_override_called
             outer_override_called = True
-            await oi_send_sms(input_)
+            await oi_send_sms(input_, user_context)
 
         oi.send_sms = send_sms_override
         return oi

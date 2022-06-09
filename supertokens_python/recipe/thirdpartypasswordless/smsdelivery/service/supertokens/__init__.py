@@ -13,6 +13,8 @@
 # under the License.
 
 
+from typing import Any, Dict
+
 from supertokens_python.ingredients.smsdelivery.service.supertokens import \
     SupertokensServiceConfig
 from supertokens_python.ingredients.smsdelivery.types import \
@@ -29,5 +31,5 @@ class SuperTokensService(SMSDeliveryInterface[TypeThirdPartyPasswordlessSmsDeliv
     def __init__(self, config: SupertokensServiceConfig) -> None:
         self.pless_supertokens_service = PlessSuperTokensService(config)
 
-    async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput) -> None:
-        await self.pless_supertokens_service.send_sms(input_)
+    async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
+        await self.pless_supertokens_service.send_sms(input_, user_context)

@@ -13,6 +13,8 @@
 # under the License.
 
 
+from typing import Any, Dict
+
 from httpx import AsyncClient
 from supertokens_python.ingredients.smsdelivery.service.supertokens import (
     SUPERTOKENS_SMS_SERVICE_URL, SupertokensServiceConfig)
@@ -29,7 +31,7 @@ class SuperTokensService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput])
                  ) -> None:
         self.config = config
 
-    async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput) -> None:
+    async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
         supertokens = Supertokens.get_instance()
         app_name = supertokens.app_info.app_name
 

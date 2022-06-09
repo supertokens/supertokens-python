@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Union
+from typing import List, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
@@ -73,16 +73,12 @@ class CreateAndSendCustomTextMessageParameters:
                  phone_number: str,
                  user_input_code: Union[str, None] = None,
                  url_with_link_code: Union[str, None] = None,
-                 user_context: Union[Dict[str, Any], None] = None
                  ):
         self.phone_number: str = phone_number
         self.code_life_time: int = code_life_time
         self.pre_auth_session_id: str = pre_auth_session_id
         self.user_input_code: Union[str, None] = user_input_code
         self.url_with_link_code: Union[str, None] = url_with_link_code
-        if user_context is None:  # TODO: Did this to avoid errors for users who have already used CreateAndSendCustomTextMessageParameters while updating. Is this okay?
-            user_context = {}
-        self.user_context = user_context
 
 
 TypePasswordlessSmsDeliveryInput = CreateAndSendCustomTextMessageParameters
