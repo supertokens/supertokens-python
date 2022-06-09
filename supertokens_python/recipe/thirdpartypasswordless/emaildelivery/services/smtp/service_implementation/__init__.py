@@ -20,7 +20,7 @@ from supertokens_python.recipe.emailverification.emaildelivery.services.smtp.ser
     ServiceImplementation as EVServiceImplementation
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
-from supertokens_python.recipe.passwordless.emaildelivery.service.smtp.service_implementation import \
+from supertokens_python.recipe.passwordless.emaildelivery.services.smtp.service_implementation import \
     ServiceImplementation as PlessServiceImplementation
 from supertokens_python.recipe.thirdpartypasswordless.types import \
     TypeThirdPartyPasswordlessEmailDeliveryInput
