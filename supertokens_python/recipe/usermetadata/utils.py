@@ -39,6 +39,9 @@ class UserMetadataConfig:
 
 def validate_and_normalise_user_input(_recipe: UserMetadataRecipe, _app_info: AppInfo,
                                       override: Union[InputOverrideConfig, None] = None) -> UserMetadataConfig:
+    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
+        raise ValueError('override must be an instance of InputOverrideConfig or None')
+
     if override is None:
         override = InputOverrideConfig()
 

@@ -39,7 +39,7 @@ nest-asyncio==1.5.1
 nodeenv==1.6.0
 packaging==21.3
 pdoc3==0.10.0
-phonenumbers==8.12.0
+phonenumbers==8.12.48
 platformdirs==2.5.1
 pluggy==1.0.0
 py==1.11.0
@@ -65,7 +65,7 @@ six==1.16.0
 sniffio==1.2.0
 sqlparse==0.4.2
 starlette==0.14.2
--e git+https://github.com/supertokens/supertokens-python.git@6b4e8d312b7d9e52d376c0eaa254bc3162e5c40b#egg=supertokens_python
+-e git+https://github.com/supertokens/supertokens-python.git@445181dba8869f33b1a90c58778c7777d5ab560c#egg=supertokens_python
 tldextract==3.1.0
 toml==0.10.2
 tomli==2.0.1
@@ -78,3 +78,4 @@ uvicorn==0.13.4
 Werkzeug==2.0.3
 wrapt==1.13.3
 zipp==3.7.0
+aiosmtplib==1.1.6

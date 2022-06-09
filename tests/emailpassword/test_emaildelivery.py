@@ -348,6 +348,95 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
     assert password_reset_url != ""
 
 
+@mark.asyncio
+async def test_reset_password_for_non_existent_user(driver_config_client: TestClient):
+    "Reset password: test no callback for non-existent users"
+    email = ""
+    password_reset_url = ""
+    get_content_called, send_raw_email_called, outer_override_called = False, False, False
+
+    def smtp_service_override(oi: ServiceInterface[TypeEmailPasswordEmailDeliveryInput]):
+        async def send_raw_email_override(input_: GetContentResult, _user_context: Dict[str, Any]):
+            nonlocal send_raw_email_called, email
+            send_raw_email_called = True
+
+            assert input_.body == password_reset_url
+            assert input_.subject == "custom subject"
+            assert input_.to_email == "test@example.com"
+            email = input_.to_email
+            # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
+
+        async def get_content_override(input_: TypeEmailPasswordEmailDeliveryInput) -> GetContentResult:
+            nonlocal get_content_called, password_reset_url
+            get_content_called = True
+
+            assert isinstance(input_, TypeEmailPasswordPasswordResetEmailDeliveryInput)
+            password_reset_url = input_.password_reset_link
+
+            return GetContentResult(
+                body=input_.password_reset_link,
+                to_email=input_.user.email,
+                subject="custom subject",
+                is_html=False,
+            )
+
+        oi.send_raw_email = send_raw_email_override
+        oi.get_content = get_content_override
+
+        return oi
+
+    email_delivery_service = SMTPService(
+        config=EmailDeliverySMTPConfig(
+            smtp_settings=SMTPServiceConfig(
+                host="",
+                from_=SMTPServiceConfigFrom("", ""),
+                password="",
+                port=465,
+                secure=True,
+            ),
+            override=smtp_service_override,
+        )
+    )
+
+    def email_delivery_override(oi: EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]) -> EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]:
+        oi_send_email = oi.send_email
+
+        async def send_email_override(input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]):
+            nonlocal outer_override_called
+            outer_override_called = True
+            await oi_send_email(input_, user_context)
+
+        oi.send_email = send_email_override
+        return oi
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[emailpassword.init(
+            email_delivery=EmailDeliveryConfig(
+                service=email_delivery_service,
+                override=email_delivery_override,
+            )
+        ), session.init()]
+    )
+    start_st()
+
+    resp = reset_password_request(driver_config_client, "test@example.com")
+
+    assert resp.status_code == 200
+
+    # User doesn't exist. So our override mustn't be called.
+    assert email == ""
+    assert all([outer_override_called, get_content_called, send_raw_email_called]) is False
+    assert password_reset_url == ""
+
+
 # Tests for Email Verification
 
 @mark.asyncio

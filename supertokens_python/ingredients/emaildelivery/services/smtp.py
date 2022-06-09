@@ -13,12 +13,12 @@
 # under the License.
 
 
-import smtplib
 import ssl
 from abc import ABC, abstractmethod
 from email.mime.text import MIMEText
 from typing import Any, Callable, Dict, Generic, TypeVar, Union
 
+import aiosmtplib
 from supertokens_python.logger import log_debug_message
 
 _T = TypeVar('_T')
@@ -57,15 +57,30 @@ class Transporter:
     def __init__(self, smtp_settings: SMTPServiceConfig) -> None:
         self.smtp_settings = smtp_settings
 
-    def _connect(self):
+    async def _connect(self):
         try:
-            mail = smtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port)
+            tls_context = ssl.create_default_context()
             if self.smtp_settings.secure:
-                context = ssl.create_default_context()
-                mail.starttls(context=context)
+                # Use TLS from the beginning
+                mail = aiosmtplib.SMTP(
+                    self.smtp_settings.host, self.smtp_settings.port,
+                    use_tls=True, tls_context=tls_context
+                )
+            else:
+                # Start without TLS (but later try upgrading)
+                mail = aiosmtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port, use_tls=False)
+
+            await mail.connect()  # type: ignore
+
+            if not self.smtp_settings.secure:
+                # Try upgrading to TLS (even if the user opted for secure=False)
+                try:
+                    await mail.starttls(tls_context=tls_context)
+                except aiosmtplib.SMTPException:  # TLS wasn't supported by the server, so ignore.
+                    pass
 
             if self.smtp_settings.password:
-                mail.login(self.smtp_settings.from_.email, self.smtp_settings.password)
+                await mail.login(self.smtp_settings.from_.email, self.smtp_settings.password)
 
             return mail
         except Exception as e:
@@ -74,7 +89,7 @@ class Transporter:
 
     async def send_email(self, input_: GetContentResult,
                          _: Dict[str, Any]) -> None:
-        connection = self._connect()
+        connection = await self._connect()
 
         from_ = self.smtp_settings.from_
         try:
@@ -84,14 +99,14 @@ class Transporter:
                 email_content["From"] = from_addr
                 email_content["To"] = input_.to_email
                 email_content["Subject"] = input_.subject
-                connection.sendmail(from_.email, input_.to_email, email_content.as_string())
+                await connection.sendmail(from_.email, input_.to_email, email_content.as_string())
             else:
-                connection.sendmail(from_addr, input_.to_email, input_.body)
+                await connection.sendmail(from_addr, input_.to_email, input_.body)
         except Exception as e:
             log_debug_message('Error in sending email: %s', e)
             raise e
         finally:
-            connection.quit()
+            await connection.quit()
 
 
 class ServiceInterface(ABC, Generic[_T]):

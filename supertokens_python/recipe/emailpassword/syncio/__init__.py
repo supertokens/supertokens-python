@@ -31,7 +31,7 @@ def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any
     return sync(verify_email_using_token(token, user_context))
 
 
-def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import unverify_email
     return sync(unverify_email(user_id, user_context))
 
@@ -42,8 +42,8 @@ def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = 
     return sync(is_email_verified(user_id, user_context))
 
 
-def update_email_or_password(user_id: str, email: Union[str, None] = None,
-                             password: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None):
+async def update_email_or_password(user_id: str, email: Union[str, None] = None,
+                                   password: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import \
         update_email_or_password
     return sync(update_email_or_password(
@@ -79,12 +79,12 @@ def sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]]
     return sync(sign_in(email, password, user_context))
 
 
-def sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+async def sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import sign_up
     return sync(sign_up(email, password, user_context))
 
 
-def revoke_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+async def revoke_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import \
         revoke_email_verification_token
     return sync(revoke_email_verification_token(user_id, user_context))

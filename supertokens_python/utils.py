@@ -192,8 +192,9 @@ def handle_httpx_client_exceptions(e: Exception, input_: Dict[str, Any]):
         log_debug_message("Error response: %s", res.json())
     else:
         log_debug_message("Error: %s", e)
-        log_debug_message("Logging the input:")
-        log_debug_message("%s", json.dumps(input_))
+
+    log_debug_message("Logging the input:")
+    log_debug_message("%s", json.dumps(input_))
 
 
 def humanize_time(ms: int) -> str:
