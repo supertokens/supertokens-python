@@ -29,5 +29,5 @@ def get_jwks(user_context: Union[Dict[str, Any], None] = None) -> GetJWKSResult:
     return sync(asyncio.get_jwks(user_context))
 
 
-async def get_open_id_discovery_configuration(user_context: Union[Dict[str, Any], None] = None) -> GetOpenIdDiscoveryConfigurationResult:
+def get_open_id_discovery_configuration(user_context: Union[Dict[str, Any], None] = None) -> GetOpenIdDiscoveryConfigurationResult:
     return sync(asyncio.get_open_id_discovery_configuration(user_context))
