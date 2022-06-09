@@ -43,13 +43,12 @@ def default_create_and_send_custom_email(
     async def func(user: User, password_reset_url_with_token: str, _: Dict[str, Any]):
         if ('SUPERTOKENS_ENV' in environ) and (environ['SUPERTOKENS_ENV'] == 'testing'):
             return
-        data = {}
+        data = {
+            'email': user.email,
+            'appName': app_info.app_name,
+            'passwordResetURL': password_reset_url_with_token
+        }
         try:
-            data = {
-                'email': user.email,
-                'appName': app_info.app_name,
-                'passwordResetURL': password_reset_url_with_token
-            }
             async with AsyncClient() as client:
                 resp = await client.post('https://api.supertokens.io/0/st/auth/password/reset', json=data, headers={'api-version': '0'})  # type: ignore
                 resp.raise_for_status()

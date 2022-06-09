@@ -57,7 +57,7 @@ def get_jwks(user_context: Union[Dict[str, Any], None] = None) -&gt; GetJWKSResu
     return sync(asyncio.get_jwks(user_context))
 
 
-async def get_open_id_discovery_configuration(user_context: Union[Dict[str, Any], None] = None) -&gt; GetOpenIdDiscoveryConfigurationResult:
+def get_open_id_discovery_configuration(user_context: Union[Dict[str, Any], None] = None) -&gt; GetOpenIdDiscoveryConfigurationResult:
     return sync(asyncio.get_open_id_discovery_configuration(user_context))</code></pre>
 </details>
 </section>
@@ -95,7 +95,7 @@ async def get_open_id_discovery_configuration(user_context: Union[Dict[str, Any]
 </details>
 </dd>
 <dt id="supertokens_python.recipe.openid.syncio.get_open_id_discovery_configuration"><code class="name flex">
-<span>async def <span class="ident">get_open_id_discovery_configuration</span></span>(<span>user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="../interfaces.html#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a></span>
+<span>def <span class="ident">get_open_id_discovery_configuration</span></span>(<span>user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="../interfaces.html#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -103,7 +103,7 @@ async def get_open_id_discovery_configuration(user_context: Union[Dict[str, Any]
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_open_id_discovery_configuration(user_context: Union[Dict[str, Any], None] = None) -&gt; GetOpenIdDiscoveryConfigurationResult:
+<pre><code class="python">def get_open_id_discovery_configuration(user_context: Union[Dict[str, Any], None] = None) -&gt; GetOpenIdDiscoveryConfigurationResult:
     return sync(asyncio.get_open_id_discovery_configuration(user_context))</code></pre>
 </details>
 </dd>

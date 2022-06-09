@@ -31,4 +31,4 @@ def get_email_verify_email_content(email_input: TypeEmailVerificationEmailDelive
 
 
 def get_email_verify_email_html(app_name: str, email: str, verification_link: str):
-    return Template(html_template).substitute(appName=app_name, verificationLink=verification_link, email=email)
+    return Template(html_template).substitute(appname=app_name, verificationLink=verification_link, toEmail=email)

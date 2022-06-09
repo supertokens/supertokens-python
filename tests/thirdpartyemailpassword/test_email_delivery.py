@@ -283,7 +283,7 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
             email = input_.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput) -> GetContentResult:
+        async def get_content_override(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
             nonlocal get_content_called, password_reset_url
             get_content_called = True
 
@@ -656,7 +656,7 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
             email = input_.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput) -> GetContentResult:
+        async def get_content_override(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
             nonlocal get_content_called, email_verify_url
             get_content_called = True
 

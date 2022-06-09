@@ -56,8 +56,8 @@ class ServiceImplementation(ServiceInterface[TypeThirdPartyPasswordlessEmailDeli
     async def send_raw_email(self, input_: GetContentResult, user_context: Dict[str, Any]) -> None:
         await self.transporter.send_email(input_, user_context)
 
-    async def get_content(self, input_: TypeThirdPartyPasswordlessEmailDeliveryInput) -> GetContentResult:
+    async def get_content(self, input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
         if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
-            return await self.ev_get_content(input_)
+            return await self.ev_get_content(input_, user_context)
 
-        return await self.pless_get_content(input_)
+        return await self.pless_get_content(input_, user_context)

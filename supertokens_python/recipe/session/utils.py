@@ -253,6 +253,18 @@ def validate_and_normalise_user_input(app_info: AppInfo,
                                                       None] = None,
                                       jwt: Union[JWTConfig, None] = None
                                       ):
+    if anti_csrf not in {"VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE", None}:
+        raise ValueError("anti_csrf must be one of VIA_TOKEN, VIA_CUSTOM_HEADER, NONE or None")
+
+    if error_handlers is not None and not isinstance(error_handlers, ErrorHandlers):  # type: ignore
+        raise ValueError("error_handlers must be an instance of ErrorHandlers or None")
+
+    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
+        raise ValueError("override must be an instance of InputOverrideConfig or None")
+
+    if jwt is not None and not isinstance(jwt, JWTConfig):  # type: ignore
+        raise ValueError("jwt must be an instance of JWTConfig or None")
+
     cookie_domain = normalise_session_scope(
         cookie_domain) if cookie_domain is not None else None
     top_level_api_domain = get_top_level_domain_for_same_site_resolution(
