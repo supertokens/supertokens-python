@@ -25,8 +25,8 @@ from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
 from ..emailverification.types import User as EmailVerificationUser
-from ..passwordless.utils import (ContactConfig, ContactEmailOrPhoneConfig,
-                                  ContactPhoneOnlyConfig, PhoneOrEmailInput,
+from ..passwordless.utils import (ContactConfig, ContactEmailOnlyConfig,
+                                  ContactEmailOrPhoneConfig, PhoneOrEmailInput,
                                   default_get_link_domain_and_path)
 
 if TYPE_CHECKING:
@@ -165,7 +165,7 @@ def validate_and_normalise_user_input(
         tppless_recipe: RecipeInterface,
     ) -> EmailDeliveryConfigWithService[TypeThirdPartyPasswordlessEmailDeliveryInput]:
         email_service = email_delivery_config.service if email_delivery_config is not None else None
-        if isinstance(contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)):
+        if isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)):
             create_and_send_custom_email = contact_config.create_and_send_custom_email
         else:
             create_and_send_custom_email = None

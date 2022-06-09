@@ -90,7 +90,6 @@ class ContactConfig(ABC):
     def __init__(
             self, contact_method: Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']):
         self.contact_method = contact_method
-        self.create_and_send_custom_email = None  # TODO: NOT SURE IF THIS IS CORRECT
 
 
 class ContactPhoneOnlyConfig(ContactConfig):
@@ -204,10 +203,10 @@ def validate_and_normalise_user_input(
 
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]:
         email_service = email_delivery_config.service if email_delivery_config is not None else None
-        if contact_config.contact_method == "PHONE":
-            create_and_send_custom_email = None
-        else:
+        if isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)):
             create_and_send_custom_email = contact_config.create_and_send_custom_email
+        else:
+            create_and_send_custom_email = None
 
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info, create_and_send_custom_email)
