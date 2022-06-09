@@ -59,11 +59,25 @@ class Transporter:
 
     async def _connect(self):
         try:
-            mail = aiosmtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port, use_tls=self.smtp_settings.secure)
-            await mail.connect()  # type: ignore
+            tls_context = ssl.create_default_context()
             if self.smtp_settings.secure:
-                context = ssl.create_default_context()
-                await mail.starttls(tls_context=context)
+                # Use TLS from the beginning
+                mail = aiosmtplib.SMTP(
+                    self.smtp_settings.host, self.smtp_settings.port,
+                    use_tls=True, tls_context=tls_context
+                )
+            else:
+                # Start without TLS (but later try upgrading)
+                mail = aiosmtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port, use_tls=False)
+
+            await mail.connect()  # type: ignore
+
+            if not self.smtp_settings.secure:
+                # Try upgrading to TLS (even if the user opted for secure=False)
+                try:
+                    await mail.starttls(tls_context=tls_context)
+                except aiosmtplib.SMTPException as e:  # TLS wasn't supported by the server, so ignore.
+                    pass
 
             if self.smtp_settings.password:
                 await mail.login(self.smtp_settings.from_.email, self.smtp_settings.password)
