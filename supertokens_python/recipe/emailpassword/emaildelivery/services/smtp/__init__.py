@@ -49,5 +49,5 @@ class SMTPService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
         if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
             return await self.email_verification_smtp_service.send_email(input_, user_context)
 
-        content = await self.service_implementation.get_content(input_)
+        content = await self.service_implementation.get_content(input_, user_context)
         await self.service_implementation.send_raw_email(content, user_context)
