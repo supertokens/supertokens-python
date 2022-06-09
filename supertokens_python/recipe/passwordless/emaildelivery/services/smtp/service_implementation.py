@@ -18,7 +18,7 @@ from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
     GetContentResult, ServiceInterface)
-from supertokens_python.recipe.passwordless.emaildelivery.service.smtp.pless_login import \
+from supertokens_python.recipe.passwordless.emaildelivery.services.smtp.pless_login import \
     pless_email_content
 from supertokens_python.recipe.passwordless.types import \
     TypePasswordlessEmailDeliveryInput

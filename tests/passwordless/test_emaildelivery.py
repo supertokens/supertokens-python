@@ -29,7 +29,7 @@ from supertokens_python.ingredients.emaildelivery.services.smtp import (
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryInterface)
 from supertokens_python.recipe import passwordless, session
-from supertokens_python.recipe.passwordless.emaildelivery.service.smtp import \
+from supertokens_python.recipe.passwordless.emaildelivery.services.smtp import \
     SMTPService
 from supertokens_python.recipe.passwordless.types import \
     TypePasswordlessEmailDeliveryInput

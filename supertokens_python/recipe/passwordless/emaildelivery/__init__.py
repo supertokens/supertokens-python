@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from .service.smtp import EmailDeliverySMTPConfig, SMTPService
+from .services.smtp import EmailDeliverySMTPConfig, SMTPService
 
 _ = EmailDeliverySMTPConfig
 _ = SMTPService

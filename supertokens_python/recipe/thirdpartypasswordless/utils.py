@@ -24,7 +24,7 @@ from supertokens_python.recipe.passwordless import (ContactEmailOnlyConfig,
                                                     ContactEmailOrPhoneConfig,
                                                     ContactPhoneOnlyConfig)
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.service.backward_compatibility import \
+from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService
 from supertokens_python.recipe.thirdpartypasswordless.types import \
     TypeThirdPartyPasswordlessSmsDeliveryInput
