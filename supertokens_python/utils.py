@@ -190,7 +190,7 @@ def handle_httpx_client_exceptions(e: Exception, input_: Dict[str, Any]):
         log_debug_message("Error status: %s", res.status_code)  # type: ignore
         log_debug_message("Error response: %s", res.json())
     else:
-        log_debug_message("Error: %s", e)
+        log_debug_message("Error: %s", str(e))
 
     log_debug_message("Logging the input:")
     log_debug_message("%s", json.dumps(input_))

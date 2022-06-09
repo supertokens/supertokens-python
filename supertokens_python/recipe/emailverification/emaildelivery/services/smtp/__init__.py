@@ -28,7 +28,6 @@ class SMTPService(EmailDeliveryInterface[TypeEmailVerificationEmailDeliveryInput
     service_implementation: ServiceInterface[TypeEmailVerificationEmailDeliveryInput]
 
     def __init__(self, config: EmailDeliverySMTPConfig[TypeEmailVerificationEmailDeliveryInput]) -> None:
-        self.config = config
         transporter = Transporter(config.smtp_settings)
         oi = ServiceImplementation(transporter)
         self.service_implementation = oi if config.override is None else config.override(oi)

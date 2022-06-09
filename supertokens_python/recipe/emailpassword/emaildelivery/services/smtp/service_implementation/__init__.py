@@ -16,7 +16,7 @@ from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
     GetContentResult, ServiceInterface, Transporter)
-from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.password_reset_implementation import \
+from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.password_reset import \
     get_password_reset_email_content
 from supertokens_python.recipe.emailpassword.types import \
     TypeEmailPasswordEmailDeliveryInput
