@@ -300,7 +300,7 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
             email = input_.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput) -> GetContentResult:
+        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
             nonlocal get_content_called, email_verify_url
             get_content_called = True
 
@@ -400,7 +400,7 @@ async def test_email_verify_for_pless_user_no_callback():
             nonlocal send_raw_email_called
             send_raw_email_called = True
 
-        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput) -> GetContentResult:
+        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
             nonlocal get_content_called
             get_content_called = True
 
@@ -704,7 +704,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
             email = input_.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput) -> GetContentResult:
+        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
 
