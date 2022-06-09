@@ -81,6 +81,9 @@ class EmailVerificationConfig:
 
 def validate_and_normalise_user_input(
         app_info: AppInfo, config: ParentRecipeEmailVerificationConfig):
+    if not isinstance(config, ParentRecipeEmailVerificationConfig):  # type: ignore
+        raise ValueError('config must be an instance of ParentRecipeEmailVerificationConfig')
+
     get_email_verification_url = config.get_email_verification_url if config.get_email_verification_url is not None \
         else default_get_email_verification_url(app_info)
 
@@ -96,6 +99,10 @@ def validate_and_normalise_user_input(
         return EmailDeliveryConfigWithService(email_service, override=override)
 
     override = config.override
+
+    if override is not None and not isinstance(override, OverrideConfig):  # type: ignore
+        raise ValueError('override must be of type OverrideConfig or None')
+
     if override is None:
         override = OverrideConfig()
 

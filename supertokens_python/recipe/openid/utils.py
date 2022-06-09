@@ -64,6 +64,9 @@ def validate_and_normalise_user_input(
         raise Exception(
             'The path of the issuer URL must be equal to the apiBasePath. The default value is /auth')
 
+    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
+        raise ValueError('override must be an instance of InputOverrideConfig or None')
+
     if override is None:
         override = InputOverrideConfig()
 

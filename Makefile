@@ -22,6 +22,9 @@ test:
 dev-install:
 	pip install -r dev-requirements.txt
 
+dev-install-refresh:
+	pip3 install -e .[dev]
+
 freeze-dev-requirements:
 	pip freeze > dev-requirements.txt
 

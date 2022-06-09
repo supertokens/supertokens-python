@@ -120,7 +120,7 @@ def start_st(host: str = 'localhost', port: str = '3567'):
     pid_after = pid_before = __get_list_of_process_ids()
     run('cd ' + INSTALLATION_PATH + ' && java -Djava.security.egd=file:/dev/urandom -classpath '
                                     '"./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host='
-        + host + ' port=' + str(port) + ' &', shell=True, stdout=DEVNULL)
+        + host + ' port=' + str(port) + ' test_mode &', shell=True, stdout=DEVNULL)
     for _ in range(35):
         pid_after = __get_list_of_process_ids()
         if len(pid_after) != len(pid_before):
@@ -163,7 +163,7 @@ def __get_list_of_process_ids() -> List[str]:
         processes = scandir(SUPERTOKENS_PROCESS_DIR)
         for process in processes:
             f = open(SUPERTOKENS_PROCESS_DIR + '/' + process.name, 'r')
-            process_ids.append(f.read())
+            process_ids.append(f.readline())
             f.close()
     except FileNotFoundError:
         pass
