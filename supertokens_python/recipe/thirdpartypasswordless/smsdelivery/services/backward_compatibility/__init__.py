@@ -31,7 +31,6 @@ class BackwardCompatibilityService(SMSDeliveryInterface[TypeThirdPartyPasswordle
     def __init__(self, app_info: AppInfo,
                  pless_create_and_send_custom_text_message: Union[Callable[[TypePasswordlessSmsDeliveryInput, Dict[str, Any]], Awaitable[None]], None] = None
                  ) -> None:
-        self.app_info = app_info
         self.pless_backward_compatibility_service = PlessBackwardCompatibilityService(
             app_info, pless_create_and_send_custom_text_message
         )

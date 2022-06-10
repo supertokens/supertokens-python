@@ -33,13 +33,13 @@ class TwilioService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
 
     def __init__(self, config: SMSDeliveryTwilioConfig[TypePasswordlessSmsDeliveryInput]) -> None:
         self.config = normalize_twilio_config(config)
-        if config.twilio_config.opts:
-            _otps = config.twilio_config.opts
+        if config.twilio_settings.opts:
+            _otps = config.twilio_settings.opts
         else:
             _otps = {}
         self.twilio_client = Client(  # type: ignore
-            config.twilio_config.account_sid,
-            config.twilio_config.auth_token,
+            config.twilio_settings.account_sid,
+            config.twilio_settings.auth_token,
             # TODO: _opts? (Twilio python sdk doesn't seem to provide a way to pass options. Find a way)
             # **_otps
         )
@@ -48,15 +48,15 @@ class TwilioService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
 
     async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
         content = await self.service_implementation.get_content(input_, user_context)
-        if self.config.twilio_config.input_from:
+        if self.config.twilio_settings.from_:
             await self.service_implementation.send_raw_sms(
                 content,
                 user_context,  # TODO: should be part of sms_input
-                from_=self.config.twilio_config.input_from,
+                from_=self.config.twilio_settings.from_,
             )
         else:
             await self.service_implementation.send_raw_sms(
                 content,
                 user_context,
-                sid=self.config.twilio_config.sid,
+                sid=self.config.twilio_settings.messaging_service_sid,
             )

@@ -23,14 +23,14 @@ class TwilioServiceConfig:
     def __init__(self,
                  account_sid: str,
                  auth_token: str,
-                 input_from: str,
-                 sid: Union[str, None] = None,
+                 from_: Union[str, None] = None,
+                 messaging_service_sid: Union[str, None] = None,
                  opts: Union[Dict[str, Any], None] = None,  # TODO: Twilio python sdk doesn't provide a type for this.
                  ) -> None:
         self.account_sid = account_sid
         self.auth_token = auth_token
-        self.input_from = input_from
-        self.sid = sid
+        self.from_ = from_
+        self.messaging_service_sid = messaging_service_sid
         self.opts = opts
 
 
@@ -63,15 +63,15 @@ class SMSDeliveryTwilioConfig(Generic[_T]):
                  twilio_settings: TwilioServiceConfig,
                  override: Union[Callable[[ServiceInterface[_T]], ServiceInterface[_T]], None] = None
                  ) -> None:
-        self.twilio_config = twilio_settings
+        self.twilio_settings = twilio_settings
         self.override = override
 
 
 def normalize_twilio_config(sms_input: SMSDeliveryTwilioConfig[_T]) -> SMSDeliveryTwilioConfig[_T]:
-    input_from = sms_input.twilio_config.input_from if sms_input.twilio_config.input_from is not None else None
-    sid = sms_input.twilio_config.sid if sms_input.twilio_config.sid is not None else None
+    from_ = sms_input.twilio_settings.from_
+    messaging_service_sid = sms_input.twilio_settings.messaging_service_sid
 
-    if (input_from and sid) or (not input_from and not sid):
-        raise Exception('Please pass exactly one of "from" and "messagingServiceSid" config for twilioSettings.')
+    if (from_ and messaging_service_sid) or (not from_ and not messaging_service_sid):
+        raise Exception('Please pass exactly one of "from" and "messaging_service_sid" config for twilio_settings.')
 
     return sms_input

@@ -85,7 +85,7 @@ class PasswordlessRecipe(RecipeModule):
         else:
             self.email_delivery = email_delivery_ingredient
 
-        sms_delivery_ingredient = ingredients.sms_delivery if ingredients is not None else None
+        sms_delivery_ingredient = ingredients.sms_delivery
         self.sms_delivery = SMSDeliveryIngredient(self.config.get_sms_delivery_config()) if sms_delivery_ingredient is None else sms_delivery_ingredient
 
     def get_apis_handled(self) -> List[APIHandled]:

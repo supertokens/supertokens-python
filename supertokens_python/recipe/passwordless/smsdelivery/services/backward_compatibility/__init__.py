@@ -16,35 +16,32 @@ import json
 from os import environ
 from typing import Any, Awaitable, Callable, Dict, Union
 
-from httpx import AsyncClient
+from httpx import AsyncClient, HTTPStatusError, Response
 from supertokens_python.ingredients.smsdelivery.service.supertokens import \
     SUPERTOKENS_SMS_SERVICE_URL
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface
 from supertokens_python.logger import log_debug_message
 from supertokens_python.supertokens import AppInfo
+from supertokens_python.utils import handle_httpx_client_exceptions
 
 from ....types import TypePasswordlessSmsDeliveryInput
 
 
-class InvalidSendCustomSmsResponse(Exception):
-    pass
-
-
 def default_create_and_send_custom_sms(app_info: AppInfo):
-    async def func(sms_input: TypePasswordlessSmsDeliveryInput, _user_context: Dict[str, Any]):
+    async def func(input_: TypePasswordlessSmsDeliveryInput, _user_context: Dict[str, Any]):
         if ('SUPERTOKENS_ENV' in environ) and (environ['SUPERTOKENS_ENV'] == 'testing'):
             return
         sms_input_json = {
             'appName': app_info.app_name,
             'type': 'PASSWORDLESS_LOGIN',
-            'phoneNumber': sms_input.phone_number,
-            'codeLifetime': sms_input.code_life_time,
+            'phoneNumber': input_.phone_number,
+            'codeLifetime': input_.code_life_time,
         }
-        if sms_input.user_input_code:
-            sms_input_json['userInputCode'] = sms_input.user_input_code
-        if sms_input.url_with_link_code:
-            sms_input_json['urlWithLinkCode'] = sms_input.url_with_link_code
+        if input_.user_input_code:
+            sms_input_json['userInputCode'] = input_.user_input_code
+        if input_.url_with_link_code:
+            sms_input_json['urlWithLinkCode'] = input_.url_with_link_code
 
         try:
             async with AsyncClient() as client:
@@ -55,17 +52,33 @@ def default_create_and_send_custom_sms(app_info: AppInfo):
                     },
                     headers={'api-version': '0'}
                 )
-                # TODO: Do we need an equivalent of "err.response === undefined"?
-                if res.status_code == 429:
-                    raise InvalidSendCustomSmsResponse(res.text)
+                res.raise_for_status()
+                log_debug_message("Passwordless login SMS sent to %s", input_.phone_number)
                 return
-        except InvalidSendCustomSmsResponse as e:
-            raise e
-        except Exception:
-            pass
+        except Exception as e:
+            log_debug_message("Error sending passwordless login SMS")
+            handle_httpx_client_exceptions(e)
 
+            if isinstance(e, HTTPStatusError):  # type: ignore
+                res: Response = e.response  # type: ignore
+                if res.status_code != 429:  # type: ignore (429 == Too many requests)
+                    data = res.json()
+                    if "err" in data:
+                        raise Exception(data["err"])
+                    if data:
+                        raise Exception(json.dumps(data))
+                    if data is None:
+                        raise e
+                else:
+                    pass  # Reach Point (1)
+            else:
+                log_debug_message("Error: %s", str(e))
+                raise e
+
+        # Point (1): Reached only when we get HTTPStatusError with e.response.status_code == 429
         print("Free daily SMS quota reached. If using our managed service, please create a production environment to get dedicated API keys for SMS sending, or define your own method for sending SMS. For now, we are logging it below:")
-        log_debug_message("SMS content: %s", json.dumps(sms_input_json))
+        print("SMS content: %s", json.dumps(input_.__dict__, indent=2))
+
     return func
 
 
@@ -74,11 +87,7 @@ class BackwardCompatibilityService(SMSDeliveryInterface[TypePasswordlessSmsDeliv
                  app_info: AppInfo,
                  create_and_send_custom_sms: Union[Callable[[TypePasswordlessSmsDeliveryInput, Dict[str, Any]], Awaitable[None]], None] = None
                  ) -> None:
-        self.app_info = app_info
-        self.create_and_send_custom_sms = default_create_and_send_custom_sms(self.app_info) if create_and_send_custom_sms is None else create_and_send_custom_sms
+        self.create_and_send_custom_sms = default_create_and_send_custom_sms(app_info) if create_and_send_custom_sms is None else create_and_send_custom_sms
 
     async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
-        try:
-            await self.create_and_send_custom_sms(input_, user_context)
-        except Exception as _:
-            pass
+        await self.create_and_send_custom_sms(input_, user_context)  # Note: intentionally not using try-except (unlike other recipes)
