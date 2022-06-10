@@ -25,8 +25,14 @@ class TwilioServiceConfig:
                  auth_token: str,
                  from_: Union[str, None] = None,
                  messaging_service_sid: Union[str, None] = None,
-                 opts: Union[Dict[str, Any], None] = None,  # TODO: Twilio python sdk doesn't provide a type for this.
+                 opts: Union[Dict[str, Any], None] = None,
                  ) -> None:
+        """
+        Note: `self.otps` can be used to override values passed to the Twilio Client.
+        Read docs from `twilio.rest.Client.__init__` to discover possible args.
+
+        For example, `opts = {"region": "...", "user_agent_extensions": ["..."], }`
+        """
         self.account_sid = account_sid
         self.auth_token = auth_token
         self.from_ = from_
