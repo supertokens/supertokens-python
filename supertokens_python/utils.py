@@ -185,16 +185,17 @@ def deprecated_warn(msg: str):
     warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
 
-def handle_httpx_client_exceptions(e: Exception, input_: Dict[str, Any]):
-    if isinstance(e, HTTPStatusError):
-        res: Response = e.response  # type: ignore
+def handle_httpx_client_exceptions(e: Exception, input_: Union[Dict[str, Any], None] = None):
+    if isinstance(e, HTTPStatusError) and isinstance(e.response, Response):  # type: ignore
+        res = e.response  # type: ignore
         log_debug_message("Error status: %s", res.status_code)  # type: ignore
         log_debug_message("Error response: %s", res.json())
     else:
         log_debug_message("Error: %s", str(e))
 
-    log_debug_message("Logging the input:")
-    log_debug_message("%s", json.dumps(input_))
+    if input_ is not None:
+        log_debug_message("Logging the input:")
+        log_debug_message("%s", json.dumps(input_))
 
 
 def humanize_time(ms: int) -> str:
