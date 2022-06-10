@@ -14,38 +14,63 @@
 from __future__ import annotations
 
 from string import Template
+from textwrap import dedent
 from typing import TYPE_CHECKING, Union
 
 from supertokens_python.ingredients.smsdelivery.service.twilio import \
     GetContentResult
+from supertokens_python.supertokens import Supertokens
+from supertokens_python.utils import humanize_time
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.passwordless.types import \
         TypePasswordlessSmsDeliveryInput
 
 
-def pless_sms_content(sms_input: TypePasswordlessSmsDeliveryInput) -> GetContentResult:
-    body = get_pless_sms_body(sms_input.code_life_time, sms_input.url_with_link_code, sms_input.user_input_code)
-    return GetContentResult(body, sms_input.phone_number)
+def pless_sms_content(input_: TypePasswordlessSmsDeliveryInput) -> GetContentResult:
+    supertokens = Supertokens.get_instance()
+    app_name = supertokens.app_info.app_name
+    code_lifetime = humanize_time(input_.code_life_time)
+    body = get_pless_sms_body(app_name, code_lifetime, input_.url_with_link_code, input_.user_input_code)
+    return GetContentResult(body, input_.phone_number)
 
 
 def get_pless_sms_body(
-    code_lifetime: int,
+    app_name: str,
+    code_lifetime: str,
     url_with_link_code: Union[str, None] = None,
     user_input_code: Union[str, None] = None
-):
+) -> str:
+    if (url_with_link_code is not None) and (user_input_code is not None):
+        sms_template = dedent("""\
+        ${appname} - Login to your account
+        Your OTP to login: ${otp}
 
-    if url_with_link_code and user_input_code:
-        template = "Enter OTP: ${userInputCode} OR click this link: ${urlWithLinkCode} to login."
-    elif url_with_link_code:
-        template = "Click this link: ${urlWithLinkCode} to login."
+        OR
+
+        Click on this link: ${magicLink}
+
+        This is valid for ${time}.""")
+    elif url_with_link_code is not None:
+        sms_template = dedent("""\
+        ${appname} - Login to your account
+
+        Click on this link: ${magicLink}
+
+        This is valid for ${time}.""")
+    elif user_input_code is not None:
+        sms_template = dedent("""\
+        ${appname} - Login to your account
+
+        Your OTP to login: ${otp}
+
+        This is valid for ${time}.""")
     else:
-        template = "Enter OTP: ${userInputCode} to login."
+        raise Exception("This should never be thrown.")
 
-    template += " It will expire in ${codeLifetime} seconds."
-
-    return Template(template).substitute(
-        codeLifetime=code_lifetime,
-        urlWithLinkCode=url_with_link_code,
-        userInputCode=user_input_code
+    return Template(sms_template).substitute(
+        appname=app_name,
+        magicLink=url_with_link_code,
+        otp=user_input_code,
+        time=code_lifetime,
     )
