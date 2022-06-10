@@ -211,11 +211,10 @@ def validate_and_normalise_user_input(
     def get_sms_delivery_config() -> SMSDeliveryConfigWithService[TypePasswordlessSmsDeliveryInput]:
         sms_service = sms_delivery.service if sms_delivery is not None else None
 
-        if contact_config.contact_method == "EMAIL":
-            create_and_send_custom_text_message = None
-        else:
-            assert isinstance(contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig))
+        if isinstance(contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)):
             create_and_send_custom_text_message = contact_config.create_and_send_custom_text_message
+        else:
+            create_and_send_custom_text_message = None
 
         if sms_service is None:
             sms_service = SMSBackwardCompatibilityService(app_info, create_and_send_custom_text_message)
@@ -226,6 +225,7 @@ def validate_and_normalise_user_input(
             override = None
 
         return SMSDeliveryConfigWithService(sms_service, override=override)
+
     if not isinstance(contact_config, ContactConfig):  # type: ignore user might not have linter enabled
         raise ValueError('contact_config must be of type ContactConfig')
 

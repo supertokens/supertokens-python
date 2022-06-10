@@ -76,7 +76,7 @@ def default_create_and_send_custom_sms(app_info: AppInfo):
                 raise e
 
         # Point (1): Reached only when we get HTTPStatusError with e.response.status_code == 429
-        print("Free daily SMS quota reached. If using our managed service, please create a production environment to get dedicated API keys for SMS sending, or define your own method for sending SMS. For now, we are logging it below:")
+        print("Free daily SMS quota reached. If you want to use SuperTokens to send SMS, please sign up on supertokens.com to get your SMS API key, else you can also define your own method by overriding the service. For now, we are logging it below:")
         print("SMS content:\n", json.dumps(input_.__dict__, indent=2))
 
     return func

@@ -25,7 +25,7 @@ from supertokens_python.recipe.passwordless.types import \
 
 from twilio.rest import Client  # type: ignore
 
-from .implementation import ServiceImplementation
+from .service_implementation import ServiceImplementation
 
 
 class TwilioService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
@@ -44,15 +44,9 @@ class TwilioService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
 
     async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
         content = await self.service_implementation.get_content(input_, user_context)
-        if self.config.twilio_settings.from_:
-            await self.service_implementation.send_raw_sms(
-                content,
-                user_context,
-                from_=self.config.twilio_settings.from_,
-            )
-        else:
-            await self.service_implementation.send_raw_sms(
-                content,
-                user_context,
-                sid=self.config.twilio_settings.messaging_service_sid,
-            )
+        await self.service_implementation.send_raw_sms(
+            content,
+            user_context,
+            from_=self.config.twilio_settings.from_,
+            messaging_service_sid=self.config.twilio_settings.messaging_service_sid,
+        )

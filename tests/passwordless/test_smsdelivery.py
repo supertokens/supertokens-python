@@ -361,7 +361,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
             get_content_result: GetContentResult,
             _user_context: Dict[str, Any],
             from_: Union[str, None] = None,
-            sid: Union[str, None] = None,
+            messaging_service_sid: Union[str, None] = None,
         ):
             nonlocal send_raw_email_called, phone, user_input_code
             send_raw_email_called = True
@@ -370,7 +370,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
             assert get_content_result.to_phone == "+919909909998"
             phone = get_content_result.to_phone
 
-            await oi_send_raw_sms(get_content_result, _user_context, from_, sid)
+            await oi_send_raw_sms(get_content_result, _user_context, from_, messaging_service_sid)
 
         async def get_content_override(input_: TypePasswordlessSmsDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
             nonlocal get_content_called, user_input_code, code_lifetime

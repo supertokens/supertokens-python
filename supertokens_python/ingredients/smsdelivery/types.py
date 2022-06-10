@@ -26,7 +26,7 @@ class SMSDeliveryInterface(ABC, Generic[_T]):
 
 class SMSDeliveryConfig(ABC, Generic[_T]):
     def __init__(
-        self, service: Union[SMSDeliveryInterface[_T], None],
+        self, service: Union[SMSDeliveryInterface[_T], None] = None,
         override: Union[Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None] = None,
     ) -> None:
         self.service = service

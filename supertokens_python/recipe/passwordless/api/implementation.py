@@ -72,6 +72,7 @@ class APIImplementation(APIInterface):
             elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
                 if phone_number is None:
                     raise Exception("Should never come here")
+                log_debug_message("Sending passwordless login SMS to %s", phone_number)
                 sms_input = TypePasswordlessSmsDeliveryInput(
                     phone_number=phone_number,
                     user_input_code=user_input_code,
@@ -145,6 +146,7 @@ class APIImplementation(APIInterface):
                     elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
                         if device_info.phone_number is None or response.code_life_time is None or response.pre_auth_session_id is None:
                             raise Exception("Should never come here")
+                        log_debug_message("Sending passwordless login SMS to %s", device_info.phone_number)
                         sms_input = TypePasswordlessSmsDeliveryInput(
                             phone_number=device_info.phone_number,
                             user_input_code=user_input_code,

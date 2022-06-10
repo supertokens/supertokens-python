@@ -29,7 +29,7 @@ class ServiceImplementation(ServiceInterface[TypePasswordlessSmsDeliveryInput]):
                            get_content_result: GetContentResult,
                            user_context: Dict[str, Any],
                            from_: Union[str, None] = None,
-                           sid: Union[str, None] = None,
+                           messaging_service_sid: Union[str, None] = None,
                            ) -> None:
         if from_:
             self.twilio_client.messages.create(  # type: ignore
@@ -41,7 +41,7 @@ class ServiceImplementation(ServiceInterface[TypePasswordlessSmsDeliveryInput]):
             self.twilio_client.messages.create(  # type: ignore
                 to=get_content_result.to_phone,
                 body=get_content_result.body,
-                messaging_service_sid=sid,
+                messaging_service_sid=messaging_service_sid,
             )
 
     async def get_content(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:

@@ -55,7 +55,7 @@ class ServiceInterface(ABC, Generic[_T]):
                            get_content_result: GetContentResult,
                            user_context: Dict[str, Any],
                            from_: Union[str, None] = None,
-                           sid: Union[str, None] = None,
+                           messaging_service_sid: Union[str, None] = None,
                            ) -> None:
         pass
 

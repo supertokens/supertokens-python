@@ -20,7 +20,9 @@ from supertokens_python.ingredients.smsdelivery.service.supertokens import (
     SUPERTOKENS_SMS_SERVICE_URL, SupertokensServiceConfig)
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface
+from supertokens_python.logger import log_debug_message
 from supertokens_python.supertokens import Supertokens
+from supertokens_python.utils import handle_httpx_client_exceptions
 
 from ....types import TypePasswordlessSmsDeliveryInput
 
@@ -35,22 +37,24 @@ class SuperTokensService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput])
         supertokens = Supertokens.get_instance()
         app_name = supertokens.app_info.app_name
 
+        sms_input = {
+            'type': 'PASSWORDLESS_LOGIN',
+            'phoneNumber': input_.phone_number,
+            'userInputCode': input_.user_input_code,
+            'urlWithLinkCode': input_.url_with_link_code,
+            'codeLifetime': input_.code_life_time,
+            'appName': app_name,
+        }
         try:
             async with AsyncClient() as client:
                 await client.post(  # type: ignore
                     SUPERTOKENS_SMS_SERVICE_URL,
                     json={
                         "apiKey": self.config.api_key,
-                        "smsInput": {
-                            'type': 'PASSWORDLESS_LOGIN',
-                            'phoneNumber': input_.phone_number,
-                            'userInputCode': input_.user_input_code,
-                            'urlWithLinkCode': input_.url_with_link_code,
-                            'codeLifetime': input_.code_life_time,
-                            'appName': app_name,
-                        },
+                        "smsInput": sms_input,
                     },
                     headers={'api-version': '0'}
                 )
-        except Exception:
-            pass
+        except Exception as e:
+            log_debug_message("Error sending passwordless login SMS")
+            handle_httpx_client_exceptions(e, sms_input)
