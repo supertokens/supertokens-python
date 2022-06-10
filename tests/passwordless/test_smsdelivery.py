@@ -12,7 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import io
 import json
+from contextlib import redirect_stdout
 from typing import Any, Dict, Union
 
 import httpx
@@ -125,9 +127,8 @@ async def test_pless_login_default_backward_compatibility(driver_config_client: 
 
 
 @mark.asyncio
-async def test_pless_login_default_backward_compatibility_no_suppress_error(driver_config_client: TestClient):
-    "Passwordless login: test default backward compatibility api being called, error message sent back to user"
-    # TODO: FIXME
+async def test_pless_login_default_backward_compatibility_no_suppress_error_for_4xx_5xx(driver_config_client: TestClient):
+    "Passwordless login: test default backward compatibility api being called, error message sent back to user if core sends 400-599 (except 429)"
     app_name = ""
     phone = ""
     code_lifetime = 0
@@ -161,7 +162,7 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(driv
         url_with_link_code = sms_input["urlWithLinkCode"]
         user_input_code = sms_input["userInputCode"]
 
-        return httpx.Response(500, json={"err": "CUSTOM_ERR"})
+        return httpx.Response(403, json={"err": "CUSTOM_ERR"})
 
     with respx_mock(assert_all_mocked=False) as mocker:
         mocker.route(host="localhost").pass_through()
@@ -169,13 +170,71 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(driv
         resp = sign_in_up_request_phone(driver_config_client, "+919909909998", True)
 
         assert resp.status_code == 200
-        assert resp.json() == {"status": "OK"}
+        assert resp.json() == {'status': 'GENERAL_ERROR', 'message': 'CUSTOM_ERR'}
         assert mocked_route.called
 
         assert app_name == "ST"
         assert phone == "+919909909998"
         assert all([url_with_link_code, user_input_code, code_lifetime])
         assert code_lifetime > 0
+
+
+@mark.asyncio
+async def test_pless_login_default_backward_compatibility_suppress_error_for_429(driver_config_client: TestClient):
+    "Passwordless login: test default backward compatibility api being called, error message not sent back to user if core sends 429 (Too many requests from client) but prints quota reached."
+    app_name = ""
+    phone = ""
+    code_lifetime = 0
+    url_with_link_code = ""
+    user_input_code = ""
+
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        app_info=InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth"
+        ),
+        framework='fastapi',
+        recipe_list=[passwordless.init(
+            contact_config=passwordless.ContactPhoneOnlyConfig(),
+            flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+        ), session.init()]
+    )
+    start_st()
+
+    def api_side_effect(request: httpx.Request):
+        nonlocal app_name, phone, code_lifetime, url_with_link_code, user_input_code
+        body = json.loads(request.content)
+        sms_input = body["smsInput"]
+
+        app_name = sms_input["appName"]
+        phone = sms_input["phoneNumber"]
+        code_lifetime = sms_input["codeLifetime"]
+        url_with_link_code = sms_input["urlWithLinkCode"]
+        user_input_code = sms_input["userInputCode"]
+
+        return httpx.Response(429, json={"err": "CUSTOM_ERR"})
+
+    f = io.StringIO()
+    with respx_mock(assert_all_mocked=False) as mocker:
+        with redirect_stdout(f):
+            mocker.route(host="localhost").pass_through()
+            mocked_route = mocker.post(SUPERTOKENS_SMS_SERVICE_URL).mock(side_effect=api_side_effect)
+            resp = sign_in_up_request_phone(driver_config_client, "+919909909998", True)
+
+            assert resp.status_code == 200
+            assert resp.json()["status"] == "OK"
+            assert mocked_route.called
+
+            assert app_name == "ST"
+            assert phone == "+919909909998"
+            assert all([url_with_link_code, user_input_code, code_lifetime])
+            assert code_lifetime > 0
+
+    out = f.getvalue()
+    assert out.startswith("Free daily SMS quota reached.")
 
 
 @mark.asyncio
