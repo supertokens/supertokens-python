@@ -30,6 +30,10 @@ RUN apt install python3.7-distutils -y
 
 RUN python3.7 get-pip.py
 
-RUN curl -s https://deb.nodesource.com/setup_16.x | bash
+RUN curl -s https://deb.nodesource.com/setup_14.x | bash
 
 RUN apt install nodejs -y
+
+RUN npm install -g n
+
+RUN n 14
