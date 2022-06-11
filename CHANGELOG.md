@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.8.3] - 2022-06-09
 - Fix bugs in syncio functions across all the recipes
-- Fixes bug in resend code POST API in passwordless recipe to use the correct instance type during checks
+- Fixes bug in resend code POST API in passwordless recipe to use the correct instance type during checks.
+- Fixes bug in thirdpartypasswordless recipe to prevent infinite loop during resent code API
 
 ## [0.8.2] - 2022-05-27
 - Update phonenumbers lib dependency version

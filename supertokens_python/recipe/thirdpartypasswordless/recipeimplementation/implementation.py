@@ -15,19 +15,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
+from ...passwordless.interfaces import (ConsumeCodeExpiredUserInputCodeError,
+                                        ConsumeCodeIncorrectUserInputCodeError)
+from ...passwordless.interfaces import \
+    ConsumeCodeOkResult as PasswordlessConsumeCodeOkResult
 from ...passwordless.interfaces import (
-    ConsumeCodeExpiredUserInputCodeError,
-    ConsumeCodeIncorrectUserInputCodeError,
     ConsumeCodeRestartFlowError, CreateCodeOkResult,
-    CreateNewCodeForDeviceOkResult,
-    CreateNewCodeForDeviceRestartFlowError,
+    CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
-    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError,
-    DeviceType, RevokeAllCodesOkResult, RevokeCodeOkResult,
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError, DeviceType,
+    RevokeAllCodesOkResult, RevokeCodeOkResult,
     UpdateUserEmailAlreadyExistsError, UpdateUserOkResult,
-    UpdateUserPhoneNumberAlreadyExistsError,
-    UpdateUserUnknownUserIdError)
-from ...passwordless.interfaces import ConsumeCodeOkResult as PasswordlessConsumeCodeOkResult
+    UpdateUserPhoneNumberAlreadyExistsError, UpdateUserUnknownUserIdError)
 from ...thirdparty.interfaces import SignInUpFieldError, SignInUpOkResult
 
 if TYPE_CHECKING:
@@ -38,7 +37,7 @@ from supertokens_python.recipe.passwordless.recipe_implementation import \
 from supertokens_python.recipe.thirdparty.recipe_implementation import \
     RecipeImplementation as ThirdPartyImplementation
 
-from ..interfaces import RecipeInterface, ConsumeCodeOkResult
+from ..interfaces import ConsumeCodeOkResult, RecipeInterface
 from ..types import User
 from .passwordless_recipe_implementation import \
     RecipeImplementation as DerivedPasswordlessImplementation
