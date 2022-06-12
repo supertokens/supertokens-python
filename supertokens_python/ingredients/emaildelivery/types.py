@@ -27,7 +27,7 @@ class EmailDeliveryInterface(ABC, Generic[_T]):
 
 class EmailDeliveryConfig(ABC, Generic[_T]):
     def __init__(
-        self, service: Union[EmailDeliveryInterface[_T], None],
+        self, service: Union[EmailDeliveryInterface[_T], None] = None,
         override: Union[Callable[[EmailDeliveryInterface[_T]], EmailDeliveryInterface[_T]], None] = None,
     ) -> None:
         self.service = service
