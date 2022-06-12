@@ -11,6 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
 from typing import List, Union
 
 
@@ -43,3 +45,25 @@ class DeviceType:
         self.codes = codes
         self.email = email
         self.phone_number = phone_number
+
+
+class CreateAndSendCustomEmailParameters:
+    def __init__(self,
+                 code_life_time: int,
+                 pre_auth_session_id: str,
+                 email: str,
+                 user_input_code: Union[str, None] = None,
+                 url_with_link_code: Union[str, None] = None):
+        self.email: str = email
+        self.code_life_time: int = code_life_time
+        self.pre_auth_session_id: str = pre_auth_session_id
+        self.user_input_code: Union[str, None] = user_input_code
+        self.url_with_link_code: Union[str, None] = url_with_link_code
+
+
+TypePasswordlessEmailDeliveryInput = CreateAndSendCustomEmailParameters
+
+
+class PasswordlessIngredients:
+    def __init__(self, email_delivery: Union[EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput], None] = None):
+        self.email_delivery = email_delivery

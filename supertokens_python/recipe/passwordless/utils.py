@@ -11,21 +11,29 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from __future__ import annotations
 
 from abc import ABC
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig, EmailDeliveryConfigWithService)
+from supertokens_python.recipe.passwordless.types import \
+    CreateAndSendCustomEmailParameters
+from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
-
 if TYPE_CHECKING:
+    from .interfaces import (APIInterface, RecipeInterface,
+                             TypePasswordlessEmailDeliveryInput)
     from supertokens_python import AppInfo
-    from .interfaces import RecipeInterface, APIInterface
 
 from re import fullmatch
 
 from phonenumbers import is_valid_number, parse  # type: ignore
+from supertokens_python.recipe.passwordless.emaildelivery.services.backward_compatibility import \
+    BackwardCompatibilityService
 
 
 async def default_validate_phone_number(value: str):
@@ -56,28 +64,6 @@ async def default_create_and_send_custom_text_message(
 ) -> None:
     # TODO
     pass
-
-
-async def default_create_and_send_custom_email(
-    _: CreateAndSendCustomEmailParameters,
-    __: Dict[str, Any]
-) -> None:
-    # TODO
-    pass
-
-
-class CreateAndSendCustomEmailParameters:
-    def __init__(self,
-                 code_life_time: int,
-                 pre_auth_session_id: str,
-                 email: str,
-                 user_input_code: Union[str, None] = None,
-                 url_with_link_code: Union[str, None] = None):
-        self.email: str = email
-        self.code_life_time: int = code_life_time
-        self.pre_auth_session_id: str = pre_auth_session_id
-        self.user_input_code: Union[str, None] = user_input_code
-        self.url_with_link_code: Union[str, None] = url_with_link_code
 
 
 class CreateAndSendCustomTextMessageParameters:
@@ -127,16 +113,17 @@ class ContactPhoneOnlyConfig(ContactConfig):
 
 class ContactEmailOnlyConfig(ContactConfig):
     def __init__(self,
-                 create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]],
+                 create_and_send_custom_email: Union[Callable[
+                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]], None] = None,
                  validate_email_address: Union[Callable[[
-                     str], Awaitable[Union[str, None]]], None] = None
+                     str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__('EMAIL')
-        if create_and_send_custom_email is None:
-            self.create_and_send_custom_email = default_create_and_send_custom_email
-        else:
-            self.create_and_send_custom_email = create_and_send_custom_email
+
+        self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email is not None:
+            deprecated_warn("create_and_send_custom_email is deprecated. Please use email delivery config instead")
+
         if validate_email_address is None:
             self.validate_email_address = default_validate_email
         else:
@@ -145,20 +132,21 @@ class ContactEmailOnlyConfig(ContactConfig):
 
 class ContactEmailOrPhoneConfig(ContactConfig):
     def __init__(self,
-                 create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]],
-                 create_and_send_custom_text_message: Callable[
-                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]],
+                 create_and_send_custom_email: Union[Callable[
+                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]], None] = None,
+                 create_and_send_custom_text_message: Union[Callable[
+                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]], None] = None,
                  validate_email_address: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  validate_phone_number: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__('EMAIL_OR_PHONE')
-        if create_and_send_custom_email is None:
-            self.create_and_send_custom_email = default_create_and_send_custom_email
-        else:
-            self.create_and_send_custom_email = create_and_send_custom_email
+
+        self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email is not None:
+            deprecated_warn("create_and_send_custom_email is deprecated. Please use email delivery config instead")
+
         if validate_email_address is None:
             self.validate_email_address = default_validate_email
         else:
@@ -185,6 +173,7 @@ class PasswordlessConfig:
                  override: OverrideConfig,
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
                  get_link_domain_and_path: Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]],
+                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]],
                  get_custom_user_input_code: Union[Callable[[
                      Dict[str, Any]], Awaitable[str]], None] = None
                  ):
@@ -193,6 +182,7 @@ class PasswordlessConfig:
         self.flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = flow_type
         self.get_custom_user_input_code = get_custom_user_input_code
         self.get_link_domain_and_path = get_link_domain_and_path
+        self.get_email_delivery_config = get_email_delivery_config
 
 
 def validate_and_normalise_user_input(
@@ -202,13 +192,32 @@ def validate_and_normalise_user_input(
         override: Union[OverrideConfig, None] = None,
         get_link_domain_and_path: Union[Callable[[
             PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
-        get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None):
+        get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
+        email_delivery_config: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
+) -> PasswordlessConfig:
 
     if override is None:
         override = OverrideConfig()
 
     if get_link_domain_and_path is None:
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)
+
+    def get_email_delivery_config() -> EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]:
+        email_service = email_delivery_config.service if email_delivery_config is not None else None
+        if isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)):
+            create_and_send_custom_email = contact_config.create_and_send_custom_email
+        else:
+            create_and_send_custom_email = None
+
+        if email_service is None:
+            email_service = BackwardCompatibilityService(app_info, create_and_send_custom_email)
+
+        if email_delivery_config is not None and email_delivery_config.override is not None:
+            override = email_delivery_config.override
+        else:
+            override = None
+
+        return EmailDeliveryConfigWithService(email_service, override=override)
 
     if not isinstance(contact_config, ContactConfig):  # type: ignore user might not have linter enabled
         raise ValueError('contact_config must be of type ContactConfig')
@@ -226,5 +235,6 @@ def validate_and_normalise_user_input(
             apis=override.apis),
         flow_type=flow_type,
         get_link_domain_and_path=get_link_domain_and_path,
+        get_email_delivery_config=get_email_delivery_config,
         get_custom_user_input_code=get_custom_user_input_code
     )

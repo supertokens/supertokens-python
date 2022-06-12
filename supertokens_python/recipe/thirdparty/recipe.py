@@ -20,6 +20,7 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.emailverification.types import \
     EmailVerificationIngredients
+from supertokens_python.recipe.thirdparty.types import ThirdPartyIngredients
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api.implementation import APIImplementation
@@ -50,9 +51,11 @@ class ThirdPartyRecipe(RecipeModule):
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  sign_in_and_up_feature: SignInAndUpFeature,
+                 _ingredients: ThirdPartyIngredients,  # TODO: Use this
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
-                 email_verification_recipe: Union[EmailVerificationRecipe, None] = None):
+                 email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
+                 ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, sign_in_and_up_feature,
                                                         email_verification_feature, override)
@@ -114,8 +117,9 @@ class ThirdPartyRecipe(RecipeModule):
              override: Union[InputOverrideConfig, None] = None):
         def func(app_info: AppInfo):
             if ThirdPartyRecipe.__instance is None:
+                ingredients = ThirdPartyIngredients(None)
                 ThirdPartyRecipe.__instance = ThirdPartyRecipe(
-                    ThirdPartyRecipe.recipe_id, app_info, sign_in_and_up_feature, email_verification_feature, override)
+                    ThirdPartyRecipe.recipe_id, app_info, sign_in_and_up_feature, ingredients, email_verification_feature, override)
                 return ThirdPartyRecipe.__instance
             raise_general_exception('ThirdParty recipe has already been initialised. Please check your code for bugs.')
 

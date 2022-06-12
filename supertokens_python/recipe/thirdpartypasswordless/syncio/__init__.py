@@ -19,7 +19,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
     DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError)
 
 from .. import asyncio, interfaces
-from ..types import User
+from ..types import TypeThirdPartyPasswordlessEmailDeliveryInput, User
 
 
 def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -161,3 +161,7 @@ def passwordlessSigninup(email: Union[str, None], phone_number: Union[str,
                                                                       None], user_context: Union[None, Dict[str, Any]] = None) -> interfaces.ConsumeCodeOkResult:
     return sync(asyncio.passwordlessSigninup(
         email=email, phone_number=phone_number, user_context=user_context))
+
+
+def send_email(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+    return sync(asyncio.send_email(input_, user_context))

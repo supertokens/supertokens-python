@@ -13,6 +13,7 @@
 # under the License.
 from typing import Any, Dict, Union
 
+from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.passwordless.interfaces import (
     APIInterface, APIOptions, ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeIncorrectUserInputCodeError,
@@ -24,10 +25,9 @@ from supertokens_python.recipe.passwordless.interfaces import (
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
     EmailExistsGetOkResult, PhoneNumberExistsGetOkResult,
     ResendCodePostGeneralError, ResendCodePostOkResult,
-    ResendCodePostRestartFlowError)
+    ResendCodePostRestartFlowError, TypePasswordlessEmailDeliveryInput)
 from supertokens_python.recipe.passwordless.utils import (
     ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig,
-    CreateAndSendCustomEmailParameters,
     CreateAndSendCustomTextMessageParameters)
 from supertokens_python.recipe.session.asyncio import create_new_session
 
@@ -59,13 +59,16 @@ class APIImplementation(APIInterface):
                     (isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig) and email is not None):
                 if email is None:
                     raise Exception("Should never come here")
-                await api_options.config.contact_config.create_and_send_custom_email(CreateAndSendCustomEmailParameters(
+
+                log_debug_message("Sending passwordless login email to %s", email)
+                passwordless_email_delivery_input = TypePasswordlessEmailDeliveryInput(
                     email=email,
                     user_input_code=user_input_code,
                     url_with_link_code=magic_link,
                     code_life_time=response.code_life_time,
                     pre_auth_session_id=response.pre_auth_session_id
-                ), user_context)
+                )
+                await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
             elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
                 if phone_number is None:
                     raise Exception("Should never come here")
@@ -128,13 +131,16 @@ class APIImplementation(APIInterface):
                                         ContactEmailOrPhoneConfig) and device_info.email is not None):
                         if device_info.email is None:
                             raise Exception("Should never come here")
-                        await api_options.config.contact_config.create_and_send_custom_email(CreateAndSendCustomEmailParameters(
+
+                        log_debug_message("Sending passwordless login email to %s", device_info.email)
+                        passwordless_email_delivery_input = TypePasswordlessEmailDeliveryInput(
                             email=device_info.email,
                             user_input_code=user_input_code,
                             url_with_link_code=magic_link,
                             code_life_time=response.code_life_time,
                             pre_auth_session_id=response.pre_auth_session_id
-                        ), user_context)
+                        )
+                        await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
                     elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
                         if device_info.phone_number is None:
                             raise Exception("Should never come here")

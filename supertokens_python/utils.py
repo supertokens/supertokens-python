@@ -18,6 +18,7 @@ import asyncio
 import json
 import warnings
 from base64 import b64decode, b64encode
+from math import floor
 from re import fullmatch
 from time import time
 from typing import (TYPE_CHECKING, Any, Callable, Coroutine, Dict, List,
@@ -195,3 +196,27 @@ def handle_httpx_client_exceptions(e: Exception, input_: Union[Dict[str, Any], N
     if input_ is not None:
         log_debug_message("Logging the input:")
         log_debug_message("%s", json.dumps(input_))
+
+
+def humanize_time(ms: int) -> str:
+    t = floor(ms / 1000)
+    suffix = ""
+
+    if t < 60:
+        if t > 1:
+            suffix = "s"
+        time_str = f"{t} second{suffix}"
+    elif t < 3600:
+        m = floor(t / 60)
+        if m > 1:
+            suffix = "s"
+        time_str = f"{m} minute{suffix}"
+    else:
+        h = floor(t / 360) / 10
+        if h > 1:
+            suffix = "s"
+        if h % 1 == 0:
+            h = int(h)
+        time_str = f"{h} hour{suffix}"
+
+    return time_str

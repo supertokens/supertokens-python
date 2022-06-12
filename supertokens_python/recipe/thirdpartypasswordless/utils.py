@@ -11,21 +11,28 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig, EmailDeliveryConfigWithService)
 from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.backward_compatibility import \
+    BackwardCompatibilityService
+from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
 from ..emailverification.types import User as EmailVerificationUser
-from ..passwordless.utils import (ContactConfig, PhoneOrEmailInput,
+from ..passwordless.utils import (ContactConfig, ContactEmailOnlyConfig,
+                                  ContactEmailOrPhoneConfig, PhoneOrEmailInput,
                                   default_get_link_domain_and_path)
-from .interfaces import APIInterface, RecipeInterface
-from .types import User
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyPasswordlessRecipe
+    from .interfaces import APIInterface, RecipeInterface
+    from .types import TypeThirdPartyPasswordlessEmailDeliveryInput, User
 
 from supertokens_python.recipe.emailverification.utils import \
     OverrideConfig as EmailVerificationOverrideConfig
@@ -42,6 +49,8 @@ class InputEmailVerificationConfig:
                  ):
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email:
+            deprecated_warn("create_and_send_custom_email is deprecated. Please use email delivery config instead")
 
 
 def email_verification_create_and_send_custom_email(
@@ -117,14 +126,18 @@ class ThirdPartyPasswordlessConfig:
                  contact_config: ContactConfig,
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
                  get_link_domain_and_path: Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]],
-                 get_custom_user_input_code: Union[Callable[[
-                     Dict[str, Any]], Awaitable[str]], None] = None):
+                 get_email_delivery_config: Callable[
+                     [RecipeInterface], EmailDeliveryConfigWithService[TypeThirdPartyPasswordlessEmailDeliveryInput]
+                 ],
+                 get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None
+                 ):
         self.email_verification_feature = email_verification_feature
         self.providers = providers
         self.contact_config = contact_config
         self.flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'] = flow_type
         self.get_link_domain_and_path = get_link_domain_and_path
         self.get_custom_user_input_code = get_custom_user_input_code
+        self.get_email_delivery_config = get_email_delivery_config
         self.override = override
 
 
@@ -137,7 +150,8 @@ def validate_and_normalise_user_input(
         get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
         override: Union[InputOverrideConfig, None] = None,
-        providers: Union[List[Provider], None] = None
+        providers: Union[List[Provider], None] = None,
+        email_delivery_config: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
 ) -> ThirdPartyPasswordlessConfig:
     if not isinstance(contact_config, ContactConfig):  # type: ignore
         raise ValueError('contact_config must be an instance of ContactConfig')
@@ -166,4 +180,25 @@ def validate_and_normalise_user_input(
     if get_link_domain_and_path is None:
         get_link_domain_and_path = default_get_link_domain_and_path(recipe.app_info)
 
-    return ThirdPartyPasswordlessConfig(override=OverrideConfig(functions=override.functions, apis=override.apis), providers=providers, contact_config=contact_config, flow_type=flow_type, get_link_domain_and_path=get_link_domain_and_path, get_custom_user_input_code=get_custom_user_input_code, email_verification_feature=validate_and_normalise_email_verification_config(recipe, email_verification_feature, override))
+    def get_email_delivery_config(
+        tppless_recipe: RecipeInterface,
+    ) -> EmailDeliveryConfigWithService[TypeThirdPartyPasswordlessEmailDeliveryInput]:
+        email_service = email_delivery_config.service if email_delivery_config is not None else None
+        if isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)):
+            create_and_send_custom_email = contact_config.create_and_send_custom_email
+        else:
+            create_and_send_custom_email = None
+
+        if email_service is None:
+            ev_feature = email_verification_feature
+            email_service = BackwardCompatibilityService(recipe.app_info, tppless_recipe, create_and_send_custom_email, ev_feature)
+
+        if email_delivery_config is not None and email_delivery_config.override is not None:
+            override = email_delivery_config.override
+        else:
+            override = None
+
+        return EmailDeliveryConfigWithService(email_service, override=override)
+
+    return ThirdPartyPasswordlessConfig(override=OverrideConfig(functions=override.functions, apis=override.apis), providers=providers, contact_config=contact_config, flow_type=flow_type, get_link_domain_and_path=get_link_domain_and_path, get_custom_user_input_code=get_custom_user_input_code, email_verification_feature=validate_and_normalise_email_verification_config(recipe, email_verification_feature, override),
+                                        get_email_delivery_config=get_email_delivery_config)
