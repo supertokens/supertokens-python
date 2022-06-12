@@ -43,7 +43,7 @@ from supertokens_python.recipe.thirdpartyemailpassword import (
     InputEmailVerificationConfig, InputResetPasswordUsingTokenFeature)
 from supertokens_python.recipe.thirdpartyemailpassword.asyncio import \
     thirdparty_sign_in_up
-from supertokens_python.recipe.thirdpartyemailpassword.emaildelivery import (
+from supertokens_python.recipe.thirdpartyemailpassword.emaildelivery.services import (
     EmailDeliverySMTPConfig, SMTPService)
 from supertokens_python.recipe.thirdpartyemailpassword.types import \
     TypeThirdPartyEmailPasswordEmailDeliveryInput
