@@ -128,7 +128,6 @@ async def test_pless_login_default_backward_compatibility(driver_config_client: 
 @mark.asyncio
 async def test_pless_login_default_backward_compatibility_no_suppress_error(driver_config_client: TestClient):
     "Passwordless login: test default backward compatibility api being called, error message sent back to user"
-    # TODO: FIXME
     app_name = ""
     phone = ""
     code_lifetime = 0
@@ -170,7 +169,7 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(driv
         resp = sign_in_up_request_phone(driver_config_client, "+919909909998", True)
 
         assert resp.status_code == 200
-        assert resp.json() == {"status": "OK"}
+        assert resp.json() == {'message': 'CUSTOM_ERR', 'status': 'GENERAL_ERROR'}
         assert mocked_route.called
 
         assert app_name == "ST"

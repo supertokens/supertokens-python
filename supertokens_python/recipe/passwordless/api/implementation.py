@@ -116,7 +116,7 @@ class APIImplementation(APIInterface):
                         'Failed to generate a one time code. Please try again')
                 continue
 
-            if isinstance(response, CreateCodeOkResult):  # TODO: or isinstance(repsonse, CreateNewCodeForDeviceOkResult) ??
+            if isinstance(response, CreateCodeOkResult):
                 magic_link = None
                 user_input_code = None
                 flow_type = api_options.config.flow_type
