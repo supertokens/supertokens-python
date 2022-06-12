@@ -186,7 +186,11 @@ recipe_list = [
     thirdpartyemailpassword.init(
         sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(
             form_fields),
-        providers=providers_list
+        providers=providers_list,
+        reset_password_using_token_feature=thirdpartyemailpassword.InputResetPasswordUsingTokenFeature(
+            create_and_send_custom_email=create_and_send_custom_email
+        )
+
     ),
     passwordless.init(
         contact_config=ContactPhoneOnlyConfig(

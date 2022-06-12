@@ -16,9 +16,8 @@ from typing import Any, Dict, List, Union
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe.session import SessionContainer
-from typing_extensions import Literal
-
 from supertokens_python.types import APIResponse
+from typing_extensions import Literal
 
 from .types import DeviceType, User
 from .utils import PasswordlessConfig

@@ -16,12 +16,11 @@ from typing import Any, Dict, Union
 from supertokens_python.recipe.passwordless.interfaces import (
     APIInterface, APIOptions, ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeIncorrectUserInputCodeError,
-    ConsumeCodePostExpiredUserInputCodeError,
-    ConsumeCodePostIncorrectUserInputCodeError,
-    ConsumeCodePostOkResult, ConsumeCodePostGeneralError,
+    ConsumeCodePostExpiredUserInputCodeError, ConsumeCodePostGeneralError,
+    ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostOkResult,
     ConsumeCodePostRestartFlowError, ConsumeCodeRestartFlowError,
-    CreateCodeOkResult, CreateCodePostGeneralError,
-    CreateCodePostOkResult,
+    CreateCodePostGeneralError, CreateCodePostOkResult,
+    CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
     EmailExistsGetOkResult, PhoneNumberExistsGetOkResult,
     ResendCodePostGeneralError, ResendCodePostOkResult,
@@ -112,7 +111,7 @@ class APIImplementation(APIInterface):
                         'Failed to generate a one time code. Please try again')
                 continue
 
-            if isinstance(response, CreateCodeOkResult):
+            if isinstance(response, CreateNewCodeForDeviceOkResult):
                 magic_link = None
                 user_input_code = None
                 flow_type = api_options.config.flow_type
@@ -127,7 +126,7 @@ class APIImplementation(APIInterface):
                     if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
                             (isinstance(api_options.config.contact_config,
                                         ContactEmailOrPhoneConfig) and device_info.email is not None):
-                        if device_info.email is None or response.code_life_time is None or response.pre_auth_session_id is None:
+                        if device_info.email is None:
                             raise Exception("Should never come here")
                         await api_options.config.contact_config.create_and_send_custom_email(CreateAndSendCustomEmailParameters(
                             email=device_info.email,
@@ -137,7 +136,7 @@ class APIImplementation(APIInterface):
                             pre_auth_session_id=response.pre_auth_session_id
                         ), user_context)
                     elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
-                        if device_info.phone_number is None or response.code_life_time is None or response.pre_auth_session_id is None:
+                        if device_info.phone_number is None:
                             raise Exception("Should never come here")
                         await api_options.config.contact_config.create_and_send_custom_text_message(CreateAndSendCustomTextMessageParameters(
                             phone_number=device_info.phone_number,
@@ -148,7 +147,8 @@ class APIImplementation(APIInterface):
                         ), user_context)
                 except Exception as e:
                     return ResendCodePostGeneralError(str(e))
-            return ResendCodePostOkResult()
+                return ResendCodePostOkResult()
+            return ResendCodePostRestartFlowError()
 
     async def consume_code_post(self,
                                 pre_auth_session_id: str,
