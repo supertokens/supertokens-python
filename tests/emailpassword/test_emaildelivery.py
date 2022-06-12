@@ -32,7 +32,7 @@ from supertokens_python.ingredients.emaildelivery.types import \
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword import (
     InputEmailVerificationConfig, InputResetPasswordUsingTokenFeature)
-from supertokens_python.recipe.emailpassword.emaildelivery import (
+from supertokens_python.recipe.emailpassword.emaildelivery.services import (
     EmailDeliverySMTPConfig, SMTPService)
 from supertokens_python.recipe.emailpassword.types import (
     TypeEmailPasswordEmailDeliveryInput,
