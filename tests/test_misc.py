@@ -29,7 +29,7 @@ class TransporterTests(TestCase):
             is_html=True,
         )
 
-        command = "python3 -m smtpd -c DebuggingServer -n localhost:1025"
+        command = "python3 -u -m smtpd -c DebuggingServer -n localhost:1025"
         proc = Popen(command.split(), stdout=PIPE, stderr=STDOUT)  # Starts a SMTP daemon
 
         is_sent = False
@@ -44,12 +44,10 @@ class TransporterTests(TestCase):
         try:
             time.sleep(0.2)
             send_email()
-            while not is_sent:
-                continue
         finally:
             proc.terminate()
             try:
-                out, _ = proc.communicate(timeout=0.2)
+                out, _ = proc.communicate(timeout=0.5)
                 out = out.decode('utf-8').replace("\\n", "\n")
                 assert out != ""
                 assert out == """---------- MESSAGE FOLLOWS ----------
