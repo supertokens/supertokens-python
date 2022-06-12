@@ -19,20 +19,16 @@ from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeOkResult,
     ConsumeCodeRestartFlowError, CreateCodeOkResult,
-    CreateNewCodeForDeviceOkResult,
-    CreateNewCodeForDeviceRestartFlowError,
+    CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
-    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError,
-    DeviceType, RecipeInterface, RevokeAllCodesOkResult,
-    RevokeCodeOkResult, UpdateUserEmailAlreadyExistsError,
-    UpdateUserOkResult, UpdateUserPhoneNumberAlreadyExistsError,
-    UpdateUserUnknownUserIdError)
+    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError, DeviceType,
+    RecipeInterface, RevokeAllCodesOkResult, RevokeCodeOkResult,
+    UpdateUserEmailAlreadyExistsError, UpdateUserOkResult,
+    UpdateUserPhoneNumberAlreadyExistsError, UpdateUserUnknownUserIdError)
 
 from ...passwordless.types import User
-from ..interfaces import (
-    RecipeInterface as ThirdPartyPasswordlessInterface,
-    ConsumeCodeOkResult as ThirdPartyConsumeCodeOkResult
-)
+from ..interfaces import ConsumeCodeOkResult as ThirdPartyConsumeCodeOkResult
+from ..interfaces import RecipeInterface as ThirdPartyPasswordlessInterface
 
 
 class RecipeImplementation(RecipeInterface):
@@ -53,7 +49,7 @@ class RecipeImplementation(RecipeInterface):
                                          device_id: str,
                                          user_input_code: Union[str, None],
                                          user_context: Dict[str, Any]) -> Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
-        return await self.create_new_code_for_device(device_id, user_input_code, user_context)
+        return await self.recipe_implementation.create_new_code_for_device(device_id, user_input_code, user_context)
 
     async def consume_code(self,
                            pre_auth_session_id: str,
