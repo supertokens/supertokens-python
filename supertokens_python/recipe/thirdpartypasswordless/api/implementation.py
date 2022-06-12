@@ -104,7 +104,7 @@ class APIImplementation(APIInterface):
                                pre_auth_session_id: str,
                                api_options: PasswordlessAPIOptions,
                                user_context: Dict[str, Any]) -> Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, ResendCodePostGeneralError]:
-        return await self.resend_code_post(device_id, pre_auth_session_id, api_options, user_context)
+        return await self.pless_resend_code_post(device_id, pre_auth_session_id, api_options, user_context)
 
     async def consume_code_post(self,
                                 pre_auth_session_id: str,
@@ -126,10 +126,10 @@ class APIImplementation(APIInterface):
                                                  email: str,
                                                  api_options: PasswordlessAPIOptions,
                                                  user_context: Dict[str, Any]) -> PasswordlessEmailExistsGetOkResult:
-        return await self.passwordless_user_email_exists_get(email, api_options, user_context)
+        return await self.pless_email_exists_get(email, api_options, user_context)
 
     async def passwordless_user_phone_number_exists_get(self,
                                                         phone_number: str,
                                                         api_options: PasswordlessAPIOptions,
                                                         user_context: Dict[str, Any]) -> PasswordlessPhoneNumberExistsGetOkResult:
-        return await self.passwordless_user_phone_number_exists_get(phone_number, api_options, user_context)
+        return await self.pless_phone_number_exists_get(phone_number, api_options, user_context)
