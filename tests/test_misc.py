@@ -1,6 +1,7 @@
 import asyncio
+import time
 from os import getenv
-from subprocess import STDOUT, TimeoutExpired
+from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 from unittest import TestCase
 
 import nest_asyncio  # type: ignore
@@ -28,10 +29,7 @@ class TransporterTests(TestCase):
             is_html=True,
         )
 
-        import time
-        from subprocess import PIPE, Popen
-
-        command = "python -m smtpd -c DebuggingServer -n localhost:1025"
+        command = "python3 -m smtpd -c DebuggingServer -n localhost:1025"
         proc = Popen(command.split(), stdout=PIPE, stderr=STDOUT)  # Starts a SMTP daemon
 
         is_sent = False
