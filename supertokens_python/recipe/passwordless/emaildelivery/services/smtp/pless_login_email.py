@@ -2673,7 +2673,7 @@ otp_and_magic_link_body = """
 													<tr>
 														<td valign="top" class="mcnTextBlockInner">
 															<div
-																style="background-color:#fff; border: 1px solid #ddd; margin-left: 3%; margin-right: 3%; border-radius: 6px">
+																style="background-color:#fff; margin-left: 3%; margin-right: 3%; border: 1px solid #ddd; border-radius: 6px">
 																<div style="padding-left: 15%; padding-right: 15%;">
 																	<p
 																		style="font-family: 'Helvetica' , sans-serif; font-size: 16px; line-height: 26px; font-weight:700; text-align: center; padding-top: 24px; padding-bottom: 8px; padding-left: 10%; padding-right: 10%; ">
