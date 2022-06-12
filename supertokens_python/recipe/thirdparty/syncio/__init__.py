@@ -11,10 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union, List
+from typing import Any, Dict, List, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
-from ..types import User
+
+from ..types import TypeThirdPartyEmailDeliveryInput, User
 
 
 def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -68,3 +69,8 @@ def sign_in_up(third_party_id: str, third_party_user_id: str,
     from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
     return sync(sign_in_up(third_party_id,
                            third_party_user_id, email, email_verified, user_context))
+
+
+def send_email(input_: TypeThirdPartyEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+    from supertokens_python.recipe.thirdparty.asyncio import send_email
+    return sync(send_email(input_, user_context))

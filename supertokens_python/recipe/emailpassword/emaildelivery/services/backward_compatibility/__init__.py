@@ -72,7 +72,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
                  ) -> None:
         self.recipe_interface_impl = recipe_interface_impl
 
-        reset_password_feature_send_email_func = default_create_and_send_custom_email(self.app_info)
+        reset_password_feature_send_email_func = default_create_and_send_custom_email(app_info)
         if reset_password_using_token_feature and reset_password_using_token_feature.create_and_send_custom_email is not None:
             reset_password_feature_send_email_func = reset_password_using_token_feature.create_and_send_custom_email
 

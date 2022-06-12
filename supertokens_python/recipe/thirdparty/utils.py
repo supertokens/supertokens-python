@@ -17,6 +17,9 @@ from typing import (TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Set,
                     Union)
 
 from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.recipe.thirdparty.emaildelivery.services.backward_compatibility import \
+    BackwardCompatibilityService
+from supertokens_python.utils import deprecated_warn
 
 from .interfaces import APIInterface, RecipeInterface
 
@@ -25,13 +28,15 @@ if TYPE_CHECKING:
     from .provider import Provider
 
 from jwt import PyJWKClient, decode
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig, EmailDeliveryConfigWithService)
 from supertokens_python.recipe.emailverification.utils import \
     OverrideConfig as EmailVerificationOverrideConfig
 from supertokens_python.recipe.emailverification.utils import \
     ParentRecipeEmailVerificationConfig
 
 from ..emailverification.types import User as EmailVerificationUser
-from .types import User
+from .types import TypeThirdPartyEmailDeliveryInput, User
 
 
 class SignInAndUpFeature:
@@ -80,6 +85,8 @@ class InputEmailVerificationConfig:
                  ):
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email:
+            deprecated_warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
 
 
 def email_verification_create_and_send_custom_email(
@@ -151,17 +158,22 @@ class ThirdPartyConfig:
     def __init__(self,
                  sign_in_and_up_feature: SignInAndUpFeature,
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
-                 override: OverrideConfig):
+                 override: OverrideConfig,
+                 get_email_delivery_config: Callable[[RecipeInterface], EmailDeliveryConfigWithService[TypeThirdPartyEmailDeliveryInput]],
+                 ):
         self.sign_in_and_up_feature = sign_in_and_up_feature
         self.email_verification_feature = email_verification_feature
         self.override = override
+        self.get_email_delivery_config = get_email_delivery_config
 
 
 def validate_and_normalise_user_input(
         recipe: ThirdPartyRecipe,
         sign_in_and_up_feature: SignInAndUpFeature,
         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-        override: Union[InputOverrideConfig, None] = None) -> ThirdPartyConfig:
+        override: Union[InputOverrideConfig, None] = None,
+        email_delivery_config: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None
+) -> ThirdPartyConfig:
     if not isinstance(sign_in_and_up_feature, SignInAndUpFeature):  # type: ignore
         raise ValueError('sign_in_and_up_feature must be an instance of SignInAndUpFeature')
 
@@ -170,10 +182,33 @@ def validate_and_normalise_user_input(
 
     if override is None:
         override = InputOverrideConfig()
-    return ThirdPartyConfig(sign_in_and_up_feature, validate_and_normalise_email_verification_config(recipe, email_verification_feature, override),
-                            OverrideConfig(
-                                functions=override.functions, apis=override.apis)
-                            )
+
+    def get_email_delivery_config(tp_recipe: RecipeInterface
+                                  ) -> EmailDeliveryConfigWithService[TypeThirdPartyEmailDeliveryInput]:
+        if email_delivery_config and email_delivery_config.service:
+            return EmailDeliveryConfigWithService(
+                email_delivery_config.service,
+                email_delivery_config.override
+            )
+
+        email_service = BackwardCompatibilityService(
+            recipe.app_info,
+            tp_recipe,
+            email_verification_feature,
+        )
+        if email_delivery_config is not None and email_delivery_config.override is not None:
+            override = email_delivery_config.override
+        else:
+            override = None
+
+        return EmailDeliveryConfigWithService(email_service, override=override)
+
+    return ThirdPartyConfig(
+        sign_in_and_up_feature,
+        validate_and_normalise_email_verification_config(recipe, email_verification_feature, override),
+        OverrideConfig(functions=override.functions, apis=override.apis),
+        get_email_delivery_config
+    )
 
 
 def find_right_provider(
