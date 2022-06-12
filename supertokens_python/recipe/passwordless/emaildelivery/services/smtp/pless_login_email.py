@@ -837,7 +837,7 @@ otp_body = """
 																	<p
 																		style="font-family:'Helvetica', sans-serif; font-size: 16px; line-height: 26px; font-weight:700; text-align: center; padding-top: 24px; padding-bottom: 24px; padding-left: 8%; padding-right: 8%; ">
 																		Enter the below OTP in your login screen. Note
-																		that the link expires in ${time}.</p>
+																		that the OTP expires in ${time}.</p>
 
 																	<div
 																		style="display: block; flex-direction: row; justify-content: center; margin-bottom: 40px; text-align: center">
@@ -2678,7 +2678,7 @@ otp_and_magic_link_body = """
 																	<p
 																		style="font-family: 'Helvetica' , sans-serif; font-size: 16px; line-height: 26px; font-weight:700; text-align: center; padding-top: 24px; padding-bottom: 8px; padding-left: 10%; padding-right: 10%; ">
 																		Enter the below OTP in your login screen. Note
-																		that the link expires in ${time}.</p>
+																		that the OTP expires in ${time}.</p>
 																</div>
 
 																<div
