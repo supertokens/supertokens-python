@@ -15,8 +15,9 @@ from typing import TypeVar, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
-from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessEmailDeliveryInput
+from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
+from supertokens_python.recipe.passwordless.types import (
+    TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput)
 
 from ..thirdparty.types import ThirdPartyInfo, TypeThirdPartyEmailDeliveryInput
 
@@ -37,7 +38,13 @@ _T = TypeVar('_T')
 TypeThirdPartyPasswordlessEmailDeliveryInput = Union[TypeThirdPartyEmailDeliveryInput, TypePasswordlessEmailDeliveryInput]
 
 
+TypeThirdPartyPasswordlessSmsDeliveryInput = TypePasswordlessSmsDeliveryInput
+
+
 class ThirdPartyPasswordlessIngredients:
     def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None) -> None:
+                 email_delivery: Union[EmailDeliveryIngredient[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
+                 sms_delivery: Union[SMSDeliveryIngredient[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
+                 ) -> None:
         self.email_delivery = email_delivery
+        self.sms_delivery = sms_delivery

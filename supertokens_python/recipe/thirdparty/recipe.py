@@ -57,7 +57,7 @@ class ThirdPartyRecipe(RecipeModule):
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  sign_in_and_up_feature: SignInAndUpFeature,
-                 ingredients: ThirdPartyIngredients,  # TODO: Use this
+                 ingredients: ThirdPartyIngredients,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,

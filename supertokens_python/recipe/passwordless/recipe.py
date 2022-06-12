@@ -20,9 +20,10 @@ from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
+from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.passwordless.types import \
-    PasswordlessIngredients
+from supertokens_python.recipe.passwordless.types import (
+    PasswordlessIngredients, TypePasswordlessSmsDeliveryInput)
 from typing_extensions import Literal
 
 from .api import (consume_code, create_code, email_exists, phone_number_exists,
@@ -45,6 +46,7 @@ if TYPE_CHECKING:
 
 from supertokens_python.exceptions import (SuperTokensError,
                                            raise_general_exception)
+from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
@@ -53,6 +55,7 @@ class PasswordlessRecipe(RecipeModule):
     recipe_id = 'passwordless'
     __instance = None
     email_delivery: EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput]
+    sms_delivery: SMSDeliveryIngredient[TypePasswordlessSmsDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo, contact_config: ContactConfig,
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
@@ -62,10 +65,11 @@ class PasswordlessRecipe(RecipeModule):
                      PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
                  get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
                  email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
+                 sms_delivery: Union[SMSDeliveryConfig[TypePasswordlessSmsDeliveryInput], None] = None,
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, contact_config, flow_type, override,
-                                                        get_link_domain_and_path, get_custom_user_input_code, email_delivery)
+                                                        get_link_domain_and_path, get_custom_user_input_code, email_delivery, sms_delivery)
 
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
         self.recipe_implementation: RecipeInterface = recipe_implementation if self.config.override.functions is None else \
@@ -80,6 +84,9 @@ class PasswordlessRecipe(RecipeModule):
             self.email_delivery = EmailDeliveryIngredient(self.config.get_email_delivery_config())
         else:
             self.email_delivery = email_delivery_ingredient
+
+        sms_delivery_ingredient = ingredients.sms_delivery
+        self.sms_delivery = SMSDeliveryIngredient(self.config.get_sms_delivery_config()) if sms_delivery_ingredient is None else sms_delivery_ingredient
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [
@@ -108,7 +115,8 @@ class PasswordlessRecipe(RecipeModule):
             self.get_recipe_id(),
             self.config,
             self.recipe_implementation,
-            self.email_delivery
+            self.email_delivery,
+            self.sms_delivery
         )
         if request_id == CONSUME_CODE_API:
             return await consume_code(self.api_implementation, options)
@@ -138,11 +146,12 @@ class PasswordlessRecipe(RecipeModule):
              get_link_domain_and_path: Union[Callable[[
                  PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
              get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
-             email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None
+             email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
+             sms_delivery: Union[SMSDeliveryConfig[TypePasswordlessSmsDeliveryInput], None] = None,
              ):
         def func(app_info: AppInfo):
             if PasswordlessRecipe.__instance is None:
-                ingredients = PasswordlessIngredients(None)
+                ingredients = PasswordlessIngredients(None, None)
                 PasswordlessRecipe.__instance = PasswordlessRecipe(
                     PasswordlessRecipe.recipe_id,
                     app_info,
@@ -151,6 +160,7 @@ class PasswordlessRecipe(RecipeModule):
                     override,
                     get_link_domain_and_path, get_custom_user_input_code,
                     email_delivery,
+                    sms_delivery,
                 )
                 return PasswordlessRecipe.__instance
             raise_general_exception('Passwordless recipe has already been initialised. Please check '

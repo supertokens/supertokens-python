@@ -63,7 +63,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/supertokens/supertokens-python",
     packages=find_packages(exclude=exclude_list),
-    package_data = {'supertokens_python': [
+    package_data={'supertokens_python': [
         'py.typed',
     ]},
     classifiers=[
@@ -92,7 +92,8 @@ setup(
         'cryptography==35.0',
         'phonenumbers==8.12.48',
         'Werkzeug>=2.0 ,<2.1.0', # flask depends on this and flask has > '2.0' for this. However, the version before 2.1.0 breaks our lib.
-        "aiosmtplib==1.1.6"
+        "twilio==7.9.1",
+        "aiosmtplib==1.1.6",
     ],
     python_requires='>=3.7',
     include_package_data=True,

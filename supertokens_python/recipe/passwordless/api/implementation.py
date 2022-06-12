@@ -26,9 +26,10 @@ from supertokens_python.recipe.passwordless.interfaces import (
     EmailExistsGetOkResult, PhoneNumberExistsGetOkResult,
     ResendCodePostGeneralError, ResendCodePostOkResult,
     ResendCodePostRestartFlowError, TypePasswordlessEmailDeliveryInput)
+from supertokens_python.recipe.passwordless.types import \
+    TypePasswordlessSmsDeliveryInput
 from supertokens_python.recipe.passwordless.utils import (
-    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig,
-    CreateAndSendCustomTextMessageParameters)
+    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)
 from supertokens_python.recipe.session.asyncio import create_new_session
 
 from ..utils import PhoneOrEmailInput
@@ -72,13 +73,15 @@ class APIImplementation(APIInterface):
             elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
                 if phone_number is None:
                     raise Exception("Should never come here")
-                await api_options.config.contact_config.create_and_send_custom_text_message(CreateAndSendCustomTextMessageParameters(
+                log_debug_message("Sending passwordless login SMS to %s", phone_number)
+                sms_input = TypePasswordlessSmsDeliveryInput(
                     phone_number=phone_number,
                     user_input_code=user_input_code,
                     url_with_link_code=magic_link,
                     code_life_time=response.code_life_time,
-                    pre_auth_session_id=response.pre_auth_session_id
-                ), user_context)
+                    pre_auth_session_id=response.pre_auth_session_id,
+                )
+                await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
         except Exception as e:
             return CreateCodePostGeneralError(str(e))
         return CreateCodePostOkResult(response.device_id, response.pre_auth_session_id, flow_type)
@@ -144,13 +147,15 @@ class APIImplementation(APIInterface):
                     elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
                         if device_info.phone_number is None:
                             raise Exception("Should never come here")
-                        await api_options.config.contact_config.create_and_send_custom_text_message(CreateAndSendCustomTextMessageParameters(
+                        log_debug_message("Sending passwordless login SMS to %s", device_info.phone_number)
+                        sms_input = TypePasswordlessSmsDeliveryInput(
                             phone_number=device_info.phone_number,
                             user_input_code=user_input_code,
                             url_with_link_code=magic_link,
                             code_life_time=response.code_life_time,
-                            pre_auth_session_id=response.pre_auth_session_id
-                        ), user_context)
+                            pre_auth_session_id=response.pre_auth_session_id,
+                        )
+                        await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
                 except Exception as e:
                     return ResendCodePostGeneralError(str(e))
                 return ResendCodePostOkResult()

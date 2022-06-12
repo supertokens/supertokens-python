@@ -18,8 +18,11 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
+from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.recipe.passwordless.interfaces import \
     TypePasswordlessEmailDeliveryInput
+from supertokens_python.recipe.passwordless.types import \
+    TypePasswordlessSmsDeliveryInput
 from typing_extensions import Literal
 
 from . import types, utils
@@ -34,7 +37,7 @@ InputOverrideConfig = utils.OverrideConfig
 ContactEmailOnlyConfig = utils.ContactEmailOnlyConfig
 ContactConfig = utils.ContactConfig
 PhoneOrEmailInput = utils.PhoneOrEmailInput
-CreateAndSendCustomTextMessageParameters = utils.CreateAndSendCustomTextMessageParameters
+CreateAndSendCustomTextMessageParameters = types.CreateAndSendCustomTextMessageParameters
 CreateAndSendCustomEmailParameters = types.CreateAndSendCustomEmailParameters
 ContactPhoneOnlyConfig = utils.ContactPhoneOnlyConfig
 ContactEmailOrPhoneConfig = utils.ContactEmailOrPhoneConfig
@@ -47,10 +50,13 @@ def init(contact_config: ContactConfig,
              PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
          get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
          email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
+         sms_delivery: Union[SMSDeliveryConfig[TypePasswordlessSmsDeliveryInput], None] = None,
          ) -> Callable[[AppInfo], RecipeModule]:
     return PasswordlessRecipe.init(contact_config,
                                    flow_type,
                                    override,
                                    get_link_domain_and_path,
                                    get_custom_user_input_code,
-                                   email_delivery)
+                                   email_delivery,
+                                   sms_delivery,
+                                   )
