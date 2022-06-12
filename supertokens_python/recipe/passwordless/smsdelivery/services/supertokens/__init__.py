@@ -58,3 +58,4 @@ class SuperTokensService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput])
         except Exception as e:
             log_debug_message("Error sending passwordless login SMS")
             handle_httpx_client_exceptions(e, sms_input)
+            raise e
