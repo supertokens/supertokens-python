@@ -47,7 +47,7 @@ class SuperTokensService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput])
         }
         try:
             async with AsyncClient() as client:
-                await client.post(  # type: ignore
+                res = await client.post(  # type: ignore
                     SUPERTOKENS_SMS_SERVICE_URL,
                     json={
                         "apiKey": self.config.api_key,
@@ -55,6 +55,7 @@ class SuperTokensService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput])
                     },
                     headers={'api-version': '0'}
                 )
+                print(res)
         except Exception as e:
             log_debug_message("Error sending passwordless login SMS")
             handle_httpx_client_exceptions(e, sms_input)

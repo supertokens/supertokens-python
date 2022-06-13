@@ -22,7 +22,7 @@ from typing import Any, Dict, List
 
 from fastapi.testclient import TestClient
 from requests.models import Response
-from supertokens_python import Supertokens
+from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig
 from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
@@ -335,3 +335,60 @@ def email_verify_token_request(
         environ['SUPERTOKENS_ENV'] = 'testing'
 
     return resp
+
+
+WEBSITE_DOMAIN = "http://localhost:3000"
+
+CLOUD = True
+if CLOUD:
+    supertokens_config = SupertokensConfig(connection_uri="https://try.supertokens.io")
+    app_info = InputAppInfo(
+        app_name="Demo app testing",
+        api_domain="http://localhost:5000",
+        website_domain=WEBSITE_DOMAIN,
+        api_base_path="/auth",
+        website_base_path="/auth",
+    )
+else:
+    supertokens_config = SupertokensConfig('http://localhost:3567')
+    app_info = InputAppInfo(
+        app_name="Demo app testing",
+        api_domain="https://api.supertokens.io",
+        website_domain="https://supertokens.io",
+        api_base_path="/auth"
+    )
+
+from supertokens_python.ingredients.emaildelivery.services.smtp import (
+    EmailDeliverySMTPConfig, SMTPServiceConfig, SMTPServiceConfigFrom)
+from supertokens_python.ingredients.emaildelivery.types import \
+    EmailDeliveryConfig
+from supertokens_python.recipe.emailpassword.emaildelivery.services import \
+    SMTPService
+
+email_delivery_smtp_config = EmailDeliverySMTPConfig(
+    smtp_settings=SMTPServiceConfig(
+        host="smtp.mailtrap.io",
+        from_=SMTPServiceConfigFrom("NAME", "EMAIL"),
+        password="PASSWORD",
+        secure=False,
+        port=2525,
+    )
+)
+
+from supertokens_python.ingredients.smsdelivery.service.twilio import (
+    SMSDeliveryTwilioConfig, TwilioServiceConfig)
+from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
+from supertokens_python.recipe.passwordless.smsdelivery.services import \
+    TwilioService
+
+sms_delivery_twilio_config = SMSDeliveryTwilioConfig(
+    twilio_settings=TwilioServiceConfig(
+        account_sid="ACCOUNT_SID",
+        auth_token="AUTH_TOKEN",
+        from_="FROM",
+    ),
+)
+
+smtp_service = SMTPService(config=email_delivery_smtp_config)
+
+email_delivery_config = EmailDeliveryConfig(service=smtp_service)
