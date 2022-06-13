@@ -330,7 +330,7 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+            "?token=")[1].split("&rid=")[0]
 
     init(
         supertokens_config=SupertokensConfig('http://localhost:3567'),
@@ -400,7 +400,7 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(driver_co
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+            "?token=")[1].split("&rid=")[0]
 
     init(
         supertokens_config=SupertokensConfig('http://localhost:3567'),
@@ -470,7 +470,7 @@ async def test_the_email_verify_api_with_token_of_not_type_string(driver_config_
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+            "?token=")[1].split("&rid=")[0]
 
     init(
         supertokens_config=SupertokensConfig('http://localhost:3567'),
@@ -543,7 +543,7 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+            "?token=")[1].split("&rid=")[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
@@ -641,7 +641,7 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(driver_con
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+            "?token=")[1].split("&rid=")[0]
 
     init(
         supertokens_config=SupertokensConfig('http://localhost:3567'),
@@ -744,7 +744,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(driver_conf
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+            "?token=")[1].split("&rid=")[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
@@ -836,7 +836,7 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
         nonlocal token
         token = email_verification_url_token.split(
-            "?token=")[1].split("&ride")[0]
+            "?token=")[1].split("&rid=")[0]
 
     def apis_override_email_password(param: APIInterface):
         temp = param.email_verify_post
