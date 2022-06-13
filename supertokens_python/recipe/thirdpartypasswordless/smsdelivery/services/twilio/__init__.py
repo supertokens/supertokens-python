@@ -22,8 +22,6 @@ from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface
 from supertokens_python.recipe.passwordless.smsdelivery.services.twilio import \
     TwilioService as PlessTwilioService
-from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessSmsDeliveryInput
 
 from ....types import TypeThirdPartyPasswordlessSmsDeliveryInput
 
@@ -34,5 +32,5 @@ class TwilioService(SMSDeliveryInterface[TypeThirdPartyPasswordlessSmsDeliveryIn
     def __init__(self, config: SMSDeliveryTwilioConfig[TypeThirdPartyPasswordlessSmsDeliveryInput]) -> None:
         self.pless_twilio_service = PlessTwilioService(config)
 
-    async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
+    async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
         await self.pless_twilio_service.send_sms(input_, user_context)

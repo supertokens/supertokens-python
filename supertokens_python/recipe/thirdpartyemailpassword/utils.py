@@ -139,7 +139,7 @@ def validate_and_normalise_user_input(
         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[Provider], None] = None,
-        email_delivery_config: Union[EmailDeliveryConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None,
+        email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None,
 ) -> ThirdPartyEmailPasswordConfig:
     if sign_up_feature is not None and not isinstance(sign_up_feature, InputSignUpFeature):  # type: ignore
         raise ValueError('sign_up_feature must be of type InputSignUpFeature or None')
@@ -166,10 +166,10 @@ def validate_and_normalise_user_input(
         override = InputOverrideConfig()
 
     def get_email_delivery_config(recipe_interface_impl: RecipeInterface, ep_recipe_interface_impl: EPRecipeInterface):
-        if email_delivery_config and email_delivery_config.service:
+        if email_delivery and email_delivery.service:
             return EmailDeliveryConfigWithService(
-                service=email_delivery_config.service,
-                override=email_delivery_config.override
+                service=email_delivery.service,
+                override=email_delivery.override
             )
 
         email_service = BackwardCompatibilityService(
@@ -179,8 +179,8 @@ def validate_and_normalise_user_input(
             reset_password_using_token_feature=reset_password_using_token_feature,
             email_verification_feature=email_verification_feature,
         )
-        if email_delivery_config is not None and email_delivery_config.override is not None:
-            override = email_delivery_config.override
+        if email_delivery is not None and email_delivery.override is not None:
+            override = email_delivery.override
         else:
             override = None
 

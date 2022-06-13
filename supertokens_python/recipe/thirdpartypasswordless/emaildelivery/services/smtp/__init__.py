@@ -15,7 +15,7 @@
 from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    EmailDeliverySMTPConfig, ServiceInterface, Transporter)
+    EmailDeliverySMTPConfig, Transporter)
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import \
@@ -37,23 +37,22 @@ from .service_implementation.passwordless_implementation import \
 
 
 class SMTPService(EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
-    service_implementation: ServiceInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]
 
     def __init__(self, config: EmailDeliverySMTPConfig[TypeThirdPartyPasswordlessEmailDeliveryInput]) -> None:
         self.transporter = Transporter(config.smtp_settings)
 
         oi = ServiceImplementation(self.transporter)
-        self.service_implementation = oi if config.override is None else config.override(oi)
+        service_implementation = oi if config.override is None else config.override(oi)
 
         ev_config = EmailDeliverySMTPConfig[TypeEmailVerificationEmailDeliveryInput](
             smtp_settings=config.smtp_settings,
-            override=lambda _: EmailVerificationServiceImpl(self.service_implementation)
+            override=lambda _: EmailVerificationServiceImpl(service_implementation)
         )
         self.ev_smtp_service = EmailVerificationSMTPService(ev_config)
 
         pless_config = EmailDeliverySMTPConfig[TypePasswordlessEmailDeliveryInput](
             smtp_settings=config.smtp_settings,
-            override=lambda _: PlessServiceImpl(self.service_implementation)
+            override=lambda _: PlessServiceImpl(service_implementation)
         )
         self.pless_smtp_service = PlessSMTPService(pless_config)
 
