@@ -136,7 +136,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             self.email_password_recipe = email_password_recipe
         else:
             def func_override_email_password(_: EmailPasswordRecipeInterface):
-                return EmailPasswordRecipeImplementation(self.recipe_implementation)
+                return ep_recipe_implementation
 
             def apis_override_email_password(_: EmailPasswordAPIInterface):
                 return get_email_password_interface_impl(self.api_implementation)

@@ -52,8 +52,6 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailPas
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  ) -> None:
-        self.recipe_interface_impl = recipe_interface_impl
-
         create_and_send_custom_email_wrapper = None
         input_create_and_send_custom_email = email_verification_feature.create_and_send_custom_email if email_verification_feature is not None else None
 
@@ -81,6 +79,6 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailPas
 
     async def send_email(self, input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
         if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
-            return await self.ev_backward_compatiblity_service.send_email(input_, user_context)
+            await self.ev_backward_compatiblity_service.send_email(input_, user_context)
 
-        return await self.ep_backward_compatiblity_service.send_email(input_, user_context)
+        await self.ep_backward_compatiblity_service.send_email(input_, user_context)

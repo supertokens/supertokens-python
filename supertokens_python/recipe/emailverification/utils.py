@@ -63,7 +63,8 @@ class ParentRecipeEmailVerificationConfig:
         self.create_and_send_custom_email = create_and_send_custom_email
 
         if create_and_send_custom_email:
-            deprecated_warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
+            # Note: This will appear twice because `InputEmailVerificationConfig` will also produce same warning.
+            deprecated_warn("create_and_send_custom_email is deprecated. Please use email delivery config instead")
 
 
 class EmailVerificationConfig:
@@ -80,7 +81,7 @@ class EmailVerificationConfig:
 
 
 def validate_and_normalise_user_input(
-        app_info: AppInfo, config: ParentRecipeEmailVerificationConfig):
+        app_info: AppInfo, config: ParentRecipeEmailVerificationConfig) -> EmailVerificationConfig:
     if not isinstance(config, ParentRecipeEmailVerificationConfig):  # type: ignore
         raise ValueError('config must be an instance of ParentRecipeEmailVerificationConfig')
 
