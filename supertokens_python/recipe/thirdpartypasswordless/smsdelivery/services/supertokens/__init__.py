@@ -15,7 +15,7 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.smsdelivery.service.supertokens import \
+from supertokens_python.ingredients.smsdelivery.services.supertokens import \
     SupertokensServiceConfig
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface

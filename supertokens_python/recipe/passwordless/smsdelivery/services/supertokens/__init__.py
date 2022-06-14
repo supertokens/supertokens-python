@@ -16,7 +16,7 @@
 from typing import Any, Dict
 
 from httpx import AsyncClient
-from supertokens_python.ingredients.smsdelivery.service.supertokens import (
+from supertokens_python.ingredients.smsdelivery.services.supertokens import (
     SUPERTOKENS_SMS_SERVICE_URL, SupertokensServiceConfig)
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface

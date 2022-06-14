@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Union
 
-from supertokens_python.ingredients.smsdelivery.service.twilio import (
+from supertokens_python.ingredients.smsdelivery.services.twilio import (
     GetContentResult, ServiceInterface)
 from supertokens_python.recipe.passwordless.smsdelivery.services.twilio.passwordless_login import \
     pless_sms_content
