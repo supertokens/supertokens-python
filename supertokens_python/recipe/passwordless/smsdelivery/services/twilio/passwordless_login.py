@@ -17,7 +17,7 @@ from string import Template
 from textwrap import dedent
 from typing import TYPE_CHECKING, Union
 
-from supertokens_python.ingredients.smsdelivery.service.twilio import \
+from supertokens_python.ingredients.smsdelivery.services.twilio import \
     GetContentResult
 from supertokens_python.supertokens import Supertokens
 from supertokens_python.utils import humanize_time

@@ -27,9 +27,9 @@ from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
-from supertokens_python.ingredients.smsdelivery.service.supertokens import \
+from supertokens_python.ingredients.smsdelivery.services.supertokens import \
     SUPERTOKENS_SMS_SERVICE_URL
-from supertokens_python.ingredients.smsdelivery.service.twilio import (
+from supertokens_python.ingredients.smsdelivery.services.twilio import (
     GetContentResult, ServiceInterface, SMSDeliveryTwilioConfig,
     TwilioServiceConfig)
 from supertokens_python.ingredients.smsdelivery.types import (

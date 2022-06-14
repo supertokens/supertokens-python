@@ -17,7 +17,7 @@ from os import environ
 from typing import Any, Awaitable, Callable, Dict, Union
 
 from httpx import AsyncClient, HTTPStatusError, Response
-from supertokens_python.ingredients.smsdelivery.service.supertokens import \
+from supertokens_python.ingredients.smsdelivery.services.supertokens import \
     SUPERTOKENS_SMS_SERVICE_URL
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface
