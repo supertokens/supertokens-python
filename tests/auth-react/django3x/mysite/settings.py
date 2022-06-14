@@ -17,20 +17,29 @@ from typing import Any, Dict, List, Union
 from corsheaders.defaults import default_headers
 from django.conf import settings
 from dotenv import load_dotenv
-from supertokens_python import (InputAppInfo, SupertokensConfig,
+from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
                                 get_all_cors_headers, init)
 from supertokens_python.recipe import (emailpassword, passwordless, session,
                                        thirdparty, thirdpartyemailpassword,
                                        thirdpartypasswordless)
+from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.types import InputFormField, User
+from supertokens_python.recipe.emailverification import EmailVerificationRecipe
+from supertokens_python.recipe.jwt import JWTRecipe
 from supertokens_python.recipe.passwordless import (
-    ContactPhoneOnlyConfig, CreateAndSendCustomEmailParameters,
-    CreateAndSendCustomTextMessageParameters)
+    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig,
+    CreateAndSendCustomEmailParameters,
+    CreateAndSendCustomTextMessageParameters, PasswordlessRecipe)
+from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import (
     AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
-from supertokens_python.recipe.thirdpartyemailpassword import (Facebook,
-                                                               Github, Google)
+from supertokens_python.recipe.thirdpartyemailpassword import (
+    Facebook, Github, Google, ThirdPartyEmailPasswordRecipe)
+from supertokens_python.recipe.thirdpartypasswordless import \
+    ThirdPartyPasswordlessRecipe
+from typing_extensions import Literal
 
 load_dotenv()
 
@@ -164,57 +173,119 @@ providers_list: List[Provider] = [
         client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
     ), CustomAuth0Provider(
         client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
-        domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
+        domain=os.environ.get('AUTH0_DOMAIN', 'auth0.supertokens.com'),  # type: ignore
         client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
     )
 ]
 
-recipe_list = [
-    session.init(),
-    emailpassword.init(
-        sign_up_feature=emailpassword.InputSignUpFeature(form_fields),
-        reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
-            create_and_send_custom_email=create_and_send_custom_email
-        ),
-        email_verification_feature=emailpassword.InputEmailVerificationConfig(
-            create_and_send_custom_email=create_and_send_custom_email
-        )
-    ),
-    thirdparty.init(
-        sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list)
-    ),
-    thirdpartyemailpassword.init(
-        sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(
-            form_fields),
-        providers=providers_list
-    ),
-    passwordless.init(
-        contact_config=ContactPhoneOnlyConfig(
-            create_and_send_custom_text_message=save_code_text
-        ),
-        flow_type='USER_INPUT_CODE_AND_MAGIC_LINK'
-    ),
-    thirdpartypasswordless.init(
-        contact_config=ContactPhoneOnlyConfig(
-            create_and_send_custom_text_message=save_code_text
-        ),
-        flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
-        providers=providers_list
-    )
-]
-init(
-    supertokens_config=SupertokensConfig('http://localhost:9000'),
-    app_info=InputAppInfo(
-        app_name="SuperTokens Demo",
-        api_domain="0.0.0.0:" + get_api_port(),
-        website_domain=get_website_domain()
-    ),
-    framework='django',
-    mode=os.environ.get('APP_MODE', 'asgi'),  # type: ignore
-    recipe_list=recipe_list,
-    telemetry=False
-)
 
+def custom_init(contact_method: Union[None, Literal['PHONE', 'EMAIL', 'EMAIL_OR_PHONE']] = None,
+                flow_type: Union[None, Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']] = None):
+    PasswordlessRecipe.reset()
+    ThirdPartyPasswordlessRecipe.reset()
+    JWTRecipe.reset()
+    EmailVerificationRecipe.reset()
+    SessionRecipe.reset()
+    ThirdPartyRecipe.reset()
+    EmailPasswordRecipe.reset()
+    ThirdPartyEmailPasswordRecipe.reset()
+    Supertokens.reset()
+
+    if contact_method is not None and flow_type is not None:
+        if contact_method == 'PHONE':
+            passwordless_init = passwordless.init(
+                contact_config=ContactPhoneOnlyConfig(
+                    create_and_send_custom_text_message=save_code_text
+                ),
+                flow_type=flow_type
+            )
+            thirdpartypasswordless_init = thirdpartypasswordless.init(
+                contact_config=ContactPhoneOnlyConfig(
+                    create_and_send_custom_text_message=save_code_text
+                ),
+                flow_type=flow_type,
+                providers=providers_list
+            )
+        elif contact_method == 'EMAIL':
+            passwordless_init = passwordless.init(
+                contact_config=ContactEmailOnlyConfig(
+                    create_and_send_custom_email=save_code_email
+                ),
+                flow_type=flow_type
+            )
+            thirdpartypasswordless_init = thirdpartypasswordless.init(
+                contact_config=ContactEmailOnlyConfig(
+                    create_and_send_custom_email=save_code_email
+                ),
+                flow_type=flow_type,
+                providers=providers_list
+            )
+        else:
+            passwordless_init = passwordless.init(
+                contact_config=ContactEmailOrPhoneConfig(
+                    create_and_send_custom_email=save_code_email,
+                    create_and_send_custom_text_message=save_code_text
+                ),
+                flow_type=flow_type
+            )
+            thirdpartypasswordless_init = thirdpartypasswordless.init(
+                contact_config=ContactEmailOrPhoneConfig(
+                    create_and_send_custom_email=save_code_email,
+                    create_and_send_custom_text_message=save_code_text
+                ),
+                flow_type=flow_type,
+                providers=providers_list
+            )
+    else:
+        passwordless_init = passwordless.init(
+            contact_config=ContactPhoneOnlyConfig(
+                create_and_send_custom_text_message=save_code_text
+            ),
+            flow_type='USER_INPUT_CODE_AND_MAGIC_LINK'
+        )
+        thirdpartypasswordless_init = thirdpartypasswordless.init(
+            contact_config=ContactPhoneOnlyConfig(create_and_send_custom_text_message=save_code_text),
+            flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
+            providers=providers_list
+        )
+
+    recipe_list = [
+        session.init(),
+        emailpassword.init(
+            sign_up_feature=emailpassword.InputSignUpFeature(form_fields),
+            reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
+                create_and_send_custom_email=create_and_send_custom_email
+            ),
+            email_verification_feature=emailpassword.InputEmailVerificationConfig(
+                create_and_send_custom_email=create_and_send_custom_email
+            )
+        ),
+        thirdparty.init(
+            sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list)
+        ),
+        thirdpartyemailpassword.init(
+            sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(
+                form_fields),
+            providers=providers_list
+        ),
+        passwordless_init,
+        thirdpartypasswordless_init
+    ]
+    init(
+        supertokens_config=SupertokensConfig('http://localhost:9000'),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="0.0.0.0:" + get_api_port(),
+            website_domain=get_website_domain()
+        ),
+        framework='django',
+        mode=os.environ.get('APP_MODE', 'asgi'),  # type: ignore
+        recipe_list=recipe_list,
+        telemetry=False
+    )
+
+
+custom_init('PHONE', 'USER_INPUT_CODE_AND_MAGIC_LINK')
 
 ALLOWED_HOSTS = ['localhost']
 
