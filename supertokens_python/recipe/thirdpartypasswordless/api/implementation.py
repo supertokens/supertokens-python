@@ -17,6 +17,7 @@ from typing import Any, Dict, Union
 
 import supertokens_python.recipe.passwordless.interfaces as PlessInterfaces
 import supertokens_python.recipe.thirdparty.interfaces as ThirdPartyInterfaces
+from supertokens_python.types import GeneralErrorResponse
 
 from ...passwordless.api.implementation import \
     APIImplementation as PasswordlessImplementation
@@ -37,7 +38,6 @@ from ..interfaces import (APIInterface, AuthorisationUrlGetOkResult,
                           PasswordlessPhoneNumberExistsGetOkResult,
                           ResendCodePostGeneralError, ResendCodePostOkResult,
                           ResendCodePostRestartFlowError,
-                          ThirdPartySignInUpPostFieldError,
                           ThirdPartySignInUpPostNoEmailGivenByProviderResponse,
                           ThirdPartySignInUpPostOkResult)
 from ..types import User
@@ -73,11 +73,11 @@ class APIImplementation(APIInterface):
         thirdparty_implementation.apple_redirect_handler_post = derived_tp.apple_redirect_handler_post
 
     async def authorisation_url_get(self, provider: Provider,
-                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResult:
+                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         return await self.tp_authorisation_url_get(provider, api_options, user_context)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResult, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, ThirdPartySignInUpPostFieldError]:
+                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResult, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
         result = await self.tp_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
         if isinstance(result, ThirdPartyInterfaces.SignInUpPostOkResult):
             return ThirdPartySignInUpPostOkResult(

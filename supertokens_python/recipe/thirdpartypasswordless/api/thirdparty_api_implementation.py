@@ -16,14 +16,14 @@ from __future__ import annotations
 from typing import Any, Dict, Union
 
 from supertokens_python.recipe.thirdparty.interfaces import (
-    APIInterface, APIOptions,
-    SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError)
+    APIInterface, APIOptions, SignInUpPostNoEmailGivenByProviderResponse,
+    SignInUpPostOkResult)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import User
+from supertokens_python.types import GeneralErrorResponse
 
-from ..interfaces import (
-    APIInterface as ThirdPartyPasswordlessAPIInterface,
-    ThirdPartySignInUpPostOkResult)
+from ..interfaces import APIInterface as ThirdPartyPasswordlessAPIInterface
+from ..interfaces import ThirdPartySignInUpPostOkResult
 
 
 def get_interface_impl(
@@ -38,7 +38,7 @@ def get_interface_impl(
 
     if not implementation.disable_sign_in_up_post:
         async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
-                                  user_context: Dict[str, Any]) -> Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError]:
+                                  user_context: Dict[str, Any]) -> Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
             response = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
             if isinstance(response, ThirdPartySignInUpPostOkResult):
                 if response.user.email is None:

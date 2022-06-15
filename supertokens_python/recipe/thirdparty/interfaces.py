@@ -16,8 +16,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-
-from ...types import APIResponse
+from ...types import APIResponse, GeneralErrorResponse
 from ..emailverification.interfaces import \
     RecipeInterface as EmailVerificationRecipeInterface
 from .provider import Provider
@@ -35,11 +34,6 @@ class SignInUpOkResult():
     def __init__(self, user: User, created_new_user: bool):
         self.user = user
         self.created_new_user = created_new_user
-
-
-class SignInUpFieldError():
-    def __init__(self, error: str):
-        self.error = error
 
 
 class RecipeInterface(ABC):
@@ -61,7 +55,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -> Union[SignInUpOkResult, SignInUpFieldError]:
+                         email_verified: bool, user_context: Dict[str, Any]) -> SignInUpOkResult:
         pass
 
 
@@ -114,19 +108,6 @@ class SignInUpPostNoEmailGivenByProviderResponse(APIResponse):
         }
 
 
-class SignInUpPostFieldError(APIResponse):
-    status: str = 'FIELD_ERROR'
-
-    def __init__(self, error: str):
-        self.error = error
-
-    def to_json(self) -> Dict[str, Any]:
-        return {
-            'status': self.status,
-            'error': self.error
-        }
-
-
 class AuthorisationUrlGetOkResult(APIResponse):
     status: str = 'OK'
 
@@ -148,12 +129,12 @@ class APIInterface:
 
     @abstractmethod
     async def authorisation_url_get(self, provider: Provider,
-                                    api_options: APIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResult:
+                                    api_options: APIOptions, user_context: Dict[str, Any]) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
-                              user_context: Dict[str, Any]) -> Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError]:
+                              user_context: Dict[str, Any]) -> Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
