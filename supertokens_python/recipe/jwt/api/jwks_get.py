@@ -14,11 +14,14 @@
 from supertokens_python.recipe.jwt.interfaces import APIInterface, APIOptions
 from supertokens_python.utils import send_200_response
 
+from ..interfaces import JWKSGetResponse
+
 
 async def jwks_get(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_jwks_get:
         return None
 
     result = await api_implementation.jwks_get(api_options, {})
-    api_options.response.set_header("Access-Control-Allow-Origin", "*")
+    if isinstance(result, JWKSGetResponse):
+        api_options.response.set_header("Access-Control-Allow-Origin", "*")
     return send_200_response(result.to_json(), api_options.response)

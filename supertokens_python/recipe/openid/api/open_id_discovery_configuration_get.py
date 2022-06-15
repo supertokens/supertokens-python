@@ -15,11 +15,15 @@ from supertokens_python.recipe.openid.interfaces import (APIInterface,
                                                          APIOptions)
 from supertokens_python.utils import send_200_response
 
+from ..interfaces import OpenIdDiscoveryConfigurationGetResponse
+
 
 async def open_id_discovery_configuration_get(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_open_id_discovery_configuration_get:
         return None
 
     result = await api_implementation.open_id_discovery_configuration_get(api_options, {})
-    api_options.response.set_header("Access-Control-Allow-Origin", "*")
+
+    if isinstance(result, OpenIdDiscoveryConfigurationGetResponse):
+        api_options.response.set_header("Access-Control-Allow-Origin", "*")
     return send_200_response(result.to_json(), api_options.response)
