@@ -30,8 +30,8 @@ from supertokens_python.recipe.thirdparty.api.implementation import \
 from supertokens_python.recipe.thirdparty.interfaces import \
     APIOptions as ThirdPartyApiOptions
 from supertokens_python.recipe.thirdparty.interfaces import (
-    AuthorisationUrlGetOkResult, SignInUpPostFieldError,
-    SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostOkResult)
+    AuthorisationUrlGetOkResult, SignInUpPostNoEmailGivenByProviderResponse,
+    SignInUpPostOkResult)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
     APIInterface
@@ -84,7 +84,7 @@ class APIImplementation(APIInterface):
         return await self.ep_password_reset_post(form_fields, token, api_options, user_context)
 
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError]:
+                                         api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
         result = await self.tp_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
         if isinstance(result, SignInUpPostOkResult):
             return ThirdPartySignInUpPostOkResult(
@@ -112,7 +112,7 @@ class APIImplementation(APIInterface):
                 result.session)
         return result
 
-    async def authorisation_url_get(self, provider: Provider, api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResult:
+    async def authorisation_url_get(self, provider: Provider, api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         return await self.tp_authorisation_url_get(provider, api_options, user_context)
 
     async def apple_redirect_handler_post(self, code: str, state: str, api_options: ThirdPartyApiOptions, user_context: Dict[str, Any]):

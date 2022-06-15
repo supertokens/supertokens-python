@@ -1,14 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
-from supertokens_python.recipe.session import SessionContainer
 
+from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.thirdparty import \
     interfaces as ThirdPartyInterfaces
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.types import APIResponse
+from supertokens_python.types import APIResponse, GeneralErrorResponse
 
 from ..passwordless import interfaces as PlessInterfaces
-
 from .types import User
 
 # Export re-used classes
@@ -44,10 +43,8 @@ PasswordlessUpdateUserPhoneNumberAlreadyExistsError = PlessInterfaces.UpdateUser
 PasswordlessUpdateUserUnknownUserIdError = PlessInterfaces.UpdateUserUnknownUserIdError
 
 AuthorisationUrlGetOkResult = ThirdPartyInterfaces.AuthorisationUrlGetOkResult
-ThirdPartySignInUpFieldError = ThirdPartyInterfaces.SignInUpFieldError
 ThirdPartySignInUpOkResult = ThirdPartyInterfaces.SignInUpOkResult
 ThirdPartySignInUpPostNoEmailGivenByProviderResponse = ThirdPartyInterfaces.SignInUpPostNoEmailGivenByProviderResponse
-ThirdPartySignInUpPostFieldError = ThirdPartyInterfaces.SignInUpPostFieldError
 
 
 class ConsumeCodeOkResult():
@@ -79,7 +76,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpOkResult, ThirdPartySignInUpFieldError]:
+                                    email_verified: bool, user_context: Dict[str, Any]) -> ThirdPartySignInUpOkResult:
         pass
 
     @abstractmethod
@@ -219,12 +216,12 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def authorisation_url_get(self, provider: Provider,
-                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> AuthorisationUrlGetOkResult:
+                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResult, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, ThirdPartySignInUpPostFieldError]:
+                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -> Union[ThirdPartySignInUpPostOkResult, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
