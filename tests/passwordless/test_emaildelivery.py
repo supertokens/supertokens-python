@@ -152,19 +152,17 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(driv
         return httpx.Response(500, json={"err": "CUSTOM_ERR"})
 
     with respx_mock(assert_all_mocked=False) as mocker:
-        mocker.route(host="localhost").pass_through()
-        mocked_route = mocker.post("https://api.supertokens.io/0/st/auth/passwordless/login").mock(side_effect=api_side_effect)
-        resp = sign_in_up_request(driver_config_client, "test@example.com", True)
+        try:
+            mocker.route(host="localhost").pass_through()
+            mocker.post("https://api.supertokens.io/0/st/auth/passwordless/login").mock(side_effect=api_side_effect)
+            sign_in_up_request(driver_config_client, "test@example.com", True)
+        except Exception as e:
+            assert str(e) == "CUSTOM_ERR"
 
-        assert resp.status_code == 200
-        # Note: Other recipes suppress this error:
-        assert resp.json() == {"status": "GENERAL_ERROR", "message": "CUSTOM_ERR"}
-        assert mocked_route.called
-
-        assert app_name == "ST"
-        assert email == "test@example.com"
-        assert all([url_with_link_code, user_input_code, code_lifetime])
-        assert code_lifetime > 0
+            assert app_name == "ST"
+            assert email == "test@example.com"
+            assert all([url_with_link_code, user_input_code, code_lifetime])
+            assert code_lifetime > 0
 
 
 @mark.asyncio
