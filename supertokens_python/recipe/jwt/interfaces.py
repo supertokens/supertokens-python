@@ -14,11 +14,10 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 
-from supertokens_python.types import APIResponse
+from supertokens_python.framework import BaseRequest, BaseResponse
+from supertokens_python.types import APIResponse, GeneralErrorResponse
 
 from .utils import JWTConfig
-
-from supertokens_python.framework import BaseRequest, BaseResponse
 
 
 class JsonWebKey:
@@ -97,5 +96,5 @@ class APIInterface:
         self.disable_jwks_get = False
 
     @abstractmethod
-    async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> JWKSGetResponse:
+    async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[JWKSGetResponse, GeneralErrorResponse]:
         pass

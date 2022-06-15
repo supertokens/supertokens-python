@@ -16,12 +16,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe.session.interfaces import (APIInterface,
-                                                          SignOutOkayResponse)
+from supertokens_python.recipe.session.interfaces import APIInterface
 from supertokens_python.utils import normalise_http_method
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session.interfaces import APIOptions, SignOutResponse
+    from supertokens_python.recipe.session.interfaces import APIOptions, SignOutOkayResponse
     from ..interfaces import SessionContainer
 
 from typing import Any, Dict
@@ -34,7 +33,7 @@ class APIImplementation(APIInterface):
     async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> None:
         await api_options.recipe_implementation.refresh_session(api_options.request, user_context)
 
-    async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> SignOutResponse:
+    async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> SignOutOkayResponse:
         try:
             session = await api_options.recipe_implementation.get_session(request=api_options.request, user_context=user_context, anti_csrf_check=None, session_required=True)
         except UnauthorisedError:
