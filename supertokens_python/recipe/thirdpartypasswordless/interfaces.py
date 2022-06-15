@@ -15,7 +15,6 @@ ThirdPartyAPIOptions = ThirdPartyInterfaces.APIOptions
 PasswordlessAPIOptions = PlessInterfaces.APIOptions
 
 ConsumeCodePostRestartFlowError = PlessInterfaces.ConsumeCodePostRestartFlowError
-ConsumeCodePostGeneralError = PlessInterfaces.ConsumeCodePostGeneralError
 ConsumeCodePostIncorrectUserInputCodeError = PlessInterfaces.ConsumeCodePostIncorrectUserInputCodeError
 ConsumeCodePostExpiredUserInputCodeError = PlessInterfaces.ConsumeCodePostExpiredUserInputCodeError
 ConsumeCodeExpiredUserInputCodeError = PlessInterfaces.ConsumeCodeExpiredUserInputCodeError
@@ -23,7 +22,6 @@ ConsumeCodeIncorrectUserInputCodeError = PlessInterfaces.ConsumeCodeIncorrectUse
 ConsumeCodeRestartFlowError = PlessInterfaces.ConsumeCodeRestartFlowError
 CreateCodeOkResult = PlessInterfaces.CreateCodeOkResult
 CreateCodePostOkResult = PlessInterfaces.CreateCodePostOkResult
-CreateCodePostGeneralError = PlessInterfaces.CreateCodePostGeneralError
 CreateNewCodeForDeviceOkResult = PlessInterfaces.CreateNewCodeForDeviceOkResult
 CreateNewCodeForDeviceRestartFlowError = PlessInterfaces.CreateNewCodeForDeviceRestartFlowError
 CreateNewCodeForDeviceUserInputCodeAlreadyUsedError = PlessInterfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError
@@ -34,7 +32,6 @@ PasswordlessEmailExistsGetOkResult = PlessInterfaces.EmailExistsGetOkResult
 PasswordlessPhoneNumberExistsGetOkResult = PlessInterfaces.PhoneNumberExistsGetOkResult
 ResendCodePostOkResult = PlessInterfaces.ResendCodePostOkResult
 ResendCodePostRestartFlowError = PlessInterfaces.ResendCodePostRestartFlowError
-ResendCodePostGeneralError = PlessInterfaces.ResendCodePostGeneralError
 RevokeAllCodesOkResult = PlessInterfaces.RevokeAllCodesOkResult
 RevokeCodeOkResult = PlessInterfaces.RevokeCodeOkResult
 PasswordlessUpdateUserEmailAlreadyExistsError = PlessInterfaces.UpdateUserEmailAlreadyExistsError
@@ -234,7 +231,7 @@ class APIInterface(ABC):
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: PasswordlessAPIOptions,
-                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResult, CreateCodePostGeneralError]:
+                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -242,7 +239,7 @@ class APIInterface(ABC):
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: PasswordlessAPIOptions,
-                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, ResendCodePostGeneralError]:
+                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -252,19 +249,19 @@ class APIInterface(ABC):
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
                                 api_options: PasswordlessAPIOptions,
-                                user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostGeneralError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
+                                user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, GeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
         pass
 
     @abstractmethod
     async def passwordless_user_email_exists_get(self,
                                                  email: str,
                                                  api_options: PasswordlessAPIOptions,
-                                                 user_context: Dict[str, Any]) -> PasswordlessEmailExistsGetOkResult:
+                                                 user_context: Dict[str, Any]) -> Union[PasswordlessEmailExistsGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def passwordless_user_phone_number_exists_get(self,
                                                         phone_number: str,
                                                         api_options: PasswordlessAPIOptions,
-                                                        user_context: Dict[str, Any]) -> PasswordlessPhoneNumberExistsGetOkResult:
+                                                        user_context: Dict[str, Any]) -> Union[PasswordlessPhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         pass
