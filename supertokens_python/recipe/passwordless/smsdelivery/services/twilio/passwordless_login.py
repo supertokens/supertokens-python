@@ -17,7 +17,7 @@ from string import Template
 from textwrap import dedent
 from typing import TYPE_CHECKING, Union
 
-from supertokens_python.ingredients.smsdelivery.service.twilio import \
+from supertokens_python.ingredients.smsdelivery.services.twilio import \
     GetContentResult
 from supertokens_python.supertokens import Supertokens
 from supertokens_python.utils import humanize_time
@@ -43,26 +43,19 @@ def get_pless_sms_body(
 ) -> str:
     if (url_with_link_code is not None) and (user_input_code is not None):
         sms_template = dedent("""\
-        ${appname} - Login to your account
-        Your OTP to login: ${otp}
+        OTP to login is ${otp} for ${appname}
 
-        OR
-
-        Click on this link: ${magicLink}
+        Or click ${magicLink} to login.
 
         This is valid for ${time}.""")
     elif url_with_link_code is not None:
         sms_template = dedent("""\
-        ${appname} - Login to your account
-
-        Click on this link: ${magicLink}
+        Click ${magicLink} to login to ${appname}
 
         This is valid for ${time}.""")
     elif user_input_code is not None:
         sms_template = dedent("""\
-        ${appname} - Login to your account
-
-        Your OTP to login: ${otp}
+        OTP to login is ${otp} for ${appname}
 
         This is valid for ${time}.""")
     else:

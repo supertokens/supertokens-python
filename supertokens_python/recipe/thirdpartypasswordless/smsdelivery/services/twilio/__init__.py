@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.smsdelivery.service.twilio import \
+from supertokens_python.ingredients.smsdelivery.services.twilio import \
     SMSDeliveryTwilioConfig
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface
