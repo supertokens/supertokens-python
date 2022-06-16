@@ -15,6 +15,8 @@
 from typing import Any, Dict, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.recipe.emailverification.interfaces import \
+    TypeEmailVerificationEmailDeliveryInput
 
 
 def create_email_verification_token(
@@ -46,3 +48,8 @@ def revoke_email_verification_tokens(user_id: str, email: str, user_context: Uni
     from supertokens_python.recipe.emailverification.asyncio import \
         revoke_email_verification_tokens
     return sync(revoke_email_verification_tokens(user_id, email, user_context))
+
+
+def send_email(input_: TypeEmailVerificationEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+    from supertokens_python.recipe.emailverification.asyncio import send_email
+    return sync(send_email(input_, user_context))

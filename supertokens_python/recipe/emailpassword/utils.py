@@ -13,13 +13,18 @@
 # under the License.
 from __future__ import annotations
 
-from os import environ
 from re import fullmatch
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, Union
 
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig, EmailDeliveryConfigWithService)
+from supertokens_python.recipe.emailpassword.emaildelivery.services.backward_compatibility import \
+    BackwardCompatibilityService
+
 from ..emailverification.types import User as EmailVerificationUser
 from .interfaces import APIInterface, RecipeInterface
-from .types import InputFormField, NormalisedFormField, User
+from .types import (InputFormField, NormalisedFormField,
+                    TypeEmailPasswordEmailDeliveryInput, User)
 
 if TYPE_CHECKING:
     from .recipe import EmailPasswordRecipe
@@ -27,12 +32,11 @@ if TYPE_CHECKING:
 
 from typing import Dict
 
-from httpx import AsyncClient
 from supertokens_python.recipe.emailverification.utils import \
     OverrideConfig as EmailVerificationOverrideConfig
 from supertokens_python.recipe.emailverification.utils import \
     ParentRecipeEmailVerificationConfig
-from supertokens_python.utils import get_filtered_list
+from supertokens_python.utils import deprecated_warn, get_filtered_list
 
 from ..emailverification.utils import ParentRecipeEmailVerificationConfig
 from .constants import (FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID,
@@ -79,26 +83,6 @@ def default_get_reset_password_url(
     async def func(_: User, __: Dict[str, Any]):
         return app_info.website_domain.get_as_string_dangerous(
         ) + app_info.website_base_path.get_as_string_dangerous() + RESET_PASSWORD
-
-    return func
-
-
-def default_create_and_send_custom_email(
-        app_info: AppInfo) -> Callable[[User, str, Dict[str, Any]], Awaitable[None]]:
-    async def func(user: User, password_reset_url_with_token: str, _: Dict[str, Any]):
-        if ('SUPERTOKENS_ENV' in environ) and (
-                environ['SUPERTOKENS_ENV'] == 'testing'):
-            return
-        try:
-            data = {
-                'email': user.email,
-                'appName': app_info.app_name,
-                'passwordResetURL': password_reset_url_with_token
-            }
-            async with AsyncClient() as client:
-                await client.post('https://api.supertokens.io/0/st/auth/password/reset', json=data, headers={'api-version': '0'})  # type: ignore
-        except Exception:
-            pass
 
     return func
 
@@ -179,17 +163,19 @@ class InputResetPasswordUsingTokenFeature:
         self.get_reset_password_url = get_reset_password_url
         self.create_and_send_custom_email = create_and_send_custom_email
 
+        if create_and_send_custom_email:
+            deprecated_warn("create_and_send_custom_email is deprecated. Please use email delivery config instead")
+
 
 class ResetPasswordUsingTokenFeature:
     def __init__(self,
                  form_fields_for_password_reset_form: List[NormalisedFormField],
                  form_fields_for_generate_token_form: List[NormalisedFormField],
-                 get_reset_password_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
-                 create_and_send_custom_email: Callable[[User, str, Dict[str, Any]], Awaitable[None]]):
+                 get_reset_password_url: Callable[[User, Dict[str, Any]], Awaitable[str]]
+                 ):
         self.form_fields_for_password_reset_form = form_fields_for_password_reset_form
         self.form_fields_for_generate_token_form = form_fields_for_generate_token_form
         self.get_reset_password_url = get_reset_password_url
-        self.create_and_send_custom_email = create_and_send_custom_email
 
 
 class InputEmailVerificationConfig:
@@ -202,6 +188,9 @@ class InputEmailVerificationConfig:
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
 
+        if create_and_send_custom_email:
+            deprecated_warn("create_and_send_custom_email is deprecated. Please use email delivery config instead")
+
 
 def validate_and_normalise_reset_password_using_token_config(app_info: AppInfo, sign_up_config: InputSignUpFeature,
                                                              config: InputResetPasswordUsingTokenFeature) -> ResetPasswordUsingTokenFeature:
@@ -213,10 +202,9 @@ def validate_and_normalise_reset_password_using_token_config(app_info: AppInfo, 
                                                                      sign_up_config.form_fields)))
     get_reset_password_url = config.get_reset_password_url if config.get_reset_password_url is not None else default_get_reset_password_url(
         app_info)
-    create_and_send_custom_email = config.create_and_send_custom_email if config.create_and_send_custom_email is not None else default_create_and_send_custom_email(
-        app_info)
+
     return ResetPasswordUsingTokenFeature(form_fields_for_password_reset_form, form_fields_for_generate_token_form,
-                                          get_reset_password_url, create_and_send_custom_email)
+                                          get_reset_password_url)
 
 
 def email_verification_create_and_send_custom_email(
@@ -288,12 +276,15 @@ class EmailPasswordConfig:
                  sign_in_feature: SignInFeature,
                  reset_password_using_token_feature: ResetPasswordUsingTokenFeature,
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
-                 override: OverrideConfig):
+                 override: OverrideConfig,
+                 get_email_delivery_config: Callable[[RecipeInterface], EmailDeliveryConfigWithService[TypeEmailPasswordEmailDeliveryInput]]
+                 ):
         self.sign_up_feature = sign_up_feature
         self.sign_in_feature = sign_in_feature
         self.reset_password_using_token_feature = reset_password_using_token_feature
         self.email_verification_feature = email_verification_feature
         self.override = override
+        self.get_email_delivery_config = get_email_delivery_config
 
 
 def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: AppInfo,
@@ -302,7 +293,9 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
                                       reset_password_using_token_feature: Union[
                                           InputResetPasswordUsingTokenFeature, None] = None,
                                       email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-                                      override: Union[InputOverrideConfig, None] = None) -> EmailPasswordConfig:
+                                      override: Union[InputOverrideConfig, None] = None,
+                                      email_delivery: Union[EmailDeliveryConfig[TypeEmailPasswordEmailDeliveryInput], None] = None
+                                      ) -> EmailPasswordConfig:
 
     if sign_up_feature is not None and not isinstance(sign_up_feature, InputSignUpFeature):  # type: ignore
         raise ValueError('sign_up_feature must be of type InputSignUpFeature or None')
@@ -323,6 +316,28 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
 
     if sign_up_feature is None:
         sign_up_feature = InputSignUpFeature()
+
+    def get_email_delivery_config(
+        ep_recipe: RecipeInterface,
+    ) -> EmailDeliveryConfigWithService[TypeEmailPasswordEmailDeliveryInput]:
+        if email_delivery and email_delivery.service:
+            return EmailDeliveryConfigWithService(
+                service=email_delivery.service,
+                override=email_delivery.override
+            )
+
+        email_service = BackwardCompatibilityService(
+            app_info=app_info,
+            recipe_interface_impl=ep_recipe,
+            reset_password_using_token_feature=reset_password_using_token_feature,
+            email_verification_feature=email_verification_feature,
+        )
+        if email_delivery is not None and email_delivery.override is not None:
+            override = email_delivery.override
+        else:
+            override = None
+        return EmailDeliveryConfigWithService(email_service, override=override)
+
     return EmailPasswordConfig(
         SignUpFeature(sign_up_feature.form_fields),
         SignInFeature(
@@ -338,5 +353,6 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
             email_verification_feature,
             override
         ),
-        OverrideConfig(functions=override.functions, apis=override.apis)
+        OverrideConfig(functions=override.functions, apis=override.apis),
+        get_email_delivery_config=get_email_delivery_config,
     )

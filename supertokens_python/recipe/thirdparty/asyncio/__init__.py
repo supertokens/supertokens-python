@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 
-from ..types import User
+from ..types import TypeThirdPartyEmailDeliveryInput, User
 
 
 async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -83,3 +83,9 @@ async def sign_in_up(third_party_id: str, third_party_user_id: str, email: str, 
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.sign_in_up(third_party_id, third_party_user_id,
                                                                                   email, email_verified, user_context)
+
+
+async def send_email(input_: TypeThirdPartyEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(input_, user_context)

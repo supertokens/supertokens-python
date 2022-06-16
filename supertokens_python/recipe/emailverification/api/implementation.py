@@ -15,12 +15,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Union
 
+from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface, CreateEmailVerificationTokenEmailAlreadyVerifiedError,
     EmailVerifyPostInvalidTokenError, EmailVerifyPostOkResult,
     GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
     GenerateEmailVerifyTokenPostOkResult, IsEmailVerifiedGetOkResult,
-    VerifyEmailUsingTokenOkResult)
+    TypeEmailVerificationEmailDeliveryInput,
+    TypeEmailVerificationEmailDeliveryInputUser, VerifyEmailUsingTokenOkResult)
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailverification.interfaces import (
@@ -59,16 +61,21 @@ class APIImplementation(APIInterface):
 
         token_result = await api_options.recipe_implementation.create_email_verification_token(user_id, email, user_context)
         if isinstance(token_result, CreateEmailVerificationTokenEmailAlreadyVerifiedError):
+            log_debug_message("Email verification email not sent to %s because it is already verified", email)
             return GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError()
 
         user = User(user_id, email)
 
         email_verify_link = (await api_options.config.get_email_verification_url(
-            user, user_context)) + '?token=' + token_result.token + '&rid' + api_options.recipe_id
+            user, user_context)) + '?token=' + token_result.token + '&rid=' + api_options.recipe_id
 
-        try:
-            await api_options.config.create_and_send_custom_email(user, email_verify_link, user_context)
-        except Exception:
-            pass
+        log_debug_message("Sending email verification email to %s", email)
+        email_delivery_user = TypeEmailVerificationEmailDeliveryInputUser(user.user_id, user.email)
+        email_verification_email_delivery_input = TypeEmailVerificationEmailDeliveryInput(
+            user=email_delivery_user,
+            email_verify_link=email_verify_link,
+            user_context=user_context
+        )
+        await api_options.email_delivery.ingredient_interface_impl.send_email(email_verification_email_delivery_input, user_context)
 
         return GenerateEmailVerifyTokenPostOkResult()

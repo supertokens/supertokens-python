@@ -6,6 +6,115 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+
+-   `email_delivery` user config for Emailpassword, Thirdparty, ThirdpartyEmailpassword, Passwordless and ThirdpartyPasswordless recipes.
+-   `sms_delivery` user config for Passwordless and ThirdpartyPasswordless recipes.
+-   `Twilio` service integartion for `sms_delivery` ingredient.
+-   `SMTP` service integration for `email_delivery` ingredient.
+-   `Supertokens` service integration for `sms_delivery` ingredient.
+
+### Deprecated
+
+-   For Emailpassword recipe input config, `reset_password_using_token_feature.create_and_send_custom_email` and `email_verification_feature.create_and_send_custom_email` have been deprecated.
+-   For Thirdparty recipe input config, `email_verification_feature.create_and_send_custom_email` has been deprecated.
+-   For ThirdpartyEmailpassword recipe input config, `reset_password_using_token_feature.create_and_send_custom_email` and `email_verification_feature.create_and_send_custom_email` have been deprecated.
+-   For Passwordless recipe input config, `create_and_send_custom_email` and `createAndSendCustomTextMessage` have been deprecated.
+-   For ThirdpartyPasswordless recipe input config, `create_and_send_custom_email`, `createAndSendCustomTextMessage` and `email_verification_feature.create_and_send_custom_email` have been deprecated.
+
+
+### Migration
+
+Following is an example of ThirdpartyPasswordless recipe migration. If your existing code looks like
+
+```python
+from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.recipe import thirdpartypasswordless
+
+async def send_pless_login_email(input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
+    print("SEND_PLESS_LOGIN_EMAIL", input_.email, input_.user_input_code)
+
+async def send_pless_login_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]):
+    print("SEND_PLESS_LOGIN_SMS", input_.phone_number, input_.user_input_code)
+
+async def send_ev_verification_email(user: TpPlessUser, link: str, user_context: Any):
+    print("SEND_EV_LOGIN_SMS", user.email, user.phone_number, user.third_party_info)
+
+
+init(
+    supertokens_config=SupertokensConfig('http://localhost:3567'),
+    app_info=InputAppInfo(
+        api_domain="...",
+        app_name="...",
+        website_domain="...",
+    ),
+    framework='...',
+    recipe_list=[thirdpartypasswordless.init(
+        contact_config=passwordless.ContactEmailOrPhoneConfig(
+            create_and_send_custom_email=send_pless_login_email,
+            create_and_send_custom_text_message=send_pless_login_sms,
+        ),
+        flow_type='...',
+        email_verification_feature=thirdpartypasswordless.InputEmailVerificationConfig(
+            create_and_send_custom_email=send_ev_verification_email,
+        )
+    )]
+)
+```
+
+After migration to using new `email_delivery` and `sms_delivery` config, your code would look like:
+
+```python
+from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryInterface, EmailDeliveryConfig
+from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryInterface, SMSDeliveryConfig
+from supertokens_python.recipe import thirdpartypasswordless, passwordless
+
+from supertokens_python.recipe.emailverification.types import TypeEmailVerificationEmailDeliveryInput
+
+
+async def send_pless_login_email(input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
+    print("SEND_PLESS_LOGIN_EMAIL", input_.email, input_.user_input_code)
+
+async def send_pless_login_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]):
+    print("SEND_PLESS_LOGIN_SMS", input_.phone_number, input_.user_input_code)
+
+async def send_ev_verification_email(user: TpPlessUser, link: str, user_context: Any):
+    print("SEND_EV_LOGIN_SMS", user.email, user.phone_number, user.third_party_info)
+
+
+class EmailDeliveryService(EmailDeliveryInterface):
+    async def send_email(self, input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
+        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
+            await send_ev_verification_email(input_, user_context)
+        elif isinstance(input_, TypePasswordlessEmailDeliveryInput):
+            await send_pless_login_email(input_, user_context)
+
+class SMSDeliveryService(SMSDeliveryInterface):
+    async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]):
+        await send_pless_login_sms(input_, user_context)
+
+init(
+    supertokens_config=SupertokensConfig('http://localhost:3567'),
+    app_info=InputAppInfo(
+        app_name="...",
+        api_domain="...",
+        website_domain="...",
+    ),
+    framework='...',
+    recipe_list=[thirdpartypasswordless.init(
+        contact_config=passwordless.ContactEmailOrPhoneConfig(),
+        flow_type='...',
+        email_delivery=EmailDeliveryConfig(
+            service=EmailDeliveryService(),
+        ),
+        sms_delivery=SMSDeliveryConfig(
+            service=SMSDeliveryService(),
+        ),
+    )]
+)
+```
+
 ## [0.8.3] - 2022-06-09
 - Fix bugs in syncio functions across all the recipes
 - Fixes bug in resend code POST API in passwordless recipe to use the correct instance type during checks.
