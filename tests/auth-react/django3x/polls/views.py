@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Union
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
+from mysite.settings import custom_init
 from supertokens_python.recipe.emailpassword import InputFormField
 from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.passwordless import (
@@ -142,7 +143,7 @@ def test_set_flow(request: HttpRequest):
     body = json.loads(request.body)
     contact_method = body['contactMethod']
     flow_type = body['flowType']
-    settings.custom_init(contact_method=contact_method, flow_type=flow_type)
+    custom_init(contact_method=contact_method, flow_type=flow_type)
     return HttpResponse('')
 
 
