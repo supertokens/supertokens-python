@@ -295,9 +295,9 @@ def validate_and_normalise_user_input(app_info: AppInfo,
         error_handlers = InputErrorHandlers()
 
     if (cookie_same_site == 'none') and \
-            not cookie_secure and \
-            not (top_level_api_domain == 'localhost' or is_an_ip_address(top_level_api_domain)) and \
-            not (top_level_website_domain == 'localhost' or is_an_ip_address(top_level_website_domain)):
+            not cookie_secure and (
+                (not (top_level_api_domain == 'localhost' or is_an_ip_address(top_level_api_domain))) or
+                (not (top_level_website_domain == 'localhost' or is_an_ip_address(top_level_website_domain)))):
         raise_general_exception('Since your API and website domain are different, for sessions to work, please use '
                                 'https on your apiDomain and don\'t set cookieSecure to false.')
 

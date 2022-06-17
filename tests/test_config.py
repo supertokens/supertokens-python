@@ -600,3 +600,60 @@ def testing_super_recipe_tests():
     ep.get_user()
 
     assert m == 2
+
+
+@mark.asyncio
+async def test_samesite_invalid_config1():
+    try:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name='SuperTokens Demo',
+                api_domain='http://api.supertokens.io',
+                website_domain='http://localhost:3000'
+            ),
+            framework='fastapi',
+            recipe_list=[session.init()]
+        )
+    except Exception as e:
+        assert str(e) == "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and don't set cookieSecure to false."
+    else:
+        assert False, "Exception not raised"
+
+
+@mark.asyncio
+async def test_samesite_invalid_config2():
+    try:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name='SuperTokens Demo',
+                api_domain='http://localhost:8000',
+                website_domain='http://supertokens.io'
+            ),
+            framework='fastapi',
+            recipe_list=[session.init()]
+        )
+    except Exception as e:
+        assert str(e) == "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and don't set cookieSecure to false."
+    else:
+        assert False, "Exception not raised"
+
+
+@mark.asyncio
+async def test_samesite_invalid_config3():
+    try:
+        init(
+            supertokens_config=SupertokensConfig('http://localhost:3567'),
+            app_info=InputAppInfo(
+                app_name='SuperTokens Demo',
+                api_domain='http://supertokensapi.io',
+                website_domain='http://supertokens.io'
+            ),
+            framework='fastapi',
+            recipe_list=[session.init()]
+        )
+    except Exception as e:
+        assert str(e) == "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and don't set cookieSecure to false."
+    else:
+        assert False, "Exception not raised"
