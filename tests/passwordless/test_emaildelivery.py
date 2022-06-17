@@ -28,11 +28,13 @@ from supertokens_python.ingredients.emaildelivery.services.smtp import (
     SMTPServiceConfig, SMTPServiceConfigFrom)
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryInterface)
+from supertokens_python.querier import Querier
 from supertokens_python.recipe import passwordless, session
 from supertokens_python.recipe.passwordless.emaildelivery.services.smtp import \
     SMTPService
 from supertokens_python.recipe.passwordless.types import \
     TypePasswordlessEmailDeliveryInput
+from supertokens_python.utils import is_version_gte
 from tests.utils import clean_st, reset, setup_st, sign_in_up_request, start_st
 
 respx_mock = respx.MockRouter
@@ -88,6 +90,10 @@ async def test_pless_login_default_backward_compatibility(driver_config_client: 
     )
     start_st()
 
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.11"):
+        return
+
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, code_lifetime, url_with_link_code, user_input_code
         body = json.loads(request.content)
@@ -138,6 +144,10 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(driv
         ), session.init()]
     )
     start_st()
+
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.11"):
+        return
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, code_lifetime, url_with_link_code, user_input_code
@@ -200,6 +210,10 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
     )
     start_st()
 
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.11"):
+        return
+
     resp = sign_in_up_request(driver_config_client, "test@example.com", True)
 
     assert resp.status_code == 200
@@ -253,6 +267,10 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
         ), session.init()]
     )
     start_st()
+
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.11"):
+        return
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, code_lifetime, url_with_link_code, user_input_code
@@ -356,6 +374,10 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         ), session.init()]
     )
     start_st()
+
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.11"):
+        return
 
     resp = sign_in_up_request(driver_config_client, "test@example.com", True)
 
