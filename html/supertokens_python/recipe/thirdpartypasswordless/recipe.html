@@ -42,12 +42,23 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union, cast
 
 from supertokens_python.framework.response import BaseResponse
+from supertokens_python.ingredients.emaildelivery.types import \
+    EmailDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.emailverification.types import \
+    EmailVerificationIngredients
+from supertokens_python.recipe.passwordless.types import \
+    PasswordlessIngredients
 from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.types import (
+    ThirdPartyIngredients, TypeThirdPartyEmailDeliveryInput)
+from supertokens_python.recipe.thirdpartypasswordless.types import (
+    ThirdPartyPasswordlessIngredients,
+    TypeThirdPartyPasswordlessEmailDeliveryInput)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from ..passwordless.utils import ContactConfig, PhoneOrEmailInput
@@ -70,6 +81,10 @@ if TYPE_CHECKING:
 from typing import Awaitable, Callable
 
 from supertokens_python.exceptions import SuperTokensError
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
+from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
+from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdparty.utils import \
@@ -81,36 +96,46 @@ from ..emailverification.interfaces import (
     CreateEmailVerificationTokenEmailAlreadyVerifiedError,
     CreateEmailVerificationTokenOkResult)
 from ..emailverification.interfaces import RecipeInterface as EVRecipeInterface
+from ..emailverification.interfaces import \
+    TypeEmailVerificationEmailDeliveryInput
 from ..emailverification.utils import OverrideConfig as EVOverrideConfig
 from ..passwordless import PasswordlessRecipe
 from ..passwordless.interfaces import APIInterface as PasswordlessAPIInterface
 from ..passwordless.interfaces import \
     RecipeInterface as PasswordlessRecipeInterface
+from ..passwordless.interfaces import TypePasswordlessEmailDeliveryInput
 from ..passwordless.utils import OverrideConfig as PlessOverrideConfig
 from ..thirdparty.interfaces import APIInterface as ThirdPartyAPIInterface
 from ..thirdparty.interfaces import \
     RecipeInterface as ThirdPartyRecipeInterface
 from .exceptions import SupertokensThirdPartyPasswordlessError
 from .interfaces import APIInterface, RecipeInterface
+from .types import (TypeThirdPartyPasswordlessEmailDeliveryInput,
+                    TypeThirdPartyPasswordlessSmsDeliveryInput)
 from .utils import InputOverrideConfig, validate_and_normalise_user_input
 
 
 class ThirdPartyPasswordlessRecipe(RecipeModule):
     recipe_id = &#39;thirdpartypasswordless&#39;
     __instance = None
+    email_delivery: EmailDeliveryIngredient[TypeThirdPartyPasswordlessEmailDeliveryInput]
+    sms_delivery: SMSDeliveryIngredient[TypeThirdPartyPasswordlessSmsDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  contact_config: ContactConfig,
                  flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;],
-                 get_link_domain_and_path: Union[Callable[[
-                     PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
+                 ingredients: ThirdPartyPasswordlessIngredients,
+                 get_link_domain_and_path: Union[Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
                  get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  providers: Union[List[Provider], None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
                  third_party_recipe: Union[ThirdPartyRecipe, None] = None,
-                 passwordless_recipe: Union[PasswordlessRecipe, None] = None):
+                 passwordless_recipe: Union[PasswordlessRecipe, None] = None,
+                 email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
+                 sms_delivery: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
+                 ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self,
                                                         contact_config=contact_config,
@@ -119,14 +144,30 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                                                         get_custom_user_input_code=get_custom_user_input_code,
                                                         get_link_domain_and_path=get_link_domain_and_path,
                                                         override=override,
-                                                        providers=providers)
+                                                        providers=providers,
+                                                        email_delivery=email_delivery,
+                                                        sms_delivery=sms_delivery,
+                                                        )
 
         recipe_implementation = RecipeImplementation(Querier.get_instance(PasswordlessRecipe.recipe_id), Querier.get_instance(ThirdPartyRecipe.recipe_id))
         self.recipe_implementation: RecipeInterface = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
+
         api_implementation = APIImplementation()
         self.api_implementation: APIInterface = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
+
+        email_delivery_ingredient = ingredients.email_delivery
+        if email_delivery_ingredient is None:
+            self.email_delivery = EmailDeliveryIngredient(self.config.get_email_delivery_config(recipe_implementation))
+        else:
+            self.email_delivery = email_delivery_ingredient
+
+        sms_delivery_ingredient = ingredients.sms_delivery
+        if sms_delivery_ingredient is None:
+            self.sms_delivery = SMSDeliveryIngredient(self.config.get_sms_delivery_config())
+        else:
+            self.sms_delivery = sms_delivery_ingredient
 
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
@@ -165,50 +206,64 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                 self.config.email_verification_feature.override = EVOverrideConfig(email_verification_override)
             else:
                 self.config.email_verification_feature.override.functions = email_verification_override
+
+            ev_email_delivery = cast(EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput], self.email_delivery)
+            ev_ingredients = EmailVerificationIngredients(ev_email_delivery)
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
-                                                                     self.config.email_verification_feature)
-
-        def func_override_passwordless(_: PasswordlessRecipeInterface) -&gt; PasswordlessRecipeInterface:
-            return PasswordlessRecipeImplementation(
-                self.recipe_implementation)
-
-        def apis_override_passwordless(_: PasswordlessAPIInterface) -&gt; PasswordlessAPIInterface:
-            return get_passwordless_interface_impl(self.api_implementation)
+                                                                     self.config.email_verification_feature, ev_ingredients)
 
         if passwordless_recipe is not None:
             self.passwordless_recipe = passwordless_recipe
         else:
+            def func_override_passwordless(_: PasswordlessRecipeInterface) -&gt; PasswordlessRecipeInterface:
+                return PasswordlessRecipeImplementation(self.recipe_implementation)
+
+            def apis_override_passwordless(_: PasswordlessAPIInterface) -&gt; PasswordlessAPIInterface:
+                return get_passwordless_interface_impl(self.api_implementation)
+
+            pless_email_delivery = cast(
+                EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput],
+                self.email_delivery
+            )
+            pless_sms_delivery = self.sms_delivery
+            pless_ingredients = PasswordlessIngredients(pless_email_delivery, pless_sms_delivery)
             self.passwordless_recipe = PasswordlessRecipe(recipe_id, app_info,
                                                           self.config.contact_config,
                                                           self.config.flow_type,
+                                                          pless_ingredients,
                                                           PlessOverrideConfig(
                                                               func_override_passwordless,
                                                               apis_override_passwordless
                                                           ),
                                                           self.config.get_link_domain_and_path,
-                                                          self.config.get_custom_user_input_code)
-
-        def func_override_third_party(_: ThirdPartyRecipeInterface) -&gt; ThirdPartyRecipeInterface:
-            return ThirdPartyRecipeImplementation(self.recipe_implementation)
-
-        def apis_override_third_party(_: ThirdPartyAPIInterface) -&gt; ThirdPartyAPIInterface:
-            return get_third_party_interface_impl(self.api_implementation)
+                                                          self.config.get_custom_user_input_code,
+                                                          )
 
         if third_party_recipe is not None:
             self.third_party_recipe: Union[ThirdPartyRecipe, None] = third_party_recipe
         else:
+            def func_override_third_party(_: ThirdPartyRecipeInterface) -&gt; ThirdPartyRecipeInterface:
+                return ThirdPartyRecipeImplementation(self.recipe_implementation)
+
+            def apis_override_third_party(_: ThirdPartyAPIInterface) -&gt; ThirdPartyAPIInterface:
+                return get_third_party_interface_impl(self.api_implementation)
+
             self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
+
             if len(self.config.providers) != 0:
+                tp_email_delivery = cast(EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput], self.email_delivery)
+                tp_ingredients = ThirdPartyIngredients(tp_email_delivery)
                 self.third_party_recipe = ThirdPartyRecipe(
                     recipe_id,
                     app_info,
                     SignInAndUpFeature(self.config.providers),
+                    tp_ingredients,
                     None,
                     TPOverrideConfig(
                         func_override_third_party,
                         apis_override_third_party
                     ),
-                    self.email_verification_recipe
+                    self.email_verification_recipe,
                 )
 
     def is_error_from_this_recipe_based_on_instance(
@@ -272,15 +327,21 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                  PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
              get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+             email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
+             sms_delivery: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
              override: Union[InputOverrideConfig, None] = None,
              providers: Union[List[Provider], None] = None):
         def func(app_info: AppInfo):
             if ThirdPartyPasswordlessRecipe.__instance is None:
+                ingredients = ThirdPartyPasswordlessIngredients(None, None)
                 ThirdPartyPasswordlessRecipe.__instance = ThirdPartyPasswordlessRecipe(
-                    ThirdPartyPasswordlessRecipe.recipe_id, app_info, contact_config, flow_type, get_link_domain_and_path, get_custom_user_input_code,
+                    ThirdPartyPasswordlessRecipe.recipe_id, app_info, contact_config, flow_type, ingredients, get_link_domain_and_path, get_custom_user_input_code,
                     email_verification_feature,
                     override,
-                    providers)
+                    providers,
+                    email_delivery=email_delivery,
+                    sms_delivery=sms_delivery,
+                )
                 return ThirdPartyPasswordlessRecipe.__instance
             raise Exception(None, &#39;ThirdPartyPasswordlessRecipe recipe has already been initialised. Please check your code for bugs.&#39;)
 
@@ -327,7 +388,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
 <dl>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe"><code class="flex name class">
 <span>class <span class="ident">ThirdPartyPasswordlessRecipe</span></span>
-<span>(</span><span>recipe_id: str, app_info: AppInfo, contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", get_link_domain_and_path: Union[Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None, get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, override: Union[InputOverrideConfig, None] = None, providers: Union[List[Provider], None] = None, email_verification_recipe: Union[EmailVerificationRecipe, None] = None, third_party_recipe: Union[ThirdPartyRecipe, None] = None, passwordless_recipe: Union[PasswordlessRecipe, None] = None)</span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", ingredients: ThirdPartyPasswordlessIngredients, get_link_domain_and_path: Union[Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None, get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, override: Union[InputOverrideConfig, None] = None, providers: Union[List[Provider], None] = None, email_verification_recipe: Union[EmailVerificationRecipe, None] = None, third_party_recipe: Union[ThirdPartyRecipe, None] = None, passwordless_recipe: Union[PasswordlessRecipe, None] = None, email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None, sms_delivery: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -339,19 +400,24 @@ inheritance.</p></div>
 <pre><code class="python">class ThirdPartyPasswordlessRecipe(RecipeModule):
     recipe_id = &#39;thirdpartypasswordless&#39;
     __instance = None
+    email_delivery: EmailDeliveryIngredient[TypeThirdPartyPasswordlessEmailDeliveryInput]
+    sms_delivery: SMSDeliveryIngredient[TypeThirdPartyPasswordlessSmsDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  contact_config: ContactConfig,
                  flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;],
-                 get_link_domain_and_path: Union[Callable[[
-                     PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
+                 ingredients: ThirdPartyPasswordlessIngredients,
+                 get_link_domain_and_path: Union[Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
                  get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  providers: Union[List[Provider], None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
                  third_party_recipe: Union[ThirdPartyRecipe, None] = None,
-                 passwordless_recipe: Union[PasswordlessRecipe, None] = None):
+                 passwordless_recipe: Union[PasswordlessRecipe, None] = None,
+                 email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
+                 sms_delivery: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
+                 ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self,
                                                         contact_config=contact_config,
@@ -360,14 +426,30 @@ inheritance.</p></div>
                                                         get_custom_user_input_code=get_custom_user_input_code,
                                                         get_link_domain_and_path=get_link_domain_and_path,
                                                         override=override,
-                                                        providers=providers)
+                                                        providers=providers,
+                                                        email_delivery=email_delivery,
+                                                        sms_delivery=sms_delivery,
+                                                        )
 
         recipe_implementation = RecipeImplementation(Querier.get_instance(PasswordlessRecipe.recipe_id), Querier.get_instance(ThirdPartyRecipe.recipe_id))
         self.recipe_implementation: RecipeInterface = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
+
         api_implementation = APIImplementation()
         self.api_implementation: APIInterface = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
+
+        email_delivery_ingredient = ingredients.email_delivery
+        if email_delivery_ingredient is None:
+            self.email_delivery = EmailDeliveryIngredient(self.config.get_email_delivery_config(recipe_implementation))
+        else:
+            self.email_delivery = email_delivery_ingredient
+
+        sms_delivery_ingredient = ingredients.sms_delivery
+        if sms_delivery_ingredient is None:
+            self.sms_delivery = SMSDeliveryIngredient(self.config.get_sms_delivery_config())
+        else:
+            self.sms_delivery = sms_delivery_ingredient
 
         if email_verification_recipe is not None:
             self.email_verification_recipe = email_verification_recipe
@@ -406,50 +488,64 @@ inheritance.</p></div>
                 self.config.email_verification_feature.override = EVOverrideConfig(email_verification_override)
             else:
                 self.config.email_verification_feature.override.functions = email_verification_override
+
+            ev_email_delivery = cast(EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput], self.email_delivery)
+            ev_ingredients = EmailVerificationIngredients(ev_email_delivery)
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
-                                                                     self.config.email_verification_feature)
-
-        def func_override_passwordless(_: PasswordlessRecipeInterface) -&gt; PasswordlessRecipeInterface:
-            return PasswordlessRecipeImplementation(
-                self.recipe_implementation)
-
-        def apis_override_passwordless(_: PasswordlessAPIInterface) -&gt; PasswordlessAPIInterface:
-            return get_passwordless_interface_impl(self.api_implementation)
+                                                                     self.config.email_verification_feature, ev_ingredients)
 
         if passwordless_recipe is not None:
             self.passwordless_recipe = passwordless_recipe
         else:
+            def func_override_passwordless(_: PasswordlessRecipeInterface) -&gt; PasswordlessRecipeInterface:
+                return PasswordlessRecipeImplementation(self.recipe_implementation)
+
+            def apis_override_passwordless(_: PasswordlessAPIInterface) -&gt; PasswordlessAPIInterface:
+                return get_passwordless_interface_impl(self.api_implementation)
+
+            pless_email_delivery = cast(
+                EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput],
+                self.email_delivery
+            )
+            pless_sms_delivery = self.sms_delivery
+            pless_ingredients = PasswordlessIngredients(pless_email_delivery, pless_sms_delivery)
             self.passwordless_recipe = PasswordlessRecipe(recipe_id, app_info,
                                                           self.config.contact_config,
                                                           self.config.flow_type,
+                                                          pless_ingredients,
                                                           PlessOverrideConfig(
                                                               func_override_passwordless,
                                                               apis_override_passwordless
                                                           ),
                                                           self.config.get_link_domain_and_path,
-                                                          self.config.get_custom_user_input_code)
-
-        def func_override_third_party(_: ThirdPartyRecipeInterface) -&gt; ThirdPartyRecipeInterface:
-            return ThirdPartyRecipeImplementation(self.recipe_implementation)
-
-        def apis_override_third_party(_: ThirdPartyAPIInterface) -&gt; ThirdPartyAPIInterface:
-            return get_third_party_interface_impl(self.api_implementation)
+                                                          self.config.get_custom_user_input_code,
+                                                          )
 
         if third_party_recipe is not None:
             self.third_party_recipe: Union[ThirdPartyRecipe, None] = third_party_recipe
         else:
+            def func_override_third_party(_: ThirdPartyRecipeInterface) -&gt; ThirdPartyRecipeInterface:
+                return ThirdPartyRecipeImplementation(self.recipe_implementation)
+
+            def apis_override_third_party(_: ThirdPartyAPIInterface) -&gt; ThirdPartyAPIInterface:
+                return get_third_party_interface_impl(self.api_implementation)
+
             self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
+
             if len(self.config.providers) != 0:
+                tp_email_delivery = cast(EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput], self.email_delivery)
+                tp_ingredients = ThirdPartyIngredients(tp_email_delivery)
                 self.third_party_recipe = ThirdPartyRecipe(
                     recipe_id,
                     app_info,
                     SignInAndUpFeature(self.config.providers),
+                    tp_ingredients,
                     None,
                     TPOverrideConfig(
                         func_override_third_party,
                         apis_override_third_party
                     ),
-                    self.email_verification_recipe
+                    self.email_verification_recipe,
                 )
 
     def is_error_from_this_recipe_based_on_instance(
@@ -513,15 +609,21 @@ inheritance.</p></div>
                  PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
              get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+             email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
+             sms_delivery: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
              override: Union[InputOverrideConfig, None] = None,
              providers: Union[List[Provider], None] = None):
         def func(app_info: AppInfo):
             if ThirdPartyPasswordlessRecipe.__instance is None:
+                ingredients = ThirdPartyPasswordlessIngredients(None, None)
                 ThirdPartyPasswordlessRecipe.__instance = ThirdPartyPasswordlessRecipe(
-                    ThirdPartyPasswordlessRecipe.recipe_id, app_info, contact_config, flow_type, get_link_domain_and_path, get_custom_user_input_code,
+                    ThirdPartyPasswordlessRecipe.recipe_id, app_info, contact_config, flow_type, ingredients, get_link_domain_and_path, get_custom_user_input_code,
                     email_verification_feature,
                     override,
-                    providers)
+                    providers,
+                    email_delivery=email_delivery,
+                    sms_delivery=sms_delivery,
+                )
                 return ThirdPartyPasswordlessRecipe.__instance
             raise Exception(None, &#39;ThirdPartyPasswordlessRecipe recipe has already been initialised. Please check your code for bugs.&#39;)
 
@@ -563,7 +665,15 @@ inheritance.</p></div>
 </ul>
 <h3>Class variables</h3>
 <dl>
+<dt id="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.email_delivery"><code class="name">var <span class="ident">email_delivery</span> : <a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[typing.Union[<a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>, <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.sms_delivery"><code class="name">var <span class="ident">sms_delivery</span> : <a title="supertokens_python.ingredients.smsdelivery.SMSDeliveryIngredient" href="../../ingredients/smsdelivery/index.html#supertokens_python.ingredients.smsdelivery.SMSDeliveryIngredient">SMSDeliveryIngredient</a>[<a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -589,7 +699,7 @@ def get_instance() -&gt; ThirdPartyPasswordlessRecipe:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", get_link_domain_and_path: Union[Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None, get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, override: Union[InputOverrideConfig, None] = None, providers: Union[List[Provider], None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", get_link_domain_and_path: Union[Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None, get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None, sms_delivery: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None, override: Union[InputOverrideConfig, None] = None, providers: Union[List[Provider], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -604,15 +714,21 @@ def init(contact_config: ContactConfig,
              PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
          get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+         email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
+         sms_delivery: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
          override: Union[InputOverrideConfig, None] = None,
          providers: Union[List[Provider], None] = None):
     def func(app_info: AppInfo):
         if ThirdPartyPasswordlessRecipe.__instance is None:
+            ingredients = ThirdPartyPasswordlessIngredients(None, None)
             ThirdPartyPasswordlessRecipe.__instance = ThirdPartyPasswordlessRecipe(
-                ThirdPartyPasswordlessRecipe.recipe_id, app_info, contact_config, flow_type, get_link_domain_and_path, get_custom_user_input_code,
+                ThirdPartyPasswordlessRecipe.recipe_id, app_info, contact_config, flow_type, ingredients, get_link_domain_and_path, get_custom_user_input_code,
                 email_verification_feature,
                 override,
-                providers)
+                providers,
+                email_delivery=email_delivery,
+                sms_delivery=sms_delivery,
+            )
             return ThirdPartyPasswordlessRecipe.__instance
         raise Exception(None, &#39;ThirdPartyPasswordlessRecipe recipe has already been initialised. Please check your code for bugs.&#39;)
 
@@ -788,6 +904,7 @@ def reset():
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe" href="#supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe">ThirdPartyPasswordlessRecipe</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.email_delivery" href="#supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.email_delivery">email_delivery</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.get_all_cors_headers" href="#supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.get_all_cors_headers">get_all_cors_headers</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.get_apis_handled" href="#supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.get_apis_handled">get_apis_handled</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.get_email_for_user_id" href="#supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.get_email_for_user_id">get_email_for_user_id</a></code></li>
@@ -798,6 +915,7 @@ def reset():
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.is_error_from_this_recipe_based_on_instance" href="#supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.is_error_from_this_recipe_based_on_instance">is_error_from_this_recipe_based_on_instance</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.recipe_id" href="#supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.recipe_id">recipe_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.reset" href="#supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.reset">reset</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.sms_delivery" href="#supertokens_python.recipe.thirdpartypasswordless.recipe.ThirdPartyPasswordlessRecipe.sms_delivery">sms_delivery</a></code></li>
 </ul>
 </li>
 </ul>

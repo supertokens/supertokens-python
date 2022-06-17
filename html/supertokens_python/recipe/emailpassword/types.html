@@ -39,7 +39,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Awaitable, Callable, List, Union
+from typing import Awaitable, Callable, List, TypeVar, Union
+
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
+from supertokens_python.recipe.emailverification.interfaces import \
+    TypeEmailVerificationEmailDeliveryInput
 
 
 class User:
@@ -81,7 +86,39 @@ class NormalisedFormField:
                  str], Awaitable[Union[str, None]]], optional: bool):
         self.id = id
         self.validate = validate
-        self.optional = optional</code></pre>
+        self.optional = optional
+
+
+_T = TypeVar(&#39;_T&#39;)
+
+
+class TypeEmailPasswordPasswordResetEmailDeliveryInputUser:
+    def __init__(self, user_id: str, email: str):
+        self.id = user_id
+        self.email = email
+
+
+class TypeEmailPasswordPasswordResetEmailDeliveryInput:
+    def __init__(
+        self,
+        user: TypeEmailPasswordPasswordResetEmailDeliveryInputUser,
+        password_reset_link: str,
+    ) -&gt; None:
+        self.user = user
+        self.password_reset_link = password_reset_link
+
+
+TypeEmailPasswordEmailDeliveryInput = Union[
+    TypeEmailPasswordPasswordResetEmailDeliveryInput,
+    TypeEmailVerificationEmailDeliveryInput
+]
+
+
+class EmailPasswordIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput], None] = None
+                 ) -&gt; None:
+        self.email_delivery = email_delivery</code></pre>
 </details>
 </section>
 <section>
@@ -93,6 +130,23 @@ class NormalisedFormField:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.recipe.emailpassword.types.EmailPasswordIngredients"><code class="flex name class">
+<span>class <span class="ident">EmailPasswordIngredients</span></span>
+<span>(</span><span>email_delivery: Optional[<a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[typing.Union[<a title="supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput" href="#supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput">TypeEmailPasswordPasswordResetEmailDeliveryInput</a>, <a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>]]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EmailPasswordIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput], None] = None
+                 ) -&gt; None:
+        self.email_delivery = email_delivery</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.emailpassword.types.ErrorFormField"><code class="flex name class">
 <span>class <span class="ident">ErrorFormField</span></span>
 <span>(</span><span>id: str, error: str)</span>
@@ -161,6 +215,42 @@ class NormalisedFormField:
         self.optional = optional</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput"><code class="flex name class">
+<span>class <span class="ident">TypeEmailPasswordPasswordResetEmailDeliveryInput</span></span>
+<span>(</span><span>user: <a title="supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInputUser" href="#supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInputUser">TypeEmailPasswordPasswordResetEmailDeliveryInputUser</a>, password_reset_link: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TypeEmailPasswordPasswordResetEmailDeliveryInput:
+    def __init__(
+        self,
+        user: TypeEmailPasswordPasswordResetEmailDeliveryInputUser,
+        password_reset_link: str,
+    ) -&gt; None:
+        self.user = user
+        self.password_reset_link = password_reset_link</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInputUser"><code class="flex name class">
+<span>class <span class="ident">TypeEmailPasswordPasswordResetEmailDeliveryInputUser</span></span>
+<span>(</span><span>user_id: str, email: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TypeEmailPasswordPasswordResetEmailDeliveryInputUser:
+    def __init__(self, user_id: str, email: str):
+        self.id = user_id
+        self.email = email</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.emailpassword.types.User"><code class="flex name class">
 <span>class <span class="ident">User</span></span>
 <span>(</span><span>user_id: str, email: str, time_joined: int)</span>
@@ -212,6 +302,9 @@ class NormalisedFormField:
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="supertokens_python.recipe.emailpassword.types.EmailPasswordIngredients" href="#supertokens_python.recipe.emailpassword.types.EmailPasswordIngredients">EmailPasswordIngredients</a></code></h4>
+</li>
+<li>
 <h4><code><a title="supertokens_python.recipe.emailpassword.types.ErrorFormField" href="#supertokens_python.recipe.emailpassword.types.ErrorFormField">ErrorFormField</a></code></h4>
 </li>
 <li>
@@ -222,6 +315,12 @@ class NormalisedFormField:
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.emailpassword.types.NormalisedFormField" href="#supertokens_python.recipe.emailpassword.types.NormalisedFormField">NormalisedFormField</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput" href="#supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput">TypeEmailPasswordPasswordResetEmailDeliveryInput</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInputUser" href="#supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInputUser">TypeEmailPasswordPasswordResetEmailDeliveryInputUser</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.emailpassword.types.User" href="#supertokens_python.recipe.emailpassword.types.User">User</a></code></h4>
