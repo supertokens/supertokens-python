@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 import os
 from typing import Any, Dict, List, Union
 
@@ -26,6 +27,8 @@ from supertokens_python.recipe.thirdpartypasswordless import \
 from typing_extensions import Literal
 
 from.store import save_url_with_token, save_code
+
+load_dotenv()
 
 
 def get_api_port():
