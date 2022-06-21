@@ -17,16 +17,16 @@ from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeOkResult,
     ConsumeCodeRestartFlowError, CreateCodeOkResult,
-    CreateNewCodeForDeviceOkResult,
-    CreateNewCodeForDeviceRestartFlowError,
+    CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
     DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError,
     RevokeAllCodesOkResult, RevokeCodeOkResult,
     UpdateUserEmailAlreadyExistsError, UpdateUserOkResult,
-    UpdateUserPhoneNumberAlreadyExistsError,
-    UpdateUserUnknownUserIdError)
+    UpdateUserPhoneNumberAlreadyExistsError, UpdateUserUnknownUserIdError)
 from supertokens_python.recipe.passwordless.recipe import PasswordlessRecipe
-from supertokens_python.recipe.passwordless.types import DeviceType, User
+from supertokens_python.recipe.passwordless.types import (
+    DeviceType, TypePasswordlessEmailDeliveryInput,
+    TypePasswordlessSmsDeliveryInput, User)
 
 
 async def create_code(email: Union[None, str] = None,
@@ -143,3 +143,15 @@ async def signinup(email: Union[str, None], phone_number: Union[str, None], user
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().signinup(email=email, phone_number=phone_number, user_context=user_context)
+
+
+async def send_email(input_: TypePasswordlessEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await PasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(input_, user_context)
+
+
+async def send_sms(input_: TypePasswordlessSmsDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+    if user_context is None:
+        user_context = {}
+    return await PasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(input_, user_context)

@@ -13,6 +13,10 @@
 # under the License.
 from typing import List, Union
 
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
+from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
+
 
 class User:
     def __init__(self, user_id: str,
@@ -43,3 +47,47 @@ class DeviceType:
         self.codes = codes
         self.email = email
         self.phone_number = phone_number
+
+
+class CreateAndSendCustomEmailParameters:
+    def __init__(self,
+                 code_life_time: int,
+                 pre_auth_session_id: str,
+                 email: str,
+                 user_input_code: Union[str, None] = None,
+                 url_with_link_code: Union[str, None] = None):
+        self.email: str = email
+        self.code_life_time: int = code_life_time
+        self.pre_auth_session_id: str = pre_auth_session_id
+        self.user_input_code: Union[str, None] = user_input_code
+        self.url_with_link_code: Union[str, None] = url_with_link_code
+
+
+TypePasswordlessEmailDeliveryInput = CreateAndSendCustomEmailParameters
+
+
+class CreateAndSendCustomTextMessageParameters:
+    def __init__(self,
+                 code_life_time: int,
+                 pre_auth_session_id: str,
+                 phone_number: str,
+                 user_input_code: Union[str, None] = None,
+                 url_with_link_code: Union[str, None] = None,
+                 ):
+        self.code_life_time: int = code_life_time
+        self.pre_auth_session_id: str = pre_auth_session_id
+        self.phone_number: str = phone_number
+        self.user_input_code: Union[str, None] = user_input_code
+        self.url_with_link_code: Union[str, None] = url_with_link_code
+
+
+TypePasswordlessSmsDeliveryInput = CreateAndSendCustomTextMessageParameters
+
+
+class PasswordlessIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput], None] = None,
+                 sms_delivery: Union[SMSDeliveryIngredient[TypePasswordlessSmsDeliveryInput], None] = None,
+                 ):
+        self.email_delivery = email_delivery
+        self.sms_delivery = sms_delivery

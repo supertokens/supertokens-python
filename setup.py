@@ -54,7 +54,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.8.1",
+    version="0.8.4",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -63,7 +63,9 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/supertokens/supertokens-python",
     packages=find_packages(exclude=exclude_list),
-    package_data = {'supertokens_python': ['py.typed']},
+    package_data={'supertokens_python': [
+        'py.typed',
+    ]},
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
@@ -88,11 +90,12 @@ setup(
         'typing_extensions==4.1.1',
         'Deprecated==1.2.13',
         'cryptography==35.0',
-        'phonenumbers==8.12',
-        'Werkzeug>=2.0 ,<2.1.0' # flask depends on this and flask has > '2.0' for this. However, the version before 2.1.0 breaks our lib.
+        'phonenumbers==8.12.48',
+        'Werkzeug>=2.0 ,<2.1.0', # flask depends on this and flask has > '2.0' for this. However, the version before 2.1.0 breaks our lib.
+        "twilio==7.9.1",
+        "aiosmtplib==1.1.6",
     ],
     python_requires='>=3.7',
     include_package_data=True,
     extras_require=extras_require
 )
-

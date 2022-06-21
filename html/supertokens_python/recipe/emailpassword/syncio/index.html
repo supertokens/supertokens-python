@@ -44,7 +44,7 @@ from typing import Any, Dict, Union
 from supertokens_python.async_to_sync_wrapper import sync
 
 from ..interfaces import SignInOkResult, SignInWrongCredentialsError
-from ..types import User
+from ..types import TypeEmailPasswordEmailDeliveryInput, User
 
 
 def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -59,7 +59,7 @@ def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any
     return sync(verify_email_using_token(token, user_context))
 
 
-async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import unverify_email
     return sync(unverify_email(user_id, user_context))
 
@@ -70,8 +70,8 @@ def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = 
     return sync(is_email_verified(user_id, user_context))
 
 
-async def update_email_or_password(user_id: str, email: Union[str, None] = None,
-                                   password: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None):
+def update_email_or_password(user_id: str, email: Union[str, None] = None,
+                             password: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import \
         update_email_or_password
     return sync(update_email_or_password(
@@ -107,15 +107,20 @@ def sign_in(email: str, password: str, user_context: Union[None, Dict[str, Any]]
     return sync(sign_in(email, password, user_context))
 
 
-async def sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+def sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import sign_up
     return sync(sign_up(email, password, user_context))
 
 
-async def revoke_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+def revoke_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import \
         revoke_email_verification_token
-    return sync(revoke_email_verification_token(user_id, user_context))</code></pre>
+    return sync(revoke_email_verification_token(user_id, user_context))
+
+
+def send_email(input_: TypeEmailPasswordEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+    from supertokens_python.recipe.emailpassword.asyncio import send_email
+    return sync(send_email(input_, user_context))</code></pre>
 </details>
 </section>
 <section>
@@ -126,7 +131,7 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.syncio.create_email_verification_token"><code class="name flex">
-<span>def <span class="ident">create_email_verification_token</span></span>(<span>user_id: str, user_context: Optional[None] = None)</span>
+<span>def <span class="ident">create_email_verification_token</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -141,7 +146,7 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.create_reset_password_token"><code class="name flex">
-<span>def <span class="ident">create_reset_password_token</span></span>(<span>user_id: str, user_context: Optional[None] = None)</span>
+<span>def <span class="ident">create_reset_password_token</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -156,7 +161,7 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.get_user_by_email"><code class="name flex">
-<span>def <span class="ident">get_user_by_email</span></span>(<span>email: str, user_context: Optional[None] = None) ‑> Optional[<a title="supertokens_python.recipe.emailpassword.types.User" href="../types.html#supertokens_python.recipe.emailpassword.types.User">User</a>]</span>
+<span>def <span class="ident">get_user_by_email</span></span>(<span>email: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.emailpassword.types.User" href="../types.html#supertokens_python.recipe.emailpassword.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -171,7 +176,7 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.get_user_by_id"><code class="name flex">
-<span>def <span class="ident">get_user_by_id</span></span>(<span>user_id: str, user_context: Optional[None] = None) ‑> Optional[<a title="supertokens_python.recipe.emailpassword.types.User" href="../types.html#supertokens_python.recipe.emailpassword.types.User">User</a>]</span>
+<span>def <span class="ident">get_user_by_id</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.emailpassword.types.User" href="../types.html#supertokens_python.recipe.emailpassword.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -185,7 +190,7 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.is_email_verified"><code class="name flex">
-<span>def <span class="ident">is_email_verified</span></span>(<span>user_id: str, user_context: Optional[None] = None)</span>
+<span>def <span class="ident">is_email_verified</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -200,7 +205,7 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.reset_password_using_token"><code class="name flex">
-<span>def <span class="ident">reset_password_using_token</span></span>(<span>token: str, new_password: str, user_context: Optional[None] = None)</span>
+<span>def <span class="ident">reset_password_using_token</span></span>(<span>token: str, new_password: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -216,7 +221,7 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.revoke_email_verification_token"><code class="name flex">
-<span>async def <span class="ident">revoke_email_verification_token</span></span>(<span>user_id: str, user_context: Optional[None] = None)</span>
+<span>def <span class="ident">revoke_email_verification_token</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -224,14 +229,28 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">def revoke_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import \
         revoke_email_verification_token
     return sync(revoke_email_verification_token(user_id, user_context))</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.emailpassword.syncio.send_email"><code class="name flex">
+<span>def <span class="ident">send_email</span></span>(<span>input_: Union[<a title="supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput" href="../types.html#supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput">TypeEmailPasswordPasswordResetEmailDeliveryInput</a>, <a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="../../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>], user_context: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def send_email(input_: TypeEmailPasswordEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+    from supertokens_python.recipe.emailpassword.asyncio import send_email
+    return sync(send_email(input_, user_context))</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.sign_in"><code class="name flex">
-<span>def <span class="ident">sign_in</span></span>(<span>email: str, password: str, user_context: Optional[None] = None) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignInOkResult" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInOkResult">SignInOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignInWrongCredentialsError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInWrongCredentialsError">SignInWrongCredentialsError</a>]</span>
+<span>def <span class="ident">sign_in</span></span>(<span>email: str, password: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignInOkResult" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInOkResult">SignInOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignInWrongCredentialsError" href="../interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInWrongCredentialsError">SignInWrongCredentialsError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -245,7 +264,7 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.sign_up"><code class="name flex">
-<span>async def <span class="ident">sign_up</span></span>(<span>email: str, password: str, user_context: Optional[None] = None)</span>
+<span>def <span class="ident">sign_up</span></span>(<span>email: str, password: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -253,13 +272,13 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">def sign_up(email: str, password: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import sign_up
     return sync(sign_up(email, password, user_context))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.unverify_email"><code class="name flex">
-<span>async def <span class="ident">unverify_email</span></span>(<span>user_id: str, user_context: Optional[None] = None)</span>
+<span>def <span class="ident">unverify_email</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -267,13 +286,13 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import unverify_email
     return sync(unverify_email(user_id, user_context))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.update_email_or_password"><code class="name flex">
-<span>async def <span class="ident">update_email_or_password</span></span>(<span>user_id: str, email: Optional[str] = None, password: Optional[str] = None, user_context: Optional[None] = None)</span>
+<span>def <span class="ident">update_email_or_password</span></span>(<span>user_id: str, email: Optional[str] = None, password: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -281,8 +300,8 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_email_or_password(user_id: str, email: Union[str, None] = None,
-                                   password: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">def update_email_or_password(user_id: str, email: Union[str, None] = None,
+                             password: Union[str, None] = None, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import \
         update_email_or_password
     return sync(update_email_or_password(
@@ -290,7 +309,7 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.syncio.verify_email_using_token"><code class="name flex">
-<span>def <span class="ident">verify_email_using_token</span></span>(<span>token: str, user_context: Optional[None] = None)</span>
+<span>def <span class="ident">verify_email_using_token</span></span>(<span>token: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -329,6 +348,7 @@ async def revoke_email_verification_token(user_id: str, user_context: Union[None
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.is_email_verified" href="#supertokens_python.recipe.emailpassword.syncio.is_email_verified">is_email_verified</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.reset_password_using_token" href="#supertokens_python.recipe.emailpassword.syncio.reset_password_using_token">reset_password_using_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.revoke_email_verification_token" href="#supertokens_python.recipe.emailpassword.syncio.revoke_email_verification_token">revoke_email_verification_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailpassword.syncio.send_email" href="#supertokens_python.recipe.emailpassword.syncio.send_email">send_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.sign_in" href="#supertokens_python.recipe.emailpassword.syncio.sign_in">sign_in</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.sign_up" href="#supertokens_python.recipe.emailpassword.syncio.sign_up">sign_up</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailpassword.syncio.unverify_email" href="#supertokens_python.recipe.emailpassword.syncio.unverify_email">unverify_email</a></code></li>

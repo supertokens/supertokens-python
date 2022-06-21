@@ -47,15 +47,15 @@ from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeOkResult,
     ConsumeCodeRestartFlowError, CreateCodeOkResult,
-    CreateNewCodeForDeviceOkResult,
-    CreateNewCodeForDeviceRestartFlowError,
+    CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
     DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError,
     RevokeAllCodesOkResult, RevokeCodeOkResult,
     UpdateUserEmailAlreadyExistsError, UpdateUserOkResult,
-    UpdateUserPhoneNumberAlreadyExistsError,
-    UpdateUserUnknownUserIdError)
-from supertokens_python.recipe.passwordless.types import DeviceType, User
+    UpdateUserPhoneNumberAlreadyExistsError, UpdateUserUnknownUserIdError)
+from supertokens_python.recipe.passwordless.types import (
+    DeviceType, TypePasswordlessEmailDeliveryInput,
+    TypePasswordlessSmsDeliveryInput, User)
 
 
 def create_code(email: Union[None, str] = None,
@@ -157,7 +157,15 @@ def create_magic_link(
 def signinup(email: Union[str, None], phone_number: Union[str,
              None], user_context: Union[None, Dict[str, Any]] = None) -&gt; ConsumeCodeOkResult:
     return sync(asyncio.signinup(
-        email=email, phone_number=phone_number, user_context=user_context))</code></pre>
+        email=email, phone_number=phone_number, user_context=user_context))
+
+
+def send_email(input_: TypePasswordlessEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
+    return sync(asyncio.send_email(input_, user_context))
+
+
+def send_sms(input_: TypePasswordlessSmsDeliveryInput, user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
+    return sync(asyncio.send_sms(input_, user_context))</code></pre>
 </details>
 </section>
 <section>
@@ -168,7 +176,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.syncio.consume_code"><code class="name flex">
-<span>def <span class="ident">consume_code</span></span>(<span>pre_auth_session_id: str, user_input_code: Optional[str] = None, device_id: Optional[str] = None, link_code: Optional[str] = None, user_context: Optional[None] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a>]</span>
+<span>def <span class="ident">consume_code</span></span>(<span>pre_auth_session_id: str, user_input_code: Optional[str] = None, device_id: Optional[str] = None, link_code: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeIncorrectUserInputCodeError">ConsumeCodeIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeExpiredUserInputCodeError">ConsumeCodeExpiredUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeRestartFlowError">ConsumeCodeRestartFlowError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -186,7 +194,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.create_code"><code class="name flex">
-<span>def <span class="ident">create_code</span></span>(<span>email: Optional[str] = None, phone_number: Optional[str] = None, user_input_code: Optional[str] = None, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult">CreateCodeOkResult</a></span>
+<span>def <span class="ident">create_code</span></span>(<span>email: Optional[str] = None, phone_number: Optional[str] = None, user_input_code: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodeOkResult">CreateCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -203,7 +211,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.create_magic_link"><code class="name flex">
-<span>def <span class="ident">create_magic_link</span></span>(<span>email: Optional[str], phone_number: Optional[str], user_context: Optional[None] = None) ‑> str</span>
+<span>def <span class="ident">create_magic_link</span></span>(<span>email: Optional[str], phone_number: Optional[str], user_context: Optional[Dict[str, Any]] = None) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -218,7 +226,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.create_new_code_for_device"><code class="name flex">
-<span>def <span class="ident">create_new_code_for_device</span></span>(<span>device_id: str, user_input_code: Optional[str] = None, user_context: Optional[None] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult">CreateNewCodeForDeviceOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError">CreateNewCodeForDeviceRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError">CreateNewCodeForDeviceUserInputCodeAlreadyUsedError</a>]</span>
+<span>def <span class="ident">create_new_code_for_device</span></span>(<span>device_id: str, user_input_code: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceOkResult">CreateNewCodeForDeviceOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceRestartFlowError">CreateNewCodeForDeviceRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError">CreateNewCodeForDeviceUserInputCodeAlreadyUsedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -235,7 +243,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.delete_email_for_user"><code class="name flex">
-<span>def <span class="ident">delete_email_for_user</span></span>(<span>user_id: str, user_context: Optional[None] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError">DeleteUserInfoUnknownUserIdError</a>]</span>
+<span>def <span class="ident">delete_email_for_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError">DeleteUserInfoUnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -248,7 +256,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.delete_phone_number_for_user"><code class="name flex">
-<span>def <span class="ident">delete_phone_number_for_user</span></span>(<span>user_id: str, user_context: Optional[None] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError">DeleteUserInfoUnknownUserIdError</a>]</span>
+<span>def <span class="ident">delete_phone_number_for_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoOkResult">DeleteUserInfoOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.DeleteUserInfoUnknownUserIdError">DeleteUserInfoUnknownUserIdError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -261,7 +269,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.get_user_by_email"><code class="name flex">
-<span>def <span class="ident">get_user_by_email</span></span>(<span>email: str, user_context: Optional[None] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="../types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
+<span>def <span class="ident">get_user_by_email</span></span>(<span>email: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="../types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -275,7 +283,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.get_user_by_id"><code class="name flex">
-<span>def <span class="ident">get_user_by_id</span></span>(<span>user_id: str, user_context: Optional[None] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="../types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
+<span>def <span class="ident">get_user_by_id</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="../types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -289,7 +297,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.get_user_by_phone_number"><code class="name flex">
-<span>def <span class="ident">get_user_by_phone_number</span></span>(<span>phone_number: str, user_context: Optional[None] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="../types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
+<span>def <span class="ident">get_user_by_phone_number</span></span>(<span>phone_number: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.User" href="../types.html#supertokens_python.recipe.passwordless.types.User">User</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -304,7 +312,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.list_codes_by_device_id"><code class="name flex">
-<span>def <span class="ident">list_codes_by_device_id</span></span>(<span>device_id: str, user_context: Optional[None] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="../types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
+<span>def <span class="ident">list_codes_by_device_id</span></span>(<span>device_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="../types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -319,7 +327,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.list_codes_by_email"><code class="name flex">
-<span>def <span class="ident">list_codes_by_email</span></span>(<span>email: str, user_context: Optional[None] = None) ‑> List[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="../types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
+<span>def <span class="ident">list_codes_by_email</span></span>(<span>email: str, user_context: Optional[Dict[str, Any]] = None) ‑> List[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="../types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -333,7 +341,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.list_codes_by_phone_number"><code class="name flex">
-<span>def <span class="ident">list_codes_by_phone_number</span></span>(<span>phone_number: str, user_context: Optional[None] = None) ‑> List[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="../types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
+<span>def <span class="ident">list_codes_by_phone_number</span></span>(<span>phone_number: str, user_context: Optional[Dict[str, Any]] = None) ‑> List[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="../types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -348,7 +356,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.list_codes_by_pre_auth_session_id"><code class="name flex">
-<span>def <span class="ident">list_codes_by_pre_auth_session_id</span></span>(<span>pre_auth_session_id: str, user_context: Optional[None] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="../types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
+<span>def <span class="ident">list_codes_by_pre_auth_session_id</span></span>(<span>pre_auth_session_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="../types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -363,7 +371,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.revoke_all_codes"><code class="name flex">
-<span>def <span class="ident">revoke_all_codes</span></span>(<span>email: Optional[str] = None, phone_number: Optional[str] = None, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult">RevokeAllCodesOkResult</a></span>
+<span>def <span class="ident">revoke_all_codes</span></span>(<span>email: Optional[str] = None, phone_number: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeAllCodesOkResult">RevokeAllCodesOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -379,7 +387,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.revoke_code"><code class="name flex">
-<span>def <span class="ident">revoke_code</span></span>(<span>code_id: str, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult">RevokeCodeOkResult</a></span>
+<span>def <span class="ident">revoke_code</span></span>(<span>code_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.RevokeCodeOkResult">RevokeCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -392,8 +400,34 @@ def signinup(email: Union[str, None], phone_number: Union[str,
         code_id=code_id, user_context=user_context))</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.passwordless.syncio.send_email"><code class="name flex">
+<span>def <span class="ident">send_email</span></span>(<span>input_: <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>, user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def send_email(input_: TypePasswordlessEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
+    return sync(asyncio.send_email(input_, user_context))</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.syncio.send_sms"><code class="name flex">
+<span>def <span class="ident">send_sms</span></span>(<span>input_: <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="../types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>, user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def send_sms(input_: TypePasswordlessSmsDeliveryInput, user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
+    return sync(asyncio.send_sms(input_, user_context))</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.signinup"><code class="name flex">
-<span>def <span class="ident">signinup</span></span>(<span>email: Optional[str], phone_number: Optional[str], user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a></span>
+<span>def <span class="ident">signinup</span></span>(<span>email: Optional[str], phone_number: Optional[str], user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodeOkResult">ConsumeCodeOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -408,7 +442,7 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.syncio.update_user"><code class="name flex">
-<span>def <span class="ident">update_user</span></span>(<span>user_id: str, email: Optional[str] = None, phone_number: Optional[str] = None, user_context: Optional[None] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError">UpdateUserEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError">UpdateUserPhoneNumberAlreadyExistsError</a>]</span>
+<span>def <span class="ident">update_user</span></span>(<span>user_id: str, email: Optional[str] = None, phone_number: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserOkResult">UpdateUserOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserUnknownUserIdError">UpdateUserUnknownUserIdError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserEmailAlreadyExistsError">UpdateUserEmailAlreadyExistsError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.UpdateUserPhoneNumberAlreadyExistsError">UpdateUserPhoneNumberAlreadyExistsError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -455,6 +489,8 @@ def signinup(email: Union[str, None], phone_number: Union[str,
 <li><code><a title="supertokens_python.recipe.passwordless.syncio.list_codes_by_pre_auth_session_id" href="#supertokens_python.recipe.passwordless.syncio.list_codes_by_pre_auth_session_id">list_codes_by_pre_auth_session_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.syncio.revoke_all_codes" href="#supertokens_python.recipe.passwordless.syncio.revoke_all_codes">revoke_all_codes</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.syncio.revoke_code" href="#supertokens_python.recipe.passwordless.syncio.revoke_code">revoke_code</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.syncio.send_email" href="#supertokens_python.recipe.passwordless.syncio.send_email">send_email</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.syncio.send_sms" href="#supertokens_python.recipe.passwordless.syncio.send_sms">send_sms</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.syncio.signinup" href="#supertokens_python.recipe.passwordless.syncio.signinup">signinup</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.syncio.update_user" href="#supertokens_python.recipe.passwordless.syncio.update_user">update_user</a></code></li>
 </ul>

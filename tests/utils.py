@@ -20,6 +20,7 @@ from subprocess import DEVNULL, run
 from time import sleep
 from typing import Any, Dict, List
 
+from fastapi.testclient import TestClient
 from requests.models import Response
 from supertokens_python import Supertokens
 from supertokens_python.process_state import ProcessState
@@ -35,8 +36,6 @@ from supertokens_python.recipe.thirdpartypasswordless import \
     ThirdPartyPasswordlessRecipe
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from yaml import FullLoader, dump, load
-
-from fastapi.testclient import TestClient
 
 INSTALLATION_PATH = environ['SUPERTOKENS_PATH']
 SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + '/.started'
@@ -121,7 +120,7 @@ def start_st(host: str = 'localhost', port: str = '3567'):
     pid_after = pid_before = __get_list_of_process_ids()
     run('cd ' + INSTALLATION_PATH + ' && java -Djava.security.egd=file:/dev/urandom -classpath '
                                     '"./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host='
-        + host + ' port=' + str(port) + ' &', shell=True, stdout=DEVNULL)
+        + host + ' port=' + str(port) + ' test_mode &', shell=True, stdout=DEVNULL)
     for _ in range(35):
         pid_after = __get_list_of_process_ids()
         if len(pid_after) != len(pid_before):
@@ -245,6 +244,56 @@ def sign_up_request(app: TestClient, email: str, password: str):
         })
 
 
+def sign_in_up_request(app: TestClient, email: str, use_server: bool = False):
+    if use_server:
+        environ['SUPERTOKENS_ENV'] = 'production'
+    response = app.post(
+        url="/auth/signinup/code",
+        headers={
+            "Content-Type": "application/json"
+        },
+        json={
+            "email": email
+        })
+    if use_server:
+        environ['SUPERTOKENS_ENV'] = 'testing'
+    return response
+
+
+def sign_in_up_request_phone(app: TestClient, phone: str, use_server: bool = False):
+    if use_server:
+        environ['SUPERTOKENS_ENV'] = 'production'
+    response = app.post(
+        url="/auth/signinup/code",
+        headers={
+            "Content-Type": "application/json"
+        },
+        json={
+            "phoneNumber": phone
+        })
+    if use_server:
+        environ['SUPERTOKENS_ENV'] = 'testing'
+    return response
+
+
+def reset_password_request(app: TestClient, email: str, use_server: bool = False):
+    if use_server:
+        environ['SUPERTOKENS_ENV'] = 'production'
+    response = app.post(
+        url="/auth/user/password/reset/token",
+        json={
+            'formFields':
+                [{
+                    "id": "email",
+                    "value": email
+                }]
+        }
+    )
+    if use_server:
+        environ['SUPERTOKENS_ENV'] = 'testing'
+    return response
+
+
 def sign_in_request(app: TestClient, email: str, password: str):
     return app.post(
         url="/auth/signin",
@@ -265,15 +314,24 @@ def sign_in_request(app: TestClient, email: str, password: str):
 
 
 def email_verify_token_request(
-        app: TestClient, accessToken: str, idRefreshTokenFromCookie: str, antiCsrf: str, userId: str):
-    return app.post(
+        app: TestClient, accessToken: str, idRefreshTokenFromCookie: str, antiCsrf: str, userId: str, use_server: bool = False):
+    if use_server:
+        environ['SUPERTOKENS_ENV'] = 'production'
+    headers = {
+        "Content-Type": "application/json",
+    }
+    if antiCsrf:
+        headers['anti-csrf'] = antiCsrf
+
+    resp = app.post(
         url="/auth/user/email/verify/token",
-        headers={
-            "Content-Type": "application/json",
-            'anti-csrf': antiCsrf
-        },
+        headers=headers,
         cookies={
             'sAccessToken': accessToken,
             'sIdRefreshToken': idRefreshTokenFromCookie,
         },
         data=str.encode(userId))
+    if use_server:
+        environ['SUPERTOKENS_ENV'] = 'testing'
+
+    return resp

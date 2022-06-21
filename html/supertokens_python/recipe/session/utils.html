@@ -281,6 +281,18 @@ def validate_and_normalise_user_input(app_info: AppInfo,
                                                       None] = None,
                                       jwt: Union[JWTConfig, None] = None
                                       ):
+    if anti_csrf not in {&#34;VIA_TOKEN&#34;, &#34;VIA_CUSTOM_HEADER&#34;, &#34;NONE&#34;, None}:
+        raise ValueError(&#34;anti_csrf must be one of VIA_TOKEN, VIA_CUSTOM_HEADER, NONE or None&#34;)
+
+    if error_handlers is not None and not isinstance(error_handlers, ErrorHandlers):  # type: ignore
+        raise ValueError(&#34;error_handlers must be an instance of ErrorHandlers or None&#34;)
+
+    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
+        raise ValueError(&#34;override must be an instance of InputOverrideConfig or None&#34;)
+
+    if jwt is not None and not isinstance(jwt, JWTConfig):  # type: ignore
+        raise ValueError(&#34;jwt must be an instance of JWTConfig or None&#34;)
+
     cookie_domain = normalise_session_scope(
         cookie_domain) if cookie_domain is not None else None
     top_level_api_domain = get_top_level_domain_for_same_site_resolution(
@@ -517,6 +529,18 @@ def validate_and_normalise_user_input(app_info: AppInfo,
                                                       None] = None,
                                       jwt: Union[JWTConfig, None] = None
                                       ):
+    if anti_csrf not in {&#34;VIA_TOKEN&#34;, &#34;VIA_CUSTOM_HEADER&#34;, &#34;NONE&#34;, None}:
+        raise ValueError(&#34;anti_csrf must be one of VIA_TOKEN, VIA_CUSTOM_HEADER, NONE or None&#34;)
+
+    if error_handlers is not None and not isinstance(error_handlers, ErrorHandlers):  # type: ignore
+        raise ValueError(&#34;error_handlers must be an instance of ErrorHandlers or None&#34;)
+
+    if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
+        raise ValueError(&#34;override must be an instance of InputOverrideConfig or None&#34;)
+
+    if jwt is not None and not isinstance(jwt, JWTConfig):  # type: ignore
+        raise ValueError(&#34;jwt must be an instance of JWTConfig or None&#34;)
+
     cookie_domain = normalise_session_scope(
         cookie_domain) if cookie_domain is not None else None
     top_level_api_domain = get_top_level_domain_for_same_site_resolution(

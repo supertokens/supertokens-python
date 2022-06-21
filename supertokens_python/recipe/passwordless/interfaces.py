@@ -11,16 +11,22 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 
 from supertokens_python.framework import BaseRequest, BaseResponse
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
 from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.types import APIResponse
 from typing_extensions import Literal
 
-from supertokens_python.types import APIResponse
-
-from .types import DeviceType, User
+# if TYPE_CHECKING:
+from .types import (DeviceType, SMSDeliveryIngredient,
+                    TypePasswordlessEmailDeliveryInput,
+                    TypePasswordlessSmsDeliveryInput, User)
 from .utils import PasswordlessConfig
 
 
@@ -201,12 +207,17 @@ class RecipeInterface(ABC):
 
 class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
-                 config: PasswordlessConfig, recipe_implementation: RecipeInterface):
+                 config: PasswordlessConfig, recipe_implementation: RecipeInterface,
+                 email_delivery: EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput],
+                 sms_delivery: SMSDeliveryIngredient[TypePasswordlessSmsDeliveryInput]
+                 ):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
         self.config = config
         self.recipe_implementation = recipe_implementation
+        self.email_delivery = email_delivery
+        self.sms_delivery = sms_delivery
 
 
 class CreateCodePostOkResult(APIResponse):

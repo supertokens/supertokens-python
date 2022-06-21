@@ -63,7 +63,7 @@ init(
                     client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
                 ), Google(
                     client_id=os.environ.get('GOOGLE_CLIENT_ID_MOBILE'),  # type: ignore
-                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
+                    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET_MOBILE')  # type: ignore
                 ), Github(
                     is_default=True,
                     client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore

@@ -12,7 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
 from typing import Union
+
+from supertokens_python.recipe.emailpassword.types import \
+    TypeEmailPasswordEmailDeliveryInput
 
 from ..thirdparty.types import ThirdPartyInfo
 
@@ -24,3 +29,13 @@ class User:
         self.email = email
         self.time_joined = time_joined
         self.third_party_info = third_party_info
+
+
+TypeThirdPartyEmailPasswordEmailDeliveryInput = TypeEmailPasswordEmailDeliveryInput
+
+
+class ThirdPartyEmailPasswordIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None
+                 ) -> None:
+        self.email_delivery = email_delivery

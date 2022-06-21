@@ -11,10 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union, List
+from typing import Any, Dict, List, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
-from ..types import User
+
+from ..types import TypeThirdPartyEmailDeliveryInput, User
 
 
 def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -39,7 +40,7 @@ def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = Non
     return sync(unverify_email(user_id, user_context))
 
 
-async def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.thirdparty.asyncio import \
         revoke_email_verification_tokens
     return sync(revoke_email_verification_tokens(user_id, user_context))
@@ -50,7 +51,7 @@ def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = Non
     return sync(get_user_by_id(user_id, user_context))
 
 
-async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -> List[User]:
+def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -> List[User]:
     from supertokens_python.recipe.thirdparty.asyncio import get_users_by_email
     return sync(get_users_by_email(email, user_context))
 
@@ -68,3 +69,8 @@ def sign_in_up(third_party_id: str, third_party_user_id: str,
     from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
     return sync(sign_in_up(third_party_id,
                            third_party_user_id, email, email_verified, user_context))
+
+
+def send_email(input_: TypeThirdPartyEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+    from supertokens_python.recipe.thirdparty.asyncio import send_email
+    return sync(send_email(input_, user_context))

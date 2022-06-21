@@ -18,35 +18,29 @@ from typing import Any, Dict, Union
 import supertokens_python.recipe.passwordless.interfaces as PlessInterfaces
 import supertokens_python.recipe.thirdparty.interfaces as ThirdPartyInterfaces
 
-from ...passwordless.api.implementation import APIImplementation as PasswordlessImplementation
+from ...passwordless.api.implementation import \
+    APIImplementation as PasswordlessImplementation
 from ...passwordless.interfaces import APIInterface
 from ...passwordless.interfaces import APIOptions as PasswordlessAPIOptions
-
-from ...thirdparty.api.implementation import APIImplementation as ThirdPartyImplementation
+from ...thirdparty.api.implementation import \
+    APIImplementation as ThirdPartyImplementation
 from ...thirdparty.interfaces import APIOptions as ThirdPartyAPIOptions
 from ...thirdparty.provider import Provider
-
-from ..interfaces import (
-    APIInterface,
-    ConsumeCodePostOkResult,
-    ConsumeCodePostExpiredUserInputCodeError,
-    ConsumeCodePostGeneralError,
-    ConsumeCodePostIncorrectUserInputCodeError,
-    CreateCodePostOkResult,
-    CreateCodePostGeneralError,
-    PasswordlessEmailExistsGetOkResult,
-    PasswordlessPhoneNumberExistsGetOkResult,
-    ConsumeCodePostRestartFlowError,
-    ResendCodePostOkResult,
-    ResendCodePostRestartFlowError,
-    ResendCodePostGeneralError,
-    AuthorisationUrlGetOkResult,
-    ThirdPartySignInUpPostOkResult,
-    ThirdPartySignInUpPostNoEmailGivenByProviderResponse,
-    ThirdPartySignInUpPostFieldError
-)
+from ..interfaces import (APIInterface, AuthorisationUrlGetOkResult,
+                          ConsumeCodePostExpiredUserInputCodeError,
+                          ConsumeCodePostGeneralError,
+                          ConsumeCodePostIncorrectUserInputCodeError,
+                          ConsumeCodePostOkResult,
+                          ConsumeCodePostRestartFlowError,
+                          CreateCodePostGeneralError, CreateCodePostOkResult,
+                          PasswordlessEmailExistsGetOkResult,
+                          PasswordlessPhoneNumberExistsGetOkResult,
+                          ResendCodePostGeneralError, ResendCodePostOkResult,
+                          ResendCodePostRestartFlowError,
+                          ThirdPartySignInUpPostFieldError,
+                          ThirdPartySignInUpPostNoEmailGivenByProviderResponse,
+                          ThirdPartySignInUpPostOkResult)
 from ..types import User
-
 from .passwordless_api_impementation import \
     get_interface_impl as get_pless_interface_impl
 from .thirdparty_api_implementation import \
@@ -110,7 +104,7 @@ class APIImplementation(APIInterface):
                                pre_auth_session_id: str,
                                api_options: PasswordlessAPIOptions,
                                user_context: Dict[str, Any]) -> Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, ResendCodePostGeneralError]:
-        return await self.resend_code_post(device_id, pre_auth_session_id, api_options, user_context)
+        return await self.pless_resend_code_post(device_id, pre_auth_session_id, api_options, user_context)
 
     async def consume_code_post(self,
                                 pre_auth_session_id: str,
@@ -132,10 +126,10 @@ class APIImplementation(APIInterface):
                                                  email: str,
                                                  api_options: PasswordlessAPIOptions,
                                                  user_context: Dict[str, Any]) -> PasswordlessEmailExistsGetOkResult:
-        return await self.passwordless_user_email_exists_get(email, api_options, user_context)
+        return await self.pless_email_exists_get(email, api_options, user_context)
 
     async def passwordless_user_phone_number_exists_get(self,
                                                         phone_number: str,
                                                         api_options: PasswordlessAPIOptions,
                                                         user_context: Dict[str, Any]) -> PasswordlessPhoneNumberExistsGetOkResult:
-        return await self.passwordless_user_phone_number_exists_get(phone_number, api_options, user_context)
+        return await self.pless_phone_number_exists_get(phone_number, api_options, user_context)

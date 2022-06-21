@@ -40,7 +40,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
 from typing import Union
+
+from supertokens_python.recipe.emailpassword.types import \
+    TypeEmailPasswordEmailDeliveryInput
 
 from ..thirdparty.types import ThirdPartyInfo
 
@@ -51,7 +56,17 @@ class User:
         self.user_id = user_id
         self.email = email
         self.time_joined = time_joined
-        self.third_party_info = third_party_info</code></pre>
+        self.third_party_info = third_party_info
+
+
+TypeThirdPartyEmailPasswordEmailDeliveryInput = TypeEmailPasswordEmailDeliveryInput
+
+
+class ThirdPartyEmailPasswordIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None
+                 ) -&gt; None:
+        self.email_delivery = email_delivery</code></pre>
 </details>
 </section>
 <section>
@@ -63,6 +78,23 @@ class User:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.recipe.thirdpartyemailpassword.types.ThirdPartyEmailPasswordIngredients"><code class="flex name class">
+<span>class <span class="ident">ThirdPartyEmailPasswordIngredients</span></span>
+<span>(</span><span>email_delivery: Optional[<a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[typing.Union[<a title="supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput" href="../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput">TypeEmailPasswordPasswordResetEmailDeliveryInput</a>, <a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>]]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ThirdPartyEmailPasswordIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None
+                 ) -&gt; None:
+        self.email_delivery = email_delivery</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.types.User"><code class="flex name class">
 <span>class <span class="ident">User</span></span>
 <span>(</span><span>user_id: str, email: str, time_joined: int, third_party_info: Optional[<a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo" href="../thirdparty/types.html#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo">ThirdPartyInfo</a>] = None)</span>
@@ -98,6 +130,9 @@ class User:
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdpartyemailpassword.types.ThirdPartyEmailPasswordIngredients" href="#supertokens_python.recipe.thirdpartyemailpassword.types.ThirdPartyEmailPasswordIngredients">ThirdPartyEmailPasswordIngredients</a></code></h4>
+</li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdpartyemailpassword.types.User" href="#supertokens_python.recipe.thirdpartyemailpassword.types.User">User</a></code></h4>
 </li>

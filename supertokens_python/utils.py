@@ -15,12 +15,16 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import warnings
 from base64 import b64decode, b64encode
+from math import floor
 from re import fullmatch
 from time import time
 from typing import (TYPE_CHECKING, Any, Callable, Coroutine, Dict, List,
                     TypeVar, Union)
+
+from httpx import HTTPStatusError, Response
 
 from supertokens_python.async_to_sync_wrapper import check_event_loop
 from supertokens_python.framework.django.framework import DjangoFramework
@@ -175,3 +179,44 @@ def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
 
 def frontend_has_interceptor(request: BaseRequest) -> bool:
     return get_rid_from_request(request) is not None
+
+
+def deprecated_warn(msg: str):
+    warnings.warn(msg, DeprecationWarning, stacklevel=2)
+
+
+def handle_httpx_client_exceptions(e: Exception, input_: Union[Dict[str, Any], None] = None):
+    if isinstance(e, HTTPStatusError) and isinstance(e.response, Response):  # type: ignore
+        res = e.response  # type: ignore
+        log_debug_message("Error status: %s", res.status_code)  # type: ignore
+        log_debug_message("Error response: %s", res.json())
+    else:
+        log_debug_message("Error: %s", str(e))
+
+    if input_ is not None:
+        log_debug_message("Logging the input:")
+        log_debug_message("%s", json.dumps(input_))
+
+
+def humanize_time(ms: int) -> str:
+    t = floor(ms / 1000)
+    suffix = ""
+
+    if t < 60:
+        if t > 1:
+            suffix = "s"
+        time_str = f"{t} second{suffix}"
+    elif t < 3600:
+        m = floor(t / 60)
+        if m > 1:
+            suffix = "s"
+        time_str = f"{m} minute{suffix}"
+    else:
+        h = floor(t / 360) / 10
+        if h > 1:
+            suffix = "s"
+        if h % 1 == 0:
+            h = int(h)
+        time_str = f"{h} hour{suffix}"
+
+    return time_str

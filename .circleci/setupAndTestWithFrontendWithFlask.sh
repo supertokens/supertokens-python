@@ -49,15 +49,16 @@ git clone git@github.com:supertokens/supertokens-website.git
 cd supertokens-website
 git checkout $2
 cd ../project/tests/frontendIntegration/flask-server
-export PYTHONPATH="${PYTHONPATH}:/root/project" && python3 app.py --port 8080 &
+export PYTHONPATH="${PYTHONPATH}:/root/project"
+python3 app.py --port 8080 &
 pid=$!
-export PYTHONPATH="${PYTHONPATH}:/root/project" && python3 app.py --port 8082 &
+python3 app.py --port 8082 &
 pid2=$!
 cd ../../../../supertokens-website/test/server
-npm i -d --quiet --no-progress
-npm i git+https://github.com:supertokens/supertokens-node.git#$3 --quiet --no-progress
+npm i -d  
+npm i git+https://github.com:supertokens/supertokens-node.git#$3  
 cd ../../
-npm i -d --quiet --no-progress
+npm i -d  
 SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
 if [[ $? -ne 0 ]]
 then
