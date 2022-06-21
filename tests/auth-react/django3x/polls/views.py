@@ -13,78 +13,19 @@
 # under the License.
 import json
 import os
-from typing import Any, Dict, List, Union
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from mysite.settings import custom_init
 from mysite.store import get_codes, get_url_with_token
-from supertokens_python.recipe.emailpassword import InputFormField
-from supertokens_python.recipe.passwordless import (
-    CreateAndSendCustomEmailParameters,
-    CreateAndSendCustomTextMessageParameters)
+from mysite.utils import custom_init
 from supertokens_python.recipe.session import SessionContainer
 
 mode = os.environ.get('APP_MODE', 'asgi')
+
 if mode == 'asgi':
     from supertokens_python.recipe.session.framework.django.asyncio import \
         verify_session
-else:
-    from supertokens_python.recipe.session.framework.django.syncio import \
-        verify_session
 
-
-async def save_code_text(param: CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
-    code_store: Union[None, Dict[str, List[Dict[str, Any]]]] = getattr(settings, "CODE_STORE", None)
-    codes: Union[None, List[Dict[str, Any]]] = []
-    if code_store is not None:
-        codes = code_store.get(param.pre_auth_session_id)
-    else:
-        code_store = dict()
-    if codes is None:
-        codes = []
-    codes.append({
-        'urlWithLinkCode': param.url_with_link_code,
-        'userInputCode': param.user_input_code
-    })
-    code_store[param.pre_auth_session_id] = codes
-    setattr(settings, "CODE_STORE", code_store)
-
-
-async def save_code_email(param: CreateAndSendCustomEmailParameters, _: Dict[str, Any]):
-    code_store: Union[None, Dict[str, List[Dict[str, Any]]]] = getattr(settings, "CODE_STORE", None)
-    codes: Union[None, List[Dict[str, Any]]] = []
-    if code_store is not None:
-        codes = code_store.get(param.pre_auth_session_id)
-    else:
-        code_store = dict()
-    if codes is None:
-        codes = []
-    codes.append({
-        'urlWithLinkCode': param.url_with_link_code,
-        'userInputCode': param.user_input_code
-    })
-    code_store[param.pre_auth_session_id] = codes
-    setattr(settings, "CODE_STORE", code_store)
-
-
-async def validate_age(value: Any):
-    try:
-        if int(value) < 18:
-            return "You must be over 18 to register"
-    except Exception:
-        pass
-
-    return None
-
-form_fields = [
-    InputFormField('name'),
-    InputFormField('age', validate=validate_age),
-    InputFormField('country', optional=True)
-]
-
-
-if mode == 'asgi':
     @verify_session()
     async def session_info(request: HttpRequest):  # type: ignore
         session_: SessionContainer = request.supertokens  # type: ignore
@@ -95,6 +36,9 @@ if mode == 'asgi':
             'sessionData': await session_.get_session_data()
         })
 else:
+    from supertokens_python.recipe.session.framework.django.syncio import \
+        verify_session
+
     @verify_session()
     def session_info(request: HttpRequest):
         session_: SessionContainer = request.supertokens  # type: ignore
