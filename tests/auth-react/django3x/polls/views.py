@@ -18,8 +18,8 @@ from typing import Any, Dict, List, Union
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from mysite.settings import custom_init
+from mysite.store import get_codes, get_url_with_token
 from supertokens_python.recipe.emailpassword import InputFormField
-from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.passwordless import (
     CreateAndSendCustomEmailParameters,
     CreateAndSendCustomTextMessageParameters)
@@ -67,12 +67,6 @@ async def save_code_email(param: CreateAndSendCustomEmailParameters, _: Dict[str
     code_store[param.pre_auth_session_id] = codes
     setattr(settings, "CODE_STORE", code_store)
 
-os.environ.setdefault('SUPERTOKENS_ENV', 'testing')
-
-
-async def create_and_send_custom_email(_: User, url_with_token: str, __: Dict[str, Any]) -> None:
-    setattr(settings, "LATEST_URL_WITH_TOKEN", url_with_token)
-
 
 async def validate_age(value: Any):
     try:
@@ -117,7 +111,7 @@ def ping(request: HttpRequest):
 
 
 def token(request: HttpRequest):
-    latest_url_with_token = getattr(settings, "LATEST_URL_WITH_TOKEN", None)
+    latest_url_with_token = get_url_with_token()
     return JsonResponse({
         'latestURLWithToken': latest_url_with_token
     })
@@ -127,12 +121,7 @@ def test_get_device(request: HttpRequest):
     pre_auth_session_id = request.GET.get('preAuthSessionId', None)
     if pre_auth_session_id is None:
         return HttpResponse('')
-    code_store = getattr(settings, "CODE_STORE", None)
-    codes = []
-    if code_store is not None:
-        codes = code_store.get(pre_auth_session_id)
-    if codes is None:
-        codes = []
+    codes = get_codes(pre_auth_session_id)
     return JsonResponse({
         'preAuthSessionId': pre_auth_session_id,
         'codes': codes

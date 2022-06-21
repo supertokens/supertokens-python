@@ -15,7 +15,6 @@ from typing import Any, Dict, List, Union
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from corsheaders.defaults import default_headers
-from django.conf import settings
 from dotenv import load_dotenv
 from supertokens_python import (InputAppInfo, Supertokens, SupertokensConfig,
                                 get_all_cors_headers, init)
@@ -41,6 +40,8 @@ from supertokens_python.recipe.thirdpartypasswordless import \
     ThirdPartyPasswordlessRecipe
 from typing_extensions import Literal
 
+from.store import save_url_with_token, save_code
+
 load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -54,13 +55,9 @@ SECRET_KEY = 'f_d6ar@t2n+e@&7b^i^**kzo68w^e*1kn9%40#sp@0v2t#=vs2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-LATEST_URL_WITH_TOKEN = None
-
 
 async def create_and_send_custom_email(_: User, url_with_token: str, context: Dict[str, Any]):
-    global LATEST_URL_WITH_TOKEN
-    setattr(settings, "LATEST_URL_WITH_TOKEN", url_with_token)
-    LATEST_URL_WITH_TOKEN = url_with_token  # type: ignore
+    save_url_with_token(url_with_token)
 
 
 async def validate_age(value: Any):
@@ -132,33 +129,12 @@ class CustomAuth0Provider(Provider):
         return self.client_id
 
 
-CODE_STORE: Dict[str, List[Dict[str, Any]]] = {}
-
-
 async def save_code_email(param: CreateAndSendCustomEmailParameters, _: Dict[str, Any]):
-    global CODE_STORE
-    codes: List[Dict[str, Any]] = getattr(settings, "CODE_STORE", None)  # type: ignore
-    if codes is None:
-        codes = []
-    codes.append({
-        'urlWithLinkCode': param.url_with_link_code,
-        'userInputCode': param.user_input_code
-    })
-    CODE_STORE[param.pre_auth_session_id] = codes
-    setattr(settings, "CODE_STORE", CODE_STORE)
+    save_code(param.pre_auth_session_id, param.url_with_link_code, param.user_input_code)
 
 
 async def save_code_text(param: CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
-    global CODE_STORE
-    codes: List[Dict[str, Any]] = getattr(settings, "CODE_STORE", None)  # type: ignore
-    if codes is None:
-        codes = []
-    codes.append({
-        'urlWithLinkCode': param.url_with_link_code,
-        'userInputCode': param.user_input_code
-    })
-    CODE_STORE[param.pre_auth_session_id] = codes
-    setattr(settings, "CODE_STORE", CODE_STORE)
+    save_code(param.pre_auth_session_id, param.url_with_link_code, param.user_input_code)
 
 
 providers_list: List[Provider] = [
