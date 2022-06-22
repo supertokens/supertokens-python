@@ -28,7 +28,7 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.smsdelivery.services.supertokens import \
     SUPERTOKENS_SMS_SERVICE_URL
 from supertokens_python.ingredients.smsdelivery.types import (
-    SmsContent, SMSDeliveryConfig, SMSDeliveryInterface,
+    SMSContent, SMSDeliveryConfig, SMSDeliveryInterface,
     TwilioSettings, TwilioServiceInterface)
 from supertokens_python.recipe import (passwordless, session,
                                        thirdpartypasswordless)
@@ -297,7 +297,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         oi_send_raw_sms = oi.send_raw_sms
 
         async def send_raw_email_override(
-            content: SmsContent,
+            content: SMSContent,
             _user_context: Dict[str, Any],
             from_: Union[str, None] = None,
             messaging_service_sid: Union[str, None] = None,
@@ -311,14 +311,14 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
 
             await oi_send_raw_sms(content, _user_context, from_, messaging_service_sid)
 
-        async def get_content_override(template_vars: PasswordlessLoginSMSTemplateVars, _user_context: Dict[str, Any]) -> SmsContent:
+        async def get_content_override(template_vars: PasswordlessLoginSMSTemplateVars, _user_context: Dict[str, Any]) -> SMSContent:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
 
             user_input_code = template_vars.user_input_code or ""
             code_lifetime = template_vars.code_life_time
 
-            return SmsContent(
+            return SMSContent(
                 body=user_input_code,
                 to_phone=template_vars.phone_number
             )
