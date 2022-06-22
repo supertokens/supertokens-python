@@ -39,21 +39,35 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from __future__ import annotations
 
 from abc import ABC
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig, EmailDeliveryConfigWithService)
+from supertokens_python.ingredients.smsdelivery.types import (
+    SMSDeliveryConfig, SMSDeliveryConfigWithService)
+from supertokens_python.recipe.passwordless.types import (
+    CreateAndSendCustomEmailParameters, TypePasswordlessSmsDeliveryInput)
+from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
+from .types import CreateAndSendCustomTextMessageParameters
 
 if TYPE_CHECKING:
+    from .interfaces import (APIInterface, RecipeInterface,
+                             TypePasswordlessEmailDeliveryInput)
     from supertokens_python import AppInfo
-    from .interfaces import RecipeInterface, APIInterface
 
 from re import fullmatch
 
 from phonenumbers import is_valid_number, parse  # type: ignore
+from supertokens_python.recipe.passwordless.emaildelivery.services.backward_compatibility import \
+    BackwardCompatibilityService
+from supertokens_python.recipe.passwordless.smsdelivery.services.backward_compatibility import \
+    BackwardCompatibilityService as SMSBackwardCompatibilityService
 
 
 async def default_validate_phone_number(value: str):
@@ -78,50 +92,6 @@ async def default_validate_email(value: str):
         return &#39;Email is invalid&#39;
 
 
-async def default_create_and_send_custom_text_message(
-    _: CreateAndSendCustomTextMessageParameters,
-    __: Dict[str, Any]
-) -&gt; None:
-    # TODO
-    pass
-
-
-async def default_create_and_send_custom_email(
-    _: CreateAndSendCustomEmailParameters,
-    __: Dict[str, Any]
-) -&gt; None:
-    # TODO
-    pass
-
-
-class CreateAndSendCustomEmailParameters:
-    def __init__(self,
-                 code_life_time: int,
-                 pre_auth_session_id: str,
-                 email: str,
-                 user_input_code: Union[str, None] = None,
-                 url_with_link_code: Union[str, None] = None):
-        self.email: str = email
-        self.code_life_time: int = code_life_time
-        self.pre_auth_session_id: str = pre_auth_session_id
-        self.user_input_code: Union[str, None] = user_input_code
-        self.url_with_link_code: Union[str, None] = url_with_link_code
-
-
-class CreateAndSendCustomTextMessageParameters:
-    def __init__(self,
-                 code_life_time: int,
-                 pre_auth_session_id: str,
-                 phone_number: str,
-                 user_input_code: Union[str, None] = None,
-                 url_with_link_code: Union[str, None] = None):
-        self.phone_number: str = phone_number
-        self.code_life_time: int = code_life_time
-        self.pre_auth_session_id: str = pre_auth_session_id
-        self.user_input_code: Union[str, None] = user_input_code
-        self.url_with_link_code: Union[str, None] = url_with_link_code
-
-
 class OverrideConfig:
     def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
                                         None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
@@ -137,16 +107,17 @@ class ContactConfig(ABC):
 
 class ContactPhoneOnlyConfig(ContactConfig):
     def __init__(self,
-                 create_and_send_custom_text_message: Callable[
-                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]],
+                 create_and_send_custom_text_message: Union[Callable[
+                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]], None] = None,
                  validate_phone_number: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__(&#39;PHONE&#39;)
-        if create_and_send_custom_text_message is None:
-            self.create_and_send_custom_text_message = default_create_and_send_custom_text_message
-        else:
-            self.create_and_send_custom_text_message = create_and_send_custom_text_message
+
+        self.create_and_send_custom_text_message = create_and_send_custom_text_message
+        if create_and_send_custom_text_message:
+            deprecated_warn(&#34;create_and_send_custom_text_message is deprecated. Please use sms delivery config instead&#34;)
+
         if validate_phone_number is None:
             self.validate_phone_number = default_validate_phone_number
         else:
@@ -155,16 +126,17 @@ class ContactPhoneOnlyConfig(ContactConfig):
 
 class ContactEmailOnlyConfig(ContactConfig):
     def __init__(self,
-                 create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]],
+                 create_and_send_custom_email: Union[Callable[
+                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]], None] = None,
                  validate_email_address: Union[Callable[[
-                     str], Awaitable[Union[str, None]]], None] = None
+                     str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__(&#39;EMAIL&#39;)
-        if create_and_send_custom_email is None:
-            self.create_and_send_custom_email = default_create_and_send_custom_email
-        else:
-            self.create_and_send_custom_email = create_and_send_custom_email
+
+        self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email is not None:
+            deprecated_warn(&#34;create_and_send_custom_email is deprecated. Please use email delivery config instead&#34;)
+
         if validate_email_address is None:
             self.validate_email_address = default_validate_email
         else:
@@ -173,28 +145,30 @@ class ContactEmailOnlyConfig(ContactConfig):
 
 class ContactEmailOrPhoneConfig(ContactConfig):
     def __init__(self,
-                 create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]],
-                 create_and_send_custom_text_message: Callable[
-                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]],
+                 create_and_send_custom_email: Union[Callable[
+                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]], None] = None,
+                 create_and_send_custom_text_message: Union[Callable[
+                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]], None] = None,
                  validate_email_address: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  validate_phone_number: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__(&#39;EMAIL_OR_PHONE&#39;)
-        if create_and_send_custom_email is None:
-            self.create_and_send_custom_email = default_create_and_send_custom_email
-        else:
-            self.create_and_send_custom_email = create_and_send_custom_email
+
+        self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email is not None:
+            deprecated_warn(&#34;create_and_send_custom_email is deprecated. Please use email delivery config instead&#34;)
+
         if validate_email_address is None:
             self.validate_email_address = default_validate_email
         else:
             self.validate_email_address = validate_email_address
-        if create_and_send_custom_text_message is None:
-            self.create_and_send_custom_text_message = default_create_and_send_custom_text_message
-        else:
-            self.create_and_send_custom_text_message = create_and_send_custom_text_message
+
+        self.create_and_send_custom_text_message = create_and_send_custom_text_message
+        if create_and_send_custom_text_message:
+            deprecated_warn(&#34;create_and_send_custom_text_message is deprecated. Please use sms delivery config instead&#34;)
+
         if validate_phone_number is None:
             self.validate_phone_number = default_validate_phone_number
         else:
@@ -213,6 +187,8 @@ class PasswordlessConfig:
                  override: OverrideConfig,
                  flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;],
                  get_link_domain_and_path: Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]],
+                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]],
+                 get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[TypePasswordlessSmsDeliveryInput]],
                  get_custom_user_input_code: Union[Callable[[
                      Dict[str, Any]], Awaitable[str]], None] = None
                  ):
@@ -221,22 +197,62 @@ class PasswordlessConfig:
         self.flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;] = flow_type
         self.get_custom_user_input_code = get_custom_user_input_code
         self.get_link_domain_and_path = get_link_domain_and_path
+        self.get_email_delivery_config = get_email_delivery_config
+        self.get_sms_delivery_config = get_sms_delivery_config
 
 
 def validate_and_normalise_user_input(
-        app_info: AppInfo,
-        contact_config: ContactConfig,
-        flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;],
-        override: Union[OverrideConfig, None] = None,
-        get_link_domain_and_path: Union[Callable[[
-            PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
-        get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None):
+    app_info: AppInfo,
+    contact_config: ContactConfig,
+    flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;],
+    override: Union[OverrideConfig, None] = None,
+    get_link_domain_and_path: Union[Callable[[
+        PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
+    get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
+    email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
+    sms_delivery: Union[SMSDeliveryConfig[TypePasswordlessSmsDeliveryInput], None] = None,
+) -&gt; PasswordlessConfig:
 
     if override is None:
         override = OverrideConfig()
 
     if get_link_domain_and_path is None:
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)
+
+    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]:
+        email_service = email_delivery.service if email_delivery is not None else None
+        if isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)):
+            create_and_send_custom_email = contact_config.create_and_send_custom_email
+        else:
+            create_and_send_custom_email = None
+
+        if email_service is None:
+            email_service = BackwardCompatibilityService(app_info, create_and_send_custom_email)
+
+        if email_delivery is not None and email_delivery.override is not None:
+            override = email_delivery.override
+        else:
+            override = None
+
+        return EmailDeliveryConfigWithService(email_service, override=override)
+
+    def get_sms_delivery_config() -&gt; SMSDeliveryConfigWithService[TypePasswordlessSmsDeliveryInput]:
+        sms_service = sms_delivery.service if sms_delivery is not None else None
+
+        if isinstance(contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)):
+            create_and_send_custom_text_message = contact_config.create_and_send_custom_text_message
+        else:
+            create_and_send_custom_text_message = None
+
+        if sms_service is None:
+            sms_service = SMSBackwardCompatibilityService(app_info, create_and_send_custom_text_message)
+
+        if sms_delivery is not None and sms_delivery.override is not None:
+            override = sms_delivery.override
+        else:
+            override = None
+
+        return SMSDeliveryConfigWithService(sms_service, override=override)
 
     if not isinstance(contact_config, ContactConfig):  # type: ignore user might not have linter enabled
         raise ValueError(&#39;contact_config must be of type ContactConfig&#39;)
@@ -254,6 +270,8 @@ def validate_and_normalise_user_input(
             apis=override.apis),
         flow_type=flow_type,
         get_link_domain_and_path=get_link_domain_and_path,
+        get_email_delivery_config=get_email_delivery_config,
+        get_sms_delivery_config=get_sms_delivery_config,
         get_custom_user_input_code=get_custom_user_input_code
     )</code></pre>
 </details>
@@ -265,40 +283,6 @@ def validate_and_normalise_user_input(
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.utils.default_create_and_send_custom_email"><code class="name flex">
-<span>async def <span class="ident">default_create_and_send_custom_email</span></span>(<span>_: <a title="supertokens_python.recipe.passwordless.utils.CreateAndSendCustomEmailParameters" href="#supertokens_python.recipe.passwordless.utils.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>, __: Dict[str, Any]) ‑> None</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def default_create_and_send_custom_email(
-    _: CreateAndSendCustomEmailParameters,
-    __: Dict[str, Any]
-) -&gt; None:
-    # TODO
-    pass</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.utils.default_create_and_send_custom_text_message"><code class="name flex">
-<span>async def <span class="ident">default_create_and_send_custom_text_message</span></span>(<span>_: <a title="supertokens_python.recipe.passwordless.utils.CreateAndSendCustomTextMessageParameters" href="#supertokens_python.recipe.passwordless.utils.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>, __: Dict[str, Any]) ‑> None</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def default_create_and_send_custom_text_message(
-    _: CreateAndSendCustomTextMessageParameters,
-    __: Dict[str, Any]
-) -&gt; None:
-    # TODO
-    pass</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.passwordless.utils.default_get_link_domain_and_path"><code class="name flex">
 <span>def <span class="ident">default_get_link_domain_and_path</span></span>(<span>app_info: AppInfo)</span>
 </code></dt>
@@ -349,7 +333,7 @@ def validate_and_normalise_user_input(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", override: Union[<a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, None] = None, get_link_domain_and_path: Union[Callable[[<a title="supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput" href="#supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput">PhoneOrEmailInput</a>, Dict[str, Any]], Awaitable[str]], None] = None, get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None)</span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", override: Union[<a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, None] = None, get_link_domain_and_path: Union[Callable[[<a title="supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput" href="#supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput">PhoneOrEmailInput</a>, Dict[str, Any]], Awaitable[str]], None] = None, get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None, sms_delivery: Union[SMSDeliveryConfig[TypePasswordlessSmsDeliveryInput], None] = None) ‑> <a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig">PasswordlessConfig</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -358,19 +342,57 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def validate_and_normalise_user_input(
-        app_info: AppInfo,
-        contact_config: ContactConfig,
-        flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;],
-        override: Union[OverrideConfig, None] = None,
-        get_link_domain_and_path: Union[Callable[[
-            PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
-        get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None):
+    app_info: AppInfo,
+    contact_config: ContactConfig,
+    flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;],
+    override: Union[OverrideConfig, None] = None,
+    get_link_domain_and_path: Union[Callable[[
+        PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
+    get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
+    email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
+    sms_delivery: Union[SMSDeliveryConfig[TypePasswordlessSmsDeliveryInput], None] = None,
+) -&gt; PasswordlessConfig:
 
     if override is None:
         override = OverrideConfig()
 
     if get_link_domain_and_path is None:
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)
+
+    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]:
+        email_service = email_delivery.service if email_delivery is not None else None
+        if isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)):
+            create_and_send_custom_email = contact_config.create_and_send_custom_email
+        else:
+            create_and_send_custom_email = None
+
+        if email_service is None:
+            email_service = BackwardCompatibilityService(app_info, create_and_send_custom_email)
+
+        if email_delivery is not None and email_delivery.override is not None:
+            override = email_delivery.override
+        else:
+            override = None
+
+        return EmailDeliveryConfigWithService(email_service, override=override)
+
+    def get_sms_delivery_config() -&gt; SMSDeliveryConfigWithService[TypePasswordlessSmsDeliveryInput]:
+        sms_service = sms_delivery.service if sms_delivery is not None else None
+
+        if isinstance(contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)):
+            create_and_send_custom_text_message = contact_config.create_and_send_custom_text_message
+        else:
+            create_and_send_custom_text_message = None
+
+        if sms_service is None:
+            sms_service = SMSBackwardCompatibilityService(app_info, create_and_send_custom_text_message)
+
+        if sms_delivery is not None and sms_delivery.override is not None:
+            override = sms_delivery.override
+        else:
+            override = None
+
+        return SMSDeliveryConfigWithService(sms_service, override=override)
 
     if not isinstance(contact_config, ContactConfig):  # type: ignore user might not have linter enabled
         raise ValueError(&#39;contact_config must be of type ContactConfig&#39;)
@@ -388,6 +410,8 @@ def validate_and_normalise_user_input(
             apis=override.apis),
         flow_type=flow_type,
         get_link_domain_and_path=get_link_domain_and_path,
+        get_email_delivery_config=get_email_delivery_config,
+        get_sms_delivery_config=get_sms_delivery_config,
         get_custom_user_input_code=get_custom_user_input_code
     )</code></pre>
 </details>
@@ -426,7 +450,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.ContactEmailOnlyConfig"><code class="flex name class">
 <span>class <span class="ident">ContactEmailOnlyConfig</span></span>
-<span>(</span><span>create_and_send_custom_email: Callable[[<a title="supertokens_python.recipe.passwordless.utils.CreateAndSendCustomEmailParameters" href="#supertokens_python.recipe.passwordless.utils.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>, Dict[str, Any]], Awaitable[None]], validate_email_address: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None)</span>
+<span>(</span><span>create_and_send_custom_email: Union[Callable[[CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]], None] = None, validate_email_address: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -437,16 +461,17 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class ContactEmailOnlyConfig(ContactConfig):
     def __init__(self,
-                 create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]],
+                 create_and_send_custom_email: Union[Callable[
+                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]], None] = None,
                  validate_email_address: Union[Callable[[
-                     str], Awaitable[Union[str, None]]], None] = None
+                     str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__(&#39;EMAIL&#39;)
-        if create_and_send_custom_email is None:
-            self.create_and_send_custom_email = default_create_and_send_custom_email
-        else:
-            self.create_and_send_custom_email = create_and_send_custom_email
+
+        self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email is not None:
+            deprecated_warn(&#34;create_and_send_custom_email is deprecated. Please use email delivery config instead&#34;)
+
         if validate_email_address is None:
             self.validate_email_address = default_validate_email
         else:
@@ -460,7 +485,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.ContactEmailOrPhoneConfig"><code class="flex name class">
 <span>class <span class="ident">ContactEmailOrPhoneConfig</span></span>
-<span>(</span><span>create_and_send_custom_email: Callable[[<a title="supertokens_python.recipe.passwordless.utils.CreateAndSendCustomEmailParameters" href="#supertokens_python.recipe.passwordless.utils.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>, Dict[str, Any]], Awaitable[None]], create_and_send_custom_text_message: Callable[[<a title="supertokens_python.recipe.passwordless.utils.CreateAndSendCustomTextMessageParameters" href="#supertokens_python.recipe.passwordless.utils.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>, Dict[str, Any]], Awaitable[None]], validate_email_address: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None, validate_phone_number: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None)</span>
+<span>(</span><span>create_and_send_custom_email: Union[Callable[[CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]], None] = None, create_and_send_custom_text_message: Union[Callable[[CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]], None] = None, validate_email_address: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None, validate_phone_number: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -471,28 +496,30 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class ContactEmailOrPhoneConfig(ContactConfig):
     def __init__(self,
-                 create_and_send_custom_email: Callable[
-                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]],
-                 create_and_send_custom_text_message: Callable[
-                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]],
+                 create_and_send_custom_email: Union[Callable[
+                     [CreateAndSendCustomEmailParameters, Dict[str, Any]], Awaitable[None]], None] = None,
+                 create_and_send_custom_text_message: Union[Callable[
+                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]], None] = None,
                  validate_email_address: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  validate_phone_number: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__(&#39;EMAIL_OR_PHONE&#39;)
-        if create_and_send_custom_email is None:
-            self.create_and_send_custom_email = default_create_and_send_custom_email
-        else:
-            self.create_and_send_custom_email = create_and_send_custom_email
+
+        self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email is not None:
+            deprecated_warn(&#34;create_and_send_custom_email is deprecated. Please use email delivery config instead&#34;)
+
         if validate_email_address is None:
             self.validate_email_address = default_validate_email
         else:
             self.validate_email_address = validate_email_address
-        if create_and_send_custom_text_message is None:
-            self.create_and_send_custom_text_message = default_create_and_send_custom_text_message
-        else:
-            self.create_and_send_custom_text_message = create_and_send_custom_text_message
+
+        self.create_and_send_custom_text_message = create_and_send_custom_text_message
+        if create_and_send_custom_text_message:
+            deprecated_warn(&#34;create_and_send_custom_text_message is deprecated. Please use sms delivery config instead&#34;)
+
         if validate_phone_number is None:
             self.validate_phone_number = default_validate_phone_number
         else:
@@ -506,7 +533,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.ContactPhoneOnlyConfig"><code class="flex name class">
 <span>class <span class="ident">ContactPhoneOnlyConfig</span></span>
-<span>(</span><span>create_and_send_custom_text_message: Callable[[<a title="supertokens_python.recipe.passwordless.utils.CreateAndSendCustomTextMessageParameters" href="#supertokens_python.recipe.passwordless.utils.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>, Dict[str, Any]], Awaitable[None]], validate_phone_number: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None)</span>
+<span>(</span><span>create_and_send_custom_text_message: Union[Callable[[CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]], None] = None, validate_phone_number: Union[Callable[[str], Awaitable[Union[str, None]]], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -517,16 +544,17 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class ContactPhoneOnlyConfig(ContactConfig):
     def __init__(self,
-                 create_and_send_custom_text_message: Callable[
-                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]],
+                 create_and_send_custom_text_message: Union[Callable[
+                     [CreateAndSendCustomTextMessageParameters, Dict[str, Any]], Awaitable[None]], None] = None,
                  validate_phone_number: Union[Callable[[
                      str], Awaitable[Union[str, None]]], None] = None,
                  ):
         super().__init__(&#39;PHONE&#39;)
-        if create_and_send_custom_text_message is None:
-            self.create_and_send_custom_text_message = default_create_and_send_custom_text_message
-        else:
-            self.create_and_send_custom_text_message = create_and_send_custom_text_message
+
+        self.create_and_send_custom_text_message = create_and_send_custom_text_message
+        if create_and_send_custom_text_message:
+            deprecated_warn(&#34;create_and_send_custom_text_message is deprecated. Please use sms delivery config instead&#34;)
+
         if validate_phone_number is None:
             self.validate_phone_number = default_validate_phone_number
         else:
@@ -537,54 +565,6 @@ inheritance.</p></div>
 <li><a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a></li>
 <li>abc.ABC</li>
 </ul>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.utils.CreateAndSendCustomEmailParameters"><code class="flex name class">
-<span>class <span class="ident">CreateAndSendCustomEmailParameters</span></span>
-<span>(</span><span>code_life_time: int, pre_auth_session_id: str, email: str, user_input_code: Union[str, None] = None, url_with_link_code: Union[str, None] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CreateAndSendCustomEmailParameters:
-    def __init__(self,
-                 code_life_time: int,
-                 pre_auth_session_id: str,
-                 email: str,
-                 user_input_code: Union[str, None] = None,
-                 url_with_link_code: Union[str, None] = None):
-        self.email: str = email
-        self.code_life_time: int = code_life_time
-        self.pre_auth_session_id: str = pre_auth_session_id
-        self.user_input_code: Union[str, None] = user_input_code
-        self.url_with_link_code: Union[str, None] = url_with_link_code</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.passwordless.utils.CreateAndSendCustomTextMessageParameters"><code class="flex name class">
-<span>class <span class="ident">CreateAndSendCustomTextMessageParameters</span></span>
-<span>(</span><span>code_life_time: int, pre_auth_session_id: str, phone_number: str, user_input_code: Union[str, None] = None, url_with_link_code: Union[str, None] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class CreateAndSendCustomTextMessageParameters:
-    def __init__(self,
-                 code_life_time: int,
-                 pre_auth_session_id: str,
-                 phone_number: str,
-                 user_input_code: Union[str, None] = None,
-                 url_with_link_code: Union[str, None] = None):
-        self.phone_number: str = phone_number
-        self.code_life_time: int = code_life_time
-        self.pre_auth_session_id: str = pre_auth_session_id
-        self.user_input_code: Union[str, None] = user_input_code
-        self.url_with_link_code: Union[str, None] = url_with_link_code</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.OverrideConfig"><code class="flex name class">
 <span>class <span class="ident">OverrideConfig</span></span>
@@ -605,7 +585,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.PasswordlessConfig"><code class="flex name class">
 <span>class <span class="ident">PasswordlessConfig</span></span>
-<span>(</span><span>contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, override: <a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", get_link_domain_and_path: Callable[[<a title="supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput" href="#supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput">PhoneOrEmailInput</a>, Dict[str, Any]], Awaitable[str]], get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None)</span>
+<span>(</span><span>contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, override: <a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", get_link_domain_and_path: Callable[[<a title="supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput" href="#supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput">PhoneOrEmailInput</a>, Dict[str, Any]], Awaitable[str]], get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]], get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[TypePasswordlessSmsDeliveryInput]], get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -619,6 +599,8 @@ inheritance.</p></div>
                  override: OverrideConfig,
                  flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;],
                  get_link_domain_and_path: Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]],
+                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]],
+                 get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[TypePasswordlessSmsDeliveryInput]],
                  get_custom_user_input_code: Union[Callable[[
                      Dict[str, Any]], Awaitable[str]], None] = None
                  ):
@@ -626,7 +608,9 @@ inheritance.</p></div>
         self.override = override
         self.flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;] = flow_type
         self.get_custom_user_input_code = get_custom_user_input_code
-        self.get_link_domain_and_path = get_link_domain_and_path</code></pre>
+        self.get_link_domain_and_path = get_link_domain_and_path
+        self.get_email_delivery_config = get_email_delivery_config
+        self.get_sms_delivery_config = get_sms_delivery_config</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput"><code class="flex name class">
@@ -661,8 +645,6 @@ inheritance.</p></div>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.utils.default_create_and_send_custom_email" href="#supertokens_python.recipe.passwordless.utils.default_create_and_send_custom_email">default_create_and_send_custom_email</a></code></li>
-<li><code><a title="supertokens_python.recipe.passwordless.utils.default_create_and_send_custom_text_message" href="#supertokens_python.recipe.passwordless.utils.default_create_and_send_custom_text_message">default_create_and_send_custom_text_message</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.utils.default_get_link_domain_and_path" href="#supertokens_python.recipe.passwordless.utils.default_get_link_domain_and_path">default_get_link_domain_and_path</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.utils.default_validate_email" href="#supertokens_python.recipe.passwordless.utils.default_validate_email">default_validate_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.passwordless.utils.default_validate_phone_number" href="#supertokens_python.recipe.passwordless.utils.default_validate_phone_number">default_validate_phone_number</a></code></li>
@@ -682,12 +664,6 @@ inheritance.</p></div>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.utils.ContactPhoneOnlyConfig" href="#supertokens_python.recipe.passwordless.utils.ContactPhoneOnlyConfig">ContactPhoneOnlyConfig</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.utils.CreateAndSendCustomEmailParameters" href="#supertokens_python.recipe.passwordless.utils.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.passwordless.utils.CreateAndSendCustomTextMessageParameters" href="#supertokens_python.recipe.passwordless.utils.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a></code></h4>

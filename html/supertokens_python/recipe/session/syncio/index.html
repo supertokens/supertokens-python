@@ -149,7 +149,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.syncio.create_jwt"><code class="name flex">
-<span>def <span class="ident">create_jwt</span></span>(<span>payload: Dict[str, Any], validity_seconds: Optional[int] = None, user_context: Optional[None] = None) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
+<span>def <span class="ident">create_jwt</span></span>(<span>payload: Dict[str, Any], validity_seconds: Optional[None] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtOkResult">CreateJwtOkResult</a>, <a title="supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.CreateJwtResultUnsupportedAlgorithm">CreateJwtResultUnsupportedAlgorithm</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -164,7 +164,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.create_new_session"><code class="name flex">
-<span>def <span class="ident">create_new_session</span></span>(<span>request: Any, user_id: str, access_token_payload: Optional[None] = None, session_data: Optional[None] = None, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+<span>def <span class="ident">create_new_session</span></span>(<span>request: Any, user_id: str, access_token_payload: Optional[Dict[str, Any]] = None, session_data: Optional[Dict[str, Any]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -180,7 +180,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.get_all_session_handles_for_user"><code class="name flex">
-<span>def <span class="ident">get_all_session_handles_for_user</span></span>(<span>user_id: str, user_context: Optional[None] = None) ‑> List[str]</span>
+<span>def <span class="ident">get_all_session_handles_for_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -196,7 +196,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.get_jwks"><code class="name flex">
-<span>def <span class="ident">get_jwks</span></span>(<span>user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.jwt.interfaces.GetJWKSResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.GetJWKSResult">GetJWKSResult</a></span>
+<span>def <span class="ident">get_jwks</span></span>(<span>user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.jwt.interfaces.GetJWKSResult" href="../../jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.GetJWKSResult">GetJWKSResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -211,7 +211,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.get_open_id_discovery_configuration"><code class="name flex">
-<span>def <span class="ident">get_open_id_discovery_configuration</span></span>(<span>user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="../../openid/interfaces.html#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a></span>
+<span>def <span class="ident">get_open_id_discovery_configuration</span></span>(<span>user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult" href="../../openid/interfaces.html#supertokens_python.recipe.openid.interfaces.GetOpenIdDiscoveryConfigurationResult">GetOpenIdDiscoveryConfigurationResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -227,7 +227,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.get_session"><code class="name flex">
-<span>def <span class="ident">get_session</span></span>(<span>request: Any, anti_csrf_check: Optional[bool] = None, session_required: bool = True, user_context: Optional[None] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
+<span>def <span class="ident">get_session</span></span>(<span>request: Any, anti_csrf_check: Optional[bool] = None, session_required: bool = True, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -243,7 +243,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.get_session_information"><code class="name flex">
-<span>def <span class="ident">get_session_information</span></span>(<span>session_handle: str, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionInformationResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionInformationResult">SessionInformationResult</a></span>
+<span>def <span class="ident">get_session_information</span></span>(<span>session_handle: str, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionInformationResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionInformationResult">SessionInformationResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -258,7 +258,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.refresh_session"><code class="name flex">
-<span>def <span class="ident">refresh_session</span></span>(<span>request: Any, user_context: Optional[None] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+<span>def <span class="ident">refresh_session</span></span>(<span>request: Any, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -273,7 +273,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.regenerate_access_token"><code class="name flex">
-<span>def <span class="ident">regenerate_access_token</span></span>(<span>access_token: str, new_access_token_payload: Optional[None] = None, user_context: Optional[None] = None)</span>
+<span>def <span class="ident">regenerate_access_token</span></span>(<span>access_token: str, new_access_token_payload: Optional[Dict[str, Any]] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -289,7 +289,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.revoke_all_sessions_for_user"><code class="name flex">
-<span>def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>user_id: str, user_context: Optional[None] = None) ‑> List[str]</span>
+<span>def <span class="ident">revoke_all_sessions_for_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -304,7 +304,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.revoke_multiple_sessions"><code class="name flex">
-<span>def <span class="ident">revoke_multiple_sessions</span></span>(<span>session_handles: List[str], user_context: Optional[None] = None) ‑> List[str]</span>
+<span>def <span class="ident">revoke_multiple_sessions</span></span>(<span>session_handles: List[str], user_context: Optional[Dict[str, Any]] = None) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -319,7 +319,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.revoke_session"><code class="name flex">
-<span>def <span class="ident">revoke_session</span></span>(<span>session_handle: str, user_context: Optional[None] = None) ‑> bool</span>
+<span>def <span class="ident">revoke_session</span></span>(<span>session_handle: str, user_context: Optional[Dict[str, Any]] = None) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -334,7 +334,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.update_access_token_payload"><code class="name flex">
-<span>def <span class="ident">update_access_token_payload</span></span>(<span>session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Optional[None] = None) ‑> None</span>
+<span>def <span class="ident">update_access_token_payload</span></span>(<span>session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -350,7 +350,7 @@ def regenerate_access_token(access_token: str, new_access_token_payload: Union[D
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.syncio.update_session_data"><code class="name flex">
-<span>def <span class="ident">update_session_data</span></span>(<span>session_handle: str, new_session_data: Dict[str, Any], user_context: Optional[None] = None) ‑> None</span>
+<span>def <span class="ident">update_session_data</span></span>(<span>session_handle: str, new_session_data: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>

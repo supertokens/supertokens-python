@@ -46,12 +46,16 @@ from typing import TYPE_CHECKING, List, Union
 
 from supertokens_python.exceptions import (SuperTokensError,
                                            raise_general_exception)
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
 from supertokens_python.recipe.emailverification.exceptions import \
     EmailVerificationInvalidTokenError
+from supertokens_python.recipe.emailverification.types import \
+    EmailVerificationIngredients
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api.implementation import APIImplementation
-from .interfaces import APIOptions
+from .interfaces import APIOptions, TypeEmailVerificationEmailDeliveryInput
 from .recipe_implementation import RecipeImplementation
 
 if TYPE_CHECKING:
@@ -73,18 +77,29 @@ from .utils import (ParentRecipeEmailVerificationConfig,
 class EmailVerificationRecipe(RecipeModule):
     recipe_id = &#39;emailverification&#39;
     __instance = None
+    email_delivery: EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
-                 config: ParentRecipeEmailVerificationConfig):
+                 config: ParentRecipeEmailVerificationConfig,
+                 ingredients: EmailVerificationIngredients,
+                 ) -&gt; None:
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, config)
+
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config)
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
+
         api_implementation = APIImplementation()
         self.api_implementation = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
+
+        email_delivery_ingredient = ingredients.email_delivery
+        if email_delivery_ingredient is None:
+            self.email_delivery = EmailDeliveryIngredient(self.config.get_email_delivery_config())
+        else:
+            self.email_delivery = email_delivery_ingredient
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -&gt; bool:
@@ -105,10 +120,10 @@ class EmailVerificationRecipe(RecipeModule):
         if request_id == USER_EMAIL_VERIFY_TOKEN:
             return await handle_generate_email_verify_token_api(self.api_implementation,
                                                                 APIOptions(request, response, self.recipe_id, self.config,
-                                                                           self.recipe_implementation))
+                                                                           self.recipe_implementation, self.email_delivery))
         return await handle_email_verify_api(self.api_implementation,
                                              APIOptions(request, response, self.recipe_id, self.config,
-                                                        self.recipe_implementation))
+                                                        self.recipe_implementation, self.email_delivery))
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -&gt; BaseResponse:
         if isinstance(err, EmailVerificationInvalidTokenError):
@@ -126,7 +141,8 @@ class EmailVerificationRecipe(RecipeModule):
     def init(config: ParentRecipeEmailVerificationConfig):
         def func(app_info: AppInfo):
             if EmailVerificationRecipe.__instance is None:
-                EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id, app_info, config)
+                ingredients = EmailVerificationIngredients(email_delivery=None)
+                EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id, app_info, config, ingredients=ingredients)
                 return EmailVerificationRecipe.__instance
             raise_general_exception(&#39;Emailverification recipe has already been initialised. Please check your code for bugs.&#39;)
 
@@ -159,7 +175,7 @@ class EmailVerificationRecipe(RecipeModule):
 <dl>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe"><code class="flex name class">
 <span>class <span class="ident">EmailVerificationRecipe</span></span>
-<span>(</span><span>recipe_id: str, app_info: AppInfo, config: ParentRecipeEmailVerificationConfig)</span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, config: ParentRecipeEmailVerificationConfig, ingredients: EmailVerificationIngredients)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -171,18 +187,29 @@ inheritance.</p></div>
 <pre><code class="python">class EmailVerificationRecipe(RecipeModule):
     recipe_id = &#39;emailverification&#39;
     __instance = None
+    email_delivery: EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
-                 config: ParentRecipeEmailVerificationConfig):
+                 config: ParentRecipeEmailVerificationConfig,
+                 ingredients: EmailVerificationIngredients,
+                 ) -&gt; None:
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(app_info, config)
+
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config)
         self.recipe_implementation = recipe_implementation if self.config.override.functions is None else \
             self.config.override.functions(recipe_implementation)
+
         api_implementation = APIImplementation()
         self.api_implementation = api_implementation if self.config.override.apis is None else \
             self.config.override.apis(api_implementation)
+
+        email_delivery_ingredient = ingredients.email_delivery
+        if email_delivery_ingredient is None:
+            self.email_delivery = EmailDeliveryIngredient(self.config.get_email_delivery_config())
+        else:
+            self.email_delivery = email_delivery_ingredient
 
     def is_error_from_this_recipe_based_on_instance(
             self, err: Exception) -&gt; bool:
@@ -203,10 +230,10 @@ inheritance.</p></div>
         if request_id == USER_EMAIL_VERIFY_TOKEN:
             return await handle_generate_email_verify_token_api(self.api_implementation,
                                                                 APIOptions(request, response, self.recipe_id, self.config,
-                                                                           self.recipe_implementation))
+                                                                           self.recipe_implementation, self.email_delivery))
         return await handle_email_verify_api(self.api_implementation,
                                              APIOptions(request, response, self.recipe_id, self.config,
-                                                        self.recipe_implementation))
+                                                        self.recipe_implementation, self.email_delivery))
 
     async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -&gt; BaseResponse:
         if isinstance(err, EmailVerificationInvalidTokenError):
@@ -224,7 +251,8 @@ inheritance.</p></div>
     def init(config: ParentRecipeEmailVerificationConfig):
         def func(app_info: AppInfo):
             if EmailVerificationRecipe.__instance is None:
-                EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id, app_info, config)
+                ingredients = EmailVerificationIngredients(email_delivery=None)
+                EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id, app_info, config, ingredients=ingredients)
                 return EmailVerificationRecipe.__instance
             raise_general_exception(&#39;Emailverification recipe has already been initialised. Please check your code for bugs.&#39;)
 
@@ -252,6 +280,10 @@ inheritance.</p></div>
 </ul>
 <h3>Class variables</h3>
 <dl>
+<dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.email_delivery"><code class="name">var <span class="ident">email_delivery</span> : <a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[<a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.recipe_id"><code class="name">var <span class="ident">recipe_id</span></code></dt>
 <dd>
 <div class="desc"></div>
@@ -289,7 +321,8 @@ def get_instance() -&gt; EmailVerificationRecipe:
 def init(config: ParentRecipeEmailVerificationConfig):
     def func(app_info: AppInfo):
         if EmailVerificationRecipe.__instance is None:
-            EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id, app_info, config)
+            ingredients = EmailVerificationIngredients(email_delivery=None)
+            EmailVerificationRecipe.__instance = EmailVerificationRecipe(EmailVerificationRecipe.recipe_id, app_info, config, ingredients=ingredients)
             return EmailVerificationRecipe.__instance
         raise_general_exception(&#39;Emailverification recipe has already been initialised. Please check your code for bugs.&#39;)
 
@@ -363,10 +396,10 @@ def reset():
     if request_id == USER_EMAIL_VERIFY_TOKEN:
         return await handle_generate_email_verify_token_api(self.api_implementation,
                                                             APIOptions(request, response, self.recipe_id, self.config,
-                                                                       self.recipe_implementation))
+                                                                       self.recipe_implementation, self.email_delivery))
     return await handle_email_verify_api(self.api_implementation,
                                          APIOptions(request, response, self.recipe_id, self.config,
-                                                    self.recipe_implementation))</code></pre>
+                                                    self.recipe_implementation, self.email_delivery))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.handle_error"><code class="name flex">
@@ -424,6 +457,7 @@ def reset():
 <li>
 <h4><code><a title="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe" href="#supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe">EmailVerificationRecipe</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.email_delivery" href="#supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.email_delivery">email_delivery</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.get_all_cors_headers" href="#supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.get_all_cors_headers">get_all_cors_headers</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.get_apis_handled" href="#supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.get_apis_handled">get_apis_handled</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.get_instance" href="#supertokens_python.recipe.emailverification.recipe.EmailVerificationRecipe.get_instance">get_instance</a></code></li>

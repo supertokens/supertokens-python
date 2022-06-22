@@ -340,10 +340,13 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
         if user_info is None:
             raise Exception('Unknown User ID provided')
         if user_info.third_party_info is None:
-            # this is a passwordless user.. so we always return some random email,
-            # and in the function for isEmailVerified, we will check if the user
-            # is a passwordless user, and if they are, we will return true in there
-            return "_____supertokens_passwordless_user@supertokens.com"
+            if user_info.email is not None:
+                return user_info.email
+            # this is a passwordless user with only a phone number.
+            # returning an empty string here is not a problem since
+            # we override the email verification functions above to
+            # send that the email is already verified for passwordless users.
+            return ""
         if user_info.email is None:
             raise Exception("Should never come here")
         return user_info.email

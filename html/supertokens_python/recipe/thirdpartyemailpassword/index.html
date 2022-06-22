@@ -43,7 +43,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, List, Union
 
+from supertokens_python.ingredients.emaildelivery.types import \
+    EmailDeliveryConfig
 from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdpartyemailpassword.types import \
+    TypeThirdPartyEmailPasswordEmailDeliveryInput
 
 from .. import emailpassword, thirdparty
 from . import exceptions as ex
@@ -72,10 +76,12 @@ def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
          reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
          override: Union[InputOverrideConfig, None] = None,
-         providers: Union[List[Provider], None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
+         providers: Union[List[Provider], None] = None,
+         email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None
+         ) -&gt; Callable[[AppInfo], RecipeModule]:
     return ThirdPartyEmailPasswordRecipe.init(sign_up_feature, reset_password_using_token_feature,
                                               email_verification_feature,
-                                              override, providers)</code></pre>
+                                              override, providers, email_delivery)</code></pre>
 </details>
 </section>
 <section>
@@ -86,6 +92,10 @@ def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio" href="asyncio/index.html">supertokens_python.recipe.thirdpartyemailpassword.asyncio</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="supertokens_python.recipe.thirdpartyemailpassword.emaildelivery" href="emaildelivery/index.html">supertokens_python.recipe.thirdpartyemailpassword.emaildelivery</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -125,7 +135,7 @@ def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>sign_up_feature: Union[InputSignUpFeature, None] = None, reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, override: Union[InputOverrideConfig, None] = None, providers: Union[List[Provider], None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
+<span>def <span class="ident">init</span></span>(<span>sign_up_feature: Union[InputSignUpFeature, None] = None, reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, override: Union[InputOverrideConfig, None] = None, providers: Union[List[Provider], None] = None, email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -137,10 +147,12 @@ def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
          reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
          override: Union[InputOverrideConfig, None] = None,
-         providers: Union[List[Provider], None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
+         providers: Union[List[Provider], None] = None,
+         email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None
+         ) -&gt; Callable[[AppInfo], RecipeModule]:
     return ThirdPartyEmailPasswordRecipe.init(sign_up_feature, reset_password_using_token_feature,
                                               email_verification_feature,
-                                              override, providers)</code></pre>
+                                              override, providers, email_delivery)</code></pre>
 </details>
 </dd>
 </dl>
@@ -163,6 +175,7 @@ def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
 <ul>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.api" href="api/index.html">supertokens_python.recipe.thirdpartyemailpassword.api</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.asyncio" href="asyncio/index.html">supertokens_python.recipe.thirdpartyemailpassword.asyncio</a></code></li>
+<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.emaildelivery" href="emaildelivery/index.html">supertokens_python.recipe.thirdpartyemailpassword.emaildelivery</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.exceptions" href="exceptions.html">supertokens_python.recipe.thirdpartyemailpassword.exceptions</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces" href="interfaces.html">supertokens_python.recipe.thirdpartyemailpassword.interfaces</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.recipe" href="recipe.html">supertokens_python.recipe.thirdpartyemailpassword.recipe</a></code></li>

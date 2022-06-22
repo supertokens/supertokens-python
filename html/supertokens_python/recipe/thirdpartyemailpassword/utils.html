@@ -43,13 +43,20 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryConfig, EmailDeliveryConfigWithService)
+from supertokens_python.recipe.emailpassword.interfaces import \
+    RecipeInterface as EPRecipeInterface
 from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.utils import deprecated_warn
 
 from ..emailpassword.utils import (InputResetPasswordUsingTokenFeature,
                                    InputSignUpFeature)
 from ..emailverification.types import User as EmailVerificationUser
+from .emaildelivery.services.backward_compatibility import \
+    BackwardCompatibilityService
 from .interfaces import APIInterface, RecipeInterface
-from .types import User
+from .types import TypeThirdPartyEmailPasswordEmailDeliveryInput, User
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyEmailPasswordRecipe
@@ -62,13 +69,13 @@ from supertokens_python.recipe.emailverification.utils import \
 
 class InputEmailVerificationConfig:
     def __init__(self,
-                 get_email_verification_url: Union[Callable[[
-                     User, Any], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[
-                     User, str, Any], Awaitable[None]], None] = None
+                 get_email_verification_url: Union[Callable[[User, Any], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[User, str, Any], Awaitable[None]], None] = None
                  ):
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email:
+            deprecated_warn(&#34;create_and_send_custom_email is depricated. Please use email delivery config instead&#34;)
 
 
 def email_verification_create_and_send_custom_email(
@@ -142,11 +149,14 @@ class ThirdPartyEmailPasswordConfig:
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
                  sign_up_feature: Union[InputSignUpFeature, None],
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None],
-                 override: OverrideConfig):
+                 get_email_delivery_config: Callable[[RecipeInterface, EPRecipeInterface], EmailDeliveryConfigWithService[TypeThirdPartyEmailPasswordEmailDeliveryInput]],
+                 override: OverrideConfig
+                 ):
         self.sign_up_feature = sign_up_feature
         self.email_verification_feature = email_verification_feature
         self.providers = providers
         self.reset_password_using_token_feature = reset_password_using_token_feature
+        self.get_email_delivery_config = get_email_delivery_config
         self.override = override
 
 
@@ -156,7 +166,8 @@ def validate_and_normalise_user_input(
         reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
         override: Union[InputOverrideConfig, None] = None,
-        providers: Union[List[Provider], None] = None
+        providers: Union[List[Provider], None] = None,
+        email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None,
 ) -&gt; ThirdPartyEmailPasswordConfig:
     if sign_up_feature is not None and not isinstance(sign_up_feature, InputSignUpFeature):  # type: ignore
         raise ValueError(&#39;sign_up_feature must be of type InputSignUpFeature or None&#39;)
@@ -181,7 +192,36 @@ def validate_and_normalise_user_input(
         providers = []
     if override is None:
         override = InputOverrideConfig()
-    return ThirdPartyEmailPasswordConfig(providers, validate_and_normalise_email_verification_config(recipe, email_verification_feature, override), sign_up_feature, reset_password_using_token_feature, OverrideConfig(functions=override.functions, apis=override.apis))</code></pre>
+
+    def get_email_delivery_config(recipe_interface_impl: RecipeInterface, ep_recipe_interface_impl: EPRecipeInterface):
+        if email_delivery and email_delivery.service:
+            return EmailDeliveryConfigWithService(
+                service=email_delivery.service,
+                override=email_delivery.override
+            )
+
+        email_service = BackwardCompatibilityService(
+            app_info=recipe.app_info,
+            recipe_interface_impl=recipe_interface_impl,
+            ep_recipe_interface_impl=ep_recipe_interface_impl,
+            reset_password_using_token_feature=reset_password_using_token_feature,
+            email_verification_feature=email_verification_feature,
+        )
+        if email_delivery is not None and email_delivery.override is not None:
+            override = email_delivery.override
+        else:
+            override = None
+
+        return EmailDeliveryConfigWithService(email_service, override=override)
+
+    return ThirdPartyEmailPasswordConfig(
+        providers,
+        validate_and_normalise_email_verification_config(recipe, email_verification_feature, override),
+        sign_up_feature,
+        reset_password_using_token_feature,
+        get_email_delivery_config,
+        OverrideConfig(functions=override.functions, apis=override.apis)
+    )</code></pre>
 </details>
 </section>
 <section>
@@ -267,7 +307,7 @@ def validate_and_normalise_user_input(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>recipe: ThirdPartyEmailPasswordRecipe, sign_up_feature: Union[InputSignUpFeature, None] = None, reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None, email_verification_feature: Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.utils.InputEmailVerificationConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.InputEmailVerificationConfig">InputEmailVerificationConfig</a>, None] = None, override: Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None, providers: Union[List[Provider], None] = None) ‑> <a title="supertokens_python.recipe.thirdpartyemailpassword.utils.ThirdPartyEmailPasswordConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.ThirdPartyEmailPasswordConfig">ThirdPartyEmailPasswordConfig</a></span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>recipe: ThirdPartyEmailPasswordRecipe, sign_up_feature: Union[InputSignUpFeature, None] = None, reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None, email_verification_feature: Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.utils.InputEmailVerificationConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.InputEmailVerificationConfig">InputEmailVerificationConfig</a>, None] = None, override: Union[<a title="supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None, providers: Union[List[Provider], None] = None, email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None) ‑> <a title="supertokens_python.recipe.thirdpartyemailpassword.utils.ThirdPartyEmailPasswordConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.ThirdPartyEmailPasswordConfig">ThirdPartyEmailPasswordConfig</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -281,7 +321,8 @@ def validate_and_normalise_user_input(
         reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
         override: Union[InputOverrideConfig, None] = None,
-        providers: Union[List[Provider], None] = None
+        providers: Union[List[Provider], None] = None,
+        email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None,
 ) -&gt; ThirdPartyEmailPasswordConfig:
     if sign_up_feature is not None and not isinstance(sign_up_feature, InputSignUpFeature):  # type: ignore
         raise ValueError(&#39;sign_up_feature must be of type InputSignUpFeature or None&#39;)
@@ -306,7 +347,36 @@ def validate_and_normalise_user_input(
         providers = []
     if override is None:
         override = InputOverrideConfig()
-    return ThirdPartyEmailPasswordConfig(providers, validate_and_normalise_email_verification_config(recipe, email_verification_feature, override), sign_up_feature, reset_password_using_token_feature, OverrideConfig(functions=override.functions, apis=override.apis))</code></pre>
+
+    def get_email_delivery_config(recipe_interface_impl: RecipeInterface, ep_recipe_interface_impl: EPRecipeInterface):
+        if email_delivery and email_delivery.service:
+            return EmailDeliveryConfigWithService(
+                service=email_delivery.service,
+                override=email_delivery.override
+            )
+
+        email_service = BackwardCompatibilityService(
+            app_info=recipe.app_info,
+            recipe_interface_impl=recipe_interface_impl,
+            ep_recipe_interface_impl=ep_recipe_interface_impl,
+            reset_password_using_token_feature=reset_password_using_token_feature,
+            email_verification_feature=email_verification_feature,
+        )
+        if email_delivery is not None and email_delivery.override is not None:
+            override = email_delivery.override
+        else:
+            override = None
+
+        return EmailDeliveryConfigWithService(email_service, override=override)
+
+    return ThirdPartyEmailPasswordConfig(
+        providers,
+        validate_and_normalise_email_verification_config(recipe, email_verification_feature, override),
+        sign_up_feature,
+        reset_password_using_token_feature,
+        get_email_delivery_config,
+        OverrideConfig(functions=override.functions, apis=override.apis)
+    )</code></pre>
 </details>
 </dd>
 </dl>
@@ -326,13 +396,13 @@ def validate_and_normalise_user_input(
 </summary>
 <pre><code class="python">class InputEmailVerificationConfig:
     def __init__(self,
-                 get_email_verification_url: Union[Callable[[
-                     User, Any], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[
-                     User, str, Any], Awaitable[None]], None] = None
+                 get_email_verification_url: Union[Callable[[User, Any], Awaitable[str]], None] = None,
+                 create_and_send_custom_email: Union[Callable[[User, str, Any], Awaitable[None]], None] = None
                  ):
         self.get_email_verification_url = get_email_verification_url
-        self.create_and_send_custom_email = create_and_send_custom_email</code></pre>
+        self.create_and_send_custom_email = create_and_send_custom_email
+        if create_and_send_custom_email:
+            deprecated_warn(&#34;create_and_send_custom_email is depricated. Please use email delivery config instead&#34;)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.InputOverrideConfig"><code class="flex name class">
@@ -374,7 +444,7 @@ def validate_and_normalise_user_input(
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.utils.ThirdPartyEmailPasswordConfig"><code class="flex name class">
 <span>class <span class="ident">ThirdPartyEmailPasswordConfig</span></span>
-<span>(</span><span>providers: List[Provider], email_verification_feature: ParentRecipeEmailVerificationConfig, sign_up_feature: Union[InputSignUpFeature, None], reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None], override: <a title="supertokens_python.recipe.thirdpartyemailpassword.utils.OverrideConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.OverrideConfig">OverrideConfig</a>)</span>
+<span>(</span><span>providers: List[Provider], email_verification_feature: ParentRecipeEmailVerificationConfig, sign_up_feature: Union[InputSignUpFeature, None], reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None], get_email_delivery_config: Callable[[RecipeInterface, EPRecipeInterface], EmailDeliveryConfigWithService[TypeThirdPartyEmailPasswordEmailDeliveryInput]], override: <a title="supertokens_python.recipe.thirdpartyemailpassword.utils.OverrideConfig" href="#supertokens_python.recipe.thirdpartyemailpassword.utils.OverrideConfig">OverrideConfig</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -388,11 +458,14 @@ def validate_and_normalise_user_input(
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
                  sign_up_feature: Union[InputSignUpFeature, None],
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None],
-                 override: OverrideConfig):
+                 get_email_delivery_config: Callable[[RecipeInterface, EPRecipeInterface], EmailDeliveryConfigWithService[TypeThirdPartyEmailPasswordEmailDeliveryInput]],
+                 override: OverrideConfig
+                 ):
         self.sign_up_feature = sign_up_feature
         self.email_verification_feature = email_verification_feature
         self.providers = providers
         self.reset_password_using_token_feature = reset_password_using_token_feature
+        self.get_email_delivery_config = get_email_delivery_config
         self.override = override</code></pre>
 </details>
 </dd>
