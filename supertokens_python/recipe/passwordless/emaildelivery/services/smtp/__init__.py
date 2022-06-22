@@ -19,21 +19,21 @@ from typing import Any, Dict
 from supertokens_python.ingredients.emaildelivery.services.smtp import \
     Transporter
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryInterface, EmailDeliverySMTPConfig, ServiceInterface)
+    EmailDeliveryInterface, EmailDeliverySMTPConfig, SMTPServiceInterface)
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessEmailDeliveryInput
+    PasswordlessLoginEmailTemplateVars
 
 from .service_implementation import ServiceImplementation
 
 
-class SMTPService(EmailDeliveryInterface[TypePasswordlessEmailDeliveryInput]):
-    service_implementation: ServiceInterface[TypePasswordlessEmailDeliveryInput]
+class SMTPService(EmailDeliveryInterface[PasswordlessLoginEmailTemplateVars]):
+    service_implementation: SMTPServiceInterface[PasswordlessLoginEmailTemplateVars]
 
-    def __init__(self, config: EmailDeliverySMTPConfig[TypePasswordlessEmailDeliveryInput]) -> None:
+    def __init__(self, config: EmailDeliverySMTPConfig[PasswordlessLoginEmailTemplateVars]) -> None:
         self.transporter = Transporter(config.smtp_settings)
         oi = ServiceImplementation(self.transporter)
         self.service_implementation = oi if config.override is None else config.override(oi)
 
-    async def send_email(self, template_vars: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+    async def send_email(self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) -> None:
         content = await self.service_implementation.get_content(template_vars, user_context)
         await self.service_implementation.send_raw_email(content, user_context)

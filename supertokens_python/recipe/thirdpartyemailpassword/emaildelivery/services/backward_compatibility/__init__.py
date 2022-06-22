@@ -27,13 +27,11 @@ from supertokens_python.recipe.emailpassword.utils import \
     InputResetPasswordUsingTokenFeature
 from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService as EVBackwardCompatibilityService
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
-from supertokens_python.recipe.emailverification.types import User as EVUser
+from supertokens_python.recipe.emailverification.types import User as EVUser, EmailVerificationEmailTemplateVars
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
     RecipeInterface
 from supertokens_python.recipe.thirdpartyemailpassword.types import \
-    EmailTemplateVars
+    ThirdPartyEmailPasswordEmailTemplateVars
 from supertokens_python.supertokens import AppInfo
 
 if TYPE_CHECKING:
@@ -41,7 +39,7 @@ if TYPE_CHECKING:
         InputEmailVerificationConfig
 
 
-class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
+class BackwardCompatibilityService(EmailDeliveryInterface[ThirdPartyEmailPasswordEmailTemplateVars]):
     ep_backward_compatiblity_service: EPBackwardCompatibilityService
     ev_backward_compatiblity_service: EVBackwardCompatibilityService
 
@@ -77,8 +75,8 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
             ep_email_verification_feature,
         )
 
-    async def send_email(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -> None:
-        if isinstance(template_vars, TypeEmailVerificationEmailDeliveryInput):
+    async def send_email(self, template_vars: ThirdPartyEmailPasswordEmailTemplateVars, user_context: Dict[str, Any]) -> None:
+        if isinstance(template_vars, EmailVerificationEmailTemplateVars):
             await self.ev_backward_compatiblity_service.send_email(template_vars, user_context)
 
         await self.ep_backward_compatiblity_service.send_email(template_vars, user_context)

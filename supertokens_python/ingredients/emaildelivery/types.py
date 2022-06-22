@@ -56,7 +56,7 @@ class EmailContent:
         self.is_html = is_html
 
 
-class ServiceInterface(ABC, Generic[_T]):
+class SMTPServiceInterface(ABC, Generic[_T]):
     def __init__(self, transporter: Transporter) -> None:
         self.transporter = transporter
 
@@ -96,7 +96,7 @@ class SMTPSettings:
 class EmailDeliverySMTPConfig(Generic[_T]):
     def __init__(self,
                  smtp_settings: SMTPSettings,
-                 override: Union[Callable[[ServiceInterface[_T]], ServiceInterface[_T]], None] = None
+                 override: Union[Callable[[SMTPServiceInterface[_T]], SMTPServiceInterface[_T]], None] = None
                  ) -> None:
         self.smtp_settings = smtp_settings
         self.override = override

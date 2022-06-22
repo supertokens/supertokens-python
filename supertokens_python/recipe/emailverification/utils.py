@@ -20,8 +20,6 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryConfigWithService)
 from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.utils import deprecated_warn
 
 if TYPE_CHECKING:
@@ -30,7 +28,7 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
     from .interfaces import APIInterface, RecipeInterface
-    from .types import User
+    from .types import User, EmailVerificationEmailTemplateVars
 
 
 def default_get_email_verification_url(app_info: AppInfo) -> Callable[[User, Dict[str, Any]], Awaitable[str]]:
@@ -54,7 +52,7 @@ class ParentRecipeEmailVerificationConfig:
                  override: Union[OverrideConfig, None] = None,
                  get_email_verification_url: Union[Callable[[User, Dict[str, Any]], Awaitable[str]], None] = None,
                  create_and_send_custom_email: Union[Callable[[User, str, Dict[str, Any]], Awaitable[None]], None] = None,
-                 email_delivery: Union[EmailDeliveryConfig[TypeEmailVerificationEmailDeliveryInput], None] = None,
+                 email_delivery: Union[EmailDeliveryConfig[EmailVerificationEmailTemplateVars], None] = None,
                  ):
         self.override = override
         self.get_email_verification_url = get_email_verification_url
@@ -72,7 +70,7 @@ class EmailVerificationConfig:
                  override: OverrideConfig,
                  get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
                  get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
-                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[TypeEmailVerificationEmailDeliveryInput]],
+                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[EmailVerificationEmailTemplateVars]],
                  ):
         self.get_email_for_user_id = get_email_for_user_id
         self.get_email_verification_url = get_email_verification_url
@@ -88,7 +86,7 @@ def validate_and_normalise_user_input(
     get_email_verification_url = config.get_email_verification_url if config.get_email_verification_url is not None \
         else default_get_email_verification_url(app_info)
 
-    def get_email_delivery_config() -> EmailDeliveryConfigWithService[TypeEmailVerificationEmailDeliveryInput]:
+    def get_email_delivery_config() -> EmailDeliveryConfigWithService[EmailVerificationEmailTemplateVars]:
         email_service = config.email_delivery.service if config.email_delivery is not None else None
         if email_service is None:
             email_service = BackwardCompatibilityService(app_info, config.create_and_send_custom_email)

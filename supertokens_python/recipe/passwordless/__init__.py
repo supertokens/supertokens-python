@@ -20,9 +20,9 @@ from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.recipe.passwordless.interfaces import \
-    TypePasswordlessEmailDeliveryInput
+    PasswordlessLoginEmailTemplateVars
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessSmsDeliveryInput
+    PasswordlessLoginSmsTemplateVars
 from typing_extensions import Literal
 
 from . import types, utils
@@ -49,8 +49,8 @@ def init(contact_config: ContactConfig,
          get_link_domain_and_path: Union[Callable[[
              PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
          get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
-         email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
-         sms_delivery: Union[SMSDeliveryConfig[TypePasswordlessSmsDeliveryInput], None] = None,
+         email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None,
+         sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSmsTemplateVars], None] = None,
          ) -> Callable[[AppInfo], RecipeModule]:
     return PasswordlessRecipe.init(contact_config,
                                    flow_type,

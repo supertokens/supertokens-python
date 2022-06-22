@@ -17,17 +17,17 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailContent, ServiceInterface)
+    EmailContent, SMTPServiceInterface)
 from supertokens_python.recipe.passwordless.emaildelivery.services.smtp.pless_login import \
     pless_email_content
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessEmailDeliveryInput
+    PasswordlessLoginEmailTemplateVars
 
 
-class ServiceImplementation(ServiceInterface[TypePasswordlessEmailDeliveryInput]):
+class ServiceImplementation(SMTPServiceInterface[PasswordlessLoginEmailTemplateVars]):
     async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -> None:
         await self.transporter.send_email(content, user_context)
 
-    async def get_content(self, template_vars: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> EmailContent:
+    async def get_content(self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) -> EmailContent:
         _ = user_context
         return pless_email_content(template_vars)

@@ -17,21 +17,20 @@ from typing import Any, Dict
 from supertokens_python.ingredients.emaildelivery.services.smtp import \
     Transporter
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailContent, ServiceInterface)
+    EmailContent, SMTPServiceInterface)
 from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.password_reset import \
     get_password_reset_email_content
 from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordEmailDeliveryInput
+    EmailPasswordEmailTemplateVars
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp.service_implementation import \
     ServiceImplementation as EVServiceImplementation
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.recipe.emailverification.types import EmailVerificationEmailTemplateVars
 
 from .email_verification_implementation import \
     ServiceImplementation as DerivedEVServiceImplementation
 
 
-class ServiceImplementation(ServiceInterface[TypeEmailPasswordEmailDeliveryInput]):
+class ServiceImplementation(SMTPServiceInterface[EmailPasswordEmailTemplateVars]):
     def __init__(self, transporter: Transporter) -> None:
         super().__init__(transporter)
 
@@ -46,7 +45,7 @@ class ServiceImplementation(ServiceInterface[TypeEmailPasswordEmailDeliveryInput
     async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -> None:
         await self.transporter.send_email(content, user_context)
 
-    async def get_content(self, template_vars: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> EmailContent:
-        if isinstance(template_vars, TypeEmailVerificationEmailDeliveryInput):
+    async def get_content(self, template_vars: EmailPasswordEmailTemplateVars, user_context: Dict[str, Any]) -> EmailContent:
+        if isinstance(template_vars, EmailVerificationEmailTemplateVars):
             return await self.ev_get_content(template_vars, user_context)
         return get_password_reset_email_content(template_vars)

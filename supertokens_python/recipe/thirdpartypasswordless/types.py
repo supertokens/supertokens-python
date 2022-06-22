@@ -15,11 +15,12 @@ from typing import TypeVar, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
+from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
 from supertokens_python.recipe.passwordless.types import (
-    TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput)
+    PasswordlessLoginEmailTemplateVars, PasswordlessLoginSmsTemplateVars)
 
-from ..thirdparty.types import ThirdPartyInfo, TypeThirdPartyEmailDeliveryInput
+from ..thirdparty.types import ThirdPartyInfo, ThirdPartyEmailTemplateVars
 
 
 class User:
@@ -35,16 +36,20 @@ class User:
 _T = TypeVar('_T')
 
 
-TypeThirdPartyPasswordlessEmailDeliveryInput = Union[TypeThirdPartyEmailDeliveryInput, TypePasswordlessEmailDeliveryInput]
+ThirdPartyPasswordlessEmailTemplateVars = Union[ThirdPartyEmailTemplateVars, PasswordlessLoginEmailTemplateVars]
 
+ThirdPartyPasswordlessSmsTemplateVars = PasswordlessLoginSmsTemplateVars
 
-TypeThirdPartyPasswordlessSmsDeliveryInput = TypePasswordlessSmsDeliveryInput
+# Export:
+EmailTemplateVars = ThirdPartyPasswordlessEmailTemplateVars
+SmsTemplateVars = ThirdPartyPasswordlessSmsTemplateVars
+SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
 
 
 class ThirdPartyPasswordlessIngredients:
     def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
-                 sms_delivery: Union[SMSDeliveryIngredient[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
+                 email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None,
+                 sms_delivery: Union[SMSDeliveryIngredient[SmsTemplateVars], None] = None,
                  ) -> None:
         self.email_delivery = email_delivery
         self.sms_delivery = sms_delivery

@@ -17,36 +17,35 @@ from typing import Any, Dict
 from supertokens_python.ingredients.emaildelivery.services.smtp import \
     Transporter
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryInterface, EmailDeliverySMTPConfig, ServiceInterface)
+    EmailDeliveryInterface, EmailDeliverySMTPConfig, SMTPServiceInterface)
 from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordEmailDeliveryInput
+    EmailPasswordEmailTemplateVars
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import \
     SMTPService as EmailVerificationSMTPService
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.recipe.emailverification.types import EmailVerificationEmailTemplateVars
 
 from .service_implementation import ServiceImplementation
 from .service_implementation.email_verification_implementation import \
     ServiceImplementation as EmailVerificationServiceImpl
 
 
-class SMTPService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
-    service_implementation: ServiceInterface[TypeEmailPasswordEmailDeliveryInput]
+class SMTPService(EmailDeliveryInterface[EmailPasswordEmailTemplateVars]):
+    service_implementation: SMTPServiceInterface[EmailPasswordEmailTemplateVars]
 
-    def __init__(self, config: EmailDeliverySMTPConfig[TypeEmailPasswordEmailDeliveryInput]) -> None:
+    def __init__(self, config: EmailDeliverySMTPConfig[EmailPasswordEmailTemplateVars]) -> None:
         transporter = Transporter(config.smtp_settings)
 
         oi = ServiceImplementation(transporter)
         self.service_implementation = oi if config.override is None else config.override(oi)
 
-        ev_config = EmailDeliverySMTPConfig[TypeEmailVerificationEmailDeliveryInput](
+        ev_config = EmailDeliverySMTPConfig[EmailVerificationEmailTemplateVars](
             smtp_settings=config.smtp_settings,
             override=lambda _: EmailVerificationServiceImpl(self.service_implementation)
         )
         self.email_verification_smtp_service = EmailVerificationSMTPService(ev_config)
 
-    async def send_email(self, template_vars: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        if isinstance(template_vars, TypeEmailVerificationEmailDeliveryInput):
+    async def send_email(self, template_vars: EmailPasswordEmailTemplateVars, user_context: Dict[str, Any]) -> None:
+        if isinstance(template_vars, EmailVerificationEmailTemplateVars):
             return await self.email_verification_smtp_service.send_email(template_vars, user_context)
 
         content = await self.service_implementation.get_content(template_vars, user_context)

@@ -15,19 +15,19 @@
 from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailContent, ServiceInterface)
+    EmailContent, SMTPServiceInterface)
 from supertokens_python.recipe.emailpassword.types import (
-    TypeEmailPasswordEmailDeliveryInput,
-    TypeEmailVerificationEmailDeliveryInput)
+    EmailPasswordEmailTemplateVars)
+from supertokens_python.recipe.emailverification.types import EmailVerificationEmailTemplateVars
 
 
-class ServiceImplementation(ServiceInterface[TypeEmailVerificationEmailDeliveryInput]):
-    def __init__(self, email_password_service_implementation: ServiceInterface[TypeEmailPasswordEmailDeliveryInput]) -> None:
+class ServiceImplementation(SMTPServiceInterface[EmailVerificationEmailTemplateVars]):
+    def __init__(self, email_password_service_implementation: SMTPServiceInterface[EmailPasswordEmailTemplateVars]) -> None:
         super().__init__(email_password_service_implementation.transporter)
         self.email_password_service_implementation = email_password_service_implementation
 
     async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -> None:
         return await self.email_password_service_implementation.send_raw_email(content, user_context)
 
-    async def get_content(self, template_vars: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> EmailContent:
+    async def get_content(self, template_vars: EmailVerificationEmailTemplateVars, user_context: Dict[str, Any]) -> EmailContent:
         return await self.email_password_service_implementation.get_content(template_vars, user_context)

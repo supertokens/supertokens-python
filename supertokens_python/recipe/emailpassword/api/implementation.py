@@ -27,8 +27,8 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     SignUpEmailAlreadyExistsError, SignUpPostEmailAlreadyExistsError,
     SignUpPostOkResult)
 from supertokens_python.recipe.emailpassword.types import (
-    FormField, TypeEmailPasswordPasswordResetEmailDeliveryInput,
-    TypeEmailPasswordPasswordResetEmailDeliveryInputUser)
+    FormField, PasswordResetEmailTemplateVars,
+    PasswordResetEmailTemplateVarsUser)
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.utils import find_first_occurrence_in_list
 
@@ -65,8 +65,8 @@ class APIImplementation(APIInterface):
             user, user_context) + '?token=' + token + '&rid=' + api_options.recipe_id
 
         log_debug_message("Sending password reset email to %s", email)
-        send_email_input = TypeEmailPasswordPasswordResetEmailDeliveryInput(
-            user=TypeEmailPasswordPasswordResetEmailDeliveryInputUser(user.user_id, user.email),
+        send_email_input = PasswordResetEmailTemplateVars(
+            user=PasswordResetEmailTemplateVarsUser(user.user_id, user.email),
             password_reset_link=password_reset_link
         )
         await api_options.email_delivery.ingredient_interface_impl.send_email(send_email_input, user_context)

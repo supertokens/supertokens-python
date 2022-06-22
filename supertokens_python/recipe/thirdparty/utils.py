@@ -36,7 +36,7 @@ from supertokens_python.recipe.emailverification.utils import \
     ParentRecipeEmailVerificationConfig
 
 from ..emailverification.types import User as EmailVerificationUser
-from .types import TypeThirdPartyEmailDeliveryInput, User
+from .types import ThirdPartyEmailTemplateVars, User
 
 
 class SignInAndUpFeature:
@@ -159,7 +159,7 @@ class ThirdPartyConfig:
                  sign_in_and_up_feature: SignInAndUpFeature,
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
                  override: OverrideConfig,
-                 get_email_delivery_config: Callable[[RecipeInterface], EmailDeliveryConfigWithService[TypeThirdPartyEmailDeliveryInput]],
+                 get_email_delivery_config: Callable[[RecipeInterface], EmailDeliveryConfigWithService[ThirdPartyEmailTemplateVars]],
                  ):
         self.sign_in_and_up_feature = sign_in_and_up_feature
         self.email_verification_feature = email_verification_feature
@@ -172,7 +172,7 @@ def validate_and_normalise_user_input(
         sign_in_and_up_feature: SignInAndUpFeature,
         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
         override: Union[InputOverrideConfig, None] = None,
-        email_delivery_config: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None
+        email_delivery_config: Union[EmailDeliveryConfig[ThirdPartyEmailTemplateVars], None] = None
 ) -> ThirdPartyConfig:
     if not isinstance(sign_in_and_up_feature, SignInAndUpFeature):  # type: ignore
         raise ValueError('sign_in_and_up_feature must be an instance of SignInAndUpFeature')
@@ -184,7 +184,7 @@ def validate_and_normalise_user_input(
         override = InputOverrideConfig()
 
     def get_email_delivery_config(tp_recipe: RecipeInterface
-                                  ) -> EmailDeliveryConfigWithService[TypeThirdPartyEmailDeliveryInput]:
+                                  ) -> EmailDeliveryConfigWithService[ThirdPartyEmailTemplateVars]:
         if email_delivery_config and email_delivery_config.service:
             return EmailDeliveryConfigWithService(
                 email_delivery_config.service,

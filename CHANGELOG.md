@@ -74,14 +74,16 @@ from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryInte
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryInterface, SMSDeliveryConfig
 from supertokens_python.recipe import thirdpartypasswordless, passwordless
 
-from supertokens_python.recipe.emailverification.types import TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.recipe.emailverification.types import EmailVerificationEmailTemplateVars
 
 
 async def send_pless_login_email(input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
     print("SEND_PLESS_LOGIN_EMAIL", input_.email, input_.user_input_code)
 
+
 async def send_pless_login_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]):
     print("SEND_PLESS_LOGIN_SMS", input_.phone_number, input_.user_input_code)
+
 
 async def send_ev_verification_email(user: TpPlessUser, link: str, user_context: Any):
     print("SEND_EV_LOGIN_SMS", user.email, user.phone_number, user.third_party_info)
@@ -89,14 +91,16 @@ async def send_ev_verification_email(user: TpPlessUser, link: str, user_context:
 
 class EmailDeliveryService(EmailDeliveryInterface):
     async def send_email(self, input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
-        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
+        if isinstance(input_, EmailVerificationEmailTemplateVars):
             await send_ev_verification_email(input_, user_context)
         elif isinstance(input_, TypePasswordlessEmailDeliveryInput):
             await send_pless_login_email(input_, user_context)
 
+
 class SMSDeliveryService(SMSDeliveryInterface):
     async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]):
         await send_pless_login_sms(input_, user_context)
+
 
 init(
     supertokens_config=SupertokensConfig('http://localhost:3567'),

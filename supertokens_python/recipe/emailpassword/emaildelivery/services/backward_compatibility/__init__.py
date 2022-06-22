@@ -21,15 +21,13 @@ from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.emailpassword.interfaces import (
-    RecipeInterface, TypeEmailPasswordEmailDeliveryInput)
+    RecipeInterface, EmailPasswordEmailTemplateVars)
 from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService as \
     EmailVerificationBackwardCompatibilityService
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.recipe.emailverification.types import \
-    User as EmailVerificationUser
+    User as EmailVerificationUser, EmailVerificationEmailTemplateVars
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.utils import handle_httpx_client_exceptions
 
@@ -60,7 +58,7 @@ def default_create_and_send_custom_email(
     return func
 
 
-class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
+class BackwardCompatibilityService(EmailDeliveryInterface[EmailPasswordEmailTemplateVars]):
     app_info: AppInfo
     ev_backward_compatibility_service: EmailVerificationBackwardCompatibilityService
 
@@ -100,8 +98,8 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
             app_info, create_and_send_custom_email=create_and_send_custom_email
         )
 
-    async def send_email(self, template_vars: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        if isinstance(template_vars, TypeEmailVerificationEmailDeliveryInput):
+    async def send_email(self, template_vars: EmailPasswordEmailTemplateVars, user_context: Dict[str, Any]) -> None:
+        if isinstance(template_vars, EmailVerificationEmailTemplateVars):
             await self.ev_backward_compatibility_service.send_email(template_vars, user_context)
         else:
             user = await self.recipe_interface_impl.get_user_by_id(

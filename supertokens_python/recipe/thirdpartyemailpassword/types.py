@@ -16,12 +16,12 @@ from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from typing import Union
 
-from supertokens_python.ingredients.emaildelivery.types import ServiceInterface
+from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface
 
 from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordEmailDeliveryInput
+    EmailPasswordEmailTemplateVars
 from supertokens_python.recipe.emailverification.types import \
-    TypeEmailVerificationEmailDeliveryInput
+    EmailVerificationEmailTemplateVars
 
 from ..thirdparty.types import ThirdPartyInfo
 
@@ -35,10 +35,12 @@ class User:
         self.third_party_info = third_party_info
 
 
-EmailTemplateVars = TypeEmailPasswordEmailDeliveryInput
-VerificationEmailTemplateVars = TypeEmailVerificationEmailDeliveryInput
+ThirdPartyEmailPasswordEmailTemplateVars = EmailPasswordEmailTemplateVars
 
-SMTPOverrideInput = ServiceInterface[EmailTemplateVars]
+# Export:
+EmailTemplateVars = ThirdPartyEmailPasswordEmailTemplateVars
+VerificationEmailTemplateVars = EmailVerificationEmailTemplateVars
+SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
 
 
 class ThirdPartyEmailPasswordIngredients:

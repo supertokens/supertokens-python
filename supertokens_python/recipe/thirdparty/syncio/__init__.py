@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 
-from ..types import TypeThirdPartyEmailDeliveryInput, User
+from ..types import ThirdPartyEmailTemplateVars, User
 
 
 def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -71,6 +71,6 @@ def sign_in_up(third_party_id: str, third_party_user_id: str,
                            third_party_user_id, email, email_verified, user_context))
 
 
-def send_email(input_: TypeThirdPartyEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+def send_email(input_: ThirdPartyEmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.thirdparty.asyncio import send_email
     return sync(send_email(input_, user_context))

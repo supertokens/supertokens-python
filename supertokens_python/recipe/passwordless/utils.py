@@ -22,7 +22,7 @@ from supertokens_python.ingredients.emaildelivery.types import (
 from supertokens_python.ingredients.smsdelivery.types import (
     SMSDeliveryConfig, SMSDeliveryConfigWithService)
 from supertokens_python.recipe.passwordless.types import (
-    CreateAndSendCustomEmailParameters, TypePasswordlessSmsDeliveryInput)
+    CreateAndSendCustomEmailParameters, PasswordlessLoginSmsTemplateVars)
 from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
@@ -30,7 +30,7 @@ from .types import CreateAndSendCustomTextMessageParameters
 
 if TYPE_CHECKING:
     from .interfaces import (APIInterface, RecipeInterface,
-                             TypePasswordlessEmailDeliveryInput)
+                             PasswordlessLoginEmailTemplateVars)
     from supertokens_python import AppInfo
 
 from re import fullmatch
@@ -159,8 +159,8 @@ class PasswordlessConfig:
                  override: OverrideConfig,
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
                  get_link_domain_and_path: Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]],
-                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]],
-                 get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[TypePasswordlessSmsDeliveryInput]],
+                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]],
+                 get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[PasswordlessLoginSmsTemplateVars]],
                  get_custom_user_input_code: Union[Callable[[
                      Dict[str, Any]], Awaitable[str]], None] = None
                  ):
@@ -181,8 +181,8 @@ def validate_and_normalise_user_input(
     get_link_domain_and_path: Union[Callable[[
         PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
     get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
-    email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
-    sms_delivery: Union[SMSDeliveryConfig[TypePasswordlessSmsDeliveryInput], None] = None,
+    email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None,
+    sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSmsTemplateVars], None] = None,
 ) -> PasswordlessConfig:
 
     if override is None:
@@ -191,7 +191,7 @@ def validate_and_normalise_user_input(
     if get_link_domain_and_path is None:
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)
 
-    def get_email_delivery_config() -> EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]:
+    def get_email_delivery_config() -> EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]:
         email_service = email_delivery.service if email_delivery is not None else None
         if isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)):
             create_and_send_custom_email = contact_config.create_and_send_custom_email
@@ -208,7 +208,7 @@ def validate_and_normalise_user_input(
 
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    def get_sms_delivery_config() -> SMSDeliveryConfigWithService[TypePasswordlessSmsDeliveryInput]:
+    def get_sms_delivery_config() -> SMSDeliveryConfigWithService[PasswordlessLoginSmsTemplateVars]:
         sms_service = sms_delivery.service if sms_delivery is not None else None
 
         if isinstance(contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)):

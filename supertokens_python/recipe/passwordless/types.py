@@ -15,6 +15,7 @@ from typing import List, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
+from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
 
 
@@ -63,7 +64,7 @@ class CreateAndSendCustomEmailParameters:
         self.url_with_link_code: Union[str, None] = url_with_link_code
 
 
-TypePasswordlessEmailDeliveryInput = CreateAndSendCustomEmailParameters
+PasswordlessLoginEmailTemplateVars = CreateAndSendCustomEmailParameters
 
 
 class CreateAndSendCustomTextMessageParameters:
@@ -81,13 +82,18 @@ class CreateAndSendCustomTextMessageParameters:
         self.url_with_link_code: Union[str, None] = url_with_link_code
 
 
-TypePasswordlessSmsDeliveryInput = CreateAndSendCustomTextMessageParameters
+PasswordlessLoginSmsTemplateVars = CreateAndSendCustomTextMessageParameters
+
+# Export:
+EmailTemplateVars = PasswordlessLoginEmailTemplateVars
+SmsTemplateVars = PasswordlessLoginSmsTemplateVars
+SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
 
 
 class PasswordlessIngredients:
     def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput], None] = None,
-                 sms_delivery: Union[SMSDeliveryIngredient[TypePasswordlessSmsDeliveryInput], None] = None,
+                 email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None,
+                 sms_delivery: Union[SMSDeliveryIngredient[SmsTemplateVars], None] = None,
                  ):
         self.email_delivery = email_delivery
         self.sms_delivery = sms_delivery

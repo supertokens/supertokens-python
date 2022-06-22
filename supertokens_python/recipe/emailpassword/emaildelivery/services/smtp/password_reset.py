@@ -16,13 +16,13 @@ from string import Template
 
 from supertokens_python.ingredients.emaildelivery.types import EmailContent
 from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordPasswordResetEmailDeliveryInput
+    PasswordResetEmailTemplateVars
 from supertokens_python.supertokens import Supertokens
 
 from .password_reset_email import html_template
 
 
-def get_password_reset_email_content(email_input: TypeEmailPasswordPasswordResetEmailDeliveryInput) -> EmailContent:
+def get_password_reset_email_content(email_input: PasswordResetEmailTemplateVars) -> EmailContent:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
     body = get_password_reset_email_html(app_name, email_input.user.email, email_input.password_reset_link)

@@ -19,9 +19,7 @@ from httpx import AsyncClient
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.logger import log_debug_message
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
-from supertokens_python.recipe.emailverification.types import User
+from supertokens_python.recipe.emailverification.types import User, EmailVerificationEmailTemplateVars
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.utils import handle_httpx_client_exceptions
 
@@ -43,14 +41,14 @@ def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[User, s
     return func
 
 
-class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailVerificationEmailDeliveryInput]):
+class BackwardCompatibilityService(EmailDeliveryInterface[EmailVerificationEmailTemplateVars]):
     def __init__(self,
                  app_info: AppInfo,
                  create_and_send_custom_email: Union[Callable[[User, str, Dict[str, Any]], Awaitable[None]], None] = None
                  ) -> None:
         self.create_and_send_custom_email = default_create_and_send_custom_email(app_info) if create_and_send_custom_email is None else create_and_send_custom_email
 
-    async def send_email(self, template_vars: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+    async def send_email(self, template_vars: EmailVerificationEmailTemplateVars, user_context: Dict[str, Any]) -> None:
         try:
             email_user = User(template_vars.user.id, template_vars.user.email)
             await self.create_and_send_custom_email(email_user, template_vars.email_verify_link, user_context)

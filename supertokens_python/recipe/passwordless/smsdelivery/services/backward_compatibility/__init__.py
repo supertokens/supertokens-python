@@ -25,11 +25,11 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.utils import handle_httpx_client_exceptions
 
-from ....types import TypePasswordlessSmsDeliveryInput
+from ....types import PasswordlessLoginSmsTemplateVars
 
 
 def default_create_and_send_custom_sms(app_info: AppInfo):
-    async def func(input_: TypePasswordlessSmsDeliveryInput, _user_context: Dict[str, Any]):
+    async def func(input_: PasswordlessLoginSmsTemplateVars, _user_context: Dict[str, Any]):
         if ('SUPERTOKENS_ENV' in environ) and (environ['SUPERTOKENS_ENV'] == 'testing'):
             return
         sms_input_json = {
@@ -82,12 +82,12 @@ def default_create_and_send_custom_sms(app_info: AppInfo):
     return func
 
 
-class BackwardCompatibilityService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
+class BackwardCompatibilityService(SMSDeliveryInterface[PasswordlessLoginSmsTemplateVars]):
     def __init__(self,
                  app_info: AppInfo,
-                 create_and_send_custom_sms: Union[Callable[[TypePasswordlessSmsDeliveryInput, Dict[str, Any]], Awaitable[None]], None] = None
+                 create_and_send_custom_sms: Union[Callable[[PasswordlessLoginSmsTemplateVars, Dict[str, Any]], Awaitable[None]], None] = None
                  ) -> None:
         self.create_and_send_custom_sms = default_create_and_send_custom_sms(app_info) if create_and_send_custom_sms is None else create_and_send_custom_sms
 
-    async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
+    async def send_sms(self, input_: PasswordlessLoginSmsTemplateVars, user_context: Dict[str, Any]) -> None:
         await self.create_and_send_custom_sms(input_, user_context)  # Note: intentionally not using try-except (unlike other recipes)
