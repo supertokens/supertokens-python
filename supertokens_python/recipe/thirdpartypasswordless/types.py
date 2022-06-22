@@ -15,11 +15,11 @@ from typing import TypeVar, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
-from supertokens_python.ingredients.smsdelivery.types import TwilioServiceInterface
-from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface
+from supertokens_python.ingredients.smsdelivery.types import TwilioServiceInterface, SMSDeliveryInterface
+from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface, EmailDeliveryInterface
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
 from supertokens_python.recipe.passwordless.types import (
-    PasswordlessLoginEmailTemplateVars, PasswordlessLoginSmsTemplateVars)
+    PasswordlessLoginEmailTemplateVars, PasswordlessLoginSMSTemplateVars)
 
 from ..thirdparty.types import ThirdPartyInfo, ThirdPartyEmailTemplateVars
 
@@ -39,19 +39,23 @@ _T = TypeVar('_T')
 
 ThirdPartyPasswordlessEmailTemplateVars = Union[ThirdPartyEmailTemplateVars, PasswordlessLoginEmailTemplateVars]
 
-ThirdPartyPasswordlessSmsTemplateVars = PasswordlessLoginSmsTemplateVars
+ThirdPartyPasswordlessSMSTemplateVars = PasswordlessLoginSMSTemplateVars
 
 # Export:
 EmailTemplateVars = ThirdPartyPasswordlessEmailTemplateVars
-SmsTemplateVars = ThirdPartyPasswordlessSmsTemplateVars
+SMSTemplateVars = ThirdPartyPasswordlessSMSTemplateVars
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
-TwilioOverrideInput = TwilioServiceInterface[SmsTemplateVars]
+TwilioOverrideInput = TwilioServiceInterface[SMSTemplateVars]
+
+
+EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
+SMSDeliveryOverrideInput = SMSDeliveryInterface[SMSTemplateVars]
 
 
 class ThirdPartyPasswordlessIngredients:
     def __init__(self,
                  email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None,
-                 sms_delivery: Union[SMSDeliveryIngredient[SmsTemplateVars], None] = None,
+                 sms_delivery: Union[SMSDeliveryIngredient[SMSTemplateVars], None] = None,
                  ) -> None:
         self.email_delivery = email_delivery
         self.sms_delivery = sms_delivery

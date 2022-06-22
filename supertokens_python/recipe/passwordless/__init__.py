@@ -23,7 +23,7 @@ from supertokens_python.recipe.passwordless.smsdelivery.services import TwilioSe
 from supertokens_python.recipe.passwordless.interfaces import \
     PasswordlessLoginEmailTemplateVars
 from supertokens_python.recipe.passwordless.types import \
-    PasswordlessLoginSmsTemplateVars
+    PasswordlessLoginSMSTemplateVars
 from typing_extensions import Literal
 
 from . import types, utils
@@ -53,7 +53,7 @@ def init(contact_config: ContactConfig,
              PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
          get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
          email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None,
-         sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSmsTemplateVars], None] = None,
+         sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None,
          ) -> Callable[[AppInfo], RecipeModule]:
     return PasswordlessRecipe.init(contact_config,
                                    flow_type,

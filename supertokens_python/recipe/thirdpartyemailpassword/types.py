@@ -12,12 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from supertokens_python.ingredients.emaildelivery import \
-    EmailDeliveryIngredient
 from typing import Union
 
-from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface
-
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
+from supertokens_python.ingredients.emaildelivery.types import \
+    SMTPServiceInterface, EmailDeliveryInterface
 from supertokens_python.recipe.emailpassword.types import \
     EmailPasswordEmailTemplateVars
 from supertokens_python.recipe.emailverification.types import \
@@ -41,6 +41,8 @@ ThirdPartyEmailPasswordEmailTemplateVars = EmailPasswordEmailTemplateVars
 EmailTemplateVars = ThirdPartyEmailPasswordEmailTemplateVars
 VerificationEmailTemplateVars = EmailVerificationEmailTemplateVars
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
+
+EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 
 
 class ThirdPartyEmailPasswordIngredients:

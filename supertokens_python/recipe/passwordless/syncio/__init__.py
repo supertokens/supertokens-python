@@ -27,7 +27,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
     UpdateUserPhoneNumberAlreadyExistsError, UpdateUserUnknownUserIdError)
 from supertokens_python.recipe.passwordless.types import (
     DeviceType, PasswordlessLoginEmailTemplateVars,
-    PasswordlessLoginSmsTemplateVars, User)
+    PasswordlessLoginSMSTemplateVars, User)
 
 
 def create_code(email: Union[None, str] = None,
@@ -136,5 +136,5 @@ def send_email(input_: PasswordlessLoginEmailTemplateVars, user_context: Union[N
     return sync(asyncio.send_email(input_, user_context))
 
 
-def send_sms(input_: PasswordlessLoginSmsTemplateVars, user_context: Union[None, Dict[str, Any]] = None) -> None:
+def send_sms(input_: PasswordlessLoginSMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None) -> None:
     return sync(asyncio.send_sms(input_, user_context))

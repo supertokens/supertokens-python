@@ -26,7 +26,7 @@ from typing_extensions import Literal
 # if TYPE_CHECKING:
 from .types import (DeviceType, SMSDeliveryIngredient,
                     PasswordlessLoginEmailTemplateVars,
-                    PasswordlessLoginSmsTemplateVars, User)
+                    PasswordlessLoginSMSTemplateVars, User)
 from .utils import PasswordlessConfig
 
 
@@ -209,7 +209,7 @@ class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: PasswordlessConfig, recipe_implementation: RecipeInterface,
                  email_delivery: EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars],
-                 sms_delivery: SMSDeliveryIngredient[PasswordlessLoginSmsTemplateVars]
+                 sms_delivery: SMSDeliveryIngredient[PasswordlessLoginSMSTemplateVars]
                  ):
         self.request = request
         self.response = response

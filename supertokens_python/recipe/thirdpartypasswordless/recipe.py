@@ -81,7 +81,7 @@ from ..thirdparty.interfaces import \
 from .exceptions import SupertokensThirdPartyPasswordlessError
 from .interfaces import APIInterface, RecipeInterface
 from .types import (ThirdPartyPasswordlessEmailTemplateVars,
-                    ThirdPartyPasswordlessSmsTemplateVars)
+                    ThirdPartyPasswordlessSMSTemplateVars)
 from .utils import InputOverrideConfig, validate_and_normalise_user_input
 
 
@@ -89,7 +89,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
     recipe_id = 'thirdpartypasswordless'
     __instance = None
     email_delivery: EmailDeliveryIngredient[ThirdPartyPasswordlessEmailTemplateVars]
-    sms_delivery: SMSDeliveryIngredient[ThirdPartyPasswordlessSmsTemplateVars]
+    sms_delivery: SMSDeliveryIngredient[ThirdPartyPasswordlessSMSTemplateVars]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  contact_config: ContactConfig,
@@ -104,7 +104,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                  third_party_recipe: Union[ThirdPartyRecipe, None] = None,
                  passwordless_recipe: Union[PasswordlessRecipe, None] = None,
                  email_delivery: Union[EmailDeliveryConfig[ThirdPartyPasswordlessEmailTemplateVars], None] = None,
-                 sms_delivery: Union[SMSDeliveryConfig[ThirdPartyPasswordlessSmsTemplateVars], None] = None,
+                 sms_delivery: Union[SMSDeliveryConfig[ThirdPartyPasswordlessSMSTemplateVars], None] = None,
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self,
@@ -298,7 +298,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
              get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
              email_delivery: Union[EmailDeliveryConfig[ThirdPartyPasswordlessEmailTemplateVars], None] = None,
-             sms_delivery: Union[SMSDeliveryConfig[ThirdPartyPasswordlessSmsTemplateVars], None] = None,
+             sms_delivery: Union[SMSDeliveryConfig[ThirdPartyPasswordlessSMSTemplateVars], None] = None,
              override: Union[InputOverrideConfig, None] = None,
              providers: Union[List[Provider], None] = None):
         def func(app_info: AppInfo):

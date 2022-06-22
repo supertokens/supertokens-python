@@ -23,10 +23,10 @@ from supertokens_python.utils import humanize_time
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.passwordless.types import \
-        PasswordlessLoginSmsTemplateVars
+        PasswordlessLoginSMSTemplateVars
 
 
-def pless_sms_content(input_: PasswordlessLoginSmsTemplateVars) -> SmsContent:
+def pless_sms_content(input_: PasswordlessLoginSMSTemplateVars) -> SmsContent:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
     code_lifetime = humanize_time(input_.code_life_time)

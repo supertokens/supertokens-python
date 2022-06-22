@@ -20,14 +20,14 @@ from supertokens_python.ingredients.smsdelivery.types import \
 from supertokens_python.recipe.passwordless.smsdelivery.services.supertokens import \
     SuperTokensService as PlessSuperTokensService
 
-from ....types import ThirdPartyPasswordlessSmsTemplateVars
+from ....types import ThirdPartyPasswordlessSMSTemplateVars
 
 
-class SuperTokensService(SMSDeliveryInterface[ThirdPartyPasswordlessSmsTemplateVars]):
+class SuperTokensService(SMSDeliveryInterface[ThirdPartyPasswordlessSMSTemplateVars]):
     pless_supertokens_service: PlessSuperTokensService
 
     def __init__(self, api_key: str) -> None:
         self.pless_supertokens_service = PlessSuperTokensService(api_key)
 
-    async def send_sms(self, template_vars: ThirdPartyPasswordlessSmsTemplateVars, user_context: Dict[str, Any]) -> None:
+    async def send_sms(self, template_vars: ThirdPartyPasswordlessSMSTemplateVars, user_context: Dict[str, Any]) -> None:
         await self.pless_supertokens_service.send_sms(template_vars, user_context)

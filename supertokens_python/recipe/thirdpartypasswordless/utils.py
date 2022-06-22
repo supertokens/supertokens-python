@@ -27,7 +27,7 @@ from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService
 from supertokens_python.recipe.thirdpartypasswordless.types import \
-    ThirdPartyPasswordlessSmsTemplateVars
+    ThirdPartyPasswordlessSMSTemplateVars
 from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
@@ -140,7 +140,7 @@ class ThirdPartyPasswordlessConfig:
                      [RecipeInterface], EmailDeliveryConfigWithService[ThirdPartyPasswordlessEmailTemplateVars]
                  ],
                  get_sms_delivery_config: Callable[
-                     [], SMSDeliveryConfigWithService[ThirdPartyPasswordlessSmsTemplateVars]
+                     [], SMSDeliveryConfigWithService[ThirdPartyPasswordlessSMSTemplateVars]
                  ],
                  get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None
                  ):
@@ -166,7 +166,7 @@ def validate_and_normalise_user_input(
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[Provider], None] = None,
         email_delivery: Union[EmailDeliveryConfig[ThirdPartyPasswordlessEmailTemplateVars], None] = None,
-        sms_delivery: Union[SMSDeliveryConfig[ThirdPartyPasswordlessSmsTemplateVars], None] = None,
+        sms_delivery: Union[SMSDeliveryConfig[ThirdPartyPasswordlessSMSTemplateVars], None] = None,
 ) -> ThirdPartyPasswordlessConfig:
     if not isinstance(contact_config, ContactConfig):  # type: ignore
         raise ValueError('contact_config must be an instance of ContactConfig')
@@ -215,7 +215,7 @@ def validate_and_normalise_user_input(
 
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    def get_sms_delivery_config() -> SMSDeliveryConfigWithService[ThirdPartyPasswordlessSmsTemplateVars]:
+    def get_sms_delivery_config() -> SMSDeliveryConfigWithService[ThirdPartyPasswordlessSMSTemplateVars]:
         if sms_delivery and sms_delivery.service:
             return SMSDeliveryConfigWithService(
                 service=sms_delivery.service,

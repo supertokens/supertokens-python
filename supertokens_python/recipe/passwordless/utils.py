@@ -22,7 +22,7 @@ from supertokens_python.ingredients.emaildelivery.types import (
 from supertokens_python.ingredients.smsdelivery.types import (
     SMSDeliveryConfig, SMSDeliveryConfigWithService)
 from supertokens_python.recipe.passwordless.types import (
-    CreateAndSendCustomEmailParameters, PasswordlessLoginSmsTemplateVars)
+    CreateAndSendCustomEmailParameters, PasswordlessLoginSMSTemplateVars)
 from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
@@ -160,7 +160,7 @@ class PasswordlessConfig:
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
                  get_link_domain_and_path: Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]],
                  get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]],
-                 get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[PasswordlessLoginSmsTemplateVars]],
+                 get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]],
                  get_custom_user_input_code: Union[Callable[[
                      Dict[str, Any]], Awaitable[str]], None] = None
                  ):
@@ -182,7 +182,7 @@ def validate_and_normalise_user_input(
         PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
     get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
     email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None,
-    sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSmsTemplateVars], None] = None,
+    sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None,
 ) -> PasswordlessConfig:
 
     if override is None:
@@ -208,7 +208,7 @@ def validate_and_normalise_user_input(
 
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    def get_sms_delivery_config() -> SMSDeliveryConfigWithService[PasswordlessLoginSmsTemplateVars]:
+    def get_sms_delivery_config() -> SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]:
         sms_service = sms_delivery.service if sms_delivery is not None else None
 
         if isinstance(contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)):

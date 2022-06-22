@@ -20,7 +20,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
 
 from .. import asyncio, interfaces
 from ..types import (ThirdPartyPasswordlessEmailTemplateVars,
-                     ThirdPartyPasswordlessSmsTemplateVars, User)
+                     ThirdPartyPasswordlessSMSTemplateVars, User)
 
 
 def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -168,5 +168,5 @@ def send_email(input_: ThirdPartyPasswordlessEmailTemplateVars, user_context: Un
     return sync(asyncio.send_email(input_, user_context))
 
 
-def send_sms(input_: ThirdPartyPasswordlessSmsTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
+def send_sms(input_: ThirdPartyPasswordlessSMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     return sync(asyncio.send_sms(input_, user_context))

@@ -26,7 +26,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
 from supertokens_python.recipe.passwordless.recipe import PasswordlessRecipe
 from supertokens_python.recipe.passwordless.types import (
     DeviceType, PasswordlessLoginEmailTemplateVars,
-    PasswordlessLoginSmsTemplateVars, User)
+    PasswordlessLoginSMSTemplateVars, User)
 
 
 async def create_code(email: Union[None, str] = None,
@@ -151,7 +151,7 @@ async def send_email(input_: PasswordlessLoginEmailTemplateVars, user_context: U
     return await PasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(input_, user_context)
 
 
-async def send_sms(input_: PasswordlessLoginSmsTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
+async def send_sms(input_: PasswordlessLoginSMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await PasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(input_, user_context)

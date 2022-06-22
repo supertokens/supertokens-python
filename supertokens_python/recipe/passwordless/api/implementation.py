@@ -27,7 +27,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
     ResendCodePostGeneralError, ResendCodePostOkResult,
     ResendCodePostRestartFlowError, PasswordlessLoginEmailTemplateVars)
 from supertokens_python.recipe.passwordless.types import \
-    PasswordlessLoginSmsTemplateVars
+    PasswordlessLoginSMSTemplateVars
 from supertokens_python.recipe.passwordless.utils import (
     ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)
 from supertokens_python.recipe.session.asyncio import create_new_session
@@ -74,7 +74,7 @@ class APIImplementation(APIInterface):
                 if phone_number is None:
                     raise Exception("Should never come here")
                 log_debug_message("Sending passwordless login SMS to %s", phone_number)
-                sms_input = PasswordlessLoginSmsTemplateVars(
+                sms_input = PasswordlessLoginSMSTemplateVars(
                     phone_number=phone_number,
                     user_input_code=user_input_code,
                     url_with_link_code=magic_link,
@@ -148,7 +148,7 @@ class APIImplementation(APIInterface):
                         if device_info.phone_number is None:
                             raise Exception("Should never come here")
                         log_debug_message("Sending passwordless login SMS to %s", device_info.phone_number)
-                        sms_input = PasswordlessLoginSmsTemplateVars(
+                        sms_input = PasswordlessLoginSMSTemplateVars(
                             phone_number=device_info.phone_number,
                             user_input_code=user_input_code,
                             url_with_link_code=magic_link,

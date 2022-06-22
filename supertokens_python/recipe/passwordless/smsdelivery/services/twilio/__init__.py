@@ -21,7 +21,7 @@ from supertokens_python.ingredients.smsdelivery.services.twilio import (
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface, TwilioServiceInterface, TwilioSettings
 from supertokens_python.recipe.passwordless.types import \
-    PasswordlessLoginSmsTemplateVars, TwilioOverrideInput
+    PasswordlessLoginSMSTemplateVars, TwilioOverrideInput
 
 from twilio.rest import Client  # type: ignore
 
@@ -31,8 +31,8 @@ from .service_implementation import ServiceImplementation
 _T = TypeVar('_T')
 
 
-class TwilioService(SMSDeliveryInterface[PasswordlessLoginSmsTemplateVars]):
-    service_implementation: TwilioServiceInterface[PasswordlessLoginSmsTemplateVars]
+class TwilioService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]):
+    service_implementation: TwilioServiceInterface[PasswordlessLoginSMSTemplateVars]
 
     def __init__(self, twilio_settings: TwilioSettings, override: Union[Callable[[TwilioOverrideInput], TwilioOverrideInput], None] = None) -> None:
         self.twilio_settings = normalize_twilio_settings(twilio_settings)
@@ -45,7 +45,7 @@ class TwilioService(SMSDeliveryInterface[PasswordlessLoginSmsTemplateVars]):
         oi = ServiceImplementation(self.twilio_client)  # type: ignore
         self.service_implementation = oi if override is None else override(oi)
 
-    async def send_sms(self, template_vars: PasswordlessLoginSmsTemplateVars, user_context: Dict[str, Any]) -> None:
+    async def send_sms(self, template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]) -> None:
         content = await self.service_implementation.get_content(template_vars, user_context)
         await self.service_implementation.send_raw_sms(
             content,

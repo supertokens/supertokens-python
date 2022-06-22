@@ -16,7 +16,7 @@ from typing import Callable, Dict, List, Union
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
-from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface
+from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface, EmailDeliveryInterface
 from supertokens_python.recipe.emailverification.types import \
     EmailVerificationEmailTemplateVars
 
@@ -79,6 +79,8 @@ ThirdPartyEmailTemplateVars = EmailVerificationEmailTemplateVars
 # Export:
 EmailTemplateVars = ThirdPartyEmailTemplateVars
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
+
+EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 
 
 class ThirdPartyIngredients:

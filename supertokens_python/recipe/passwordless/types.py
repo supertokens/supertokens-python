@@ -15,8 +15,8 @@ from typing import List, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
-from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface
-from supertokens_python.ingredients.smsdelivery.types import TwilioServiceInterface
+from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface, EmailDeliveryInterface
+from supertokens_python.ingredients.smsdelivery.types import TwilioServiceInterface, SMSDeliveryInterface
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
 
 
@@ -83,19 +83,23 @@ class CreateAndSendCustomTextMessageParameters:
         self.url_with_link_code: Union[str, None] = url_with_link_code
 
 
-PasswordlessLoginSmsTemplateVars = CreateAndSendCustomTextMessageParameters
+PasswordlessLoginSMSTemplateVars = CreateAndSendCustomTextMessageParameters
 
 # Export:
 EmailTemplateVars = PasswordlessLoginEmailTemplateVars
-SmsTemplateVars = PasswordlessLoginSmsTemplateVars
+SMSTemplateVars = PasswordlessLoginSMSTemplateVars
+
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
-TwilioOverrideInput = TwilioServiceInterface[SmsTemplateVars]
+TwilioOverrideInput = TwilioServiceInterface[SMSTemplateVars]
+
+EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
+SMSDeliveryOverrideInput = SMSDeliveryInterface[SMSTemplateVars]
 
 
 class PasswordlessIngredients:
     def __init__(self,
                  email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None,
-                 sms_delivery: Union[SMSDeliveryIngredient[SmsTemplateVars], None] = None,
+                 sms_delivery: Union[SMSDeliveryIngredient[SMSTemplateVars], None] = None,
                  ):
         self.email_delivery = email_delivery
         self.sms_delivery = sms_delivery
