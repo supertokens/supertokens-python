@@ -100,12 +100,12 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
             app_info, create_and_send_custom_email=create_and_send_custom_email
         )
 
-    async def send_email(self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
-            await self.ev_backward_compatibility_service.send_email(input_, user_context)
+    async def send_email(self, template_vars: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+        if isinstance(template_vars, TypeEmailVerificationEmailDeliveryInput):
+            await self.ev_backward_compatibility_service.send_email(template_vars, user_context)
         else:
             user = await self.recipe_interface_impl.get_user_by_id(
-                user_id=input_.user.id,
+                user_id=template_vars.user.id,
                 user_context=user_context
             )
 
@@ -114,7 +114,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
 
             try:
                 await self.reset_password_feature_send_email_func(
-                    user, input_.password_reset_link, user_context
+                    user, template_vars.password_reset_link, user_context
                 )
             except Exception:
                 pass

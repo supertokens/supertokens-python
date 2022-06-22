@@ -6,12 +6,14 @@ from unittest import TestCase
 
 import nest_asyncio  # type: ignore
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    GetContentResult, SMTPServiceConfig, SMTPServiceConfigFrom, Transporter)
+    Transporter)
+from supertokens_python.ingredients.emaildelivery.types import SMTPServiceConfigFrom, SMTPSettings, \
+    EmailContent
 
 
 class TransporterTests(TestCase):
     def test_transporter(self):  # pylint: disable=no-self-use
-        local_insecure_smtpd_config_without_auth = SMTPServiceConfig(
+        local_insecure_smtpd_config_without_auth = SMTPSettings(
             host="localhost",
             from_=SMTPServiceConfigFrom("Foo bar", "foo@example.com"),
             port=1025,
@@ -22,7 +24,7 @@ class TransporterTests(TestCase):
             smtp_settings=local_insecure_smtpd_config_without_auth,
         )
 
-        content = GetContentResult(
+        content = EmailContent(
             body="<h1>Hello world</h1>",
             subject='Greetings',
             to_email='bar@example.com',
@@ -73,7 +75,7 @@ b'<h1>Hello world</h1>'
             # Skip test if env vars aren't provided
             return
 
-        real_gmail_smtp_config = SMTPServiceConfig(
+        real_gmail_smtp_config = SMTPSettings(
             host="smtp.gmail.com",
             from_=SMTPServiceConfigFrom("ST Demo", email),
             password=password,
@@ -85,7 +87,7 @@ b'<h1>Hello world</h1>'
             smtp_settings=real_gmail_smtp_config,
         )
 
-        content = GetContentResult(
+        content = EmailContent(
             body="<h1>Hello world</h1>",
             subject='Greetings',
             to_email=email,

@@ -19,7 +19,9 @@ from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartyemailpassword.types import \
-    TypeThirdPartyEmailPasswordEmailDeliveryInput
+    EmailTemplateVars
+
+from supertokens_python.recipe.thirdpartyemailpassword.emaildelivery.services import SMTPService
 
 from .. import emailpassword, thirdparty
 from . import exceptions as ex
@@ -37,6 +39,7 @@ Facebook = thirdparty.Facebook
 Github = thirdparty.Github
 Google = thirdparty.Google
 GoogleWorkspaces = thirdparty.GoogleWorkspaces
+_ = SMTPService
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
@@ -49,7 +52,7 @@ def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
          override: Union[InputOverrideConfig, None] = None,
          providers: Union[List[Provider], None] = None,
-         email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None
+         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
          ) -> Callable[[AppInfo], RecipeModule]:
     return ThirdPartyEmailPasswordRecipe.init(sign_up_feature, reset_password_using_token_feature,
                                               email_verification_feature,

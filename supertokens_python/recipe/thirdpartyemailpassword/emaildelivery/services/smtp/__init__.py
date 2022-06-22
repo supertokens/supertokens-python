@@ -12,32 +12,30 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict
+from typing import Any, Callable, Dict, Union
 
-from supertokens_python.ingredients.emaildelivery.services.smtp import \
-    EmailDeliverySMTPConfig
-from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryInterface, EmailDeliverySMTPConfig, SMTPSettings)
 from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp import \
     SMTPService as EmailPasswordSMTPService
 from supertokens_python.recipe.emailpassword.types import \
     TypeEmailPasswordEmailDeliveryInput
-from supertokens_python.recipe.thirdpartyemailpassword.types import \
-    TypeThirdPartyEmailPasswordEmailDeliveryInput
+from supertokens_python.recipe.thirdpartyemailpassword.types import (
+    EmailTemplateVars, SMTPOverrideInput)
 
 
-class SMTPService(EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]):
+class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
     ep_smtp_service: EmailPasswordSMTPService
 
-    def __init__(self, config: EmailDeliverySMTPConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput]) -> None:
+    def __init__(self, smtp_settings: SMTPSettings, override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -> None:
         ev_config = EmailDeliverySMTPConfig[TypeEmailPasswordEmailDeliveryInput](
-            smtp_settings=config.smtp_settings,
-            override=config.override
+            smtp_settings=smtp_settings,
+            override=override
         )
         self.ep_smtp_service = EmailPasswordSMTPService(ev_config)
 
     async def send_email(self,
-                         input_: TypeThirdPartyEmailPasswordEmailDeliveryInput,
+                         template_vars: EmailTemplateVars,
                          user_context: Dict[str, Any]
                          ) -> None:
-        await self.ep_smtp_service.send_email(input_, user_context)
+        await self.ep_smtp_service.send_email(template_vars, user_context)

@@ -14,10 +14,10 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    EmailDeliverySMTPConfig, ServiceInterface, Transporter)
-from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface
+from supertokens_python.ingredients.emaildelivery.services.smtp import \
+    Transporter
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryInterface, EmailDeliverySMTPConfig, ServiceInterface)
 from supertokens_python.recipe.emailpassword.types import \
     TypeEmailPasswordEmailDeliveryInput
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import \
@@ -45,9 +45,9 @@ class SMTPService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
         )
         self.email_verification_smtp_service = EmailVerificationSMTPService(ev_config)
 
-    async def send_email(self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
-            return await self.email_verification_smtp_service.send_email(input_, user_context)
+    async def send_email(self, template_vars: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+        if isinstance(template_vars, TypeEmailVerificationEmailDeliveryInput):
+            return await self.email_verification_smtp_service.send_email(template_vars, user_context)
 
-        content = await self.service_implementation.get_content(input_, user_context)
+        content = await self.service_implementation.get_content(template_vars, user_context)
         await self.service_implementation.send_raw_email(content, user_context)

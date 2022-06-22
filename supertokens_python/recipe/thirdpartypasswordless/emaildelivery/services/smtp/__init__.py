@@ -14,10 +14,10 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    EmailDeliverySMTPConfig, Transporter)
-from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface
+from supertokens_python.ingredients.emaildelivery.services.smtp import \
+    Transporter
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryInterface, EmailDeliverySMTPConfig)
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import \
     SMTPService as EmailVerificationSMTPService
 from supertokens_python.recipe.emailverification.interfaces import \
@@ -56,8 +56,8 @@ class SMTPService(EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDelivery
         )
         self.pless_smtp_service = PlessSMTPService(pless_config)
 
-    async def send_email(self, input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
-            return await self.ev_smtp_service.send_email(input_, user_context)
+    async def send_email(self, template_vars: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+        if isinstance(template_vars, TypeEmailVerificationEmailDeliveryInput):
+            return await self.ev_smtp_service.send_email(template_vars, user_context)
 
-        return await self.pless_smtp_service.send_email(input_, user_context)
+        return await self.pless_smtp_service.send_email(template_vars, user_context)
