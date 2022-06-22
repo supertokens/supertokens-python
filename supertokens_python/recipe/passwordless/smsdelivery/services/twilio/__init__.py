@@ -14,39 +14,42 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Union, Callable, TypeVar
 
 from supertokens_python.ingredients.smsdelivery.services.twilio import (
-    ServiceInterface, SMSDeliveryTwilioConfig, normalize_twilio_config)
+    normalize_twilio_settings)
 from supertokens_python.ingredients.smsdelivery.types import \
-    SMSDeliveryInterface
+    SMSDeliveryInterface, TwilioServiceInterface, TwilioSettings
 from supertokens_python.recipe.passwordless.types import \
-    PasswordlessLoginSmsTemplateVars
+    PasswordlessLoginSmsTemplateVars, TwilioOverrideInput
 
 from twilio.rest import Client  # type: ignore
 
 from .service_implementation import ServiceImplementation
 
 
-class TwilioService(SMSDeliveryInterface[PasswordlessLoginSmsTemplateVars]):
-    service_implementation: ServiceInterface[PasswordlessLoginSmsTemplateVars]
+_T = TypeVar('_T')
 
-    def __init__(self, config: SMSDeliveryTwilioConfig[PasswordlessLoginSmsTemplateVars]) -> None:
-        self.config = normalize_twilio_config(config)
-        otps = config.twilio_settings.opts if config.twilio_settings.opts else {}
+
+class TwilioService(SMSDeliveryInterface[PasswordlessLoginSmsTemplateVars]):
+    service_implementation: TwilioServiceInterface[PasswordlessLoginSmsTemplateVars]
+
+    def __init__(self, twilio_settings: TwilioSettings, override: Union[Callable[[TwilioOverrideInput], TwilioOverrideInput], None] = None) -> None:
+        self.twilio_settings = normalize_twilio_settings(twilio_settings)
+        otps = twilio_settings.opts if twilio_settings.opts else {}
         self.twilio_client = Client(  # type: ignore
-            config.twilio_settings.account_sid,
-            config.twilio_settings.auth_token,
+            twilio_settings.account_sid,
+            twilio_settings.auth_token,
             **otps
         )
         oi = ServiceImplementation(self.twilio_client)  # type: ignore
-        self.service_implementation = oi if config.override is None else config.override(oi)
+        self.service_implementation = oi if override is None else override(oi)
 
-    async def send_sms(self, input_: PasswordlessLoginSmsTemplateVars, user_context: Dict[str, Any]) -> None:
-        content = await self.service_implementation.get_content(input_, user_context)
+    async def send_sms(self, template_vars: PasswordlessLoginSmsTemplateVars, user_context: Dict[str, Any]) -> None:
+        content = await self.service_implementation.get_content(template_vars, user_context)
         await self.service_implementation.send_raw_sms(
             content,
             user_context,
-            from_=self.config.twilio_settings.from_,
-            messaging_service_sid=self.config.twilio_settings.messaging_service_sid,
+            from_=self.twilio_settings.from_,
+            messaging_service_sid=self.twilio_settings.messaging_service_sid,
         )

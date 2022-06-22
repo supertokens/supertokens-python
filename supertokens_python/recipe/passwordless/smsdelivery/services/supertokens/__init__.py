@@ -17,7 +17,7 @@ from typing import Any, Dict
 
 from httpx import AsyncClient
 from supertokens_python.ingredients.smsdelivery.services.supertokens import (
-    SUPERTOKENS_SMS_SERVICE_URL, SupertokensServiceConfig)
+    SUPERTOKENS_SMS_SERVICE_URL)
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface
 from supertokens_python.logger import log_debug_message
@@ -29,20 +29,20 @@ from ....types import PasswordlessLoginSmsTemplateVars
 
 class SuperTokensService(SMSDeliveryInterface[PasswordlessLoginSmsTemplateVars]):
     def __init__(self,
-                 config: SupertokensServiceConfig
+                 api_key: str
                  ) -> None:
-        self.config = config
+        self.api_key = api_key
 
-    async def send_sms(self, input_: PasswordlessLoginSmsTemplateVars, user_context: Dict[str, Any]) -> None:
+    async def send_sms(self, template_vars: PasswordlessLoginSmsTemplateVars, user_context: Dict[str, Any]) -> None:
         supertokens = Supertokens.get_instance()
         app_name = supertokens.app_info.app_name
 
         sms_input = {
             'type': 'PASSWORDLESS_LOGIN',
-            'phoneNumber': input_.phone_number,
-            'userInputCode': input_.user_input_code,
-            'urlWithLinkCode': input_.url_with_link_code,
-            'codeLifetime': input_.code_life_time,
+            'phoneNumber': template_vars.phone_number,
+            'userInputCode': template_vars.user_input_code,
+            'urlWithLinkCode': template_vars.url_with_link_code,
+            'codeLifetime': template_vars.code_life_time,
             'appName': app_name,
         }
         try:
@@ -50,7 +50,7 @@ class SuperTokensService(SMSDeliveryInterface[PasswordlessLoginSmsTemplateVars])
                 await client.post(  # type: ignore
                     SUPERTOKENS_SMS_SERVICE_URL,
                     json={
-                        "apiKey": self.config.api_key,
+                        "apiKey": self.api_key,
                         "smsInput": sms_input,
                     },
                     headers={'api-version': '0'}

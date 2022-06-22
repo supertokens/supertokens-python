@@ -16,34 +16,33 @@ from __future__ import annotations
 
 from typing import Any, Dict, Union
 
-from supertokens_python.ingredients.smsdelivery.services.twilio import (
-    GetContentResult, ServiceInterface)
+from supertokens_python.ingredients.smsdelivery.types import SmsContent, TwilioServiceInterface
 from supertokens_python.recipe.passwordless.smsdelivery.services.twilio.passwordless_login import \
     pless_sms_content
 from supertokens_python.recipe.passwordless.types import \
     PasswordlessLoginSmsTemplateVars
 
 
-class ServiceImplementation(ServiceInterface[PasswordlessLoginSmsTemplateVars]):
+class ServiceImplementation(TwilioServiceInterface[PasswordlessLoginSmsTemplateVars]):
     async def send_raw_sms(self,
-                           get_content_result: GetContentResult,
+                           content: SmsContent,
                            user_context: Dict[str, Any],
                            from_: Union[str, None] = None,
                            messaging_service_sid: Union[str, None] = None,
                            ) -> None:
         if from_:
             self.twilio_client.messages.create(  # type: ignore
-                to=get_content_result.to_phone,
-                body=get_content_result.body,
+                to=content.to_phone,
+                body=content.body,
                 from_=from_,
             )
         else:
             self.twilio_client.messages.create(  # type: ignore
-                to=get_content_result.to_phone,
-                body=get_content_result.body,
+                to=content.to_phone,
+                body=content.body,
                 messaging_service_sid=messaging_service_sid,
             )
 
-    async def get_content(self, input_: PasswordlessLoginSmsTemplateVars, user_context: Dict[str, Any]) -> GetContentResult:
+    async def get_content(self, template_vars: PasswordlessLoginSmsTemplateVars, user_context: Dict[str, Any]) -> SmsContent:
         _ = user_context
-        return pless_sms_content(input_)
+        return pless_sms_content(template_vars)

@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
+from supertokens_python.recipe.passwordless.smsdelivery.services import TwilioService, SuperTokensService
 from supertokens_python.recipe.passwordless.interfaces import \
     PasswordlessLoginEmailTemplateVars
 from supertokens_python.recipe.passwordless.types import \
@@ -41,6 +42,8 @@ CreateAndSendCustomTextMessageParameters = types.CreateAndSendCustomTextMessageP
 CreateAndSendCustomEmailParameters = types.CreateAndSendCustomEmailParameters
 ContactPhoneOnlyConfig = utils.ContactPhoneOnlyConfig
 ContactEmailOrPhoneConfig = utils.ContactEmailOrPhoneConfig
+_ = TwilioService
+_ = SuperTokensService
 
 
 def init(contact_config: ContactConfig,

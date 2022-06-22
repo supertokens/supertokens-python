@@ -14,23 +14,21 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Union, Callable
 
-from supertokens_python.ingredients.smsdelivery.services.twilio import \
-    SMSDeliveryTwilioConfig
 from supertokens_python.ingredients.smsdelivery.types import \
-    SMSDeliveryInterface
+    SMSDeliveryInterface, TwilioSettings
 from supertokens_python.recipe.passwordless.smsdelivery.services.twilio import \
     TwilioService as PlessTwilioService
 
-from ....types import ThirdPartyPasswordlessSmsTemplateVars
+from ....types import ThirdPartyPasswordlessSmsTemplateVars, TwilioOverrideInput
 
 
 class TwilioService(SMSDeliveryInterface[ThirdPartyPasswordlessSmsTemplateVars]):
     pless_twilio_service: PlessTwilioService
 
-    def __init__(self, config: SMSDeliveryTwilioConfig[ThirdPartyPasswordlessSmsTemplateVars]) -> None:
-        self.pless_twilio_service = PlessTwilioService(config)
+    def __init__(self, twilio_settings: TwilioSettings, override: Union[Callable[[TwilioOverrideInput], TwilioOverrideInput], None] = None) -> None:
+        self.pless_twilio_service = PlessTwilioService(twilio_settings, override)
 
-    async def send_sms(self, input_: ThirdPartyPasswordlessSmsTemplateVars, user_context: Dict[str, Any]) -> None:
-        await self.pless_twilio_service.send_sms(input_, user_context)
+    async def send_sms(self, template_vars: ThirdPartyPasswordlessSmsTemplateVars, user_context: Dict[str, Any]) -> None:
+        await self.pless_twilio_service.send_sms(template_vars, user_context)
