@@ -15,13 +15,17 @@ from typing import TypeVar, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
-from supertokens_python.ingredients.smsdelivery.types import TwilioServiceInterface, SMSDeliveryInterface
-from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface, EmailDeliveryInterface
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryInterface, SMTPServiceInterface)
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
+from supertokens_python.ingredients.smsdelivery.types import (
+    SMSDeliveryInterface, TwilioServiceInterface)
+from supertokens_python.recipe.emailverification.types import \
+    EmailVerificationEmailTemplateVars
 from supertokens_python.recipe.passwordless.types import (
     PasswordlessLoginEmailTemplateVars, PasswordlessLoginSMSTemplateVars)
 
-from ..thirdparty.types import ThirdPartyInfo, ThirdPartyEmailTemplateVars
+from ..thirdparty.types import ThirdPartyEmailTemplateVars, ThirdPartyInfo
 
 
 class User:
@@ -43,10 +47,12 @@ ThirdPartyPasswordlessSMSTemplateVars = PasswordlessLoginSMSTemplateVars
 
 # Export:
 EmailTemplateVars = ThirdPartyPasswordlessEmailTemplateVars
+VerificationEmailTemplateVars = EmailVerificationEmailTemplateVars
+PasswordlessEmailTemplateVars = PasswordlessLoginEmailTemplateVars
 SMSTemplateVars = ThirdPartyPasswordlessSMSTemplateVars
+
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
 TwilioOverrideInput = TwilioServiceInterface[SMSTemplateVars]
-
 
 EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 SMSDeliveryOverrideInput = SMSDeliveryInterface[SMSTemplateVars]
