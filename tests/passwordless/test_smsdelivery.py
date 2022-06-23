@@ -177,16 +177,16 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error_for_
     with respx_mock(assert_all_mocked=False) as mocker:
         mocker.route(host="localhost").pass_through()
         mocked_route = mocker.post(SUPERTOKENS_SMS_SERVICE_URL).mock(side_effect=api_side_effect)
-        resp = sign_in_up_request_phone(driver_config_client, "+919909909998", True)
+        try:
+            sign_in_up_request_phone(driver_config_client, "+919909909998", True)
+        except Exception as e:
+            assert str(e) == "CUSTOM_ERR"
+            assert mocked_route.called
 
-        assert resp.status_code == 200
-        assert resp.json() == {'status': 'GENERAL_ERROR', 'message': 'CUSTOM_ERR'}
-        assert mocked_route.called
-
-        assert app_name == "ST"
-        assert phone == "+919909909998"
-        assert all([url_with_link_code, user_input_code, code_lifetime])
-        assert code_lifetime > 0
+            assert app_name == "ST"
+            assert phone == "+919909909998"
+            assert all([url_with_link_code, user_input_code, code_lifetime])
+            assert code_lifetime > 0
 
 
 @mark.asyncio

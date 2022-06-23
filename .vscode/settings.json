@@ -4,5 +4,7 @@
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
     },
-    "python.analysis.typeCheckingMode": "strict"
+    "python.analysis.typeCheckingMode": "strict",
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }

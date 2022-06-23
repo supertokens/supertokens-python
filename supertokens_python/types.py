@@ -42,3 +42,15 @@ class APIResponse(ABC):
     @abstractmethod
     def to_json(self) -> Dict[str, Any]:
         pass
+
+
+class GeneralErrorResponse(APIResponse):
+    def __init__(self, message: str):
+        self.status = 'GENERAL_ERROR'
+        self.message = message
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            'status': self.status,
+            'message': self.message
+        }
