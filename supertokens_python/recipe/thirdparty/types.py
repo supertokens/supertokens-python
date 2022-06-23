@@ -18,8 +18,7 @@ from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryInterface, SMTPServiceInterface)
-from supertokens_python.recipe.emailverification.types import \
-    VerificationEmailTemplateVars
+from supertokens_python.recipe.emailverification import types as ev_types
 
 
 class ThirdPartyInfo:
@@ -75,7 +74,7 @@ class UsersResponse:
         self.next_pagination_token = next_pagination_token
 
 
-ThirdPartyEmailTemplateVars = VerificationEmailTemplateVars
+ThirdPartyEmailTemplateVars = ev_types.VerificationEmailTemplateVars
 
 
 class ThirdPartyIngredients:
@@ -87,7 +86,7 @@ class ThirdPartyIngredients:
 
 # Export:
 EmailTemplateVars = ThirdPartyEmailTemplateVars
-_ = VerificationEmailTemplateVars
+VerificationEmailTemplateVars = ev_types.VerificationEmailTemplateVars
 
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
 

@@ -26,7 +26,7 @@ class User:
         self.email = email
 
 
-class TypeEmailVerificationEmailDeliveryInputUser:
+class VerificationEmailTemplateVarsUser:
     def __init__(self, user_id: str, email: str):
         self.id = user_id
         self.email = email
@@ -35,7 +35,7 @@ class TypeEmailVerificationEmailDeliveryInputUser:
 class VerificationEmailTemplateVars:
     def __init__(
         self,
-        user: TypeEmailVerificationEmailDeliveryInputUser,
+        user: VerificationEmailTemplateVarsUser,
         email_verify_link: str,
         user_context: Dict[str, Any],
     ) -> None:

@@ -15,7 +15,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Union
 
-from .emaildelivery.services import SMTPService
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.recipe.emailpassword.types import \
@@ -23,6 +22,7 @@ from supertokens_python.recipe.emailpassword.types import \
 
 from . import exceptions as ex
 from . import utils
+from .emaildelivery import services as emaildelivery_services
 from .recipe import EmailPasswordRecipe
 
 exceptions = ex
@@ -31,7 +31,7 @@ InputResetPasswordUsingTokenFeature = utils.InputResetPasswordUsingTokenFeature
 InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputSignUpFeature = utils.InputSignUpFeature
 InputFormField = utils.InputFormField
-_ = SMTPService
+SMTPService = emaildelivery_services.SMTPService
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo

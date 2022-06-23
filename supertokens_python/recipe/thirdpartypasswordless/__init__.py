@@ -24,11 +24,11 @@ from typing_extensions import Literal
 from .. import passwordless, thirdparty
 from . import exceptions as ex
 from . import utils
+from .emaildelivery import services as emaildelivery_services
 from .recipe import ThirdPartyPasswordlessRecipe
+from .smsdelivery import services as smsdelivery_services
 from .types import (ThirdPartyPasswordlessEmailTemplateVars,
                     ThirdPartyPasswordlessSMSTemplateVars)
-from .emaildelivery.services import SMTPService
-from .smsdelivery.services import TwilioService, SuperTokensSMSService
 
 InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputOverrideConfig = utils.InputOverrideConfig
@@ -44,9 +44,9 @@ GoogleWorkspaces = thirdparty.GoogleWorkspaces
 ContactPhoneOnlyConfig = passwordless.ContactPhoneOnlyConfig
 ContactEmailOnlyConfig = passwordless.ContactEmailOnlyConfig
 ContactEmailOrPhoneConfig = passwordless.ContactEmailOrPhoneConfig
-_ = SMTPService
-_ = TwilioService
-_ = SuperTokensSMSService
+SMTPService = emaildelivery_services.SMTPService
+TwilioService = smsdelivery_services.TwilioService
+SuperTokensSMSService = smsdelivery_services.SuperTokensSMSService
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo

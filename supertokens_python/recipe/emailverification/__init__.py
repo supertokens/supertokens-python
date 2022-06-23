@@ -16,14 +16,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 
 from . import exceptions as ex
-from .recipe import EmailVerificationRecipe
 from . import utils
-from .emaildelivery.services import SMTPService
+from .emaildelivery import services as emaildelivery_services
+from .recipe import EmailVerificationRecipe
 
 InputOverrideConfig = utils.OverrideConfig
 ParentRecipeEmailVerificationConfig = utils.ParentRecipeEmailVerificationConfig
 exception = ex
-_ = SMTPService
+SMTPService = emaildelivery_services.SMTPService
 
 
 if TYPE_CHECKING:

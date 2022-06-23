@@ -21,9 +21,9 @@ from supertokens_python.ingredients.emaildelivery.types import \
 
 from . import exceptions as ex
 from . import providers, utils
+from .emaildelivery import services as emaildelivery_services
 from .recipe import ThirdPartyRecipe
 from .types import ThirdPartyEmailTemplateVars
-from .emaildelivery.services import SMTPService
 
 InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputOverrideConfig = utils.InputOverrideConfig
@@ -35,7 +35,7 @@ Github = providers.Github
 Google = providers.Google
 GoogleWorkspaces = providers.GoogleWorkspaces
 exceptions = ex
-_ = SMTPService
+SMTPService = emaildelivery_services.SMTPService
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo

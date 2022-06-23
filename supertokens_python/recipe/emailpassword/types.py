@@ -17,8 +17,7 @@ from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryInterface, SMTPServiceInterface)
-from supertokens_python.recipe.emailverification.types import \
-    VerificationEmailTemplateVars
+from supertokens_python.recipe.emailverification import types as ev_types
 
 
 class User:
@@ -66,7 +65,7 @@ class NormalisedFormField:
 _T = TypeVar('_T')
 
 
-class TypeEmailPasswordPasswordResetEmailDeliveryInputUser:
+class PasswordResetEmailTemplateVarsUser:
     def __init__(self, user_id: str, email: str):
         self.id = user_id
         self.email = email
@@ -75,7 +74,7 @@ class TypeEmailPasswordPasswordResetEmailDeliveryInputUser:
 class PasswordResetEmailTemplateVars:
     def __init__(
         self,
-        user: TypeEmailPasswordPasswordResetEmailDeliveryInputUser,
+        user: PasswordResetEmailTemplateVarsUser,
         password_reset_link: str,
     ) -> None:
         self.user = user
@@ -84,13 +83,13 @@ class PasswordResetEmailTemplateVars:
 
 EmailPasswordEmailTemplateVars = Union[
     PasswordResetEmailTemplateVars,
-    VerificationEmailTemplateVars
+    ev_types.VerificationEmailTemplateVars
 ]
 
 # Export:
 EmailTemplateVars = EmailPasswordEmailTemplateVars
-_ = PasswordResetEmailTemplateVars
-_ = VerificationEmailTemplateVars
+# PasswordResetEmailTemplateVars (Already exported because it's defined in the same)
+VerificationEmailTemplateVars = ev_types.VerificationEmailTemplateVars
 
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
 
