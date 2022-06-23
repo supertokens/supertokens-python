@@ -15,7 +15,10 @@ from typing import Awaitable, Callable, List, TypeVar, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
-from supertokens_python.recipe.emailverification.types import VerificationEmailTemplateVars
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryInterface, SMTPServiceInterface)
+from supertokens_python.recipe.emailverification.types import \
+    VerificationEmailTemplateVars
 
 
 class User:
@@ -86,6 +89,12 @@ EmailPasswordEmailTemplateVars = Union[
 
 # Export:
 EmailTemplateVars = EmailPasswordEmailTemplateVars
+_ = PasswordResetEmailTemplateVars
+_ = VerificationEmailTemplateVars
+
+SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
+
+EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 
 
 class EmailPasswordIngredients:

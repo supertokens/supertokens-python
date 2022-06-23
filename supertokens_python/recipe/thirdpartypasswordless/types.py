@@ -20,6 +20,8 @@ from supertokens_python.recipe.passwordless.types import (
     PasswordlessLoginEmailTemplateVars, PasswordlessLoginSMSTemplateVars)
 
 from ..thirdparty.types import ThirdPartyInfo, ThirdPartyEmailTemplateVars, VerificationEmailTemplateVars
+from ...ingredients.emaildelivery.types import SMTPServiceInterface, EmailDeliveryInterface
+from ...ingredients.smsdelivery.types import TwilioServiceInterface, SMSDeliveryInterface
 
 
 class User:
@@ -54,3 +56,11 @@ class ThirdPartyPasswordlessIngredients:
 EmailTemplateVars = ThirdPartyPasswordlessEmailTemplateVars
 SMSTemplateVars = ThirdPartyPasswordlessSMSTemplateVars
 _ = VerificationEmailTemplateVars
+_ = PasswordlessLoginEmailTemplateVars
+_ = PasswordlessLoginSMSTemplateVars
+
+SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
+TwilioOverrideInput = TwilioServiceInterface[SMSTemplateVars]
+
+EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
+SMSDeliveryOverrideInput = SMSDeliveryInterface[SMSTemplateVars]

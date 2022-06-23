@@ -17,6 +17,7 @@ from typing import Union, Dict, Any
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
+from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface, EmailDeliveryInterface
 
 
 class User:
@@ -45,6 +46,10 @@ class VerificationEmailTemplateVars:
 
 # Export:
 EmailTemplateVars = VerificationEmailTemplateVars
+
+SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
+
+EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 
 
 class EmailVerificationIngredients:

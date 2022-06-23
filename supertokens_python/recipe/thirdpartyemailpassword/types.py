@@ -14,6 +14,8 @@
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
+from supertokens_python.ingredients.emaildelivery.types import \
+    SMTPServiceInterface, EmailDeliveryInterface
 from typing import Union
 
 from supertokens_python.recipe.emailpassword.types import \
@@ -45,3 +47,7 @@ class ThirdPartyEmailPasswordIngredients:
 EmailTemplateVars = ThirdPartyEmailPasswordEmailTemplateVars
 _ = VerificationEmailTemplateVars
 _ = PasswordResetEmailTemplateVars
+
+SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
+
+EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
