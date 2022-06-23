@@ -12,7 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from .smtp import EmailDeliverySMTPConfig, SMTPService
+from .smtp import SMTPService
+from supertokens_python.ingredients.emaildelivery.types import EmailDeliverySMTPConfig
 
 _ = EmailDeliverySMTPConfig
 _ = SMTPService

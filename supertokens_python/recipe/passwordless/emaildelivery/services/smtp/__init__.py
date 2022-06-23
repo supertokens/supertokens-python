@@ -17,9 +17,9 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    EmailDeliverySMTPConfig, ServiceInterface, Transporter)
+    Transporter)
 from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface
+    EmailDeliveryInterface, SMTPServiceInterface, EmailDeliverySMTPConfig
 from supertokens_python.recipe.passwordless.types import \
     TypePasswordlessEmailDeliveryInput
 
@@ -27,7 +27,7 @@ from .service_implementation import ServiceImplementation
 
 
 class SMTPService(EmailDeliveryInterface[TypePasswordlessEmailDeliveryInput]):
-    service_implementation: ServiceInterface[TypePasswordlessEmailDeliveryInput]
+    service_implementation: SMTPServiceInterface[TypePasswordlessEmailDeliveryInput]
 
     def __init__(self, config: EmailDeliverySMTPConfig[TypePasswordlessEmailDeliveryInput]) -> None:
         self.transporter = Transporter(config.smtp_settings)

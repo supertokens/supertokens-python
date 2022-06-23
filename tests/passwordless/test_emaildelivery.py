@@ -23,11 +23,9 @@ from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
-from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    EmailDeliverySMTPConfig, GetContentResult, ServiceInterface,
-    SMTPServiceConfig, SMTPServiceConfigFrom)
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryConfig, EmailDeliveryInterface)
+    EmailDeliveryConfig, EmailDeliveryInterface, SMTPServiceConfigFrom, SMTPServiceConfig, EmailContent,
+    SMTPServiceInterface, EmailDeliverySMTPConfig)
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import passwordless, session
 from supertokens_python.recipe.passwordless.emaildelivery.services.smtp import \
@@ -301,8 +299,8 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
     user_input_code = ""
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
 
-    def smtp_service_override(oi: ServiceInterface[TypePasswordlessEmailDeliveryInput]):
-        async def send_raw_email_override(input_: GetContentResult, _user_context: Dict[str, Any]):
+    def smtp_service_override(oi: SMTPServiceInterface[TypePasswordlessEmailDeliveryInput]):
+        async def send_raw_email_override(input_: EmailContent, _user_context: Dict[str, Any]):
             nonlocal send_raw_email_called, email, user_input_code
             send_raw_email_called = True
 
@@ -312,14 +310,14 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
             email = input_.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypePasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
+        async def get_content_override(input_: TypePasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
 
             user_input_code = input_.user_input_code or ""
             code_lifetime = input_.code_life_time
 
-            return GetContentResult(
+            return EmailContent(
                 body=user_input_code,
                 to_email=input_.email,
                 subject="custom subject",

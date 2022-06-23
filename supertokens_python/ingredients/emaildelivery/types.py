@@ -12,9 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Generic, TypeVar, Union
+from typing import Any, Callable, Dict, Generic, TypeVar, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from supertokens_python.ingredients.emaildelivery.services.smtp import Transporter
 
 _T = TypeVar('_T')
 
@@ -40,4 +43,58 @@ class EmailDeliveryConfigWithService(ABC, Generic[_T]):
         override: Union[Callable[[EmailDeliveryInterface[_T]], EmailDeliveryInterface[_T]], None] = None,
     ) -> None:
         self.service = service
+        self.override = override
+
+
+class SMTPServiceConfigFrom:
+    def __init__(self, name: str, email: str) -> None:
+        self.name = name
+        self.email = email
+
+
+class SMTPServiceConfig:
+    def __init__(
+        self, host: str,
+        port: int,
+        from_: SMTPServiceConfigFrom,
+        password: Union[str, None] = None,
+        secure: Union[bool, None] = None,
+    ) -> None:
+        self.host = host
+        self.from_ = from_
+        self.password = password
+        self.port = port
+        self.secure = secure
+
+
+class EmailContent:
+    def __init__(self, body: str, subject: str, to_email: str, is_html: bool) -> None:
+        self.body = body
+        self.subject = subject
+        self.to_email = to_email
+        self.is_html = is_html
+
+
+class SMTPServiceInterface(ABC, Generic[_T]):
+    def __init__(self, transporter: Transporter) -> None:
+        self.transporter = transporter
+
+    @abstractmethod
+    async def send_raw_email(self,
+                             input_: EmailContent,
+                             user_context: Dict[str, Any]
+                             ) -> None:
+        pass
+
+    @abstractmethod
+    async def get_content(self, input_: _T, user_context: Dict[str, Any]) -> EmailContent:
+        pass
+
+
+class EmailDeliverySMTPConfig(Generic[_T]):
+    def __init__(self,
+                 smtp_settings: SMTPServiceConfig,
+                 override: Union[Callable[[SMTPServiceInterface[_T]], SMTPServiceInterface[_T]], None] = None
+                 ) -> None:
+        self.smtp_settings = smtp_settings
         self.override = override

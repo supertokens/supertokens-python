@@ -14,18 +14,17 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    GetContentResult, ServiceInterface)
+from supertokens_python.ingredients.emaildelivery.types import EmailContent, SMTPServiceInterface
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp.email_verify import \
     get_email_verify_email_content
 from supertokens_python.recipe.emailverification.interfaces import \
     TypeEmailVerificationEmailDeliveryInput
 
 
-class ServiceImplementation(ServiceInterface[TypeEmailVerificationEmailDeliveryInput]):
-    async def send_raw_email(self, input_: GetContentResult, user_context: Dict[str, Any]) -> None:
+class ServiceImplementation(SMTPServiceInterface[TypeEmailVerificationEmailDeliveryInput]):
+    async def send_raw_email(self, input_: EmailContent, user_context: Dict[str, Any]) -> None:
         await self.transporter.send_email(input_, user_context)
 
-    async def get_content(self, input_: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
+    async def get_content(self, input_: TypeEmailVerificationEmailDeliveryInput, user_context: Dict[str, Any]) -> EmailContent:
         _ = user_context
         return get_email_verify_email_content(input_)

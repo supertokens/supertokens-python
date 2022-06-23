@@ -15,9 +15,9 @@
 from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    EmailDeliverySMTPConfig, Transporter)
+    Transporter)
 from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface
+    EmailDeliveryInterface, EmailDeliverySMTPConfig
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import \
     SMTPService as EmailVerificationSMTPService
 from supertokens_python.recipe.emailverification.interfaces import \

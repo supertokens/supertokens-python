@@ -23,11 +23,9 @@ from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
-from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    EmailDeliverySMTPConfig, GetContentResult, ServiceInterface,
-    SMTPServiceConfig, SMTPServiceConfigFrom)
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryConfig, EmailDeliveryInterface)
+    EmailDeliveryConfig, EmailDeliveryInterface, SMTPServiceConfigFrom, SMTPServiceConfig, EmailContent,
+    SMTPServiceInterface, EmailDeliverySMTPConfig)
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import (passwordless, session,
                                        thirdpartypasswordless)
@@ -291,8 +289,8 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     email_verify_url = ""
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
 
-    def smtp_service_override(oi: ServiceInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
-        async def send_raw_email_override(input_: GetContentResult, _user_context: Dict[str, Any]):
+    def smtp_service_override(oi: SMTPServiceInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
+        async def send_raw_email_override(input_: EmailContent, _user_context: Dict[str, Any]):
             nonlocal send_raw_email_called, email
             send_raw_email_called = True
 
@@ -302,14 +300,14 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
             email = input_.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
+        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
             nonlocal get_content_called, email_verify_url
             get_content_called = True
 
             assert isinstance(input_, TypeThirdPartyEmailDeliveryInput)
             email_verify_url = input_.email_verify_link
 
-            return GetContentResult(
+            return EmailContent(
                 body=email_verify_url,
                 to_email=input_.user.email,
                 subject="custom subject",
@@ -397,18 +395,18 @@ async def test_email_verify_for_pless_user_no_callback():
     "Email verify: test pless user shouldn't trigger callback"
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
 
-    def smtp_service_override(oi: ServiceInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
-        async def send_raw_email_override(_input: GetContentResult, _user_context: Dict[str, Any]):
+    def smtp_service_override(oi: SMTPServiceInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
+        async def send_raw_email_override(_input: EmailContent, _user_context: Dict[str, Any]):
             nonlocal send_raw_email_called
             send_raw_email_called = True
 
-        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
+        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
             nonlocal get_content_called
             get_content_called = True
 
             assert isinstance(input_, TypePasswordlessEmailDeliveryInput)
 
-            return GetContentResult(
+            return EmailContent(
                 body="Custom body",
                 to_email=input_.email,  # type: ignore
                 subject="custom subject",
@@ -715,8 +713,8 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
     user_input_code = ""
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
 
-    def smtp_service_override(oi: ServiceInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
-        async def send_raw_email_override(input_: GetContentResult, _user_context: Dict[str, Any]):
+    def smtp_service_override(oi: SMTPServiceInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
+        async def send_raw_email_override(input_: EmailContent, _user_context: Dict[str, Any]):
             nonlocal send_raw_email_called, email, user_input_code
             send_raw_email_called = True
 
@@ -726,7 +724,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
             email = input_.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
+        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
 
@@ -734,7 +732,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
             user_input_code = input_.user_input_code or ""
             code_lifetime = input_.code_life_time
 
-            return GetContentResult(
+            return EmailContent(
                 body=user_input_code,
                 to_email=input_.email,
                 subject="custom subject",

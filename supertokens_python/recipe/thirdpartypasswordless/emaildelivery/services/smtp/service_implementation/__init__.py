@@ -15,7 +15,8 @@
 from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    GetContentResult, ServiceInterface, Transporter)
+    Transporter)
+from supertokens_python.ingredients.emaildelivery.types import EmailContent, SMTPServiceInterface
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp.service_implementation import \
     ServiceImplementation as EVServiceImplementation
 from supertokens_python.recipe.emailverification.interfaces import \
@@ -31,7 +32,7 @@ from .passwordless_implementation import \
     ServiceImplementation as DerivedPlessServiceImplementation
 
 
-class ServiceImplementation(ServiceInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
+class ServiceImplementation(SMTPServiceInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
     def __init__(self, transporter: Transporter) -> None:
         super().__init__(transporter)
 
@@ -53,10 +54,10 @@ class ServiceImplementation(ServiceInterface[TypeThirdPartyPasswordlessEmailDeli
         pless_service_impl.send_raw_email = derived_pless_service_implementation.send_raw_email
         pless_service_impl.get_content = derived_pless_service_implementation.get_content
 
-    async def send_raw_email(self, input_: GetContentResult, user_context: Dict[str, Any]) -> None:
+    async def send_raw_email(self, input_: EmailContent, user_context: Dict[str, Any]) -> None:
         await self.transporter.send_email(input_, user_context)
 
-    async def get_content(self, input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
+    async def get_content(self, input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> EmailContent:
         if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
             return await self.ev_get_content(input_, user_context)
 

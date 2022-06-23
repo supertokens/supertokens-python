@@ -14,10 +14,8 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.services.smtp import \
-    EmailDeliverySMTPConfig
 from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface
+    EmailDeliveryInterface, EmailDeliverySMTPConfig
 from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp import \
     SMTPService as EmailPasswordSMTPService
 from supertokens_python.recipe.emailpassword.types import \
