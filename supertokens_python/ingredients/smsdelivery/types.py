@@ -44,7 +44,7 @@ class SMSDeliveryConfigWithService(ABC, Generic[_T]):
         self.override = override
 
 
-class TwilioServiceConfig:
+class TwilioSettings:
     def __init__(self,
                  account_sid: str,
                  auth_token: str,
@@ -91,7 +91,7 @@ class TwilioServiceInterface(ABC, Generic[_T]):
 
 class SMSDeliveryTwilioConfig(Generic[_T]):
     def __init__(self,
-                 twilio_settings: TwilioServiceConfig,
+                 twilio_settings: TwilioSettings,
                  override: Union[Callable[[TwilioServiceInterface[_T]], TwilioServiceInterface[_T]], None] = None
                  ) -> None:
         self.twilio_settings = twilio_settings

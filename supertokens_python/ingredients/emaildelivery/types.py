@@ -52,7 +52,7 @@ class SMTPServiceConfigFrom:
         self.email = email
 
 
-class SMTPServiceConfig:
+class SMTPSettings:
     def __init__(
         self, host: str,
         port: int,
@@ -93,7 +93,7 @@ class SMTPServiceInterface(ABC, Generic[_T]):
 
 class EmailDeliverySMTPConfig(Generic[_T]):
     def __init__(self,
-                 smtp_settings: SMTPServiceConfig,
+                 smtp_settings: SMTPSettings,
                  override: Union[Callable[[SMTPServiceInterface[_T]], SMTPServiceInterface[_T]], None] = None
                  ) -> None:
         self.smtp_settings = smtp_settings

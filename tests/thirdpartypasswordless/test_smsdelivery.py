@@ -28,7 +28,7 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.smsdelivery.services.supertokens import \
     SUPERTOKENS_SMS_SERVICE_URL
 from supertokens_python.ingredients.smsdelivery.types import (
-    SMSDeliveryConfig, SMSDeliveryInterface, TwilioServiceConfig, SMSContent, TwilioServiceInterface,
+    SMSDeliveryConfig, SMSDeliveryInterface, TwilioSettings, SMSContent, TwilioServiceInterface,
     SMSDeliveryTwilioConfig)
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import (passwordless, session,
@@ -348,7 +348,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
 
     twilio_sms_delivery_service = TwilioService(
         config=SMSDeliveryTwilioConfig(
-            twilio_settings=TwilioServiceConfig(
+            twilio_settings=TwilioSettings(
                 account_sid="ACTWILIO_ACCOUNT_SID",
                 auth_token="test-token",
                 from_="+919909909999",

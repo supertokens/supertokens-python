@@ -19,14 +19,14 @@ from typing import Any, Dict, TypeVar
 
 import aiosmtplib
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailContent, SMTPServiceConfig)
+    EmailContent, SMTPSettings)
 from supertokens_python.logger import log_debug_message
 
 _T = TypeVar('_T')
 
 
 class Transporter:
-    def __init__(self, smtp_settings: SMTPServiceConfig) -> None:
+    def __init__(self, smtp_settings: SMTPSettings) -> None:
         self.smtp_settings = smtp_settings
 
     async def _connect(self):
