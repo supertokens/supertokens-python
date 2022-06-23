@@ -35,7 +35,7 @@ class SMTPService(EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliver
         self.ep_smtp_service = EmailPasswordSMTPService(ev_config)
 
     async def send_email(self,
-                         input_: TypeThirdPartyEmailPasswordEmailDeliveryInput,
+                         template_vars: TypeThirdPartyEmailPasswordEmailDeliveryInput,
                          user_context: Dict[str, Any]
                          ) -> None:
-        await self.ep_smtp_service.send_email(input_, user_context)
+        await self.ep_smtp_service.send_email(template_vars, user_context)

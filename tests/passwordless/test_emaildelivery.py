@@ -234,14 +234,14 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
     def email_delivery_override(oi: EmailDeliveryInterface[TypePasswordlessEmailDeliveryInput]):
         oi_send_email = oi.send_email
 
-        async def send_email(input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
+        async def send_email(template_vars: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
             nonlocal email, url_with_link_code, user_input_code, code_lifetime
-            email = input_.email
-            url_with_link_code = input_.url_with_link_code
-            user_input_code = input_.user_input_code
-            code_lifetime = input_.code_life_time
+            email = template_vars.email
+            url_with_link_code = template_vars.url_with_link_code
+            user_input_code = template_vars.user_input_code
+            code_lifetime = template_vars.code_life_time
 
-            await oi_send_email(input_, user_context)
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email
         return oi
@@ -345,10 +345,10 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
     def email_delivery_override(oi: EmailDeliveryInterface[TypePasswordlessEmailDeliveryInput]) -> EmailDeliveryInterface[TypePasswordlessEmailDeliveryInput]:
         oi_send_email = oi.send_email
 
-        async def send_email_override(input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
+        async def send_email_override(template_vars: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
             nonlocal outer_override_called
             outer_override_called = True
-            await oi_send_email(input_, user_context)
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email_override
         return oi

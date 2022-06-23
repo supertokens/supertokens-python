@@ -74,8 +74,8 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyPassword
             create_and_send_custom_email
         )
 
-    async def send_email(self, input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
-            await self.ev_backward_compatiblity_service.send_email(input_, user_context)
+    async def send_email(self, template_vars: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+        if isinstance(template_vars, TypeEmailVerificationEmailDeliveryInput):
+            await self.ev_backward_compatiblity_service.send_email(template_vars, user_context)
         else:
-            await self.pless_backward_compatiblity_service.send_email(input_, user_context)
+            await self.pless_backward_compatiblity_service.send_email(template_vars, user_context)

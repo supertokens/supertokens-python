@@ -50,5 +50,5 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailDel
 
         self.ev_backward_compatibility_service = EVBackwardCompatibilityService(app_info, email_verification_feature_config)
 
-    async def send_email(self, input_: TypeThirdPartyEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        await self.ev_backward_compatibility_service.send_email(input_, user_context)
+    async def send_email(self, template_vars: TypeThirdPartyEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+        await self.ev_backward_compatibility_service.send_email(template_vars, user_context)

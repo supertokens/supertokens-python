@@ -73,5 +73,5 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypePasswordlessEmailD
                  ) -> None:
         self.create_and_send_custom_email = create_and_send_custom_email if create_and_send_custom_email is not None else default_create_and_send_custom_email(app_info)
 
-    async def send_email(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        await self.create_and_send_custom_email(input_, user_context)  # Note: intentionally not using try-except (unlike other recipes)
+    async def send_email(self, template_vars: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+        await self.create_and_send_custom_email(template_vars, user_context)  # Note: intentionally not using try-except (unlike other recipes)

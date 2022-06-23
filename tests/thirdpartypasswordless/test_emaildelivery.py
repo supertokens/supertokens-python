@@ -212,12 +212,12 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
     def email_delivery_override(oi: EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
         oi_send_email = oi.send_email
 
-        async def send_email(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
+        async def send_email(template_vars: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
             nonlocal email, email_verify_url
-            assert isinstance(input_, TypeThirdPartyEmailDeliveryInput)
-            email = input_.user.email
-            email_verify_url = input_.email_verify_link
-            await oi_send_email(input_, user_context)
+            assert isinstance(template_vars, TypeThirdPartyEmailDeliveryInput)
+            email = template_vars.user.email
+            email_verify_url = template_vars.email_verify_link
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email
         return oi
@@ -335,10 +335,10 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     def email_delivery_override(oi: EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]) -> EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]:
         oi_send_email = oi.send_email
 
-        async def send_email_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
+        async def send_email_override(template_vars: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
             nonlocal outer_override_called
             outer_override_called = True
-            await oi_send_email(input_, user_context)
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email_override
         return oi
@@ -434,10 +434,10 @@ async def test_email_verify_for_pless_user_no_callback():
     def email_delivery_override(oi: EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]) -> EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]:
         oi_send_email = oi.send_email
 
-        async def send_email_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
+        async def send_email_override(template_vars: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
             nonlocal outer_override_called
             outer_override_called = True
-            await oi_send_email(input_, user_context)
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email_override
         return oi
@@ -647,15 +647,15 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
     def email_delivery_override(oi: EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
         oi_send_email = oi.send_email
 
-        async def send_email(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
+        async def send_email(template_vars: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
             nonlocal email, url_with_link_code, user_input_code, code_lifetime
-            assert isinstance(input_, TypePasswordlessEmailDeliveryInput)
-            email = input_.email
-            url_with_link_code = input_.url_with_link_code
-            user_input_code = input_.user_input_code
-            code_lifetime = input_.code_life_time
+            assert isinstance(template_vars, TypePasswordlessEmailDeliveryInput)
+            email = template_vars.email
+            url_with_link_code = template_vars.url_with_link_code
+            user_input_code = template_vars.user_input_code
+            code_lifetime = template_vars.code_life_time
 
-            await oi_send_email(input_, user_context)
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email
         return oi
@@ -760,10 +760,10 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
     def email_delivery_override(oi: EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]) -> EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]:
         oi_send_email = oi.send_email
 
-        async def send_email_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
+        async def send_email_override(template_vars: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]):
             nonlocal outer_override_called
             outer_override_called = True
-            await oi_send_email(input_, user_context)
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email_override
         return oi
