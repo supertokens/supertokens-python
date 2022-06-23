@@ -300,26 +300,26 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
 
     def smtp_service_override(oi: SMTPServiceInterface[TypePasswordlessEmailDeliveryInput]):
-        async def send_raw_email_override(input_: EmailContent, _user_context: Dict[str, Any]):
+        async def send_raw_email_override(content: EmailContent, _user_context: Dict[str, Any]):
             nonlocal send_raw_email_called, email, user_input_code
             send_raw_email_called = True
 
-            assert input_.body == user_input_code
-            assert input_.subject == "custom subject"
-            assert input_.to_email == "test@example.com"
-            email = input_.to_email
+            assert content.body == user_input_code
+            assert content.subject == "custom subject"
+            assert content.to_email == "test@example.com"
+            email = content.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypePasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
+        async def get_content_override(template_vars: TypePasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
 
-            user_input_code = input_.user_input_code or ""
-            code_lifetime = input_.code_life_time
+            user_input_code = template_vars.user_input_code or ""
+            code_lifetime = template_vars.code_life_time
 
             return EmailContent(
                 body=user_input_code,
-                to_email=input_.email,
+                to_email=template_vars.email,
                 subject="custom subject",
                 is_html=False,
             )

@@ -290,26 +290,26 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
 
     def smtp_service_override(oi: SMTPServiceInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
-        async def send_raw_email_override(input_: EmailContent, _user_context: Dict[str, Any]):
+        async def send_raw_email_override(content: EmailContent, _user_context: Dict[str, Any]):
             nonlocal send_raw_email_called, email
             send_raw_email_called = True
 
-            assert input_.body == email_verify_url
-            assert input_.subject == "custom subject"
-            assert input_.to_email == "test@example.com"
-            email = input_.to_email
+            assert content.body == email_verify_url
+            assert content.subject == "custom subject"
+            assert content.to_email == "test@example.com"
+            email = content.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
+        async def get_content_override(template_vars: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
             nonlocal get_content_called, email_verify_url
             get_content_called = True
 
-            assert isinstance(input_, TypeThirdPartyEmailDeliveryInput)
-            email_verify_url = input_.email_verify_link
+            assert isinstance(template_vars, TypeThirdPartyEmailDeliveryInput)
+            email_verify_url = template_vars.email_verify_link
 
             return EmailContent(
                 body=email_verify_url,
-                to_email=input_.user.email,
+                to_email=template_vars.user.email,
                 subject="custom subject",
                 is_html=False,
             )
@@ -396,19 +396,19 @@ async def test_email_verify_for_pless_user_no_callback():
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
 
     def smtp_service_override(oi: SMTPServiceInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
-        async def send_raw_email_override(_input: EmailContent, _user_context: Dict[str, Any]):
+        async def send_raw_email_override(_content: EmailContent, _user_context: Dict[str, Any]):
             nonlocal send_raw_email_called
             send_raw_email_called = True
 
-        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
+        async def get_content_override(template_vars: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
             nonlocal get_content_called
             get_content_called = True
 
-            assert isinstance(input_, TypePasswordlessEmailDeliveryInput)
+            assert isinstance(template_vars, TypePasswordlessEmailDeliveryInput)
 
             return EmailContent(
                 body="Custom body",
-                to_email=input_.email,  # type: ignore
+                to_email=template_vars.email,  # type: ignore
                 subject="custom subject",
                 is_html=False,
             )
@@ -714,27 +714,27 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
 
     def smtp_service_override(oi: SMTPServiceInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
-        async def send_raw_email_override(input_: EmailContent, _user_context: Dict[str, Any]):
+        async def send_raw_email_override(content: EmailContent, _user_context: Dict[str, Any]):
             nonlocal send_raw_email_called, email, user_input_code
             send_raw_email_called = True
 
-            assert input_.body == user_input_code
-            assert input_.subject == "custom subject"
-            assert input_.to_email == "test@example.com"
-            email = input_.to_email
+            assert content.body == user_input_code
+            assert content.subject == "custom subject"
+            assert content.to_email == "test@example.com"
+            email = content.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
+        async def get_content_override(template_vars: TypeThirdPartyPasswordlessEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
 
-            assert isinstance(input_, TypePasswordlessEmailDeliveryInput)
-            user_input_code = input_.user_input_code or ""
-            code_lifetime = input_.code_life_time
+            assert isinstance(template_vars, TypePasswordlessEmailDeliveryInput)
+            user_input_code = template_vars.user_input_code or ""
+            code_lifetime = template_vars.code_life_time
 
             return EmailContent(
                 body=user_input_code,
-                to_email=input_.email,
+                to_email=template_vars.email,
                 subject="custom subject",
                 is_html=False,
             )

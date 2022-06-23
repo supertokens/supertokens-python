@@ -271,26 +271,26 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
 
     def smtp_service_override(oi: SMTPServiceInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]):
-        async def send_raw_email_override(input_: EmailContent, _user_context: Dict[str, Any]):
+        async def send_raw_email_override(content: EmailContent, _user_context: Dict[str, Any]):
             nonlocal send_raw_email_called, email
             send_raw_email_called = True
 
-            assert input_.body == password_reset_url
-            assert input_.subject == "custom subject"
-            assert input_.to_email == "test@example.com"
-            email = input_.to_email
+            assert content.body == password_reset_url
+            assert content.subject == "custom subject"
+            assert content.to_email == "test@example.com"
+            email = content.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
+        async def get_content_override(template_vars: TypeThirdPartyEmailPasswordEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
             nonlocal get_content_called, password_reset_url
             get_content_called = True
 
-            assert isinstance(input_, TypeEmailPasswordPasswordResetEmailDeliveryInput)
-            password_reset_url = input_.password_reset_link
+            assert isinstance(template_vars, TypeEmailPasswordPasswordResetEmailDeliveryInput)
+            password_reset_url = template_vars.password_reset_link
 
             return EmailContent(
-                body=input_.password_reset_link,
-                to_email=input_.user.email,
+                body=template_vars.password_reset_link,
+                to_email=template_vars.user.email,
                 subject="custom subject",
                 is_html=False,
             )
@@ -644,26 +644,26 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
 
     def smtp_service_override(oi: SMTPServiceInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]):
-        async def send_raw_email_override(input_: EmailContent, _user_context: Dict[str, Any]):
+        async def send_raw_email_override(content: EmailContent, _user_context: Dict[str, Any]):
             nonlocal send_raw_email_called, email
             send_raw_email_called = True
 
-            assert input_.body == email_verify_url
-            assert input_.subject == "custom subject"
-            assert input_.to_email == "test@example.com"
-            email = input_.to_email
+            assert content.body == email_verify_url
+            assert content.subject == "custom subject"
+            assert content.to_email == "test@example.com"
+            email = content.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
+        async def get_content_override(template_vars: TypeThirdPartyEmailPasswordEmailDeliveryInput, _user_context: Dict[str, Any]) -> EmailContent:
             nonlocal get_content_called, email_verify_url
             get_content_called = True
 
-            assert isinstance(input_, TypeEmailVerificationEmailDeliveryInput)
-            email_verify_url = input_.email_verify_link
+            assert isinstance(template_vars, TypeEmailVerificationEmailDeliveryInput)
+            email_verify_url = template_vars.email_verify_link
 
             return EmailContent(
-                body=input_.email_verify_link,
-                to_email=input_.user.email,
+                body=template_vars.email_verify_link,
+                to_email=template_vars.user.email,
                 subject="custom subject",
                 is_html=False,
             )

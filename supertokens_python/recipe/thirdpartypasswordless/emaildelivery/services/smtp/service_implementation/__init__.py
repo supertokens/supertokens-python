@@ -54,11 +54,11 @@ class ServiceImplementation(SMTPServiceInterface[TypeThirdPartyPasswordlessEmail
         pless_service_impl.send_raw_email = derived_pless_service_implementation.send_raw_email
         pless_service_impl.get_content = derived_pless_service_implementation.get_content
 
-    async def send_raw_email(self, input_: EmailContent, user_context: Dict[str, Any]) -> None:
-        await self.transporter.send_email(input_, user_context)
+    async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -> None:
+        await self.transporter.send_email(content, user_context)
 
-    async def get_content(self, input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> EmailContent:
-        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
-            return await self.ev_get_content(input_, user_context)
+    async def get_content(self, template_vars: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> EmailContent:
+        if isinstance(template_vars, TypeEmailVerificationEmailDeliveryInput):
+            return await self.ev_get_content(template_vars, user_context)
 
-        return await self.pless_get_content(input_, user_context)
+        return await self.pless_get_content(template_vars, user_context)

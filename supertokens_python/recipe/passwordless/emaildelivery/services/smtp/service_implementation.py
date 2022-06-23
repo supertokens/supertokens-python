@@ -24,9 +24,9 @@ from supertokens_python.recipe.passwordless.types import \
 
 
 class ServiceImplementation(SMTPServiceInterface[TypePasswordlessEmailDeliveryInput]):
-    async def send_raw_email(self, input_: EmailContent, user_context: Dict[str, Any]) -> None:
-        await self.transporter.send_email(input_, user_context)
+    async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -> None:
+        await self.transporter.send_email(content, user_context)
 
-    async def get_content(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> EmailContent:
+    async def get_content(self, template_vars: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> EmailContent:
         _ = user_context
-        return pless_email_content(input_)
+        return pless_email_content(template_vars)

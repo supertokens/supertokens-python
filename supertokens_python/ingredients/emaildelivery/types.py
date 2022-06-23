@@ -81,13 +81,13 @@ class SMTPServiceInterface(ABC, Generic[_T]):
 
     @abstractmethod
     async def send_raw_email(self,
-                             input_: EmailContent,
+                             content: EmailContent,
                              user_context: Dict[str, Any]
                              ) -> None:
         pass
 
     @abstractmethod
-    async def get_content(self, input_: _T, user_context: Dict[str, Any]) -> EmailContent:
+    async def get_content(self, template_vars: _T, user_context: Dict[str, Any]) -> EmailContent:
         pass
 
 
