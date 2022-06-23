@@ -25,8 +25,7 @@ from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
 from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryConfig, SMTPServiceConfigFrom, SMTPSettings, EmailContent, SMTPServiceInterface, \
-    EmailDeliverySMTPConfig
+    EmailDeliveryConfig, SMTPServiceConfigFrom, SMTPSettings, EmailContent, SMTPServiceInterface
 from supertokens_python.recipe import session, thirdpartyemailpassword
 from supertokens_python.recipe.emailpassword.types import (
     PasswordResetEmailTemplateVars)
@@ -301,16 +300,14 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
         return oi
 
     email_delivery_service = SMTPService(
-        config=EmailDeliverySMTPConfig(
-            smtp_settings=SMTPSettings(
-                host="",
-                from_=SMTPServiceConfigFrom("", ""),
-                password="",
-                port=465,
-                secure=True,
-            ),
-            override=smtp_service_override,
-        )
+        smtp_settings=SMTPSettings(
+            host="",
+            from_=SMTPServiceConfigFrom("", ""),
+            password="",
+            port=465,
+            secure=True,
+        ),
+        override=smtp_service_override,
     )
 
     def email_delivery_override(oi: EmailDeliveryInterface[ThirdPartyEmailPasswordEmailTemplateVars]) -> EmailDeliveryInterface[ThirdPartyEmailPasswordEmailTemplateVars]:
@@ -674,16 +671,14 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
         return oi
 
     email_delivery_service = SMTPService(
-        config=EmailDeliverySMTPConfig(
-            smtp_settings=SMTPSettings(
-                host="",
-                from_=SMTPServiceConfigFrom("", ""),
-                password="",
-                port=465,
-                secure=True,
-            ),
-            override=smtp_service_override,
-        )
+        smtp_settings=SMTPSettings(
+            host="",
+            from_=SMTPServiceConfigFrom("", ""),
+            password="",
+            port=465,
+            secure=True,
+        ),
+        override=smtp_service_override,
     )
 
     def email_delivery_override(oi: EmailDeliveryInterface[ThirdPartyEmailPasswordEmailTemplateVars]) -> EmailDeliveryInterface[ThirdPartyEmailPasswordEmailTemplateVars]:

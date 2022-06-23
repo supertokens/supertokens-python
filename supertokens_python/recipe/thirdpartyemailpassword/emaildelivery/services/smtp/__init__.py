@@ -12,27 +12,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict
+from typing import Any, Dict, Callable, Union
 
 from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface, EmailDeliverySMTPConfig
+    EmailDeliveryInterface, SMTPSettings
 from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp import \
     SMTPService as EmailPasswordSMTPService
-from supertokens_python.recipe.emailpassword.types import \
-    EmailPasswordEmailTemplateVars
 from supertokens_python.recipe.thirdpartyemailpassword.types import \
-    ThirdPartyEmailPasswordEmailTemplateVars
+    ThirdPartyEmailPasswordEmailTemplateVars, SMTPOverrideInput
 
 
 class SMTPService(EmailDeliveryInterface[ThirdPartyEmailPasswordEmailTemplateVars]):
     ep_smtp_service: EmailPasswordSMTPService
 
-    def __init__(self, config: EmailDeliverySMTPConfig[ThirdPartyEmailPasswordEmailTemplateVars]) -> None:
-        ev_config = EmailDeliverySMTPConfig[EmailPasswordEmailTemplateVars](
-            smtp_settings=config.smtp_settings,
-            override=config.override
-        )
-        self.ep_smtp_service = EmailPasswordSMTPService(ev_config)
+    def __init__(self, smtp_settings: SMTPSettings,
+                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -> None:
+        self.ep_smtp_service = EmailPasswordSMTPService(smtp_settings, override)
 
     async def send_email(self,
                          template_vars: ThirdPartyEmailPasswordEmailTemplateVars,

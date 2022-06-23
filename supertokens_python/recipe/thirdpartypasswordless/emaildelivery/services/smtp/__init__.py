@@ -12,21 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict
+from typing import Any, Dict, Callable, Union
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
     Transporter)
 from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface, EmailDeliverySMTPConfig
+    EmailDeliveryInterface, SMTPSettings
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import \
     SMTPService as EmailVerificationSMTPService
 from supertokens_python.recipe.emailverification.types import VerificationEmailTemplateVars
 from supertokens_python.recipe.passwordless.emaildelivery.services.smtp import \
     SMTPService as PlessSMTPService
-from supertokens_python.recipe.passwordless.types import \
-    PasswordlessLoginEmailTemplateVars
 from supertokens_python.recipe.thirdpartypasswordless.types import \
-    ThirdPartyPasswordlessEmailTemplateVars
+    ThirdPartyPasswordlessEmailTemplateVars, SMTPOverrideInput
 
 from .service_implementation import ServiceImplementation
 from .service_implementation.email_verification_implementation import \
@@ -37,23 +35,22 @@ from .service_implementation.passwordless_implementation import \
 
 class SMTPService(EmailDeliveryInterface[ThirdPartyPasswordlessEmailTemplateVars]):
 
-    def __init__(self, config: EmailDeliverySMTPConfig[ThirdPartyPasswordlessEmailTemplateVars]) -> None:
-        self.transporter = Transporter(config.smtp_settings)
+    def __init__(self, smtp_settings: SMTPSettings,
+                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -> None:
+        self.transporter = Transporter(smtp_settings)
 
         oi = ServiceImplementation(self.transporter)
-        service_implementation = oi if config.override is None else config.override(oi)
+        service_implementation = oi if override is None else override(oi)
 
-        ev_config = EmailDeliverySMTPConfig[VerificationEmailTemplateVars](
-            smtp_settings=config.smtp_settings,
+        self.ev_smtp_service = EmailVerificationSMTPService(
+            smtp_settings=smtp_settings,
             override=lambda _: EmailVerificationServiceImpl(service_implementation)
         )
-        self.ev_smtp_service = EmailVerificationSMTPService(ev_config)
 
-        pless_config = EmailDeliverySMTPConfig[PasswordlessLoginEmailTemplateVars](
-            smtp_settings=config.smtp_settings,
+        self.pless_smtp_service = PlessSMTPService(
+            smtp_settings=smtp_settings,
             override=lambda _: PlessServiceImpl(service_implementation)
         )
-        self.pless_smtp_service = PlessSMTPService(pless_config)
 
     async def send_email(self, template_vars: ThirdPartyPasswordlessEmailTemplateVars, user_context: Dict[str, Any]) -> None:
         if isinstance(template_vars, VerificationEmailTemplateVars):

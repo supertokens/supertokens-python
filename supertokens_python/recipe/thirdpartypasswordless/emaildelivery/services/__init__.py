@@ -13,7 +13,5 @@
 # under the License.
 
 from .smtp import SMTPService
-from supertokens_python.ingredients.emaildelivery.types import EmailDeliverySMTPConfig
 
-_ = EmailDeliverySMTPConfig
 _ = SMTPService

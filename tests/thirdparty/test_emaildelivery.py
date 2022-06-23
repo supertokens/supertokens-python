@@ -25,7 +25,7 @@ from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig, EmailDeliveryInterface, SMTPServiceConfigFrom, SMTPSettings, EmailContent,
-    SMTPServiceInterface, EmailDeliverySMTPConfig)
+    SMTPServiceInterface)
 from supertokens_python.recipe import session, thirdparty
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.recipe_implementation import \
@@ -396,16 +396,14 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
         return oi
 
     email_delivery_service = SMTPService(
-        config=EmailDeliverySMTPConfig(
-            smtp_settings=SMTPSettings(
-                host="",
-                from_=SMTPServiceConfigFrom("", ""),
-                password="",
-                port=465,
-                secure=True,
-            ),
-            override=smtp_service_override,
-        )
+        smtp_settings=SMTPSettings(
+            host="",
+            from_=SMTPServiceConfigFrom("", ""),
+            password="",
+            port=465,
+            secure=True,
+        ),
+        override=smtp_service_override,
     )
 
     def email_delivery_override(oi: EmailDeliveryInterface[ThirdPartyEmailTemplateVars]) -> EmailDeliveryInterface[ThirdPartyEmailTemplateVars]:

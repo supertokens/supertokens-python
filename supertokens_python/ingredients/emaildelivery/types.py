@@ -89,12 +89,3 @@ class SMTPServiceInterface(ABC, Generic[_T]):
     @abstractmethod
     async def get_content(self, template_vars: _T, user_context: Dict[str, Any]) -> EmailContent:
         pass
-
-
-class EmailDeliverySMTPConfig(Generic[_T]):
-    def __init__(self,
-                 smtp_settings: SMTPSettings,
-                 override: Union[Callable[[SMTPServiceInterface[_T]], SMTPServiceInterface[_T]], None] = None
-                 ) -> None:
-        self.smtp_settings = smtp_settings
-        self.override = override

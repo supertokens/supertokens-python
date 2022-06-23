@@ -14,14 +14,14 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Callable, Union
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
     Transporter)
 from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface, SMTPServiceInterface, EmailDeliverySMTPConfig
+    EmailDeliveryInterface, SMTPServiceInterface, SMTPSettings
 from supertokens_python.recipe.passwordless.types import \
-    PasswordlessLoginEmailTemplateVars
+    PasswordlessLoginEmailTemplateVars, SMTPOverrideInput
 
 from .service_implementation import ServiceImplementation
 
@@ -29,10 +29,11 @@ from .service_implementation import ServiceImplementation
 class SMTPService(EmailDeliveryInterface[PasswordlessLoginEmailTemplateVars]):
     service_implementation: SMTPServiceInterface[PasswordlessLoginEmailTemplateVars]
 
-    def __init__(self, config: EmailDeliverySMTPConfig[PasswordlessLoginEmailTemplateVars]) -> None:
-        self.transporter = Transporter(config.smtp_settings)
+    def __init__(self, smtp_settings: SMTPSettings,
+                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -> None:
+        self.transporter = Transporter(smtp_settings)
         oi = ServiceImplementation(self.transporter)
-        self.service_implementation = oi if config.override is None else config.override(oi)
+        self.service_implementation = oi if override is None else override(oi)
 
     async def send_email(self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) -> None:
         content = await self.service_implementation.get_content(template_vars, user_context)
