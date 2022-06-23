@@ -45,7 +45,7 @@ from .api import (handle_apple_redirect_api, handle_authorisation_url_api,
                   handle_sign_in_up_api)
 from .constants import APPLE_REDIRECT_HANDLER, AUTHORISATIONURL, SIGNINUP
 from .exceptions import SuperTokensThirdPartyError
-from .types import ThirdPartyIngredients, TypeThirdPartyEmailDeliveryInput
+from .types import ThirdPartyIngredients, ThirdPartyEmailTemplateVars
 from .utils import (InputEmailVerificationConfig,
                     validate_and_normalise_user_input)
 
@@ -53,7 +53,7 @@ from .utils import (InputEmailVerificationConfig,
 class ThirdPartyRecipe(RecipeModule):
     recipe_id = 'thirdparty'
     __instance = None
-    email_delivery: EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput]
+    email_delivery: EmailDeliveryIngredient[ThirdPartyEmailTemplateVars]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  sign_in_and_up_feature: SignInAndUpFeature,
@@ -61,7 +61,7 @@ class ThirdPartyRecipe(RecipeModule):
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
-                 email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None,
+                 email_delivery: Union[EmailDeliveryConfig[ThirdPartyEmailTemplateVars], None] = None,
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, sign_in_and_up_feature,
@@ -131,7 +131,7 @@ class ThirdPartyRecipe(RecipeModule):
     def init(sign_in_and_up_feature: SignInAndUpFeature,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
              override: Union[InputOverrideConfig, None] = None,
-             email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None
+             email_delivery: Union[EmailDeliveryConfig[ThirdPartyEmailTemplateVars], None] = None
              ):
         def func(app_info: AppInfo):
             if ThirdPartyRecipe.__instance is None:

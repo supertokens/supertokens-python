@@ -19,21 +19,21 @@ from supertokens_python.ingredients.smsdelivery.types import \
 from supertokens_python.recipe.passwordless.smsdelivery.services.backward_compatibility import \
     BackwardCompatibilityService as PlessBackwardCompatibilityService
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessSmsDeliveryInput
+    PasswordlessLoginSMSTemplateVars
 from supertokens_python.supertokens import AppInfo
 
-from ....types import TypeThirdPartyPasswordlessSmsDeliveryInput
+from ....types import ThirdPartyPasswordlessSMSTemplateVars
 
 
-class BackwardCompatibilityService(SMSDeliveryInterface[TypeThirdPartyPasswordlessSmsDeliveryInput]):
+class BackwardCompatibilityService(SMSDeliveryInterface[ThirdPartyPasswordlessSMSTemplateVars]):
     pless_backward_compatibility_service: PlessBackwardCompatibilityService
 
     def __init__(self, app_info: AppInfo,
-                 pless_create_and_send_custom_text_message: Union[Callable[[TypePasswordlessSmsDeliveryInput, Dict[str, Any]], Awaitable[None]], None] = None
+                 pless_create_and_send_custom_text_message: Union[Callable[[PasswordlessLoginSMSTemplateVars, Dict[str, Any]], Awaitable[None]], None] = None
                  ) -> None:
         self.pless_backward_compatibility_service = PlessBackwardCompatibilityService(
             app_info, pless_create_and_send_custom_text_message
         )
 
-    async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
-        await self.pless_backward_compatibility_service.send_sms(input_, user_context)
+    async def send_sms(self, template_vars: ThirdPartyPasswordlessSMSTemplateVars, user_context: Dict[str, Any]) -> None:
+        await self.pless_backward_compatibility_service.send_sms(template_vars, user_context)

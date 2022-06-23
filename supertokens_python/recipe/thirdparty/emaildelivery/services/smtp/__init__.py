@@ -12,23 +12,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict
+from typing import Any, Dict, Callable, Union
 
-from supertokens_python.ingredients.emaildelivery.services.smtp import \
-    EmailDeliverySMTPConfig
 from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface
+    EmailDeliveryInterface, SMTPSettings
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import \
     SMTPService as EmailVerificationSMTPService
 from supertokens_python.recipe.thirdparty.types import \
-    TypeThirdPartyEmailDeliveryInput
+    ThirdPartyEmailTemplateVars, SMTPOverrideInput
 
 
-class SMTPService(EmailDeliveryInterface[TypeThirdPartyEmailDeliveryInput]):
+class SMTPService(EmailDeliveryInterface[ThirdPartyEmailTemplateVars]):
     ev_smtp_service: EmailVerificationSMTPService
 
-    def __init__(self, config: EmailDeliverySMTPConfig[TypeThirdPartyEmailDeliveryInput]) -> None:
-        self.ev_smtp_service = EmailVerificationSMTPService(config)
+    def __init__(self, smtp_settings: SMTPSettings,
+                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -> None:
+        self.ev_smtp_service = EmailVerificationSMTPService(smtp_settings, override)
 
-    async def send_email(self, input_: TypeThirdPartyEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        await self.ev_smtp_service.send_email(input_, user_context)
+    async def send_email(self, template_vars: ThirdPartyEmailTemplateVars, user_context: Dict[str, Any]) -> None:
+        await self.ev_smtp_service.send_email(template_vars, user_context)

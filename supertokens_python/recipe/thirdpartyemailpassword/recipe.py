@@ -23,16 +23,14 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.emailpassword.types import \
     EmailPasswordIngredients
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.recipe.emailverification.types import \
-    EmailVerificationIngredients
+    EmailVerificationIngredients, VerificationEmailTemplateVars
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import (
-    ThirdPartyIngredients, TypeThirdPartyEmailDeliveryInput)
+    ThirdPartyIngredients, ThirdPartyEmailTemplateVars)
 from supertokens_python.recipe.thirdpartyemailpassword.types import (
     ThirdPartyEmailPasswordIngredients,
-    TypeThirdPartyEmailPasswordEmailDeliveryInput)
+    ThirdPartyEmailPasswordEmailTemplateVars)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from ..emailpassword.utils import (InputResetPasswordUsingTokenFeature,
@@ -80,7 +78,7 @@ from .utils import InputOverrideConfig, validate_and_normalise_user_input
 class ThirdPartyEmailPasswordRecipe(RecipeModule):
     recipe_id = 'thirdpartyemailpassword'
     __instance = None
-    email_delivery: EmailDeliveryIngredient[TypeThirdPartyEmailPasswordEmailDeliveryInput]
+    email_delivery: EmailDeliveryIngredient[ThirdPartyEmailPasswordEmailTemplateVars]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  ingredients: ThirdPartyEmailPasswordIngredients,
@@ -92,7 +90,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
                  email_password_recipe: Union[EmailPasswordRecipe, None] = None,
                  third_party_recipe: Union[ThirdPartyRecipe, None] = None,
-                 email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None,
+                 email_delivery: Union[EmailDeliveryConfig[ThirdPartyEmailPasswordEmailTemplateVars], None] = None,
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self,
@@ -126,7 +124,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             self.email_verification_recipe = email_verification_recipe
         else:
             ev_email_delivery_ingredient = cast(
-                EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput], self.email_delivery
+                EmailDeliveryIngredient[VerificationEmailTemplateVars], self.email_delivery
             )
             ev_ingredients = EmailVerificationIngredients(ev_email_delivery_ingredient)
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
@@ -165,7 +163,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                 return get_third_party_interface_impl(self.api_implementation)
 
             self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
-            ingredient = cast(EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput], self.email_delivery)
+            ingredient = cast(EmailDeliveryIngredient[ThirdPartyEmailTemplateVars], self.email_delivery)
             tp_ingredients = ThirdPartyIngredients(ingredient)
             if len(self.config.providers) != 0:
                 self.third_party_recipe = ThirdPartyRecipe(
@@ -242,7 +240,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
              override: Union[InputOverrideConfig, None] = None,
              providers: Union[List[Provider], None] = None,
-             email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None
+             email_delivery: Union[EmailDeliveryConfig[ThirdPartyEmailPasswordEmailTemplateVars], None] = None
              ):
         def func(app_info: AppInfo):
             if ThirdPartyEmailPasswordRecipe.__instance is None:

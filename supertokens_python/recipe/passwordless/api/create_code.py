@@ -16,10 +16,11 @@ from typing import Union
 import phonenumbers  # type: ignore
 from phonenumbers import format_number, parse  # type: ignore
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.passwordless.interfaces import (
-    APIInterface, APIOptions, CreateCodePostGeneralError)
+from supertokens_python.recipe.passwordless.interfaces import (APIInterface,
+                                                               APIOptions)
 from supertokens_python.recipe.passwordless.utils import (
     ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)
+from supertokens_python.types import GeneralErrorResponse
 from supertokens_python.utils import send_200_response
 
 
@@ -62,7 +63,7 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
         validation_error = await api_options.config.contact_config.validate_email_address(email)
         if validation_error is not None:
             api_options.response.set_json_content(
-                CreateCodePostGeneralError(validation_error).to_json())
+                GeneralErrorResponse(validation_error).to_json())
             return api_options.response
 
     if phone_number is not None and (
@@ -71,7 +72,7 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
         validation_error = await api_options.config.contact_config.validate_phone_number(phone_number)
         if validation_error is not None:
             api_options.response.set_json_content(
-                CreateCodePostGeneralError(validation_error).to_json())
+                GeneralErrorResponse(validation_error).to_json())
             return api_options.response
         try:
             phone_number_formatted: str = format_number(

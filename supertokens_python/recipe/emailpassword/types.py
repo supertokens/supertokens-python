@@ -15,8 +15,9 @@ from typing import Awaitable, Callable, List, TypeVar, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryInterface, SMTPServiceInterface)
+from supertokens_python.recipe.emailverification import types as ev_types
 
 
 class User:
@@ -64,30 +65,39 @@ class NormalisedFormField:
 _T = TypeVar('_T')
 
 
-class TypeEmailPasswordPasswordResetEmailDeliveryInputUser:
+class PasswordResetEmailTemplateVarsUser:
     def __init__(self, user_id: str, email: str):
         self.id = user_id
         self.email = email
 
 
-class TypeEmailPasswordPasswordResetEmailDeliveryInput:
+class PasswordResetEmailTemplateVars:
     def __init__(
         self,
-        user: TypeEmailPasswordPasswordResetEmailDeliveryInputUser,
+        user: PasswordResetEmailTemplateVarsUser,
         password_reset_link: str,
     ) -> None:
         self.user = user
         self.password_reset_link = password_reset_link
 
 
-TypeEmailPasswordEmailDeliveryInput = Union[
-    TypeEmailPasswordPasswordResetEmailDeliveryInput,
-    TypeEmailVerificationEmailDeliveryInput
+EmailPasswordEmailTemplateVars = Union[
+    PasswordResetEmailTemplateVars,
+    ev_types.VerificationEmailTemplateVars
 ]
+
+# Export:
+EmailTemplateVars = EmailPasswordEmailTemplateVars
+# PasswordResetEmailTemplateVars (Already exported because it's defined in the same)
+VerificationEmailTemplateVars = ev_types.VerificationEmailTemplateVars
+
+SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
+
+EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 
 
 class EmailPasswordIngredients:
     def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput], None] = None
+                 email_delivery: Union[EmailDeliveryIngredient[EmailPasswordEmailTemplateVars], None] = None
                  ) -> None:
         self.email_delivery = email_delivery

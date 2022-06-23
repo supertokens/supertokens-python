@@ -14,14 +14,12 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Union
 
-from supertokens_python.types import APIResponse
+from supertokens_python.framework import BaseRequest, BaseResponse
+from supertokens_python.recipe.jwt.interfaces import (
+    CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult)
+from supertokens_python.types import APIResponse, GeneralErrorResponse
 
 from .utils import OpenIdConfig
-
-from supertokens_python.framework import BaseRequest, BaseResponse
-from supertokens_python.recipe.jwt.interfaces import (CreateJwtOkResult,
-                                                      CreateJwtResultUnsupportedAlgorithm,
-                                                      GetJWKSResult)
 
 
 class GetOpenIdDiscoveryConfigurationResult():
@@ -77,6 +75,5 @@ class APIInterface:
         self.disable_open_id_discovery_configuration_get = False
 
     @abstractmethod
-    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) ->\
-            OpenIdDiscoveryConfigurationGetResponse:
+    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[OpenIdDiscoveryConfigurationGetResponse, GeneralErrorResponse]:
         pass
