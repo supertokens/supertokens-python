@@ -25,6 +25,7 @@ from .. import emailpassword, thirdparty
 from . import exceptions as ex
 from . import utils
 from .recipe import ThirdPartyEmailPasswordRecipe
+from .emaildelivery.services import SMTPService
 
 InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputOverrideConfig = utils.InputOverrideConfig
@@ -37,6 +38,7 @@ Facebook = thirdparty.Facebook
 Github = thirdparty.Github
 Google = thirdparty.Google
 GoogleWorkspaces = thirdparty.GoogleWorkspaces
+_ = SMTPService
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo

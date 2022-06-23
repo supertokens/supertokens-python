@@ -18,9 +18,12 @@ from typing import TYPE_CHECKING, Callable
 from . import exceptions as ex
 from .recipe import EmailVerificationRecipe
 from . import utils
+from .emaildelivery.services import SMTPService
+
 InputOverrideConfig = utils.OverrideConfig
 ParentRecipeEmailVerificationConfig = utils.ParentRecipeEmailVerificationConfig
 exception = ex
+_ = SMTPService
 
 
 if TYPE_CHECKING:

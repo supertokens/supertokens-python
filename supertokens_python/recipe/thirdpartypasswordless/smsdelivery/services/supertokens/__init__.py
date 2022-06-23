@@ -20,12 +20,12 @@ from supertokens_python.ingredients.smsdelivery.services.supertokens import \
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface
 from supertokens_python.recipe.passwordless.smsdelivery.services.supertokens import \
-    SuperTokensService as PlessSuperTokensService
+    SuperTokensSMSService as PlessSuperTokensService
 
 from ....types import ThirdPartyPasswordlessSMSTemplateVars
 
 
-class SuperTokensService(SMSDeliveryInterface[ThirdPartyPasswordlessSMSTemplateVars]):
+class SuperTokensSMSService(SMSDeliveryInterface[ThirdPartyPasswordlessSMSTemplateVars]):
     pless_supertokens_service: PlessSuperTokensService
 
     def __init__(self, config: SupertokensServiceConfig) -> None:

@@ -27,6 +27,8 @@ from . import utils
 from .recipe import ThirdPartyPasswordlessRecipe
 from .types import (ThirdPartyPasswordlessEmailTemplateVars,
                     ThirdPartyPasswordlessSMSTemplateVars)
+from .emaildelivery.services import SMTPService
+from .smsdelivery.services import TwilioService, SuperTokensSMSService
 
 InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputOverrideConfig = utils.InputOverrideConfig
@@ -39,6 +41,9 @@ Facebook = thirdparty.Facebook
 Github = thirdparty.Github
 Google = thirdparty.Google
 GoogleWorkspaces = thirdparty.GoogleWorkspaces
+_ = SMTPService
+_ = TwilioService
+_ = SuperTokensSMSService
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo

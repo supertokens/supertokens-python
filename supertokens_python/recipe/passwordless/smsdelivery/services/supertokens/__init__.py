@@ -27,7 +27,7 @@ from supertokens_python.utils import handle_httpx_client_exceptions
 from ....types import PasswordlessLoginSMSTemplateVars
 
 
-class SuperTokensService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]):
+class SuperTokensSMSService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]):
     def __init__(self,
                  config: SupertokensServiceConfig
                  ) -> None:

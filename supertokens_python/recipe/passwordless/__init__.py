@@ -27,6 +27,8 @@ from typing_extensions import Literal
 
 from . import types, utils
 from .recipe import PasswordlessRecipe
+from .emaildelivery.services import SMTPService
+from .smsdelivery.services import TwilioService, SuperTokensSMSService
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
@@ -41,6 +43,9 @@ CreateAndSendCustomTextMessageParameters = types.CreateAndSendCustomTextMessageP
 CreateAndSendCustomEmailParameters = types.CreateAndSendCustomEmailParameters
 ContactPhoneOnlyConfig = utils.ContactPhoneOnlyConfig
 ContactEmailOrPhoneConfig = utils.ContactEmailOrPhoneConfig
+_ = SMTPService
+_ = TwilioService
+_ = SuperTokensSMSService
 
 
 def init(contact_config: ContactConfig,
