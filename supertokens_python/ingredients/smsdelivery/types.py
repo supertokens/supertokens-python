@@ -87,12 +87,3 @@ class TwilioServiceInterface(ABC, Generic[_T]):
     @abstractmethod
     async def get_content(self, template_vars: _T, user_context: Dict[str, Any]) -> SMSContent:
         pass
-
-
-class SMSDeliveryTwilioConfig(Generic[_T]):
-    def __init__(self,
-                 twilio_settings: TwilioSettings,
-                 override: Union[Callable[[TwilioServiceInterface[_T]], TwilioServiceInterface[_T]], None] = None
-                 ) -> None:
-        self.twilio_settings = twilio_settings
-        self.override = override

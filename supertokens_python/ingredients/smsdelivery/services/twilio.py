@@ -13,16 +13,16 @@
 # under the License.
 from typing import TypeVar
 
-from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryTwilioConfig
+from supertokens_python.ingredients.smsdelivery.types import TwilioSettings
 
 _T = TypeVar('_T')
 
 
-def normalize_twilio_config(sms_input: SMSDeliveryTwilioConfig[_T]) -> SMSDeliveryTwilioConfig[_T]:
-    from_ = sms_input.twilio_settings.from_
-    messaging_service_sid = sms_input.twilio_settings.messaging_service_sid
+def normalize_twilio_settings(twilio_settings: TwilioSettings) -> TwilioSettings:
+    from_ = twilio_settings.from_
+    messaging_service_sid = twilio_settings.messaging_service_sid
 
     if (from_ and messaging_service_sid) or (not from_ and not messaging_service_sid):
         raise Exception('Please pass exactly one of "from" and "messaging_service_sid" config for twilio_settings.')
 
-    return sms_input
+    return twilio_settings
