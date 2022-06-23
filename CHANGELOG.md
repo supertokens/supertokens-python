@@ -6,16 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-- Make email and sms delivery ingredient interfaces developer friendly:
-    - Remove the need of `SMSDeliveryTwilioConfig`, `EmailDeliverySMTPConfig`, and `SupertokensServiceConfig`.
-    - Export `(.*)OverrideInput` and `(Email|SMS)DeliveryOverrideInput` from the relevant recipes.
-    - Rename `Type<Recipe>EmailDeliveryInput` to `<Recipe>EmailTemplateVars`
-    - Export `EmailTemplateVars` (alias of `<Recipe>EmailTemplateVars`) from all the relevant recipes
-    - Export `PasswordlessLogin(Email|SMS)TemplateVars`, `PasswordResetEmailTemplateVars`, and `VerificationEmailTemplateVars` from relevant recipes.
-    - Rename `(.*)ServiceConfig` to `(.*)Settings` for readability.
-    - Rename arg `input_` to `template_vars` in `EmailDeliveryInterface.send_email` and `SMTPServiceInterface.send_sms` functions.
-    - Rename arg `input_` to `content` and `template_vars` in `SMTPServiceInterface.send_raw_email` and `SMTPServiceInterface.get_content` functions respectively.
-    - Rename arg `get_content_result` to `content` and `input_` to `template_vars` in `TwilioServiceInterface.send_raw_email` and `TwilioServiceInterface.get_content` functions respectively.
+## [0.9.0] - 2022-06-23
 
 ### Fixes
 - Fixes Cookie same_site config validation.
@@ -28,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Removed `FIELD_ERROR` status type from third party signinup recipe function.
 -   If sms or email sending failed in passwordless recipe APIs, we now throw a regular JS error from the API as opposed to returning a `GENERAL_ERROR` to the client.
 -   If there is an error whilst getting the profile info about a user from a third party provider (in /signinup POST API), then we throw a regular JS error instead of returning a `GENERAL_ERROR` to the client.
+- Make email and sms delivery ingredient interfaces developer friendly:
+    - Remove the need of `SMSDeliveryTwilioConfig`, `EmailDeliverySMTPConfig`, and `SupertokensServiceConfig`.
+    - Export `(.*)OverrideInput` and `(Email|SMS)DeliveryOverrideInput` from the relevant recipes.
+    - Rename `Type<Recipe>EmailDeliveryInput` to `<Recipe>EmailTemplateVars`
+    - Export `EmailTemplateVars` (alias of `<Recipe>EmailTemplateVars`) from all the relevant recipes
+    - Export `PasswordlessLogin(Email|SMS)TemplateVars`, `PasswordResetEmailTemplateVars`, and `VerificationEmailTemplateVars` from relevant recipes.
+    - Rename `(.*)ServiceConfig` to `(.*)Settings` for readability.
+    - Rename arg `input_` to `template_vars` in `EmailDeliveryInterface.send_email` and `SMTPServiceInterface.send_sms` functions.
+    - Rename arg `input_` to `content` and `template_vars` in `SMTPServiceInterface.send_raw_email` and `SMTPServiceInterface.get_content` functions respectively.
+    - Rename arg `get_content_result` to `content` and `input_` to `template_vars` in `TwilioServiceInterface.send_raw_email` and `TwilioServiceInterface.get_content` functions respectively.
 
 ### Changes
 -   Changes `get_email_for_user_id` function inside thirdpartypasswordless to take into account passwordless emails and return an empty string in case a passwordless email doesn't exist. This helps situations where the dev wants to customise the email verification functions in the thirdpartypasswordless recipe.
