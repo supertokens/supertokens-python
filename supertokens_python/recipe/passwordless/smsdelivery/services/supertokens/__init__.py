@@ -17,7 +17,7 @@ from typing import Any, Dict
 
 from httpx import AsyncClient
 from supertokens_python.ingredients.smsdelivery.services.supertokens import (
-    SUPERTOKENS_SMS_SERVICE_URL, SupertokensServiceConfig)
+    SUPERTOKENS_SMS_SERVICE_URL)
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface
 from supertokens_python.logger import log_debug_message
@@ -29,9 +29,9 @@ from ....types import PasswordlessLoginSMSTemplateVars
 
 class SuperTokensSMSService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]):
     def __init__(self,
-                 config: SupertokensServiceConfig
+                 api_key: str
                  ) -> None:
-        self.config = config
+        self.api_key = api_key
 
     async def send_sms(self, template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]) -> None:
         supertokens = Supertokens.get_instance()
@@ -52,7 +52,7 @@ class SuperTokensSMSService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVar
                 await client.post(  # type: ignore
                     SUPERTOKENS_SMS_SERVICE_URL,
                     json={
-                        "apiKey": self.config.api_key,
+                        "apiKey": self.api_key,
                         "smsInput": sms_input,
                     },
                     headers={'api-version': '0'}
