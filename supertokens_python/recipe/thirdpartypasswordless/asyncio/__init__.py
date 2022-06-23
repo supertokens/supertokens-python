@@ -19,8 +19,8 @@ from supertokens_python.recipe.passwordless.interfaces import (
 
 from .. import interfaces
 from ..recipe import ThirdPartyPasswordlessRecipe
-from ..types import (TypeThirdPartyPasswordlessEmailDeliveryInput,
-                     TypeThirdPartyPasswordlessSmsDeliveryInput, User)
+from ..types import (ThirdPartyPasswordlessEmailTemplateVars,
+                     ThirdPartyPasswordlessSMSTemplateVars, User)
 
 
 async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -194,13 +194,13 @@ async def passwordlessSigninup(email: Union[str, None], phone_number: Union[str,
     )
 
 
-async def send_email(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+async def send_email(input_: ThirdPartyPasswordlessEmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(input_, user_context)
 
 
-async def send_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+async def send_sms(input_: ThirdPartyPasswordlessSMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(input_, user_context)

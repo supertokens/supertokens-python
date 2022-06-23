@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
+
+- Make email and sms delivery ingredient interfaces developer friendly:
+    - Remove the need of `SMSDeliveryTwilioConfig`, `EmailDeliverySMTPConfig`, and `SupertokensServiceConfig`.
+    - Export `(.*)OverrideInput` and `(Email|SMS)DeliveryOverrideInput` from the relevant recipes.
+    - Rename `Type<Recipe>EmailDeliveryInput` to `<Recipe>EmailTemplateVars`
+    - Export `EmailTemplateVars` (alias of `<Recipe>EmailTemplateVars`) from all the relevant recipes
+    - Export `PasswordlessLogin(Email|SMS)TemplateVars`, `PasswordResetEmailTemplateVars`, and `VerificationEmailTemplateVars` from relevant recipes.
+    - Rename `(.*)ServiceConfig` to `(.*)Settings` for readability.
+    - Rename arg `input_` to `template_vars` in `EmailDeliveryInterface.send_email` and `SMTPServiceInterface.send_sms` functions.
+    - Rename arg `input_` to `content` and `template_vars` in `SMTPServiceInterface.send_raw_email` and `SMTPServiceInterface.get_content` functions respectively.
+    - Rename arg `get_content_result` to `content` and `input_` to `template_vars` in `TwilioServiceInterface.send_raw_email` and `TwilioServiceInterface.get_content` functions respectively.
+
 ### Fixes
 - Fixes Cookie same_site config validation.
 

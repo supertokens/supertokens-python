@@ -12,8 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from .supertokens import SuperTokensService
-from .twilio import TwilioService
+from . import supertokens, twilio
 
-_ = SuperTokensService
-_ = TwilioService
+SuperTokensSMSService = supertokens.SuperTokensSMSService
+TwilioService = twilio.TwilioService

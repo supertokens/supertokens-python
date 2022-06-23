@@ -22,13 +22,13 @@ from httpx import AsyncClient, HTTPStatusError
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessEmailDeliveryInput
+    PasswordlessLoginEmailTemplateVars
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.utils import handle_httpx_client_exceptions
 
 
-def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[TypePasswordlessEmailDeliveryInput, Dict[str, Any]], Awaitable[None]]:
-    async def func(input_: TypePasswordlessEmailDeliveryInput, _: Dict[str, Any]):
+def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[PasswordlessLoginEmailTemplateVars, Dict[str, Any]], Awaitable[None]]:
+    async def func(input_: PasswordlessLoginEmailTemplateVars, _: Dict[str, Any]):
         if ('SUPERTOKENS_ENV' in environ) and (environ['SUPERTOKENS_ENV'] == 'testing'):
             return
         data = {
@@ -63,15 +63,15 @@ def default_create_and_send_custom_email(app_info: AppInfo) -> Callable[[TypePas
     return func
 
 
-class BackwardCompatibilityService(EmailDeliveryInterface[TypePasswordlessEmailDeliveryInput]):
+class BackwardCompatibilityService(EmailDeliveryInterface[PasswordlessLoginEmailTemplateVars]):
     def __init__(self,
                  app_info: AppInfo,
                  create_and_send_custom_email: Union[
-                     Callable[[TypePasswordlessEmailDeliveryInput, Dict[str, Any]], Awaitable[None]],
+                     Callable[[PasswordlessLoginEmailTemplateVars, Dict[str, Any]], Awaitable[None]],
                      None
                  ] = None
                  ) -> None:
         self.create_and_send_custom_email = create_and_send_custom_email if create_and_send_custom_email is not None else default_create_and_send_custom_email(app_info)
 
-    async def send_email(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        await self.create_and_send_custom_email(input_, user_context)  # Note: intentionally not using try-except (unlike other recipes)
+    async def send_email(self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) -> None:
+        await self.create_and_send_custom_email(template_vars, user_context)  # Note: intentionally not using try-except (unlike other recipes)

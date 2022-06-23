@@ -15,21 +15,19 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.smsdelivery.services.supertokens import \
-    SupertokensServiceConfig
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface
 from supertokens_python.recipe.passwordless.smsdelivery.services.supertokens import \
-    SuperTokensService as PlessSuperTokensService
+    SuperTokensSMSService as PlessSuperTokensService
 
-from ....types import TypeThirdPartyPasswordlessSmsDeliveryInput
+from ....types import ThirdPartyPasswordlessSMSTemplateVars
 
 
-class SuperTokensService(SMSDeliveryInterface[TypeThirdPartyPasswordlessSmsDeliveryInput]):
+class SuperTokensSMSService(SMSDeliveryInterface[ThirdPartyPasswordlessSMSTemplateVars]):
     pless_supertokens_service: PlessSuperTokensService
 
-    def __init__(self, config: SupertokensServiceConfig) -> None:
-        self.pless_supertokens_service = PlessSuperTokensService(config)
+    def __init__(self, api_key: str) -> None:
+        self.pless_supertokens_service = PlessSuperTokensService(api_key)
 
-    async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
-        await self.pless_supertokens_service.send_sms(input_, user_context)
+    async def send_sms(self, template_vars: ThirdPartyPasswordlessSMSTemplateVars, user_context: Dict[str, Any]) -> None:
+        await self.pless_supertokens_service.send_sms(template_vars, user_context)

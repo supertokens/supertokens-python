@@ -22,11 +22,11 @@ from supertokens_python.recipe.passwordless.interfaces import (
     ConsumeCodePostRestartFlowError, ConsumeCodeRestartFlowError,
     CreateCodePostOkResult, CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
-    EmailExistsGetOkResult, PhoneNumberExistsGetOkResult,
-    ResendCodePostOkResult, ResendCodePostRestartFlowError,
-    TypePasswordlessEmailDeliveryInput)
+    EmailExistsGetOkResult, PasswordlessLoginEmailTemplateVars,
+    PhoneNumberExistsGetOkResult, ResendCodePostOkResult,
+    ResendCodePostRestartFlowError)
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessSmsDeliveryInput
+    PasswordlessLoginSMSTemplateVars
 from supertokens_python.recipe.passwordless.utils import (
     ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)
 from supertokens_python.recipe.session.asyncio import create_new_session
@@ -61,7 +61,7 @@ class APIImplementation(APIInterface):
                 raise Exception("Should never come here")
 
             log_debug_message("Sending passwordless login email to %s", email)
-            passwordless_email_delivery_input = TypePasswordlessEmailDeliveryInput(
+            passwordless_email_delivery_input = PasswordlessLoginEmailTemplateVars(
                 email=email,
                 user_input_code=user_input_code,
                 url_with_link_code=magic_link,
@@ -73,7 +73,7 @@ class APIImplementation(APIInterface):
             if phone_number is None:
                 raise Exception("Should never come here")
             log_debug_message("Sending passwordless login SMS to %s", phone_number)
-            sms_input = TypePasswordlessSmsDeliveryInput(
+            sms_input = PasswordlessLoginSMSTemplateVars(
                 phone_number=phone_number,
                 user_input_code=user_input_code,
                 url_with_link_code=magic_link,
@@ -133,7 +133,7 @@ class APIImplementation(APIInterface):
                         raise Exception("Should never come here")
 
                     log_debug_message("Sending passwordless login email to %s", device_info.email)
-                    passwordless_email_delivery_input = TypePasswordlessEmailDeliveryInput(
+                    passwordless_email_delivery_input = PasswordlessLoginEmailTemplateVars(
                         email=device_info.email,
                         user_input_code=user_input_code,
                         url_with_link_code=magic_link,
@@ -145,7 +145,7 @@ class APIImplementation(APIInterface):
                     if device_info.phone_number is None:
                         raise Exception("Should never come here")
                     log_debug_message("Sending passwordless login SMS to %s", device_info.phone_number)
-                    sms_input = TypePasswordlessSmsDeliveryInput(
+                    sms_input = PasswordlessLoginSMSTemplateVars(
                         phone_number=device_info.phone_number,
                         user_input_code=user_input_code,
                         url_with_link_code=magic_link,

@@ -21,15 +21,13 @@ from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.emailpassword.interfaces import (
-    RecipeInterface, TypeEmailPasswordEmailDeliveryInput)
+    RecipeInterface, EmailPasswordEmailTemplateVars)
 from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService as \
     EmailVerificationBackwardCompatibilityService
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.recipe.emailverification.types import \
-    User as EmailVerificationUser
+    User as EmailVerificationUser, VerificationEmailTemplateVars
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.utils import handle_httpx_client_exceptions
 
@@ -60,7 +58,7 @@ def default_create_and_send_custom_email(
     return func
 
 
-class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
+class BackwardCompatibilityService(EmailDeliveryInterface[EmailPasswordEmailTemplateVars]):
     app_info: AppInfo
     ev_backward_compatibility_service: EmailVerificationBackwardCompatibilityService
 
@@ -100,12 +98,12 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
             app_info, create_and_send_custom_email=create_and_send_custom_email
         )
 
-    async def send_email(self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
-            await self.ev_backward_compatibility_service.send_email(input_, user_context)
+    async def send_email(self, template_vars: EmailPasswordEmailTemplateVars, user_context: Dict[str, Any]) -> None:
+        if isinstance(template_vars, VerificationEmailTemplateVars):
+            await self.ev_backward_compatibility_service.send_email(template_vars, user_context)
         else:
             user = await self.recipe_interface_impl.get_user_by_id(
-                user_id=input_.user.id,
+                user_id=template_vars.user.id,
                 user_context=user_context
             )
 
@@ -114,7 +112,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
 
             try:
                 await self.reset_password_feature_send_email_func(
-                    user, input_.password_reset_link, user_context
+                    user, template_vars.password_reset_link, user_context
                 )
             except Exception:
                 pass

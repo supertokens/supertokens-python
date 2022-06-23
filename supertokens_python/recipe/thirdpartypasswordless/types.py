@@ -16,10 +16,14 @@ from typing import TypeVar, Union
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
-from supertokens_python.recipe.passwordless.types import (
-    TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput)
 
-from ..thirdparty.types import ThirdPartyInfo, TypeThirdPartyEmailDeliveryInput
+from ...ingredients.emaildelivery.types import (EmailDeliveryInterface,
+                                                SMTPServiceInterface)
+from ...ingredients.smsdelivery.types import (SMSDeliveryInterface,
+                                              TwilioServiceInterface)
+from ..passwordless import types as pless_types
+from ..thirdparty import types as tp_types
+from ..thirdparty.types import ThirdPartyInfo
 
 
 class User:
@@ -35,16 +39,32 @@ class User:
 _T = TypeVar('_T')
 
 
-TypeThirdPartyPasswordlessEmailDeliveryInput = Union[TypeThirdPartyEmailDeliveryInput, TypePasswordlessEmailDeliveryInput]
+ThirdPartyPasswordlessEmailTemplateVars = Union[
+    tp_types.ThirdPartyEmailTemplateVars, pless_types.PasswordlessLoginEmailTemplateVars
+]
 
 
-TypeThirdPartyPasswordlessSmsDeliveryInput = TypePasswordlessSmsDeliveryInput
+ThirdPartyPasswordlessSMSTemplateVars = pless_types.PasswordlessLoginSMSTemplateVars
 
 
 class ThirdPartyPasswordlessIngredients:
     def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
-                 sms_delivery: Union[SMSDeliveryIngredient[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
+                 email_delivery: Union[EmailDeliveryIngredient[ThirdPartyPasswordlessEmailTemplateVars], None] = None,
+                 sms_delivery: Union[SMSDeliveryIngredient[ThirdPartyPasswordlessSMSTemplateVars], None] = None,
                  ) -> None:
         self.email_delivery = email_delivery
         self.sms_delivery = sms_delivery
+
+
+# Export:
+EmailTemplateVars = ThirdPartyPasswordlessEmailTemplateVars
+SMSTemplateVars = ThirdPartyPasswordlessSMSTemplateVars
+VerificationEmailTemplateVars = tp_types.VerificationEmailTemplateVars
+PasswordlessLoginEmailTemplateVars = pless_types.PasswordlessLoginEmailTemplateVars
+PasswordlessLoginSMSTemplateVars = pless_types.PasswordlessLoginSMSTemplateVars
+
+SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
+TwilioOverrideInput = TwilioServiceInterface[SMSTemplateVars]
+
+EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
+SMSDeliveryOverrideInput = SMSDeliveryInterface[SMSTemplateVars]

@@ -24,15 +24,12 @@ from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
-from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    GetContentResult, ServiceInterface, SMTPServiceConfig,
-    SMTPServiceConfigFrom)
 from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryConfig
+    EmailDeliveryConfig, SMTPSettingsFrom, SMTPSettings, EmailContent, SMTPServiceInterface
 from supertokens_python.recipe import session, thirdpartyemailpassword
 from supertokens_python.recipe.emailpassword.types import (
-    TypeEmailPasswordPasswordResetEmailDeliveryInput,
-    TypeEmailVerificationEmailDeliveryInput)
+    PasswordResetEmailTemplateVars)
+from supertokens_python.recipe.emailverification.types import VerificationEmailTemplateVars
 from supertokens_python.recipe.emailpassword.types import User as EPUser
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.recipe_implementation import \
@@ -44,9 +41,9 @@ from supertokens_python.recipe.thirdpartyemailpassword import (
 from supertokens_python.recipe.thirdpartyemailpassword.asyncio import \
     thirdparty_sign_in_up
 from supertokens_python.recipe.thirdpartyemailpassword.emaildelivery.services import (
-    EmailDeliverySMTPConfig, SMTPService)
+    SMTPService)
 from supertokens_python.recipe.thirdpartyemailpassword.types import \
-    TypeThirdPartyEmailPasswordEmailDeliveryInput
+    ThirdPartyEmailPasswordEmailTemplateVars
 from supertokens_python.recipe.thirdpartyemailpassword.types import \
     User as TPEPUser
 from tests.utils import (clean_st, email_verify_token_request, reset,
@@ -213,15 +210,15 @@ async def test_reset_password_custom_override(driver_config_client: TestClient):
     password_reset_url = ""
     app_name = ""
 
-    def email_delivery_override(oi: EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]):
+    def email_delivery_override(oi: EmailDeliveryInterface[ThirdPartyEmailPasswordEmailTemplateVars]):
         oi_send_email = oi.send_email
 
-        async def send_email(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]):
+        async def send_email(template_vars: ThirdPartyEmailPasswordEmailTemplateVars, user_context: Dict[str, Any]):
             nonlocal email, password_reset_url
-            email = input_.user.email
-            assert isinstance(input_, TypeEmailPasswordPasswordResetEmailDeliveryInput)
-            password_reset_url = input_.password_reset_link
-            await oi_send_email(input_, user_context)
+            email = template_vars.user.email
+            assert isinstance(template_vars, PasswordResetEmailTemplateVars)
+            password_reset_url = template_vars.password_reset_link
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email
         return oi
@@ -272,27 +269,27 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
     password_reset_url = ""
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
 
-    def smtp_service_override(oi: ServiceInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]):
-        async def send_raw_email_override(input_: GetContentResult, _user_context: Dict[str, Any]):
+    def smtp_service_override(oi: SMTPServiceInterface[ThirdPartyEmailPasswordEmailTemplateVars]):
+        async def send_raw_email_override(content: EmailContent, _user_context: Dict[str, Any]):
             nonlocal send_raw_email_called, email
             send_raw_email_called = True
 
-            assert input_.body == password_reset_url
-            assert input_.subject == "custom subject"
-            assert input_.to_email == "test@example.com"
-            email = input_.to_email
+            assert content.body == password_reset_url
+            assert content.subject == "custom subject"
+            assert content.to_email == "test@example.com"
+            email = content.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
+        async def get_content_override(template_vars: ThirdPartyEmailPasswordEmailTemplateVars, _user_context: Dict[str, Any]) -> EmailContent:
             nonlocal get_content_called, password_reset_url
             get_content_called = True
 
-            assert isinstance(input_, TypeEmailPasswordPasswordResetEmailDeliveryInput)
-            password_reset_url = input_.password_reset_link
+            assert isinstance(template_vars, PasswordResetEmailTemplateVars)
+            password_reset_url = template_vars.password_reset_link
 
-            return GetContentResult(
-                body=input_.password_reset_link,
-                to_email=input_.user.email,
+            return EmailContent(
+                body=template_vars.password_reset_link,
+                to_email=template_vars.user.email,
                 subject="custom subject",
                 is_html=False,
             )
@@ -303,25 +300,23 @@ async def test_reset_password_smtp_service(driver_config_client: TestClient):
         return oi
 
     email_delivery_service = SMTPService(
-        config=EmailDeliverySMTPConfig(
-            smtp_settings=SMTPServiceConfig(
-                host="",
-                from_=SMTPServiceConfigFrom("", ""),
-                password="",
-                port=465,
-                secure=True,
-            ),
-            override=smtp_service_override,
-        )
+        smtp_settings=SMTPSettings(
+            host="",
+            from_=SMTPSettingsFrom("", ""),
+            password="",
+            port=465,
+            secure=True,
+        ),
+        override=smtp_service_override,
     )
 
-    def email_delivery_override(oi: EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]) -> EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]:
+    def email_delivery_override(oi: EmailDeliveryInterface[ThirdPartyEmailPasswordEmailTemplateVars]) -> EmailDeliveryInterface[ThirdPartyEmailPasswordEmailTemplateVars]:
         oi_send_email = oi.send_email
 
-        async def send_email_override(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]):
+        async def send_email_override(template_vars: ThirdPartyEmailPasswordEmailTemplateVars, user_context: Dict[str, Any]):
             nonlocal outer_override_called
             outer_override_called = True
-            await oi_send_email(input_, user_context)
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email_override
         return oi
@@ -570,15 +565,15 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
     email = ""
     email_verify_url = ""
 
-    def email_delivery_override(oi: EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]):
+    def email_delivery_override(oi: EmailDeliveryInterface[ThirdPartyEmailPasswordEmailTemplateVars]):
         oi_send_email = oi.send_email
 
-        async def send_email(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]):
+        async def send_email(template_vars: ThirdPartyEmailPasswordEmailTemplateVars, user_context: Dict[str, Any]):
             nonlocal email, email_verify_url
-            email = input_.user.email
-            assert isinstance(input_, TypeEmailVerificationEmailDeliveryInput)
-            email_verify_url = input_.email_verify_link
-            await oi_send_email(input_, user_context)
+            email = template_vars.user.email
+            assert isinstance(template_vars, VerificationEmailTemplateVars)
+            email_verify_url = template_vars.email_verify_link
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email
         return oi
@@ -645,27 +640,27 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
     email_verify_url = ""
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
 
-    def smtp_service_override(oi: ServiceInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]):
-        async def send_raw_email_override(input_: GetContentResult, _user_context: Dict[str, Any]):
+    def smtp_service_override(oi: SMTPServiceInterface[ThirdPartyEmailPasswordEmailTemplateVars]):
+        async def send_raw_email_override(content: EmailContent, _user_context: Dict[str, Any]):
             nonlocal send_raw_email_called, email
             send_raw_email_called = True
 
-            assert input_.body == email_verify_url
-            assert input_.subject == "custom subject"
-            assert input_.to_email == "test@example.com"
-            email = input_.to_email
+            assert content.body == email_verify_url
+            assert content.subject == "custom subject"
+            assert content.to_email == "test@example.com"
+            email = content.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
+        async def get_content_override(template_vars: ThirdPartyEmailPasswordEmailTemplateVars, _user_context: Dict[str, Any]) -> EmailContent:
             nonlocal get_content_called, email_verify_url
             get_content_called = True
 
-            assert isinstance(input_, TypeEmailVerificationEmailDeliveryInput)
-            email_verify_url = input_.email_verify_link
+            assert isinstance(template_vars, VerificationEmailTemplateVars)
+            email_verify_url = template_vars.email_verify_link
 
-            return GetContentResult(
-                body=input_.email_verify_link,
-                to_email=input_.user.email,
+            return EmailContent(
+                body=template_vars.email_verify_link,
+                to_email=template_vars.user.email,
                 subject="custom subject",
                 is_html=False,
             )
@@ -676,25 +671,23 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
         return oi
 
     email_delivery_service = SMTPService(
-        config=EmailDeliverySMTPConfig(
-            smtp_settings=SMTPServiceConfig(
-                host="",
-                from_=SMTPServiceConfigFrom("", ""),
-                password="",
-                port=465,
-                secure=True,
-            ),
-            override=smtp_service_override,
-        )
+        smtp_settings=SMTPSettings(
+            host="",
+            from_=SMTPSettingsFrom("", ""),
+            password="",
+            port=465,
+            secure=True,
+        ),
+        override=smtp_service_override,
     )
 
-    def email_delivery_override(oi: EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]) -> EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]:
+    def email_delivery_override(oi: EmailDeliveryInterface[ThirdPartyEmailPasswordEmailTemplateVars]) -> EmailDeliveryInterface[ThirdPartyEmailPasswordEmailTemplateVars]:
         oi_send_email = oi.send_email
 
-        async def send_email_override(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]):
+        async def send_email_override(template_vars: ThirdPartyEmailPasswordEmailTemplateVars, user_context: Dict[str, Any]):
             nonlocal outer_override_called
             outer_override_called = True
-            await oi_send_email(input_, user_context)
+            await oi_send_email(template_vars, user_context)
 
         oi.send_email = send_email_override
         return oi

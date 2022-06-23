@@ -20,13 +20,15 @@ from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
 from supertokens_python.recipe.passwordless.interfaces import \
-    TypePasswordlessEmailDeliveryInput
+    PasswordlessLoginEmailTemplateVars
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessSmsDeliveryInput
+    PasswordlessLoginSMSTemplateVars
 from typing_extensions import Literal
 
 from . import types, utils
+from .emaildelivery import services as emaildelivery_services
 from .recipe import PasswordlessRecipe
+from .smsdelivery import services as smsdelivery_services
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
@@ -41,6 +43,9 @@ CreateAndSendCustomTextMessageParameters = types.CreateAndSendCustomTextMessageP
 CreateAndSendCustomEmailParameters = types.CreateAndSendCustomEmailParameters
 ContactPhoneOnlyConfig = utils.ContactPhoneOnlyConfig
 ContactEmailOrPhoneConfig = utils.ContactEmailOrPhoneConfig
+SMTPService = emaildelivery_services.SMTPService
+TwilioService = smsdelivery_services.TwilioService
+SuperTokensSMSService = smsdelivery_services.SuperTokensSMSService
 
 
 def init(contact_config: ContactConfig,
@@ -49,8 +54,8 @@ def init(contact_config: ContactConfig,
          get_link_domain_and_path: Union[Callable[[
              PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
          get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
-         email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
-         sms_delivery: Union[SMSDeliveryConfig[TypePasswordlessSmsDeliveryInput], None] = None,
+         email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None,
+         sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None,
          ) -> Callable[[AppInfo], RecipeModule]:
     return PasswordlessRecipe.init(contact_config,
                                    flow_type,

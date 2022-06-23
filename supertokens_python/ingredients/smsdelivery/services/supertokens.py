@@ -13,8 +13,3 @@
 # under the License.
 
 SUPERTOKENS_SMS_SERVICE_URL = "https://api.supertokens.com/0/services/sms"
-
-
-class SupertokensServiceConfig:
-    def __init__(self, api_key: str) -> None:
-        self.api_key = api_key

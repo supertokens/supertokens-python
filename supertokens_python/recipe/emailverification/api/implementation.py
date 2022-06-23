@@ -21,15 +21,15 @@ from supertokens_python.recipe.emailverification.interfaces import (
     EmailVerifyPostInvalidTokenError, EmailVerifyPostOkResult,
     GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
     GenerateEmailVerifyTokenPostOkResult, IsEmailVerifiedGetOkResult,
-    TypeEmailVerificationEmailDeliveryInput,
-    TypeEmailVerificationEmailDeliveryInputUser, VerifyEmailUsingTokenOkResult)
+    VerifyEmailUsingTokenOkResult)
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailverification.interfaces import (
         APIOptions
     )
 
-from supertokens_python.recipe.emailverification.types import User
+from supertokens_python.recipe.emailverification.types import User, VerificationEmailTemplateVarsUser, \
+    VerificationEmailTemplateVars
 from supertokens_python.recipe.session.asyncio import get_session
 
 
@@ -70,8 +70,8 @@ class APIImplementation(APIInterface):
             user, user_context)) + '?token=' + token_result.token + '&rid=' + api_options.recipe_id
 
         log_debug_message("Sending email verification email to %s", email)
-        email_delivery_user = TypeEmailVerificationEmailDeliveryInputUser(user.user_id, user.email)
-        email_verification_email_delivery_input = TypeEmailVerificationEmailDeliveryInput(
+        email_delivery_user = VerificationEmailTemplateVarsUser(user.user_id, user.email)
+        email_verification_email_delivery_input = VerificationEmailTemplateVars(
             user=email_delivery_user,
             email_verify_link=email_verify_link,
             user_context=user_context

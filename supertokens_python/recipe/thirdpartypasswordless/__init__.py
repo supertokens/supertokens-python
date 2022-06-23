@@ -24,9 +24,11 @@ from typing_extensions import Literal
 from .. import passwordless, thirdparty
 from . import exceptions as ex
 from . import utils
+from .emaildelivery import services as emaildelivery_services
 from .recipe import ThirdPartyPasswordlessRecipe
-from .types import (TypeThirdPartyPasswordlessEmailDeliveryInput,
-                    TypeThirdPartyPasswordlessSmsDeliveryInput)
+from .smsdelivery import services as smsdelivery_services
+from .types import (ThirdPartyPasswordlessEmailTemplateVars,
+                    ThirdPartyPasswordlessSMSTemplateVars)
 
 InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputOverrideConfig = utils.InputOverrideConfig
@@ -39,6 +41,12 @@ Facebook = thirdparty.Facebook
 Github = thirdparty.Github
 Google = thirdparty.Google
 GoogleWorkspaces = thirdparty.GoogleWorkspaces
+ContactPhoneOnlyConfig = passwordless.ContactPhoneOnlyConfig
+ContactEmailOnlyConfig = passwordless.ContactEmailOnlyConfig
+ContactEmailOrPhoneConfig = passwordless.ContactEmailOrPhoneConfig
+SMTPService = emaildelivery_services.SMTPService
+TwilioService = smsdelivery_services.TwilioService
+SuperTokensSMSService = smsdelivery_services.SuperTokensSMSService
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
@@ -52,8 +60,8 @@ def init(contact_config: ContactConfig,
              PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
          get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
-         sms_delivery: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
+         email_delivery: Union[EmailDeliveryConfig[ThirdPartyPasswordlessEmailTemplateVars], None] = None,
+         sms_delivery: Union[SMSDeliveryConfig[ThirdPartyPasswordlessSMSTemplateVars], None] = None,
          override: Union[InputOverrideConfig, None] = None,
          providers: Union[List[Provider], None] = None) -> Callable[[AppInfo], RecipeModule]:
     return ThirdPartyPasswordlessRecipe.init(contact_config, flow_type, get_link_domain_and_path, get_custom_user_input_code, email_verification_feature, email_delivery, sms_delivery, override, providers)
