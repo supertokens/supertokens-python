@@ -22,7 +22,7 @@ _T = TypeVar('_T')
 
 class SMSDeliveryInterface(ABC, Generic[_T]):
     @abstractmethod
-    async def send_sms(self, input_: _T, user_context: Dict[str, Any]) -> None:
+    async def send_sms(self, template_vars: _T, user_context: Dict[str, Any]) -> None:
         pass
 
 
@@ -77,7 +77,7 @@ class TwilioServiceInterface(ABC, Generic[_T]):
 
     @abstractmethod
     async def send_raw_sms(self,
-                           get_content_result: SMSContent,
+                           content: SMSContent,
                            user_context: Dict[str, Any],
                            from_: Union[str, None] = None,
                            messaging_service_sid: Union[str, None] = None,
@@ -85,7 +85,7 @@ class TwilioServiceInterface(ABC, Generic[_T]):
         pass
 
     @abstractmethod
-    async def get_content(self, input_: _T, user_context: Dict[str, Any]) -> SMSContent:
+    async def get_content(self, template_vars: _T, user_context: Dict[str, Any]) -> SMSContent:
         pass
 
 

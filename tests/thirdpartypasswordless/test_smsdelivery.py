@@ -244,14 +244,14 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
     def sms_delivery_override(oi: SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
         oi_send_sms = oi.send_sms
 
-        async def send_sms(input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]):
+        async def send_sms(template_vars: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]):
             nonlocal phone, url_with_link_code, user_input_code, code_lifetime
-            phone = input_.phone_number
-            url_with_link_code = input_.url_with_link_code
-            user_input_code = input_.user_input_code
-            code_lifetime = input_.code_life_time
+            phone = template_vars.phone_number
+            url_with_link_code = template_vars.url_with_link_code
+            user_input_code = template_vars.user_input_code
+            code_lifetime = template_vars.code_life_time
 
-            await oi_send_sms(input_, user_context)
+            await oi_send_sms(template_vars, user_context)
 
         oi.send_sms = send_sms
         return oi
@@ -315,7 +315,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         oi_send_raw_sms = oi.send_raw_sms
 
         async def send_raw_email_override(
-            get_content_result: SMSContent,
+            content: SMSContent,
             _user_context: Dict[str, Any],
             from_: Union[str, None] = None,
             messaging_service_sid: Union[str, None] = None,
@@ -323,22 +323,22 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
             nonlocal send_raw_email_called, phone, user_input_code
             send_raw_email_called = True
 
-            assert get_content_result.body == user_input_code
-            assert get_content_result.to_phone == "+919909909998"
-            phone = get_content_result.to_phone
+            assert content.body == user_input_code
+            assert content.to_phone == "+919909909998"
+            phone = content.to_phone
 
-            await oi_send_raw_sms(get_content_result, _user_context, from_, messaging_service_sid)
+            await oi_send_raw_sms(content, _user_context, from_, messaging_service_sid)
 
-        async def get_content_override(input_: TypePasswordlessSmsDeliveryInput, _user_context: Dict[str, Any]) -> SMSContent:
+        async def get_content_override(template_vars: TypePasswordlessSmsDeliveryInput, _user_context: Dict[str, Any]) -> SMSContent:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
 
-            user_input_code = input_.user_input_code or ""
-            code_lifetime = input_.code_life_time
+            user_input_code = template_vars.user_input_code or ""
+            code_lifetime = template_vars.code_life_time
 
             return SMSContent(
                 body=user_input_code,
-                to_phone=input_.phone_number
+                to_phone=template_vars.phone_number
             )
 
         oi.send_raw_sms = send_raw_email_override
@@ -360,10 +360,10 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
     def sms_delivery_override(oi: SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]) -> SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]:
         oi_send_sms = oi.send_sms
 
-        async def send_sms_override(input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]):
+        async def send_sms_override(template_vars: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]):
             nonlocal outer_override_called
             outer_override_called = True
-            await oi_send_sms(input_, user_context)
+            await oi_send_sms(template_vars, user_context)
 
         oi.send_sms = send_sms_override
         return oi

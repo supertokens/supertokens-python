@@ -33,20 +33,20 @@ class SuperTokensService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput])
                  ) -> None:
         self.config = config
 
-    async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
+    async def send_sms(self, template_vars: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
         supertokens = Supertokens.get_instance()
         app_name = supertokens.app_info.app_name
 
         sms_input = {
             'type': 'PASSWORDLESS_LOGIN',
-            'phoneNumber': input_.phone_number,
-            'codeLifetime': input_.code_life_time,
+            'phoneNumber': template_vars.phone_number,
+            'codeLifetime': template_vars.code_life_time,
             'appName': app_name,
         }
-        if input_.url_with_link_code:
-            sms_input['urlWithLinkCode'] = input_.url_with_link_code
-        if input_.user_input_code:
-            sms_input['userInputCode'] = input_.user_input_code
+        if template_vars.url_with_link_code:
+            sms_input['urlWithLinkCode'] = template_vars.url_with_link_code
+        if template_vars.user_input_code:
+            sms_input['userInputCode'] = template_vars.user_input_code
         try:
             async with AsyncClient() as client:
                 await client.post(  # type: ignore

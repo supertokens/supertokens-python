@@ -35,5 +35,5 @@ class BackwardCompatibilityService(SMSDeliveryInterface[TypeThirdPartyPasswordle
             app_info, pless_create_and_send_custom_text_message
         )
 
-    async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
-        await self.pless_backward_compatibility_service.send_sms(input_, user_context)
+    async def send_sms(self, template_vars: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
+        await self.pless_backward_compatibility_service.send_sms(template_vars, user_context)

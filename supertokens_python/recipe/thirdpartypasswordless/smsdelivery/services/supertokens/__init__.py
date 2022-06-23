@@ -31,5 +31,5 @@ class SuperTokensService(SMSDeliveryInterface[TypeThirdPartyPasswordlessSmsDeliv
     def __init__(self, config: SupertokensServiceConfig) -> None:
         self.pless_supertokens_service = PlessSuperTokensService(config)
 
-    async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
-        await self.pless_supertokens_service.send_sms(input_, user_context)
+    async def send_sms(self, template_vars: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
+        await self.pless_supertokens_service.send_sms(template_vars, user_context)

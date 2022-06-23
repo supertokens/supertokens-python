@@ -89,5 +89,5 @@ class BackwardCompatibilityService(SMSDeliveryInterface[TypePasswordlessSmsDeliv
                  ) -> None:
         self.create_and_send_custom_sms = default_create_and_send_custom_sms(app_info) if create_and_send_custom_sms is None else create_and_send_custom_sms
 
-    async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
-        await self.create_and_send_custom_sms(input_, user_context)  # Note: intentionally not using try-except (unlike other recipes)
+    async def send_sms(self, template_vars: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
+        await self.create_and_send_custom_sms(template_vars, user_context)  # Note: intentionally not using try-except (unlike other recipes)
