@@ -46,7 +46,7 @@ class EmailDeliveryConfigWithService(ABC, Generic[_T]):
         self.override = override
 
 
-class SMTPServiceConfigFrom:
+class SMTPSettingsFrom:
     def __init__(self, name: str, email: str) -> None:
         self.name = name
         self.email = email
@@ -56,7 +56,7 @@ class SMTPSettings:
     def __init__(
         self, host: str,
         port: int,
-        from_: SMTPServiceConfigFrom,
+        from_: SMTPSettingsFrom,
         password: Union[str, None] = None,
         secure: Union[bool, None] = None,
     ) -> None:
