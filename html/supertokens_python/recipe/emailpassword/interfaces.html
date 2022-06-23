@@ -44,6 +44,11 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
+from supertokens_python.recipe.emailpassword.types import \
+    TypeEmailPasswordEmailDeliveryInput
+
 from ...types import APIResponse
 from ..emailverification.interfaces import \
     RecipeInterface as EmailVerificationRecipeInterface
@@ -142,13 +147,15 @@ class RecipeInterface(ABC):
 class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: EmailPasswordConfig, recipe_implementation: RecipeInterface,
-                 email_verification_recipe_implementation: EmailVerificationRecipeInterface):
+                 email_verification_recipe_implementation: EmailVerificationRecipeInterface,
+                 email_delivery: EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput]):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
         self.config: EmailPasswordConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = email_verification_recipe_implementation
+        self.email_delivery = email_delivery
 
 
 class EmailVerifyPostOkResult(APIResponse):
@@ -480,7 +487,7 @@ async def sign_up_post(self, form_fields: List[FormField],
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: EmailPasswordConfig, recipe_implementation: <a title="supertokens_python.recipe.emailpassword.interfaces.RecipeInterface" href="#supertokens_python.recipe.emailpassword.interfaces.RecipeInterface">RecipeInterface</a>, email_verification_recipe_implementation: EmailVerificationRecipeInterface)</span>
+<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: EmailPasswordConfig, recipe_implementation: <a title="supertokens_python.recipe.emailpassword.interfaces.RecipeInterface" href="#supertokens_python.recipe.emailpassword.interfaces.RecipeInterface">RecipeInterface</a>, email_verification_recipe_implementation: EmailVerificationRecipeInterface, email_delivery: EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -491,13 +498,15 @@ async def sign_up_post(self, form_fields: List[FormField],
 <pre><code class="python">class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: EmailPasswordConfig, recipe_implementation: RecipeInterface,
-                 email_verification_recipe_implementation: EmailVerificationRecipeInterface):
+                 email_verification_recipe_implementation: EmailVerificationRecipeInterface,
+                 email_delivery: EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput]):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
         self.config: EmailPasswordConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
-        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = email_verification_recipe_implementation</code></pre>
+        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = email_verification_recipe_implementation
+        self.email_delivery = email_delivery</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.CreateResetPasswordOkResult"><code class="flex name class">

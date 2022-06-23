@@ -11,28 +11,13 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-from typing import Any, Dict, List, Union
+from typing import List
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from corsheaders.defaults import default_headers
-from django.conf import settings
-from dotenv import load_dotenv
-from supertokens_python import (InputAppInfo, SupertokensConfig,
-                                get_all_cors_headers, init)
-from supertokens_python.recipe import (emailpassword, passwordless, session,
-                                       thirdparty, thirdpartyemailpassword,
-                                       thirdpartypasswordless)
-from supertokens_python.recipe.emailpassword.types import InputFormField, User
-from supertokens_python.recipe.passwordless import (
-    ContactPhoneOnlyConfig, CreateAndSendCustomEmailParameters,
-    CreateAndSendCustomTextMessageParameters)
-from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import (
-    AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
-from supertokens_python.recipe.thirdpartyemailpassword import (Facebook,
-                                                               Github, Google)
+from supertokens_python import get_all_cors_headers
 
-load_dotenv()
+from .utils import custom_init, get_website_domain
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -45,180 +30,7 @@ SECRET_KEY = 'f_d6ar@t2n+e@&7b^i^**kzo68w^e*1kn9%40#sp@0v2t#=vs2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-LATEST_URL_WITH_TOKEN = None
-
-
-async def create_and_send_custom_email(_: User, url_with_token: str, context: Dict[str, Any]):
-    global LATEST_URL_WITH_TOKEN
-    setattr(settings, "LATEST_URL_WITH_TOKEN", url_with_token)
-    LATEST_URL_WITH_TOKEN = url_with_token  # type: ignore
-
-
-async def validate_age(value: Any):
-    try:
-        if int(value) < 18:
-            return "You must be over 18 to register"
-    except Exception:
-        pass
-
-    return None
-
-form_fields = [
-    InputFormField('name'),
-    InputFormField('age', validate=validate_age),
-    InputFormField('country', optional=True)
-]
-
-
-def get_api_port():
-    return '8083'
-
-
-def get_website_port():
-    return '3031'
-
-
-def get_website_domain():
-    return 'http://localhost:' + get_website_port()
-
-
-class CustomAuth0Provider(Provider):
-    def __init__(self, client_id: str, client_secret: str, domain: str):
-        super().__init__('auth0', False)
-        self.domain = domain
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.authorisation_redirect_url = "https://" + self.domain + "/authorize"
-        self.access_token_api_url = "https://" + self.domain + "/oauth/token"
-
-    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
-        # we do not query auth0 here cause it reaches their rate limit.
-        return UserInfo("test-user-id-1", UserInfoEmail(
-            "auth0email@example.com", True))
-
-    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
-        params: Dict[str, Any] = {
-            'scope': 'openid profile',
-            'response_type': 'code',
-            'client_id': self.client_id,
-        }
-        return AuthorisationRedirectAPI(
-            self.authorisation_redirect_url, params)
-
-    def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
-        params = {
-            'client_id': self.client_id,
-            'client_secret': self.client_secret,
-            'grant_type': 'authorization_code',
-            'code': auth_code_from_request,
-            'redirect_uri': redirect_uri
-        }
-        return AccessTokenAPI(self.access_token_api_url, params)
-
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
-        return None
-
-    def get_client_id(self, user_context: Dict[str, Any]) -> str:
-        return self.client_id
-
-
-CODE_STORE: Dict[str, List[Dict[str, Any]]] = {}
-
-
-async def save_code_email(param: CreateAndSendCustomEmailParameters, _: Dict[str, Any]):
-    global CODE_STORE
-    codes: List[Dict[str, Any]] = getattr(settings, "CODE_STORE", None)  # type: ignore
-    if codes is None:
-        codes = []
-    codes.append({
-        'urlWithLinkCode': param.url_with_link_code,
-        'userInputCode': param.user_input_code
-    })
-    CODE_STORE[param.pre_auth_session_id] = codes
-    setattr(settings, "CODE_STORE", CODE_STORE)
-
-
-async def save_code_text(param: CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
-    global CODE_STORE
-    codes: List[Dict[str, Any]] = getattr(settings, "CODE_STORE", None)  # type: ignore
-    if codes is None:
-        codes = []
-    codes.append({
-        'urlWithLinkCode': param.url_with_link_code,
-        'userInputCode': param.user_input_code
-    })
-    CODE_STORE[param.pre_auth_session_id] = codes
-    setattr(settings, "CODE_STORE", CODE_STORE)
-
-
-providers_list: List[Provider] = [
-    Google(
-        client_id=os.environ.get('GOOGLE_CLIENT_ID'),  # type: ignore
-        client_secret=os.environ.get('GOOGLE_CLIENT_SECRET')  # type: ignore
-    ), Facebook(
-        client_id=os.environ.get('FACEBOOK_CLIENT_ID'),  # type: ignore
-        client_secret=os.environ.get('FACEBOOK_CLIENT_SECRET')  # type: ignore
-    ), Github(
-        client_id=os.environ.get('GITHUB_CLIENT_ID'),  # type: ignore
-        client_secret=os.environ.get('GITHUB_CLIENT_SECRET')  # type: ignore
-    ), CustomAuth0Provider(
-        client_id=os.environ.get('AUTH0_CLIENT_ID'),  # type: ignore
-        domain=os.environ.get('AUTH0_DOMAIN'),  # type: ignore
-        client_secret=os.environ.get('AUTH0_CLIENT_SECRET')  # type: ignore
-    )
-]
-
-recipe_list = [
-    session.init(),
-    emailpassword.init(
-        sign_up_feature=emailpassword.InputSignUpFeature(form_fields),
-        reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
-            create_and_send_custom_email=create_and_send_custom_email
-        ),
-        email_verification_feature=emailpassword.InputEmailVerificationConfig(
-            create_and_send_custom_email=create_and_send_custom_email
-        )
-    ),
-    thirdparty.init(
-        sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers_list)
-    ),
-    thirdpartyemailpassword.init(
-        sign_up_feature=thirdpartyemailpassword.InputSignUpFeature(
-            form_fields),
-        providers=providers_list,
-        reset_password_using_token_feature=thirdpartyemailpassword.InputResetPasswordUsingTokenFeature(
-            create_and_send_custom_email=create_and_send_custom_email
-        )
-
-    ),
-    passwordless.init(
-        contact_config=ContactPhoneOnlyConfig(
-            create_and_send_custom_text_message=save_code_text
-        ),
-        flow_type='USER_INPUT_CODE_AND_MAGIC_LINK'
-    ),
-    thirdpartypasswordless.init(
-        contact_config=ContactPhoneOnlyConfig(
-            create_and_send_custom_text_message=save_code_text
-        ),
-        flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
-        providers=providers_list
-    )
-]
-init(
-    supertokens_config=SupertokensConfig('http://localhost:9000'),
-    app_info=InputAppInfo(
-        app_name="SuperTokens Demo",
-        api_domain="0.0.0.0:" + get_api_port(),
-        website_domain=get_website_domain()
-    ),
-    framework='django',
-    mode=os.environ.get('APP_MODE', 'asgi'),  # type: ignore
-    recipe_list=recipe_list,
-    telemetry=False
-)
-
+custom_init('PHONE', 'USER_INPUT_CODE_AND_MAGIC_LINK')
 
 ALLOWED_HOSTS = ['localhost']
 

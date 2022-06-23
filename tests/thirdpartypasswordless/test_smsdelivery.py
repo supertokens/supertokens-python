@@ -32,12 +32,14 @@ from supertokens_python.ingredients.smsdelivery.services.twilio import (
     TwilioServiceConfig)
 from supertokens_python.ingredients.smsdelivery.types import (
     SMSDeliveryConfig, SMSDeliveryInterface)
+from supertokens_python.querier import Querier
 from supertokens_python.recipe import (passwordless, session,
                                        thirdpartypasswordless)
 from supertokens_python.recipe.thirdpartypasswordless.smsdelivery.services.twilio import \
     TwilioService
 from supertokens_python.recipe.thirdpartypasswordless.types import \
     TypePasswordlessSmsDeliveryInput
+from supertokens_python.utils import is_version_gte
 from tests.utils import (clean_st, reset, setup_st, sign_in_up_request_phone,
                          start_st)
 
@@ -95,6 +97,10 @@ async def test_pless_login_default_backward_compatibility(driver_config_client: 
     )
     start_st()
 
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.11"):
+        return
+
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, phone_number, code_lifetime, url_with_link_code, user_input_code, api_key
         body = json.loads(request.content)
@@ -149,6 +155,10 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(driv
         ), session.init()]
     )
     start_st()
+
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.11"):
+        return
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, phone, code_lifetime, url_with_link_code, user_input_code
@@ -211,6 +221,10 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
     )
     start_st()
 
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.11"):
+        return
+
     resp = sign_in_up_request_phone(driver_config_client, "+919909909998", True)
 
     assert resp.status_code == 200
@@ -263,6 +277,10 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
         ), session.init()]
     )
     start_st()
+
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.11"):
+        return
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name
@@ -371,6 +389,10 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         ), session.init()]
     )
     start_st()
+
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.11"):
+        return
 
     def json_callback(_: requests.Request, _ctx: Any) -> Dict[str, Any]:
         nonlocal twilio_api_called

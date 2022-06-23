@@ -42,6 +42,10 @@
 from typing import Callable, Dict, List, Union
 
 from supertokens_python.framework.request import BaseRequest
+from supertokens_python.ingredients.emaildelivery import \
+    EmailDeliveryIngredient
+from supertokens_python.recipe.emailverification.types import \
+    TypeEmailVerificationEmailDeliveryInput
 
 
 class ThirdPartyInfo:
@@ -94,7 +98,17 @@ class UsersResponse:
     def __init__(self, users: List[User],
                  next_pagination_token: Union[str, None]):
         self.users = users
-        self.next_pagination_token = next_pagination_token</code></pre>
+        self.next_pagination_token = next_pagination_token
+
+
+TypeThirdPartyEmailDeliveryInput = TypeEmailVerificationEmailDeliveryInput
+
+
+class ThirdPartyIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput], None] = None
+                 ) -&gt; None:
+        self.email_delivery = email_delivery</code></pre>
 </details>
 </section>
 <section>
@@ -169,6 +183,23 @@ class UsersResponse:
     def __init__(self, third_party_user_id: str, third_party_id: str):
         self.user_id = third_party_user_id
         self.id = third_party_id</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.thirdparty.types.ThirdPartyIngredients"><code class="flex name class">
+<span>class <span class="ident">ThirdPartyIngredients</span></span>
+<span>(</span><span>email_delivery: Optional[<a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[<a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ThirdPartyIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput], None] = None
+                 ) -&gt; None:
+        self.email_delivery = email_delivery</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.types.User"><code class="flex name class">
@@ -266,6 +297,9 @@ class UsersResponse:
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.types.ThirdPartyInfo" href="#supertokens_python.recipe.thirdparty.types.ThirdPartyInfo">ThirdPartyInfo</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.thirdparty.types.ThirdPartyIngredients" href="#supertokens_python.recipe.thirdparty.types.ThirdPartyIngredients">ThirdPartyIngredients</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.types.User" href="#supertokens_python.recipe.thirdparty.types.User">User</a></code></h4>

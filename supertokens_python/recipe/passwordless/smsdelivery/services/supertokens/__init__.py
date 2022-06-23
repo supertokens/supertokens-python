@@ -40,11 +40,13 @@ class SuperTokensService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput])
         sms_input = {
             'type': 'PASSWORDLESS_LOGIN',
             'phoneNumber': input_.phone_number,
-            'userInputCode': input_.user_input_code,
-            'urlWithLinkCode': input_.url_with_link_code,
             'codeLifetime': input_.code_life_time,
             'appName': app_name,
         }
+        if input_.url_with_link_code:
+            sms_input['urlWithLinkCode'] = input_.url_with_link_code
+        if input_.user_input_code:
+            sms_input['userInputCode'] = input_.user_input_code
         try:
             async with AsyncClient() as client:
                 await client.post(  # type: ignore
