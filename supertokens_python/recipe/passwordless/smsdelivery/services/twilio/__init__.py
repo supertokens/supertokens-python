@@ -17,9 +17,9 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from supertokens_python.ingredients.smsdelivery.services.twilio import (
-    ServiceInterface, SMSDeliveryTwilioConfig, normalize_twilio_config)
+    normalize_twilio_config)
 from supertokens_python.ingredients.smsdelivery.types import \
-    SMSDeliveryInterface
+    SMSDeliveryInterface, TwilioServiceInterface, SMSDeliveryTwilioConfig
 from supertokens_python.recipe.passwordless.types import \
     TypePasswordlessSmsDeliveryInput
 
@@ -29,7 +29,7 @@ from .service_implementation import ServiceImplementation
 
 
 class TwilioService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
-    service_implementation: ServiceInterface[TypePasswordlessSmsDeliveryInput]
+    service_implementation: TwilioServiceInterface[TypePasswordlessSmsDeliveryInput]
 
     def __init__(self, config: SMSDeliveryTwilioConfig[TypePasswordlessSmsDeliveryInput]) -> None:
         self.config = normalize_twilio_config(config)

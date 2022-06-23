@@ -16,10 +16,8 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.smsdelivery.services.twilio import \
-    SMSDeliveryTwilioConfig
 from supertokens_python.ingredients.smsdelivery.types import \
-    SMSDeliveryInterface
+    SMSDeliveryInterface, SMSDeliveryTwilioConfig
 from supertokens_python.recipe.passwordless.smsdelivery.services.twilio import \
     TwilioService as PlessTwilioService
 

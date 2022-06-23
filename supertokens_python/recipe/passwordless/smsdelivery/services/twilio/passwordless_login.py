@@ -17,8 +17,7 @@ from string import Template
 from textwrap import dedent
 from typing import TYPE_CHECKING, Union
 
-from supertokens_python.ingredients.smsdelivery.services.twilio import \
-    GetContentResult
+from supertokens_python.ingredients.smsdelivery.types import SMSContent
 from supertokens_python.supertokens import Supertokens
 from supertokens_python.utils import humanize_time
 
@@ -27,12 +26,12 @@ if TYPE_CHECKING:
         TypePasswordlessSmsDeliveryInput
 
 
-def pless_sms_content(input_: TypePasswordlessSmsDeliveryInput) -> GetContentResult:
+def pless_sms_content(input_: TypePasswordlessSmsDeliveryInput) -> SMSContent:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
     code_lifetime = humanize_time(input_.code_life_time)
     body = get_pless_sms_body(app_name, code_lifetime, input_.url_with_link_code, input_.user_input_code)
-    return GetContentResult(body, input_.phone_number)
+    return SMSContent(body, input_.phone_number)
 
 
 def get_pless_sms_body(

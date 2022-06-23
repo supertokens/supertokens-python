@@ -29,11 +29,9 @@ from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.smsdelivery.services.supertokens import \
     SUPERTOKENS_SMS_SERVICE_URL
-from supertokens_python.ingredients.smsdelivery.services.twilio import (
-    GetContentResult, ServiceInterface, SMSDeliveryTwilioConfig,
-    TwilioServiceConfig)
 from supertokens_python.ingredients.smsdelivery.types import (
-    SMSDeliveryConfig, SMSDeliveryInterface)
+    SMSDeliveryConfig, SMSDeliveryInterface, TwilioServiceConfig, SMSContent, TwilioServiceInterface,
+    SMSDeliveryTwilioConfig)
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import passwordless, session
 from supertokens_python.recipe.passwordless.smsdelivery.services.twilio import \
@@ -375,12 +373,12 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
     twilio_api_called = False
 
-    def twilio_service_override(oi: ServiceInterface[TypePasswordlessSmsDeliveryInput]):
+    def twilio_service_override(oi: TwilioServiceInterface[TypePasswordlessSmsDeliveryInput]):
 
         oi_send_raw_sms = oi.send_raw_sms
 
         async def send_raw_email_override(
-            get_content_result: GetContentResult,
+            get_content_result: SMSContent,
             _user_context: Dict[str, Any],
             from_: Union[str, None] = None,
             messaging_service_sid: Union[str, None] = None,
@@ -394,14 +392,14 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
 
             await oi_send_raw_sms(get_content_result, _user_context, from_, messaging_service_sid)
 
-        async def get_content_override(input_: TypePasswordlessSmsDeliveryInput, _user_context: Dict[str, Any]) -> GetContentResult:
+        async def get_content_override(input_: TypePasswordlessSmsDeliveryInput, _user_context: Dict[str, Any]) -> SMSContent:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
 
             user_input_code = input_.user_input_code or ""
             code_lifetime = input_.code_life_time
 
-            return GetContentResult(
+            return SMSContent(
                 body=user_input_code,
                 to_phone=input_.phone_number
             )
