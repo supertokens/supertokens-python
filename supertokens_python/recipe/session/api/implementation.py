@@ -16,11 +16,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
-from supertokens_python.recipe.session.interfaces import APIInterface
+from supertokens_python.recipe.session.interfaces import (APIInterface,
+                                                          SignOutOkayResponse)
 from supertokens_python.utils import normalise_http_method
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.session.interfaces import APIOptions, SignOutOkayResponse
+    from supertokens_python.recipe.session.interfaces import APIOptions
     from ..interfaces import SessionContainer
 
 from typing import Any, Dict
