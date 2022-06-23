@@ -17,7 +17,7 @@ from supertokens_python.ingredients.emaildelivery import \
 from typing import Union
 
 from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordEmailDeliveryInput
+    EmailPasswordEmailTemplateVars, VerificationEmailTemplateVars, PasswordResetEmailTemplateVars
 
 from ..thirdparty.types import ThirdPartyInfo
 
@@ -31,11 +31,17 @@ class User:
         self.third_party_info = third_party_info
 
 
-TypeThirdPartyEmailPasswordEmailDeliveryInput = TypeEmailPasswordEmailDeliveryInput
+ThirdPartyEmailPasswordEmailTemplateVars = EmailPasswordEmailTemplateVars
 
 
 class ThirdPartyEmailPasswordIngredients:
     def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[TypeThirdPartyEmailPasswordEmailDeliveryInput], None] = None
+                 email_delivery: Union[EmailDeliveryIngredient[ThirdPartyEmailPasswordEmailTemplateVars], None] = None
                  ) -> None:
         self.email_delivery = email_delivery
+
+
+# Export:
+EmailTemplateVars = ThirdPartyEmailPasswordEmailTemplateVars
+_ = VerificationEmailTemplateVars
+_ = PasswordResetEmailTemplateVars

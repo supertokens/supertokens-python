@@ -37,7 +37,7 @@ from supertokens_python.recipe import passwordless, session
 from supertokens_python.recipe.passwordless.smsdelivery.services.twilio import \
     TwilioService
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessSmsDeliveryInput
+    PasswordlessLoginSMSTemplateVars
 from supertokens_python.utils import is_version_gte
 from tests.utils import (clean_st, reset, setup_st, sign_in_up_request_phone,
                          start_st)
@@ -257,7 +257,7 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
     url_with_link_code = ""
     user_input_code = ""
 
-    async def create_and_send_custom_text_message(input_: TypePasswordlessSmsDeliveryInput, _: Dict[str, Any]):
+    async def create_and_send_custom_text_message(input_: PasswordlessLoginSMSTemplateVars, _: Dict[str, Any]):
         nonlocal phone, code_lifetime, url_with_link_code, user_input_code
         phone = input_.phone_number
         code_lifetime = input_.code_life_time
@@ -304,10 +304,10 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
     user_input_code = ""
     app_name = ""
 
-    def sms_delivery_override(oi: SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
+    def sms_delivery_override(oi: SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]):
         oi_send_sms = oi.send_sms
 
-        async def send_sms(template_vars: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]):
+        async def send_sms(template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]):
             nonlocal phone, url_with_link_code, user_input_code, code_lifetime
             phone = template_vars.phone_number
             url_with_link_code = template_vars.url_with_link_code
@@ -373,7 +373,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
     get_content_called, send_raw_email_called, outer_override_called = False, False, False
     twilio_api_called = False
 
-    def twilio_service_override(oi: TwilioServiceInterface[TypePasswordlessSmsDeliveryInput]):
+    def twilio_service_override(oi: TwilioServiceInterface[PasswordlessLoginSMSTemplateVars]):
 
         oi_send_raw_sms = oi.send_raw_sms
 
@@ -392,7 +392,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
 
             await oi_send_raw_sms(content, _user_context, from_, messaging_service_sid)
 
-        async def get_content_override(template_vars: TypePasswordlessSmsDeliveryInput, _user_context: Dict[str, Any]) -> SMSContent:
+        async def get_content_override(template_vars: PasswordlessLoginSMSTemplateVars, _user_context: Dict[str, Any]) -> SMSContent:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
 
@@ -420,10 +420,10 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         )
     )
 
-    def sms_delivery_override(oi: SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]) -> SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]:
+    def sms_delivery_override(oi: SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]) -> SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]:
         oi_send_sms = oi.send_sms
 
-        async def send_sms_override(template_vars: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]):
+        async def send_sms_override(template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]):
             nonlocal outer_override_called
             outer_override_called = True
             await oi_send_sms(template_vars, user_context)

@@ -23,11 +23,11 @@ from supertokens_python.ingredients.emaildelivery import \
 from supertokens_python.recipe.emailverification.exceptions import \
     EmailVerificationInvalidTokenError
 from supertokens_python.recipe.emailverification.types import \
-    EmailVerificationIngredients
+    EmailVerificationIngredients, VerificationEmailTemplateVars
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api.implementation import APIImplementation
-from .interfaces import APIOptions, TypeEmailVerificationEmailDeliveryInput
+from .interfaces import APIOptions
 from .recipe_implementation import RecipeImplementation
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ from .utils import (ParentRecipeEmailVerificationConfig,
 class EmailVerificationRecipe(RecipeModule):
     recipe_id = 'emailverification'
     __instance = None
-    email_delivery: EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput]
+    email_delivery: EmailDeliveryIngredient[VerificationEmailTemplateVars]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  config: ParentRecipeEmailVerificationConfig,

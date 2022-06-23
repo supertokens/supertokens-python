@@ -24,16 +24,16 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.supertokens import Supertokens
 from supertokens_python.utils import handle_httpx_client_exceptions
 
-from ....types import TypePasswordlessSmsDeliveryInput
+from ....types import PasswordlessLoginSMSTemplateVars
 
 
-class SuperTokensService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
+class SuperTokensService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]):
     def __init__(self,
                  config: SupertokensServiceConfig
                  ) -> None:
         self.config = config
 
-    async def send_sms(self, template_vars: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> None:
+    async def send_sms(self, template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]) -> None:
         supertokens = Supertokens.get_instance()
         app_name = supertokens.app_info.app_name
 

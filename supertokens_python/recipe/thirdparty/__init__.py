@@ -22,7 +22,7 @@ from supertokens_python.ingredients.emaildelivery.types import \
 from . import exceptions as ex
 from . import providers, utils
 from .recipe import ThirdPartyRecipe
-from .types import TypeThirdPartyEmailDeliveryInput
+from .types import ThirdPartyEmailTemplateVars
 
 InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputOverrideConfig = utils.InputOverrideConfig
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 def init(sign_in_and_up_feature: SignInAndUpFeature,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
          override: Union[InputOverrideConfig, None] = None,
-         email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None
+         email_delivery: Union[EmailDeliveryConfig[ThirdPartyEmailTemplateVars], None] = None
          ) -> Callable[[AppInfo], RecipeModule]:
     return ThirdPartyRecipe.init(
         sign_in_and_up_feature, email_verification_feature, override, email_delivery)

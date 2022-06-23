@@ -19,23 +19,23 @@ from supertokens_python.ingredients.emaildelivery.types import \
 from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp import \
     SMTPService as EmailPasswordSMTPService
 from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordEmailDeliveryInput
+    EmailPasswordEmailTemplateVars
 from supertokens_python.recipe.thirdpartyemailpassword.types import \
-    TypeThirdPartyEmailPasswordEmailDeliveryInput
+    ThirdPartyEmailPasswordEmailTemplateVars
 
 
-class SMTPService(EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]):
+class SMTPService(EmailDeliveryInterface[ThirdPartyEmailPasswordEmailTemplateVars]):
     ep_smtp_service: EmailPasswordSMTPService
 
-    def __init__(self, config: EmailDeliverySMTPConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput]) -> None:
-        ev_config = EmailDeliverySMTPConfig[TypeEmailPasswordEmailDeliveryInput](
+    def __init__(self, config: EmailDeliverySMTPConfig[ThirdPartyEmailPasswordEmailTemplateVars]) -> None:
+        ev_config = EmailDeliverySMTPConfig[EmailPasswordEmailTemplateVars](
             smtp_settings=config.smtp_settings,
             override=config.override
         )
         self.ep_smtp_service = EmailPasswordSMTPService(ev_config)
 
     async def send_email(self,
-                         template_vars: TypeThirdPartyEmailPasswordEmailDeliveryInput,
+                         template_vars: ThirdPartyEmailPasswordEmailTemplateVars,
                          user_context: Dict[str, Any]
                          ) -> None:
         await self.ep_smtp_service.send_email(template_vars, user_context)

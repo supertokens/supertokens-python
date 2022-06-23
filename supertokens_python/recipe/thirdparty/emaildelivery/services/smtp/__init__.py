@@ -19,14 +19,14 @@ from supertokens_python.ingredients.emaildelivery.types import \
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import \
     SMTPService as EmailVerificationSMTPService
 from supertokens_python.recipe.thirdparty.types import \
-    TypeThirdPartyEmailDeliveryInput
+    ThirdPartyEmailTemplateVars
 
 
-class SMTPService(EmailDeliveryInterface[TypeThirdPartyEmailDeliveryInput]):
+class SMTPService(EmailDeliveryInterface[ThirdPartyEmailTemplateVars]):
     ev_smtp_service: EmailVerificationSMTPService
 
-    def __init__(self, config: EmailDeliverySMTPConfig[TypeThirdPartyEmailDeliveryInput]) -> None:
+    def __init__(self, config: EmailDeliverySMTPConfig[ThirdPartyEmailTemplateVars]) -> None:
         self.ev_smtp_service = EmailVerificationSMTPService(config)
 
-    async def send_email(self, template_vars: TypeThirdPartyEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
+    async def send_email(self, template_vars: ThirdPartyEmailTemplateVars, user_context: Dict[str, Any]) -> None:
         await self.ev_smtp_service.send_email(template_vars, user_context)

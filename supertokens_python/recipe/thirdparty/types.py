@@ -17,7 +17,7 @@ from supertokens_python.framework.request import BaseRequest
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.recipe.emailverification.types import \
-    TypeEmailVerificationEmailDeliveryInput
+    VerificationEmailTemplateVars
 
 
 class ThirdPartyInfo:
@@ -73,11 +73,15 @@ class UsersResponse:
         self.next_pagination_token = next_pagination_token
 
 
-TypeThirdPartyEmailDeliveryInput = TypeEmailVerificationEmailDeliveryInput
+ThirdPartyEmailTemplateVars = VerificationEmailTemplateVars
 
 
 class ThirdPartyIngredients:
     def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput], None] = None
+                 email_delivery: Union[EmailDeliveryIngredient[ThirdPartyEmailTemplateVars], None] = None
                  ) -> None:
         self.email_delivery = email_delivery
+
+
+# Export:
+EmailTemplateVars = ThirdPartyEmailTemplateVars

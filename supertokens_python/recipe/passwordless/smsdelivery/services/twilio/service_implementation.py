@@ -20,10 +20,10 @@ from supertokens_python.ingredients.smsdelivery.types import SMSContent, TwilioS
 from supertokens_python.recipe.passwordless.smsdelivery.services.twilio.passwordless_login import \
     pless_sms_content
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessSmsDeliveryInput
+    PasswordlessLoginSMSTemplateVars
 
 
-class ServiceImplementation(TwilioServiceInterface[TypePasswordlessSmsDeliveryInput]):
+class ServiceImplementation(TwilioServiceInterface[PasswordlessLoginSMSTemplateVars]):
     async def send_raw_sms(self,
                            content: SMSContent,
                            user_context: Dict[str, Any],
@@ -43,6 +43,6 @@ class ServiceImplementation(TwilioServiceInterface[TypePasswordlessSmsDeliveryIn
                 messaging_service_sid=messaging_service_sid,
             )
 
-    async def get_content(self, template_vars: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -> SMSContent:
+    async def get_content(self, template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]) -> SMSContent:
         _ = user_context
         return pless_sms_content(template_vars)

@@ -15,8 +15,7 @@ from typing import Awaitable, Callable, List, TypeVar, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.recipe.emailverification.types import VerificationEmailTemplateVars
 
 
 class User:
@@ -70,7 +69,7 @@ class TypeEmailPasswordPasswordResetEmailDeliveryInputUser:
         self.email = email
 
 
-class TypeEmailPasswordPasswordResetEmailDeliveryInput:
+class PasswordResetEmailTemplateVars:
     def __init__(
         self,
         user: TypeEmailPasswordPasswordResetEmailDeliveryInputUser,
@@ -80,14 +79,17 @@ class TypeEmailPasswordPasswordResetEmailDeliveryInput:
         self.password_reset_link = password_reset_link
 
 
-TypeEmailPasswordEmailDeliveryInput = Union[
-    TypeEmailPasswordPasswordResetEmailDeliveryInput,
-    TypeEmailVerificationEmailDeliveryInput
+EmailPasswordEmailTemplateVars = Union[
+    PasswordResetEmailTemplateVars,
+    VerificationEmailTemplateVars
 ]
+
+# Export:
+EmailTemplateVars = EmailPasswordEmailTemplateVars
 
 
 class EmailPasswordIngredients:
     def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput], None] = None
+                 email_delivery: Union[EmailDeliveryIngredient[EmailPasswordEmailTemplateVars], None] = None
                  ) -> None:
         self.email_delivery = email_delivery

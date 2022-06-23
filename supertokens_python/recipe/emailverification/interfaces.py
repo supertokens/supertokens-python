@@ -23,7 +23,7 @@ from supertokens_python.types import APIResponse
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
 
-    from .types import User
+    from .types import User, VerificationEmailTemplateVars
     from .utils import EmailVerificationConfig
 
 
@@ -81,7 +81,7 @@ class RecipeInterface(ABC):
 class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: EmailVerificationConfig, recipe_implementation: RecipeInterface,
-                 email_delivery: EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput]):
+                 email_delivery: EmailDeliveryIngredient[VerificationEmailTemplateVars]):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -147,24 +147,6 @@ class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError(
         return {
             'status': self.status
         }
-
-
-class TypeEmailVerificationEmailDeliveryInputUser:
-    def __init__(self, user_id: str, email: str):
-        self.id = user_id
-        self.email = email
-
-
-class TypeEmailVerificationEmailDeliveryInput:
-    def __init__(
-        self,
-        user: TypeEmailVerificationEmailDeliveryInputUser,
-        email_verify_link: str,
-        user_context: Dict[str, Any],
-    ) -> None:
-        self.user = user
-        self.email_verify_link = email_verify_link
-        self.user_context = user_context
 
 
 class APIInterface(ABC):

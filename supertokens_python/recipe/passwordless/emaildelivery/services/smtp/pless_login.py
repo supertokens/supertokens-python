@@ -25,10 +25,10 @@ from .pless_login_email import (magic_link_body, otp_and_magic_link_body,
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.passwordless.interfaces import \
-        TypePasswordlessEmailDeliveryInput
+        PasswordlessLoginEmailTemplateVars
 
 
-def pless_email_content(input_: TypePasswordlessEmailDeliveryInput) -> EmailContent:
+def pless_email_content(input_: PasswordlessLoginEmailTemplateVars) -> EmailContent:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
     code_lifetime = humanize_time(input_.code_life_time)

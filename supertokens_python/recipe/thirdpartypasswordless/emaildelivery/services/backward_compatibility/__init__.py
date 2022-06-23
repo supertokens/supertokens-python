@@ -20,7 +20,7 @@ from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
 from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService as EVBackwardCompatibilityService
 from supertokens_python.recipe.emailverification.types import \
-    TypeEmailVerificationEmailDeliveryInput
+    VerificationEmailTemplateVars
 from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.passwordless.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService as PlessBackwardCompatibilityService
@@ -29,7 +29,7 @@ from supertokens_python.recipe.passwordless.types import \
 from supertokens_python.recipe.thirdpartypasswordless.interfaces import \
     RecipeInterface
 from supertokens_python.recipe.thirdpartypasswordless.types import \
-    TypeThirdPartyPasswordlessEmailDeliveryInput
+    ThirdPartyPasswordlessEmailTemplateVars
 from supertokens_python.supertokens import AppInfo
 
 if TYPE_CHECKING:
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
         InputEmailVerificationConfig
 
 
-class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyPasswordlessEmailDeliveryInput]):
+class BackwardCompatibilityService(EmailDeliveryInterface[ThirdPartyPasswordlessEmailTemplateVars]):
     pless_backward_compatiblity_service: PlessBackwardCompatibilityService
     ev_backward_compatiblity_service: EVBackwardCompatibilityService
 
@@ -74,8 +74,8 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyPassword
             create_and_send_custom_email
         )
 
-    async def send_email(self, template_vars: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        if isinstance(template_vars, TypeEmailVerificationEmailDeliveryInput):
+    async def send_email(self, template_vars: ThirdPartyPasswordlessEmailTemplateVars, user_context: Dict[str, Any]) -> None:
+        if isinstance(template_vars, VerificationEmailTemplateVars):
             await self.ev_backward_compatiblity_service.send_email(template_vars, user_context)
         else:
             await self.pless_backward_compatiblity_service.send_email(template_vars, user_context)
