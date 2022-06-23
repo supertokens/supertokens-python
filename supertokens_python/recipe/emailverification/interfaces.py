@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, Dict, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
-from supertokens_python.types import APIResponse
+from supertokens_python.types import APIResponse, GeneralErrorResponse
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -156,14 +156,14 @@ class APIInterface(ABC):
         self.disable_generate_email_verify_token_post = False
 
     @abstractmethod
-    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError]:
+    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError, GeneralErrorResponse]:
         pass
 
     @abstractmethod
-    async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> IsEmailVerifiedGetOkResult:
+    async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[IsEmailVerifiedGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def generate_email_verify_token_post(self, api_options: APIOptions,
-                                               user_context: Dict[str, Any]) -> Union[GenerateEmailVerifyTokenPostOkResult, GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError]:
+                                               user_context: Dict[str, Any]) -> Union[GenerateEmailVerifyTokenPostOkResult, GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError, GeneralErrorResponse]:
         pass

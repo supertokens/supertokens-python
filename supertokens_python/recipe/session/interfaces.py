@@ -17,6 +17,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.types import APIResponse, GeneralErrorResponse
 
 from .utils import SessionConfig
 
@@ -118,19 +119,9 @@ class RecipeInterface(ABC):
         pass
 
 
-class SignOutResponse:
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    def to_json(self) -> Dict[str, Any]:
-        pass
-
-
-class SignOutOkayResponse(SignOutResponse):
+class SignOutOkayResponse(APIResponse):
     def __init__(self):
         self.status = 'OK'
-        super().__init__()
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -153,12 +144,16 @@ class APIInterface(ABC):
         self.disable_refresh_post = False
         self.disable_signout_post = False
 
+    # We do not add a GeneralErrorResponse response to this API
+    # since it's not something that is directly called by the user on the
+    # frontend anyway
+
     @abstractmethod
     async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> None:
         pass
 
     @abstractmethod
-    async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> SignOutResponse:
+    async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[SignOutOkayResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod

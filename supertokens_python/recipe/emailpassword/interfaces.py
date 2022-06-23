@@ -21,7 +21,7 @@ from supertokens_python.ingredients.emaildelivery import \
 from supertokens_python.recipe.emailpassword.types import \
     EmailPasswordEmailTemplateVars
 
-from ...types import APIResponse
+from ...types import APIResponse, GeneralErrorResponse
 from ..emailverification.interfaces import \
     RecipeInterface as EmailVerificationRecipeInterface
 
@@ -292,28 +292,28 @@ class APIInterface:
         self.disable_sign_up_post = False
 
     @abstractmethod
-    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailExistsGetOkResult:
+    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
                                                  api_options: APIOptions,
-                                                 user_context: Dict[str, Any]) -> GeneratePasswordResetTokenPostOkResult:
+                                                 user_context: Dict[str, Any]) -> Union[GeneratePasswordResetTokenPostOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def password_reset_post(self, form_fields: List[FormField], token: str,
-                                  api_options: APIOptions, user_context: Dict[str, Any]) -> Union[PasswordResetPostOkResult, PasswordResetPostInvalidTokenResponse]:
+                                  api_options: APIOptions, user_context: Dict[str, Any]) -> Union[PasswordResetPostOkResult, PasswordResetPostInvalidTokenResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def sign_in_post(self, form_fields: List[FormField],
                            api_options: APIOptions,
-                           user_context: Dict[str, Any]) -> Union[SignInPostOkResult, SignInPostWrongCredentialsError]:
+                           user_context: Dict[str, Any]) -> Union[SignInPostOkResult, SignInPostWrongCredentialsError, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def sign_up_post(self, form_fields: List[FormField],
                            api_options: APIOptions,
-                           user_context: Dict[str, Any]) -> Union[SignUpPostOkResult, SignUpPostEmailAlreadyExistsError]:
+                           user_context: Dict[str, Any]) -> Union[SignUpPostOkResult, SignUpPostEmailAlreadyExistsError, GeneralErrorResponse]:
         pass

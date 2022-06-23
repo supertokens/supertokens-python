@@ -20,6 +20,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixes
 - Fixes Cookie same_site config validation.
 
+### Breaking change
+-   https://github.com/supertokens/supertokens-node/issues/220
+    -   Adds `{status: "GENERAL_ERROR", message: string}` as a possible output to all the APIs.
+    -   Changes `FIELD_ERROR` output status in third party recipe API to be `GENERAL_ERROR`.
+    -   Replaced `FIELD_ERROR` status type in third party signinup API with `GENERAL_ERROR`.
+    -   Removed `FIELD_ERROR` status type from third party signinup recipe function.
+-   If sms or email sending failed in passwordless recipe APIs, we now throw a regular JS error from the API as opposed to returning a `GENERAL_ERROR` to the client.
+-   If there is an error whilst getting the profile info about a user from a third party provider (in /signinup POST API), then we throw a regular JS error instead of returning a `GENERAL_ERROR` to the client.
+
+### Changes
 -   Changes `get_email_for_user_id` function inside thirdpartypasswordless to take into account passwordless emails and return an empty string in case a passwordless email doesn't exist. This helps situations where the dev wants to customise the email verification functions in the thirdpartypasswordless recipe.
 
 ## [0.8.4] - 2022-06-17

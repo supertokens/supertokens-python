@@ -24,8 +24,8 @@ from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryConfig, EmailDeliveryInterface, SMTPServiceConfigFrom, SMTPSettings, EmailContent,
-    SMTPServiceInterface)
+    EmailContent, EmailDeliveryConfig, EmailDeliveryInterface,
+    SMTPServiceConfigFrom, SMTPServiceInterface, SMTPSettings)
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import (passwordless, session,
                                        thirdpartypasswordless)
@@ -576,19 +576,17 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(driv
 
     with respx_mock(assert_all_mocked=False) as mocker:
         mocker.route(host="localhost").pass_through()
-        mocked_route = mocker.post("https://api.supertokens.io/0/st/auth/passwordless/login").mock(
-            side_effect=api_side_effect)
-        resp = sign_in_up_request(driver_config_client, "test@example.com", True)
+        mocked_route = mocker.post("https://api.supertokens.io/0/st/auth/passwordless/login").mock(side_effect=api_side_effect)
+        try:
+            sign_in_up_request(driver_config_client, "test@example.com", True)
+        except Exception as e:
+            assert str(e) == "CUSTOM_ERR"
+            assert mocked_route.called
 
-        assert resp.status_code == 200
-        # Note: Other recipes suppress this error:
-        assert resp.json() == {"status": "GENERAL_ERROR", "message": "CUSTOM_ERR"}
-        assert mocked_route.called
-
-        assert app_name == "ST"
-        assert email == "test@example.com"
-        assert all([url_with_link_code, user_input_code, code_lifetime])
-        assert code_lifetime > 0
+            assert app_name == "ST"
+            assert email == "test@example.com"
+            assert all([url_with_link_code, user_input_code, code_lifetime])
+            assert code_lifetime > 0
 
 
 @mark.asyncio
