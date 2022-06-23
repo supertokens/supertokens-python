@@ -87,5 +87,5 @@ def before_each(request: HttpRequest):
 
 def test_feature_flags(request: HttpRequest):
     return JsonResponse({
-        'available': ['passwordless', 'thirdpartypasswordless']
+        'available': ['passwordless', 'thirdpartypasswordless', 'generalerror']
     })
