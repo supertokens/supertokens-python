@@ -42,47 +42,19 @@
 
 
 import ssl
-from abc import ABC, abstractmethod
 from email.mime.text import MIMEText
-from typing import Any, Callable, Dict, Generic, TypeVar, Union
+from typing import Any, Dict, TypeVar
 
 import aiosmtplib
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailContent, SMTPSettings)
 from supertokens_python.logger import log_debug_message
 
 _T = TypeVar(&#39;_T&#39;)
 
 
-class SMTPServiceConfigFrom:
-    def __init__(self, name: str, email: str) -&gt; None:
-        self.name = name
-        self.email = email
-
-
-class SMTPServiceConfig:
-    def __init__(
-        self, host: str,
-        port: int,
-        from_: SMTPServiceConfigFrom,
-        password: Union[str, None] = None,
-        secure: Union[bool, None] = None,
-    ) -&gt; None:
-        self.host = host
-        self.from_ = from_
-        self.password = password
-        self.port = port
-        self.secure = secure
-
-
-class GetContentResult:
-    def __init__(self, body: str, subject: str, to_email: str, is_html: bool) -&gt; None:
-        self.body = body
-        self.subject = subject
-        self.to_email = to_email
-        self.is_html = is_html
-
-
 class Transporter:
-    def __init__(self, smtp_settings: SMTPServiceConfig) -&gt; None:
+    def __init__(self, smtp_settings: SMTPSettings) -&gt; None:
         self.smtp_settings = smtp_settings
 
     async def _connect(self):
@@ -115,7 +87,7 @@ class Transporter:
             log_debug_message(&#34;Couldn&#39;t connect to the SMTP server: %s&#34;, e)
             raise e
 
-    async def send_email(self, input_: GetContentResult,
+    async def send_email(self, input_: EmailContent,
                          _: Dict[str, Any]) -&gt; None:
         connection = await self._connect()
 
@@ -134,32 +106,7 @@ class Transporter:
             log_debug_message(&#39;Error in sending email: %s&#39;, e)
             raise e
         finally:
-            await connection.quit()
-
-
-class ServiceInterface(ABC, Generic[_T]):
-    def __init__(self, transporter: Transporter) -&gt; None:
-        self.transporter = transporter
-
-    @abstractmethod
-    async def send_raw_email(self,
-                             input_: GetContentResult,
-                             user_context: Dict[str, Any]
-                             ) -&gt; None:
-        pass
-
-    @abstractmethod
-    async def get_content(self, input_: _T, user_context: Dict[str, Any]) -&gt; GetContentResult:
-        pass
-
-
-class EmailDeliverySMTPConfig(Generic[_T]):
-    def __init__(self,
-                 smtp_settings: SMTPServiceConfig,
-                 override: Union[Callable[[ServiceInterface[_T]], ServiceInterface[_T]], None] = None
-                 ) -&gt; None:
-        self.smtp_settings = smtp_settings
-        self.override = override</code></pre>
+            await connection.quit()</code></pre>
 </details>
 </section>
 <section>
@@ -171,180 +118,9 @@ class EmailDeliverySMTPConfig(Generic[_T]):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="supertokens_python.ingredients.emaildelivery.services.smtp.EmailDeliverySMTPConfig"><code class="flex name class">
-<span>class <span class="ident">EmailDeliverySMTPConfig</span></span>
-<span>(</span><span>smtp_settings: <a title="supertokens_python.ingredients.emaildelivery.services.smtp.SMTPServiceConfig" href="#supertokens_python.ingredients.emaildelivery.services.smtp.SMTPServiceConfig">SMTPServiceConfig</a>, override: Optional[Callable[[<a title="supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface" href="#supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface">ServiceInterface</a>[~_T]], <a title="supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface" href="#supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface">ServiceInterface</a>[~_T]]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Abstract base class for generic types.</p>
-<p>A generic type is typically declared by inheriting from
-this class parameterized with one or more type variables.
-For example, a generic mapping type might be defined as::</p>
-<p>class Mapping(Generic[KT, VT]):
-def <strong>getitem</strong>(self, key: KT) -&gt; VT:
-&hellip;
-# Etc.</p>
-<p>This class can then be used as follows::</p>
-<p>def lookup_name(mapping: Mapping[KT, VT], key: KT, default: VT) -&gt; VT:
-try:
-return mapping[key]
-except KeyError:
-return default</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class EmailDeliverySMTPConfig(Generic[_T]):
-    def __init__(self,
-                 smtp_settings: SMTPServiceConfig,
-                 override: Union[Callable[[ServiceInterface[_T]], ServiceInterface[_T]], None] = None
-                 ) -&gt; None:
-        self.smtp_settings = smtp_settings
-        self.override = override</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>typing.Generic</li>
-</ul>
-</dd>
-<dt id="supertokens_python.ingredients.emaildelivery.services.smtp.GetContentResult"><code class="flex name class">
-<span>class <span class="ident">GetContentResult</span></span>
-<span>(</span><span>body: str, subject: str, to_email: str, is_html: bool)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class GetContentResult:
-    def __init__(self, body: str, subject: str, to_email: str, is_html: bool) -&gt; None:
-        self.body = body
-        self.subject = subject
-        self.to_email = to_email
-        self.is_html = is_html</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.ingredients.emaildelivery.services.smtp.SMTPServiceConfig"><code class="flex name class">
-<span>class <span class="ident">SMTPServiceConfig</span></span>
-<span>(</span><span>host: str, port: int, from_: <a title="supertokens_python.ingredients.emaildelivery.services.smtp.SMTPServiceConfigFrom" href="#supertokens_python.ingredients.emaildelivery.services.smtp.SMTPServiceConfigFrom">SMTPServiceConfigFrom</a>, password: Optional[str] = None, secure: Optional[bool] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SMTPServiceConfig:
-    def __init__(
-        self, host: str,
-        port: int,
-        from_: SMTPServiceConfigFrom,
-        password: Union[str, None] = None,
-        secure: Union[bool, None] = None,
-    ) -&gt; None:
-        self.host = host
-        self.from_ = from_
-        self.password = password
-        self.port = port
-        self.secure = secure</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.ingredients.emaildelivery.services.smtp.SMTPServiceConfigFrom"><code class="flex name class">
-<span>class <span class="ident">SMTPServiceConfigFrom</span></span>
-<span>(</span><span>name: str, email: str)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SMTPServiceConfigFrom:
-    def __init__(self, name: str, email: str) -&gt; None:
-        self.name = name
-        self.email = email</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface"><code class="flex name class">
-<span>class <span class="ident">ServiceInterface</span></span>
-<span>(</span><span>transporter: <a title="supertokens_python.ingredients.emaildelivery.services.smtp.Transporter" href="#supertokens_python.ingredients.emaildelivery.services.smtp.Transporter">Transporter</a>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class ServiceInterface(ABC, Generic[_T]):
-    def __init__(self, transporter: Transporter) -&gt; None:
-        self.transporter = transporter
-
-    @abstractmethod
-    async def send_raw_email(self,
-                             input_: GetContentResult,
-                             user_context: Dict[str, Any]
-                             ) -&gt; None:
-        pass
-
-    @abstractmethod
-    async def get_content(self, input_: _T, user_context: Dict[str, Any]) -&gt; GetContentResult:
-        pass</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-<li>typing.Generic</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.ServiceImplementation" href="../../../recipe/emailpassword/emaildelivery/services/smtp/service_implementation/index.html#supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.ServiceImplementation">ServiceImplementation</a></li>
-<li><a title="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation.ServiceImplementation" href="../../../recipe/emailpassword/emaildelivery/services/smtp/service_implementation/email_verification_implementation.html#supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation.ServiceImplementation">ServiceImplementation</a></li>
-<li><a title="supertokens_python.recipe.emailverification.emaildelivery.services.smtp.service_implementation.ServiceImplementation" href="../../../recipe/emailverification/emaildelivery/services/smtp/service_implementation.html#supertokens_python.recipe.emailverification.emaildelivery.services.smtp.service_implementation.ServiceImplementation">ServiceImplementation</a></li>
-<li><a title="supertokens_python.recipe.passwordless.emaildelivery.services.smtp.service_implementation.ServiceImplementation" href="../../../recipe/passwordless/emaildelivery/services/smtp/service_implementation.html#supertokens_python.recipe.passwordless.emaildelivery.services.smtp.service_implementation.ServiceImplementation">ServiceImplementation</a></li>
-<li><a title="supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp.service_implementation.ServiceImplementation" href="../../../recipe/thirdpartypasswordless/emaildelivery/services/smtp/service_implementation/index.html#supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp.service_implementation.ServiceImplementation">ServiceImplementation</a></li>
-<li><a title="supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp.service_implementation.email_verification_implementation.ServiceImplementation" href="../../../recipe/thirdpartypasswordless/emaildelivery/services/smtp/service_implementation/email_verification_implementation.html#supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp.service_implementation.email_verification_implementation.ServiceImplementation">ServiceImplementation</a></li>
-<li><a title="supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp.service_implementation.passwordless_implementation.ServiceImplementation" href="../../../recipe/thirdpartypasswordless/emaildelivery/services/smtp/service_implementation/passwordless_implementation.html#supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp.service_implementation.passwordless_implementation.ServiceImplementation">ServiceImplementation</a></li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface.get_content"><code class="name flex">
-<span>async def <span class="ident">get_content</span></span>(<span>self, input_: ~_T, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.ingredients.emaildelivery.services.smtp.GetContentResult" href="#supertokens_python.ingredients.emaildelivery.services.smtp.GetContentResult">GetContentResult</a></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def get_content(self, input_: _T, user_context: Dict[str, Any]) -&gt; GetContentResult:
-    pass</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface.send_raw_email"><code class="name flex">
-<span>async def <span class="ident">send_raw_email</span></span>(<span>self, input_: <a title="supertokens_python.ingredients.emaildelivery.services.smtp.GetContentResult" href="#supertokens_python.ingredients.emaildelivery.services.smtp.GetContentResult">GetContentResult</a>, user_context: Dict[str, Any]) ‑> None</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-async def send_raw_email(self,
-                         input_: GetContentResult,
-                         user_context: Dict[str, Any]
-                         ) -&gt; None:
-    pass</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
 <dt id="supertokens_python.ingredients.emaildelivery.services.smtp.Transporter"><code class="flex name class">
 <span>class <span class="ident">Transporter</span></span>
-<span>(</span><span>smtp_settings: <a title="supertokens_python.ingredients.emaildelivery.services.smtp.SMTPServiceConfig" href="#supertokens_python.ingredients.emaildelivery.services.smtp.SMTPServiceConfig">SMTPServiceConfig</a>)</span>
+<span>(</span><span>smtp_settings: <a title="supertokens_python.ingredients.emaildelivery.types.SMTPSettings" href="../types.html#supertokens_python.ingredients.emaildelivery.types.SMTPSettings">SMTPSettings</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -353,7 +129,7 @@ async def send_raw_email(self,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Transporter:
-    def __init__(self, smtp_settings: SMTPServiceConfig) -&gt; None:
+    def __init__(self, smtp_settings: SMTPSettings) -&gt; None:
         self.smtp_settings = smtp_settings
 
     async def _connect(self):
@@ -386,7 +162,7 @@ async def send_raw_email(self,
             log_debug_message(&#34;Couldn&#39;t connect to the SMTP server: %s&#34;, e)
             raise e
 
-    async def send_email(self, input_: GetContentResult,
+    async def send_email(self, input_: EmailContent,
                          _: Dict[str, Any]) -&gt; None:
         connection = await self._connect()
 
@@ -410,7 +186,7 @@ async def send_raw_email(self,
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.ingredients.emaildelivery.services.smtp.Transporter.send_email"><code class="name flex">
-<span>async def <span class="ident">send_email</span></span>(<span>self, input_: <a title="supertokens_python.ingredients.emaildelivery.services.smtp.GetContentResult" href="#supertokens_python.ingredients.emaildelivery.services.smtp.GetContentResult">GetContentResult</a>, _: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">send_email</span></span>(<span>self, input_: <a title="supertokens_python.ingredients.emaildelivery.types.EmailContent" href="../types.html#supertokens_python.ingredients.emaildelivery.types.EmailContent">EmailContent</a>, _: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -418,7 +194,7 @@ async def send_raw_email(self,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_email(self, input_: GetContentResult,
+<pre><code class="python">async def send_email(self, input_: EmailContent,
                      _: Dict[str, Any]) -&gt; None:
     connection = await self._connect()
 
@@ -458,25 +234,6 @@ async def send_raw_email(self,
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
-<li>
-<h4><code><a title="supertokens_python.ingredients.emaildelivery.services.smtp.EmailDeliverySMTPConfig" href="#supertokens_python.ingredients.emaildelivery.services.smtp.EmailDeliverySMTPConfig">EmailDeliverySMTPConfig</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.ingredients.emaildelivery.services.smtp.GetContentResult" href="#supertokens_python.ingredients.emaildelivery.services.smtp.GetContentResult">GetContentResult</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.ingredients.emaildelivery.services.smtp.SMTPServiceConfig" href="#supertokens_python.ingredients.emaildelivery.services.smtp.SMTPServiceConfig">SMTPServiceConfig</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.ingredients.emaildelivery.services.smtp.SMTPServiceConfigFrom" href="#supertokens_python.ingredients.emaildelivery.services.smtp.SMTPServiceConfigFrom">SMTPServiceConfigFrom</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface" href="#supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface">ServiceInterface</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface.get_content" href="#supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface.get_content">get_content</a></code></li>
-<li><code><a title="supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface.send_raw_email" href="#supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface.send_raw_email">send_raw_email</a></code></li>
-</ul>
-</li>
 <li>
 <h4><code><a title="supertokens_python.ingredients.emaildelivery.services.smtp.Transporter" href="#supertokens_python.ingredients.emaildelivery.services.smtp.Transporter">Transporter</a></code></h4>
 <ul class="">

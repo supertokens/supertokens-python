@@ -45,7 +45,7 @@ from typing import Any, Dict, List, Union
 from supertokens_python.recipe.thirdpartyemailpassword.recipe import \
     ThirdPartyEmailPasswordRecipe
 
-from ..types import TypeThirdPartyEmailPasswordEmailDeliveryInput, User
+from ..types import EmailTemplateVars, User
 
 
 async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -142,7 +142,7 @@ async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any
     return await ThirdPartyEmailPasswordRecipe.get_instance().recipe_implementation.get_users_by_email(email, user_context)
 
 
-async def send_email(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+async def send_email(input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
@@ -315,7 +315,7 @@ async def send_email(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, user
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.asyncio.send_email"><code class="name flex">
-<span>async def <span class="ident">send_email</span></span>(<span>input_: Union[<a title="supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput" href="../../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput">TypeEmailPasswordPasswordResetEmailDeliveryInput</a>, <a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="../../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>], user_context: Optional[Dict[str, Any]] = None)</span>
+<span>async def <span class="ident">send_email</span></span>(<span>input_: Union[<a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="../../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a>, <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>], user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -323,7 +323,7 @@ async def send_email(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, user
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_email(input_: TypeThirdPartyEmailPasswordEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def send_email(input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyEmailPasswordRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(

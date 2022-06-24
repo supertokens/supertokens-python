@@ -42,28 +42,29 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Callable, Union
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    EmailDeliverySMTPConfig, ServiceInterface, Transporter)
+    Transporter)
 from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface
+    EmailDeliveryInterface, SMTPServiceInterface, SMTPSettings
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessEmailDeliveryInput
+    PasswordlessLoginEmailTemplateVars, SMTPOverrideInput
 
 from .service_implementation import ServiceImplementation
 
 
-class SMTPService(EmailDeliveryInterface[TypePasswordlessEmailDeliveryInput]):
-    service_implementation: ServiceInterface[TypePasswordlessEmailDeliveryInput]
+class SMTPService(EmailDeliveryInterface[PasswordlessLoginEmailTemplateVars]):
+    service_implementation: SMTPServiceInterface[PasswordlessLoginEmailTemplateVars]
 
-    def __init__(self, config: EmailDeliverySMTPConfig[TypePasswordlessEmailDeliveryInput]) -&gt; None:
-        self.transporter = Transporter(config.smtp_settings)
+    def __init__(self, smtp_settings: SMTPSettings,
+                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -&gt; None:
+        self.transporter = Transporter(smtp_settings)
         oi = ServiceImplementation(self.transporter)
-        self.service_implementation = oi if config.override is None else config.override(oi)
+        self.service_implementation = oi if override is None else override(oi)
 
-    async def send_email(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -&gt; None:
-        content = await self.service_implementation.get_content(input_, user_context)
+    async def send_email(self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+        content = await self.service_implementation.get_content(template_vars, user_context)
         await self.service_implementation.send_raw_email(content, user_context)</code></pre>
 </details>
 </section>
@@ -93,7 +94,7 @@ class SMTPService(EmailDeliveryInterface[TypePasswordlessEmailDeliveryInput]):
 <dl>
 <dt id="supertokens_python.recipe.passwordless.emaildelivery.services.smtp.SMTPService"><code class="flex name class">
 <span>class <span class="ident">SMTPService</span></span>
-<span>(</span><span>config: EmailDeliverySMTPConfig[TypePasswordlessEmailDeliveryInput])</span>
+<span>(</span><span>smtp_settings: SMTPSettings, override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -102,16 +103,17 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SMTPService(EmailDeliveryInterface[TypePasswordlessEmailDeliveryInput]):
-    service_implementation: ServiceInterface[TypePasswordlessEmailDeliveryInput]
+<pre><code class="python">class SMTPService(EmailDeliveryInterface[PasswordlessLoginEmailTemplateVars]):
+    service_implementation: SMTPServiceInterface[PasswordlessLoginEmailTemplateVars]
 
-    def __init__(self, config: EmailDeliverySMTPConfig[TypePasswordlessEmailDeliveryInput]) -&gt; None:
-        self.transporter = Transporter(config.smtp_settings)
+    def __init__(self, smtp_settings: SMTPSettings,
+                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -&gt; None:
+        self.transporter = Transporter(smtp_settings)
         oi = ServiceImplementation(self.transporter)
-        self.service_implementation = oi if config.override is None else config.override(oi)
+        self.service_implementation = oi if override is None else override(oi)
 
-    async def send_email(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -&gt; None:
-        content = await self.service_implementation.get_content(input_, user_context)
+    async def send_email(self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+        content = await self.service_implementation.get_content(template_vars, user_context)
         await self.service_implementation.send_raw_email(content, user_context)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -122,7 +124,7 @@ inheritance.</p></div>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.emaildelivery.services.smtp.SMTPService.service_implementation"><code class="name">var <span class="ident">service_implementation</span> : <a title="supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface" href="../../../../../ingredients/emaildelivery/services/smtp.html#supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface">ServiceInterface</a>[<a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../../types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>]</code></dt>
+<dt id="supertokens_python.recipe.passwordless.emaildelivery.services.smtp.SMTPService.service_implementation"><code class="name">var <span class="ident">service_implementation</span> : <a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[<a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../../types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -130,7 +132,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.emaildelivery.services.smtp.SMTPService.send_email"><code class="name flex">
-<span>async def <span class="ident">send_email</span></span>(<span>self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">send_email</span></span>(<span>self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -138,8 +140,8 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_email(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -&gt; None:
-    content = await self.service_implementation.get_content(input_, user_context)
+<pre><code class="python">async def send_email(self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+    content = await self.service_implementation.get_content(template_vars, user_context)
     await self.service_implementation.send_raw_email(content, user_context)</code></pre>
 </details>
 </dd>

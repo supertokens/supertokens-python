@@ -45,20 +45,20 @@ from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.passwordless.interfaces import (
     APIInterface, APIOptions, ConsumeCodeExpiredUserInputCodeError,
     ConsumeCodeIncorrectUserInputCodeError,
-    ConsumeCodePostExpiredUserInputCodeError, ConsumeCodePostGeneralError,
+    ConsumeCodePostExpiredUserInputCodeError,
     ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostOkResult,
     ConsumeCodePostRestartFlowError, ConsumeCodeRestartFlowError,
-    CreateCodePostGeneralError, CreateCodePostOkResult,
-    CreateNewCodeForDeviceOkResult,
+    CreateCodePostOkResult, CreateNewCodeForDeviceOkResult,
     CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
-    EmailExistsGetOkResult, PhoneNumberExistsGetOkResult,
-    ResendCodePostGeneralError, ResendCodePostOkResult,
-    ResendCodePostRestartFlowError, TypePasswordlessEmailDeliveryInput)
+    EmailExistsGetOkResult, PasswordlessLoginEmailTemplateVars,
+    PhoneNumberExistsGetOkResult, ResendCodePostOkResult,
+    ResendCodePostRestartFlowError)
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessSmsDeliveryInput
+    PasswordlessLoginSMSTemplateVars
 from supertokens_python.recipe.passwordless.utils import (
     ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)
 from supertokens_python.recipe.session.asyncio import create_new_session
+from supertokens_python.types import GeneralErrorResponse
 
 from ..utils import PhoneOrEmailInput
 
@@ -68,7 +68,7 @@ class APIImplementation(APIInterface):
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -&gt; Union[CreateCodePostOkResult, CreateCodePostGeneralError]:
+                               user_context: Dict[str, Any]) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
         user_input_code = None
         if api_options.config.get_custom_user_input_code is not None:
             user_input_code = await api_options.config.get_custom_user_input_code(user_context)
@@ -83,42 +83,40 @@ class APIImplementation(APIInterface):
         if flow_type in (&#39;USER_INPUT_CODE&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;):
             user_input_code = response.user_input_code
 
-        try:
-            if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
-                    (isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig) and email is not None):
-                if email is None:
-                    raise Exception(&#34;Should never come here&#34;)
+        if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
+                (isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig) and email is not None):
+            if email is None:
+                raise Exception(&#34;Should never come here&#34;)
 
-                log_debug_message(&#34;Sending passwordless login email to %s&#34;, email)
-                passwordless_email_delivery_input = TypePasswordlessEmailDeliveryInput(
-                    email=email,
-                    user_input_code=user_input_code,
-                    url_with_link_code=magic_link,
-                    code_life_time=response.code_life_time,
-                    pre_auth_session_id=response.pre_auth_session_id
-                )
-                await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
-            elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
-                if phone_number is None:
-                    raise Exception(&#34;Should never come here&#34;)
-                log_debug_message(&#34;Sending passwordless login SMS to %s&#34;, phone_number)
-                sms_input = TypePasswordlessSmsDeliveryInput(
-                    phone_number=phone_number,
-                    user_input_code=user_input_code,
-                    url_with_link_code=magic_link,
-                    code_life_time=response.code_life_time,
-                    pre_auth_session_id=response.pre_auth_session_id,
-                )
-                await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
-        except Exception as e:
-            return CreateCodePostGeneralError(str(e))
+            log_debug_message(&#34;Sending passwordless login email to %s&#34;, email)
+            passwordless_email_delivery_input = PasswordlessLoginEmailTemplateVars(
+                email=email,
+                user_input_code=user_input_code,
+                url_with_link_code=magic_link,
+                code_life_time=response.code_life_time,
+                pre_auth_session_id=response.pre_auth_session_id
+            )
+            await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
+        elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
+            if phone_number is None:
+                raise Exception(&#34;Should never come here&#34;)
+            log_debug_message(&#34;Sending passwordless login SMS to %s&#34;, phone_number)
+            sms_input = PasswordlessLoginSMSTemplateVars(
+                phone_number=phone_number,
+                user_input_code=user_input_code,
+                url_with_link_code=magic_link,
+                code_life_time=response.code_life_time,
+                pre_auth_session_id=response.pre_auth_session_id,
+            )
+            await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
+
         return CreateCodePostOkResult(response.device_id, response.pre_auth_session_id, flow_type)
 
     async def resend_code_post(self,
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -&gt; Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, ResendCodePostGeneralError]:
+                               user_context: Dict[str, Any]) -&gt; Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse]:
         device_info = await api_options.recipe_implementation.list_codes_by_device_id(
             device_id=device_id,
             user_context=user_context
@@ -141,7 +139,7 @@ class APIImplementation(APIInterface):
             )
             if isinstance(response, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError):
                 if number_of_tries_to_create_new_code &gt;= 3:
-                    return ResendCodePostGeneralError(
+                    return GeneralErrorResponse(
                         &#39;Failed to generate a one time code. Please try again&#39;)
                 continue
 
@@ -156,36 +154,33 @@ class APIImplementation(APIInterface):
                 if flow_type in (&#39;USER_INPUT_CODE&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;):
                     user_input_code = response.user_input_code
 
-                try:
-                    if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
-                            (isinstance(api_options.config.contact_config,
-                                        ContactEmailOrPhoneConfig) and device_info.email is not None):
-                        if device_info.email is None:
-                            raise Exception(&#34;Should never come here&#34;)
+                if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
+                        (isinstance(api_options.config.contact_config,
+                                    ContactEmailOrPhoneConfig) and device_info.email is not None):
+                    if device_info.email is None:
+                        raise Exception(&#34;Should never come here&#34;)
 
-                        log_debug_message(&#34;Sending passwordless login email to %s&#34;, device_info.email)
-                        passwordless_email_delivery_input = TypePasswordlessEmailDeliveryInput(
-                            email=device_info.email,
-                            user_input_code=user_input_code,
-                            url_with_link_code=magic_link,
-                            code_life_time=response.code_life_time,
-                            pre_auth_session_id=response.pre_auth_session_id
-                        )
-                        await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
-                    elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
-                        if device_info.phone_number is None:
-                            raise Exception(&#34;Should never come here&#34;)
-                        log_debug_message(&#34;Sending passwordless login SMS to %s&#34;, device_info.phone_number)
-                        sms_input = TypePasswordlessSmsDeliveryInput(
-                            phone_number=device_info.phone_number,
-                            user_input_code=user_input_code,
-                            url_with_link_code=magic_link,
-                            code_life_time=response.code_life_time,
-                            pre_auth_session_id=response.pre_auth_session_id,
-                        )
-                        await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
-                except Exception as e:
-                    return ResendCodePostGeneralError(str(e))
+                    log_debug_message(&#34;Sending passwordless login email to %s&#34;, device_info.email)
+                    passwordless_email_delivery_input = PasswordlessLoginEmailTemplateVars(
+                        email=device_info.email,
+                        user_input_code=user_input_code,
+                        url_with_link_code=magic_link,
+                        code_life_time=response.code_life_time,
+                        pre_auth_session_id=response.pre_auth_session_id
+                    )
+                    await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
+                elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
+                    if device_info.phone_number is None:
+                        raise Exception(&#34;Should never come here&#34;)
+                    log_debug_message(&#34;Sending passwordless login SMS to %s&#34;, device_info.phone_number)
+                    sms_input = PasswordlessLoginSMSTemplateVars(
+                        phone_number=device_info.phone_number,
+                        user_input_code=user_input_code,
+                        url_with_link_code=magic_link,
+                        code_life_time=response.code_life_time,
+                        pre_auth_session_id=response.pre_auth_session_id,
+                    )
+                    await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
                 return ResendCodePostOkResult()
             return ResendCodePostRestartFlowError()
 
@@ -195,7 +190,7 @@ class APIImplementation(APIInterface):
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
                                 api_options: APIOptions,
-                                user_context: Dict[str, Any]) -&gt; Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostGeneralError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
+                                user_context: Dict[str, Any]) -&gt; Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError, GeneralErrorResponse]:
         response = await api_options.recipe_implementation.consume_code(
             pre_auth_session_id=pre_auth_session_id,
             user_input_code=user_input_code,
@@ -225,11 +220,11 @@ class APIImplementation(APIInterface):
             session=session
         )
 
-    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; EmailExistsGetOkResult:
+    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         response = await api_options.recipe_implementation.get_user_by_email(email, user_context)
         return EmailExistsGetOkResult(exists=response is not None)
 
-    async def phone_number_exists_get(self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; PhoneNumberExistsGetOkResult:
+    async def phone_number_exists_get(self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[PhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         response = await api_options.recipe_implementation.get_user_by_phone_number(phone_number, user_context)
         return PhoneNumberExistsGetOkResult(exists=response is not None)</code></pre>
 </details>
@@ -257,7 +252,7 @@ class APIImplementation(APIInterface):
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -&gt; Union[CreateCodePostOkResult, CreateCodePostGeneralError]:
+                               user_context: Dict[str, Any]) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
         user_input_code = None
         if api_options.config.get_custom_user_input_code is not None:
             user_input_code = await api_options.config.get_custom_user_input_code(user_context)
@@ -272,42 +267,40 @@ class APIImplementation(APIInterface):
         if flow_type in (&#39;USER_INPUT_CODE&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;):
             user_input_code = response.user_input_code
 
-        try:
-            if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
-                    (isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig) and email is not None):
-                if email is None:
-                    raise Exception(&#34;Should never come here&#34;)
+        if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
+                (isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig) and email is not None):
+            if email is None:
+                raise Exception(&#34;Should never come here&#34;)
 
-                log_debug_message(&#34;Sending passwordless login email to %s&#34;, email)
-                passwordless_email_delivery_input = TypePasswordlessEmailDeliveryInput(
-                    email=email,
-                    user_input_code=user_input_code,
-                    url_with_link_code=magic_link,
-                    code_life_time=response.code_life_time,
-                    pre_auth_session_id=response.pre_auth_session_id
-                )
-                await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
-            elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
-                if phone_number is None:
-                    raise Exception(&#34;Should never come here&#34;)
-                log_debug_message(&#34;Sending passwordless login SMS to %s&#34;, phone_number)
-                sms_input = TypePasswordlessSmsDeliveryInput(
-                    phone_number=phone_number,
-                    user_input_code=user_input_code,
-                    url_with_link_code=magic_link,
-                    code_life_time=response.code_life_time,
-                    pre_auth_session_id=response.pre_auth_session_id,
-                )
-                await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
-        except Exception as e:
-            return CreateCodePostGeneralError(str(e))
+            log_debug_message(&#34;Sending passwordless login email to %s&#34;, email)
+            passwordless_email_delivery_input = PasswordlessLoginEmailTemplateVars(
+                email=email,
+                user_input_code=user_input_code,
+                url_with_link_code=magic_link,
+                code_life_time=response.code_life_time,
+                pre_auth_session_id=response.pre_auth_session_id
+            )
+            await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
+        elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
+            if phone_number is None:
+                raise Exception(&#34;Should never come here&#34;)
+            log_debug_message(&#34;Sending passwordless login SMS to %s&#34;, phone_number)
+            sms_input = PasswordlessLoginSMSTemplateVars(
+                phone_number=phone_number,
+                user_input_code=user_input_code,
+                url_with_link_code=magic_link,
+                code_life_time=response.code_life_time,
+                pre_auth_session_id=response.pre_auth_session_id,
+            )
+            await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
+
         return CreateCodePostOkResult(response.device_id, response.pre_auth_session_id, flow_type)
 
     async def resend_code_post(self,
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -&gt; Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, ResendCodePostGeneralError]:
+                               user_context: Dict[str, Any]) -&gt; Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse]:
         device_info = await api_options.recipe_implementation.list_codes_by_device_id(
             device_id=device_id,
             user_context=user_context
@@ -330,7 +323,7 @@ class APIImplementation(APIInterface):
             )
             if isinstance(response, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError):
                 if number_of_tries_to_create_new_code &gt;= 3:
-                    return ResendCodePostGeneralError(
+                    return GeneralErrorResponse(
                         &#39;Failed to generate a one time code. Please try again&#39;)
                 continue
 
@@ -345,36 +338,33 @@ class APIImplementation(APIInterface):
                 if flow_type in (&#39;USER_INPUT_CODE&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;):
                     user_input_code = response.user_input_code
 
-                try:
-                    if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
-                            (isinstance(api_options.config.contact_config,
-                                        ContactEmailOrPhoneConfig) and device_info.email is not None):
-                        if device_info.email is None:
-                            raise Exception(&#34;Should never come here&#34;)
+                if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
+                        (isinstance(api_options.config.contact_config,
+                                    ContactEmailOrPhoneConfig) and device_info.email is not None):
+                    if device_info.email is None:
+                        raise Exception(&#34;Should never come here&#34;)
 
-                        log_debug_message(&#34;Sending passwordless login email to %s&#34;, device_info.email)
-                        passwordless_email_delivery_input = TypePasswordlessEmailDeliveryInput(
-                            email=device_info.email,
-                            user_input_code=user_input_code,
-                            url_with_link_code=magic_link,
-                            code_life_time=response.code_life_time,
-                            pre_auth_session_id=response.pre_auth_session_id
-                        )
-                        await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
-                    elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
-                        if device_info.phone_number is None:
-                            raise Exception(&#34;Should never come here&#34;)
-                        log_debug_message(&#34;Sending passwordless login SMS to %s&#34;, device_info.phone_number)
-                        sms_input = TypePasswordlessSmsDeliveryInput(
-                            phone_number=device_info.phone_number,
-                            user_input_code=user_input_code,
-                            url_with_link_code=magic_link,
-                            code_life_time=response.code_life_time,
-                            pre_auth_session_id=response.pre_auth_session_id,
-                        )
-                        await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
-                except Exception as e:
-                    return ResendCodePostGeneralError(str(e))
+                    log_debug_message(&#34;Sending passwordless login email to %s&#34;, device_info.email)
+                    passwordless_email_delivery_input = PasswordlessLoginEmailTemplateVars(
+                        email=device_info.email,
+                        user_input_code=user_input_code,
+                        url_with_link_code=magic_link,
+                        code_life_time=response.code_life_time,
+                        pre_auth_session_id=response.pre_auth_session_id
+                    )
+                    await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
+                elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
+                    if device_info.phone_number is None:
+                        raise Exception(&#34;Should never come here&#34;)
+                    log_debug_message(&#34;Sending passwordless login SMS to %s&#34;, device_info.phone_number)
+                    sms_input = PasswordlessLoginSMSTemplateVars(
+                        phone_number=device_info.phone_number,
+                        user_input_code=user_input_code,
+                        url_with_link_code=magic_link,
+                        code_life_time=response.code_life_time,
+                        pre_auth_session_id=response.pre_auth_session_id,
+                    )
+                    await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
                 return ResendCodePostOkResult()
             return ResendCodePostRestartFlowError()
 
@@ -384,7 +374,7 @@ class APIImplementation(APIInterface):
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
                                 api_options: APIOptions,
-                                user_context: Dict[str, Any]) -&gt; Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostGeneralError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
+                                user_context: Dict[str, Any]) -&gt; Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError, GeneralErrorResponse]:
         response = await api_options.recipe_implementation.consume_code(
             pre_auth_session_id=pre_auth_session_id,
             user_input_code=user_input_code,
@@ -414,11 +404,11 @@ class APIImplementation(APIInterface):
             session=session
         )
 
-    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; EmailExistsGetOkResult:
+    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         response = await api_options.recipe_implementation.get_user_by_email(email, user_context)
         return EmailExistsGetOkResult(exists=response is not None)
 
-    async def phone_number_exists_get(self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; PhoneNumberExistsGetOkResult:
+    async def phone_number_exists_get(self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[PhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         response = await api_options.recipe_implementation.get_user_by_phone_number(phone_number, user_context)
         return PhoneNumberExistsGetOkResult(exists=response is not None)</code></pre>
 </details>
@@ -429,7 +419,7 @@ class APIImplementation(APIInterface):
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.consume_code_post"><code class="name flex">
-<span>async def <span class="ident">consume_code_post</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Optional[str], device_id: Optional[str], link_code: Optional[str], api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError">ConsumeCodePostRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError">ConsumeCodePostGeneralError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a>]</span>
+<span>async def <span class="ident">consume_code_post</span></span>(<span>self, pre_auth_session_id: str, user_input_code: Optional[str], device_id: Optional[str], link_code: Optional[str], api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError">ConsumeCodePostRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -443,7 +433,7 @@ class APIImplementation(APIInterface):
                             device_id: Union[str, None],
                             link_code: Union[str, None],
                             api_options: APIOptions,
-                            user_context: Dict[str, Any]) -&gt; Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostGeneralError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
+                            user_context: Dict[str, Any]) -&gt; Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError, GeneralErrorResponse]:
     response = await api_options.recipe_implementation.consume_code(
         pre_auth_session_id=pre_auth_session_id,
         user_input_code=user_input_code,
@@ -475,7 +465,7 @@ class APIImplementation(APIInterface):
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.create_code_post"><code class="name flex">
-<span>async def <span class="ident">create_code_post</span></span>(<span>self, email: Optional[str], phone_number: Optional[str], api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult">CreateCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError">CreateCodePostGeneralError</a>]</span>
+<span>async def <span class="ident">create_code_post</span></span>(<span>self, email: Optional[str], phone_number: Optional[str], api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult">CreateCodePostOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -487,7 +477,7 @@ class APIImplementation(APIInterface):
                            email: Union[str, None],
                            phone_number: Union[str, None],
                            api_options: APIOptions,
-                           user_context: Dict[str, Any]) -&gt; Union[CreateCodePostOkResult, CreateCodePostGeneralError]:
+                           user_context: Dict[str, Any]) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
     user_input_code = None
     if api_options.config.get_custom_user_input_code is not None:
         user_input_code = await api_options.config.get_custom_user_input_code(user_context)
@@ -502,40 +492,38 @@ class APIImplementation(APIInterface):
     if flow_type in (&#39;USER_INPUT_CODE&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;):
         user_input_code = response.user_input_code
 
-    try:
-        if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
-                (isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig) and email is not None):
-            if email is None:
-                raise Exception(&#34;Should never come here&#34;)
+    if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
+            (isinstance(api_options.config.contact_config, ContactEmailOrPhoneConfig) and email is not None):
+        if email is None:
+            raise Exception(&#34;Should never come here&#34;)
 
-            log_debug_message(&#34;Sending passwordless login email to %s&#34;, email)
-            passwordless_email_delivery_input = TypePasswordlessEmailDeliveryInput(
-                email=email,
-                user_input_code=user_input_code,
-                url_with_link_code=magic_link,
-                code_life_time=response.code_life_time,
-                pre_auth_session_id=response.pre_auth_session_id
-            )
-            await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
-        elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
-            if phone_number is None:
-                raise Exception(&#34;Should never come here&#34;)
-            log_debug_message(&#34;Sending passwordless login SMS to %s&#34;, phone_number)
-            sms_input = TypePasswordlessSmsDeliveryInput(
-                phone_number=phone_number,
-                user_input_code=user_input_code,
-                url_with_link_code=magic_link,
-                code_life_time=response.code_life_time,
-                pre_auth_session_id=response.pre_auth_session_id,
-            )
-            await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
-    except Exception as e:
-        return CreateCodePostGeneralError(str(e))
+        log_debug_message(&#34;Sending passwordless login email to %s&#34;, email)
+        passwordless_email_delivery_input = PasswordlessLoginEmailTemplateVars(
+            email=email,
+            user_input_code=user_input_code,
+            url_with_link_code=magic_link,
+            code_life_time=response.code_life_time,
+            pre_auth_session_id=response.pre_auth_session_id
+        )
+        await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
+    elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
+        if phone_number is None:
+            raise Exception(&#34;Should never come here&#34;)
+        log_debug_message(&#34;Sending passwordless login SMS to %s&#34;, phone_number)
+        sms_input = PasswordlessLoginSMSTemplateVars(
+            phone_number=phone_number,
+            user_input_code=user_input_code,
+            url_with_link_code=magic_link,
+            code_life_time=response.code_life_time,
+            pre_auth_session_id=response.pre_auth_session_id,
+        )
+        await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
+
     return CreateCodePostOkResult(response.device_id, response.pre_auth_session_id, flow_type)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.email_exists_get"><code class="name flex">
-<span>async def <span class="ident">email_exists_get</span></span>(<span>self, email: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a></span>
+<span>async def <span class="ident">email_exists_get</span></span>(<span>self, email: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -543,13 +531,13 @@ class APIImplementation(APIInterface):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; EmailExistsGetOkResult:
+<pre><code class="python">async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
     response = await api_options.recipe_implementation.get_user_by_email(email, user_context)
     return EmailExistsGetOkResult(exists=response is not None)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.phone_number_exists_get"><code class="name flex">
-<span>async def <span class="ident">phone_number_exists_get</span></span>(<span>self, phone_number: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult">PhoneNumberExistsGetOkResult</a></span>
+<span>async def <span class="ident">phone_number_exists_get</span></span>(<span>self, phone_number: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult">PhoneNumberExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -557,13 +545,13 @@ class APIImplementation(APIInterface):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def phone_number_exists_get(self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; PhoneNumberExistsGetOkResult:
+<pre><code class="python">async def phone_number_exists_get(self, phone_number: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[PhoneNumberExistsGetOkResult, GeneralErrorResponse]:
     response = await api_options.recipe_implementation.get_user_by_phone_number(phone_number, user_context)
     return PhoneNumberExistsGetOkResult(exists=response is not None)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.api.implementation.APIImplementation.resend_code_post"><code class="name flex">
-<span>async def <span class="ident">resend_code_post</span></span>(<span>self, device_id: str, pre_auth_session_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult">ResendCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError">ResendCodePostRestartFlowError</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError">ResendCodePostGeneralError</a>]</span>
+<span>async def <span class="ident">resend_code_post</span></span>(<span>self, device_id: str, pre_auth_session_id: str, api_options: <a title="supertokens_python.recipe.passwordless.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult">ResendCodePostOkResult</a>, <a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError" href="../interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError">ResendCodePostRestartFlowError</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -575,7 +563,7 @@ class APIImplementation(APIInterface):
                            device_id: str,
                            pre_auth_session_id: str,
                            api_options: APIOptions,
-                           user_context: Dict[str, Any]) -&gt; Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, ResendCodePostGeneralError]:
+                           user_context: Dict[str, Any]) -&gt; Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse]:
     device_info = await api_options.recipe_implementation.list_codes_by_device_id(
         device_id=device_id,
         user_context=user_context
@@ -598,7 +586,7 @@ class APIImplementation(APIInterface):
         )
         if isinstance(response, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError):
             if number_of_tries_to_create_new_code &gt;= 3:
-                return ResendCodePostGeneralError(
+                return GeneralErrorResponse(
                     &#39;Failed to generate a one time code. Please try again&#39;)
             continue
 
@@ -613,36 +601,33 @@ class APIImplementation(APIInterface):
             if flow_type in (&#39;USER_INPUT_CODE&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;):
                 user_input_code = response.user_input_code
 
-            try:
-                if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
-                        (isinstance(api_options.config.contact_config,
-                                    ContactEmailOrPhoneConfig) and device_info.email is not None):
-                    if device_info.email is None:
-                        raise Exception(&#34;Should never come here&#34;)
+            if isinstance(api_options.config.contact_config, ContactEmailOnlyConfig) or \
+                    (isinstance(api_options.config.contact_config,
+                                ContactEmailOrPhoneConfig) and device_info.email is not None):
+                if device_info.email is None:
+                    raise Exception(&#34;Should never come here&#34;)
 
-                    log_debug_message(&#34;Sending passwordless login email to %s&#34;, device_info.email)
-                    passwordless_email_delivery_input = TypePasswordlessEmailDeliveryInput(
-                        email=device_info.email,
-                        user_input_code=user_input_code,
-                        url_with_link_code=magic_link,
-                        code_life_time=response.code_life_time,
-                        pre_auth_session_id=response.pre_auth_session_id
-                    )
-                    await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
-                elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
-                    if device_info.phone_number is None:
-                        raise Exception(&#34;Should never come here&#34;)
-                    log_debug_message(&#34;Sending passwordless login SMS to %s&#34;, device_info.phone_number)
-                    sms_input = TypePasswordlessSmsDeliveryInput(
-                        phone_number=device_info.phone_number,
-                        user_input_code=user_input_code,
-                        url_with_link_code=magic_link,
-                        code_life_time=response.code_life_time,
-                        pre_auth_session_id=response.pre_auth_session_id,
-                    )
-                    await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
-            except Exception as e:
-                return ResendCodePostGeneralError(str(e))
+                log_debug_message(&#34;Sending passwordless login email to %s&#34;, device_info.email)
+                passwordless_email_delivery_input = PasswordlessLoginEmailTemplateVars(
+                    email=device_info.email,
+                    user_input_code=user_input_code,
+                    url_with_link_code=magic_link,
+                    code_life_time=response.code_life_time,
+                    pre_auth_session_id=response.pre_auth_session_id
+                )
+                await api_options.email_delivery.ingredient_interface_impl.send_email(passwordless_email_delivery_input, user_context)
+            elif isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)):
+                if device_info.phone_number is None:
+                    raise Exception(&#34;Should never come here&#34;)
+                log_debug_message(&#34;Sending passwordless login SMS to %s&#34;, device_info.phone_number)
+                sms_input = PasswordlessLoginSMSTemplateVars(
+                    phone_number=device_info.phone_number,
+                    user_input_code=user_input_code,
+                    url_with_link_code=magic_link,
+                    code_life_time=response.code_life_time,
+                    pre_auth_session_id=response.pre_auth_session_id,
+                )
+                await api_options.sms_delivery.ingredient_interface_impl.send_sms(sms_input, user_context)
             return ResendCodePostOkResult()
         return ResendCodePostRestartFlowError()</code></pre>
 </details>

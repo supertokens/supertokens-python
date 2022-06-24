@@ -47,24 +47,24 @@ from supertokens_python.ingredients.smsdelivery.types import \
 from supertokens_python.recipe.passwordless.smsdelivery.services.backward_compatibility import \
     BackwardCompatibilityService as PlessBackwardCompatibilityService
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessSmsDeliveryInput
+    PasswordlessLoginSMSTemplateVars
 from supertokens_python.supertokens import AppInfo
 
-from ....types import TypeThirdPartyPasswordlessSmsDeliveryInput
+from ....types import SMSTemplateVars
 
 
-class BackwardCompatibilityService(SMSDeliveryInterface[TypeThirdPartyPasswordlessSmsDeliveryInput]):
+class BackwardCompatibilityService(SMSDeliveryInterface[SMSTemplateVars]):
     pless_backward_compatibility_service: PlessBackwardCompatibilityService
 
     def __init__(self, app_info: AppInfo,
-                 pless_create_and_send_custom_text_message: Union[Callable[[TypePasswordlessSmsDeliveryInput, Dict[str, Any]], Awaitable[None]], None] = None
+                 pless_create_and_send_custom_text_message: Union[Callable[[PasswordlessLoginSMSTemplateVars, Dict[str, Any]], Awaitable[None]], None] = None
                  ) -&gt; None:
         self.pless_backward_compatibility_service = PlessBackwardCompatibilityService(
             app_info, pless_create_and_send_custom_text_message
         )
 
-    async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -&gt; None:
-        await self.pless_backward_compatibility_service.send_sms(input_, user_context)</code></pre>
+    async def send_sms(self, template_vars: SMSTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+        await self.pless_backward_compatibility_service.send_sms(template_vars, user_context)</code></pre>
 </details>
 </section>
 <section>
@@ -87,18 +87,18 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class BackwardCompatibilityService(SMSDeliveryInterface[TypeThirdPartyPasswordlessSmsDeliveryInput]):
+<pre><code class="python">class BackwardCompatibilityService(SMSDeliveryInterface[SMSTemplateVars]):
     pless_backward_compatibility_service: PlessBackwardCompatibilityService
 
     def __init__(self, app_info: AppInfo,
-                 pless_create_and_send_custom_text_message: Union[Callable[[TypePasswordlessSmsDeliveryInput, Dict[str, Any]], Awaitable[None]], None] = None
+                 pless_create_and_send_custom_text_message: Union[Callable[[PasswordlessLoginSMSTemplateVars, Dict[str, Any]], Awaitable[None]], None] = None
                  ) -&gt; None:
         self.pless_backward_compatibility_service = PlessBackwardCompatibilityService(
             app_info, pless_create_and_send_custom_text_message
         )
 
-    async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -&gt; None:
-        await self.pless_backward_compatibility_service.send_sms(input_, user_context)</code></pre>
+    async def send_sms(self, template_vars: SMSTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+        await self.pless_backward_compatibility_service.send_sms(template_vars, user_context)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -116,7 +116,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.smsdelivery.services.backward_compatibility.BackwardCompatibilityService.send_sms"><code class="name flex">
-<span>async def <span class="ident">send_sms</span></span>(<span>self, input_: <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="../../../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>, user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">send_sms</span></span>(<span>self, template_vars: <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="../../../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>, user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -124,8 +124,8 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_sms(self, input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -&gt; None:
-    await self.pless_backward_compatibility_service.send_sms(input_, user_context)</code></pre>
+<pre><code class="python">async def send_sms(self, template_vars: SMSTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+    await self.pless_backward_compatibility_service.send_sms(template_vars, user_context)</code></pre>
 </details>
 </dd>
 </dl>

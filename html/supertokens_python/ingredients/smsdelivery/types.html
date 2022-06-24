@@ -43,19 +43,21 @@
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Generic, TypeVar, Union
 
+from twilio.rest import Client  # type: ignore
+
 _T = TypeVar(&#39;_T&#39;)
 
 
 class SMSDeliveryInterface(ABC, Generic[_T]):
     @abstractmethod
-    async def send_sms(self, input_: _T, user_context: Dict[str, Any]) -&gt; None:
+    async def send_sms(self, template_vars: _T, user_context: Dict[str, Any]) -&gt; None:
         pass
 
 
 class SMSDeliveryConfig(ABC, Generic[_T]):
     def __init__(
-        self, service: Union[SMSDeliveryInterface[_T], None] = None,
-        override: Union[Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None] = None,
+            self, service: Union[SMSDeliveryInterface[_T], None] = None,
+            override: Union[Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None] = None,
     ) -&gt; None:
         self.service = service
         self.override = override
@@ -63,11 +65,56 @@ class SMSDeliveryConfig(ABC, Generic[_T]):
 
 class SMSDeliveryConfigWithService(ABC, Generic[_T]):
     def __init__(
-        self, service: SMSDeliveryInterface[_T],
-        override: Union[Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None] = None,
+            self, service: SMSDeliveryInterface[_T],
+            override: Union[Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None] = None,
     ) -&gt; None:
         self.service = service
-        self.override = override</code></pre>
+        self.override = override
+
+
+class TwilioSettings:
+    def __init__(self,
+                 account_sid: str,
+                 auth_token: str,
+                 from_: Union[str, None] = None,
+                 messaging_service_sid: Union[str, None] = None,
+                 opts: Union[Dict[str, Any], None] = None,
+                 ) -&gt; None:
+        &#34;&#34;&#34;
+        Note: `self.otps` can be used to override values passed to the Twilio Client.
+        Read docs from `twilio.rest.Client.__init__` to discover possible args.
+
+        For example, `opts = {&#34;region&#34;: &#34;...&#34;, &#34;user_agent_extensions&#34;: [&#34;...&#34;], }`
+        &#34;&#34;&#34;
+        self.account_sid = account_sid
+        self.auth_token = auth_token
+        self.from_ = from_
+        self.messaging_service_sid = messaging_service_sid
+        self.opts = opts
+
+
+class SMSContent:
+    def __init__(self, body: str, to_phone: str) -&gt; None:
+        self.body = body
+        self.to_phone = to_phone
+
+
+class TwilioServiceInterface(ABC, Generic[_T]):
+    def __init__(self, twilio_client: Client) -&gt; None:  # type: ignore
+        self.twilio_client = twilio_client  # type: ignore
+
+    @abstractmethod
+    async def send_raw_sms(self,
+                           content: SMSContent,
+                           user_context: Dict[str, Any],
+                           from_: Union[str, None] = None,
+                           messaging_service_sid: Union[str, None] = None,
+                           ) -&gt; None:
+        pass
+
+    @abstractmethod
+    async def get_content(self, template_vars: _T, user_context: Dict[str, Any]) -&gt; SMSContent:
+        pass</code></pre>
 </details>
 </section>
 <section>
@@ -79,6 +126,22 @@ class SMSDeliveryConfigWithService(ABC, Generic[_T]):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.ingredients.smsdelivery.types.SMSContent"><code class="flex name class">
+<span>class <span class="ident">SMSContent</span></span>
+<span>(</span><span>body: str, to_phone: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SMSContent:
+    def __init__(self, body: str, to_phone: str) -&gt; None:
+        self.body = body
+        self.to_phone = to_phone</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.ingredients.smsdelivery.types.SMSDeliveryConfig"><code class="flex name class">
 <span>class <span class="ident">SMSDeliveryConfig</span></span>
 <span>(</span><span>service: Optional[<a title="supertokens_python.ingredients.smsdelivery.types.SMSDeliveryInterface" href="#supertokens_python.ingredients.smsdelivery.types.SMSDeliveryInterface">SMSDeliveryInterface</a>[~_T]] = None, override: Optional[Callable[[<a title="supertokens_python.ingredients.smsdelivery.types.SMSDeliveryInterface" href="#supertokens_python.ingredients.smsdelivery.types.SMSDeliveryInterface">SMSDeliveryInterface</a>[~_T]], <a title="supertokens_python.ingredients.smsdelivery.types.SMSDeliveryInterface" href="#supertokens_python.ingredients.smsdelivery.types.SMSDeliveryInterface">SMSDeliveryInterface</a>[~_T]]] = None)</span>
@@ -92,8 +155,8 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class SMSDeliveryConfig(ABC, Generic[_T]):
     def __init__(
-        self, service: Union[SMSDeliveryInterface[_T], None] = None,
-        override: Union[Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None] = None,
+            self, service: Union[SMSDeliveryInterface[_T], None] = None,
+            override: Union[Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None] = None,
     ) -&gt; None:
         self.service = service
         self.override = override</code></pre>
@@ -117,8 +180,8 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class SMSDeliveryConfigWithService(ABC, Generic[_T]):
     def __init__(
-        self, service: SMSDeliveryInterface[_T],
-        override: Union[Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None] = None,
+            self, service: SMSDeliveryInterface[_T],
+            override: Union[Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None] = None,
     ) -&gt; None:
         self.service = service
         self.override = override</code></pre>
@@ -141,7 +204,7 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class SMSDeliveryInterface(ABC, Generic[_T]):
     @abstractmethod
-    async def send_sms(self, input_: _T, user_context: Dict[str, Any]) -&gt; None:
+    async def send_sms(self, template_vars: _T, user_context: Dict[str, Any]) -&gt; None:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -152,16 +215,16 @@ inheritance.</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.passwordless.smsdelivery.services.backward_compatibility.BackwardCompatibilityService" href="../../recipe/passwordless/smsdelivery/services/backward_compatibility/index.html#supertokens_python.recipe.passwordless.smsdelivery.services.backward_compatibility.BackwardCompatibilityService">BackwardCompatibilityService</a></li>
-<li><a title="supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensService" href="../../recipe/passwordless/smsdelivery/services/supertokens/index.html#supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensService">SuperTokensService</a></li>
+<li><a title="supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensSMSService" href="../../recipe/passwordless/smsdelivery/services/supertokens/index.html#supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensSMSService">SuperTokensSMSService</a></li>
 <li><a title="supertokens_python.recipe.passwordless.smsdelivery.services.twilio.TwilioService" href="../../recipe/passwordless/smsdelivery/services/twilio/index.html#supertokens_python.recipe.passwordless.smsdelivery.services.twilio.TwilioService">TwilioService</a></li>
 <li><a title="supertokens_python.recipe.thirdpartypasswordless.smsdelivery.services.backward_compatibility.BackwardCompatibilityService" href="../../recipe/thirdpartypasswordless/smsdelivery/services/backward_compatibility/index.html#supertokens_python.recipe.thirdpartypasswordless.smsdelivery.services.backward_compatibility.BackwardCompatibilityService">BackwardCompatibilityService</a></li>
-<li><a title="supertokens_python.recipe.thirdpartypasswordless.smsdelivery.services.supertokens.SuperTokensService" href="../../recipe/thirdpartypasswordless/smsdelivery/services/supertokens/index.html#supertokens_python.recipe.thirdpartypasswordless.smsdelivery.services.supertokens.SuperTokensService">SuperTokensService</a></li>
+<li><a title="supertokens_python.recipe.thirdpartypasswordless.smsdelivery.services.supertokens.SuperTokensSMSService" href="../../recipe/thirdpartypasswordless/smsdelivery/services/supertokens/index.html#supertokens_python.recipe.thirdpartypasswordless.smsdelivery.services.supertokens.SuperTokensSMSService">SuperTokensSMSService</a></li>
 <li><a title="supertokens_python.recipe.thirdpartypasswordless.smsdelivery.services.twilio.TwilioService" href="../../recipe/thirdpartypasswordless/smsdelivery/services/twilio/index.html#supertokens_python.recipe.thirdpartypasswordless.smsdelivery.services.twilio.TwilioService">TwilioService</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.ingredients.smsdelivery.types.SMSDeliveryInterface.send_sms"><code class="name flex">
-<span>async def <span class="ident">send_sms</span></span>(<span>self, input_: ~_T, user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">send_sms</span></span>(<span>self, template_vars: ~_T, user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -170,11 +233,118 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def send_sms(self, input_: _T, user_context: Dict[str, Any]) -&gt; None:
+async def send_sms(self, template_vars: _T, user_context: Dict[str, Any]) -&gt; None:
     pass</code></pre>
 </details>
 </dd>
 </dl>
+</dd>
+<dt id="supertokens_python.ingredients.smsdelivery.types.TwilioServiceInterface"><code class="flex name class">
+<span>class <span class="ident">TwilioServiceInterface</span></span>
+<span>(</span><span>twilio_client: twilio.rest.Client)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TwilioServiceInterface(ABC, Generic[_T]):
+    def __init__(self, twilio_client: Client) -&gt; None:  # type: ignore
+        self.twilio_client = twilio_client  # type: ignore
+
+    @abstractmethod
+    async def send_raw_sms(self,
+                           content: SMSContent,
+                           user_context: Dict[str, Any],
+                           from_: Union[str, None] = None,
+                           messaging_service_sid: Union[str, None] = None,
+                           ) -&gt; None:
+        pass
+
+    @abstractmethod
+    async def get_content(self, template_vars: _T, user_context: Dict[str, Any]) -&gt; SMSContent:
+        pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.passwordless.smsdelivery.services.twilio.service_implementation.ServiceImplementation" href="../../recipe/passwordless/smsdelivery/services/twilio/service_implementation.html#supertokens_python.recipe.passwordless.smsdelivery.services.twilio.service_implementation.ServiceImplementation">ServiceImplementation</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.ingredients.smsdelivery.types.TwilioServiceInterface.get_content"><code class="name flex">
+<span>async def <span class="ident">get_content</span></span>(<span>self, template_vars: ~_T, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.ingredients.smsdelivery.types.SMSContent" href="#supertokens_python.ingredients.smsdelivery.types.SMSContent">SMSContent</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def get_content(self, template_vars: _T, user_context: Dict[str, Any]) -&gt; SMSContent:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.ingredients.smsdelivery.types.TwilioServiceInterface.send_raw_sms"><code class="name flex">
+<span>async def <span class="ident">send_raw_sms</span></span>(<span>self, content: <a title="supertokens_python.ingredients.smsdelivery.types.SMSContent" href="#supertokens_python.ingredients.smsdelivery.types.SMSContent">SMSContent</a>, user_context: Dict[str, Any], from_: Optional[str] = None, messaging_service_sid: Optional[str] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def send_raw_sms(self,
+                       content: SMSContent,
+                       user_context: Dict[str, Any],
+                       from_: Union[str, None] = None,
+                       messaging_service_sid: Union[str, None] = None,
+                       ) -&gt; None:
+    pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.ingredients.smsdelivery.types.TwilioSettings"><code class="flex name class">
+<span>class <span class="ident">TwilioSettings</span></span>
+<span>(</span><span>account_sid: str, auth_token: str, from_: Optional[str] = None, messaging_service_sid: Optional[str] = None, opts: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Note: <code>self.otps</code> can be used to override values passed to the Twilio Client.
+Read docs from <code>twilio.rest.Client.__init__</code> to discover possible args.</p>
+<p>For example, <code>opts = {"region": "...", "user_agent_extensions": ["..."], }</code></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TwilioSettings:
+    def __init__(self,
+                 account_sid: str,
+                 auth_token: str,
+                 from_: Union[str, None] = None,
+                 messaging_service_sid: Union[str, None] = None,
+                 opts: Union[Dict[str, Any], None] = None,
+                 ) -&gt; None:
+        &#34;&#34;&#34;
+        Note: `self.otps` can be used to override values passed to the Twilio Client.
+        Read docs from `twilio.rest.Client.__init__` to discover possible args.
+
+        For example, `opts = {&#34;region&#34;: &#34;...&#34;, &#34;user_agent_extensions&#34;: [&#34;...&#34;], }`
+        &#34;&#34;&#34;
+        self.account_sid = account_sid
+        self.auth_token = auth_token
+        self.from_ = from_
+        self.messaging_service_sid = messaging_service_sid
+        self.opts = opts</code></pre>
+</details>
 </dd>
 </dl>
 </section>
@@ -193,6 +363,9 @@ async def send_sms(self, input_: _T, user_context: Dict[str, Any]) -&gt; None:
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="supertokens_python.ingredients.smsdelivery.types.SMSContent" href="#supertokens_python.ingredients.smsdelivery.types.SMSContent">SMSContent</a></code></h4>
+</li>
+<li>
 <h4><code><a title="supertokens_python.ingredients.smsdelivery.types.SMSDeliveryConfig" href="#supertokens_python.ingredients.smsdelivery.types.SMSDeliveryConfig">SMSDeliveryConfig</a></code></h4>
 </li>
 <li>
@@ -203,6 +376,16 @@ async def send_sms(self, input_: _T, user_context: Dict[str, Any]) -&gt; None:
 <ul class="">
 <li><code><a title="supertokens_python.ingredients.smsdelivery.types.SMSDeliveryInterface.send_sms" href="#supertokens_python.ingredients.smsdelivery.types.SMSDeliveryInterface.send_sms">send_sms</a></code></li>
 </ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.ingredients.smsdelivery.types.TwilioServiceInterface" href="#supertokens_python.ingredients.smsdelivery.types.TwilioServiceInterface">TwilioServiceInterface</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.ingredients.smsdelivery.types.TwilioServiceInterface.get_content" href="#supertokens_python.ingredients.smsdelivery.types.TwilioServiceInterface.get_content">get_content</a></code></li>
+<li><code><a title="supertokens_python.ingredients.smsdelivery.types.TwilioServiceInterface.send_raw_sms" href="#supertokens_python.ingredients.smsdelivery.types.TwilioServiceInterface.send_raw_sms">send_raw_sms</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.ingredients.smsdelivery.types.TwilioSettings" href="#supertokens_python.ingredients.smsdelivery.types.TwilioSettings">TwilioSettings</a></code></h4>
 </li>
 </ul>
 </li>

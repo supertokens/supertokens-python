@@ -40,35 +40,28 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict
+from typing import Any, Dict, Callable, Union
 
-from supertokens_python.ingredients.emaildelivery.services.smtp import \
-    EmailDeliverySMTPConfig
 from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface
+    EmailDeliveryInterface, SMTPSettings
 from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp import \
     SMTPService as EmailPasswordSMTPService
-from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordEmailDeliveryInput
 from supertokens_python.recipe.thirdpartyemailpassword.types import \
-    TypeThirdPartyEmailPasswordEmailDeliveryInput
+    EmailTemplateVars, SMTPOverrideInput
 
 
-class SMTPService(EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]):
+class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
     ep_smtp_service: EmailPasswordSMTPService
 
-    def __init__(self, config: EmailDeliverySMTPConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput]) -&gt; None:
-        ev_config = EmailDeliverySMTPConfig[TypeEmailPasswordEmailDeliveryInput](
-            smtp_settings=config.smtp_settings,
-            override=config.override
-        )
-        self.ep_smtp_service = EmailPasswordSMTPService(ev_config)
+    def __init__(self, smtp_settings: SMTPSettings,
+                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -&gt; None:
+        self.ep_smtp_service = EmailPasswordSMTPService(smtp_settings, override)
 
     async def send_email(self,
-                         input_: TypeThirdPartyEmailPasswordEmailDeliveryInput,
+                         template_vars: EmailTemplateVars,
                          user_context: Dict[str, Any]
                          ) -&gt; None:
-        await self.ep_smtp_service.send_email(input_, user_context)</code></pre>
+        await self.ep_smtp_service.send_email(template_vars, user_context)</code></pre>
 </details>
 </section>
 <section>
@@ -82,7 +75,7 @@ class SMTPService(EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliver
 <dl>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.emaildelivery.services.smtp.SMTPService"><code class="flex name class">
 <span>class <span class="ident">SMTPService</span></span>
-<span>(</span><span>config: <a title="supertokens_python.ingredients.emaildelivery.services.smtp.EmailDeliverySMTPConfig" href="../../../../../ingredients/emaildelivery/services/smtp.html#supertokens_python.ingredients.emaildelivery.services.smtp.EmailDeliverySMTPConfig">EmailDeliverySMTPConfig</a>[typing.Union[<a title="supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput" href="../../../../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput">TypeEmailPasswordPasswordResetEmailDeliveryInput</a>, <a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="../../../../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>]])</span>
+<span>(</span><span>smtp_settings: <a title="supertokens_python.ingredients.emaildelivery.types.SMTPSettings" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPSettings">SMTPSettings</a>, override: Optional[Callable[[<a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[Union[<a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="../../../../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a>, <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>]]], <a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[Union[<a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="../../../../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a>, <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>]]]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -91,21 +84,18 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SMTPService(EmailDeliveryInterface[TypeThirdPartyEmailPasswordEmailDeliveryInput]):
+<pre><code class="python">class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
     ep_smtp_service: EmailPasswordSMTPService
 
-    def __init__(self, config: EmailDeliverySMTPConfig[TypeThirdPartyEmailPasswordEmailDeliveryInput]) -&gt; None:
-        ev_config = EmailDeliverySMTPConfig[TypeEmailPasswordEmailDeliveryInput](
-            smtp_settings=config.smtp_settings,
-            override=config.override
-        )
-        self.ep_smtp_service = EmailPasswordSMTPService(ev_config)
+    def __init__(self, smtp_settings: SMTPSettings,
+                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -&gt; None:
+        self.ep_smtp_service = EmailPasswordSMTPService(smtp_settings, override)
 
     async def send_email(self,
-                         input_: TypeThirdPartyEmailPasswordEmailDeliveryInput,
+                         template_vars: EmailTemplateVars,
                          user_context: Dict[str, Any]
                          ) -&gt; None:
-        await self.ep_smtp_service.send_email(input_, user_context)</code></pre>
+        await self.ep_smtp_service.send_email(template_vars, user_context)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -123,7 +113,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.emaildelivery.services.smtp.SMTPService.send_email"><code class="name flex">
-<span>async def <span class="ident">send_email</span></span>(<span>self, input_: Union[<a title="supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput" href="../../../../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.TypeEmailPasswordPasswordResetEmailDeliveryInput">TypeEmailPasswordPasswordResetEmailDeliveryInput</a>, <a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="../../../../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>], user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">send_email</span></span>(<span>self, template_vars: Union[<a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="../../../../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a>, <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>], user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -132,10 +122,10 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def send_email(self,
-                     input_: TypeThirdPartyEmailPasswordEmailDeliveryInput,
+                     template_vars: EmailTemplateVars,
                      user_context: Dict[str, Any]
                      ) -&gt; None:
-    await self.ep_smtp_service.send_email(input_, user_context)</code></pre>
+    await self.ep_smtp_service.send_email(template_vars, user_context)</code></pre>
 </details>
 </dd>
 </dl>

@@ -44,21 +44,20 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    GetContentResult, ServiceInterface)
+from supertokens_python.ingredients.emaildelivery.types import EmailContent, SMTPServiceInterface
 from supertokens_python.recipe.passwordless.emaildelivery.services.smtp.pless_login import \
     pless_email_content
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessEmailDeliveryInput
+    PasswordlessLoginEmailTemplateVars
 
 
-class ServiceImplementation(ServiceInterface[TypePasswordlessEmailDeliveryInput]):
-    async def send_raw_email(self, input_: GetContentResult, user_context: Dict[str, Any]) -&gt; None:
-        await self.transporter.send_email(input_, user_context)
+class ServiceImplementation(SMTPServiceInterface[PasswordlessLoginEmailTemplateVars]):
+    async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -&gt; None:
+        await self.transporter.send_email(content, user_context)
 
-    async def get_content(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -&gt; GetContentResult:
+    async def get_content(self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) -&gt; EmailContent:
         _ = user_context
-        return pless_email_content(input_)</code></pre>
+        return pless_email_content(template_vars)</code></pre>
 </details>
 </section>
 <section>
@@ -72,7 +71,7 @@ class ServiceImplementation(ServiceInterface[TypePasswordlessEmailDeliveryInput]
 <dl>
 <dt id="supertokens_python.recipe.passwordless.emaildelivery.services.smtp.service_implementation.ServiceImplementation"><code class="flex name class">
 <span>class <span class="ident">ServiceImplementation</span></span>
-<span>(</span><span>transporter: <a title="supertokens_python.ingredients.emaildelivery.services.smtp.Transporter" href="../../../../../ingredients/emaildelivery/services/smtp.html#supertokens_python.ingredients.emaildelivery.services.smtp.Transporter">Transporter</a>)</span>
+<span>(</span><span>transporter: Transporter)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -81,24 +80,24 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ServiceImplementation(ServiceInterface[TypePasswordlessEmailDeliveryInput]):
-    async def send_raw_email(self, input_: GetContentResult, user_context: Dict[str, Any]) -&gt; None:
-        await self.transporter.send_email(input_, user_context)
+<pre><code class="python">class ServiceImplementation(SMTPServiceInterface[PasswordlessLoginEmailTemplateVars]):
+    async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -&gt; None:
+        await self.transporter.send_email(content, user_context)
 
-    async def get_content(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -&gt; GetContentResult:
+    async def get_content(self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) -&gt; EmailContent:
         _ = user_context
-        return pless_email_content(input_)</code></pre>
+        return pless_email_content(template_vars)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface" href="../../../../../ingredients/emaildelivery/services/smtp.html#supertokens_python.ingredients.emaildelivery.services.smtp.ServiceInterface">ServiceInterface</a></li>
+<li><a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a></li>
 <li>abc.ABC</li>
 <li>typing.Generic</li>
 </ul>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.emaildelivery.services.smtp.service_implementation.ServiceImplementation.get_content"><code class="name flex">
-<span>async def <span class="ident">get_content</span></span>(<span>self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.ingredients.emaildelivery.services.smtp.GetContentResult" href="../../../../../ingredients/emaildelivery/services/smtp.html#supertokens_python.ingredients.emaildelivery.services.smtp.GetContentResult">GetContentResult</a></span>
+<span>async def <span class="ident">get_content</span></span>(<span>self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.ingredients.emaildelivery.types.EmailContent" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.EmailContent">EmailContent</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -106,13 +105,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_content(self, input_: TypePasswordlessEmailDeliveryInput, user_context: Dict[str, Any]) -&gt; GetContentResult:
+<pre><code class="python">async def get_content(self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) -&gt; EmailContent:
     _ = user_context
-    return pless_email_content(input_)</code></pre>
+    return pless_email_content(template_vars)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.emaildelivery.services.smtp.service_implementation.ServiceImplementation.send_raw_email"><code class="name flex">
-<span>async def <span class="ident">send_raw_email</span></span>(<span>self, input_: GetContentResult, user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">send_raw_email</span></span>(<span>self, content: EmailContent, user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -120,8 +119,8 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_raw_email(self, input_: GetContentResult, user_context: Dict[str, Any]) -&gt; None:
-    await self.transporter.send_email(input_, user_context)</code></pre>
+<pre><code class="python">async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -&gt; None:
+    await self.transporter.send_email(content, user_context)</code></pre>
 </details>
 </dd>
 </dl>

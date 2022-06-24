@@ -50,7 +50,7 @@ from supertokens_python.ingredients.emaildelivery.types import (
 from supertokens_python.ingredients.smsdelivery.types import (
     SMSDeliveryConfig, SMSDeliveryConfigWithService)
 from supertokens_python.recipe.passwordless.types import (
-    CreateAndSendCustomEmailParameters, TypePasswordlessSmsDeliveryInput)
+    CreateAndSendCustomEmailParameters, PasswordlessLoginSMSTemplateVars)
 from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
@@ -58,7 +58,7 @@ from .types import CreateAndSendCustomTextMessageParameters
 
 if TYPE_CHECKING:
     from .interfaces import (APIInterface, RecipeInterface,
-                             TypePasswordlessEmailDeliveryInput)
+                             PasswordlessLoginEmailTemplateVars)
     from supertokens_python import AppInfo
 
 from re import fullmatch
@@ -187,8 +187,8 @@ class PasswordlessConfig:
                  override: OverrideConfig,
                  flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;],
                  get_link_domain_and_path: Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]],
-                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]],
-                 get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[TypePasswordlessSmsDeliveryInput]],
+                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]],
+                 get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]],
                  get_custom_user_input_code: Union[Callable[[
                      Dict[str, Any]], Awaitable[str]], None] = None
                  ):
@@ -209,8 +209,8 @@ def validate_and_normalise_user_input(
     get_link_domain_and_path: Union[Callable[[
         PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
     get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
-    email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
-    sms_delivery: Union[SMSDeliveryConfig[TypePasswordlessSmsDeliveryInput], None] = None,
+    email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None,
+    sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None,
 ) -&gt; PasswordlessConfig:
 
     if override is None:
@@ -219,7 +219,7 @@ def validate_and_normalise_user_input(
     if get_link_domain_and_path is None:
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)
 
-    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]:
+    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]:
         email_service = email_delivery.service if email_delivery is not None else None
         if isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)):
             create_and_send_custom_email = contact_config.create_and_send_custom_email
@@ -236,7 +236,7 @@ def validate_and_normalise_user_input(
 
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    def get_sms_delivery_config() -&gt; SMSDeliveryConfigWithService[TypePasswordlessSmsDeliveryInput]:
+    def get_sms_delivery_config() -&gt; SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]:
         sms_service = sms_delivery.service if sms_delivery is not None else None
 
         if isinstance(contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)):
@@ -333,7 +333,7 @@ def validate_and_normalise_user_input(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", override: Union[<a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, None] = None, get_link_domain_and_path: Union[Callable[[<a title="supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput" href="#supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput">PhoneOrEmailInput</a>, Dict[str, Any]], Awaitable[str]], None] = None, get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None, sms_delivery: Union[SMSDeliveryConfig[TypePasswordlessSmsDeliveryInput], None] = None) ‑> <a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig">PasswordlessConfig</a></span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>app_info: AppInfo, contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", override: Union[<a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, None] = None, get_link_domain_and_path: Union[Callable[[<a title="supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput" href="#supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput">PhoneOrEmailInput</a>, Dict[str, Any]], Awaitable[str]], None] = None, get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None) ‑> <a title="supertokens_python.recipe.passwordless.utils.PasswordlessConfig" href="#supertokens_python.recipe.passwordless.utils.PasswordlessConfig">PasswordlessConfig</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -349,8 +349,8 @@ def validate_and_normalise_user_input(
     get_link_domain_and_path: Union[Callable[[
         PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
     get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
-    email_delivery: Union[EmailDeliveryConfig[TypePasswordlessEmailDeliveryInput], None] = None,
-    sms_delivery: Union[SMSDeliveryConfig[TypePasswordlessSmsDeliveryInput], None] = None,
+    email_delivery: Union[EmailDeliveryConfig[PasswordlessLoginEmailTemplateVars], None] = None,
+    sms_delivery: Union[SMSDeliveryConfig[PasswordlessLoginSMSTemplateVars], None] = None,
 ) -&gt; PasswordlessConfig:
 
     if override is None:
@@ -359,7 +359,7 @@ def validate_and_normalise_user_input(
     if get_link_domain_and_path is None:
         get_link_domain_and_path = default_get_link_domain_and_path(app_info)
 
-    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]:
+    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]:
         email_service = email_delivery.service if email_delivery is not None else None
         if isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)):
             create_and_send_custom_email = contact_config.create_and_send_custom_email
@@ -376,7 +376,7 @@ def validate_and_normalise_user_input(
 
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    def get_sms_delivery_config() -&gt; SMSDeliveryConfigWithService[TypePasswordlessSmsDeliveryInput]:
+    def get_sms_delivery_config() -&gt; SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]:
         sms_service = sms_delivery.service if sms_delivery is not None else None
 
         if isinstance(contact_config, (ContactPhoneOnlyConfig, ContactEmailOrPhoneConfig)):
@@ -585,7 +585,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.utils.PasswordlessConfig"><code class="flex name class">
 <span>class <span class="ident">PasswordlessConfig</span></span>
-<span>(</span><span>contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, override: <a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", get_link_domain_and_path: Callable[[<a title="supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput" href="#supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput">PhoneOrEmailInput</a>, Dict[str, Any]], Awaitable[str]], get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]], get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[TypePasswordlessSmsDeliveryInput]], get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None)</span>
+<span>(</span><span>contact_config: <a title="supertokens_python.recipe.passwordless.utils.ContactConfig" href="#supertokens_python.recipe.passwordless.utils.ContactConfig">ContactConfig</a>, override: <a title="supertokens_python.recipe.passwordless.utils.OverrideConfig" href="#supertokens_python.recipe.passwordless.utils.OverrideConfig">OverrideConfig</a>, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", get_link_domain_and_path: Callable[[<a title="supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput" href="#supertokens_python.recipe.passwordless.utils.PhoneOrEmailInput">PhoneOrEmailInput</a>, Dict[str, Any]], Awaitable[str]], get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]], get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]], get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -599,8 +599,8 @@ inheritance.</p></div>
                  override: OverrideConfig,
                  flow_type: Literal[&#39;USER_INPUT_CODE&#39;, &#39;MAGIC_LINK&#39;, &#39;USER_INPUT_CODE_AND_MAGIC_LINK&#39;],
                  get_link_domain_and_path: Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]],
-                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[TypePasswordlessEmailDeliveryInput]],
-                 get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[TypePasswordlessSmsDeliveryInput]],
+                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]],
+                 get_sms_delivery_config: Callable[[], SMSDeliveryConfigWithService[PasswordlessLoginSMSTemplateVars]],
                  get_custom_user_input_code: Union[Callable[[
                      Dict[str, Any]], Awaitable[str]], None] = None
                  ):

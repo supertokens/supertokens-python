@@ -43,7 +43,7 @@ from typing import Any, Dict, List, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 
-from ..types import TypeThirdPartyEmailDeliveryInput, User
+from ..types import EmailTemplateVars, User
 
 
 def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -99,7 +99,7 @@ def sign_in_up(third_party_id: str, third_party_user_id: str,
                            third_party_user_id, email, email_verified, user_context))
 
 
-def send_email(input_: TypeThirdPartyEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+def send_email(input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.thirdparty.asyncio import send_email
     return sync(send_email(input_, user_context))</code></pre>
 </details>
@@ -201,7 +201,7 @@ def send_email(input_: TypeThirdPartyEmailDeliveryInput, user_context: Union[Non
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.syncio.send_email"><code class="name flex">
-<span>def <span class="ident">send_email</span></span>(<span>input_: <a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="../../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">send_email</span></span>(<span>input_: <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -209,7 +209,7 @@ def send_email(input_: TypeThirdPartyEmailDeliveryInput, user_context: Union[Non
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def send_email(input_: TypeThirdPartyEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">def send_email(input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.thirdparty.asyncio import send_email
     return sync(send_email(input_, user_context))</code></pre>
 </details>

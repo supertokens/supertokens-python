@@ -47,8 +47,8 @@ from supertokens_python.recipe.passwordless.interfaces import (
     DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError)
 
 from .. import asyncio, interfaces
-from ..types import (TypeThirdPartyPasswordlessEmailDeliveryInput,
-                     TypeThirdPartyPasswordlessSmsDeliveryInput, User)
+from ..types import (EmailTemplateVars,
+                     SMSTemplateVars, User)
 
 
 def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -192,11 +192,11 @@ def passwordlessSigninup(email: Union[str, None], phone_number: Union[str,
         email=email, phone_number=phone_number, user_context=user_context))
 
 
-def send_email(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+def send_email(input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     return sync(asyncio.send_email(input_, user_context))
 
 
-def send_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     return sync(asyncio.send_sms(input_, user_context))</code></pre>
 </details>
 </section>
@@ -506,7 +506,7 @@ def send_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: U
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.syncio.send_email"><code class="name flex">
-<span>def <span class="ident">send_email</span></span>(<span>input_: Union[<a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="../../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>, <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>], user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">send_email</span></span>(<span>input_: Union[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>, <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>], user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -514,7 +514,7 @@ def send_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def send_email(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">def send_email(input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     return sync(asyncio.send_email(input_, user_context))</code></pre>
 </details>
 </dd>
@@ -527,7 +527,7 @@ def send_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def send_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     return sync(asyncio.send_sms(input_, user_context))</code></pre>
 </details>
 </dd>

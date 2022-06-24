@@ -45,42 +45,42 @@ from typing import Any, Dict
 
 from httpx import AsyncClient
 from supertokens_python.ingredients.smsdelivery.services.supertokens import (
-    SUPERTOKENS_SMS_SERVICE_URL, SupertokensServiceConfig)
+    SUPERTOKENS_SMS_SERVICE_URL)
 from supertokens_python.ingredients.smsdelivery.types import \
     SMSDeliveryInterface
 from supertokens_python.logger import log_debug_message
 from supertokens_python.supertokens import Supertokens
 from supertokens_python.utils import handle_httpx_client_exceptions
 
-from ....types import TypePasswordlessSmsDeliveryInput
+from ....types import PasswordlessLoginSMSTemplateVars
 
 
-class SuperTokensService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
+class SuperTokensSMSService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]):
     def __init__(self,
-                 config: SupertokensServiceConfig
+                 api_key: str
                  ) -&gt; None:
-        self.config = config
+        self.api_key = api_key
 
-    async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -&gt; None:
+    async def send_sms(self, template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]) -&gt; None:
         supertokens = Supertokens.get_instance()
         app_name = supertokens.app_info.app_name
 
         sms_input = {
             &#39;type&#39;: &#39;PASSWORDLESS_LOGIN&#39;,
-            &#39;phoneNumber&#39;: input_.phone_number,
-            &#39;codeLifetime&#39;: input_.code_life_time,
+            &#39;phoneNumber&#39;: template_vars.phone_number,
+            &#39;codeLifetime&#39;: template_vars.code_life_time,
             &#39;appName&#39;: app_name,
         }
-        if input_.url_with_link_code:
-            sms_input[&#39;urlWithLinkCode&#39;] = input_.url_with_link_code
-        if input_.user_input_code:
-            sms_input[&#39;userInputCode&#39;] = input_.user_input_code
+        if template_vars.url_with_link_code:
+            sms_input[&#39;urlWithLinkCode&#39;] = template_vars.url_with_link_code
+        if template_vars.user_input_code:
+            sms_input[&#39;userInputCode&#39;] = template_vars.user_input_code
         try:
             async with AsyncClient() as client:
                 await client.post(  # type: ignore
                     SUPERTOKENS_SMS_SERVICE_URL,
                     json={
-                        &#34;apiKey&#34;: self.config.api_key,
+                        &#34;apiKey&#34;: self.api_key,
                         &#34;smsInput&#34;: sms_input,
                     },
                     headers={&#39;api-version&#39;: &#39;0&#39;}
@@ -100,9 +100,9 @@ class SuperTokensService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput])
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensService"><code class="flex name class">
-<span>class <span class="ident">SuperTokensService</span></span>
-<span>(</span><span>config: <a title="supertokens_python.ingredients.smsdelivery.services.supertokens.SupertokensServiceConfig" href="../../../../../ingredients/smsdelivery/services/supertokens.html#supertokens_python.ingredients.smsdelivery.services.supertokens.SupertokensServiceConfig">SupertokensServiceConfig</a>)</span>
+<dt id="supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensSMSService"><code class="flex name class">
+<span>class <span class="ident">SuperTokensSMSService</span></span>
+<span>(</span><span>api_key: str)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -111,32 +111,32 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SuperTokensService(SMSDeliveryInterface[TypePasswordlessSmsDeliveryInput]):
+<pre><code class="python">class SuperTokensSMSService(SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]):
     def __init__(self,
-                 config: SupertokensServiceConfig
+                 api_key: str
                  ) -&gt; None:
-        self.config = config
+        self.api_key = api_key
 
-    async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -&gt; None:
+    async def send_sms(self, template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]) -&gt; None:
         supertokens = Supertokens.get_instance()
         app_name = supertokens.app_info.app_name
 
         sms_input = {
             &#39;type&#39;: &#39;PASSWORDLESS_LOGIN&#39;,
-            &#39;phoneNumber&#39;: input_.phone_number,
-            &#39;codeLifetime&#39;: input_.code_life_time,
+            &#39;phoneNumber&#39;: template_vars.phone_number,
+            &#39;codeLifetime&#39;: template_vars.code_life_time,
             &#39;appName&#39;: app_name,
         }
-        if input_.url_with_link_code:
-            sms_input[&#39;urlWithLinkCode&#39;] = input_.url_with_link_code
-        if input_.user_input_code:
-            sms_input[&#39;userInputCode&#39;] = input_.user_input_code
+        if template_vars.url_with_link_code:
+            sms_input[&#39;urlWithLinkCode&#39;] = template_vars.url_with_link_code
+        if template_vars.user_input_code:
+            sms_input[&#39;userInputCode&#39;] = template_vars.user_input_code
         try:
             async with AsyncClient() as client:
                 await client.post(  # type: ignore
                     SUPERTOKENS_SMS_SERVICE_URL,
                     json={
-                        &#34;apiKey&#34;: self.config.api_key,
+                        &#34;apiKey&#34;: self.api_key,
                         &#34;smsInput&#34;: sms_input,
                     },
                     headers={&#39;api-version&#39;: &#39;0&#39;}
@@ -154,8 +154,8 @@ inheritance.</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensService.send_sms"><code class="name flex">
-<span>async def <span class="ident">send_sms</span></span>(<span>self, input_: <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="../../../types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>, user_context: Dict[str, Any]) ‑> None</span>
+<dt id="supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensSMSService.send_sms"><code class="name flex">
+<span>async def <span class="ident">send_sms</span></span>(<span>self, template_vars: <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="../../../types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a>, user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -163,26 +163,26 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_sms(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -&gt; None:
+<pre><code class="python">async def send_sms(self, template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]) -&gt; None:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
 
     sms_input = {
         &#39;type&#39;: &#39;PASSWORDLESS_LOGIN&#39;,
-        &#39;phoneNumber&#39;: input_.phone_number,
-        &#39;codeLifetime&#39;: input_.code_life_time,
+        &#39;phoneNumber&#39;: template_vars.phone_number,
+        &#39;codeLifetime&#39;: template_vars.code_life_time,
         &#39;appName&#39;: app_name,
     }
-    if input_.url_with_link_code:
-        sms_input[&#39;urlWithLinkCode&#39;] = input_.url_with_link_code
-    if input_.user_input_code:
-        sms_input[&#39;userInputCode&#39;] = input_.user_input_code
+    if template_vars.url_with_link_code:
+        sms_input[&#39;urlWithLinkCode&#39;] = template_vars.url_with_link_code
+    if template_vars.user_input_code:
+        sms_input[&#39;userInputCode&#39;] = template_vars.user_input_code
     try:
         async with AsyncClient() as client:
             await client.post(  # type: ignore
                 SUPERTOKENS_SMS_SERVICE_URL,
                 json={
-                    &#34;apiKey&#34;: self.config.api_key,
+                    &#34;apiKey&#34;: self.api_key,
                     &#34;smsInput&#34;: sms_input,
                 },
                 headers={&#39;api-version&#39;: &#39;0&#39;}
@@ -212,9 +212,9 @@ inheritance.</p></div>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensService" href="#supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensService">SuperTokensService</a></code></h4>
+<h4><code><a title="supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensSMSService" href="#supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensSMSService">SuperTokensSMSService</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensService.send_sms" href="#supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensService.send_sms">send_sms</a></code></li>
+<li><code><a title="supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensSMSService.send_sms" href="#supertokens_python.recipe.passwordless.smsdelivery.services.supertokens.SuperTokensSMSService.send_sms">send_sms</a></code></li>
 </ul>
 </li>
 </ul>

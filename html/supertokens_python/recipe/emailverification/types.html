@@ -39,14 +39,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
-
-from typing import Union
+from typing import Union, Dict, Any
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface, EmailDeliveryInterface
 
 
 class User:
@@ -55,8 +54,34 @@ class User:
         self.email = email
 
 
+class VerificationEmailTemplateVarsUser:
+    def __init__(self, user_id: str, email: str):
+        self.id = user_id
+        self.email = email
+
+
+class VerificationEmailTemplateVars:
+    def __init__(
+        self,
+        user: VerificationEmailTemplateVarsUser,
+        email_verify_link: str,
+        user_context: Dict[str, Any],
+    ) -&gt; None:
+        self.user = user
+        self.email_verify_link = email_verify_link
+        self.user_context = user_context
+
+
+# Export:
+EmailTemplateVars = VerificationEmailTemplateVars
+
+SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
+
+EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
+
+
 class EmailVerificationIngredients:
-    def __init__(self, email_delivery: Union[EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput], None] = None):
+    def __init__(self, email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None):
         self.email_delivery = email_delivery</code></pre>
 </details>
 </section>
@@ -71,7 +96,7 @@ class EmailVerificationIngredients:
 <dl>
 <dt id="supertokens_python.recipe.emailverification.types.EmailVerificationIngredients"><code class="flex name class">
 <span>class <span class="ident">EmailVerificationIngredients</span></span>
-<span>(</span><span>email_delivery: Optional[<a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[<a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>]] = None)</span>
+<span>(</span><span>email_delivery: Union[EmailDeliveryIngredient[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -80,7 +105,7 @@ class EmailVerificationIngredients:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class EmailVerificationIngredients:
-    def __init__(self, email_delivery: Union[EmailDeliveryIngredient[TypeEmailVerificationEmailDeliveryInput], None] = None):
+    def __init__(self, email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None):
         self.email_delivery = email_delivery</code></pre>
 </details>
 </dd>
@@ -97,6 +122,66 @@ class EmailVerificationIngredients:
 <pre><code class="python">class User:
     def __init__(self, user_id: str, email: str):
         self.user_id = user_id
+        self.email = email</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars"><code class="flex name class">
+<span>class <span class="ident">VerificationEmailTemplateVars</span></span>
+<span>(</span><span>user: <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser" href="#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser">VerificationEmailTemplateVarsUser</a>, email_verify_link: str, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class VerificationEmailTemplateVars:
+    def __init__(
+        self,
+        user: VerificationEmailTemplateVarsUser,
+        email_verify_link: str,
+        user_context: Dict[str, Any],
+    ) -&gt; None:
+        self.user = user
+        self.email_verify_link = email_verify_link
+        self.user_context = user_context</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars"><code class="flex name class">
+<span>class <span class="ident">EmailTemplateVars</span></span>
+<span>(</span><span>user: <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser" href="#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser">VerificationEmailTemplateVarsUser</a>, email_verify_link: str, user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class VerificationEmailTemplateVars:
+    def __init__(
+        self,
+        user: VerificationEmailTemplateVarsUser,
+        email_verify_link: str,
+        user_context: Dict[str, Any],
+    ) -&gt; None:
+        self.user = user
+        self.email_verify_link = email_verify_link
+        self.user_context = user_context</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser"><code class="flex name class">
+<span>class <span class="ident">VerificationEmailTemplateVarsUser</span></span>
+<span>(</span><span>user_id: str, email: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class VerificationEmailTemplateVarsUser:
+    def __init__(self, user_id: str, email: str):
+        self.id = user_id
         self.email = email</code></pre>
 </details>
 </dd>
@@ -121,6 +206,15 @@ class EmailVerificationIngredients:
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.emailverification.types.User" href="#supertokens_python.recipe.emailverification.types.User">User</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser" href="#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVarsUser">VerificationEmailTemplateVarsUser</a></code></h4>
 </li>
 </ul>
 </li>
