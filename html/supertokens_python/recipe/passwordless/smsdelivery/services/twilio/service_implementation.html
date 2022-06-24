@@ -44,37 +44,36 @@ from __future__ import annotations
 
 from typing import Any, Dict, Union
 
-from supertokens_python.ingredients.smsdelivery.services.twilio import (
-    GetContentResult, ServiceInterface)
+from supertokens_python.ingredients.smsdelivery.types import SMSContent, TwilioServiceInterface
 from supertokens_python.recipe.passwordless.smsdelivery.services.twilio.passwordless_login import \
     pless_sms_content
 from supertokens_python.recipe.passwordless.types import \
-    TypePasswordlessSmsDeliveryInput
+    PasswordlessLoginSMSTemplateVars
 
 
-class ServiceImplementation(ServiceInterface[TypePasswordlessSmsDeliveryInput]):
+class ServiceImplementation(TwilioServiceInterface[PasswordlessLoginSMSTemplateVars]):
     async def send_raw_sms(self,
-                           get_content_result: GetContentResult,
+                           content: SMSContent,
                            user_context: Dict[str, Any],
                            from_: Union[str, None] = None,
                            messaging_service_sid: Union[str, None] = None,
                            ) -&gt; None:
         if from_:
             self.twilio_client.messages.create(  # type: ignore
-                to=get_content_result.to_phone,
-                body=get_content_result.body,
+                to=content.to_phone,
+                body=content.body,
                 from_=from_,
             )
         else:
             self.twilio_client.messages.create(  # type: ignore
-                to=get_content_result.to_phone,
-                body=get_content_result.body,
+                to=content.to_phone,
+                body=content.body,
                 messaging_service_sid=messaging_service_sid,
             )
 
-    async def get_content(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -&gt; GetContentResult:
+    async def get_content(self, template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]) -&gt; SMSContent:
         _ = user_context
-        return pless_sms_content(input_)</code></pre>
+        return pless_sms_content(template_vars)</code></pre>
 </details>
 </section>
 <section>
@@ -97,40 +96,40 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ServiceImplementation(ServiceInterface[TypePasswordlessSmsDeliveryInput]):
+<pre><code class="python">class ServiceImplementation(TwilioServiceInterface[PasswordlessLoginSMSTemplateVars]):
     async def send_raw_sms(self,
-                           get_content_result: GetContentResult,
+                           content: SMSContent,
                            user_context: Dict[str, Any],
                            from_: Union[str, None] = None,
                            messaging_service_sid: Union[str, None] = None,
                            ) -&gt; None:
         if from_:
             self.twilio_client.messages.create(  # type: ignore
-                to=get_content_result.to_phone,
-                body=get_content_result.body,
+                to=content.to_phone,
+                body=content.body,
                 from_=from_,
             )
         else:
             self.twilio_client.messages.create(  # type: ignore
-                to=get_content_result.to_phone,
-                body=get_content_result.body,
+                to=content.to_phone,
+                body=content.body,
                 messaging_service_sid=messaging_service_sid,
             )
 
-    async def get_content(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -&gt; GetContentResult:
+    async def get_content(self, template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]) -&gt; SMSContent:
         _ = user_context
-        return pless_sms_content(input_)</code></pre>
+        return pless_sms_content(template_vars)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.ingredients.smsdelivery.services.twilio.ServiceInterface" href="../../../../../ingredients/smsdelivery/services/twilio.html#supertokens_python.ingredients.smsdelivery.services.twilio.ServiceInterface">ServiceInterface</a></li>
+<li><a title="supertokens_python.ingredients.smsdelivery.types.TwilioServiceInterface" href="../../../../../ingredients/smsdelivery/types.html#supertokens_python.ingredients.smsdelivery.types.TwilioServiceInterface">TwilioServiceInterface</a></li>
 <li>abc.ABC</li>
 <li>typing.Generic</li>
 </ul>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.passwordless.smsdelivery.services.twilio.service_implementation.ServiceImplementation.get_content"><code class="name flex">
-<span>async def <span class="ident">get_content</span></span>(<span>self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.ingredients.smsdelivery.services.twilio.GetContentResult" href="../../../../../ingredients/smsdelivery/services/twilio.html#supertokens_python.ingredients.smsdelivery.services.twilio.GetContentResult">GetContentResult</a></span>
+<span>async def <span class="ident">get_content</span></span>(<span>self, template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.ingredients.smsdelivery.types.SMSContent" href="../../../../../ingredients/smsdelivery/types.html#supertokens_python.ingredients.smsdelivery.types.SMSContent">SMSContent</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -138,13 +137,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_content(self, input_: TypePasswordlessSmsDeliveryInput, user_context: Dict[str, Any]) -&gt; GetContentResult:
+<pre><code class="python">async def get_content(self, template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]) -&gt; SMSContent:
     _ = user_context
-    return pless_sms_content(input_)</code></pre>
+    return pless_sms_content(template_vars)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.smsdelivery.services.twilio.service_implementation.ServiceImplementation.send_raw_sms"><code class="name flex">
-<span>async def <span class="ident">send_raw_sms</span></span>(<span>self, get_content_result: GetContentResult, user_context: Dict[str, Any], from_: Union[str, None] = None, messaging_service_sid: Union[str, None] = None) ‑> None</span>
+<span>async def <span class="ident">send_raw_sms</span></span>(<span>self, content: SMSContent, user_context: Dict[str, Any], from_: Union[str, None] = None, messaging_service_sid: Union[str, None] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -153,21 +152,21 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def send_raw_sms(self,
-                       get_content_result: GetContentResult,
+                       content: SMSContent,
                        user_context: Dict[str, Any],
                        from_: Union[str, None] = None,
                        messaging_service_sid: Union[str, None] = None,
                        ) -&gt; None:
     if from_:
         self.twilio_client.messages.create(  # type: ignore
-            to=get_content_result.to_phone,
-            body=get_content_result.body,
+            to=content.to_phone,
+            body=content.body,
             from_=from_,
         )
     else:
         self.twilio_client.messages.create(  # type: ignore
-            to=get_content_result.to_phone,
-            body=get_content_result.body,
+            to=content.to_phone,
+            body=content.body,
             messaging_service_sid=messaging_service_sid,
         )</code></pre>
 </details>

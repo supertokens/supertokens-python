@@ -48,8 +48,7 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
 
-from .interfaces import (RecipeInterface, SignInUpFieldError,
-                         SignInUpOkResult)
+from .interfaces import RecipeInterface, SignInUpOkResult
 from .types import ThirdPartyInfo, User
 
 
@@ -113,7 +112,7 @@ class RecipeImplementation(RecipeInterface):
         return None
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -&gt; Union[SignInUpOkResult, SignInUpFieldError]:
+                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
         data = {
             &#39;thirdPartyId&#39;: third_party_id,
             &#39;thirdPartyUserId&#39;: third_party_user_id,
@@ -217,7 +216,7 @@ inheritance.</p></div>
         return None
 
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -&gt; Union[SignInUpOkResult, SignInUpFieldError]:
+                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
         data = {
             &#39;thirdPartyId&#39;: third_party_id,
             &#39;thirdPartyUserId&#39;: third_party_user_id,
@@ -331,7 +330,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.recipe_implementation.RecipeImplementation.sign_in_up"><code class="name flex">
-<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpFieldError" href="interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpFieldError">SignInUpFieldError</a>]</span>
+<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -340,7 +339,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                     email_verified: bool, user_context: Dict[str, Any]) -&gt; Union[SignInUpOkResult, SignInUpFieldError]:
+                     email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
     data = {
         &#39;thirdPartyId&#39;: third_party_id,
         &#39;thirdPartyUserId&#39;: third_party_user_id,

@@ -47,8 +47,8 @@ from supertokens_python.recipe.passwordless.interfaces import (
 
 from .. import interfaces
 from ..recipe import ThirdPartyPasswordlessRecipe
-from ..types import (TypeThirdPartyPasswordlessEmailDeliveryInput,
-                     TypeThirdPartyPasswordlessSmsDeliveryInput, User)
+from ..types import (EmailTemplateVars,
+                     SMSTemplateVars, User)
 
 
 async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -222,13 +222,13 @@ async def passwordlessSigninup(email: Union[str, None], phone_number: Union[str,
     )
 
 
-async def send_email(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+async def send_email(input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(input_, user_context)
 
 
-async def send_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(input_, user_context)</code></pre>
@@ -563,7 +563,7 @@ async def send_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_cont
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.send_email"><code class="name flex">
-<span>async def <span class="ident">send_email</span></span>(<span>input_: Union[<a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="../../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>, <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>], user_context: Optional[Dict[str, Any]] = None)</span>
+<span>async def <span class="ident">send_email</span></span>(<span>input_: Union[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>, <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>], user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -571,7 +571,7 @@ async def send_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_cont
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_email(input_: TypeThirdPartyPasswordlessEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def send_email(input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(input_, user_context)</code></pre>
@@ -586,7 +586,7 @@ async def send_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_cont
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_sms(input_: TypeThirdPartyPasswordlessSmsDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await ThirdPartyPasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(input_, user_context)</code></pre>

@@ -47,9 +47,9 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordEmailDeliveryInput
+    EmailTemplateVars
 
-from ...types import APIResponse
+from ...types import APIResponse, GeneralErrorResponse
 from ..emailverification.interfaces import \
     RecipeInterface as EmailVerificationRecipeInterface
 
@@ -148,7 +148,7 @@ class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: EmailPasswordConfig, recipe_implementation: RecipeInterface,
                  email_verification_recipe_implementation: EmailVerificationRecipeInterface,
-                 email_delivery: EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput]):
+                 email_delivery: EmailDeliveryIngredient[EmailTemplateVars]):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
@@ -320,30 +320,30 @@ class APIInterface:
         self.disable_sign_up_post = False
 
     @abstractmethod
-    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; EmailExistsGetOkResult:
+    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
                                                  api_options: APIOptions,
-                                                 user_context: Dict[str, Any]) -&gt; GeneratePasswordResetTokenPostOkResult:
+                                                 user_context: Dict[str, Any]) -&gt; Union[GeneratePasswordResetTokenPostOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def password_reset_post(self, form_fields: List[FormField], token: str,
-                                  api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[PasswordResetPostOkResult, PasswordResetPostInvalidTokenResponse]:
+                                  api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[PasswordResetPostOkResult, PasswordResetPostInvalidTokenResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def sign_in_post(self, form_fields: List[FormField],
                            api_options: APIOptions,
-                           user_context: Dict[str, Any]) -&gt; Union[SignInPostOkResult, SignInPostWrongCredentialsError]:
+                           user_context: Dict[str, Any]) -&gt; Union[SignInPostOkResult, SignInPostWrongCredentialsError, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def sign_up_post(self, form_fields: List[FormField],
                            api_options: APIOptions,
-                           user_context: Dict[str, Any]) -&gt; Union[SignUpPostOkResult, SignUpPostEmailAlreadyExistsError]:
+                           user_context: Dict[str, Any]) -&gt; Union[SignUpPostOkResult, SignUpPostEmailAlreadyExistsError, GeneralErrorResponse]:
         pass</code></pre>
 </details>
 </section>
@@ -374,30 +374,30 @@ class APIInterface:
         self.disable_sign_up_post = False
 
     @abstractmethod
-    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; EmailExistsGetOkResult:
+    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
                                                  api_options: APIOptions,
-                                                 user_context: Dict[str, Any]) -&gt; GeneratePasswordResetTokenPostOkResult:
+                                                 user_context: Dict[str, Any]) -&gt; Union[GeneratePasswordResetTokenPostOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def password_reset_post(self, form_fields: List[FormField], token: str,
-                                  api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[PasswordResetPostOkResult, PasswordResetPostInvalidTokenResponse]:
+                                  api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[PasswordResetPostOkResult, PasswordResetPostInvalidTokenResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def sign_in_post(self, form_fields: List[FormField],
                            api_options: APIOptions,
-                           user_context: Dict[str, Any]) -&gt; Union[SignInPostOkResult, SignInPostWrongCredentialsError]:
+                           user_context: Dict[str, Any]) -&gt; Union[SignInPostOkResult, SignInPostWrongCredentialsError, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def sign_up_post(self, form_fields: List[FormField],
                            api_options: APIOptions,
-                           user_context: Dict[str, Any]) -&gt; Union[SignUpPostOkResult, SignUpPostEmailAlreadyExistsError]:
+                           user_context: Dict[str, Any]) -&gt; Union[SignUpPostOkResult, SignUpPostEmailAlreadyExistsError, GeneralErrorResponse]:
         pass</code></pre>
 </details>
 <h3>Subclasses</h3>
@@ -407,7 +407,7 @@ class APIInterface:
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.APIInterface.email_exists_get"><code class="name flex">
-<span>async def <span class="ident">email_exists_get</span></span>(<span>self, email: str, api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult" href="#supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a></span>
+<span>async def <span class="ident">email_exists_get</span></span>(<span>self, email: str, api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult" href="#supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -416,12 +416,12 @@ class APIInterface:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; EmailExistsGetOkResult:
+async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[EmailExistsGetOkResult, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.APIInterface.generate_password_reset_token_post"><code class="name flex">
-<span>async def <span class="ident">generate_password_reset_token_post</span></span>(<span>self, form_fields: List[FormField], api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult" href="#supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult">GeneratePasswordResetTokenPostOkResult</a></span>
+<span>async def <span class="ident">generate_password_reset_token_post</span></span>(<span>self, form_fields: List[FormField], api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult" href="#supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult">GeneratePasswordResetTokenPostOkResult</a>, GeneralErrorResponse]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -432,12 +432,12 @@ async def email_exists_get(self, email: str, api_options: APIOptions, user_conte
 <pre><code class="python">@abstractmethod
 async def generate_password_reset_token_post(self, form_fields: List[FormField],
                                              api_options: APIOptions,
-                                             user_context: Dict[str, Any]) -&gt; GeneratePasswordResetTokenPostOkResult:
+                                             user_context: Dict[str, Any]) -&gt; Union[GeneratePasswordResetTokenPostOkResult, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.APIInterface.password_reset_post"><code class="name flex">
-<span>async def <span class="ident">password_reset_post</span></span>(<span>self, form_fields: List[FormField], token: str, api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult" href="#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult">PasswordResetPostOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse" href="#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse">PasswordResetPostInvalidTokenResponse</a>]</span>
+<span>async def <span class="ident">password_reset_post</span></span>(<span>self, form_fields: List[FormField], token: str, api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult" href="#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult">PasswordResetPostOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse" href="#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse">PasswordResetPostInvalidTokenResponse</a>, GeneralErrorResponse]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -447,12 +447,12 @@ async def generate_password_reset_token_post(self, form_fields: List[FormField],
 </summary>
 <pre><code class="python">@abstractmethod
 async def password_reset_post(self, form_fields: List[FormField], token: str,
-                              api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[PasswordResetPostOkResult, PasswordResetPostInvalidTokenResponse]:
+                              api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[PasswordResetPostOkResult, PasswordResetPostInvalidTokenResponse, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.APIInterface.sign_in_post"><code class="name flex">
-<span>async def <span class="ident">sign_in_post</span></span>(<span>self, form_fields: List[FormField], api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostOkResult" href="#supertokens_python.recipe.emailpassword.interfaces.SignInPostOkResult">SignInPostOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostWrongCredentialsError" href="#supertokens_python.recipe.emailpassword.interfaces.SignInPostWrongCredentialsError">SignInPostWrongCredentialsError</a>]</span>
+<span>async def <span class="ident">sign_in_post</span></span>(<span>self, form_fields: List[FormField], api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostOkResult" href="#supertokens_python.recipe.emailpassword.interfaces.SignInPostOkResult">SignInPostOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostWrongCredentialsError" href="#supertokens_python.recipe.emailpassword.interfaces.SignInPostWrongCredentialsError">SignInPostWrongCredentialsError</a>, GeneralErrorResponse]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -463,12 +463,12 @@ async def password_reset_post(self, form_fields: List[FormField], token: str,
 <pre><code class="python">@abstractmethod
 async def sign_in_post(self, form_fields: List[FormField],
                        api_options: APIOptions,
-                       user_context: Dict[str, Any]) -&gt; Union[SignInPostOkResult, SignInPostWrongCredentialsError]:
+                       user_context: Dict[str, Any]) -&gt; Union[SignInPostOkResult, SignInPostWrongCredentialsError, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.APIInterface.sign_up_post"><code class="name flex">
-<span>async def <span class="ident">sign_up_post</span></span>(<span>self, form_fields: List[FormField], api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostOkResult" href="#supertokens_python.recipe.emailpassword.interfaces.SignUpPostOkResult">SignUpPostOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostEmailAlreadyExistsError" href="#supertokens_python.recipe.emailpassword.interfaces.SignUpPostEmailAlreadyExistsError">SignUpPostEmailAlreadyExistsError</a>]</span>
+<span>async def <span class="ident">sign_up_post</span></span>(<span>self, form_fields: List[FormField], api_options: <a title="supertokens_python.recipe.emailpassword.interfaces.APIOptions" href="#supertokens_python.recipe.emailpassword.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostOkResult" href="#supertokens_python.recipe.emailpassword.interfaces.SignUpPostOkResult">SignUpPostOkResult</a>, <a title="supertokens_python.recipe.emailpassword.interfaces.SignUpPostEmailAlreadyExistsError" href="#supertokens_python.recipe.emailpassword.interfaces.SignUpPostEmailAlreadyExistsError">SignUpPostEmailAlreadyExistsError</a>, GeneralErrorResponse]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -479,7 +479,7 @@ async def sign_in_post(self, form_fields: List[FormField],
 <pre><code class="python">@abstractmethod
 async def sign_up_post(self, form_fields: List[FormField],
                        api_options: APIOptions,
-                       user_context: Dict[str, Any]) -&gt; Union[SignUpPostOkResult, SignUpPostEmailAlreadyExistsError]:
+                       user_context: Dict[str, Any]) -&gt; Union[SignUpPostOkResult, SignUpPostEmailAlreadyExistsError, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
@@ -487,7 +487,7 @@ async def sign_up_post(self, form_fields: List[FormField],
 </dd>
 <dt id="supertokens_python.recipe.emailpassword.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: EmailPasswordConfig, recipe_implementation: <a title="supertokens_python.recipe.emailpassword.interfaces.RecipeInterface" href="#supertokens_python.recipe.emailpassword.interfaces.RecipeInterface">RecipeInterface</a>, email_verification_recipe_implementation: EmailVerificationRecipeInterface, email_delivery: EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput])</span>
+<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: EmailPasswordConfig, recipe_implementation: <a title="supertokens_python.recipe.emailpassword.interfaces.RecipeInterface" href="#supertokens_python.recipe.emailpassword.interfaces.RecipeInterface">RecipeInterface</a>, email_verification_recipe_implementation: EmailVerificationRecipeInterface, email_delivery: EmailDeliveryIngredient[EmailTemplateVars])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -499,7 +499,7 @@ async def sign_up_post(self, form_fields: List[FormField],
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: EmailPasswordConfig, recipe_implementation: RecipeInterface,
                  email_verification_recipe_implementation: EmailVerificationRecipeInterface,
-                 email_delivery: EmailDeliveryIngredient[TypeEmailPasswordEmailDeliveryInput]):
+                 email_delivery: EmailDeliveryIngredient[EmailTemplateVars]):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id

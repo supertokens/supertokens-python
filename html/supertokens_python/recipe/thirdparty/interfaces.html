@@ -44,8 +44,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-
-from ...types import APIResponse
+from ...types import APIResponse, GeneralErrorResponse
 from ..emailverification.interfaces import \
     RecipeInterface as EmailVerificationRecipeInterface
 from .provider import Provider
@@ -63,11 +62,6 @@ class SignInUpOkResult():
     def __init__(self, user: User, created_new_user: bool):
         self.user = user
         self.created_new_user = created_new_user
-
-
-class SignInUpFieldError():
-    def __init__(self, error: str):
-        self.error = error
 
 
 class RecipeInterface(ABC):
@@ -89,7 +83,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -&gt; Union[SignInUpOkResult, SignInUpFieldError]:
+                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
         pass
 
 
@@ -142,19 +136,6 @@ class SignInUpPostNoEmailGivenByProviderResponse(APIResponse):
         }
 
 
-class SignInUpPostFieldError(APIResponse):
-    status: str = &#39;FIELD_ERROR&#39;
-
-    def __init__(self, error: str):
-        self.error = error
-
-    def to_json(self) -&gt; Dict[str, Any]:
-        return {
-            &#39;status&#39;: self.status,
-            &#39;error&#39;: self.error
-        }
-
-
 class AuthorisationUrlGetOkResult(APIResponse):
     status: str = &#39;OK&#39;
 
@@ -176,12 +157,12 @@ class APIInterface:
 
     @abstractmethod
     async def authorisation_url_get(self, provider: Provider,
-                                    api_options: APIOptions, user_context: Dict[str, Any]) -&gt; AuthorisationUrlGetOkResult:
+                                    api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
-                              user_context: Dict[str, Any]) -&gt; Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError]:
+                              user_context: Dict[str, Any]) -&gt; Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -215,12 +196,12 @@ class APIInterface:
 
     @abstractmethod
     async def authorisation_url_get(self, provider: Provider,
-                                    api_options: APIOptions, user_context: Dict[str, Any]) -&gt; AuthorisationUrlGetOkResult:
+                                    api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
-                              user_context: Dict[str, Any]) -&gt; Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError]:
+                              user_context: Dict[str, Any]) -&gt; Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -248,7 +229,7 @@ async def apple_redirect_handler_post(self, code: str, state: str, api_options: 
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.APIInterface.authorisation_url_get"><code class="name flex">
-<span>async def <span class="ident">authorisation_url_get</span></span>(<span>self, provider: Provider, api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult">AuthorisationUrlGetOkResult</a></span>
+<span>async def <span class="ident">authorisation_url_get</span></span>(<span>self, provider: Provider, api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult">AuthorisationUrlGetOkResult</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -258,12 +239,12 @@ async def apple_redirect_handler_post(self, code: str, state: str, api_options: 
 </summary>
 <pre><code class="python">@abstractmethod
 async def authorisation_url_get(self, provider: Provider,
-                                api_options: APIOptions, user_context: Dict[str, Any]) -&gt; AuthorisationUrlGetOkResult:
+                                api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.APIInterface.sign_in_up_post"><code class="name flex">
-<span>async def <span class="ident">sign_in_up_post</span></span>(<span>self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult">SignInUpPostOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError">SignInUpPostFieldError</a>]</span>
+<span>async def <span class="ident">sign_in_up_post</span></span>(<span>self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: <a title="supertokens_python.recipe.thirdparty.interfaces.APIOptions" href="#supertokens_python.recipe.thirdparty.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult">SignInUpPostOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -273,7 +254,7 @@ async def authorisation_url_get(self, provider: Provider,
 </summary>
 <pre><code class="python">@abstractmethod
 async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
-                          user_context: Dict[str, Any]) -&gt; Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, SignInUpPostFieldError]:
+                          user_context: Dict[str, Any]) -&gt; Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
@@ -386,7 +367,7 @@ inheritance.</p></div>
 
     @abstractmethod
     async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -&gt; Union[SignInUpOkResult, SignInUpFieldError]:
+                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -445,7 +426,7 @@ async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&g
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.sign_in_up"><code class="name flex">
-<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a>, <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpFieldError" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpFieldError">SignInUpFieldError</a>]</span>
+<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -455,26 +436,11 @@ async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&g
 </summary>
 <pre><code class="python">@abstractmethod
 async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                     email_verified: bool, user_context: Dict[str, Any]) -&gt; Union[SignInUpOkResult, SignInUpFieldError]:
+                     email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
     pass</code></pre>
 </details>
 </dd>
 </dl>
-</dd>
-<dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpFieldError"><code class="flex name class">
-<span>class <span class="ident">SignInUpFieldError</span></span>
-<span>(</span><span>error: str)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SignInUpFieldError():
-    def __init__(self, error: str):
-        self.error = error</code></pre>
-</details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult"><code class="flex name class">
 <span>class <span class="ident">SignInUpOkResult</span></span>
@@ -491,61 +457,6 @@ async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email:
         self.user = user
         self.created_new_user = created_new_user</code></pre>
 </details>
-</dd>
-<dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError"><code class="flex name class">
-<span>class <span class="ident">SignInUpPostFieldError</span></span>
-<span>(</span><span>error: str)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SignInUpPostFieldError(APIResponse):
-    status: str = &#39;FIELD_ERROR&#39;
-
-    def __init__(self, error: str):
-        self.error = error
-
-    def to_json(self) -&gt; Dict[str, Any]:
-        return {
-            &#39;status&#39;: self.status,
-            &#39;error&#39;: self.error
-        }</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#39;status&#39;: self.status,
-        &#39;error&#39;: self.error
-    }</code></pre>
-</details>
-</dd>
-</dl>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse"><code class="flex name class">
 <span>class <span class="ident">SignInUpPostNoEmailGivenByProviderResponse</span></span>
@@ -718,17 +629,7 @@ inheritance.</p></div>
 </ul>
 </li>
 <li>
-<h4><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpFieldError" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpFieldError">SignInUpFieldError</a></code></h4>
-</li>
-<li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a></code></h4>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError">SignInUpPostFieldError</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError.status" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError.status">status</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError.to_json" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError.to_json">to_json</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a></code></h4>

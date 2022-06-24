@@ -22,7 +22,7 @@ from supertokens_python.recipe.emailverification.emaildelivery.services.backward
 from supertokens_python.recipe.emailverification.types import User
 from supertokens_python.recipe.thirdparty.interfaces import RecipeInterface
 from supertokens_python.recipe.thirdparty.types import \
-    TypeThirdPartyEmailDeliveryInput
+    EmailTemplateVars
 from supertokens_python.supertokens import AppInfo
 
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
         InputEmailVerificationConfig
 
 
-class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailDeliveryInput]):
+class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
     def __init__(self,
                  app_info: AppInfo,
                  recipe_interface_impl: RecipeInterface,
@@ -50,5 +50,5 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeThirdPartyEmailDel
 
         self.ev_backward_compatibility_service = EVBackwardCompatibilityService(app_info, email_verification_feature_config)
 
-    async def send_email(self, input_: TypeThirdPartyEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        await self.ev_backward_compatibility_service.send_email(input_, user_context)
+    async def send_email(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -> None:
+        await self.ev_backward_compatibility_service.send_email(template_vars, user_context)

@@ -12,42 +12,41 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict
+from typing import Any, Dict, Callable, Union
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    EmailDeliverySMTPConfig, ServiceInterface, Transporter)
+    Transporter)
 from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface
+    EmailDeliveryInterface, SMTPServiceInterface, SMTPSettings
 from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordEmailDeliveryInput
+    EmailTemplateVars, SMTPOverrideInput
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import \
     SMTPService as EmailVerificationSMTPService
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.recipe.emailverification.types import VerificationEmailTemplateVars
 
 from .service_implementation import ServiceImplementation
 from .service_implementation.email_verification_implementation import \
     ServiceImplementation as EmailVerificationServiceImpl
 
 
-class SMTPService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
-    service_implementation: ServiceInterface[TypeEmailPasswordEmailDeliveryInput]
+class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
+    service_implementation: SMTPServiceInterface[EmailTemplateVars]
 
-    def __init__(self, config: EmailDeliverySMTPConfig[TypeEmailPasswordEmailDeliveryInput]) -> None:
-        transporter = Transporter(config.smtp_settings)
+    def __init__(self, smtp_settings: SMTPSettings,
+                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -> None:
+        transporter = Transporter(smtp_settings)
 
         oi = ServiceImplementation(transporter)
-        self.service_implementation = oi if config.override is None else config.override(oi)
+        self.service_implementation = oi if override is None else override(oi)
 
-        ev_config = EmailDeliverySMTPConfig[TypeEmailVerificationEmailDeliveryInput](
-            smtp_settings=config.smtp_settings,
+        self.email_verification_smtp_service = EmailVerificationSMTPService(
+            smtp_settings=smtp_settings,
             override=lambda _: EmailVerificationServiceImpl(self.service_implementation)
         )
-        self.email_verification_smtp_service = EmailVerificationSMTPService(ev_config)
 
-    async def send_email(self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> None:
-        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
-            return await self.email_verification_smtp_service.send_email(input_, user_context)
+    async def send_email(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -> None:
+        if isinstance(template_vars, VerificationEmailTemplateVars):
+            return await self.email_verification_smtp_service.send_email(template_vars, user_context)
 
-        content = await self.service_implementation.get_content(input_, user_context)
+        content = await self.service_implementation.get_content(template_vars, user_context)
         await self.service_implementation.send_raw_email(content, user_context)

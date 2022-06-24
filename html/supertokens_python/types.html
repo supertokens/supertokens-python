@@ -69,7 +69,19 @@ class UsersResponse:
 class APIResponse(ABC):
     @abstractmethod
     def to_json(self) -&gt; Dict[str, Any]:
-        pass</code></pre>
+        pass
+
+
+class GeneralErrorResponse(APIResponse):
+    def __init__(self, message: str):
+        self.status = &#39;GENERAL_ERROR&#39;
+        self.message = message
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#39;status&#39;: self.status,
+            &#39;message&#39;: self.message
+        }</code></pre>
 </details>
 </section>
 <section>
@@ -123,19 +135,16 @@ inheritance.</p></div>
 <li><a title="supertokens_python.recipe.jwt.interfaces.JWKSGetResponse" href="recipe/jwt/interfaces.html#supertokens_python.recipe.jwt.interfaces.JWKSGetResponse">JWKSGetResponse</a></li>
 <li><a title="supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse" href="recipe/openid/interfaces.html#supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse">OpenIdDiscoveryConfigurationGetResponse</a></li>
 <li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostExpiredUserInputCodeError">ConsumeCodePostExpiredUserInputCodeError</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostGeneralError">ConsumeCodePostGeneralError</a></li>
 <li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostIncorrectUserInputCodeError">ConsumeCodePostIncorrectUserInputCodeError</a></li>
 <li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a></li>
 <li><a title="supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ConsumeCodePostRestartFlowError">ConsumeCodePostRestartFlowError</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostGeneralError">CreateCodePostGeneralError</a></li>
 <li><a title="supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.CreateCodePostOkResult">CreateCodePostOkResult</a></li>
 <li><a title="supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a></li>
 <li><a title="supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.PhoneNumberExistsGetOkResult">PhoneNumberExistsGetOkResult</a></li>
-<li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostGeneralError">ResendCodePostGeneralError</a></li>
 <li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostOkResult">ResendCodePostOkResult</a></li>
 <li><a title="supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError" href="recipe/passwordless/interfaces.html#supertokens_python.recipe.passwordless.interfaces.ResendCodePostRestartFlowError">ResendCodePostRestartFlowError</a></li>
+<li><a title="supertokens_python.recipe.session.interfaces.SignOutOkayResponse" href="recipe/session/interfaces.html#supertokens_python.recipe.session.interfaces.SignOutOkayResponse">SignOutOkayResponse</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult" href="recipe/thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult">AuthorisationUrlGetOkResult</a></li>
-<li><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError" href="recipe/thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostFieldError">SignInUpPostFieldError</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse" href="recipe/thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostNoEmailGivenByProviderResponse">SignInUpPostNoEmailGivenByProviderResponse</a></li>
 <li><a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult" href="recipe/thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpPostOkResult">SignInUpPostOkResult</a></li>
 <li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignInPostOkResult" href="recipe/thirdpartyemailpassword/interfaces.html#supertokens_python.recipe.thirdpartyemailpassword.interfaces.EmailPasswordSignInPostOkResult">EmailPasswordSignInPostOkResult</a></li>
@@ -143,6 +152,7 @@ inheritance.</p></div>
 <li><a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.ThirdPartySignInUpPostOkResult" href="recipe/thirdpartyemailpassword/interfaces.html#supertokens_python.recipe.thirdpartyemailpassword.interfaces.ThirdPartySignInUpPostOkResult">ThirdPartySignInUpPostOkResult</a></li>
 <li><a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.ConsumeCodePostOkResult" href="recipe/thirdpartypasswordless/interfaces.html#supertokens_python.recipe.thirdpartypasswordless.interfaces.ConsumeCodePostOkResult">ConsumeCodePostOkResult</a></li>
 <li><a title="supertokens_python.recipe.thirdpartypasswordless.interfaces.ThirdPartySignInUpPostOkResult" href="recipe/thirdpartypasswordless/interfaces.html#supertokens_python.recipe.thirdpartypasswordless.interfaces.ThirdPartySignInUpPostOkResult">ThirdPartySignInUpPostOkResult</a></li>
+<li><a title="supertokens_python.types.GeneralErrorResponse" href="#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
@@ -158,6 +168,53 @@ inheritance.</p></div>
 <pre><code class="python">@abstractmethod
 def to_json(self) -&gt; Dict[str, Any]:
     pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.types.GeneralErrorResponse"><code class="flex name class">
+<span>class <span class="ident">GeneralErrorResponse</span></span>
+<span>(</span><span>message: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneralErrorResponse(APIResponse):
+    def __init__(self, message: str):
+        self.status = &#39;GENERAL_ERROR&#39;
+        self.message = message
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#39;status&#39;: self.status,
+            &#39;message&#39;: self.message
+        }</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.types.GeneralErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {
+        &#39;status&#39;: self.status,
+        &#39;message&#39;: self.message
+    }</code></pre>
 </details>
 </dd>
 </dl>
@@ -235,6 +292,12 @@ def to_json(self) -&gt; Dict[str, Any]:
 <h4><code><a title="supertokens_python.types.APIResponse" href="#supertokens_python.types.APIResponse">APIResponse</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.types.APIResponse.to_json" href="#supertokens_python.types.APIResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.types.GeneralErrorResponse" href="#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.GeneralErrorResponse.to_json" href="#supertokens_python.types.GeneralErrorResponse.to_json">to_json</a></code></li>
 </ul>
 </li>
 <li>

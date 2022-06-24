@@ -12,8 +12,7 @@
 # under the License.
 from typing import Any, Dict, Union
 
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 from supertokens_python.recipe.emailverification.recipe import \
     EmailVerificationRecipe
 
@@ -48,7 +47,7 @@ async def revoke_email_verification_tokens(user_id: str, email: str, user_contex
     return await EmailVerificationRecipe.get_instance().recipe_implementation.revoke_email_verification_tokens(user_id, email, user_context)
 
 
-async def send_email(input_: TypeEmailVerificationEmailDeliveryInput, user_context: Union[None, Dict[str, Any]] = None):
+async def send_email(input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     if user_context is None:
         user_context = {}
     return await EmailVerificationRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(input_, user_context)

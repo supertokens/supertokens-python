@@ -27,22 +27,24 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     SignUpEmailAlreadyExistsError, SignUpPostEmailAlreadyExistsError,
     SignUpPostOkResult)
 from supertokens_python.recipe.emailpassword.types import (
-    FormField, TypeEmailPasswordPasswordResetEmailDeliveryInput,
-    TypeEmailPasswordPasswordResetEmailDeliveryInputUser)
+    FormField, PasswordResetEmailTemplateVars,
+    PasswordResetEmailTemplateVarsUser)
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.utils import find_first_occurrence_in_list
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import APIOptions
 
+from supertokens_python.types import GeneralErrorResponse
+
 
 class APIImplementation(APIInterface):
-    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -> EmailExistsGetOkResult:
+    async def email_exists_get(self, email: str, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         user = await api_options.recipe_implementation.get_user_by_email(email, user_context)
         return EmailExistsGetOkResult(user is not None)
 
     async def generate_password_reset_token_post(self, form_fields: List[FormField],
-                                                 api_options: APIOptions, user_context: Dict[str, Any]) -> GeneratePasswordResetTokenPostOkResult:
+                                                 api_options: APIOptions, user_context: Dict[str, Any]) -> Union[GeneratePasswordResetTokenPostOkResult, GeneralErrorResponse]:
         emailFormField = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_EMAIL_ID, form_fields)
         if emailFormField is None:
@@ -65,8 +67,8 @@ class APIImplementation(APIInterface):
             user, user_context) + '?token=' + token + '&rid=' + api_options.recipe_id
 
         log_debug_message("Sending password reset email to %s", email)
-        send_email_input = TypeEmailPasswordPasswordResetEmailDeliveryInput(
-            user=TypeEmailPasswordPasswordResetEmailDeliveryInputUser(user.user_id, user.email),
+        send_email_input = PasswordResetEmailTemplateVars(
+            user=PasswordResetEmailTemplateVarsUser(user.user_id, user.email),
             password_reset_link=password_reset_link
         )
         await api_options.email_delivery.ingredient_interface_impl.send_email(send_email_input, user_context)
@@ -74,7 +76,7 @@ class APIImplementation(APIInterface):
         return GeneratePasswordResetTokenPostOkResult()
 
     async def password_reset_post(self, form_fields: List[FormField], token: str,
-                                  api_options: APIOptions, user_context: Dict[str, Any]) -> Union[PasswordResetPostOkResult, PasswordResetPostInvalidTokenResponse]:
+                                  api_options: APIOptions, user_context: Dict[str, Any]) -> Union[PasswordResetPostOkResult, PasswordResetPostInvalidTokenResponse, GeneralErrorResponse]:
         new_password_for_field = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields)
         if new_password_for_field is None:
@@ -88,7 +90,7 @@ class APIImplementation(APIInterface):
 
         return PasswordResetPostOkResult(result.user_id)
 
-    async def sign_in_post(self, form_fields: List[FormField], api_options: APIOptions, user_context: Dict[str, Any]) -> Union[SignInPostOkResult, SignInPostWrongCredentialsError]:
+    async def sign_in_post(self, form_fields: List[FormField], api_options: APIOptions, user_context: Dict[str, Any]) -> Union[SignInPostOkResult, SignInPostWrongCredentialsError, GeneralErrorResponse]:
         password_form_field = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields)
         if password_form_field is None:
@@ -110,7 +112,7 @@ class APIImplementation(APIInterface):
         session = await create_new_session(api_options.request, user.user_id, user_context=user_context)
         return SignInPostOkResult(user, session)
 
-    async def sign_up_post(self, form_fields: List[FormField], api_options: APIOptions, user_context: Dict[str, Any]) -> Union[SignUpPostOkResult, SignUpPostEmailAlreadyExistsError]:
+    async def sign_up_post(self, form_fields: List[FormField], api_options: APIOptions, user_context: Dict[str, Any]) -> Union[SignUpPostOkResult, SignUpPostEmailAlreadyExistsError, GeneralErrorResponse]:
         password_form_field = find_first_occurrence_in_list(
             lambda x: x.id == FORM_FIELD_PASSWORD_ID, form_fields)
         if password_form_field is None:

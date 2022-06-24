@@ -45,6 +45,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.types import APIResponse, GeneralErrorResponse
 
 from .utils import SessionConfig
 
@@ -146,19 +147,9 @@ class RecipeInterface(ABC):
         pass
 
 
-class SignOutResponse:
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    def to_json(self) -&gt; Dict[str, Any]:
-        pass
-
-
-class SignOutOkayResponse(SignOutResponse):
+class SignOutOkayResponse(APIResponse):
     def __init__(self):
         self.status = &#39;OK&#39;
-        super().__init__()
 
     def to_json(self) -&gt; Dict[str, Any]:
         return {
@@ -181,12 +172,16 @@ class APIInterface(ABC):
         self.disable_refresh_post = False
         self.disable_signout_post = False
 
+    # We do not add a GeneralErrorResponse response to this API
+    # since it&#39;s not something that is directly called by the user on the
+    # frontend anyway
+
     @abstractmethod
     async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; None:
         pass
 
     @abstractmethod
-    async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; SignOutResponse:
+    async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -302,12 +297,16 @@ inheritance.</p></div>
         self.disable_refresh_post = False
         self.disable_signout_post = False
 
+    # We do not add a GeneralErrorResponse response to this API
+    # since it&#39;s not something that is directly called by the user on the
+    # frontend anyway
+
     @abstractmethod
     async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; None:
         pass
 
     @abstractmethod
-    async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; SignOutResponse:
+    async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -341,7 +340,7 @@ async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, An
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.APIInterface.signout_post"><code class="name flex">
-<span>async def <span class="ident">signout_post</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.session.interfaces.APIOptions" href="#supertokens_python.recipe.session.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SignOutResponse" href="#supertokens_python.recipe.session.interfaces.SignOutResponse">SignOutResponse</a></span>
+<span>async def <span class="ident">signout_post</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.session.interfaces.APIOptions" href="#supertokens_python.recipe.session.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.session.interfaces.SignOutOkayResponse" href="#supertokens_python.recipe.session.interfaces.SignOutOkayResponse">SignOutOkayResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -350,7 +349,7 @@ async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, An
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; SignOutResponse:
+async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
@@ -1067,15 +1066,15 @@ async def update_session_data(self, new_session_data: Dict[str, Any], user_conte
 <span>class <span class="ident">SignOutOkayResponse</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SignOutOkayResponse(SignOutResponse):
+<pre><code class="python">class SignOutOkayResponse(APIResponse):
     def __init__(self):
         self.status = &#39;OK&#39;
-        super().__init__()
 
     def to_json(self) -&gt; Dict[str, Any]:
         return {
@@ -1084,7 +1083,8 @@ async def update_session_data(self, new_session_data: Dict[str, Any], user_conte
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="supertokens_python.recipe.session.interfaces.SignOutResponse" href="#supertokens_python.recipe.session.interfaces.SignOutResponse">SignOutResponse</a></li>
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
 </ul>
 <h3>Methods</h3>
 <dl>
@@ -1101,45 +1101,6 @@ async def update_session_data(self, new_session_data: Dict[str, Any], user_conte
     return {
         &#39;status&#39;: self.status
     }</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="supertokens_python.recipe.session.interfaces.SignOutResponse"><code class="flex name class">
-<span>class <span class="ident">SignOutResponse</span></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SignOutResponse:
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    def to_json(self) -&gt; Dict[str, Any]:
-        pass</code></pre>
-</details>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.recipe.session.interfaces.SignOutOkayResponse" href="#supertokens_python.recipe.session.interfaces.SignOutOkayResponse">SignOutOkayResponse</a></li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.recipe.session.interfaces.SignOutResponse.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@abstractmethod
-def to_json(self) -&gt; Dict[str, Any]:
-    pass</code></pre>
 </details>
 </dd>
 </dl>
@@ -1226,12 +1187,6 @@ def to_json(self) -&gt; Dict[str, Any]:
 <h4><code><a title="supertokens_python.recipe.session.interfaces.SignOutOkayResponse" href="#supertokens_python.recipe.session.interfaces.SignOutOkayResponse">SignOutOkayResponse</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.session.interfaces.SignOutOkayResponse.to_json" href="#supertokens_python.recipe.session.interfaces.SignOutOkayResponse.to_json">to_json</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="supertokens_python.recipe.session.interfaces.SignOutResponse" href="#supertokens_python.recipe.session.interfaces.SignOutResponse">SignOutResponse</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.session.interfaces.SignOutResponse.to_json" href="#supertokens_python.recipe.session.interfaces.SignOutResponse.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>

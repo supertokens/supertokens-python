@@ -42,14 +42,12 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Union
 
-from supertokens_python.types import APIResponse
+from supertokens_python.framework import BaseRequest, BaseResponse
+from supertokens_python.recipe.jwt.interfaces import (
+    CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult)
+from supertokens_python.types import APIResponse, GeneralErrorResponse
 
 from .utils import OpenIdConfig
-
-from supertokens_python.framework import BaseRequest, BaseResponse
-from supertokens_python.recipe.jwt.interfaces import (CreateJwtOkResult,
-                                                      CreateJwtResultUnsupportedAlgorithm,
-                                                      GetJWKSResult)
 
 
 class GetOpenIdDiscoveryConfigurationResult():
@@ -105,8 +103,7 @@ class APIInterface:
         self.disable_open_id_discovery_configuration_get = False
 
     @abstractmethod
-    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt;\
-            OpenIdDiscoveryConfigurationGetResponse:
+    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[OpenIdDiscoveryConfigurationGetResponse, GeneralErrorResponse]:
         pass</code></pre>
 </details>
 </section>
@@ -133,8 +130,7 @@ class APIInterface:
         self.disable_open_id_discovery_configuration_get = False
 
     @abstractmethod
-    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt;\
-            OpenIdDiscoveryConfigurationGetResponse:
+    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[OpenIdDiscoveryConfigurationGetResponse, GeneralErrorResponse]:
         pass</code></pre>
 </details>
 <h3>Subclasses</h3>
@@ -144,7 +140,7 @@ class APIInterface:
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.openid.interfaces.APIInterface.open_id_discovery_configuration_get"><code class="name flex">
-<span>async def <span class="ident">open_id_discovery_configuration_get</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.openid.interfaces.APIOptions" href="#supertokens_python.recipe.openid.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse" href="#supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse">OpenIdDiscoveryConfigurationGetResponse</a></span>
+<span>async def <span class="ident">open_id_discovery_configuration_get</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.openid.interfaces.APIOptions" href="#supertokens_python.recipe.openid.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse" href="#supertokens_python.recipe.openid.interfaces.OpenIdDiscoveryConfigurationGetResponse">OpenIdDiscoveryConfigurationGetResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -153,8 +149,7 @@ class APIInterface:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt;\
-        OpenIdDiscoveryConfigurationGetResponse:
+async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[OpenIdDiscoveryConfigurationGetResponse, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>

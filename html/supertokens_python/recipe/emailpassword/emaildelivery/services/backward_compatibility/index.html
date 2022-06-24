@@ -49,13 +49,12 @@ from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.emailpassword.interfaces import (
-    RecipeInterface, TypeEmailPasswordEmailDeliveryInput)
-from supertokens_python.recipe.emailpassword.types import User
+    EmailTemplateVars, RecipeInterface)
+from supertokens_python.recipe.emailpassword.types import (
+    User, VerificationEmailTemplateVars)
 from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService as \
     EmailVerificationBackwardCompatibilityService
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
 from supertokens_python.recipe.emailverification.types import \
     User as EmailVerificationUser
 from supertokens_python.supertokens import AppInfo
@@ -88,7 +87,7 @@ def default_create_and_send_custom_email(
     return func
 
 
-class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
+class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
     app_info: AppInfo
     ev_backward_compatibility_service: EmailVerificationBackwardCompatibilityService
 
@@ -128,12 +127,12 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
             app_info, create_and_send_custom_email=create_and_send_custom_email
         )
 
-    async def send_email(self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -&gt; None:
-        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
-            await self.ev_backward_compatibility_service.send_email(input_, user_context)
+    async def send_email(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+        if isinstance(template_vars, VerificationEmailTemplateVars):
+            await self.ev_backward_compatibility_service.send_email(template_vars, user_context)
         else:
             user = await self.recipe_interface_impl.get_user_by_id(
-                user_id=input_.user.id,
+                user_id=template_vars.user.id,
                 user_context=user_context
             )
 
@@ -142,7 +141,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmail
 
             try:
                 await self.reset_password_feature_send_email_func(
-                    user, input_.password_reset_link, user_context
+                    user, template_vars.password_reset_link, user_context
                 )
             except Exception:
                 pass</code></pre>
@@ -202,7 +201,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class BackwardCompatibilityService(EmailDeliveryInterface[TypeEmailPasswordEmailDeliveryInput]):
+<pre><code class="python">class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
     app_info: AppInfo
     ev_backward_compatibility_service: EmailVerificationBackwardCompatibilityService
 
@@ -242,12 +241,12 @@ inheritance.</p></div>
             app_info, create_and_send_custom_email=create_and_send_custom_email
         )
 
-    async def send_email(self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -&gt; None:
-        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
-            await self.ev_backward_compatibility_service.send_email(input_, user_context)
+    async def send_email(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+        if isinstance(template_vars, VerificationEmailTemplateVars):
+            await self.ev_backward_compatibility_service.send_email(template_vars, user_context)
         else:
             user = await self.recipe_interface_impl.get_user_by_id(
-                user_id=input_.user.id,
+                user_id=template_vars.user.id,
                 user_context=user_context
             )
 
@@ -256,7 +255,7 @@ inheritance.</p></div>
 
             try:
                 await self.reset_password_feature_send_email_func(
-                    user, input_.password_reset_link, user_context
+                    user, template_vars.password_reset_link, user_context
                 )
             except Exception:
                 pass</code></pre>
@@ -281,7 +280,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.emaildelivery.services.backward_compatibility.BackwardCompatibilityService.send_email"><code class="name flex">
-<span>async def <span class="ident">send_email</span></span>(<span>self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">send_email</span></span>(<span>self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -289,12 +288,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_email(self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -&gt; None:
-    if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
-        await self.ev_backward_compatibility_service.send_email(input_, user_context)
+<pre><code class="python">async def send_email(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+    if isinstance(template_vars, VerificationEmailTemplateVars):
+        await self.ev_backward_compatibility_service.send_email(template_vars, user_context)
     else:
         user = await self.recipe_interface_impl.get_user_by_id(
-            user_id=input_.user.id,
+            user_id=template_vars.user.id,
             user_context=user_context
         )
 
@@ -303,7 +302,7 @@ inheritance.</p></div>
 
         try:
             await self.reset_password_feature_send_email_func(
-                user, input_.password_reset_link, user_context
+                user, template_vars.password_reset_link, user_context
             )
         except Exception:
             pass</code></pre>

@@ -16,12 +16,15 @@ from __future__ import annotations
 from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.emailpassword.interfaces import (
-    APIInterface, APIOptions, SignInPostOkResult, SignInPostWrongCredentialsError,
-    SignUpPostOkResult, SignUpPostEmailAlreadyExistsError)
+    APIInterface, APIOptions, SignInPostOkResult,
+    SignInPostWrongCredentialsError, SignUpPostEmailAlreadyExistsError,
+    SignUpPostOkResult)
 from supertokens_python.recipe.emailpassword.types import FormField, User
+from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
+    APIInterface as ThirdPartyEmailPasswordAPIInterface
 from supertokens_python.recipe.thirdpartyemailpassword.interfaces import (
-    APIInterface as ThirdPartyEmailPasswordAPIInterface,
     EmailPasswordSignInPostOkResult, EmailPasswordSignUpPostOkResult)
+from supertokens_python.types import GeneralErrorResponse
 
 
 def get_interface_impl(
@@ -40,7 +43,7 @@ def get_interface_impl(
     if not implementation.disable_sign_in_post:
         async def sign_in_post(form_fields: List[FormField],
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> Union[SignInPostOkResult, SignInPostWrongCredentialsError]:
+                               user_context: Dict[str, Any]) -> Union[SignInPostOkResult, SignInPostWrongCredentialsError, GeneralErrorResponse]:
             result = await api_implementation.emailpassword_sign_in_post(form_fields, api_options, user_context)
             if isinstance(result, EmailPasswordSignInPostOkResult):
                 return SignInPostOkResult(
@@ -52,7 +55,7 @@ def get_interface_impl(
     if not implementation.disable_sign_up_post:
         async def sign_up_post(form_fields: List[FormField],
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> Union[SignUpPostOkResult, SignUpPostEmailAlreadyExistsError]:
+                               user_context: Dict[str, Any]) -> Union[SignUpPostOkResult, SignUpPostEmailAlreadyExistsError, GeneralErrorResponse]:
             result = await api_implementation.emailpassword_sign_up_post(form_fields, api_options, user_context)
             if isinstance(result, EmailPasswordSignUpPostOkResult):
                 return SignUpPostOkResult(

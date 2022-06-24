@@ -20,7 +20,8 @@ from supertokens_python.querier import Querier
 from supertokens_python.recipe import usermetadata
 from supertokens_python.recipe.usermetadata.asyncio import (
     clear_user_metadata, get_user_metadata, update_user_metadata)
-from supertokens_python.recipe.usermetadata.interfaces import ClearUserMetadataResult, RecipeInterface
+from supertokens_python.recipe.usermetadata.interfaces import (
+    ClearUserMetadataResult, RecipeInterface)
 from supertokens_python.recipe.usermetadata.utils import InputOverrideConfig
 from supertokens_python.utils import is_version_gte
 from tests.utils import clean_st, reset, setup_st, start_st

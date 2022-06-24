@@ -73,7 +73,7 @@ from .api import (handle_apple_redirect_api, handle_authorisation_url_api,
                   handle_sign_in_up_api)
 from .constants import APPLE_REDIRECT_HANDLER, AUTHORISATIONURL, SIGNINUP
 from .exceptions import SuperTokensThirdPartyError
-from .types import ThirdPartyIngredients, TypeThirdPartyEmailDeliveryInput
+from .types import ThirdPartyIngredients, EmailTemplateVars
 from .utils import (InputEmailVerificationConfig,
                     validate_and_normalise_user_input)
 
@@ -81,7 +81,7 @@ from .utils import (InputEmailVerificationConfig,
 class ThirdPartyRecipe(RecipeModule):
     recipe_id = &#39;thirdparty&#39;
     __instance = None
-    email_delivery: EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput]
+    email_delivery: EmailDeliveryIngredient[EmailTemplateVars]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  sign_in_and_up_feature: SignInAndUpFeature,
@@ -89,7 +89,7 @@ class ThirdPartyRecipe(RecipeModule):
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
-                 email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None,
+                 email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, sign_in_and_up_feature,
@@ -159,7 +159,7 @@ class ThirdPartyRecipe(RecipeModule):
     def init(sign_in_and_up_feature: SignInAndUpFeature,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
              override: Union[InputOverrideConfig, None] = None,
-             email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None
+             email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
              ):
         def func(app_info: AppInfo):
             if ThirdPartyRecipe.__instance is None:
@@ -206,7 +206,7 @@ class ThirdPartyRecipe(RecipeModule):
 <dl>
 <dt id="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe"><code class="flex name class">
 <span>class <span class="ident">ThirdPartyRecipe</span></span>
-<span>(</span><span>recipe_id: str, app_info: AppInfo, sign_in_and_up_feature: SignInAndUpFeature, ingredients: ThirdPartyIngredients, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, override: Union[InputOverrideConfig, None] = None, email_verification_recipe: Union[EmailVerificationRecipe, None] = None, email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None)</span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, sign_in_and_up_feature: SignInAndUpFeature, ingredients: ThirdPartyIngredients, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, override: Union[InputOverrideConfig, None] = None, email_verification_recipe: Union[EmailVerificationRecipe, None] = None, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -218,7 +218,7 @@ inheritance.</p></div>
 <pre><code class="python">class ThirdPartyRecipe(RecipeModule):
     recipe_id = &#39;thirdparty&#39;
     __instance = None
-    email_delivery: EmailDeliveryIngredient[TypeThirdPartyEmailDeliveryInput]
+    email_delivery: EmailDeliveryIngredient[EmailTemplateVars]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  sign_in_and_up_feature: SignInAndUpFeature,
@@ -226,7 +226,7 @@ inheritance.</p></div>
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
-                 email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None,
+                 email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, sign_in_and_up_feature,
@@ -296,7 +296,7 @@ inheritance.</p></div>
     def init(sign_in_and_up_feature: SignInAndUpFeature,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
              override: Union[InputOverrideConfig, None] = None,
-             email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None
+             email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
              ):
         def func(app_info: AppInfo):
             if ThirdPartyRecipe.__instance is None:
@@ -338,7 +338,7 @@ inheritance.</p></div>
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.email_delivery"><code class="name">var <span class="ident">email_delivery</span> : <a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[<a title="supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput" href="../emailverification/interfaces.html#supertokens_python.recipe.emailverification.interfaces.TypeEmailVerificationEmailDeliveryInput">TypeEmailVerificationEmailDeliveryInput</a>]</code></dt>
+<dt id="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.email_delivery"><code class="name">var <span class="ident">email_delivery</span> : <a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -367,7 +367,7 @@ def get_instance() -&gt; ThirdPartyRecipe:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.recipe.ThirdPartyRecipe.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>sign_in_and_up_feature: SignInAndUpFeature, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, override: Union[InputOverrideConfig, None] = None, email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>sign_in_and_up_feature: SignInAndUpFeature, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, override: Union[InputOverrideConfig, None] = None, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -379,7 +379,7 @@ def get_instance() -&gt; ThirdPartyRecipe:
 def init(sign_in_and_up_feature: SignInAndUpFeature,
          email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
          override: Union[InputOverrideConfig, None] = None,
-         email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyEmailDeliveryInput], None] = None
+         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
          ):
     def func(app_info: AppInfo):
         if ThirdPartyRecipe.__instance is None:

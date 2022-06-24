@@ -12,16 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Generic, TypeVar, Union
+from typing import Any, Callable, Dict, Generic, TypeVar, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from supertokens_python.ingredients.emaildelivery.services.smtp import Transporter
 
 _T = TypeVar('_T')
 
 
 class EmailDeliveryInterface(ABC, Generic[_T]):
     @abstractmethod
-    async def send_email(self, input_: _T, user_context: Dict[str, Any]) -> None:
+    async def send_email(self, template_vars: _T, user_context: Dict[str, Any]) -> None:
         pass
 
 
@@ -41,3 +44,48 @@ class EmailDeliveryConfigWithService(ABC, Generic[_T]):
     ) -> None:
         self.service = service
         self.override = override
+
+
+class SMTPSettingsFrom:
+    def __init__(self, name: str, email: str) -> None:
+        self.name = name
+        self.email = email
+
+
+class SMTPSettings:
+    def __init__(
+        self, host: str,
+        port: int,
+        from_: SMTPSettingsFrom,
+        password: Union[str, None] = None,
+        secure: Union[bool, None] = None,
+    ) -> None:
+        self.host = host
+        self.from_ = from_
+        self.password = password
+        self.port = port
+        self.secure = secure
+
+
+class EmailContent:
+    def __init__(self, body: str, subject: str, to_email: str, is_html: bool) -> None:
+        self.body = body
+        self.subject = subject
+        self.to_email = to_email
+        self.is_html = is_html
+
+
+class SMTPServiceInterface(ABC, Generic[_T]):
+    def __init__(self, transporter: Transporter) -> None:
+        self.transporter = transporter
+
+    @abstractmethod
+    async def send_raw_email(self,
+                             content: EmailContent,
+                             user_context: Dict[str, Any]
+                             ) -> None:
+        pass
+
+    @abstractmethod
+    async def get_content(self, template_vars: _T, user_context: Dict[str, Any]) -> EmailContent:
+        pass

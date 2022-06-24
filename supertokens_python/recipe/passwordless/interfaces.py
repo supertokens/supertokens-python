@@ -20,13 +20,13 @@ from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.types import APIResponse
+from supertokens_python.types import APIResponse, GeneralErrorResponse
 from typing_extensions import Literal
 
 # if TYPE_CHECKING:
 from .types import (DeviceType, SMSDeliveryIngredient,
-                    TypePasswordlessEmailDeliveryInput,
-                    TypePasswordlessSmsDeliveryInput, User)
+                    PasswordlessLoginEmailTemplateVars,
+                    PasswordlessLoginSMSTemplateVars, User)
 from .utils import PasswordlessConfig
 
 
@@ -208,8 +208,8 @@ class RecipeInterface(ABC):
 class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: PasswordlessConfig, recipe_implementation: RecipeInterface,
-                 email_delivery: EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput],
-                 sms_delivery: SMSDeliveryIngredient[TypePasswordlessSmsDeliveryInput]
+                 email_delivery: EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars],
+                 sms_delivery: SMSDeliveryIngredient[PasswordlessLoginSMSTemplateVars]
                  ):
         self.request = request
         self.response = response
@@ -241,21 +241,6 @@ class CreateCodePostOkResult(APIResponse):
         }
 
 
-class CreateCodePostGeneralError(APIResponse):
-    status: str = 'GENERAL_ERROR'
-
-    def __init__(
-            self,
-            message: str):
-        self.message = message
-
-    def to_json(self):
-        return {
-            'status': self.status,
-            'message': self.message
-        }
-
-
 class ResendCodePostOkResult(APIResponse):
     status: str = 'OK'
 
@@ -271,19 +256,6 @@ class ResendCodePostRestartFlowError(APIResponse):
     def to_json(self):
         return {
             'status': self.status
-        }
-
-
-class ResendCodePostGeneralError(APIResponse):
-    status: str = 'GENERAL_ERROR'
-
-    def __init__(self, message: str):
-        self.message = message
-
-    def to_json(self):
-        return {
-            'status': self.status,
-            'message': self.message
         }
 
 
@@ -323,21 +295,6 @@ class ConsumeCodePostRestartFlowError(APIResponse):
     def to_json(self):
         return {
             'status': self.status
-        }
-
-
-class ConsumeCodePostGeneralError(APIResponse):
-    status: str = 'GENERAL_ERROR'
-
-    def __init__(
-            self,
-            message: str):
-        self.message = message
-
-    def to_json(self):
-        return {
-            'status': self.status,
-            'message': self.message
         }
 
 
@@ -418,7 +375,7 @@ class APIInterface:
                                email: Union[str, None],
                                phone_number: Union[str, None],
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResult, CreateCodePostGeneralError]:
+                               user_context: Dict[str, Any]) -> Union[CreateCodePostOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -426,7 +383,7 @@ class APIInterface:
                                device_id: str,
                                pre_auth_session_id: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, ResendCodePostGeneralError]:
+                               user_context: Dict[str, Any]) -> Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -436,19 +393,19 @@ class APIInterface:
                                 device_id: Union[str, None],
                                 link_code: Union[str, None],
                                 api_options: APIOptions,
-                                user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, ConsumeCodePostGeneralError, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
+                                user_context: Dict[str, Any]) -> Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, GeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
         pass
 
     @abstractmethod
     async def email_exists_get(self,
                                email: str,
                                api_options: APIOptions,
-                               user_context: Dict[str, Any]) -> EmailExistsGetOkResult:
+                               user_context: Dict[str, Any]) -> Union[EmailExistsGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def phone_number_exists_get(self,
                                       phone_number: str,
                                       api_options: APIOptions,
-                                      user_context: Dict[str, Any]) -> PhoneNumberExistsGetOkResult:
+                                      user_context: Dict[str, Any]) -> Union[PhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         pass

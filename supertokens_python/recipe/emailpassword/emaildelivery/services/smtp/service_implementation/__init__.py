@@ -15,21 +15,21 @@
 from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    GetContentResult, ServiceInterface, Transporter)
+    Transporter)
+from supertokens_python.ingredients.emaildelivery.types import EmailContent, SMTPServiceInterface
 from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.password_reset import \
     get_password_reset_email_content
 from supertokens_python.recipe.emailpassword.types import \
-    TypeEmailPasswordEmailDeliveryInput
+    EmailTemplateVars
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp.service_implementation import \
     ServiceImplementation as EVServiceImplementation
-from supertokens_python.recipe.emailverification.interfaces import \
-    TypeEmailVerificationEmailDeliveryInput
+from supertokens_python.recipe.emailverification.types import VerificationEmailTemplateVars
 
 from .email_verification_implementation import \
     ServiceImplementation as DerivedEVServiceImplementation
 
 
-class ServiceImplementation(ServiceInterface[TypeEmailPasswordEmailDeliveryInput]):
+class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
     def __init__(self, transporter: Transporter) -> None:
         super().__init__(transporter)
 
@@ -41,10 +41,10 @@ class ServiceImplementation(ServiceInterface[TypeEmailPasswordEmailDeliveryInput
         email_verification_service_implementation.send_raw_email = derived_ev_service_implementation.send_raw_email
         email_verification_service_implementation.get_content = derived_ev_service_implementation.get_content
 
-    async def send_raw_email(self, input_: GetContentResult, user_context: Dict[str, Any]) -> None:
-        await self.transporter.send_email(input_, user_context)
+    async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -> None:
+        await self.transporter.send_email(content, user_context)
 
-    async def get_content(self, input_: TypeEmailPasswordEmailDeliveryInput, user_context: Dict[str, Any]) -> GetContentResult:
-        if isinstance(input_, TypeEmailVerificationEmailDeliveryInput):
-            return await self.ev_get_content(input_, user_context)
-        return get_password_reset_email_content(input_)
+    async def get_content(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -> EmailContent:
+        if isinstance(template_vars, VerificationEmailTemplateVars):
+            return await self.ev_get_content(template_vars, user_context)
+        return get_password_reset_email_content(template_vars)

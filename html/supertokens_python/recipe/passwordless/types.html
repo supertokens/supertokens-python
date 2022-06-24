@@ -43,7 +43,9 @@ from typing import List, Union
 
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
+from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface, EmailDeliveryInterface
 from supertokens_python.ingredients.smsdelivery import SMSDeliveryIngredient
+from supertokens_python.ingredients.smsdelivery.types import TwilioServiceInterface, SMSDeliveryInterface
 
 
 class User:
@@ -91,7 +93,7 @@ class CreateAndSendCustomEmailParameters:
         self.url_with_link_code: Union[str, None] = url_with_link_code
 
 
-TypePasswordlessEmailDeliveryInput = CreateAndSendCustomEmailParameters
+PasswordlessLoginEmailTemplateVars = CreateAndSendCustomEmailParameters
 
 
 class CreateAndSendCustomTextMessageParameters:
@@ -109,13 +111,24 @@ class CreateAndSendCustomTextMessageParameters:
         self.url_with_link_code: Union[str, None] = url_with_link_code
 
 
-TypePasswordlessSmsDeliveryInput = CreateAndSendCustomTextMessageParameters
+PasswordlessLoginSMSTemplateVars = CreateAndSendCustomTextMessageParameters
+
+
+# Export:
+EmailTemplateVars = PasswordlessLoginEmailTemplateVars
+SMSTemplateVars = PasswordlessLoginSMSTemplateVars
+
+SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
+TwilioOverrideInput = TwilioServiceInterface[SMSTemplateVars]
+
+EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
+SMSDeliveryOverrideInput = SMSDeliveryInterface[SMSTemplateVars]
 
 
 class PasswordlessIngredients:
     def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput], None] = None,
-                 sms_delivery: Union[SMSDeliveryIngredient[TypePasswordlessSmsDeliveryInput], None] = None,
+                 email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None,
+                 sms_delivery: Union[SMSDeliveryIngredient[SMSTemplateVars], None] = None,
                  ):
         self.email_delivery = email_delivery
         self.sms_delivery = sms_delivery</code></pre>
@@ -155,7 +168,31 @@ class PasswordlessIngredients:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters"><code class="flex name class">
-<span>class <span class="ident">TypePasswordlessEmailDeliveryInput</span></span>
+<span>class <span class="ident">PasswordlessLoginEmailTemplateVars</span></span>
+<span>(</span><span>code_life_time: int, pre_auth_session_id: str, email: str, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CreateAndSendCustomEmailParameters:
+    def __init__(self,
+                 code_life_time: int,
+                 pre_auth_session_id: str,
+                 email: str,
+                 user_input_code: Union[str, None] = None,
+                 url_with_link_code: Union[str, None] = None):
+        self.email: str = email
+        self.code_life_time: int = code_life_time
+        self.pre_auth_session_id: str = pre_auth_session_id
+        self.user_input_code: Union[str, None] = user_input_code
+        self.url_with_link_code: Union[str, None] = url_with_link_code</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters"><code class="flex name class">
+<span>class <span class="ident">EmailTemplateVars</span></span>
 <span>(</span><span>code_life_time: int, pre_auth_session_id: str, email: str, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
 </code></dt>
 <dd>
@@ -204,7 +241,32 @@ class PasswordlessIngredients:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters"><code class="flex name class">
-<span>class <span class="ident">TypePasswordlessSmsDeliveryInput</span></span>
+<span>class <span class="ident">PasswordlessLoginSMSTemplateVars</span></span>
+<span>(</span><span>code_life_time: int, pre_auth_session_id: str, phone_number: str, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CreateAndSendCustomTextMessageParameters:
+    def __init__(self,
+                 code_life_time: int,
+                 pre_auth_session_id: str,
+                 phone_number: str,
+                 user_input_code: Union[str, None] = None,
+                 url_with_link_code: Union[str, None] = None,
+                 ):
+        self.code_life_time: int = code_life_time
+        self.pre_auth_session_id: str = pre_auth_session_id
+        self.phone_number: str = phone_number
+        self.user_input_code: Union[str, None] = user_input_code
+        self.url_with_link_code: Union[str, None] = url_with_link_code</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters"><code class="flex name class">
+<span>class <span class="ident">SMSTemplateVars</span></span>
 <span>(</span><span>code_life_time: int, pre_auth_session_id: str, phone_number: str, user_input_code: Optional[str] = None, url_with_link_code: Optional[str] = None)</span>
 </code></dt>
 <dd>
@@ -282,8 +344,8 @@ class PasswordlessIngredients:
 </summary>
 <pre><code class="python">class PasswordlessIngredients:
     def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[TypePasswordlessEmailDeliveryInput], None] = None,
-                 sms_delivery: Union[SMSDeliveryIngredient[TypePasswordlessSmsDeliveryInput], None] = None,
+                 email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None,
+                 sms_delivery: Union[SMSDeliveryIngredient[SMSTemplateVars], None] = None,
                  ):
         self.email_delivery = email_delivery
         self.sms_delivery = sms_delivery</code></pre>
@@ -329,6 +391,12 @@ class PasswordlessIngredients:
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters" href="#supertokens_python.recipe.passwordless.types.CreateAndSendCustomTextMessageParameters">CreateAndSendCustomTextMessageParameters</a></code></h4>

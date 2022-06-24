@@ -27,7 +27,7 @@ from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService
 from supertokens_python.recipe.thirdpartypasswordless.types import \
-    TypeThirdPartyPasswordlessSmsDeliveryInput
+    SMSTemplateVars
 from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
@@ -39,7 +39,7 @@ from ..passwordless.utils import (ContactConfig, ContactEmailOnlyConfig,
 if TYPE_CHECKING:
     from .recipe import ThirdPartyPasswordlessRecipe
     from .interfaces import APIInterface, RecipeInterface
-    from .types import TypeThirdPartyPasswordlessEmailDeliveryInput, User
+    from .types import EmailTemplateVars, User
 
 from supertokens_python.recipe.emailverification.utils import \
     OverrideConfig as EmailVerificationOverrideConfig
@@ -137,10 +137,10 @@ class ThirdPartyPasswordlessConfig:
                  flow_type: Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK'],
                  get_link_domain_and_path: Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]],
                  get_email_delivery_config: Callable[
-                     [RecipeInterface], EmailDeliveryConfigWithService[TypeThirdPartyPasswordlessEmailDeliveryInput]
+                     [RecipeInterface], EmailDeliveryConfigWithService[EmailTemplateVars]
                  ],
                  get_sms_delivery_config: Callable[
-                     [], SMSDeliveryConfigWithService[TypeThirdPartyPasswordlessSmsDeliveryInput]
+                     [], SMSDeliveryConfigWithService[SMSTemplateVars]
                  ],
                  get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None
                  ):
@@ -165,8 +165,8 @@ def validate_and_normalise_user_input(
         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[Provider], None] = None,
-        email_delivery: Union[EmailDeliveryConfig[TypeThirdPartyPasswordlessEmailDeliveryInput], None] = None,
-        sms_delivery: Union[SMSDeliveryConfig[TypeThirdPartyPasswordlessSmsDeliveryInput], None] = None,
+        email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+        sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,
 ) -> ThirdPartyPasswordlessConfig:
     if not isinstance(contact_config, ContactConfig):  # type: ignore
         raise ValueError('contact_config must be an instance of ContactConfig')
@@ -197,7 +197,7 @@ def validate_and_normalise_user_input(
 
     def get_email_delivery_config(
         tppless_recipe: RecipeInterface,
-    ) -> EmailDeliveryConfigWithService[TypeThirdPartyPasswordlessEmailDeliveryInput]:
+    ) -> EmailDeliveryConfigWithService[EmailTemplateVars]:
         email_service = email_delivery.service if email_delivery is not None else None
         if isinstance(contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig)):
             create_and_send_custom_email = contact_config.create_and_send_custom_email
@@ -215,7 +215,7 @@ def validate_and_normalise_user_input(
 
         return EmailDeliveryConfigWithService(email_service, override=override)
 
-    def get_sms_delivery_config() -> SMSDeliveryConfigWithService[TypeThirdPartyPasswordlessSmsDeliveryInput]:
+    def get_sms_delivery_config() -> SMSDeliveryConfigWithService[SMSTemplateVars]:
         if sms_delivery and sms_delivery.service:
             return SMSDeliveryConfigWithService(
                 service=sms_delivery.service,
