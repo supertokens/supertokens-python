@@ -13,13 +13,12 @@
 # under the License.
 
 from pytest import mark
-from supertokens_python.querier import Querier
 from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.querier import Querier
 from supertokens_python.recipe import userroles
+from supertokens_python.recipe.userroles import asyncio, interfaces
 from supertokens_python.utils import is_version_gte
 from tests.utils import clean_st, reset, setup_st, start_st
-from supertokens_python.recipe.userroles import asyncio
-from supertokens_python.recipe.userroles import interfaces
 
 
 def setup_function(_):
@@ -52,17 +51,16 @@ async def test_get_permission_for_a_role():
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
         return
 
-    user_id = "userId"
     role = "role"
     permissions = ["perm1", "perm2", "perm3"]
 
-    # Create new with all the permissions
+    # Create new role with all the permissions
     result = await asyncio.create_new_role_or_add_permissions(role, permissions)
     assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsResult)
     assert result.created_new_role
 
     # Get the permissions given to the role
-    result = await asyncio.get_permissions_for_role(user_id)
+    result = await asyncio.get_permissions_for_role(role)
     assert isinstance(result, interfaces.GetPermissionsForRoleOkResult)
     assert result.permissions == permissions
 

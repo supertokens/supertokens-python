@@ -85,7 +85,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_roles_that_have_permission(self, permission: str,
                                              user_context: Dict[str, Any]) -> GetRolesThatHavePermissionResult:
-        params = {"permissions": permission}
+        params = {"permission": permission}
         response = await self.querier.send_get_request(NormalisedURLPath("/recipe/permission/roles"), params)
         return GetRolesThatHavePermissionResult(roles=response["roles"])
 
