@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Rename arg `input_` to `template_vars` in `EmailDeliveryInterface.send_email` and `SMTPServiceInterface.send_sms` functions.
     - Rename arg `input_` to `content` and `template_vars` in `SMTPServiceInterface.send_raw_email` and `SMTPServiceInterface.get_content` functions respectively.
     - Rename arg `get_content_result` to `content` and `input_` to `template_vars` in `TwilioServiceInterface.send_raw_email` and `TwilioServiceInterface.get_content` functions respectively.
+- Removes support for FDI < 1.14
 
 ### Changes
 -   Changes `get_email_for_user_id` function inside thirdpartypasswordless to take into account passwordless emails and return an empty string in case a passwordless email doesn't exist. This helps situations where the dev wants to customise the email verification functions in the thirdpartypasswordless recipe.
