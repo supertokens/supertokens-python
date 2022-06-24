@@ -24,7 +24,7 @@ from supertokens_python.recipe.emailpassword.emaildelivery.services.backward_com
 from ..emailverification.types import User as EmailVerificationUser
 from .interfaces import APIInterface, RecipeInterface
 from .types import (InputFormField, NormalisedFormField,
-                    EmailPasswordEmailTemplateVars, User)
+                    EmailTemplateVars, User)
 
 if TYPE_CHECKING:
     from .recipe import EmailPasswordRecipe
@@ -277,7 +277,7 @@ class EmailPasswordConfig:
                  reset_password_using_token_feature: ResetPasswordUsingTokenFeature,
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
                  override: OverrideConfig,
-                 get_email_delivery_config: Callable[[RecipeInterface], EmailDeliveryConfigWithService[EmailPasswordEmailTemplateVars]]
+                 get_email_delivery_config: Callable[[RecipeInterface], EmailDeliveryConfigWithService[EmailTemplateVars]]
                  ):
         self.sign_up_feature = sign_up_feature
         self.sign_in_feature = sign_in_feature
@@ -294,7 +294,7 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
                                           InputResetPasswordUsingTokenFeature, None] = None,
                                       email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                                       override: Union[InputOverrideConfig, None] = None,
-                                      email_delivery: Union[EmailDeliveryConfig[EmailPasswordEmailTemplateVars], None] = None
+                                      email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
                                       ) -> EmailPasswordConfig:
 
     if sign_up_feature is not None and not isinstance(sign_up_feature, InputSignUpFeature):  # type: ignore
@@ -319,7 +319,7 @@ def validate_and_normalise_user_input(recipe: EmailPasswordRecipe, app_info: App
 
     def get_email_delivery_config(
         ep_recipe: RecipeInterface,
-    ) -> EmailDeliveryConfigWithService[EmailPasswordEmailTemplateVars]:
+    ) -> EmailDeliveryConfigWithService[EmailTemplateVars]:
         if email_delivery and email_delivery.service:
             return EmailDeliveryConfigWithService(
                 service=email_delivery.service,

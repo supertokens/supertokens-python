@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixes
 - Fixes Cookie same_site config validation.
+- Remove `<Recipe>(Email|SMS)TemplateVars` in favour of `(Email|SMS)TemplateVars` for better DX.
 
 ### Breaking change
 -   https://github.com/supertokens/supertokens-node/issues/220

@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Callable, Union
 from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.recipe.emailpassword.types import \
-    EmailPasswordEmailTemplateVars
+    EmailTemplateVars
 
 from . import exceptions as ex
 from . import utils
@@ -44,7 +44,7 @@ def init(sign_up_feature: Union[utils.InputSignUpFeature, None] = None,
              utils.InputResetPasswordUsingTokenFeature, None] = None,
          email_verification_feature: Union[utils.InputEmailVerificationConfig, None] = None,
          override: Union[utils.InputOverrideConfig, None] = None,
-         email_delivery: Union[EmailDeliveryConfig[EmailPasswordEmailTemplateVars], None] = None
+         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
          ) -> Callable[[AppInfo], RecipeModule]:
     return EmailPasswordRecipe.init(
         sign_up_feature,

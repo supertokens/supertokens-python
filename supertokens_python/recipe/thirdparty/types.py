@@ -74,20 +74,17 @@ class UsersResponse:
         self.next_pagination_token = next_pagination_token
 
 
-ThirdPartyEmailTemplateVars = ev_types.VerificationEmailTemplateVars
-
-
-class ThirdPartyIngredients:
-    def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[ThirdPartyEmailTemplateVars], None] = None
-                 ) -> None:
-        self.email_delivery = email_delivery
-
-
 # Export:
-EmailTemplateVars = ThirdPartyEmailTemplateVars
+EmailTemplateVars = ev_types.VerificationEmailTemplateVars
 VerificationEmailTemplateVars = ev_types.VerificationEmailTemplateVars
 
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
 
 EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
+
+
+class ThirdPartyIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None
+                 ) -> None:
+        self.email_delivery = email_delivery

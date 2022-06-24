@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 from supertokens_python.ingredients.emaildelivery import \
     EmailDeliveryIngredient
 from supertokens_python.recipe.emailpassword.types import \
-    EmailPasswordEmailTemplateVars
+    EmailTemplateVars
 
 from ...types import APIResponse, GeneralErrorResponse
 from ..emailverification.interfaces import \
@@ -120,7 +120,7 @@ class APIOptions:
     def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
                  config: EmailPasswordConfig, recipe_implementation: RecipeInterface,
                  email_verification_recipe_implementation: EmailVerificationRecipeInterface,
-                 email_delivery: EmailDeliveryIngredient[EmailPasswordEmailTemplateVars]):
+                 email_delivery: EmailDeliveryIngredient[EmailTemplateVars]):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id

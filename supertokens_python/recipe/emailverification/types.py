@@ -53,5 +53,5 @@ EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 
 
 class EmailVerificationIngredients:
-    def __init__(self, email_delivery: Union[EmailDeliveryIngredient[VerificationEmailTemplateVars], None] = None):
+    def __init__(self, email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None):
         self.email_delivery = email_delivery

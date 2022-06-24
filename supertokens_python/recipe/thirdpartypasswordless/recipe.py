@@ -22,15 +22,17 @@ from supertokens_python.ingredients.emaildelivery.types import \
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.emailverification.types import \
-    EmailVerificationIngredients, VerificationEmailTemplateVars
+    EmailTemplateVars as EmailVerificationEmailTemplateVars
+from supertokens_python.recipe.emailverification.types import \
+    EmailVerificationIngredients
 from supertokens_python.recipe.passwordless.types import \
     PasswordlessIngredients
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import (
-    ThirdPartyIngredients, ThirdPartyEmailTemplateVars)
+from supertokens_python.recipe.thirdparty.types import \
+    EmailTemplateVars as ThirdPartyEmailTemplateVars
+from supertokens_python.recipe.thirdparty.types import ThirdPartyIngredients
 from supertokens_python.recipe.thirdpartypasswordless.types import (
-    ThirdPartyPasswordlessIngredients,
-    ThirdPartyPasswordlessEmailTemplateVars)
+    EmailTemplateVars, ThirdPartyPasswordlessIngredients)
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from ..passwordless.utils import ContactConfig, PhoneOrEmailInput
@@ -71,25 +73,24 @@ from ..emailverification.interfaces import RecipeInterface as EVRecipeInterface
 from ..emailverification.utils import OverrideConfig as EVOverrideConfig
 from ..passwordless import PasswordlessRecipe
 from ..passwordless.interfaces import APIInterface as PasswordlessAPIInterface
+from ..passwordless.interfaces import PasswordlessLoginEmailTemplateVars
 from ..passwordless.interfaces import \
     RecipeInterface as PasswordlessRecipeInterface
-from ..passwordless.interfaces import PasswordlessLoginEmailTemplateVars
 from ..passwordless.utils import OverrideConfig as PlessOverrideConfig
 from ..thirdparty.interfaces import APIInterface as ThirdPartyAPIInterface
 from ..thirdparty.interfaces import \
     RecipeInterface as ThirdPartyRecipeInterface
 from .exceptions import SupertokensThirdPartyPasswordlessError
 from .interfaces import APIInterface, RecipeInterface
-from .types import (ThirdPartyPasswordlessEmailTemplateVars,
-                    ThirdPartyPasswordlessSMSTemplateVars)
+from .types import EmailTemplateVars, SMSTemplateVars
 from .utils import InputOverrideConfig, validate_and_normalise_user_input
 
 
 class ThirdPartyPasswordlessRecipe(RecipeModule):
     recipe_id = 'thirdpartypasswordless'
     __instance = None
-    email_delivery: EmailDeliveryIngredient[ThirdPartyPasswordlessEmailTemplateVars]
-    sms_delivery: SMSDeliveryIngredient[ThirdPartyPasswordlessSMSTemplateVars]
+    email_delivery: EmailDeliveryIngredient[EmailTemplateVars]
+    sms_delivery: SMSDeliveryIngredient[SMSTemplateVars]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  contact_config: ContactConfig,
@@ -103,8 +104,8 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
                  third_party_recipe: Union[ThirdPartyRecipe, None] = None,
                  passwordless_recipe: Union[PasswordlessRecipe, None] = None,
-                 email_delivery: Union[EmailDeliveryConfig[ThirdPartyPasswordlessEmailTemplateVars], None] = None,
-                 sms_delivery: Union[SMSDeliveryConfig[ThirdPartyPasswordlessSMSTemplateVars], None] = None,
+                 email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+                 sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self,
@@ -177,7 +178,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             else:
                 self.config.email_verification_feature.override.functions = email_verification_override
 
-            ev_email_delivery = cast(EmailDeliveryIngredient[VerificationEmailTemplateVars], self.email_delivery)
+            ev_email_delivery = cast(EmailDeliveryIngredient[EmailVerificationEmailTemplateVars], self.email_delivery)
             ev_ingredients = EmailVerificationIngredients(ev_email_delivery)
             self.email_verification_recipe = EmailVerificationRecipe(recipe_id, app_info,
                                                                      self.config.email_verification_feature, ev_ingredients)
@@ -297,8 +298,8 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                  PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None,
              get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-             email_delivery: Union[EmailDeliveryConfig[ThirdPartyPasswordlessEmailTemplateVars], None] = None,
-             sms_delivery: Union[SMSDeliveryConfig[ThirdPartyPasswordlessSMSTemplateVars], None] = None,
+             email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+             sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,
              override: Union[InputOverrideConfig, None] = None,
              providers: Union[List[Provider], None] = None):
         def func(app_info: AppInfo):

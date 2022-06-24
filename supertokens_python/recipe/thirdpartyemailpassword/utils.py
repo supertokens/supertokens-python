@@ -28,7 +28,7 @@ from ..emailverification.types import User as EmailVerificationUser
 from .emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService
 from .interfaces import APIInterface, RecipeInterface
-from .types import ThirdPartyEmailPasswordEmailTemplateVars, User
+from .types import EmailTemplateVars, User
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyEmailPasswordRecipe
@@ -121,7 +121,7 @@ class ThirdPartyEmailPasswordConfig:
                  email_verification_feature: ParentRecipeEmailVerificationConfig,
                  sign_up_feature: Union[InputSignUpFeature, None],
                  reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None],
-                 get_email_delivery_config: Callable[[RecipeInterface, EPRecipeInterface], EmailDeliveryConfigWithService[ThirdPartyEmailPasswordEmailTemplateVars]],
+                 get_email_delivery_config: Callable[[RecipeInterface, EPRecipeInterface], EmailDeliveryConfigWithService[EmailTemplateVars]],
                  override: OverrideConfig
                  ):
         self.sign_up_feature = sign_up_feature
@@ -139,7 +139,7 @@ def validate_and_normalise_user_input(
         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[Provider], None] = None,
-        email_delivery: Union[EmailDeliveryConfig[ThirdPartyEmailPasswordEmailTemplateVars], None] = None,
+        email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> ThirdPartyEmailPasswordConfig:
     if sign_up_feature is not None and not isinstance(sign_up_feature, InputSignUpFeature):  # type: ignore
         raise ValueError('sign_up_feature must be of type InputSignUpFeature or None')

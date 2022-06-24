@@ -21,13 +21,14 @@ from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryInterface
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.emailpassword.interfaces import (
-    RecipeInterface, EmailPasswordEmailTemplateVars)
-from supertokens_python.recipe.emailpassword.types import User
+    EmailTemplateVars, RecipeInterface)
+from supertokens_python.recipe.emailpassword.types import (
+    User, VerificationEmailTemplateVars)
 from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import \
     BackwardCompatibilityService as \
     EmailVerificationBackwardCompatibilityService
 from supertokens_python.recipe.emailverification.types import \
-    User as EmailVerificationUser, VerificationEmailTemplateVars
+    User as EmailVerificationUser
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.utils import handle_httpx_client_exceptions
 
@@ -58,7 +59,7 @@ def default_create_and_send_custom_email(
     return func
 
 
-class BackwardCompatibilityService(EmailDeliveryInterface[EmailPasswordEmailTemplateVars]):
+class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
     app_info: AppInfo
     ev_backward_compatibility_service: EmailVerificationBackwardCompatibilityService
 
@@ -98,7 +99,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailPasswordEmailTemp
             app_info, create_and_send_custom_email=create_and_send_custom_email
         )
 
-    async def send_email(self, template_vars: EmailPasswordEmailTemplateVars, user_context: Dict[str, Any]) -> None:
+    async def send_email(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -> None:
         if isinstance(template_vars, VerificationEmailTemplateVars):
             await self.ev_backward_compatibility_service.send_email(template_vars, user_context)
         else:

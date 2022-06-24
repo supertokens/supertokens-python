@@ -15,14 +15,12 @@
 from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.types import EmailContent, SMTPServiceInterface
-from supertokens_python.recipe.passwordless.types import \
-    PasswordlessLoginEmailTemplateVars
 from supertokens_python.recipe.thirdpartypasswordless.types import \
-    ThirdPartyPasswordlessEmailTemplateVars
+    EmailTemplateVars, PasswordlessLoginEmailTemplateVars
 
 
 class ServiceImplementation(SMTPServiceInterface[PasswordlessLoginEmailTemplateVars]):
-    def __init__(self, tppless_service_implementation: SMTPServiceInterface[ThirdPartyPasswordlessEmailTemplateVars]) -> None:
+    def __init__(self, tppless_service_implementation: SMTPServiceInterface[EmailTemplateVars]) -> None:
         super().__init__(tppless_service_implementation.transporter)
         self.tppless_service_implementation = tppless_service_implementation
 
