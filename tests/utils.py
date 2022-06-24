@@ -37,6 +37,8 @@ from supertokens_python.recipe.thirdpartypasswordless import \
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from yaml import FullLoader, dump, load
 
+from supertokens_python.recipe.userroles import UserRolesRecipe
+
 INSTALLATION_PATH = environ['SUPERTOKENS_PATH']
 SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + '/.started'
 LICENSE_FILE_PATH = INSTALLATION_PATH + '/licenseKey'
@@ -182,6 +184,7 @@ def reset():
     PasswordlessRecipe.reset()
     JWTRecipe.reset()
     UserMetadataRecipe.reset()
+    UserRolesRecipe.reset()
     ThirdPartyPasswordlessRecipe.reset()
     PasswordlessRecipe.reset()
 
