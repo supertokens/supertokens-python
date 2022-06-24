@@ -19,26 +19,26 @@ async def add_role_to_user(user_id: str, role: str,
     return await UserRolesRecipe.get_instance().recipe_implementation.add_role_to_user(user_id, role, user_context)
 
 
-async def remove_user_role(user_id: str, role: str, user_context: Dict[str, Any]) -> RemoveUserRoleResult:
+async def remove_user_role(user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None) -> RemoveUserRoleResult:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.remove_user_role(user_id, role, user_context)
 
 
-async def get_roles_for_user(user_id: str, user_context: Dict[str, Any]) -> GetRolesForUserResult:
+async def get_roles_for_user(user_id: str, user_context: Union[Dict[str, Any], None] = None) -> GetRolesForUserResult:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.get_roles_for_user(user_id, user_context)
 
 
-async def get_users_that_have_role(role: str, user_context: Dict[str, Any]) -> GetUsersThatHaveRoleResult:
+async def get_users_that_have_role(role: str, user_context: Union[Dict[str, Any], None] = None) -> GetUsersThatHaveRoleResult:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.get_users_that_have_role(role, user_context)
 
 
 async def create_new_role_or_add_permissions(role: str, permissions: List[str],
-                                             user_context: Dict[str, Any]) -> CreateNewRoleOrAddPermissionsResult:
+                                             user_context: Union[Dict[str, Any], None] = None) -> CreateNewRoleOrAddPermissionsResult:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.create_new_role_or_add_permissions(role,
@@ -46,14 +46,14 @@ async def create_new_role_or_add_permissions(role: str, permissions: List[str],
                                                                                                          user_context)
 
 
-async def get_permissions_for_role(role: str, user_context: Dict[str, Any]) -> GetPermissionsForRoleResult:
+async def get_permissions_for_role(role: str, user_context: Union[Dict[str, Any], None] = None) -> GetPermissionsForRoleResult:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.get_permissions_for_role(role, user_context)
 
 
 async def remove_permissions_from_role(role: str, permissions: List[str],
-                                       user_context: Dict[str, Any]) -> RemovePermissionsFromRoleResult:
+                                       user_context: Union[Dict[str, Any], None] = None) -> RemovePermissionsFromRoleResult:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.remove_permissions_from_role(role, permissions,
@@ -61,20 +61,20 @@ async def remove_permissions_from_role(role: str, permissions: List[str],
 
 
 async def get_roles_that_have_permission(permission: str,
-                                         user_context: Dict[str, Any]) -> GetRolesThatHavePermissionResult:
+                                         user_context: Union[Dict[str, Any], None] = None) -> GetRolesThatHavePermissionResult:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.get_roles_that_have_permission(permission,
                                                                                                      user_context)
 
 
-async def delete_role(role: str, user_context: Dict[str, Any]) -> DeleteRoleResult:
+async def delete_role(role: str, user_context: Union[Dict[str, Any], None] = None) -> DeleteRoleResult:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.delete_role(role, user_context)
 
 
-async def get_all_roles(user_context: Dict[str, Any]) -> GetAllRolesResult:
+async def get_all_roles(user_context: Union[Dict[str, Any], None] = None) -> GetAllRolesResult:
     if user_context is None:
         user_context = {}
     return await UserRolesRecipe.get_instance().recipe_implementation.get_all_roles(user_context)
