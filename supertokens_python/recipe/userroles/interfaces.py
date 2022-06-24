@@ -23,9 +23,12 @@ class RemoveUserRoleOkResult:
 RemoveUserRoleResult = Union[RemoveUserRoleOkResult, UnknownRoleError]
 
 
-class GetRolesForUserResult:
+class GetRolesForUserOkResult:
     def __init__(self, roles: List[str]):
         self.roles = roles
+
+
+GetRolesForUserResult = GetRolesForUserOkResult
 
 
 class GetUsersThatHaveRoleOkResult:
@@ -36,9 +39,12 @@ class GetUsersThatHaveRoleOkResult:
 GetUsersThatHaveRoleResult = Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]
 
 
-class CreateNewRoleOrAddPermissionsResult:
+class CreateNewRoleOrAddPermissionsOkResult:
     def __init__(self, created_new_role: bool):
         self.created_new_role = created_new_role
+
+
+CreateNewRoleOrAddPermissionsResult = CreateNewRoleOrAddPermissionsOkResult
 
 
 class GetPermissionsForRoleOkResult:
@@ -56,19 +62,28 @@ class RemovePermissionsFromRoleOkResult:
 RemovePermissionsFromRoleResult = Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]
 
 
-class GetRolesThatHavePermissionResult:
+class GetRolesThatHavePermissionOkResult:
     def __init__(self, roles: List[str]):
         self.roles = roles
 
 
-class DeleteRoleResult:
+GetRolesThatHavePermissionResult = GetRolesThatHavePermissionOkResult
+
+
+class DeleteRoleOkResult:
     def __init__(self, did_role_exist: bool):
         self.did_role_exist = did_role_exist
 
 
-class GetAllRolesResult:
+DeleteRoleResult = DeleteRoleOkResult
+
+
+class GetAllRolesOkResult:
     def __init__(self, roles: List[str]):
         self.roles = roles
+
+
+GetAllRolesResult = GetAllRolesOkResult
 
 
 class RecipeInterface(ABC):
