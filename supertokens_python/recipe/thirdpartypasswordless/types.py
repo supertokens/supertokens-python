@@ -38,27 +38,9 @@ class User:
 
 _T = TypeVar('_T')
 
-
-ThirdPartyPasswordlessEmailTemplateVars = Union[
-    tp_types.ThirdPartyEmailTemplateVars, pless_types.PasswordlessLoginEmailTemplateVars
-]
-
-
-ThirdPartyPasswordlessSMSTemplateVars = pless_types.PasswordlessLoginSMSTemplateVars
-
-
-class ThirdPartyPasswordlessIngredients:
-    def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[ThirdPartyPasswordlessEmailTemplateVars], None] = None,
-                 sms_delivery: Union[SMSDeliveryIngredient[ThirdPartyPasswordlessSMSTemplateVars], None] = None,
-                 ) -> None:
-        self.email_delivery = email_delivery
-        self.sms_delivery = sms_delivery
-
-
 # Export:
-EmailTemplateVars = ThirdPartyPasswordlessEmailTemplateVars
-SMSTemplateVars = ThirdPartyPasswordlessSMSTemplateVars
+EmailTemplateVars = Union[tp_types.EmailTemplateVars, pless_types.EmailTemplateVars]
+SMSTemplateVars = pless_types.SMSTemplateVars
 VerificationEmailTemplateVars = tp_types.VerificationEmailTemplateVars
 PasswordlessLoginEmailTemplateVars = pless_types.PasswordlessLoginEmailTemplateVars
 PasswordlessLoginSMSTemplateVars = pless_types.PasswordlessLoginSMSTemplateVars
@@ -68,3 +50,12 @@ TwilioOverrideInput = TwilioServiceInterface[SMSTemplateVars]
 
 EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 SMSDeliveryOverrideInput = SMSDeliveryInterface[SMSTemplateVars]
+
+
+class ThirdPartyPasswordlessIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None,
+                 sms_delivery: Union[SMSDeliveryIngredient[SMSTemplateVars], None] = None,
+                 ) -> None:
+        self.email_delivery = email_delivery
+        self.sms_delivery = sms_delivery

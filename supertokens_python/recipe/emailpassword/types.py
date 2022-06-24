@@ -81,13 +81,11 @@ class PasswordResetEmailTemplateVars:
         self.password_reset_link = password_reset_link
 
 
-EmailPasswordEmailTemplateVars = Union[
+# Export:
+EmailTemplateVars = Union[
     PasswordResetEmailTemplateVars,
     ev_types.VerificationEmailTemplateVars
 ]
-
-# Export:
-EmailTemplateVars = EmailPasswordEmailTemplateVars
 # PasswordResetEmailTemplateVars (Already exported because it's defined in the same)
 VerificationEmailTemplateVars = ev_types.VerificationEmailTemplateVars
 
@@ -98,6 +96,6 @@ EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 
 class EmailPasswordIngredients:
     def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[EmailPasswordEmailTemplateVars], None] = None
+                 email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None
                  ) -> None:
         self.email_delivery = email_delivery

@@ -29,7 +29,7 @@ from supertokens_python.recipe.passwordless.types import \
 from supertokens_python.recipe.thirdpartypasswordless.interfaces import \
     RecipeInterface
 from supertokens_python.recipe.thirdpartypasswordless.types import \
-    ThirdPartyPasswordlessEmailTemplateVars
+    EmailTemplateVars
 from supertokens_python.supertokens import AppInfo
 
 if TYPE_CHECKING:
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
         InputEmailVerificationConfig
 
 
-class BackwardCompatibilityService(EmailDeliveryInterface[ThirdPartyPasswordlessEmailTemplateVars]):
+class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
     pless_backward_compatiblity_service: PlessBackwardCompatibilityService
     ev_backward_compatiblity_service: EVBackwardCompatibilityService
 
@@ -74,7 +74,7 @@ class BackwardCompatibilityService(EmailDeliveryInterface[ThirdPartyPasswordless
             create_and_send_custom_email
         )
 
-    async def send_email(self, template_vars: ThirdPartyPasswordlessEmailTemplateVars, user_context: Dict[str, Any]) -> None:
+    async def send_email(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -> None:
         if isinstance(template_vars, VerificationEmailTemplateVars):
             await self.ev_backward_compatiblity_service.send_email(template_vars, user_context)
         else:

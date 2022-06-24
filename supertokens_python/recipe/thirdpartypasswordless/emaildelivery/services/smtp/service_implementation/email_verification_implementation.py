@@ -18,11 +18,11 @@ from supertokens_python.ingredients.emaildelivery.types import EmailContent, SMT
 from supertokens_python.recipe.emailverification.types import \
     VerificationEmailTemplateVars
 from supertokens_python.recipe.thirdpartypasswordless.types import \
-    ThirdPartyPasswordlessEmailTemplateVars
+    EmailTemplateVars
 
 
 class ServiceImplementation(SMTPServiceInterface[VerificationEmailTemplateVars]):
-    def __init__(self, tppless_service_implementation: SMTPServiceInterface[ThirdPartyPasswordlessEmailTemplateVars]) -> None:
+    def __init__(self, tppless_service_implementation: SMTPServiceInterface[EmailTemplateVars]) -> None:
         super().__init__(tppless_service_implementation.transporter)
         self.tppless_service_implementation = tppless_service_implementation
 

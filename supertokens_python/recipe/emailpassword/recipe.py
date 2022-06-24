@@ -22,7 +22,7 @@ from supertokens_python.ingredients.emaildelivery.types import \
     EmailDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.emailpassword.types import (
-    EmailPasswordIngredients, EmailPasswordEmailTemplateVars)
+    EmailPasswordIngredients, EmailTemplateVars)
 from supertokens_python.recipe.emailverification.types import \
     EmailVerificationIngredients, VerificationEmailTemplateVars
 from supertokens_python.recipe_module import APIHandled, RecipeModule
@@ -57,7 +57,7 @@ from .utils import (InputEmailVerificationConfig, InputOverrideConfig,
 class EmailPasswordRecipe(RecipeModule):
     recipe_id = 'emailpassword'
     __instance = None
-    email_delivery: EmailDeliveryIngredient[EmailPasswordEmailTemplateVars]
+    email_delivery: EmailDeliveryIngredient[EmailTemplateVars]
 
     def __init__(self, recipe_id: str, app_info: AppInfo,
                  ingredients: EmailPasswordIngredients,
@@ -66,7 +66,7 @@ class EmailPasswordRecipe(RecipeModule):
                  email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
                  override: Union[InputOverrideConfig, None] = None,
                  email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
-                 email_delivery: Union[EmailDeliveryConfig[EmailPasswordEmailTemplateVars], None] = None,
+                 email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
                  ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(self, app_info, sign_up_feature,
@@ -159,7 +159,7 @@ class EmailPasswordRecipe(RecipeModule):
              reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
              email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
              override: Union[InputOverrideConfig, None] = None,
-             email_delivery: Union[EmailDeliveryConfig[EmailPasswordEmailTemplateVars], None] = None):
+             email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None):
         def func(app_info: AppInfo):
             if EmailPasswordRecipe.__instance is None:
                 ingredients = EmailPasswordIngredients(None)

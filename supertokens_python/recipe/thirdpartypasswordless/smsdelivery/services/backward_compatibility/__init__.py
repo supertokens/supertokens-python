@@ -22,10 +22,10 @@ from supertokens_python.recipe.passwordless.types import \
     PasswordlessLoginSMSTemplateVars
 from supertokens_python.supertokens import AppInfo
 
-from ....types import ThirdPartyPasswordlessSMSTemplateVars
+from ....types import SMSTemplateVars
 
 
-class BackwardCompatibilityService(SMSDeliveryInterface[ThirdPartyPasswordlessSMSTemplateVars]):
+class BackwardCompatibilityService(SMSDeliveryInterface[SMSTemplateVars]):
     pless_backward_compatibility_service: PlessBackwardCompatibilityService
 
     def __init__(self, app_info: AppInfo,
@@ -35,5 +35,5 @@ class BackwardCompatibilityService(SMSDeliveryInterface[ThirdPartyPasswordlessSM
             app_info, pless_create_and_send_custom_text_message
         )
 
-    async def send_sms(self, template_vars: ThirdPartyPasswordlessSMSTemplateVars, user_context: Dict[str, Any]) -> None:
+    async def send_sms(self, template_vars: SMSTemplateVars, user_context: Dict[str, Any]) -> None:
         await self.pless_backward_compatibility_service.send_sms(template_vars, user_context)

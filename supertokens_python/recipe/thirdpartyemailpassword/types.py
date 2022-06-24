@@ -32,21 +32,18 @@ class User:
         self.third_party_info = third_party_info
 
 
-ThirdPartyEmailPasswordEmailTemplateVars = ep_types.EmailPasswordEmailTemplateVars
-
-
-class ThirdPartyEmailPasswordIngredients:
-    def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[ThirdPartyEmailPasswordEmailTemplateVars], None] = None
-                 ) -> None:
-        self.email_delivery = email_delivery
-
-
 # Export:
-EmailTemplateVars = ThirdPartyEmailPasswordEmailTemplateVars
+EmailTemplateVars = ep_types.EmailTemplateVars
 VerificationEmailTemplateVars = ep_types.VerificationEmailTemplateVars
 PasswordResetEmailTemplateVars = ep_types.PasswordResetEmailTemplateVars
 
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
 
 EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
+
+
+class ThirdPartyEmailPasswordIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None
+                 ) -> None:
+        self.email_delivery = email_delivery

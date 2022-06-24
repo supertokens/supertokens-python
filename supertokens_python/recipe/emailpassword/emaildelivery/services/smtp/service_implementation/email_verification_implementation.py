@@ -16,12 +16,12 @@ from typing import Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.types import EmailContent, SMTPServiceInterface
 from supertokens_python.recipe.emailpassword.types import (
-    EmailPasswordEmailTemplateVars)
+    EmailTemplateVars)
 from supertokens_python.recipe.emailverification.types import VerificationEmailTemplateVars
 
 
 class ServiceImplementation(SMTPServiceInterface[VerificationEmailTemplateVars]):
-    def __init__(self, email_password_service_implementation: SMTPServiceInterface[EmailPasswordEmailTemplateVars]) -> None:
+    def __init__(self, email_password_service_implementation: SMTPServiceInterface[EmailTemplateVars]) -> None:
         super().__init__(email_password_service_implementation.transporter)
         self.email_password_service_implementation = email_password_service_implementation
 

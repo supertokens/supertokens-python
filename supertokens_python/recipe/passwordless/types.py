@@ -86,15 +86,6 @@ class CreateAndSendCustomTextMessageParameters:
 PasswordlessLoginSMSTemplateVars = CreateAndSendCustomTextMessageParameters
 
 
-class PasswordlessIngredients:
-    def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars], None] = None,
-                 sms_delivery: Union[SMSDeliveryIngredient[PasswordlessLoginSMSTemplateVars], None] = None,
-                 ):
-        self.email_delivery = email_delivery
-        self.sms_delivery = sms_delivery
-
-
 # Export:
 EmailTemplateVars = PasswordlessLoginEmailTemplateVars
 SMSTemplateVars = PasswordlessLoginSMSTemplateVars
@@ -104,3 +95,12 @@ TwilioOverrideInput = TwilioServiceInterface[SMSTemplateVars]
 
 EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 SMSDeliveryOverrideInput = SMSDeliveryInterface[SMSTemplateVars]
+
+
+class PasswordlessIngredients:
+    def __init__(self,
+                 email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None,
+                 sms_delivery: Union[SMSDeliveryIngredient[SMSTemplateVars], None] = None,
+                 ):
+        self.email_delivery = email_delivery
+        self.sms_delivery = sms_delivery

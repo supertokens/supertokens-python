@@ -16,7 +16,7 @@ from typing import Any, Dict, Union
 from supertokens_python.async_to_sync_wrapper import sync
 
 from ..interfaces import SignInOkResult, SignInWrongCredentialsError
-from ..types import EmailPasswordEmailTemplateVars, User
+from ..types import EmailTemplateVars, User
 
 
 def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
@@ -90,6 +90,6 @@ def revoke_email_verification_token(user_id: str, user_context: Union[None, Dict
     return sync(revoke_email_verification_token(user_id, user_context))
 
 
-def send_email(input_: EmailPasswordEmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
+def send_email(input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
     from supertokens_python.recipe.emailpassword.asyncio import send_email
     return sync(send_email(input_, user_context))
