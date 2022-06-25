@@ -64,6 +64,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: /
+      - run: n 16
+      - run: node --version
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-fastapi
       - run: (cd .circleci && ./authReactFastApi.sh << parameters.fdi-version >>)
@@ -90,6 +92,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: /
+      - run: n 16
+      - run: node --version
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-flask
       - run: (cd .circleci && ./authReactFlask.sh << parameters.fdi-version >>)
@@ -116,6 +120,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: /
+      - run: n 16
+      - run: node --version
       - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
       - run: make with-django
       - run: (cd .circleci && ./authReactDjango.sh << parameters.fdi-version >>)
