@@ -299,7 +299,7 @@
       <%include file="_lunr_search.inc.mako"/>
     % endif
 
-    <h1>Index</h1>
+    <h2>Index</h2>
     ${extract_toc(module.docstring) if extract_module_toc_into_sidebar else ''}
     <ul id="index">
     % if supermodule:

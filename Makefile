@@ -38,4 +38,4 @@ with-flask:
 	pip3 install -e .[flask]
 
 build-docs:
-	rm -rf html && pdoc --html supertokens_python
+	rm -rf html && pdoc --html supertokens_python --template-dir docs-templates
