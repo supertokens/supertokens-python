@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ## [0.9.0] - 2022-06-23
+### Features:
+
+- Introduce `userroles` recipe.
+```python
+from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.recipe import userroles
+from supertokens_python.recipe.userroles.asyncio import create_new_role_or_add_permissions, add_role_to_user
+
+init(
+    supertokens_config=SupertokensConfig('http://localhost:3567'),
+    app_info=InputAppInfo(
+        app_name='SuperTokens Demo',
+        api_domain='https://api.supertokens.io',
+        website_domain='supertokens.io'
+    ),
+    framework='flask',
+    recipe_list=[userroles.init()]
+)
+
+user_id = "userId"
+role = "role"
+permissions = ["perm1", "perm2"]
+
+# Functions to use inside your views:
+# Create a new role with a few permissions:
+result = await create_new_role_or_add_permissions(role, permissions)
+# Add role to the user:
+result = await add_role_to_user(user_id, role)
+# Check documentation for more examples..
+```
 
 ### Fixes
 - Fixes Cookie same_site config validation.
