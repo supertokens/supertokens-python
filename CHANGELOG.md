@@ -6,7 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [0.9.0] - 2022-06-23
 ### Features:
 
 - Introduce `userroles` recipe.
@@ -38,6 +37,7 @@ result = await add_role_to_user(user_id, role)
 # Check documentation for more examples..
 ```
 
+## [0.9.0] - 2022-06-23
 ### Fixes
 - Fixes Cookie same_site config validation.
 - Remove `<Recipe>(Email|SMS)TemplateVars` in favour of `(Email|SMS)TemplateVars` for better DX.

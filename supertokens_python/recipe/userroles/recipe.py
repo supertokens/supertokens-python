@@ -28,8 +28,8 @@ from supertokens_python.recipe.userroles.utils import \
     validate_and_normalise_user_input
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.supertokens import AppInfo
-from .exceptions import SuperTokensUserRolesError
 
+from .exceptions import SuperTokensUserRolesError
 from .utils import InputOverrideConfig
 
 
@@ -84,4 +84,4 @@ class UserRolesRecipe(RecipeModule):
         if UserRolesRecipe.__instance is not None:
             return UserRolesRecipe.__instance
         raise_general_exception(
-            'Initialisation not done. Did you forget to call the SuperTokens.init function?')
+            'Initialisation not done. Did you forget to call the SuperTokens.init or UserRoles.init function?')

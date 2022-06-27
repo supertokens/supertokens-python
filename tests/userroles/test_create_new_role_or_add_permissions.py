@@ -55,7 +55,7 @@ async def test_create_new_role():
 
     # Create a new role
     result = await asyncio.create_new_role_or_add_permissions(role, [])
-    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsResult)
+    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsOkResult)
     assert result.created_new_role
 
 
@@ -82,12 +82,12 @@ async def test_create_new_role_twice():
 
     # Create a new role
     result = await asyncio.create_new_role_or_add_permissions(role, [])
-    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsResult)
+    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsOkResult)
     assert result.created_new_role
 
     # Create the new role again
     result = await asyncio.create_new_role_or_add_permissions(role, [])
-    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsResult)
+    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsOkResult)
     assert not result.created_new_role
 
 
@@ -115,7 +115,7 @@ async def test_create_new_role_with_permissions():
 
     # Create a new role
     result = await asyncio.create_new_role_or_add_permissions(role, permissions)
-    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsResult)
+    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsOkResult)
     assert result.created_new_role
 
     # Get permissions for the role
@@ -148,12 +148,12 @@ async def test_add_permissions_to_new_role_():
 
     # Create a new role with only one of the permissions
     result = await asyncio.create_new_role_or_add_permissions(role, permissions[0:])
-    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsResult)
+    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsOkResult)
     assert result.created_new_role
 
     # Add remaining permissions to the role
     result = await asyncio.create_new_role_or_add_permissions(role, permissions[1:])
-    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsResult)
+    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsOkResult)
     assert not result.created_new_role
 
     # Get permissions for the role
@@ -186,12 +186,12 @@ async def test_add_duplicate_permission():
 
     # Create a new role
     result = await asyncio.create_new_role_or_add_permissions(role, permissions)
-    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsResult)
+    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsOkResult)
     assert result.created_new_role
 
     # Add duplicate permissions to the role
     result = await asyncio.create_new_role_or_add_permissions(role, permissions)
-    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsResult)
+    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsOkResult)
     assert not result.created_new_role
 
     # Get permissions for the role

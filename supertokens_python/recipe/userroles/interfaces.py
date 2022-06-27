@@ -8,11 +8,7 @@ class AddRoleToUserOkResult:
 
 
 class UnknownRoleError:
-    # self.status = "UNKNOWN_ROLE_ERROR"
     pass
-
-
-AddRoleToUserResult = Union[AddRoleToUserOkResult, UnknownRoleError]
 
 
 class RemoveUserRoleOkResult:
@@ -20,15 +16,9 @@ class RemoveUserRoleOkResult:
         self.did_user_have_role = did_user_have_role
 
 
-RemoveUserRoleResult = Union[RemoveUserRoleOkResult, UnknownRoleError]
-
-
 class GetRolesForUserOkResult:
     def __init__(self, roles: List[str]):
         self.roles = roles
-
-
-GetRolesForUserResult = GetRolesForUserOkResult
 
 
 class GetUsersThatHaveRoleOkResult:
@@ -36,15 +26,9 @@ class GetUsersThatHaveRoleOkResult:
         self.users = users
 
 
-GetUsersThatHaveRoleResult = Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]
-
-
 class CreateNewRoleOrAddPermissionsOkResult:
     def __init__(self, created_new_role: bool):
         self.created_new_role = created_new_role
-
-
-CreateNewRoleOrAddPermissionsResult = CreateNewRoleOrAddPermissionsOkResult
 
 
 class GetPermissionsForRoleOkResult:
@@ -52,14 +36,8 @@ class GetPermissionsForRoleOkResult:
         self.permissions = permissions
 
 
-GetPermissionsForRoleResult = Union[GetPermissionsForRoleOkResult, UnknownRoleError]
-
-
 class RemovePermissionsFromRoleOkResult:
     pass
-
-
-RemovePermissionsFromRoleResult = Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]
 
 
 class GetRolesThatHavePermissionOkResult:
@@ -67,15 +45,9 @@ class GetRolesThatHavePermissionOkResult:
         self.roles = roles
 
 
-GetRolesThatHavePermissionResult = GetRolesThatHavePermissionOkResult
-
-
 class DeleteRoleOkResult:
     def __init__(self, did_role_exist: bool):
         self.did_role_exist = did_role_exist
-
-
-DeleteRoleResult = DeleteRoleOkResult
 
 
 class GetAllRolesOkResult:
@@ -83,51 +55,48 @@ class GetAllRolesOkResult:
         self.roles = roles
 
 
-GetAllRolesResult = GetAllRolesOkResult
-
-
 class RecipeInterface(ABC):
     @abstractmethod
-    async def add_role_to_user(self, user_id: str, role: str, user_context: Dict[str, Any]) -> AddRoleToUserResult:
+    async def add_role_to_user(self, user_id: str, role: str, user_context: Dict[str, Any]) -> Union[AddRoleToUserOkResult, UnknownRoleError]:
         pass
 
     @abstractmethod
-    async def remove_user_role(self, user_id: str, role: str, user_context: Dict[str, Any]) -> RemoveUserRoleResult:
+    async def remove_user_role(self, user_id: str, role: str, user_context: Dict[str, Any]) -> Union[RemoveUserRoleOkResult, UnknownRoleError]:
         pass
 
     @abstractmethod
-    async def get_roles_for_user(self, user_id: str, user_context: Dict[str, Any]) -> GetRolesForUserResult:
+    async def get_roles_for_user(self, user_id: str, user_context: Dict[str, Any]) -> GetRolesForUserOkResult:
         pass
 
     @abstractmethod
-    async def get_users_that_have_role(self, role: str, user_context: Dict[str, Any]) -> GetUsersThatHaveRoleResult:
+    async def get_users_that_have_role(self, role: str, user_context: Dict[str, Any]) -> Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
         pass
 
     @abstractmethod
     async def create_new_role_or_add_permissions(self, role: str, permissions: List[str],
-                                                 user_context: Dict[str, Any]) -> CreateNewRoleOrAddPermissionsResult:
+                                                 user_context: Dict[str, Any]) -> CreateNewRoleOrAddPermissionsOkResult:
         pass
 
     @abstractmethod
-    async def get_permissions_for_role(self, role: str, user_context: Dict[str, Any]) -> GetPermissionsForRoleResult:
+    async def get_permissions_for_role(self, role: str, user_context: Dict[str, Any]) -> Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
         pass
 
     @abstractmethod
     async def remove_permissions_from_role(self, role: str, permissions: List[str],
-                                           user_context: Dict[str, Any]) -> RemovePermissionsFromRoleResult:
+                                           user_context: Dict[str, Any]) -> Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
         pass
 
     @abstractmethod
     async def get_roles_that_have_permission(self, permission: str,
-                                             user_context: Dict[str, Any]) -> GetRolesThatHavePermissionResult:
+                                             user_context: Dict[str, Any]) -> GetRolesThatHavePermissionOkResult:
         pass
 
     @abstractmethod
-    async def delete_role(self, role: str, user_context: Dict[str, Any]) -> DeleteRoleResult:
+    async def delete_role(self, role: str, user_context: Dict[str, Any]) -> DeleteRoleOkResult:
         pass
 
     @abstractmethod
-    async def get_all_roles(self, user_context: Dict[str, Any]) -> GetAllRolesResult:
+    async def get_all_roles(self, user_context: Dict[str, Any]) -> GetAllRolesOkResult:
         pass
 
 

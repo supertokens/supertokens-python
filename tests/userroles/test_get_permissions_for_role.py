@@ -56,7 +56,7 @@ async def test_get_permission_for_a_role():
 
     # Create new role with all the permissions
     result = await asyncio.create_new_role_or_add_permissions(role, permissions)
-    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsResult)
+    assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsOkResult)
     assert result.created_new_role
 
     # Get the permissions given to the role

@@ -58,7 +58,7 @@ async def test_create_and_assign_new_role_and_delete_it():
     # Create new roles and assign them:
     for role in roles:
         result = await asyncio.create_new_role_or_add_permissions(role, [])
-        assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsResult)
+        assert isinstance(result, interfaces.CreateNewRoleOrAddPermissionsOkResult)
         assert result.created_new_role
 
         result = await asyncio.add_role_to_user(user_id, role)
