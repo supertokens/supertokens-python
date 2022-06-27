@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.session.utils import SessionConfig
     from supertokens_python.recipe.session.interfaces import (RecipeInterface,
                                                               SessionContainer)
+    from supertokens_python.framework.types import BaseRequest
 
 from math import ceil
 
@@ -43,7 +44,7 @@ def get_recipe_implementation_with_jwt(original_implementation: RecipeInterface,
 
     og_create_new_session = original_implementation.create_new_session
 
-    async def create_new_session(request: Any, user_id: str,
+    async def create_new_session(request: BaseRequest, user_id: str,
                                  access_token_payload: Union[None, Dict[str, Any]],
                                  session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) -> SessionContainer:
         if access_token_payload is None:
@@ -62,7 +63,7 @@ def get_recipe_implementation_with_jwt(original_implementation: RecipeInterface,
 
     og_get_session = original_implementation.get_session
 
-    async def get_session(request: Any, anti_csrf_check: Union[bool, None],
+    async def get_session(request: BaseRequest, anti_csrf_check: Union[bool, None],
                           session_required: bool, user_context: Dict[str, Any]) -> Union[SessionContainer, None]:
         session_container = await og_get_session(request, anti_csrf_check, session_required, user_context)
         if session_container is None:
@@ -72,7 +73,7 @@ def get_recipe_implementation_with_jwt(original_implementation: RecipeInterface,
 
     og_refresh_session = original_implementation.refresh_session
 
-    async def refresh_session(request: Any, user_context: Dict[str, Any]) -> SessionContainer:
+    async def refresh_session(request: BaseRequest, user_context: Dict[str, Any]) -> SessionContainer:
         access_token_validity_in_seconds = ceil(await original_implementation.get_access_token_lifetime_ms(user_context) / 1000)
 
         # Refresh session first because this will create a new access token
