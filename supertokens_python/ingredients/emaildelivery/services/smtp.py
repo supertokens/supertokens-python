@@ -19,10 +19,12 @@ from typing import Any, Dict, TypeVar
 
 import aiosmtplib
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailContent, SMTPSettings)
+    EmailContent,
+    SMTPSettings,
+)
 from supertokens_python.logger import log_debug_message
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 
 class Transporter:
@@ -35,12 +37,16 @@ class Transporter:
             if self.smtp_settings.secure:
                 # Use TLS from the beginning
                 mail = aiosmtplib.SMTP(
-                    self.smtp_settings.host, self.smtp_settings.port,
-                    use_tls=True, tls_context=tls_context
+                    self.smtp_settings.host,
+                    self.smtp_settings.port,
+                    use_tls=True,
+                    tls_context=tls_context,
                 )
             else:
                 # Start without TLS (but later try upgrading)
-                mail = aiosmtplib.SMTP(self.smtp_settings.host, self.smtp_settings.port, use_tls=False)
+                mail = aiosmtplib.SMTP(
+                    self.smtp_settings.host, self.smtp_settings.port, use_tls=False
+                )
 
             await mail.connect()  # type: ignore
 
@@ -52,15 +58,16 @@ class Transporter:
                     pass
 
             if self.smtp_settings.password:
-                await mail.login(self.smtp_settings.from_.email, self.smtp_settings.password)
+                await mail.login(
+                    self.smtp_settings.from_.email, self.smtp_settings.password
+                )
 
             return mail
         except Exception as e:
             log_debug_message("Couldn't connect to the SMTP server: %s", e)
             raise e
 
-    async def send_email(self, input_: EmailContent,
-                         _: Dict[str, Any]) -> None:
+    async def send_email(self, input_: EmailContent, _: Dict[str, Any]) -> None:
         connection = await self._connect()
 
         from_ = self.smtp_settings.from_
@@ -71,11 +78,13 @@ class Transporter:
                 email_content["From"] = from_addr
                 email_content["To"] = input_.to_email
                 email_content["Subject"] = input_.subject
-                await connection.sendmail(from_.email, input_.to_email, email_content.as_string())
+                await connection.sendmail(
+                    from_.email, input_.to_email, email_content.as_string()
+                )
             else:
                 await connection.sendmail(from_addr, input_.to_email, input_.body)
         except Exception as e:
-            log_debug_message('Error in sending email: %s', e)
+            log_debug_message("Error in sending email: %s", e)
             raise e
         finally:
             await connection.quit()

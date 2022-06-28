@@ -11,11 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-FORM_FIELD_PASSWORD_ID = 'password'
-FORM_FIELD_EMAIL_ID = 'email'
-SIGNUP = '/signup'
-SIGNIN = '/signin'
-USER_PASSWORD_RESET_TOKEN = '/user/password/reset/token'
-USER_PASSWORD_RESET = '/user/password/reset'
-SIGNUP_EMAIL_EXISTS = '/signup/email/exists'
-RESET_PASSWORD = '/reset-password'
+FORM_FIELD_PASSWORD_ID = "password"
+FORM_FIELD_EMAIL_ID = "email"
+SIGNUP = "/signup"
+SIGNIN = "/signin"
+USER_PASSWORD_RESET_TOKEN = "/user/password/reset/token"
+USER_PASSWORD_RESET = "/user/password/reset"
+SIGNUP_EMAIL_EXISTS = "/signup/email/exists"
+RESET_PASSWORD = "/reset-password"

@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- Use [black](https://github.com/psf/black) instead of `autopep8` to format code.
+
 ### Documentation
 
 - Add more details in the `CONTRIBUTING.md` to make it beginner friendly.

@@ -23,8 +23,7 @@ if TYPE_CHECKING:
 
 
 class DjangoFramework(Framework):
-
     def wrap_request(self, unwrapped: HttpRequest):
-        from supertokens_python.framework.django.django_request import \
-            DjangoRequest
+        from supertokens_python.framework.django.django_request import DjangoRequest
+
         return DjangoRequest(unwrapped)

@@ -16,8 +16,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Union
 
-from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryConfig
+from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 
 from . import exceptions as ex
 from . import providers, utils
@@ -43,10 +42,12 @@ if TYPE_CHECKING:
     from ...recipe_module import RecipeModule
 
 
-def init(sign_in_and_up_feature: SignInAndUpFeature,
-         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[InputOverrideConfig, None] = None,
-         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
-         ) -> Callable[[AppInfo], RecipeModule]:
+def init(
+    sign_in_and_up_feature: SignInAndUpFeature,
+    email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+    override: Union[InputOverrideConfig, None] = None,
+    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+) -> Callable[[AppInfo], RecipeModule]:
     return ThirdPartyRecipe.init(
-        sign_in_and_up_feature, email_verification_feature, override, email_delivery)
+        sign_in_and_up_feature, email_verification_feature, override, email_delivery
+    )

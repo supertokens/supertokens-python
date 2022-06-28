@@ -19,9 +19,14 @@ from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import usermetadata
 from supertokens_python.recipe.usermetadata.asyncio import (
-    clear_user_metadata, get_user_metadata, update_user_metadata)
+    clear_user_metadata,
+    get_user_metadata,
+    update_user_metadata,
+)
 from supertokens_python.recipe.usermetadata.interfaces import (
-    ClearUserMetadataResult, RecipeInterface)
+    ClearUserMetadataResult,
+    RecipeInterface,
+)
 from supertokens_python.recipe.usermetadata.utils import InputOverrideConfig
 from supertokens_python.utils import is_version_gte
 from tests.utils import clean_st, reset, setup_st, start_st
@@ -41,24 +46,27 @@ def teardown_function(_):
 @mark.asyncio
 async def test_that_usermetadata_recipe_works_as_expected():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='https://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[usermetadata.init()]
+        framework="fastapi",
+        recipe_list=[usermetadata.init()],
     )
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if not is_version_gte(version, '2.13'):
+    if not is_version_gte(version, "2.13"):
         # If the version less than 2.13, user metadata doesn't exist. So skip the test
         return
 
     TEST_USER_ID = "userId"
-    TEST_METADATA: Dict[str, Any] = {"role": "admin", "name": {"first": "John", "last": "Doe"}}
+    TEST_METADATA: Dict[str, Any] = {
+        "role": "admin",
+        "name": {"first": "John", "last": "Doe"},
+    }
 
     get_metadata_res = await get_user_metadata(TEST_USER_ID)
     assert get_metadata_res.metadata == {}
@@ -71,12 +79,12 @@ async def test_that_usermetadata_recipe_works_as_expected():
 
     # Overriding updates with shallow merge:
     # Passing {'role': None, ...} should remove 'role' from the metdata
-    TEST_METADATA['role'] = None
+    TEST_METADATA["role"] = None
     # 'first' is inside 'role' so it won't get
     # removed despite setting 'first' as None
-    TEST_METADATA['name']['first'] = None
+    TEST_METADATA["name"]["first"] = None
     update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA)
-    TEST_METADATA.pop('role')
+    TEST_METADATA.pop("role")
     assert update_metadata_res.metadata == TEST_METADATA
 
     get_metadata_res = await get_user_metadata(TEST_USER_ID)
@@ -92,19 +100,19 @@ async def test_that_usermetadata_recipe_works_as_expected():
 @mark.asyncio
 async def test_usermetadata_recipe_shallow_merge():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='https://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[usermetadata.init()]
+        framework="fastapi",
+        recipe_list=[usermetadata.init()],
     )
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if not is_version_gte(version, '2.13'):
+    if not is_version_gte(version, "2.13"):
         # If the version less than 2.13, user metadata doesn't exist. So skip the test
         return
 
@@ -126,7 +134,7 @@ async def test_usermetadata_recipe_shallow_merge():
             "subObjectNewProp": "this will appear",
         },
         "cleared": None,
-        "newRootProp": "this should appear in the end result"
+        "newRootProp": "this should appear in the end result",
     }
 
     TEST_METADATA_RESULT: Dict[str, Any] = {
@@ -135,13 +143,15 @@ async def test_usermetadata_recipe_shallow_merge():
             "subObjectUpdate": 123,
             "subObjectNewProp": "this will appear",
         },
-        "newRootProp": "this should appear in the end result"
+        "newRootProp": "this should appear in the end result",
     }
 
     get_metadata_res = await get_user_metadata(TEST_USER_ID)
     assert get_metadata_res.metadata == {}
 
-    update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA_ORIGINAL)
+    update_metadata_res = await update_user_metadata(
+        TEST_USER_ID, TEST_METADATA_ORIGINAL
+    )
     assert update_metadata_res.metadata == TEST_METADATA_ORIGINAL
 
     update_metadata_res = await update_user_metadata(TEST_USER_ID, TEST_METADATA_UPDATE)
@@ -164,27 +174,25 @@ async def test_recipe_override():
         return oi
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='https://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[usermetadata.init(
-            override=InputOverrideConfig(
-                functions=override_func
-            )
-        )]
+        framework="fastapi",
+        recipe_list=[
+            usermetadata.init(override=InputOverrideConfig(functions=override_func))
+        ],
     )
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if not is_version_gte(version, '2.13'):
+    if not is_version_gte(version, "2.13"):
         # If the version less than 2.13, user metadata doesn't exist. So skip the test
         return
 
-    res = await get_user_metadata('userId')
+    res = await get_user_metadata("userId")
     assert res.metadata == {}
 
     assert override_used is True

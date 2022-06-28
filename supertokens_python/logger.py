@@ -40,12 +40,14 @@ class CustomStreamHandler(logging.StreamHandler):  # type: ignore
     def emit(self, record: logging.LogRecord):
         relative_path = path.relpath(record.pathname, supertokens_dir)
 
-        record.msg = json.dumps({
-            "t": _get_log_timestamp(),
-            "sdkVer": VERSION,
-            "message": record.msg,
-            "file": f'{relative_path}:{record.lineno}'
-        })
+        record.msg = json.dumps(
+            {
+                "t": _get_log_timestamp(),
+                "sdkVer": VERSION,
+                "message": record.msg,
+                "file": f"{relative_path}:{record.lineno}",
+            }
+        )
 
         return super().emit(record)
 

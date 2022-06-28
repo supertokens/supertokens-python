@@ -1,6 +1,13 @@
-[tool.autopep8]
-max_line_length = 120
-ignore = "E501,W6"  # or ["E501", "W6"]
-in-place = true
-recursive = true
-aggressive = 3
+[tool.black]
+exclude = '''
+/(
+    \.eggs         # exclude a few common directories in the
+  | \.git          # root of the project
+  | \.mypy_cache
+  | \.vscode
+  | \.idea
+  | build
+  | dist
+  | \./html/
+)/
+'''

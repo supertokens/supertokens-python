@@ -14,19 +14,25 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    Transporter)
-from supertokens_python.ingredients.emaildelivery.types import EmailContent, SMTPServiceInterface
-from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.password_reset import \
-    get_password_reset_email_content
-from supertokens_python.recipe.emailpassword.types import \
-    EmailTemplateVars
-from supertokens_python.recipe.emailverification.emaildelivery.services.smtp.service_implementation import \
-    ServiceImplementation as EVServiceImplementation
-from supertokens_python.recipe.emailverification.types import VerificationEmailTemplateVars
+from supertokens_python.ingredients.emaildelivery.services.smtp import Transporter
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailContent,
+    SMTPServiceInterface,
+)
+from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.password_reset import (
+    get_password_reset_email_content,
+)
+from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
+from supertokens_python.recipe.emailverification.emaildelivery.services.smtp.service_implementation import (
+    ServiceImplementation as EVServiceImplementation,
+)
+from supertokens_python.recipe.emailverification.types import (
+    VerificationEmailTemplateVars,
+)
 
-from .email_verification_implementation import \
-    ServiceImplementation as DerivedEVServiceImplementation
+from .email_verification_implementation import (
+    ServiceImplementation as DerivedEVServiceImplementation,
+)
 
 
 class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
@@ -34,17 +40,27 @@ class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
         super().__init__(transporter)
 
         email_verification_service_implementation = EVServiceImplementation(transporter)
-        self.ev_send_raw_email = email_verification_service_implementation.send_raw_email
+        self.ev_send_raw_email = (
+            email_verification_service_implementation.send_raw_email
+        )
         self.ev_get_content = email_verification_service_implementation.get_content
 
         derived_ev_service_implementation = DerivedEVServiceImplementation(self)
-        email_verification_service_implementation.send_raw_email = derived_ev_service_implementation.send_raw_email
-        email_verification_service_implementation.get_content = derived_ev_service_implementation.get_content
+        email_verification_service_implementation.send_raw_email = (
+            derived_ev_service_implementation.send_raw_email
+        )
+        email_verification_service_implementation.get_content = (
+            derived_ev_service_implementation.get_content
+        )
 
-    async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -> None:
+    async def send_raw_email(
+        self, content: EmailContent, user_context: Dict[str, Any]
+    ) -> None:
         await self.transporter.send_email(content, user_context)
 
-    async def get_content(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -> EmailContent:
+    async def get_content(
+        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+    ) -> EmailContent:
         if isinstance(template_vars, VerificationEmailTemplateVars):
             return await self.ev_get_content(template_vars, user_context)
         return get_password_reset_email_content(template_vars)

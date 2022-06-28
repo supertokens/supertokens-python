@@ -16,8 +16,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Union
 
-from supertokens_python.ingredients.emaildelivery import \
-    EmailDeliveryIngredient
+from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.types import APIResponse, GeneralErrorResponse
 
 if TYPE_CHECKING:
@@ -58,30 +57,49 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_email_verification_token(self, user_id: str, email: str, user_context: Dict[str, Any]) -> Union[CreateEmailVerificationTokenOkResult, CreateEmailVerificationTokenEmailAlreadyVerifiedError]:
+    async def create_email_verification_token(
+        self, user_id: str, email: str, user_context: Dict[str, Any]
+    ) -> Union[
+        CreateEmailVerificationTokenOkResult,
+        CreateEmailVerificationTokenEmailAlreadyVerifiedError,
+    ]:
         pass
 
     @abstractmethod
-    async def verify_email_using_token(self, token: str, user_context: Dict[str, Any]) -> Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenError]:
+    async def verify_email_using_token(
+        self, token: str, user_context: Dict[str, Any]
+    ) -> Union[VerifyEmailUsingTokenOkResult, VerifyEmailUsingTokenInvalidTokenError]:
         pass
 
     @abstractmethod
-    async def is_email_verified(self, user_id: str, email: str, user_context: Dict[str, Any]) -> bool:
+    async def is_email_verified(
+        self, user_id: str, email: str, user_context: Dict[str, Any]
+    ) -> bool:
         pass
 
     @abstractmethod
-    async def revoke_email_verification_tokens(self, user_id: str, email: str, user_context: Dict[str, Any]) -> RevokeEmailVerificationTokensOkResult:
+    async def revoke_email_verification_tokens(
+        self, user_id: str, email: str, user_context: Dict[str, Any]
+    ) -> RevokeEmailVerificationTokensOkResult:
         pass
 
     @abstractmethod
-    async def unverify_email(self, user_id: str, email: str, user_context: Dict[str, Any]) -> UnverifyEmailOkResult:
+    async def unverify_email(
+        self, user_id: str, email: str, user_context: Dict[str, Any]
+    ) -> UnverifyEmailOkResult:
         pass
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
-                 config: EmailVerificationConfig, recipe_implementation: RecipeInterface,
-                 email_delivery: EmailDeliveryIngredient[VerificationEmailTemplateVars]):
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        recipe_id: str,
+        config: EmailVerificationConfig,
+        recipe_implementation: RecipeInterface,
+        email_delivery: EmailDeliveryIngredient[VerificationEmailTemplateVars],
+    ):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -97,11 +115,8 @@ class EmailVerifyPostOkResult(APIResponse):
 
     def to_json(self) -> Dict[str, Any]:
         return {
-            'status': self.status,
-            'user': {
-                'id': self.user.user_id,
-                'email': self.user.email
-            }
+            "status": self.status,
+            "user": {"id": self.user.user_id, "email": self.user.email},
         }
 
 
@@ -110,43 +125,32 @@ class EmailVerifyPostInvalidTokenError(APIResponse):
         self.status = "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
 
     def to_json(self) -> Dict[str, Any]:
-        return {
-            'status': self.status
-        }
+        return {"status": self.status}
 
 
 class IsEmailVerifiedGetOkResult(APIResponse):
     def __init__(self, is_verified: bool):
-        self.status = 'OK'
+        self.status = "OK"
         self.is_verified = is_verified
 
     def to_json(self) -> Dict[str, Any]:
-        return {
-            'status': self.status,
-            'isVerified': self.is_verified
-        }
+        return {"status": self.status, "isVerified": self.is_verified}
 
 
-class GenerateEmailVerifyTokenPostOkResult(
-        APIResponse):
+class GenerateEmailVerifyTokenPostOkResult(APIResponse):
     def __init__(self):
-        self.status = 'OK'
+        self.status = "OK"
 
     def to_json(self) -> Dict[str, Any]:
-        return {
-            'status': self.status
-        }
+        return {"status": self.status}
 
 
-class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError(
-        APIResponse):
+class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError(APIResponse):
     def __init__(self):
-        self.status = 'EMAIL_ALREADY_VERIFIED_ERROR'
+        self.status = "EMAIL_ALREADY_VERIFIED_ERROR"
 
     def to_json(self) -> Dict[str, Any]:
-        return {
-            'status': self.status
-        }
+        return {"status": self.status}
 
 
 class APIInterface(ABC):
@@ -156,14 +160,25 @@ class APIInterface(ABC):
         self.disable_generate_email_verify_token_post = False
 
     @abstractmethod
-    async def email_verify_post(self, token: str, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError, GeneralErrorResponse]:
+    async def email_verify_post(
+        self, token: str, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -> Union[
+        EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError, GeneralErrorResponse
+    ]:
         pass
 
     @abstractmethod
-    async def is_email_verified_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[IsEmailVerifiedGetOkResult, GeneralErrorResponse]:
+    async def is_email_verified_get(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -> Union[IsEmailVerifiedGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
-    async def generate_email_verify_token_post(self, api_options: APIOptions,
-                                               user_context: Dict[str, Any]) -> Union[GenerateEmailVerifyTokenPostOkResult, GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError, GeneralErrorResponse]:
+    async def generate_email_verify_token_post(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -> Union[
+        GenerateEmailVerifyTokenPostOkResult,
+        GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
+        GeneralErrorResponse,
+    ]:
         pass

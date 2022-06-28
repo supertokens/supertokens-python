@@ -24,14 +24,17 @@ SupertokensConfig = supertokens.SupertokensConfig
 AppInfo = supertokens.AppInfo
 
 
-def init(app_info: InputAppInfo,
-         framework: Literal['fastapi', 'flask', 'django'],
-         supertokens_config: SupertokensConfig,
-         recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
-         mode: Union[Literal['asgi', 'wsgi'], None] = None,
-         telemetry: Union[bool, None] = None):
-    return Supertokens.init(app_info, framework,
-                            supertokens_config, recipe_list, mode, telemetry)
+def init(
+    app_info: InputAppInfo,
+    framework: Literal["fastapi", "flask", "django"],
+    supertokens_config: SupertokensConfig,
+    recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
+    mode: Union[Literal["asgi", "wsgi"], None] = None,
+    telemetry: Union[bool, None] = None,
+):
+    return Supertokens.init(
+        app_info, framework, supertokens_config, recipe_list, mode, telemetry
+    )
 
 
 def get_all_cors_headers() -> List[str]:

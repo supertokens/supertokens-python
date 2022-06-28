@@ -19,8 +19,13 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict
 
 from httpx import AsyncClient, ConnectTimeout, NetworkError, Response
 
-from .constants import (API_KEY_HEADER, API_VERSION, API_VERSION_HEADER,
-                        RID_KEY_HEADER, SUPPORTED_CDI_VERSIONS)
+from .constants import (
+    API_KEY_HEADER,
+    API_VERSION,
+    API_VERSION_HEADER,
+    RID_KEY_HEADER,
+    SUPPORTED_CDI_VERSIONS,
+)
 from .normalised_url_path import NormalisedURLPath
 
 if TYPE_CHECKING:
@@ -41,8 +46,7 @@ class Querier:
     __last_tried_index: int = 0
     __hosts_alive_for_testing: Set[str] = set()
 
-    def __init__(self, hosts: List[Host],
-                 rid_to_core: Union[None, str] = None):
+    def __init__(self, hosts: List[Host], rid_to_core: Union[None, str] = None):
         self.__hosts = hosts
         self.__rid_to_core = None
         if rid_to_core is not None:
@@ -50,18 +54,18 @@ class Querier:
 
     @staticmethod
     def reset():
-        if ('SUPERTOKENS_ENV' not in environ) or (
-                environ['SUPERTOKENS_ENV'] != 'testing'):
-            raise_general_exception(
-                'calling testing function in non testing env')
+        if ("SUPERTOKENS_ENV" not in environ) or (
+            environ["SUPERTOKENS_ENV"] != "testing"
+        ):
+            raise_general_exception("calling testing function in non testing env")
         Querier.__init_called = False
 
     @staticmethod
     def get_hosts_alive_for_testing():
-        if ('SUPERTOKENS_ENV' not in environ) or (
-                environ['SUPERTOKENS_ENV'] != 'testing'):
-            raise_general_exception(
-                'calling testing function in non testing env')
+        if ("SUPERTOKENS_ENV" not in environ) or (
+            environ["SUPERTOKENS_ENV"] != "testing"
+        ):
+            raise_general_exception("calling testing function in non testing env")
         return Querier.__hosts_alive_for_testing
 
     async def get_api_version(self):
@@ -69,28 +73,28 @@ class Querier:
             return Querier.__api_version
 
         ProcessState.get_instance().add_state(
-            AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION)
+            AllowedProcessStates.CALLING_SERVICE_IN_GET_API_VERSION
+        )
 
         async def f(url: str) -> Response:
             headers = {}
             if Querier.__api_key is not None:
-                headers = {
-                    API_KEY_HEADER: Querier.__api_key
-                }
+                headers = {API_KEY_HEADER: Querier.__api_key}
             async with AsyncClient() as client:
                 return await client.get(url, headers=headers)
 
         response = await self.__send_request_helper(
-            NormalisedURLPath(API_VERSION), 'GET', f, len(self.__hosts))
-        cdi_supported_by_server = response['versions']
-        api_version = find_max_version(
-            cdi_supported_by_server,
-            SUPPORTED_CDI_VERSIONS)
+            NormalisedURLPath(API_VERSION), "GET", f, len(self.__hosts)
+        )
+        cdi_supported_by_server = response["versions"]
+        api_version = find_max_version(cdi_supported_by_server, SUPPORTED_CDI_VERSIONS)
 
         if api_version is None:
-            raise_general_exception('The running SuperTokens core version is not compatible with this FastAPI '
-                                    'SDK. Please visit https://supertokens.io/docs/community/compatibility-table '
-                                    'to find the right versions')
+            raise_general_exception(
+                "The running SuperTokens core version is not compatible with this FastAPI "
+                "SDK. Please visit https://supertokens.io/docs/community/compatibility-table "
+                "to find the right versions"
+            )
 
         Querier.__api_version = api_version
         return Querier.__api_version
@@ -99,7 +103,8 @@ class Querier:
     def get_instance(rid_to_core: Union[str, None] = None):
         if (not Querier.__init_called) or (Querier.__hosts is None):
             raise Exception(
-                "Please call the supertokens.init function before using SuperTokens")
+                "Please call the supertokens.init function before using SuperTokens"
+            )
         return Querier(Querier.__hosts, rid_to_core)
 
     @staticmethod
@@ -113,94 +118,120 @@ class Querier:
             Querier.__hosts_alive_for_testing = set()
 
     async def __get_headers_with_api_version(self, path: NormalisedURLPath):
-        headers = {
-            API_VERSION_HEADER: await self.get_api_version()
-        }
+        headers = {API_VERSION_HEADER: await self.get_api_version()}
         if Querier.__api_key is not None:
-            headers = {
-                **headers,
-                API_KEY_HEADER: Querier.__api_key
-            }
+            headers = {**headers, API_KEY_HEADER: Querier.__api_key}
         if path.is_a_recipe_path() and self.__rid_to_core is not None:
-            headers = {
-                **headers,
-                RID_KEY_HEADER: self.__rid_to_core
-            }
+            headers = {**headers, RID_KEY_HEADER: self.__rid_to_core}
         return headers
 
-    async def send_get_request(self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None):
+    async def send_get_request(
+        self, path: NormalisedURLPath, params: Union[Dict[str, Any], None] = None
+    ):
         if params is None:
             params = {}
 
         async def f(url: str) -> Response:
             async with AsyncClient() as client:
-                return await client.get(url, params=params, headers=await self.__get_headers_with_api_version(path))
+                return await client.get(
+                    url,
+                    params=params,
+                    headers=await self.__get_headers_with_api_version(path),
+                )
 
-        return await self.__send_request_helper(path, 'GET', f, len(self.__hosts))
+        return await self.__send_request_helper(path, "GET", f, len(self.__hosts))
 
-    async def send_post_request(self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None, test: bool = False):
+    async def send_post_request(
+        self,
+        path: NormalisedURLPath,
+        data: Union[Dict[str, Any], None] = None,
+        test: bool = False,
+    ):
         if data is None:
             data = {}
 
-        if ('SUPERTOKENS_ENV' in environ) and (
-                environ['SUPERTOKENS_ENV'] == 'testing') and test:
+        if (
+            ("SUPERTOKENS_ENV" in environ)
+            and (environ["SUPERTOKENS_ENV"] == "testing")
+            and test
+        ):
             return data
 
         headers = await self.__get_headers_with_api_version(path)
-        headers['content-type'] = 'application/json; charset=utf-8'
+        headers["content-type"] = "application/json; charset=utf-8"
 
         async def f(url: str) -> Response:
             async with AsyncClient() as client:
                 return await client.post(url, json=data, headers=headers)  # type: ignore
 
-        return await self.__send_request_helper(path, 'POST', f, len(self.__hosts))
+        return await self.__send_request_helper(path, "POST", f, len(self.__hosts))
 
     async def send_delete_request(self, path: NormalisedURLPath):
-
         async def f(url: str) -> Response:
             async with AsyncClient() as client:
-                return await client.delete(url, headers=await self.__get_headers_with_api_version(path))
+                return await client.delete(
+                    url, headers=await self.__get_headers_with_api_version(path)
+                )
 
-        return await self.__send_request_helper(path, 'DELETE', f, len(self.__hosts))
+        return await self.__send_request_helper(path, "DELETE", f, len(self.__hosts))
 
-    async def send_put_request(self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None):
+    async def send_put_request(
+        self, path: NormalisedURLPath, data: Union[Dict[str, Any], None] = None
+    ):
         if data is None:
             data = {}
 
         headers = await self.__get_headers_with_api_version(path)
-        headers['content-type'] = 'application/json; charset=utf-8'
+        headers["content-type"] = "application/json; charset=utf-8"
 
         async def f(url: str) -> Response:
             async with AsyncClient() as client:
                 return await client.put(url, json=data, headers=headers)  # type: ignore
 
-        return await self.__send_request_helper(path, 'PUT', f, len(self.__hosts))
+        return await self.__send_request_helper(path, "PUT", f, len(self.__hosts))
 
-    async def __send_request_helper(self, path: NormalisedURLPath, method: str, http_function: Callable[[str], Awaitable[Response]], no_of_tries: int) -> Any:
+    async def __send_request_helper(
+        self,
+        path: NormalisedURLPath,
+        method: str,
+        http_function: Callable[[str], Awaitable[Response]],
+        no_of_tries: int,
+    ) -> Any:
         if no_of_tries == 0:
-            raise_general_exception('No SuperTokens core available to query')
+            raise_general_exception("No SuperTokens core available to query")
 
         try:
-            current_host_domain = self.__hosts[Querier.__last_tried_index].domain.get_as_string_dangerous(
-            )
-            current_host_base_path = self.__hosts[Querier.__last_tried_index].base_path.get_as_string_dangerous(
-            )
+            current_host_domain = self.__hosts[
+                Querier.__last_tried_index
+            ].domain.get_as_string_dangerous()
+            current_host_base_path = self.__hosts[
+                Querier.__last_tried_index
+            ].base_path.get_as_string_dangerous()
             current_host: str = current_host_domain + current_host_base_path
             Querier.__last_tried_index += 1
             Querier.__last_tried_index %= len(self.__hosts)
             url = current_host + path.get_as_string_dangerous()
 
             ProcessState.get_instance().add_state(
-                AllowedProcessStates.CALLING_SERVICE_IN_REQUEST_HELPER)
+                AllowedProcessStates.CALLING_SERVICE_IN_REQUEST_HELPER
+            )
             response = await http_function(url)
-            if ('SUPERTOKENS_ENV' in environ) and (
-                    environ['SUPERTOKENS_ENV'] == 'testing'):
+            if ("SUPERTOKENS_ENV" in environ) and (
+                environ["SUPERTOKENS_ENV"] == "testing"
+            ):
                 Querier.__hosts_alive_for_testing.add(current_host)
 
             if is_4xx_error(response.status_code) or is_5xx_error(response.status_code):  # type: ignore
-                raise_general_exception('SuperTokens core threw an error for a ' + method + ' request to path: ' + path.get_as_string_dangerous() + ' with status code: ' + str(
-                    response.status_code) + ' and message: ' +  # type: ignore
-                    response.text)
+                raise_general_exception(
+                    "SuperTokens core threw an error for a "
+                    + method
+                    + " request to path: "
+                    + path.get_as_string_dangerous()
+                    + " with status code: "
+                    + str(response.status_code)
+                    + " and message: "
+                    + response.text  # type: ignore
+                )
 
             try:
                 return response.json()
@@ -209,6 +240,7 @@ class Querier:
 
         except (ConnectionError, NetworkError, ConnectTimeout):
             return await self.__send_request_helper(
-                path, method, http_function, no_of_tries - 1)
+                path, method, http_function, no_of_tries - 1
+            )
         except Exception as e:
             raise_general_exception(e)

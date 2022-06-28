@@ -41,17 +41,22 @@ class RecipeModule(abc.ABC):
         return self.app_info
 
     def return_api_id_if_can_handle_request(
-            self, path: NormalisedURLPath, method: str) -> Union[str, None]:
+        self, path: NormalisedURLPath, method: str
+    ) -> Union[str, None]:
         apis_handled = self.get_apis_handled()
         for current_api in apis_handled:
-            if not current_api.disabled and current_api.method == method and self.app_info.api_base_path.append(
-                    current_api.path_without_api_base_path).equals(path):
+            if (
+                not current_api.disabled
+                and current_api.method == method
+                and self.app_info.api_base_path.append(
+                    current_api.path_without_api_base_path
+                ).equals(path)
+            ):
                 return current_api.request_id
         return None
 
     @abc.abstractmethod
-    def is_error_from_this_recipe_based_on_instance(
-            self, err: Exception) -> bool:
+    def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         pass
 
     @abc.abstractmethod
@@ -59,11 +64,20 @@ class RecipeModule(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def handle_api_request(self, request_id: str, request: BaseRequest, path: NormalisedURLPath, method: str, response: BaseResponse) -> Union[BaseResponse, None]:
+    async def handle_api_request(
+        self,
+        request_id: str,
+        request: BaseRequest,
+        path: NormalisedURLPath,
+        method: str,
+        response: BaseResponse,
+    ) -> Union[BaseResponse, None]:
         pass
 
     @abc.abstractmethod
-    async def handle_error(self, request: BaseRequest, err: SuperTokensError, response: BaseResponse) -> BaseResponse:
+    async def handle_error(
+        self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
+    ) -> BaseResponse:
         pass
 
     @abc.abstractmethod
@@ -72,8 +86,13 @@ class RecipeModule(abc.ABC):
 
 
 class APIHandled:
-    def __init__(self, path_without_api_base_path: NormalisedURLPath,
-                 method: Literal['post', 'get', 'delete', 'put', 'options', 'trace'], request_id: str, disabled: bool):
+    def __init__(
+        self,
+        path_without_api_base_path: NormalisedURLPath,
+        method: Literal["post", "get", "delete", "put", "options", "trace"],
+        request_id: str,
+        disabled: bool,
+    ):
         self.path_without_api_base_path = path_without_api_base_path
         self.method = method
         self.request_id = request_id

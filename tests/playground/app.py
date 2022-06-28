@@ -14,22 +14,14 @@
 
 from supertokens_python import init, InputAppInfo, SupertokensConfig
 from supertokens_python.recipe import emailpassword
+
 # from supertokens_python.recipe.emailpassword import InputFormField
 # from supertokens_python.recipe.emailverification import InputOverrideConfig as EVInputOverrideConfig
 # from supertokens_python.recipe.session.utils import OverrideConfig
 
 init(
-    app_info=InputAppInfo(
-        app_name='',
-        website_domain='',
-        api_domain=''
-    ),
-    supertokens_config=SupertokensConfig(
-        connection_uri='',
-        api_key=''
-    ),
-    framework='fastapi',
-    recipe_list=[
-        emailpassword.init()
-    ]
+    app_info=InputAppInfo(app_name="", website_domain="", api_domain=""),
+    supertokens_config=SupertokensConfig(connection_uri="", api_key=""),
+    framework="fastapi",
+    recipe_list=[emailpassword.init()],
 )

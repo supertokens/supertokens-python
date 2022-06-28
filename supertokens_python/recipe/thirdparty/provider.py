@@ -27,16 +27,24 @@ class Provider(abc.ABC):
         self.is_default: bool = is_default
 
     @abc.abstractmethod
-    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
+    async def get_profile_info(
+        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+    ) -> UserInfo:
         pass
 
     @abc.abstractmethod
-    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(
+        self, user_context: Dict[str, Any]
+    ) -> AuthorisationRedirectAPI:
         pass
 
     @abc.abstractmethod
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
+        self,
+        redirect_uri: str,
+        auth_code_from_request: str,
+        user_context: Dict[str, Any],
+    ) -> AccessTokenAPI:
         pass
 
     @abc.abstractmethod

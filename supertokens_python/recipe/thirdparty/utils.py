@@ -13,12 +13,12 @@
 # under the License.
 from __future__ import annotations
 
-from typing import (TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Set,
-                    Union)
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Set, Union
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.thirdparty.emaildelivery.services.backward_compatibility import \
-    BackwardCompatibilityService
+from supertokens_python.recipe.thirdparty.emaildelivery.services.backward_compatibility import (
+    BackwardCompatibilityService,
+)
 from supertokens_python.utils import deprecated_warn
 
 from .interfaces import APIInterface, RecipeInterface
@@ -29,11 +29,15 @@ if TYPE_CHECKING:
 
 from jwt import PyJWKClient, decode
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryConfig, EmailDeliveryConfigWithService)
-from supertokens_python.recipe.emailverification.utils import \
-    OverrideConfig as EmailVerificationOverrideConfig
-from supertokens_python.recipe.emailverification.utils import \
-    ParentRecipeEmailVerificationConfig
+    EmailDeliveryConfig,
+    EmailDeliveryConfigWithService,
+)
+from supertokens_python.recipe.emailverification.utils import (
+    OverrideConfig as EmailVerificationOverrideConfig,
+)
+from supertokens_python.recipe.emailverification.utils import (
+    ParentRecipeEmailVerificationConfig,
+)
 
 from ..emailverification.types import User as EmailVerificationUser
 from .types import EmailTemplateVars, User
@@ -42,7 +46,9 @@ from .types import EmailTemplateVars, User
 class SignInAndUpFeature:
     def __init__(self, providers: List[Provider]):
         if len(providers) == 0:
-            raise_bad_input_exception('thirdparty recipe requires atleast 1 provider to be passed in sign_in_and_up_feature.providers config')
+            raise_bad_input_exception(
+                "thirdparty recipe requires atleast 1 provider to be passed in sign_in_and_up_feature.providers config"
+            )
         default_providers_set: Set[str] = set()
         all_providers_set: Set[str] = set()
 
@@ -55,112 +61,142 @@ class SignInAndUpFeature:
                 # if this id is not being used by any other provider, we treat
                 # this as the is_default
                 other_providers_with_same_id = list(
-                    filter(lambda p: p.id == provider_id and provider != p, providers))
+                    filter(lambda p: p.id == provider_id and provider != p, providers)
+                )
                 if len(other_providers_with_same_id) == 0:
                     # we treat this as the isDefault now.
                     is_default = True
             if is_default:
                 if provider_id in default_providers_set:
                     raise_bad_input_exception(
-                        'You have provided multiple third party providers that have the id: "' + provider_id + '" '
-                                                                                                               'and '
-                                                                                                               'are '
-                                                                                                               'marked as "is_default: True". Please only mark one of them as is_default.')
+                        'You have provided multiple third party providers that have the id: "'
+                        + provider_id
+                        + '" '
+                        "and "
+                        "are "
+                        'marked as "is_default: True". Please only mark one of them as is_default.'
+                    )
                 default_providers_set.add(provider_id)
 
         if len(default_providers_set) != len(all_providers_set):
             # this means that there is no provider marked as is_default
             raise_bad_input_exception(
-                'The providers array has multiple entries for the same third party provider. Please '
-                'mark one of them as the default one by using "is_default: true".')
+                "The providers array has multiple entries for the same third party provider. Please "
+                'mark one of them as the default one by using "is_default: true".'
+            )
         self.providers = providers
 
 
 class InputEmailVerificationConfig:
-    def __init__(self,
-                 get_email_verification_url: Union[Callable[[
-                     User, Dict[str, Any]], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[
-                     User, str, Dict[str, Any]], Awaitable[None]], None] = None
-                 ):
+    def __init__(
+        self,
+        get_email_verification_url: Union[
+            Callable[[User, Dict[str, Any]], Awaitable[str]], None
+        ] = None,
+        create_and_send_custom_email: Union[
+            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
+        ] = None,
+    ):
         self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
         if create_and_send_custom_email:
-            deprecated_warn("create_and_send_custom_email is depricated. Please use email delivery config instead")
+            deprecated_warn(
+                "create_and_send_custom_email is depricated. Please use email delivery config instead"
+            )
 
 
 def email_verification_create_and_send_custom_email(
-        recipe: ThirdPartyRecipe, create_and_send_custom_email: Callable[[
-            User, str, Dict[str, Any]], Awaitable[None]]) -> Callable[[
-                EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]]:
-    async def func(user: EmailVerificationUser, link: str, user_context: Dict[str, Any]):
-        user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id, user_context)
+    recipe: ThirdPartyRecipe,
+    create_and_send_custom_email: Callable[
+        [User, str, Dict[str, Any]], Awaitable[None]
+    ],
+) -> Callable[[EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]]:
+    async def func(
+        user: EmailVerificationUser, link: str, user_context: Dict[str, Any]
+    ):
+        user_info = await recipe.recipe_implementation.get_user_by_id(
+            user.user_id, user_context
+        )
         if user_info is None:
-            raise Exception('Unknown User ID provided')
+            raise Exception("Unknown User ID provided")
         return await create_and_send_custom_email(user_info, link, user_context)
 
     return func
 
 
 def email_verification_get_email_verification_url(
-        recipe: ThirdPartyRecipe, get_email_verification_url: Callable[[
-            User, Dict[str, Any]], Awaitable[str]]) -> Callable[[
-                EmailVerificationUser, Any], Awaitable[str]]:
+    recipe: ThirdPartyRecipe,
+    get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
+) -> Callable[[EmailVerificationUser, Any], Awaitable[str]]:
     async def func(user: EmailVerificationUser, user_context: Dict[str, Any]):
-        user_info = await recipe.recipe_implementation.get_user_by_id(user.user_id, user_context)
+        user_info = await recipe.recipe_implementation.get_user_by_id(
+            user.user_id, user_context
+        )
         if user_info is None:
-            raise Exception('Unknown User ID provided')
+            raise Exception("Unknown User ID provided")
         return await get_email_verification_url(user_info, user_context)
 
     return func
 
 
 def validate_and_normalise_email_verification_config(
-        recipe: ThirdPartyRecipe, config: Union[InputEmailVerificationConfig, None], override: InputOverrideConfig)\
-        -> ParentRecipeEmailVerificationConfig:
+    recipe: ThirdPartyRecipe,
+    config: Union[InputEmailVerificationConfig, None],
+    override: InputOverrideConfig,
+) -> ParentRecipeEmailVerificationConfig:
     create_and_send_custom_email = None
     get_email_verification_url = None
     if config is None:
         config = InputEmailVerificationConfig()
     if config.create_and_send_custom_email is not None:
         create_and_send_custom_email = email_verification_create_and_send_custom_email(
-            recipe, config.create_and_send_custom_email)
+            recipe, config.create_and_send_custom_email
+        )
     if config.get_email_verification_url is not None:
-        get_email_verification_url = email_verification_get_email_verification_url(recipe,
-                                                                                   config.get_email_verification_url)
+        get_email_verification_url = email_verification_get_email_verification_url(
+            recipe, config.get_email_verification_url
+        )
 
     return ParentRecipeEmailVerificationConfig(
         get_email_for_user_id=recipe.get_email_for_user_id,
         create_and_send_custom_email=create_and_send_custom_email,
         get_email_verification_url=get_email_verification_url,
-        override=override.email_verification_feature
+        override=override.email_verification_feature,
     )
 
 
 class InputOverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-                 apis: Union[Callable[[APIInterface],
-                                      APIInterface], None] = None,
-                 email_verification_feature: Union[EmailVerificationOverrideConfig, None] = None):
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+        email_verification_feature: Union[EmailVerificationOverrideConfig, None] = None,
+    ):
         self.functions = functions
         self.apis = apis
         self.email_verification_feature = email_verification_feature
 
 
 class OverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-                 apis: Union[Callable[[APIInterface], APIInterface], None] = None):
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+    ):
         self.functions = functions
         self.apis = apis
 
 
 class ThirdPartyConfig:
-    def __init__(self,
-                 sign_in_and_up_feature: SignInAndUpFeature,
-                 email_verification_feature: ParentRecipeEmailVerificationConfig,
-                 override: OverrideConfig,
-                 get_email_delivery_config: Callable[[RecipeInterface], EmailDeliveryConfigWithService[EmailTemplateVars]],
-                 ):
+    def __init__(
+        self,
+        sign_in_and_up_feature: SignInAndUpFeature,
+        email_verification_feature: ParentRecipeEmailVerificationConfig,
+        override: OverrideConfig,
+        get_email_delivery_config: Callable[
+            [RecipeInterface], EmailDeliveryConfigWithService[EmailTemplateVars]
+        ],
+    ):
         self.sign_in_and_up_feature = sign_in_and_up_feature
         self.email_verification_feature = email_verification_feature
         self.override = override
@@ -168,27 +204,29 @@ class ThirdPartyConfig:
 
 
 def validate_and_normalise_user_input(
-        recipe: ThirdPartyRecipe,
-        sign_in_and_up_feature: SignInAndUpFeature,
-        email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-        override: Union[InputOverrideConfig, None] = None,
-        email_delivery_config: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
+    recipe: ThirdPartyRecipe,
+    sign_in_and_up_feature: SignInAndUpFeature,
+    email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+    override: Union[InputOverrideConfig, None] = None,
+    email_delivery_config: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> ThirdPartyConfig:
     if not isinstance(sign_in_and_up_feature, SignInAndUpFeature):  # type: ignore
-        raise ValueError('sign_in_and_up_feature must be an instance of SignInAndUpFeature')
+        raise ValueError(
+            "sign_in_and_up_feature must be an instance of SignInAndUpFeature"
+        )
 
     if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError('override must be an instance of InputOverrideConfig or None')
+        raise ValueError("override must be an instance of InputOverrideConfig or None")
 
     if override is None:
         override = InputOverrideConfig()
 
-    def get_email_delivery_config(tp_recipe: RecipeInterface
-                                  ) -> EmailDeliveryConfigWithService[EmailTemplateVars]:
+    def get_email_delivery_config(
+        tp_recipe: RecipeInterface,
+    ) -> EmailDeliveryConfigWithService[EmailTemplateVars]:
         if email_delivery_config and email_delivery_config.service:
             return EmailDeliveryConfigWithService(
-                email_delivery_config.service,
-                email_delivery_config.override
+                email_delivery_config.service, email_delivery_config.override
             )
 
         email_service = BackwardCompatibilityService(
@@ -196,7 +234,10 @@ def validate_and_normalise_user_input(
             tp_recipe,
             email_verification_feature,
         )
-        if email_delivery_config is not None and email_delivery_config.override is not None:
+        if (
+            email_delivery_config is not None
+            and email_delivery_config.override is not None
+        ):
             override = email_delivery_config.override
         else:
             override = None
@@ -205,16 +246,16 @@ def validate_and_normalise_user_input(
 
     return ThirdPartyConfig(
         sign_in_and_up_feature,
-        validate_and_normalise_email_verification_config(recipe, email_verification_feature, override),
+        validate_and_normalise_email_verification_config(
+            recipe, email_verification_feature, override
+        ),
         OverrideConfig(functions=override.functions, apis=override.apis),
-        get_email_delivery_config
+        get_email_delivery_config,
     )
 
 
 def find_right_provider(
-        providers: List[Provider],
-        third_party_id: str,
-        client_id: Union[str, None]
+    providers: List[Provider], third_party_id: str, client_id: Union[str, None]
 ) -> Union[Provider, None]:
     for provider in providers:
         provider_id = provider.id
@@ -224,7 +265,8 @@ def find_right_provider(
         # first if there is only one provider with third_party_id in the
         # providers array
         other_providers_with_same_id = list(
-            filter(lambda p: p.id == provider_id and provider != p, providers))
+            filter(lambda p: p.id == provider_id and provider != p, providers)
+        )
         if len(other_providers_with_same_id) == 0:
             # then we always return that.
             return provider
@@ -243,7 +285,8 @@ def find_right_provider(
 
 
 def verify_id_token_from_jwks_endpoint(
-        id_token: str, jwks_uri: str, audience: str, issuers: List[str]) -> Dict[str, Any]:
+    id_token: str, jwks_uri: str, audience: str, issuers: List[str]
+) -> Dict[str, Any]:
     jwks_client = PyJWKClient(jwks_uri)
     signing_key = jwks_client.get_signing_key_from_jwt(id_token)
 
@@ -252,14 +295,15 @@ def verify_id_token_from_jwks_endpoint(
         signing_key.key,  # type: ignore
         algorithms=["RS256"],
         audience=audience,
-        options={"verify_exp": False})
+        options={"verify_exp": False},
+    )
 
     issuer_found = False
     for issuer in issuers:
-        if data['iss'] == issuer:
+        if data["iss"] == issuer:
             issuer_found = True
 
     if not issuer_found:
-        raise Exception('no required issuer found')
+        raise Exception("no required issuer found")
 
     return data

@@ -12,8 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.passwordless.interfaces import (APIInterface,
-                                                               APIOptions)
+from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
 from supertokens_python.utils import send_200_response
 
 
@@ -25,14 +24,16 @@ async def resend_code(api_implementation: APIInterface, api_options: APIOptions)
     if body is None:
         raise_bad_input_exception("Please provide a JSON body")
 
-    if 'preAuthSessionId' not in body:
-        raise_bad_input_exception('Please provide preAuthSessionId')
+    if "preAuthSessionId" not in body:
+        raise_bad_input_exception("Please provide preAuthSessionId")
 
-    if 'deviceId' not in body:
-        raise_bad_input_exception('Please provide deviceId')
+    if "deviceId" not in body:
+        raise_bad_input_exception("Please provide deviceId")
 
-    pre_auth_session_id = body['preAuthSessionId']
-    device_id = body['deviceId']
+    pre_auth_session_id = body["preAuthSessionId"]
+    device_id = body["deviceId"]
 
-    result = await api_implementation.resend_code_post(device_id, pre_auth_session_id, api_options, {})
+    result = await api_implementation.resend_code_post(
+        device_id, pre_auth_session_id, api_options, {}
+    )
     return send_200_response(result.to_json(), api_options.response)

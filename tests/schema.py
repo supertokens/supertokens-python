@@ -12,90 +12,87 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-type_string = {
-    'type': 'string'
-}
-type_number = {
-    'type': 'number'
-}
-type_boolean = {
-    'type': 'boolean'
-}
-type_object = {
-    'type': 'object'
-}
-type_null = {
-    'type': 'null'
-}
-same_site = {
-    'type': 'string',
-    'enum': ['None', 'Lax', 'Strict']
-}
+type_string = {"type": "string"}
+type_number = {"type": "number"}
+type_boolean = {"type": "boolean"}
+type_object = {"type": "object"}
+type_null = {"type": "null"}
+same_site = {"type": "string", "enum": ["None", "Lax", "Strict"]}
 user_id = type_string
 user_data_in_jwt = type_object
 user_data_in_database = type_object
 session_handle = type_string
 anti_csrf_token = type_string
 session = {
-    'type': 'object',
-    'properties': {
-        'handle': session_handle,
-        'userId': user_id,
-        'userDataInJWT': user_data_in_jwt
+    "type": "object",
+    "properties": {
+        "handle": session_handle,
+        "userId": user_id,
+        "userDataInJWT": user_data_in_jwt,
     },
-    'additionalProperties': False,
-    'required': ['handle', 'userId', 'userDataInJWT']
+    "additionalProperties": False,
+    "required": ["handle", "userId", "userDataInJWT"],
 }
 token = {
-    'type': 'object',
-    'properties': {
-        'token': type_string,
-        'expiry': type_number,
-        'createdTime': type_number,
-        'cookiePath': type_string,
-        'cookieSecure': type_boolean,
-        'domain': type_string,
-        'sameSite': same_site
-    }
+    "type": "object",
+    "properties": {
+        "token": type_string,
+        "expiry": type_number,
+        "createdTime": type_number,
+        "cookiePath": type_string,
+        "cookieSecure": type_boolean,
+        "domain": type_string,
+        "sameSite": same_site,
+    },
 }
 session_without_anti_csrf = {
-    'type': 'object',
-    'properties': {
-        'session': session,
-        'accessToken': token,
-        'refreshToken': token,
-        'idRefreshToken': token,
-        'antiCsrfToken': type_null
+    "type": "object",
+    "properties": {
+        "session": session,
+        "accessToken": token,
+        "refreshToken": token,
+        "idRefreshToken": token,
+        "antiCsrfToken": type_null,
     },
-    'additionalProperties': False,
-    'required': ['session', 'accessToken', 'refreshToken', 'idRefreshToken', 'antiCsrfToken']
+    "additionalProperties": False,
+    "required": [
+        "session",
+        "accessToken",
+        "refreshToken",
+        "idRefreshToken",
+        "antiCsrfToken",
+    ],
 }
 session_with_anti_csrf = {
-    'type': 'object',
-    'properties': {
-        'session': session,
-        'accessToken': token,
-        'refreshToken': token,
-        'idRefreshToken': token,
-        'antiCsrfToken': anti_csrf_token
+    "type": "object",
+    "properties": {
+        "session": session,
+        "accessToken": token,
+        "refreshToken": token,
+        "idRefreshToken": token,
+        "antiCsrfToken": anti_csrf_token,
     },
-    'additionalProperties': False,
-    'required': ['session', 'accessToken', 'refreshToken', 'idRefreshToken', 'antiCsrfToken']
+    "additionalProperties": False,
+    "required": [
+        "session",
+        "accessToken",
+        "refreshToken",
+        "idRefreshToken",
+        "antiCsrfToken",
+    ],
 }
 session_verify_without_access_token = {
-    'type': 'object',
-    'properties': {
-        'session': session
-    },
-    'additionalProperties': False,
-    'required': ['session']
+    "type": "object",
+    "properties": {"session": session},
+    "additionalProperties": False,
+    "required": ["session"],
 }
 session_verify_with_access_token = {
-    'type': 'object',
-    'properties': {
-        'session': session,
-        'accessToken': token,
+    "type": "object",
+    "properties": {
+        "session": session,
+        "accessToken": token,
     },
-    'additionalProperties': False,
-    'required': ['session', 'accessToken']
+    "additionalProperties": False,
+    "required": ["session", "accessToken"],
 }

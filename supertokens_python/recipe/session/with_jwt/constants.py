@@ -12,5 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY = '_jwtPName'
-JWT_RESERVED_KEY_USE_ERROR_MESSAGE = ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY + 'is a reserved property name, please use a different key name for the jwt'
+ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY = "_jwtPName"
+JWT_RESERVED_KEY_USE_ERROR_MESSAGE = (
+    ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
+    + "is a reserved property name, please use a different key name for the jwt"
+)

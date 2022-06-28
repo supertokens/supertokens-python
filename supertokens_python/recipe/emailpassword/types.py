@@ -13,10 +13,11 @@
 # under the License.
 from typing import Awaitable, Callable, List, TypeVar, Union
 
-from supertokens_python.ingredients.emaildelivery import \
-    EmailDeliveryIngredient
+from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryInterface, SMTPServiceInterface)
+    EmailDeliveryInterface,
+    SMTPServiceInterface,
+)
 from supertokens_python.recipe.emailverification import types as ev_types
 
 
@@ -28,8 +29,7 @@ class User:
 
 
 class UsersResponse:
-    def __init__(self, users: List[User],
-                 next_pagination_token: Union[str, None]):
+    def __init__(self, users: List[User], next_pagination_token: Union[str, None]):
         self.users = users
         self.next_pagination_token = next_pagination_token
 
@@ -47,22 +47,33 @@ class FormField:
 
 
 class InputFormField:
-    def __init__(self, id: str, validate: Union[Callable[[  # pylint: disable=redefined-builtin
-                 str], Awaitable[Union[str, None]]], None] = None, optional: Union[bool, None] = None):
+    def __init__(
+        self,
+        id: str,  # pylint: disable=redefined-builtin
+        validate: Union[
+            Callable[[str], Awaitable[Union[str, None]]],
+            None,
+        ] = None,
+        optional: Union[bool, None] = None,
+    ):
         self.id = id
         self.validate = validate
         self.optional = optional
 
 
 class NormalisedFormField:
-    def __init__(self, id: str, validate: Callable[[  # pylint: disable=redefined-builtin
-                 str], Awaitable[Union[str, None]]], optional: bool):
+    def __init__(
+        self,
+        id: str,  # pylint: disable=redefined-builtin
+        validate: Callable[[str], Awaitable[Union[str, None]]],
+        optional: bool,
+    ):
         self.id = id
         self.validate = validate
         self.optional = optional
 
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 
 class PasswordResetEmailTemplateVarsUser:
@@ -83,8 +94,7 @@ class PasswordResetEmailTemplateVars:
 
 # Export:
 EmailTemplateVars = Union[
-    PasswordResetEmailTemplateVars,
-    ev_types.VerificationEmailTemplateVars
+    PasswordResetEmailTemplateVars, ev_types.VerificationEmailTemplateVars
 ]
 # PasswordResetEmailTemplateVars (Already exported because it's defined in the same)
 VerificationEmailTemplateVars = ev_types.VerificationEmailTemplateVars
@@ -95,7 +105,8 @@ EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 
 
 class EmailPasswordIngredients:
-    def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None
-                 ) -> None:
+    def __init__(
+        self,
+        email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None,
+    ) -> None:
         self.email_delivery = email_delivery

@@ -25,19 +25,25 @@ from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.utils import send_200_response
 
 
-async def handle_authorisation_url_api(api_implementation: APIInterface, api_options: APIOptions):
+async def handle_authorisation_url_api(
+    api_implementation: APIInterface, api_options: APIOptions
+):
     if api_implementation.disable_authorisation_url_get:
         return None
-    third_party_id = api_options.request.get_query_param('thirdPartyId')
+    third_party_id = api_options.request.get_query_param("thirdPartyId")
 
     if third_party_id is None:
-        raise_bad_input_exception(
-            'Please provide the thirdPartyId as a GET param')
+        raise_bad_input_exception("Please provide the thirdPartyId as a GET param")
 
     provider: Union[None, Provider] = find_right_provider(
-        api_options.providers, third_party_id, None)
+        api_options.providers, third_party_id, None
+    )
     if provider is None:
-        raise_bad_input_exception('The third party provider ' + third_party_id + ' seems to be missing from the backend configs.')
+        raise_bad_input_exception(
+            "The third party provider "
+            + third_party_id
+            + " seems to be missing from the backend configs."
+        )
 
     result = await api_implementation.authorisation_url_get(provider, api_options, {})
     return send_200_response(result.to_json(), api_options.response)
