@@ -16,12 +16,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict
 
 from supertokens_python.framework.request import BaseRequest
-# from supertokens_python.framework import BaseRequest
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
-from supertokens_python.utils import (execute_async,
-                                      frontend_has_interceptor,
+from supertokens_python.utils import (execute_async, frontend_has_interceptor,
                                       get_timestamp_ms, normalise_http_method)
 
 from . import session_functions
