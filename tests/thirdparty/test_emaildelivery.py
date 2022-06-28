@@ -24,24 +24,33 @@ from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailContent, EmailDeliveryConfig, EmailDeliveryInterface,
-    SMTPServiceInterface, SMTPSettings, SMTPSettingsFrom)
+    EmailContent,
+    EmailDeliveryConfig,
+    EmailDeliveryInterface,
+    SMTPServiceInterface,
+    SMTPSettings,
+    SMTPSettingsFrom,
+)
 from supertokens_python.recipe import session, thirdparty
 from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.session.recipe_implementation import \
-    RecipeImplementation as SessionRecipeImplementation
-from supertokens_python.recipe.session.session_functions import \
-    create_new_session
+from supertokens_python.recipe.session.recipe_implementation import (
+    RecipeImplementation as SessionRecipeImplementation,
+)
+from supertokens_python.recipe.session.session_functions import create_new_session
 from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
-from supertokens_python.recipe.thirdparty.emaildelivery.services.smtp import \
-    SMTPService
+from supertokens_python.recipe.thirdparty.emaildelivery.services.smtp import SMTPService
 from supertokens_python.recipe.thirdparty.interfaces import SignInUpOkResult
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import (
-    AccessTokenAPI, AuthorisationRedirectAPI, EmailTemplateVars, User,
-    UserInfo, UserInfoEmail, VerificationEmailTemplateVars)
-from tests.utils import (clean_st, email_verify_token_request, reset, setup_st,
-                         start_st)
+    AccessTokenAPI,
+    AuthorisationRedirectAPI,
+    EmailTemplateVars,
+    User,
+    UserInfo,
+    UserInfoEmail,
+    VerificationEmailTemplateVars,
+)
+from tests.utils import clean_st, email_verify_token_request, reset, setup_st, start_st
 
 respx_mock = respx.MockRouter
 
@@ -57,31 +66,40 @@ def teardown_function(_):
     clean_st()
 
 
-@fixture(scope='function')
+@fixture(scope="function")
 async def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
-    @app.get('/login')
+    @app.get("/login")
     async def login(_request: Request):  # type: ignore
-        user_id = 'userId'
+        user_id = "userId"
         # await create_new_session(request, user_id, {}, {})
-        return {'userId': user_id}
+        return {"userId": user_id}
 
     return TestClient(app)
 
 
 class CustomProvider(Provider):
-    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
+    async def get_profile_info(
+        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+    ) -> UserInfo:
         return UserInfo(
             user_id=auth_code_response["id"],
-            email=UserInfoEmail(auth_code_response["email"], True)
+            email=UserInfoEmail(auth_code_response["email"], True),
         )
 
-    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -> AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(
+        self, user_context: Dict[str, Any]
+    ) -> AuthorisationRedirectAPI:
         return AuthorisationRedirectAPI("https://example.com/oauth/auth", {})
 
-    def get_access_token_api_info(self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -> AccessTokenAPI:
+    def get_access_token_api_info(
+        self,
+        redirect_uri: str,
+        auth_code_from_request: str,
+        user_context: Dict[str, Any],
+    ) -> AccessTokenAPI:
         return AccessTokenAPI("https://example.com/oauth/token", {})
 
     def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
@@ -92,26 +110,31 @@ class CustomProvider(Provider):
 
 
 @mark.asyncio
-async def test_email_verify_default_backward_compatibility(driver_config_client: TestClient):
+async def test_email_verify_default_backward_compatibility(
+    driver_config_client: TestClient,
+):
     "Email verify: test default backward compatibility api being called"
     app_name = ""
     email = ""
     email_verify_url = ""
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdparty.init(
-            sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers=[
-                CustomProvider("CUSTOM", True)
-            ])
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[CustomProvider("CUSTOM", True)]
+                )
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -141,9 +164,9 @@ async def test_email_verify_default_backward_compatibility(driver_config_client:
         ).mock(side_effect=api_side_effect)
         resp = email_verify_token_request(
             driver_config_client,
-            response['accessToken']['token'],
-            response['idRefreshToken']['token'],
-            response.get('antiCsrf', ""),
+            response["accessToken"]["token"],
+            response["idRefreshToken"]["token"],
+            response.get("antiCsrf", ""),
             user_id,
             True,
         )
@@ -157,26 +180,31 @@ async def test_email_verify_default_backward_compatibility(driver_config_client:
 
 
 @mark.asyncio
-async def test_email_verify_default_backward_compatibility_supress_error(driver_config_client: TestClient):
+async def test_email_verify_default_backward_compatibility_supress_error(
+    driver_config_client: TestClient,
+):
     "Email verify: test default backward compatibility api being called, error message not sent back to user"
     app_name = ""
     email = ""
     email_verify_url = ""
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdparty.init(
-            sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers=[
-                CustomProvider("CUSTOM", True)
-            ])
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[CustomProvider("CUSTOM", True)]
+                )
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -206,9 +234,9 @@ async def test_email_verify_default_backward_compatibility_supress_error(driver_
         ).mock(side_effect=api_side_effect)
         resp = email_verify_token_request(
             driver_config_client,
-            response['accessToken']['token'],
-            response['idRefreshToken']['token'],
-            response.get('antiCsrf', ""),
+            response["accessToken"]["token"],
+            response["idRefreshToken"]["token"],
+            response.get("antiCsrf", ""),
             user_id,
             True,
         )
@@ -228,28 +256,33 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     email = ""
     email_verify_url = ""
 
-    async def create_and_send_custom_email(input_: User, email_verification_link: str, _: Dict[str, Any]):
+    async def create_and_send_custom_email(
+        input_: User, email_verification_link: str, _: Dict[str, Any]
+    ):
         nonlocal email, email_verify_url
         email = input_.email
         email_verify_url = email_verification_link
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdparty.init(
-            sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers=[
-                CustomProvider("CUSTOM", True)
-            ]),
-            email_verification_feature=thirdparty.InputEmailVerificationConfig(
-                create_and_send_custom_email=create_and_send_custom_email,
-            )
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdparty.init(
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[CustomProvider("CUSTOM", True)]
+                ),
+                email_verification_feature=thirdparty.InputEmailVerificationConfig(
+                    create_and_send_custom_email=create_and_send_custom_email,
+                ),
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -264,9 +297,9 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
 
     resp = email_verify_token_request(
         driver_config_client,
-        response['accessToken']['token'],
-        response['idRefreshToken']['token'],
-        response.get('antiCsrf', ""),
+        response["accessToken"]["token"],
+        response["idRefreshToken"]["token"],
+        response.get("antiCsrf", ""),
         user_id,
         True,
     )
@@ -287,7 +320,9 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
     def email_delivery_override(oi: EmailDeliveryInterface[EmailTemplateVars]):
         oi_send_email = oi.send_email
 
-        async def send_email(template_vars: EmailTemplateVars, user_context: Dict[str, Any]):
+        async def send_email(
+            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        ):
             nonlocal email, email_verify_url
             assert isinstance(template_vars, VerificationEmailTemplateVars)
             email = template_vars.user.email
@@ -298,24 +333,26 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
+        framework="fastapi",
         recipe_list=[
             thirdparty.init(
-                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers=[
-                    CustomProvider("CUSTOM", True)
-                ]),
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[CustomProvider("CUSTOM", True)]
+                ),
                 email_delivery=EmailDeliveryConfig(
                     service=None,
                     override=email_delivery_override,
                 ),
-            ), session.init()]
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -343,9 +380,9 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
         ).mock(side_effect=api_side_effect)
         resp = email_verify_token_request(
             driver_config_client,
-            response['accessToken']['token'],
-            response['idRefreshToken']['token'],
-            response.get('antiCsrf', ""),
+            response["accessToken"]["token"],
+            response["idRefreshToken"]["token"],
+            response.get("antiCsrf", ""),
             user_id,
             True,
         )
@@ -363,10 +400,16 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     "Email verify: test smtp service"
     email = ""
     email_verify_url = ""
-    get_content_called, send_raw_email_called, outer_override_called = False, False, False
+    get_content_called, send_raw_email_called, outer_override_called = (
+        False,
+        False,
+        False,
+    )
 
     def smtp_service_override(oi: SMTPServiceInterface[EmailTemplateVars]):
-        async def send_raw_email_override(content: EmailContent, _user_context: Dict[str, Any]):
+        async def send_raw_email_override(
+            content: EmailContent, _user_context: Dict[str, Any]
+        ):
             nonlocal send_raw_email_called, email
             send_raw_email_called = True
 
@@ -376,7 +419,9 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
             email = content.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(template_vars: EmailTemplateVars, _user_context: Dict[str, Any]) -> EmailContent:
+        async def get_content_override(
+            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
+        ) -> EmailContent:
             nonlocal get_content_called, email_verify_url
             get_content_called = True
 
@@ -406,10 +451,14 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
         override=smtp_service_override,
     )
 
-    def email_delivery_override(oi: EmailDeliveryInterface[EmailTemplateVars]) -> EmailDeliveryInterface[EmailTemplateVars]:
+    def email_delivery_override(
+        oi: EmailDeliveryInterface[EmailTemplateVars],
+    ) -> EmailDeliveryInterface[EmailTemplateVars]:
         oi_send_email = oi.send_email
 
-        async def send_email_override(template_vars: EmailTemplateVars, user_context: Dict[str, Any]):
+        async def send_email_override(
+            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        ):
             nonlocal outer_override_called
             outer_override_called = True
             await oi_send_email(template_vars, user_context)
@@ -418,24 +467,26 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
+        framework="fastapi",
         recipe_list=[
             thirdparty.init(
-                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(providers=[
-                    CustomProvider("CUSTOM", True)
-                ]),
+                sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                    providers=[CustomProvider("CUSTOM", True)]
+                ),
                 email_delivery=EmailDeliveryConfig(
                     service=email_delivery_service,
                     override=email_delivery_override,
                 ),
-            ), session.init()]
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -451,9 +502,9 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
 
     resp = email_verify_token_request(
         driver_config_client,
-        response['accessToken']['token'],
-        response['idRefreshToken']['token'],
-        response.get('antiCsrf', ""),
+        response["accessToken"]["token"],
+        response["idRefreshToken"]["token"],
+        response.get("antiCsrf", ""),
         user_id,
         True,
     )

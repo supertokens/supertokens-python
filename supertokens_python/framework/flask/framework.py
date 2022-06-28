@@ -22,8 +22,7 @@ if TYPE_CHECKING:
 
 
 class FlaskFramework(Framework):
-
     def wrap_request(self, unwrapped: Request):
-        from supertokens_python.framework.flask.flask_request import \
-            FlaskRequest
+        from supertokens_python.framework.flask.flask_request import FlaskRequest
+
         return FlaskRequest(unwrapped)

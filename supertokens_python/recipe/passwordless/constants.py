@@ -12,8 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-CREATE_CODE_API = '/signinup/code'
-RESEND_CODE_API = '/signinup/code/resend'
-CONSUME_CODE_API = '/signinup/code/consume'
-DOES_EMAIL_EXIST_API = '/signup/email/exists'
-DOES_PHONE_NUMBER_EXIST_API = '/signup/phonenumber/exists'
+CREATE_CODE_API = "/signinup/code"
+RESEND_CODE_API = "/signinup/code/resend"
+CONSUME_CODE_API = "/signinup/code/consume"
+DOES_EMAIL_EXIST_API = "/signup/email/exists"
+DOES_PHONE_NUMBER_EXIST_API = "/signup/phonenumber/exists"

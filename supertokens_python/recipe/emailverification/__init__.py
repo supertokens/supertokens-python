@@ -32,5 +32,7 @@ if TYPE_CHECKING:
     from ...recipe_module import RecipeModule
 
 
-def init(config: ParentRecipeEmailVerificationConfig) -> Callable[[AppInfo], RecipeModule]:
+def init(
+    config: ParentRecipeEmailVerificationConfig,
+) -> Callable[[AppInfo], RecipeModule]:
     return EmailVerificationRecipe.init(config)

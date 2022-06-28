@@ -37,8 +37,5 @@ class FieldError(SuperTokensEmailPasswordError):
     def get_json_form_fields(self) -> List[Dict[str, Any]]:
         form_fields: List[Dict[str, Any]] = []
         for form_field in self.form_fields:
-            form_fields.append({
-                'id': form_field.id,
-                'error': form_field.error
-            })
+            form_fields.append({"id": form_field.id, "error": form_field.error})
         return form_fields

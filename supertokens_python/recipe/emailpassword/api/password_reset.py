@@ -16,7 +16,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.emailpassword.interfaces import APIOptions, APIInterface
+    from supertokens_python.recipe.emailpassword.interfaces import (
+        APIOptions,
+        APIInterface,
+    )
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.utils import send_200_response
@@ -24,21 +27,27 @@ from supertokens_python.utils import send_200_response
 from .utils import validate_form_fields_or_throw_error
 
 
-async def handle_password_reset_api(api_implementation: APIInterface, api_options: APIOptions):
+async def handle_password_reset_api(
+    api_implementation: APIInterface, api_options: APIOptions
+):
     if api_implementation.disable_generate_password_reset_token_post:
         return None
     body = await api_options.request.json()
     if body is None:
-        raise_bad_input_exception('Please provide a JSON body')
-    form_fields_raw: Any = body['formFields'] if 'formFields' in body else []
-    form_fields = await validate_form_fields_or_throw_error(api_options.config.reset_password_using_token_feature.form_fields_for_password_reset_form,
-                                                            form_fields_raw)
+        raise_bad_input_exception("Please provide a JSON body")
+    form_fields_raw: Any = body["formFields"] if "formFields" in body else []
+    form_fields = await validate_form_fields_or_throw_error(
+        api_options.config.reset_password_using_token_feature.form_fields_for_password_reset_form,
+        form_fields_raw,
+    )
 
-    if 'token' not in body:
-        raise_bad_input_exception('Please provide the password reset token')
-    if not isinstance(body['token'], str):
-        raise_bad_input_exception('The password reset token must be a string')
+    if "token" not in body:
+        raise_bad_input_exception("Please provide the password reset token")
+    if not isinstance(body["token"], str):
+        raise_bad_input_exception("The password reset token must be a string")
 
-    token = body['token']
-    response = await api_implementation.password_reset_post(form_fields, token, api_options, {})
+    token = body["token"]
+    response = await api_implementation.password_reset_post(
+        form_fields, token, api_options, {}
+    )
     return send_200_response(response.to_json(), api_options.response)

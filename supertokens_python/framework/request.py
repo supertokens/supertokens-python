@@ -21,14 +21,14 @@ if TYPE_CHECKING:
 
 
 class BaseRequest(ABC):
-
     def __init__(self):
         self.wrapper_used = True
         self.request = None
 
     @abstractmethod
     def get_query_param(
-            self, key: str, default: Union[str, None] = None) -> Union[str, None]:
+        self, key: str, default: Union[str, None] = None
+    ) -> Union[str, None]:
         pass
 
     @abstractmethod

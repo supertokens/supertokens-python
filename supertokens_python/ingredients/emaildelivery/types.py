@@ -19,7 +19,7 @@ from typing import Any, Callable, Dict, Generic, TypeVar, Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from supertokens_python.ingredients.emaildelivery.services.smtp import Transporter
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 
 class EmailDeliveryInterface(ABC, Generic[_T]):
@@ -30,8 +30,11 @@ class EmailDeliveryInterface(ABC, Generic[_T]):
 
 class EmailDeliveryConfig(ABC, Generic[_T]):
     def __init__(
-        self, service: Union[EmailDeliveryInterface[_T], None] = None,
-        override: Union[Callable[[EmailDeliveryInterface[_T]], EmailDeliveryInterface[_T]], None] = None,
+        self,
+        service: Union[EmailDeliveryInterface[_T], None] = None,
+        override: Union[
+            Callable[[EmailDeliveryInterface[_T]], EmailDeliveryInterface[_T]], None
+        ] = None,
     ) -> None:
         self.service = service
         self.override = override
@@ -39,8 +42,11 @@ class EmailDeliveryConfig(ABC, Generic[_T]):
 
 class EmailDeliveryConfigWithService(ABC, Generic[_T]):
     def __init__(
-        self, service: EmailDeliveryInterface[_T],
-        override: Union[Callable[[EmailDeliveryInterface[_T]], EmailDeliveryInterface[_T]], None] = None,
+        self,
+        service: EmailDeliveryInterface[_T],
+        override: Union[
+            Callable[[EmailDeliveryInterface[_T]], EmailDeliveryInterface[_T]], None
+        ] = None,
     ) -> None:
         self.service = service
         self.override = override
@@ -54,7 +60,8 @@ class SMTPSettingsFrom:
 
 class SMTPSettings:
     def __init__(
-        self, host: str,
+        self,
+        host: str,
         port: int,
         from_: SMTPSettingsFrom,
         password: Union[str, None] = None,
@@ -80,12 +87,13 @@ class SMTPServiceInterface(ABC, Generic[_T]):
         self.transporter = transporter
 
     @abstractmethod
-    async def send_raw_email(self,
-                             content: EmailContent,
-                             user_context: Dict[str, Any]
-                             ) -> None:
+    async def send_raw_email(
+        self, content: EmailContent, user_context: Dict[str, Any]
+    ) -> None:
         pass
 
     @abstractmethod
-    async def get_content(self, template_vars: _T, user_context: Dict[str, Any]) -> EmailContent:
+    async def get_content(
+        self, template_vars: _T, user_context: Dict[str, Any]
+    ) -> EmailContent:
         pass

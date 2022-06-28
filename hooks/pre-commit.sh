@@ -87,7 +87,7 @@ while IFS='"' read -ra ADDR; do
 done <<< "$version"
 
 codeversion=`cat ./supertokens_python/constants.py | grep -e '^VERSION'`
-while IFS="'" read -ra ADDR; do
+while IFS='"' read -ra ADDR; do
     counter=0
     for i in "${ADDR[@]}"; do
         if [[ ${counter} == 1 ]]

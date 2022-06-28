@@ -20,7 +20,10 @@ from ...interfaces import SessionContainer
 
 
 def verify_session(
-        anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None) -> Callable[..., Coroutine[Any, Any, Union[SessionContainer, None]]]:
+    anti_csrf_check: Union[bool, None] = None,
+    session_required: bool = True,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Callable[..., Coroutine[Any, Any, Union[SessionContainer, None]]]:
     if user_context is None:
         user_context = {}
     from fastapi import Request
@@ -28,7 +31,9 @@ def verify_session(
     async def func(request: Request) -> Union[SessionContainer, None]:
         baseRequest = FastApiRequest(request)
         recipe = SessionRecipe.get_instance()
-        session = await recipe.verify_session(baseRequest, anti_csrf_check, session_required, user_context)
+        session = await recipe.verify_session(
+            baseRequest, anti_csrf_check, session_required, user_context
+        )
         if session is None:
             if session_required:
                 raise Exception("Should never come here")

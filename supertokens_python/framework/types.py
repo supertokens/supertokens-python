@@ -28,7 +28,6 @@ class FrameworkEnum(Enum):
 
 
 class Framework(ABC):
-
     @abstractmethod
     def wrap_request(self, unwrapped: Any) -> Union[BaseRequest, None]:
         pass

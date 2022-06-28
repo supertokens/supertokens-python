@@ -14,20 +14,33 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.types import EmailContent, SMTPServiceInterface
-from supertokens_python.recipe.emailverification.types import \
-    VerificationEmailTemplateVars
-from supertokens_python.recipe.thirdpartypasswordless.types import \
-    EmailTemplateVars
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailContent,
+    SMTPServiceInterface,
+)
+from supertokens_python.recipe.emailverification.types import (
+    VerificationEmailTemplateVars,
+)
+from supertokens_python.recipe.thirdpartypasswordless.types import EmailTemplateVars
 
 
 class ServiceImplementation(SMTPServiceInterface[VerificationEmailTemplateVars]):
-    def __init__(self, tppless_service_implementation: SMTPServiceInterface[EmailTemplateVars]) -> None:
+    def __init__(
+        self, tppless_service_implementation: SMTPServiceInterface[EmailTemplateVars]
+    ) -> None:
         super().__init__(tppless_service_implementation.transporter)
         self.tppless_service_implementation = tppless_service_implementation
 
-    async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -> None:
-        return await self.tppless_service_implementation.send_raw_email(content, user_context)
+    async def send_raw_email(
+        self, content: EmailContent, user_context: Dict[str, Any]
+    ) -> None:
+        return await self.tppless_service_implementation.send_raw_email(
+            content, user_context
+        )
 
-    async def get_content(self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]) -> EmailContent:
-        return await self.tppless_service_implementation.get_content(template_vars, user_context)
+    async def get_content(
+        self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
+    ) -> EmailContent:
+        return await self.tppless_service_implementation.get_content(
+            template_vars, user_context
+        )

@@ -20,10 +20,14 @@ from supertokens_python.framework.django.django_request import DjangoRequest
 from supertokens_python.framework.django.django_response import DjangoResponse
 from supertokens_python.recipe.session import SessionRecipe
 
-_T = TypeVar('_T', bound=Callable[..., Any])
+_T = TypeVar("_T", bound=Callable[..., Any])
 
 
-def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None) -> Callable[[_T], _T]:
+def verify_session(
+    anti_csrf_check: Union[bool, None] = None,
+    session_required: bool = True,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Callable[[_T], _T]:
     if user_context is None:
         user_context = {}
 
@@ -33,10 +37,13 @@ def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: 
         @wraps(f)
         async def wrapped_function(request: HttpRequest, *args: Any, **kwargs: Any):
             from django.http import JsonResponse
+
             try:
                 baseRequest = DjangoRequest(request)
                 recipe = SessionRecipe.get_instance()
-                session = await recipe.verify_session(baseRequest, anti_csrf_check, session_required, user_context)
+                session = await recipe.verify_session(
+                    baseRequest, anti_csrf_check, session_required, user_context
+                )
                 if session is None:
                     if session_required:
                         raise Exception("Should never come here")
@@ -46,7 +53,9 @@ def verify_session(anti_csrf_check: Union[bool, None] = None, session_required: 
                 return await f(baseRequest.request, *args, **kwargs)
             except SuperTokensError as e:
                 response = DjangoResponse(JsonResponse({}))
-                result = await Supertokens.get_instance().handle_supertokens_error(DjangoRequest(request), e, response)
+                result = await Supertokens.get_instance().handle_supertokens_error(
+                    DjangoRequest(request), e, response
+                )
                 if isinstance(result, DjangoResponse):
                     return result.response
                 raise Exception("Should never come here")

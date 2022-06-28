@@ -24,7 +24,6 @@ if TYPE_CHECKING:
 
 
 class Middleware:
-
     def __init__(self, app: Flask):
         self.app = app
         self.set_before_after_request()
@@ -32,10 +31,8 @@ class Middleware:
 
     def set_before_after_request(self):
         app = self.app
-        from supertokens_python.framework.flask.flask_request import \
-            FlaskRequest
-        from supertokens_python.framework.flask.flask_response import \
-            FlaskResponse
+        from supertokens_python.framework.flask.flask_request import FlaskRequest
+        from supertokens_python.framework.flask.flask_response import FlaskResponse
         from supertokens_python.supertokens import manage_cookies_post_response
 
         from flask.wrappers import Response
@@ -54,8 +51,7 @@ class Middleware:
             request_ = FlaskRequest(request)
             response_ = FlaskResponse(Response())
 
-            result: Union[BaseResponse, None] = sync(st.middleware(
-                request_, response_))
+            result: Union[BaseResponse, None] = sync(st.middleware(request_, response_))
 
             if result is not None:
                 if isinstance(result, FlaskResponse):
@@ -66,8 +62,9 @@ class Middleware:
         @app.after_request
         def _(response: Response):
             from flask import g
+
             response_ = FlaskResponse(response)
-            if hasattr(g, 'supertokens') and g.supertokens is not None:
+            if hasattr(g, "supertokens") and g.supertokens is not None:
                 manage_cookies_post_response(g.supertokens, response_)
 
             return response_.response
@@ -81,19 +78,19 @@ class Middleware:
         @app.errorhandler(SuperTokensError)
         def _(error: Exception):
             from supertokens_python import Supertokens
-            from supertokens_python.framework.flask.flask_request import \
-                FlaskRequest
-            from supertokens_python.framework.flask.flask_response import \
-                FlaskResponse
+            from supertokens_python.framework.flask.flask_request import FlaskRequest
+            from supertokens_python.framework.flask.flask_response import FlaskResponse
 
             from flask.wrappers import Response
-            st = Supertokens.get_instance()
-            response = Response(json.dumps({}),
-                                mimetype='application/json',
-                                status=200)
 
-            result: BaseResponse = sync(st.handle_supertokens_error(
-                FlaskRequest(request), error, FlaskResponse(response)))
+            st = Supertokens.get_instance()
+            response = Response(json.dumps({}), mimetype="application/json", status=200)
+
+            result: BaseResponse = sync(
+                st.handle_supertokens_error(
+                    FlaskRequest(request), error, FlaskResponse(response)
+                )
+            )
             if isinstance(result, FlaskResponse):
                 return result.response
             raise Exception("Shoulld never come here")

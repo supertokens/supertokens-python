@@ -15,9 +15,11 @@ from __future__ import annotations
 
 from typing import Union, Dict, Any
 
-from supertokens_python.ingredients.emaildelivery import \
-    EmailDeliveryIngredient
-from supertokens_python.ingredients.emaildelivery.types import SMTPServiceInterface, EmailDeliveryInterface
+from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
+from supertokens_python.ingredients.emaildelivery.types import (
+    SMTPServiceInterface,
+    EmailDeliveryInterface,
+)
 
 
 class User:
@@ -53,5 +55,8 @@ EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 
 
 class EmailVerificationIngredients:
-    def __init__(self, email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None):
+    def __init__(
+        self,
+        email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None,
+    ):
         self.email_delivery = email_delivery

@@ -15,20 +15,27 @@
 from string import Template
 
 from supertokens_python.ingredients.emaildelivery.types import EmailContent
-from supertokens_python.recipe.emailpassword.types import \
-    PasswordResetEmailTemplateVars
+from supertokens_python.recipe.emailpassword.types import PasswordResetEmailTemplateVars
 from supertokens_python.supertokens import Supertokens
 
 from .password_reset_email import html_template
 
 
-def get_password_reset_email_content(email_input: PasswordResetEmailTemplateVars) -> EmailContent:
+def get_password_reset_email_content(
+    email_input: PasswordResetEmailTemplateVars,
+) -> EmailContent:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
-    body = get_password_reset_email_html(app_name, email_input.user.email, email_input.password_reset_link)
-    content_result = EmailContent(body, "Password reset instructions", email_input.user.email, is_html=True)
+    body = get_password_reset_email_html(
+        app_name, email_input.user.email, email_input.password_reset_link
+    )
+    content_result = EmailContent(
+        body, "Password reset instructions", email_input.user.email, is_html=True
+    )
     return content_result
 
 
 def get_password_reset_email_html(app_name: str, email: str, reset_link: str):
-    return Template(html_template).substitute(appname=app_name, resetLink=reset_link, toEmail=email)
+    return Template(html_template).substitute(
+        appname=app_name, resetLink=reset_link, toEmail=email
+    )
