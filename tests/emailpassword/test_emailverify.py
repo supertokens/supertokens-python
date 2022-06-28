@@ -37,6 +37,7 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (create_new_session,
                                                        get_session,
                                                        refresh_session)
+from supertokens_python.utils import is_version_gte
 from tests.utils import (TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY, clean_st,
                          email_verify_token_request, extract_all_cookies,
                          reset, set_key_value_in_config, setup_st,
@@ -938,7 +939,9 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(dri
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version in ('2.9', '2.10', '2.11', '2.12', '2.13')
+    if not is_version_gte(version, "2.9"):
+        # If the version less than 2.9, the recipe doesn't exist. So skip the test
+        return
 
     response_1 = sign_up_request(
         driver_config_client,
@@ -977,7 +980,9 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    assert version in ('2.9', '2.10', '2.11', '2.12', '2.13')
+    if not is_version_gte(version, "2.9"):
+        # If the version is less than 2.9, the recipe doesn't exist. So skip the test.
+        return
 
     response_1 = sign_up_request(
         driver_config_client,
