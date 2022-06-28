@@ -8,6 +8,7 @@ exclude = '''
   | \.idea
   | build
   | dist
+  | venv
   | \./html/
 )/
 '''
