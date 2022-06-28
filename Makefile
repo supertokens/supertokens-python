@@ -7,7 +7,7 @@ help:
 	@echo "        \x1b[33;1mhelp: \x1b[0mprints this"
 
 format:
-	black -r -i -a supertokens_python tests examples
+	black .
 
 check-lint:
 	pyright supertokens_python tests examples && pylint supertokens_python tests examples
