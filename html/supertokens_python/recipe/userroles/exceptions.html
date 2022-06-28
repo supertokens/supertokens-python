@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>supertokens_python.constants API documentation</title>
+<title>supertokens_python.recipe.userroles.exceptions API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>supertokens_python.constants</code></h1>
+<h1 class="title">Module <code>supertokens_python.recipe.userroles.exceptions</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -39,20 +39,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-SUPPORTED_CDI_VERSIONS = [&#39;2.9&#39;, &#39;2.10&#39;, &#39;2.11&#39;, &#39;2.12&#39;, &#39;2.13&#39;, &#39;2.14&#39;]
-VERSION = &#39;0.9.1&#39;
-TELEMETRY = &#39;/telemetry&#39;
-USER_COUNT = &#39;/users/count&#39;
-USER_DELETE = &#39;/user/remove&#39;
-USERS = &#39;/users&#39;
-TELEMETRY_SUPERTOKENS_API_URL = &#39;https://api.supertokens.io/0/st/telemetry&#39;
-TELEMETRY_SUPERTOKENS_API_VERSION = &#39;2&#39;
-ERROR_MESSAGE_KEY = &#39;message&#39;
-API_KEY_HEADER = &#39;api-key&#39;
-RID_KEY_HEADER = &#39;rid&#39;
-FDI_KEY_HEADER = &#39;fdi-version&#39;
-API_VERSION = &#39;/apiversion&#39;
-API_VERSION_HEADER = &#39;cdi-version&#39;</code></pre>
+
+from supertokens_python.exceptions import SuperTokensError
+
+
+class SuperTokensUserRolesError(SuperTokensError):
+    pass</code></pre>
 </details>
 </section>
 <section>
@@ -62,6 +54,29 @@ API_VERSION_HEADER = &#39;cdi-version&#39;</code></pre>
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.userroles.exceptions.SuperTokensUserRolesError"><code class="flex name class">
+<span>class <span class="ident">SuperTokensUserRolesError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SuperTokensUserRolesError(SuperTokensError):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.exceptions.SuperTokensError" href="../../exceptions.html#supertokens_python.exceptions.SuperTokensError">SuperTokensError</a></li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -72,7 +87,14 @@ API_VERSION_HEADER = &#39;cdi-version&#39;</code></pre>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="supertokens_python" href="index.html">supertokens_python</a></code></li>
+<li><code><a title="supertokens_python.recipe.userroles" href="index.html">supertokens_python.recipe.userroles</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.userroles.exceptions.SuperTokensUserRolesError" href="#supertokens_python.recipe.userroles.exceptions.SuperTokensUserRolesError">SuperTokensUserRolesError</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>
