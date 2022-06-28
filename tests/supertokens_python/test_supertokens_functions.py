@@ -39,15 +39,15 @@ def teardown_function(_):
 @mark.asyncio
 async def test_supertokens_functions():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[emailpassword.init(), session.init()]
+        framework="fastapi",
+        recipe_list=[emailpassword.init(), session.init()],
     )
     start_st()
 

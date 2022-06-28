@@ -25,8 +25,12 @@ from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import jwt
 from supertokens_python.recipe.jwt.asyncio import create_jwt
-from supertokens_python.recipe.jwt.interfaces import (APIInterface, APIOptions,
-                                                      CreateJwtOkResult, RecipeInterface)
+from supertokens_python.recipe.jwt.interfaces import (
+    APIInterface,
+    APIOptions,
+    CreateJwtOkResult,
+    RecipeInterface,
+)
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
@@ -41,14 +45,14 @@ def teardown_function(_):
     clean_st()
 
 
-@fixture(scope='function')
+@fixture(scope="function")
 async def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
-    @app.post('/jwtcreate')
+    @app.post("/jwtcreate")
     async def jwt_create(request: Request):  # type: ignore
-        payload = (await request.json())['payload']
+        payload = (await request.json())["payload"]
         response = await create_jwt(payload, 1000)
         return response
 
@@ -56,7 +60,9 @@ async def driver_config_client():
 
 
 @mark.asyncio
-async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_config_client: TestClient):
+async def test_that_default_getJWKS_api_does_not_work_when_disabled(
+    driver_config_client: TestClient,
+):
     created_jwt = None
     jwt_keys: List[Dict[str, Any]] = []
 
@@ -67,18 +73,26 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
             response_ = await temp(user_context)
 
             for key in response_.keys:
-                jwt_keys.append({'kty': key.kty,
-                                 'kid': key.kid,
-                                 'n': key.n,
-                                 'e': key.e,
-                                 'alg': key.alg,
-                                 'use': key.use})
+                jwt_keys.append(
+                    {
+                        "kty": key.kty,
+                        "kid": key.kid,
+                        "n": key.n,
+                        "e": key.e,
+                        "alg": key.alg,
+                        "use": key.use,
+                    }
+                )
 
             return response_
 
         temp1 = param.create_jwt
 
-        async def create_jwt_(payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]):
+        async def create_jwt_(
+            payload: Dict[str, Any],
+            validity_seconds: Union[int, None],
+            user_context: Dict[str, Any],
+        ):
             response_ = await temp1(payload, validity_seconds, user_context)
 
             if isinstance(response_, CreateJwtOkResult):
@@ -92,39 +106,28 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
         return param
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='http://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[jwt.init(
-            override=jwt.OverrideConfig(
-                functions=custom_functions
-            )
-        )]
+        framework="fastapi",
+        recipe_list=[jwt.init(override=jwt.OverrideConfig(functions=custom_functions))],
     )
     start_st()
 
     response = driver_config_client.post(
-        url="/jwtcreate",
-        json={
-            'payload': {
-                "someKey": "key"
-            }
-        }
+        url="/jwtcreate", json={"payload": {"someKey": "key"}}
     )
 
     assert response is not None
-    assert response.json()['jwt'] == created_jwt
+    assert response.json()["jwt"] == created_jwt
 
-    response = driver_config_client.get(
-        url="/auth/jwt/jwks.json"
-    )
+    response = driver_config_client.get(url="/auth/jwt/jwks.json")
 
     assert response is not None
-    assert response.json()['keys'] == jwt_keys
+    assert response.json()["keys"] == jwt_keys
 
 
 @mark.asyncio
@@ -137,7 +140,7 @@ async def test_overriding_APIs(driver_config_client: TestClient):
         async def get_jwks_get(api_options: APIOptions, user_context: Dict[str, Any]):
             response_ = await temp(api_options, user_context)
             nonlocal jwt_keys
-            jwt_keys = response_.to_json()['keys']
+            jwt_keys = response_.to_json()["keys"]
             return response_
 
         param.jwks_get = get_jwks_get
@@ -145,24 +148,18 @@ async def test_overriding_APIs(driver_config_client: TestClient):
         return param
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='http://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[jwt.init(
-            override=jwt.OverrideConfig(
-                apis=custom_api
-            )
-        )]
+        framework="fastapi",
+        recipe_list=[jwt.init(override=jwt.OverrideConfig(apis=custom_api))],
     )
     start_st()
 
-    response = driver_config_client.get(
-        url="/auth/jwt/jwks.json"
-    )
+    response = driver_config_client.get(url="/auth/jwt/jwks.json")
 
     assert response is not None
-    assert response.json()['keys'] == jwt_keys
+    assert response.json()["keys"] == jwt_keys

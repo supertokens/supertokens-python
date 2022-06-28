@@ -12,8 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from .email_exists import handle_email_exists_api  # type: ignore
-from .generate_password_reset_token import \
-    handle_generate_password_reset_token_api  # type: ignore
+from .generate_password_reset_token import (
+    handle_generate_password_reset_token_api,
+)  # type: ignore
 from .password_reset import handle_password_reset_api  # type: ignore
 from .signin import handle_sign_in_api  # type: ignore
 from .signup import handle_sign_up_api  # type: ignore

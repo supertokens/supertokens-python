@@ -12,4 +12,5 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from supertokens_python.framework.flask import flask_middleware
+
 Middleware = flask_middleware.Middleware

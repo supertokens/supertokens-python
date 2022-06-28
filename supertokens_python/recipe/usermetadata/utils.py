@@ -16,18 +16,22 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Union
 
-from supertokens_python.recipe.usermetadata.interfaces import (APIInterface,
-                                                               RecipeInterface)
+from supertokens_python.recipe.usermetadata.interfaces import (
+    APIInterface,
+    RecipeInterface,
+)
 from supertokens_python.supertokens import AppInfo
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.usermetadata.recipe import \
-        UserMetadataRecipe
+    from supertokens_python.recipe.usermetadata.recipe import UserMetadataRecipe
 
 
 class InputOverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-                 apis: Union[Callable[[APIInterface], APIInterface], None] = None):
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+    ):
         self.functions = functions
         self.apis = apis
 
@@ -37,14 +41,15 @@ class UserMetadataConfig:
         self.override = override
 
 
-def validate_and_normalise_user_input(_recipe: UserMetadataRecipe, _app_info: AppInfo,
-                                      override: Union[InputOverrideConfig, None] = None) -> UserMetadataConfig:
+def validate_and_normalise_user_input(
+    _recipe: UserMetadataRecipe,
+    _app_info: AppInfo,
+    override: Union[InputOverrideConfig, None] = None,
+) -> UserMetadataConfig:
     if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError('override must be an instance of InputOverrideConfig or None')
+        raise ValueError("override must be an instance of InputOverrideConfig or None")
 
     if override is None:
         override = InputOverrideConfig()
 
-    return UserMetadataConfig(
-        override=override
-    )
+    return UserMetadataConfig(override=override)

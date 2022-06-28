@@ -14,10 +14,11 @@
 from typing import Callable, Dict, List, Union
 
 from supertokens_python.framework.request import BaseRequest
-from supertokens_python.ingredients.emaildelivery import \
-    EmailDeliveryIngredient
+from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryInterface, SMTPServiceInterface)
+    EmailDeliveryInterface,
+    SMTPServiceInterface,
+)
 from supertokens_python.recipe.emailverification import types as ev_types
 
 
@@ -28,8 +29,13 @@ class ThirdPartyInfo:
 
 
 class User:
-    def __init__(self, user_id: str, email: str, time_joined: int,
-                 third_party_info: ThirdPartyInfo):
+    def __init__(
+        self,
+        user_id: str,
+        email: str,
+        time_joined: int,
+        third_party_info: ThirdPartyInfo,
+    ):
         self.user_id: str = user_id
         self.email: str = email
         self.time_joined: int = time_joined
@@ -55,8 +61,9 @@ class AccessTokenAPI:
 
 
 class AuthorisationRedirectAPI:
-    def __init__(self, url: str,
-                 params: Dict[str, Union[Callable[[BaseRequest], str], str]]):
+    def __init__(
+        self, url: str, params: Dict[str, Union[Callable[[BaseRequest], str], str]]
+    ):
         self.url = url
         self.params = params
 
@@ -68,8 +75,7 @@ class SignInUpResponse:
 
 
 class UsersResponse:
-    def __init__(self, users: List[User],
-                 next_pagination_token: Union[str, None]):
+    def __init__(self, users: List[User], next_pagination_token: Union[str, None]):
         self.users = users
         self.next_pagination_token = next_pagination_token
 
@@ -84,7 +90,8 @@ EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 
 
 class ThirdPartyIngredients:
-    def __init__(self,
-                 email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None
-                 ) -> None:
+    def __init__(
+        self,
+        email_delivery: Union[EmailDeliveryIngredient[EmailTemplateVars], None] = None,
+    ) -> None:
         self.email_delivery = email_delivery

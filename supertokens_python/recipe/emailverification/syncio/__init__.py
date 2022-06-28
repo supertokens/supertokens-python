@@ -19,36 +19,54 @@ from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 
 
 def create_email_verification_token(
-        user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None):
-    from supertokens_python.recipe.emailverification.asyncio import \
-        create_email_verification_token
+    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+):
+    from supertokens_python.recipe.emailverification.asyncio import (
+        create_email_verification_token,
+    )
+
     return sync(create_email_verification_token(user_id, email, user_context))
 
 
-def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any]] = None):
-    from supertokens_python.recipe.emailverification.asyncio import \
-        verify_email_using_token
+def verify_email_using_token(
+    token: str, user_context: Union[None, Dict[str, Any]] = None
+):
+    from supertokens_python.recipe.emailverification.asyncio import (
+        verify_email_using_token,
+    )
+
     return sync(verify_email_using_token(token, user_context))
 
 
-def is_email_verified(user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None):
-    from supertokens_python.recipe.emailverification.asyncio import \
-        is_email_verified
+def is_email_verified(
+    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+):
+    from supertokens_python.recipe.emailverification.asyncio import is_email_verified
+
     return sync(is_email_verified(user_id, email, user_context))
 
 
-def unverify_email(user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None):
-    from supertokens_python.recipe.emailverification.asyncio import \
-        is_email_verified
+def unverify_email(
+    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+):
+    from supertokens_python.recipe.emailverification.asyncio import is_email_verified
+
     return sync(is_email_verified(user_id, email, user_context))
 
 
-def revoke_email_verification_tokens(user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None):
-    from supertokens_python.recipe.emailverification.asyncio import \
-        revoke_email_verification_tokens
+def revoke_email_verification_tokens(
+    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+):
+    from supertokens_python.recipe.emailverification.asyncio import (
+        revoke_email_verification_tokens,
+    )
+
     return sync(revoke_email_verification_tokens(user_id, email, user_context))
 
 
-def send_email(input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
+def send_email(
+    input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+):
     from supertokens_python.recipe.emailverification.asyncio import send_email
+
     return sync(send_email(input_, user_context))

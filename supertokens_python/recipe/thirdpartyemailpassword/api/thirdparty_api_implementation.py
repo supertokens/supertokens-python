@@ -16,8 +16,11 @@ from __future__ import annotations
 from typing import Any, Dict, Union
 
 from supertokens_python.recipe.thirdparty.interfaces import (
-    APIInterface, APIOptions, SignInUpPostNoEmailGivenByProviderResponse,
-    SignInUpPostOkResult)
+    APIInterface,
+    APIOptions,
+    SignInUpPostNoEmailGivenByProviderResponse,
+    SignInUpPostOkResult,
+)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import User
 from supertokens_python.types import GeneralErrorResponse
@@ -27,28 +30,64 @@ from ..interfaces import ThirdPartySignInUpPostOkResult
 
 
 def get_interface_impl(
-        api_implementation: ThirdPartyEmailPasswordAPIInterface) -> APIInterface:
+    api_implementation: ThirdPartyEmailPasswordAPIInterface,
+) -> APIInterface:
     implementation = APIInterface()
 
-    implementation.disable_authorisation_url_get = api_implementation.disable_authorisation_url_get
-    implementation.disable_sign_in_up_post = api_implementation.disable_thirdparty_sign_in_up_post
-    implementation.disable_apple_redirect_handler_post = api_implementation.disable_apple_redirect_handler_post
+    implementation.disable_authorisation_url_get = (
+        api_implementation.disable_authorisation_url_get
+    )
+    implementation.disable_sign_in_up_post = (
+        api_implementation.disable_thirdparty_sign_in_up_post
+    )
+    implementation.disable_apple_redirect_handler_post = (
+        api_implementation.disable_apple_redirect_handler_post
+    )
 
     implementation.authorisation_url_get = api_implementation.authorisation_url_get
     if not implementation.disable_sign_in_up_post:
-        async def sign_in_up_post(provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions, user_context: Dict[str, Any]) -> Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
-            result = await api_implementation.thirdparty_sign_in_up_post(provider, code, redirect_uri, client_id, auth_code_response, api_options, user_context)
+
+        async def sign_in_up_post(
+            provider: Provider,
+            code: str,
+            redirect_uri: str,
+            client_id: Union[str, None],
+            auth_code_response: Union[Dict[str, Any], None],
+            api_options: APIOptions,
+            user_context: Dict[str, Any],
+        ) -> Union[
+            SignInUpPostOkResult,
+            SignInUpPostNoEmailGivenByProviderResponse,
+            GeneralErrorResponse,
+        ]:
+            result = await api_implementation.thirdparty_sign_in_up_post(
+                provider,
+                code,
+                redirect_uri,
+                client_id,
+                auth_code_response,
+                api_options,
+                user_context,
+            )
             if isinstance(result, ThirdPartySignInUpPostOkResult):
                 if result.user.third_party_info is None:
                     raise Exception("Third Party Info cannot be None")
                 return SignInUpPostOkResult(
-                    User(result.user.user_id, result.user.email, result.user.time_joined, result.user.third_party_info),
+                    User(
+                        result.user.user_id,
+                        result.user.email,
+                        result.user.time_joined,
+                        result.user.third_party_info,
+                    ),
                     result.created_new_user,
                     result.auth_code_response,
-                    result.session)
+                    result.session,
+                )
             return result
 
         implementation.sign_in_up_post = sign_in_up_post
-    implementation.apple_redirect_handler_post = api_implementation.apple_redirect_handler_post
+    implementation.apple_redirect_handler_post = (
+        api_implementation.apple_redirect_handler_post
+    )
 
     return implementation

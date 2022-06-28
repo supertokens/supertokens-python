@@ -33,21 +33,23 @@ SessionContainer = interfaces.SessionContainer
 exceptions = ex
 
 
-def init(cookie_domain: Union[str, None] = None,
-         cookie_secure: Union[bool, None] = None,
-         cookie_same_site: Union[Literal["lax",
-                                         "none", "strict"], None] = None,
-         session_expired_status_code: Union[int, None] = None,
-         anti_csrf: Union[Literal["VIA_TOKEN",
-                                  "VIA_CUSTOM_HEADER", "NONE"], None] = None,
-         error_handlers: Union[InputErrorHandlers, None] = None,
-         override: Union[InputOverrideConfig, None] = None,
-         jwt: Union[JWTConfig, None] = None) -> Callable[[AppInfo], RecipeModule]:
-    return SessionRecipe.init(cookie_domain,
-                              cookie_secure,
-                              cookie_same_site,
-                              session_expired_status_code,
-                              anti_csrf,
-                              error_handlers,
-                              override,
-                              jwt)
+def init(
+    cookie_domain: Union[str, None] = None,
+    cookie_secure: Union[bool, None] = None,
+    cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
+    session_expired_status_code: Union[int, None] = None,
+    anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+    error_handlers: Union[InputErrorHandlers, None] = None,
+    override: Union[InputOverrideConfig, None] = None,
+    jwt: Union[JWTConfig, None] = None,
+) -> Callable[[AppInfo], RecipeModule]:
+    return SessionRecipe.init(
+        cookie_domain,
+        cookie_secure,
+        cookie_same_site,
+        session_expired_status_code,
+        anti_csrf,
+        error_handlers,
+        override,
+        jwt,
+    )

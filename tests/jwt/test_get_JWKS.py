@@ -38,16 +38,16 @@ def teardown_function(_):
     clean_st()
 
 
-@fixture(scope='function')
+@fixture(scope="function")
 async def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
-    @app.get('/login')
+    @app.get("/login")
     async def login(request: Request):  # type: ignore
-        user_id = 'userId'
+        user_id = "userId"
         await create_new_session(request, user_id, {}, {})
-        return {'userId': user_id}
+        return {"userId": user_id}
 
     return TestClient(app)
 
@@ -58,25 +58,24 @@ def apis_override_get_JWKS(param: APIInterface):
 
 
 @mark.asyncio
-async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_config_client: TestClient):
+async def test_that_default_getJWKS_api_does_not_work_when_disabled(
+    driver_config_client: TestClient,
+):
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='http://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[jwt.init(
-            override=jwt.OverrideConfig(
-                apis=apis_override_get_JWKS
-            )
-        )]
+        framework="fastapi",
+        recipe_list=[
+            jwt.init(override=jwt.OverrideConfig(apis=apis_override_get_JWKS))
+        ],
     )
     start_st()
 
-    response = driver_config_client.get(
-        url="/auth/jwt/jwks.json")
+    response = driver_config_client.get(url="/auth/jwt/jwks.json")
 
     assert response.status_code == 404
 
@@ -84,20 +83,19 @@ async def test_that_default_getJWKS_api_does_not_work_when_disabled(driver_confi
 @mark.asyncio
 async def test_that_default_getJWKS_works_fine(driver_config_client: TestClient):
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='http://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[jwt.init()]
+        framework="fastapi",
+        recipe_list=[jwt.init()],
     )
     start_st()
 
-    response = driver_config_client.get(
-        url="/auth/jwt/jwks.json")
+    response = driver_config_client.get(url="/auth/jwt/jwks.json")
 
     assert response.status_code == 200
     data = response.json()
-    assert len(data['keys']) > 0
+    assert len(data["keys"]) > 0
