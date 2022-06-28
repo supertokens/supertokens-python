@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Documentation
+
+- Add more details in the `CONTRIBUTING.md` to make it beginner friendly.
+
+
 ## [0.9.1] - 2022-06-27
 ### Features:
 
