@@ -1,0 +1,3 @@
+# run this command: git config --global blame.ignoreRevsFile .git-blame-ignore-revs
+# when using git blame, ignore the commit that ran black formatter for the first time.
+a6560214cfc966a656fa08ef01447deaa8a41fd2
