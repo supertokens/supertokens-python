@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
+- Update tests to cover `resend_code` feature in `passwordless` and `thirdpartypasswordless` recipe.
 
 - Use [black](https://github.com/psf/black) instead of `autopep8` to format code.
 
