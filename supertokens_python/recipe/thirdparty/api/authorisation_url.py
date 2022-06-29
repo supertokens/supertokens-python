@@ -44,7 +44,7 @@ async def handle_authorisation_url_api(
             + third_party_id
             + " seems to be missing from the backend configs."
         )
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.authorisation_url_get(
         provider, api_options, user_context

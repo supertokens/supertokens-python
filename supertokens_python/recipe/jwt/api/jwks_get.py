@@ -20,7 +20,7 @@ from ..interfaces import JWKSGetResponse
 async def jwks_get(api_implementation: APIInterface, api_options: APIOptions):
     if api_implementation.disable_jwks_get:
         return None
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.jwks_get(api_options, user_context)
     if isinstance(result, JWKSGetResponse):

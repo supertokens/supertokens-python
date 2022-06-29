@@ -32,7 +32,7 @@ async def resend_code(api_implementation: APIInterface, api_options: APIOptions)
 
     pre_auth_session_id = body["preAuthSessionId"]
     device_id = body["deviceId"]
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.resend_code_post(
         device_id, pre_auth_session_id, api_options, user_context

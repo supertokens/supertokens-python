@@ -37,7 +37,7 @@ async def handle_sign_up_api(api_implementation: APIInterface, api_options: APIO
     form_fields = await validate_form_fields_or_throw_error(
         api_options.config.sign_up_feature.form_fields, form_fields_raw
     )
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     response = await api_implementation.sign_up_post(
         form_fields, api_options, user_context

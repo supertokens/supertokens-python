@@ -47,7 +47,7 @@ async def handle_password_reset_api(
         raise_bad_input_exception("The password reset token must be a string")
 
     token = body["token"]
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     response = await api_implementation.password_reset_post(
         form_fields, token, api_options, user_context

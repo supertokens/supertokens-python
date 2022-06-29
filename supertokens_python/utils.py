@@ -231,5 +231,5 @@ def humanize_time(ms: int) -> str:
     return time_str
 
 
-async def default_user_context(request: BaseRequest) -> Dict[str, Any]:
-    return {"_default": {"request": await request.json()}}
+def default_user_context(request: BaseRequest) -> Dict[str, Any]:
+    return {"_default": {"request": request}}

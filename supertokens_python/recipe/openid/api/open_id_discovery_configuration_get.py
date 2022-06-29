@@ -23,7 +23,7 @@ async def open_id_discovery_configuration_get(
     if api_implementation.disable_open_id_discovery_configuration_get:
         return None
 
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.open_id_discovery_configuration_get(
         api_options, user_context

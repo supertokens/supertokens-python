@@ -26,7 +26,7 @@ async def phone_number_exists(
     if phone_number is None:
         raise_bad_input_exception("Please provide the phoneNumber as a GET param")
 
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.phone_number_exists_get(
         phone_number, api_options, user_context

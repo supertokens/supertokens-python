@@ -30,7 +30,7 @@ async def handle_apple_redirect_api(
 
     code = body["code"] if "code" in body else ""
     state = body["state"] if "state" in body else ""
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     # this will redirect the user...
     await api_implementation.apple_redirect_handler_post(

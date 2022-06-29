@@ -23,6 +23,7 @@ from supertokens_python.recipe.emailpassword.interfaces import (
     APIOptions,
     RecipeInterface,
 )
+from supertokens_python.framework import BaseRequest
 from supertokens_python.recipe.emailpassword.types import FormField
 from supertokens_python.recipe.session.interfaces import (
     RecipeInterface as SRecipeInterface,
@@ -187,7 +188,7 @@ async def test_default_context(driver_config_client: TestClient):
             api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
-            if user_context["_default"]["request"] is not None:
+            if isinstance(user_context["_default"]["request"], BaseRequest):
                 nonlocal signin_api_context_works
                 signin_api_context_works = True
 
@@ -200,7 +201,7 @@ async def test_default_context(driver_config_client: TestClient):
         og_sign_in = param.sign_in
 
         async def sign_in(email: str, password: str, user_context: Dict[str, Any]):
-            if user_context["_default"]["request"] is not None:
+            if isinstance(user_context["_default"]["request"], BaseRequest):
                 nonlocal signin_context_works
                 signin_context_works = True
 
@@ -219,7 +220,7 @@ async def test_default_context(driver_config_client: TestClient):
             session_data: Union[None, Dict[str, Any]],
             user_context: Dict[str, Any],
         ):
-            if user_context["_default"]["request"] is not None:
+            if isinstance(user_context["_default"]["request"], BaseRequest):
                 nonlocal create_new_session_context_works
                 create_new_session_context_works = True
 

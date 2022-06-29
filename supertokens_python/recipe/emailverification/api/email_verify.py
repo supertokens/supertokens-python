@@ -40,7 +40,7 @@ async def handle_email_verify_api(
             raise_bad_input_exception("The email verification token must be a string")
 
         token = body["token"]
-        user_context = await default_user_context(api_options.request)
+        user_context = default_user_context(api_options.request)
 
         result = await api_implementation.email_verify_post(
             token, api_options, user_context
@@ -49,7 +49,7 @@ async def handle_email_verify_api(
         if api_implementation.disable_is_email_verified_get:
             return None
 
-        user_context = await default_user_context(api_options.request)
+        user_context = default_user_context(api_options.request)
         result = await api_implementation.is_email_verified_get(
             api_options, user_context
         )

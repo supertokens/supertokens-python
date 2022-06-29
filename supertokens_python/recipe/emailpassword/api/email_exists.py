@@ -33,7 +33,7 @@ async def handle_email_exists_api(
     email = api_options.request.get_query_param("email")
     if email is None:
         raise_bad_input_exception("Please provide the email as a GET param")
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     response = await api_implementation.email_exists_get(
         email, api_options, user_context

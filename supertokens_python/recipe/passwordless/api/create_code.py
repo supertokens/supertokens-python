@@ -100,7 +100,7 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
         except Exception:
             phone_number = phone_number.strip()
 
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.create_code_post(
         email=email,

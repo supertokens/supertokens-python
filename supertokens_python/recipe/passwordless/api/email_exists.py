@@ -24,7 +24,7 @@ async def email_exists(api_implementation: APIInterface, api_options: APIOptions
     if email is None:
         raise_bad_input_exception("Please provide the email as a GET param")
 
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.email_exists_get(email, api_options, user_context)
     return send_200_response(result.to_json(), api_options.response)

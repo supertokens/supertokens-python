@@ -25,7 +25,7 @@ async def handle_generate_email_verify_token_api(
 ):
     if api_implementation.disable_generate_email_verify_token_post:
         return None
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.generate_email_verify_token_post(
         api_options, user_context

@@ -40,7 +40,7 @@ async def handle_generate_password_reset_token_api(
         api_options.config.reset_password_using_token_feature.form_fields_for_generate_token_form,
         form_fields_raw,
     )
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     response = await api_implementation.generate_password_reset_token_post(
         form_fields, api_options, user_context

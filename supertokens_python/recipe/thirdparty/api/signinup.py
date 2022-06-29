@@ -74,7 +74,7 @@ async def handle_sign_in_up_api(
             + third_party_id
             + " seems to be missing from the backend configs. If it is configured, then please make sure that you are passing the correct clientId from the frontend."
         )
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     result = await api_implementation.sign_in_up_post(
         provider,

@@ -27,7 +27,7 @@ async def handle_signout_api(api_implementation: APIInterface, api_options: APIO
         or api_implementation.signout_post is None
     ):
         return None
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     response = await api_implementation.signout_post(api_options, user_context)
     if api_options.response is None:

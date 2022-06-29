@@ -27,7 +27,7 @@ async def handle_refresh_api(api_implementation: APIInterface, api_options: APIO
         or api_implementation.refresh_post is None
     ):
         return None
-    user_context = await default_user_context(api_options.request)
+    user_context = default_user_context(api_options.request)
 
     await api_implementation.refresh_post(api_options, user_context)
     if api_options.response is None:
