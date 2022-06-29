@@ -8,8 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Use [black](https://github.com/psf/black) instead of `autopep8` to format code.
 
-### Documentation
+### Breaking change
+- Change request arg type in session recipe functions from Any to BaseRequest.
 
+### Documentation
 - Add more details in the `CONTRIBUTING.md` to make it beginner friendly.
 
 

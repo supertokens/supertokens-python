@@ -15,11 +15,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
 
+from supertokens_python.framework.request import BaseRequest
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 from supertokens_python.utils import (
-    FRAMEWORKS,
     execute_async,
     frontend_has_interceptor,
     get_timestamp_ms,
@@ -136,14 +136,12 @@ class RecipeImplementation(RecipeInterface):
 
     async def create_new_session(
         self,
-        request: Any,
+        request: BaseRequest,
         user_id: str,
         access_token_payload: Union[None, Dict[str, Any]],
         session_data: Union[None, Dict[str, Any]],
         user_context: Dict[str, Any],
     ) -> SessionContainer:
-        if not hasattr(request, "wrapper_used") or not request.wrapper_used:
-            request = FRAMEWORKS[self.config.framework].wrap_request(request)
         session = await session_functions.create_new_session(
             self, user_id, access_token_payload, session_data
         )
@@ -163,18 +161,16 @@ class RecipeImplementation(RecipeInterface):
         if "antiCsrfToken" in session and session["antiCsrfToken"] is not None:
             new_session.new_anti_csrf_token = session["antiCsrfToken"]
         request.set_session(new_session)
-        return request.get_session()
+        return new_session
 
     async def get_session(
         self,
-        request: Any,
+        request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
         user_context: Dict[str, Any],
     ) -> Union[SessionContainer, None]:
         log_debug_message("getSession: Started")
-        if not hasattr(request, "wrapper_used") or not request.wrapper_used:
-            request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
         log_debug_message(
             "getSession: rid in header: %s", str(frontend_has_interceptor(request))
@@ -244,11 +240,9 @@ class RecipeImplementation(RecipeInterface):
         return request.get_session()
 
     async def refresh_session(
-        self, request: Any, user_context: Dict[str, Any]
+        self, request: BaseRequest, user_context: Dict[str, Any]
     ) -> SessionContainer:
         log_debug_message("refreshSession: Started")
-        if not hasattr(request, "wrapper_used") or not request.wrapper_used:
-            request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
@@ -291,7 +285,7 @@ class RecipeImplementation(RecipeInterface):
 
         log_debug_message("refreshSession: Success!")
         request.set_session(session)
-        return request.get_session()
+        return session
 
     async def revoke_session(
         self, session_handle: str, user_context: Dict[str, Any]

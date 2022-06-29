@@ -70,7 +70,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def create_new_session(
         self,
-        request: Any,
+        request: BaseRequest,
         user_id: str,
         access_token_payload: Union[None, Dict[str, Any]],
         session_data: Union[None, Dict[str, Any]],
@@ -81,7 +81,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def get_session(
         self,
-        request: Any,
+        request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
         user_context: Dict[str, Any],
@@ -90,7 +90,7 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def refresh_session(
-        self, request: Any, user_context: Dict[str, Any]
+        self, request: BaseRequest, user_context: Dict[str, Any]
     ) -> SessionContainer:
         pass
 

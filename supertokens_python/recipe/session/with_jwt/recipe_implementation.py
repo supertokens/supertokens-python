@@ -28,6 +28,7 @@ if TYPE_CHECKING:
         RecipeInterface,
         SessionContainer,
     )
+    from supertokens_python.framework.types import BaseRequest
 
 from math import ceil
 
@@ -51,7 +52,7 @@ def get_recipe_implementation_with_jwt(
     og_create_new_session = original_implementation.create_new_session
 
     async def create_new_session(
-        request: Any,
+        request: BaseRequest,
         user_id: str,
         access_token_payload: Union[None, Dict[str, Any]],
         session_data: Union[None, Dict[str, Any]],
@@ -83,7 +84,7 @@ def get_recipe_implementation_with_jwt(
     og_get_session = original_implementation.get_session
 
     async def get_session(
-        request: Any,
+        request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
         user_context: Dict[str, Any],
@@ -98,7 +99,7 @@ def get_recipe_implementation_with_jwt(
     og_refresh_session = original_implementation.refresh_session
 
     async def refresh_session(
-        request: Any, user_context: Dict[str, Any]
+        request: BaseRequest, user_context: Dict[str, Any]
     ) -> SessionContainer:
         access_token_validity_in_seconds = ceil(
             await original_implementation.get_access_token_lifetime_ms(user_context)
