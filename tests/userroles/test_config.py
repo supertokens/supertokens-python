@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from pytest import mark
+from pytest import mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import userroles
@@ -48,6 +48,6 @@ async def test_recipe_works_without_config():
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.14"):
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
-        return
+        skip()
 
     userroles.recipe.UserRolesRecipe.get_instance()

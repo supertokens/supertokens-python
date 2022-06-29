@@ -18,7 +18,7 @@ from typing import Any, Dict, Union
 from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.testclient import TestClient
-from pytest import fixture, mark
+from pytest import fixture, mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.exceptions import BadInputError
 from supertokens_python.framework.fastapi import get_middleware
@@ -971,7 +971,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.9"):
         # If the version less than 2.9, the recipe doesn't exist. So skip the test
-        return
+        skip()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     assert response_1.status_code == 200
@@ -1009,7 +1009,7 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.9"):
         # If the version is less than 2.9, the recipe doesn't exist. So skip the test.
-        return
+        skip()
 
     response_1 = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
     assert response_1.status_code == 200

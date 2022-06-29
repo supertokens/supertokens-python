@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from pytest import mark
+from pytest import mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import userroles
@@ -49,7 +49,7 @@ async def test_create_new_role():
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.14"):
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
-        return
+        skip()
 
     role = "role"
 
@@ -76,7 +76,7 @@ async def test_create_new_role_twice():
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.14"):
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
-        return
+        skip()
 
     role = "role"
 
@@ -108,7 +108,7 @@ async def test_create_new_role_with_permissions():
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.14"):
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
-        return
+        skip()
 
     permissions = ["permission1"]
     role = "role"
@@ -141,7 +141,7 @@ async def test_add_permissions_to_new_role_():
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.14"):
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
-        return
+        skip()
 
     permissions = ["permission1", "permission2", "permission3"]
     role = "role"
@@ -179,7 +179,7 @@ async def test_add_duplicate_permission():
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.14"):
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
-        return
+        skip()
 
     permissions = ["permission1", "permission2"]
     role = "role"
