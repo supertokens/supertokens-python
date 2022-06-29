@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.utils import send_200_response
+from supertokens_python.utils import default_user_context, send_200_response
 
 
 async def handle_sign_in_up_api(
@@ -74,6 +74,7 @@ async def handle_sign_in_up_api(
             + third_party_id
             + " seems to be missing from the backend configs. If it is configured, then please make sure that you are passing the correct clientId from the frontend."
         )
+    user_context = await default_user_context(api_options.request)
 
     result = await api_implementation.sign_in_up_post(
         provider,
@@ -82,6 +83,6 @@ async def handle_sign_in_up_api(
         client_id,
         auth_code_response,
         api_options,
-        {},
+        user_context,
     )
     return send_200_response(result.to_json(), api_options.response)

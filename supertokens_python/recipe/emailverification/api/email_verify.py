@@ -18,7 +18,11 @@ from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface,
     APIOptions,
 )
-from supertokens_python.utils import normalise_http_method, send_200_response
+from supertokens_python.utils import (
+    default_user_context,
+    normalise_http_method,
+    send_200_response,
+)
 
 
 async def handle_email_verify_api(
@@ -36,11 +40,18 @@ async def handle_email_verify_api(
             raise_bad_input_exception("The email verification token must be a string")
 
         token = body["token"]
-        result = await api_implementation.email_verify_post(token, api_options, {})
+        user_context = await default_user_context(api_options.request)
+
+        result = await api_implementation.email_verify_post(
+            token, api_options, user_context
+        )
     else:
         if api_implementation.disable_is_email_verified_get:
             return None
 
-        result = await api_implementation.is_email_verified_get(api_options, {})
+        user_context = await default_user_context(api_options.request)
+        result = await api_implementation.is_email_verified_get(
+            api_options, user_context
+        )
 
     return send_200_response(result.to_json(), api_options.response)
