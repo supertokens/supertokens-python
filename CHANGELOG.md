@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 - Update tests to cover `resend_code` feature in `passwordless` and `thirdpartypasswordless` recipe.
 
+- Update usermetadata tests to ensure that utf8 chars are supported.
+
+# Fixes
+- Fixed handling of unicode characters in usermetadata (and emails, roles, session/access token payload data)
+
 - Use [black](https://github.com/psf/black) instead of `autopep8` to format code.
 
 ### Breaking change
