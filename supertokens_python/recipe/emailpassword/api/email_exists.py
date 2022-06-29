@@ -16,18 +16,23 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.emailpassword.interfaces import APIOptions, APIInterface
+    from supertokens_python.recipe.emailpassword.interfaces import (
+        APIOptions,
+        APIInterface,
+    )
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.utils import send_200_response
 
 
-async def handle_email_exists_api(api_implementation: APIInterface, api_options: APIOptions):
+async def handle_email_exists_api(
+    api_implementation: APIInterface, api_options: APIOptions
+):
     if api_implementation.disable_email_exists_get:
         return None
-    email = api_options.request.get_query_param('email')
+    email = api_options.request.get_query_param("email")
     if email is None:
-        raise_bad_input_exception('Please provide the email as a GET param')
+        raise_bad_input_exception("Please provide the email as a GET param")
 
     response = await api_implementation.email_exists_get(email, api_options, {})
     return send_200_response(response.to_json(), api_options.response)

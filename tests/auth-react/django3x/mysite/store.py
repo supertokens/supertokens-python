@@ -15,13 +15,16 @@ def get_url_with_token() -> str:
 _CODE_STORE: Dict[str, List[Dict[str, Any]]] = {}
 
 
-def save_code(pre_auth_session_id: str, url_with_link_code: Union[str, None], user_input_code: Union[str, None]):
+def save_code(
+    pre_auth_session_id: str,
+    url_with_link_code: Union[str, None],
+    user_input_code: Union[str, None],
+):
     global _CODE_STORE
     codes = _CODE_STORE.get(pre_auth_session_id, [])
-    codes.append({
-        'urlWithLinkCode': url_with_link_code,
-        'userInputCode': user_input_code
-    })
+    codes.append(
+        {"urlWithLinkCode": url_with_link_code, "userInputCode": user_input_code}
+    )
     _CODE_STORE[pre_auth_session_id] = codes
 
 

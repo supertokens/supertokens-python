@@ -17,8 +17,9 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from ...types import APIResponse, GeneralErrorResponse
-from ..emailverification.interfaces import \
-    RecipeInterface as EmailVerificationRecipeInterface
+from ..emailverification.interfaces import (
+    RecipeInterface as EmailVerificationRecipeInterface,
+)
 from .provider import Provider
 
 if TYPE_CHECKING:
@@ -30,7 +31,7 @@ if TYPE_CHECKING:
     from .utils import ThirdPartyConfig
 
 
-class SignInUpOkResult():
+class SignInUpOkResult:
     def __init__(self, user: User, created_new_user: bool):
         self.user = user
         self.created_new_user = created_new_user
@@ -41,27 +42,50 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
+    async def get_user_by_id(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -> List[User]:
+    async def get_users_by_email(
+        self, email: str, user_context: Dict[str, Any]
+    ) -> List[User]:
         pass
 
     @abstractmethod
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str,
-                                          user_context: Dict[str, Any]) -> Union[User, None]:
+    async def get_user_by_thirdparty_info(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        user_context: Dict[str, Any],
+    ) -> Union[User, None]:
         pass
 
     @abstractmethod
-    async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -> SignInUpOkResult:
+    async def sign_in_up(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        email_verified: bool,
+        user_context: Dict[str, Any],
+    ) -> SignInUpOkResult:
         pass
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
-                 config: ThirdPartyConfig, recipe_implementation: RecipeInterface, providers: List[Provider], app_info: AppInfo, email_verification_recipe_implementation: EmailVerificationRecipeInterface):
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        recipe_id: str,
+        config: ThirdPartyConfig,
+        recipe_implementation: RecipeInterface,
+        providers: List[Provider],
+        app_info: AppInfo,
+        email_verification_recipe_implementation: EmailVerificationRecipeInterface,
+    ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
@@ -69,15 +93,21 @@ class APIOptions:
         self.providers: List[Provider] = providers
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info: AppInfo = app_info
-        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = email_verification_recipe_implementation
+        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = (
+            email_verification_recipe_implementation
+        )
 
 
 class SignInUpPostOkResult(APIResponse):
-    status: str = 'OK'
+    status: str = "OK"
 
-    def __init__(self, user: User, created_new_user: bool,
-                 auth_code_response: Dict[str, Any],
-                 session: SessionContainer):
+    def __init__(
+        self,
+        user: User,
+        created_new_user: bool,
+        auth_code_response: Dict[str, Any],
+        session: SessionContainer,
+    ):
         self.user = user
         self.created_new_user = created_new_user
         self.auth_code_response = auth_code_response
@@ -85,40 +115,35 @@ class SignInUpPostOkResult(APIResponse):
 
     def to_json(self) -> Dict[str, Any]:
         return {
-            'status': self.status,
-            'user': {
-                'id': self.user.user_id,
-                'email': self.user.email,
-                'timeJoined': self.user.time_joined,
-                'thirdParty': {
-                    'id': self.user.third_party_info.id,
-                    'userId': self.user.third_party_info.user_id
-                }
+            "status": self.status,
+            "user": {
+                "id": self.user.user_id,
+                "email": self.user.email,
+                "timeJoined": self.user.time_joined,
+                "thirdParty": {
+                    "id": self.user.third_party_info.id,
+                    "userId": self.user.third_party_info.user_id,
+                },
             },
-            'createdNewUser': self.created_new_user
+            "createdNewUser": self.created_new_user,
         }
 
 
 class SignInUpPostNoEmailGivenByProviderResponse(APIResponse):
-    status: str = 'NO_EMAIL_GIVEN_BY_PROVIDER'
+    status: str = "NO_EMAIL_GIVEN_BY_PROVIDER"
 
     def to_json(self) -> Dict[str, Any]:
-        return {
-            'status': self.status
-        }
+        return {"status": self.status}
 
 
 class AuthorisationUrlGetOkResult(APIResponse):
-    status: str = 'OK'
+    status: str = "OK"
 
     def __init__(self, url: str):
         self.url = url
 
     def to_json(self):
-        return {
-            'status': self.status,
-            'url': self.url
-        }
+        return {"status": self.status, "url": self.url}
 
 
 class APIInterface:
@@ -128,15 +153,34 @@ class APIInterface:
         self.disable_apple_redirect_handler_post = False
 
     @abstractmethod
-    async def authorisation_url_get(self, provider: Provider,
-                                    api_options: APIOptions, user_context: Dict[str, Any]) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
+    async def authorisation_url_get(
+        self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
-    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
-                              user_context: Dict[str, Any]) -> Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
+    async def sign_in_up_post(
+        self,
+        provider: Provider,
+        code: str,
+        redirect_uri: str,
+        client_id: Union[str, None],
+        auth_code_response: Union[Dict[str, Any], None],
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+    ) -> Union[
+        SignInUpPostOkResult,
+        SignInUpPostNoEmailGivenByProviderResponse,
+        GeneralErrorResponse,
+    ]:
         pass
 
     @abstractmethod
-    async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions, user_context: Dict[str, Any]):
+    async def apple_redirect_handler_post(
+        self,
+        code: str,
+        state: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+    ):
         pass

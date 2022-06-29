@@ -17,14 +17,24 @@ from supertokens_python import Supertokens
 from supertokens_python.types import UsersResponse
 
 
-async def get_users_oldest_first(limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
-                                 include_recipe_ids: Union[None, List[str]] = None) -> UsersResponse:
-    return await Supertokens.get_instance().get_users('ASC', limit, pagination_token, include_recipe_ids)
+async def get_users_oldest_first(
+    limit: Union[int, None] = None,
+    pagination_token: Union[str, None] = None,
+    include_recipe_ids: Union[None, List[str]] = None,
+) -> UsersResponse:
+    return await Supertokens.get_instance().get_users(
+        "ASC", limit, pagination_token, include_recipe_ids
+    )
 
 
-async def get_users_newest_first(limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
-                                 include_recipe_ids: Union[None, List[str]] = None) -> UsersResponse:
-    return await Supertokens.get_instance().get_users('DESC', limit, pagination_token, include_recipe_ids)
+async def get_users_newest_first(
+    limit: Union[int, None] = None,
+    pagination_token: Union[str, None] = None,
+    include_recipe_ids: Union[None, List[str]] = None,
+) -> UsersResponse:
+    return await Supertokens.get_instance().get_users(
+        "DESC", limit, pagination_token, include_recipe_ids
+    )
 
 
 async def get_user_count(include_recipe_ids: Union[None, List[str]] = None) -> int:

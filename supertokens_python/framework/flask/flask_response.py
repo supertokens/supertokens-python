@@ -30,12 +30,22 @@ class FlaskResponse(BaseResponse):
     def set_html_content(self, content: str):
         if not self.response_sent:
             self.response.data = content
-            self.set_header('Content-Type', 'text/html')
+            self.set_header("Content-Type", "text/html")
             self.response_sent = True
 
-    def set_cookie(self, key: str, value: str, expires: int, path: str = "/",
-                   domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = "lax"):
+    def set_cookie(
+        self,
+        key: str,
+        value: str,
+        expires: int,
+        path: str = "/",
+        domain: Union[str, None] = None,
+        secure: bool = False,
+        httponly: bool = False,
+        samesite: str = "lax",
+    ):
         from werkzeug.http import dump_cookie
+
         if self.response is None:
             cookie = dump_cookie(
                 key,
@@ -45,12 +55,20 @@ class FlaskResponse(BaseResponse):
                 domain=domain,
                 secure=secure,
                 httponly=httponly,
-                samesite=samesite
+                samesite=samesite,
             )
             self.headers.append(("Set-Cookie", cookie))
         else:
-            self.response.set_cookie(key, value=value, expires=expires / 1000,
-                                     path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
+            self.response.set_cookie(
+                key,
+                value=value,
+                expires=expires / 1000,
+                path=path,
+                domain=domain,
+                secure=secure,
+                httponly=httponly,
+                samesite=samesite,
+            )
 
     def set_header(self, key: str, value: str):
         if self.response is None:
@@ -86,7 +104,7 @@ class FlaskResponse(BaseResponse):
 
     def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:
-            self.set_header('Content-Type', 'application/json; charset=utf-8')
+            self.set_header("Content-Type", "application/json; charset=utf-8")
             self.response.data = json.dumps(
                 content,
                 ensure_ascii=False,

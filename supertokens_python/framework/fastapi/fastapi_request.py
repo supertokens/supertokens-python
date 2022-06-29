@@ -31,7 +31,8 @@ class FastApiRequest(BaseRequest):
         self.request = request
 
     def get_query_param(
-            self, key: str, default: Union[str, None] = None) -> Union[str, None]:
+        self, key: str, default: Union[str, None] = None
+    ) -> Union[str, None]:
         return self.request.query_params.get(key, default)
 
     async def json(self) -> Union[Any, None]:
@@ -62,4 +63,4 @@ class FastApiRequest(BaseRequest):
         return self.request.url.path
 
     async def form_data(self):
-        return dict(parse_qsl((await self.request.body()).decode('utf-8')))
+        return dict(parse_qsl((await self.request.body()).decode("utf-8")))

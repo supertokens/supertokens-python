@@ -15,52 +15,94 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Union
 
-from supertokens_python.recipe.thirdparty.interfaces import (RecipeInterface,
-                                                             SignInUpOkResult)
+from supertokens_python.recipe.thirdparty.interfaces import (
+    RecipeInterface,
+    SignInUpOkResult,
+)
 from supertokens_python.recipe.thirdparty.types import User
-from supertokens_python.recipe.thirdpartyemailpassword.interfaces import \
-    RecipeInterface as ThirdPartyEmailPasswordRecipeInterface
+from supertokens_python.recipe.thirdpartyemailpassword.interfaces import (
+    RecipeInterface as ThirdPartyEmailPasswordRecipeInterface,
+)
 
 
 class RecipeImplementation(RecipeInterface):
-
-    def __init__(
-            self, recipe_implementation: ThirdPartyEmailPasswordRecipeInterface):
+    def __init__(self, recipe_implementation: ThirdPartyEmailPasswordRecipeInterface):
         super().__init__()
         self.recipe_implementation = recipe_implementation
 
-    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
+    async def get_user_by_id(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -> Union[User, None]:
         user = await self.recipe_implementation.get_user_by_id(user_id, user_context)
         if user is None or user.third_party_info is None:
             return None
 
-        return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
+        return User(
+            user_id=user.user_id,
+            email=user.email,
+            time_joined=user.time_joined,
+            third_party_info=user.third_party_info,
+        )
 
-    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -> List[User]:
+    async def get_users_by_email(
+        self, email: str, user_context: Dict[str, Any]
+    ) -> List[User]:
         users = await self.recipe_implementation.get_users_by_email(email, user_context)
         users_result: List[User] = []
 
         for user in users:
             if user.third_party_info is not None:
-                users_result.append(User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info))
+                users_result.append(
+                    User(
+                        user_id=user.user_id,
+                        email=user.email,
+                        time_joined=user.time_joined,
+                        third_party_info=user.third_party_info,
+                    )
+                )
 
         return users_result
 
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -> Union[User, None]:
-        user = await self.recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
+    async def get_user_by_thirdparty_info(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        user_context: Dict[str, Any],
+    ) -> Union[User, None]:
+        user = await self.recipe_implementation.get_user_by_thirdparty_info(
+            third_party_id, third_party_user_id, user_context
+        )
         if user is None or user.third_party_info is None:
             return None
 
-        return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
+        return User(
+            user_id=user.user_id,
+            email=user.email,
+            time_joined=user.time_joined,
+            third_party_info=user.third_party_info,
+        )
 
-    async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -> SignInUpOkResult:
-        result = await self.recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
+    async def sign_in_up(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        email_verified: bool,
+        user_context: Dict[str, Any],
+    ) -> SignInUpOkResult:
+        result = await self.recipe_implementation.thirdparty_sign_in_up(
+            third_party_id, third_party_user_id, email, email_verified, user_context
+        )
 
         if result.user.third_party_info is None:
             raise Exception("Third party info cannot be None")
 
         return SignInUpOkResult(
-            User(result.user.user_id, result.user.email, result.user.time_joined, result.user.third_party_info),
-            result.created_new_user
+            User(
+                result.user.user_id,
+                result.user.email,
+                result.user.time_joined,
+                result.user.third_party_info,
+            ),
+            result.created_new_user,
         )

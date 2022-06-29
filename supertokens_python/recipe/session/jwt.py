@@ -22,8 +22,8 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature.pkcs1_15 import PKCS115_SigScheme
 from supertokens_python.utils import utf_base64decode, utf_base64encode
 
-_key_start = '-----BEGIN PUBLIC KEY-----\n'
-_key_end = '\n-----END PUBLIC KEY-----'
+_key_start = "-----BEGIN PUBLIC KEY-----\n"
+_key_end = "\n-----END PUBLIC KEY-----"
 
 """
 why separators is used in dumps:
@@ -32,11 +32,15 @@ why separators is used in dumps:
 
 we require the non-spaced version, else the base64 encoding string will end up different than required
 """
-_allowed_headers = [utf_base64encode(dumps({
-    'alg': 'RS256',
-    'typ': 'JWT',
-    'version': '2'
-}, separators=(',', ':'), sort_keys=True))]
+_allowed_headers = [
+    utf_base64encode(
+        dumps(
+            {"alg": "RS256", "typ": "JWT", "version": "2"},
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+    )
+]
 
 
 def get_payload(jwt: str, signing_public_key: str):
@@ -49,16 +53,12 @@ def get_payload(jwt: str, signing_public_key: str):
         raise Exception("jwt header mismatch")
 
     public_key = RSA.import_key(
-        _key_start +
-        "\n".join(
-            wrap(
-                signing_public_key,
-                width=64)) +
-        _key_end)
+        _key_start + "\n".join(wrap(signing_public_key, width=64)) + _key_end
+    )
     verifier = PKCS115_SigScheme(public_key)
-    to_verify = SHA256.new((header + "." + payload).encode('utf-8'))
+    to_verify = SHA256.new((header + "." + payload).encode("utf-8"))
     try:
-        verifier.verify(to_verify, b64decode(signature.encode('utf-8')))
+        verifier.verify(to_verify, b64decode(signature.encode("utf-8")))
     except BaseException:
         raise Exception("jwt verification failed")
 

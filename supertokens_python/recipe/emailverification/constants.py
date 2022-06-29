@@ -11,5 +11,5 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-USER_EMAIL_VERIFY_TOKEN = '/user/email/verify/token'
-USER_EMAIL_VERIFY = '/user/email/verify'
+USER_EMAIL_VERIFY_TOKEN = "/user/email/verify/token"
+USER_EMAIL_VERIFY = "/user/email/verify"

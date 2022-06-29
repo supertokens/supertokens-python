@@ -32,51 +32,50 @@ class NormalisedURLDomain:
 
 
 def normalise_domain_path_or_throw_error(
-        input_str: str, ignore_protocol: bool = False) -> str:
+    input_str: str, ignore_protocol: bool = False
+) -> str:
     input_str = input_str.strip().lower()
 
     try:
-        if (not input_str.startswith('http://')) and (not input_str.startswith('https://')) and \
-                (not input_str.startswith('supertokens://')):
-            raise Exception('converting to proper URL')
+        if (
+            (not input_str.startswith("http://"))
+            and (not input_str.startswith("https://"))
+            and (not input_str.startswith("supertokens://"))
+        ):
+            raise Exception("converting to proper URL")
         url_obj = urlparse(input_str)
 
         if ignore_protocol:
             if url_obj.hostname is None:
                 raise Exception("Should never come here")
-            if url_obj.hostname.startswith(
-                    'localhost') or is_an_ip_address(url_obj.hostname):
-                input_str = 'http://' + url_obj.netloc
+            if url_obj.hostname.startswith("localhost") or is_an_ip_address(
+                url_obj.hostname
+            ):
+                input_str = "http://" + url_obj.netloc
             else:
-                input_str = 'https://' + url_obj.netloc
+                input_str = "https://" + url_obj.netloc
         else:
-            input_str = url_obj.scheme + '://' + url_obj.netloc
+            input_str = url_obj.scheme + "://" + url_obj.netloc
 
         return input_str
     except Exception:
         pass
 
-    if input_str.startswith('/'):
-        raise_general_exception('Please provide a valid domain name')
+    if input_str.startswith("/"):
+        raise_general_exception("Please provide a valid domain name")
 
-    if input_str.startswith('.'):
+    if input_str.startswith("."):
         input_str = input_str[1:]
 
     if (
-        (
-            '.' in input_str
-            or
-            input_str.startswith('localhost')
-        )
-        and
-        (not input_str.startswith('http://'))
-        and
-        (not input_str.startswith('https://'))
+        ("." in input_str or input_str.startswith("localhost"))
+        and (not input_str.startswith("http://"))
+        and (not input_str.startswith("https://"))
     ):
-        input_str = 'https://' + input_str
+        input_str = "https://" + input_str
         try:
             urlparse(input_str)
             return normalise_domain_path_or_throw_error(input_str, True)
         except Exception:
             pass
-    raise_general_exception('Please provide a valid domain name')
+    raise_general_exception("Please provide a valid domain name")

@@ -39,14 +39,14 @@ def teardown_function(_):
 @mark.asyncio
 async def test_that_sending_0_validity_throws_an_error():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='http://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[jwt.init()]
+        framework="fastapi",
+        recipe_list=[jwt.init()],
     )
     start_st()
 
@@ -62,14 +62,14 @@ async def test_that_sending_0_validity_throws_an_error():
 @mark.asyncio
 async def test_that_sending_a_invalid_json_throws_an_error():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='http://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[jwt.init()]
+        framework="fastapi",
+        recipe_list=[jwt.init()],
     )
     start_st()
 
@@ -87,14 +87,14 @@ async def test_that_sending_a_invalid_json_throws_an_error():
 @mark.asyncio
 async def test_that_returned_JWT_uses_100_years_for_expiry_for_default_config():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='http://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[jwt.init()]
+        framework="fastapi",
+        recipe_list=[jwt.init()],
     )
     start_st()
 
@@ -105,11 +105,10 @@ async def test_that_returned_JWT_uses_100_years_for_expiry_for_default_config():
     decoded_jwt_value = utf_base64decode(jwt_value)
 
     target_expiry_duration = 3153600000
-    jwt_expiry = json.loads(decoded_jwt_value)['exp']
+    jwt_expiry = json.loads(decoded_jwt_value)["exp"]
 
     actual_expiry = jwt_expiry - time_rn
-    difference_in_expiry_durations = abs(
-        actual_expiry - target_expiry_duration)
+    difference_in_expiry_durations = abs(actual_expiry - target_expiry_duration)
 
     assert difference_in_expiry_durations < 5
 
@@ -117,16 +116,14 @@ async def test_that_returned_JWT_uses_100_years_for_expiry_for_default_config():
 @mark.asyncio
 async def test_that_jwt_validity_is_same_as_validity_set_in_config():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='http://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[jwt.init(
-            jwt_validity_seconds=1000
-        )]
+        framework="fastapi",
+        recipe_list=[jwt.init(jwt_validity_seconds=1000)],
     )
     start_st()
 
@@ -138,11 +135,10 @@ async def test_that_jwt_validity_is_same_as_validity_set_in_config():
     decoded_jwt_value = utf_base64decode(jwt_value)
 
     target_expiry_duration = 1000
-    jwt_expiry = json.loads(decoded_jwt_value)['exp']
+    jwt_expiry = json.loads(decoded_jwt_value)["exp"]
 
     actual_expiry = jwt_expiry - time_rn
-    difference_in_expiry_durations = abs(
-        actual_expiry - target_expiry_duration)
+    difference_in_expiry_durations = abs(actual_expiry - target_expiry_duration)
 
     assert difference_in_expiry_durations < 5
 
@@ -150,16 +146,14 @@ async def test_that_jwt_validity_is_same_as_validity_set_in_config():
 @mark.asyncio
 async def test_that_jwt_validity_is_same_as_validity_passed_in_createJWT_function():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='http://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[jwt.init(
-            jwt_validity_seconds=1000
-        )]
+        framework="fastapi",
+        recipe_list=[jwt.init(jwt_validity_seconds=1000)],
     )
     start_st()
 
@@ -171,10 +165,9 @@ async def test_that_jwt_validity_is_same_as_validity_passed_in_createJWT_functio
     jwt_value = result.jwt.split(".")[1]
     decoded_jwt_value = utf_base64decode(jwt_value)
 
-    jwt_expiry = json.loads(decoded_jwt_value)['exp']
+    jwt_expiry = json.loads(decoded_jwt_value)["exp"]
 
     actual_expiry = jwt_expiry - time_rn
-    difference_in_expiry_durations = abs(
-        actual_expiry - target_expiry_duration)
+    difference_in_expiry_durations = abs(actual_expiry - target_expiry_duration)
 
     assert difference_in_expiry_durations < 5

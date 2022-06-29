@@ -15,11 +15,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, List, Union
 
-from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryConfig
+from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdpartyemailpassword.types import \
-    EmailTemplateVars
+from supertokens_python.recipe.thirdpartyemailpassword.types import EmailTemplateVars
 
 from .. import emailpassword, thirdparty
 from . import exceptions as ex
@@ -46,13 +44,21 @@ if TYPE_CHECKING:
     from ...recipe_module import RecipeModule
 
 
-def init(sign_up_feature: Union[InputSignUpFeature, None] = None,
-         reset_password_using_token_feature: Union[InputResetPasswordUsingTokenFeature, None] = None,
-         email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
-         override: Union[InputOverrideConfig, None] = None,
-         providers: Union[List[Provider], None] = None,
-         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None
-         ) -> Callable[[AppInfo], RecipeModule]:
-    return ThirdPartyEmailPasswordRecipe.init(sign_up_feature, reset_password_using_token_feature,
-                                              email_verification_feature,
-                                              override, providers, email_delivery)
+def init(
+    sign_up_feature: Union[InputSignUpFeature, None] = None,
+    reset_password_using_token_feature: Union[
+        InputResetPasswordUsingTokenFeature, None
+    ] = None,
+    email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+    override: Union[InputOverrideConfig, None] = None,
+    providers: Union[List[Provider], None] = None,
+    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+) -> Callable[[AppInfo], RecipeModule]:
+    return ThirdPartyEmailPasswordRecipe.init(
+        sign_up_feature,
+        reset_password_using_token_feature,
+        email_verification_feature,
+        override,
+        providers,
+        email_delivery,
+    )

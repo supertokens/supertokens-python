@@ -25,20 +25,26 @@ from fastapi.testclient import TestClient
 from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
-from supertokens_python.ingredients.smsdelivery.services.supertokens import \
-    SUPERTOKENS_SMS_SERVICE_URL
+from supertokens_python.ingredients.smsdelivery.services.supertokens import (
+    SUPERTOKENS_SMS_SERVICE_URL,
+)
 from supertokens_python.ingredients.smsdelivery.types import (
-    SMSDeliveryConfig, SMSDeliveryInterface, TwilioSettings, SMSContent, TwilioServiceInterface)
+    SMSDeliveryConfig,
+    SMSDeliveryInterface,
+    TwilioSettings,
+    SMSContent,
+    TwilioServiceInterface,
+)
 from supertokens_python.querier import Querier
-from supertokens_python.recipe import (passwordless, session,
-                                       thirdpartypasswordless)
-from supertokens_python.recipe.thirdpartypasswordless.smsdelivery.services.twilio import \
-    TwilioService
-from supertokens_python.recipe.thirdpartypasswordless.types import \
-    PasswordlessLoginSMSTemplateVars
+from supertokens_python.recipe import passwordless, session, thirdpartypasswordless
+from supertokens_python.recipe.thirdpartypasswordless.smsdelivery.services.twilio import (
+    TwilioService,
+)
+from supertokens_python.recipe.thirdpartypasswordless.types import (
+    PasswordlessLoginSMSTemplateVars,
+)
 from supertokens_python.utils import is_version_gte
-from tests.utils import (clean_st, reset, setup_st, sign_in_up_request_phone,
-                         start_st)
+from tests.utils import clean_st, reset, setup_st, sign_in_up_request_phone, start_st
 
 respx_mock = respx.MockRouter
 
@@ -54,22 +60,24 @@ def teardown_function(_):
     clean_st()
 
 
-@fixture(scope='function')
+@fixture(scope="function")
 async def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
-    @app.get('/login')
+    @app.get("/login")
     async def login(_request: Request):  # type: ignore
-        user_id = 'userId'
+        user_id = "userId"
         # await create_new_session(request, user_id, {}, {})
-        return {'userId': user_id}
+        return {"userId": user_id}
 
     return TestClient(app)
 
 
 @mark.asyncio
-async def test_pless_login_default_backward_compatibility(driver_config_client: TestClient):
+async def test_pless_login_default_backward_compatibility(
+    driver_config_client: TestClient,
+):
     "Passwordless login: test default backward compatibility api being called"
     app_name = ""
     phone_number = ""
@@ -79,18 +87,21 @@ async def test_pless_login_default_backward_compatibility(driver_config_client: 
     api_key = ""
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=passwordless.ContactPhoneOnlyConfig(),
-            flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=passwordless.ContactPhoneOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -115,7 +126,9 @@ async def test_pless_login_default_backward_compatibility(driver_config_client: 
 
     with respx_mock(assert_all_mocked=False) as mocker:
         mocker.route(host="localhost").pass_through()
-        mocked_route = mocker.post(SUPERTOKENS_SMS_SERVICE_URL).mock(side_effect=api_side_effect)
+        mocked_route = mocker.post(SUPERTOKENS_SMS_SERVICE_URL).mock(
+            side_effect=api_side_effect
+        )
         resp = sign_in_up_request_phone(driver_config_client, "+919909909998", True)
 
         assert resp.status_code == 200
@@ -129,7 +142,9 @@ async def test_pless_login_default_backward_compatibility(driver_config_client: 
 
 
 @mark.asyncio
-async def test_pless_login_default_backward_compatibility_no_suppress_error(driver_config_client: TestClient):
+async def test_pless_login_default_backward_compatibility_no_suppress_error(
+    driver_config_client: TestClient,
+):
     "Passwordless login: test default backward compatibility api being called, error message sent back to user"
     app_name = ""
     phone = ""
@@ -138,18 +153,21 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(driv
     user_input_code = ""
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=passwordless.ContactPhoneOnlyConfig(),
-            flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=passwordless.ContactPhoneOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -172,7 +190,9 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(driv
 
     with respx_mock(assert_all_mocked=False) as mocker:
         mocker.route(host="localhost").pass_through()
-        mocked_route = mocker.post(SUPERTOKENS_SMS_SERVICE_URL).mock(side_effect=api_side_effect)
+        mocked_route = mocker.post(SUPERTOKENS_SMS_SERVICE_URL).mock(
+            side_effect=api_side_effect
+        )
         try:
             sign_in_up_request_phone(driver_config_client, "+919909909998", True)
         except Exception as e:
@@ -193,7 +213,9 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
     url_with_link_code = ""
     user_input_code = ""
 
-    async def create_and_send_custom_text_message(input_: PasswordlessLoginSMSTemplateVars, _: Dict[str, Any]):
+    async def create_and_send_custom_text_message(
+        input_: PasswordlessLoginSMSTemplateVars, _: Dict[str, Any]
+    ):
         nonlocal phone, code_lifetime, url_with_link_code, user_input_code
         phone = input_.phone_number
         code_lifetime = input_.code_life_time
@@ -201,20 +223,23 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
         user_input_code = input_.user_input_code
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=passwordless.ContactPhoneOnlyConfig(
-                create_and_send_custom_text_message=create_and_send_custom_text_message,
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=passwordless.ContactPhoneOnlyConfig(
+                    create_and_send_custom_text_message=create_and_send_custom_text_message,
+                ),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             ),
-            flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-        ), session.init()]
+            session.init(),
+        ],
     )
     start_st()
 
@@ -240,10 +265,15 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
     user_input_code = ""
     app_name = ""
 
-    def sms_delivery_override(oi: SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]):
+    def sms_delivery_override(
+        oi: SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars],
+    ):
         oi_send_sms = oi.send_sms
 
-        async def send_sms(template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]):
+        async def send_sms(
+            template_vars: PasswordlessLoginSMSTemplateVars,
+            user_context: Dict[str, Any],
+        ):
             nonlocal phone, url_with_link_code, user_input_code, code_lifetime
             phone = template_vars.phone_number
             url_with_link_code = template_vars.url_with_link_code
@@ -256,22 +286,25 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=passwordless.ContactPhoneOnlyConfig(),
-            flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-            sms_delivery=SMSDeliveryConfig(
-                service=None,
-                override=sms_delivery_override,
-            )
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=passwordless.ContactPhoneOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                sms_delivery=SMSDeliveryConfig(
+                    service=None,
+                    override=sms_delivery_override,
+                ),
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -288,7 +321,9 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
 
     with respx_mock(assert_all_mocked=False) as mocker:
         mocker.route(host="localhost").pass_through()
-        mocked_route = mocker.post(SUPERTOKENS_SMS_SERVICE_URL).mock(side_effect=api_side_effect)
+        mocked_route = mocker.post(SUPERTOKENS_SMS_SERVICE_URL).mock(
+            side_effect=api_side_effect
+        )
         resp = sign_in_up_request_phone(driver_config_client, "+919909909998", True)
 
         assert resp.status_code == 200
@@ -306,10 +341,16 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
     phone = ""
     code_lifetime = 0
     user_input_code = ""
-    get_content_called, send_raw_email_called, outer_override_called = False, False, False
+    get_content_called, send_raw_email_called, outer_override_called = (
+        False,
+        False,
+        False,
+    )
     twilio_api_called = False
 
-    def twilio_service_override(oi: TwilioServiceInterface[PasswordlessLoginSMSTemplateVars]):
+    def twilio_service_override(
+        oi: TwilioServiceInterface[PasswordlessLoginSMSTemplateVars],
+    ):
 
         oi_send_raw_sms = oi.send_raw_sms
 
@@ -328,17 +369,17 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
 
             await oi_send_raw_sms(content, _user_context, from_, messaging_service_sid)
 
-        async def get_content_override(template_vars: PasswordlessLoginSMSTemplateVars, _user_context: Dict[str, Any]) -> SMSContent:
+        async def get_content_override(
+            template_vars: PasswordlessLoginSMSTemplateVars,
+            _user_context: Dict[str, Any],
+        ) -> SMSContent:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
 
             user_input_code = template_vars.user_input_code or ""
             code_lifetime = template_vars.code_life_time
 
-            return SMSContent(
-                body=user_input_code,
-                to_phone=template_vars.phone_number
-            )
+            return SMSContent(body=user_input_code, to_phone=template_vars.phone_number)
 
         oi.send_raw_sms = send_raw_email_override
         oi.get_content = get_content_override
@@ -354,10 +395,15 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         override=twilio_service_override,
     )
 
-    def sms_delivery_override(oi: SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]) -> SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]:
+    def sms_delivery_override(
+        oi: SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars],
+    ) -> SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars]:
         oi_send_sms = oi.send_sms
 
-        async def send_sms_override(template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]):
+        async def send_sms_override(
+            template_vars: PasswordlessLoginSMSTemplateVars,
+            user_context: Dict[str, Any],
+        ):
             nonlocal outer_override_called
             outer_override_called = True
             await oi_send_sms(template_vars, user_context)
@@ -366,22 +412,25 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=passwordless.ContactPhoneOnlyConfig(),
-            flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-            sms_delivery=SMSDeliveryConfig(
-                service=twilio_sms_delivery_service,
-                override=sms_delivery_override,
-            )
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=passwordless.ContactPhoneOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                sms_delivery=SMSDeliveryConfig(
+                    service=twilio_sms_delivery_service,
+                    override=sms_delivery_override,
+                ),
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -397,7 +446,10 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
 
     m: requests_mock.Mocker
     with requests_mock.Mocker(real_http=True) as m:
-        m.post("https://api.twilio.com/2010-04-01/Accounts/ACTWILIO_ACCOUNT_SID/Messages.json", json=json_callback)
+        m.post(
+            "https://api.twilio.com/2010-04-01/Accounts/ACTWILIO_ACCOUNT_SID/Messages.json",
+            json=json_callback,
+        )
 
         resp = sign_in_up_request_phone(driver_config_client, "+919909909998", True)
 

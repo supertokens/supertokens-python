@@ -15,13 +15,19 @@
 from typing import Generic, TypeVar
 
 from supertokens_python.ingredients.smsdelivery.types import (
-    SMSDeliveryConfigWithService, SMSDeliveryInterface)
+    SMSDeliveryConfigWithService,
+    SMSDeliveryInterface,
+)
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 
 class SMSDeliveryIngredient(Generic[_T]):
     ingredient_interface_impl: SMSDeliveryInterface[_T]
 
     def __init__(self, config: SMSDeliveryConfigWithService[_T]) -> None:
-        self.ingredient_interface_impl = config.service if config.override is None else config.override(config.service)
+        self.ingredient_interface_impl = (
+            config.service
+            if config.override is None
+            else config.override(config.service)
+        )

@@ -19,10 +19,14 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.recipe.emailpassword.interfaces import (
-    APIInterface, APIOptions, RecipeInterface)
+    APIInterface,
+    APIOptions,
+    RecipeInterface,
+)
 from supertokens_python.recipe.emailpassword.types import FormField
-from supertokens_python.recipe.session.interfaces import \
-    RecipeInterface as SRecipeInterface
+from supertokens_python.recipe.session.interfaces import (
+    RecipeInterface as SRecipeInterface,
+)
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -44,7 +48,7 @@ def teardown_function(_):
     clean_st()
 
 
-@fixture(scope='function')
+@fixture(scope="function")
 async def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
@@ -60,18 +64,20 @@ async def test_user_context(driver_config_client: TestClient):
     def apis_override_email_password(param: APIInterface):
         og_sign_in_post = param.sign_in_post
 
-        async def sign_in_post(form_fields: List[FormField],
-                               api_options: APIOptions,
-                               user_context: Dict[str, Any]):
-            user_context = {
-                'preSignInPOST': True
-            }
+        async def sign_in_post(
+            form_fields: List[FormField],
+            api_options: APIOptions,
+            user_context: Dict[str, Any],
+        ):
+            user_context = {"preSignInPOST": True}
             response = await og_sign_in_post(form_fields, api_options, user_context)
-            if 'preSignInPOST' in user_context and \
-                    'preSignIn' in user_context and \
-                    'preCreateNewSession' in user_context and \
-                    'postCreateNewSession' in user_context and \
-                    'postSignIn' in user_context:
+            if (
+                "preSignInPOST" in user_context
+                and "preSignIn" in user_context
+                and "preCreateNewSession" in user_context
+                and "postCreateNewSession" in user_context
+                and "postSignIn" in user_context
+            ):
                 global works
                 works = True
             return response
@@ -84,19 +90,18 @@ async def test_user_context(driver_config_client: TestClient):
         og_sign_up = param.sign_up
 
         async def sign_up_(email: str, password: str, user_context: Dict[str, Any]):
-            if 'manualCall' in user_context:
+            if "manualCall" in user_context:
                 global signUpContextWorks
                 signUpContextWorks = True
             response = await og_sign_up(email, password, user_context)
             return response
 
         async def sign_in(email: str, password: str, user_context: Dict[str, Any]):
-            if 'preSignInPOST' in user_context:
-                user_context['preSignIn'] = True
+            if "preSignInPOST" in user_context:
+                user_context["preSignIn"] = True
             response = await og_sign_in(email, password, user_context)
-            if 'preSignInPOST' in user_context and \
-                    'preSignIn' in user_context:
-                user_context['postSignIn'] = True
+            if "preSignInPOST" in user_context and "preSignIn" in user_context:
+                user_context["postSignIn"] = True
             return response
 
         param.sign_in = sign_in
@@ -106,51 +111,61 @@ async def test_user_context(driver_config_client: TestClient):
     def functions_override_session(param: SRecipeInterface):
         og_create_new_session = param.create_new_session
 
-        async def create_new_session(request: Any, user_id: str,
-                                     access_token_payload: Union[None, Dict[str, Any]],
-                                     session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]):
-            if 'preSignInPOST' in user_context and \
-                    'preSignIn' in user_context and \
-                    'postSignIn' in user_context:
-                user_context['preCreateNewSession'] = True
-            response = await og_create_new_session(request, user_id, access_token_payload, session_data, user_context)
-            if 'preSignInPOST' in user_context and \
-                    'preSignIn' in user_context and \
-                    'postSignIn' in user_context and \
-                    'preCreateNewSession' in user_context:
-                user_context['postCreateNewSession'] = True
+        async def create_new_session(
+            request: Any,
+            user_id: str,
+            access_token_payload: Union[None, Dict[str, Any]],
+            session_data: Union[None, Dict[str, Any]],
+            user_context: Dict[str, Any],
+        ):
+            if (
+                "preSignInPOST" in user_context
+                and "preSignIn" in user_context
+                and "postSignIn" in user_context
+            ):
+                user_context["preCreateNewSession"] = True
+            response = await og_create_new_session(
+                request, user_id, access_token_payload, session_data, user_context
+            )
+            if (
+                "preSignInPOST" in user_context
+                and "preSignIn" in user_context
+                and "postSignIn" in user_context
+                and "preCreateNewSession" in user_context
+            ):
+                user_context["postCreateNewSession"] = True
             return response
 
         param.create_new_session = create_new_session
         return param
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
-            website_domain="http://supertokens.io"
+            website_domain="http://supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[emailpassword.init(
-            override=emailpassword.InputOverrideConfig(
-                apis=apis_override_email_password,
-                functions=functions_override_email_password
-            )
-        ), session.init(
-            override=session.InputOverrideConfig(
-                functions=functions_override_session
-            )
-        )]
+        framework="fastapi",
+        recipe_list=[
+            emailpassword.init(
+                override=emailpassword.InputOverrideConfig(
+                    apis=apis_override_email_password,
+                    functions=functions_override_email_password,
+                )
+            ),
+            session.init(
+                override=session.InputOverrideConfig(
+                    functions=functions_override_session
+                )
+            ),
+        ],
     )
     start_st()
 
-    await sign_up("random@gmail.com", "validpass123", {'manualCall': True})
+    await sign_up("random@gmail.com", "validpass123", {"manualCall": True})
 
-    res = sign_in_request(
-        driver_config_client,
-        "random@gmail.com",
-        "validpass123")
+    res = sign_in_request(driver_config_client, "random@gmail.com", "validpass123")
     assert res.status_code == 200
     assert works
     assert signUpContextWorks

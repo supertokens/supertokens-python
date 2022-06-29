@@ -11,9 +11,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-AUTHORISATIONURL = '/authorisationurl'
-SIGNINUP = '/signinup'
-SIGNOUT = '/signout'
-SIGNUP_EMAIL_EXISTS = '/signup/email/exists'
-RESET_PASSWORD = '/reset-password'
+AUTHORISATIONURL = "/authorisationurl"
+SIGNINUP = "/signinup"
+SIGNOUT = "/signout"
+SIGNUP_EMAIL_EXISTS = "/signup/email/exists"
+RESET_PASSWORD = "/reset-password"
 APPLE_REDIRECT_HANDLER = "/callback/apple"

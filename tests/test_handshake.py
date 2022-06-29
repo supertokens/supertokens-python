@@ -12,8 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from supertokens_python.recipe.session.recipe_implementation import \
-    RecipeImplementation
+from supertokens_python.recipe.session.recipe_implementation import RecipeImplementation
 from pytest import mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
@@ -37,25 +36,33 @@ def teardown_function(_):
 @mark.asyncio
 async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[session.init()]
+        framework="fastapi",
+        recipe_list=[session.init()],
     )
     start_st()
 
     session_recipe_instance = SessionRecipe.get_instance()
-    if not isinstance(session_recipe_instance.recipe_implementation, RecipeImplementation):
+    if not isinstance(
+        session_recipe_instance.recipe_implementation, RecipeImplementation
+    ):
         raise Exception("Should never come here")
     await session_recipe_instance.recipe_implementation.get_handshake_info()
 
-    assert AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO in ProcessState.get_instance().history
+    assert (
+        AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO
+        in ProcessState.get_instance().history
+    )
 
     ProcessState.get_instance().reset()
     await session_recipe_instance.recipe_implementation.get_handshake_info()
 
-    assert AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO not in ProcessState.get_instance().history
+    assert (
+        AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO
+        not in ProcessState.get_instance().history
+    )

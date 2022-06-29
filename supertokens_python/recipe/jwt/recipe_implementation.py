@@ -23,47 +23,55 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
 from supertokens_python.recipe.jwt.interfaces import (
-    CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult,
-    RecipeInterface)
+    CreateJwtOkResult,
+    CreateJwtResultUnsupportedAlgorithm,
+    GetJWKSResult,
+    RecipeInterface,
+)
 
 from .interfaces import JsonWebKey
 
 
 class RecipeImplementation(RecipeInterface):
-
     def __init__(self, querier: Querier, config: JWTConfig, app_info: AppInfo):
         super().__init__()
         self.querier = querier
         self.config = config
         self.app_info = app_info
 
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
+    async def create_jwt(
+        self,
+        payload: Dict[str, Any],
+        validity_seconds: Union[int, None],
+        user_context: Dict[str, Any],
+    ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         if validity_seconds is None:
             validity_seconds = self.config.jwt_validity_seconds
 
         data = {
-            'payload': payload,
-            'validity': validity_seconds,
-            'algorithm': 'RS256',
-            'jwksDomain': self.app_info.api_domain.get_as_string_dangerous()
+            "payload": payload,
+            "validity": validity_seconds,
+            "algorithm": "RS256",
+            "jwksDomain": self.app_info.api_domain.get_as_string_dangerous(),
         }
-        response = await self.querier.send_post_request(NormalisedURLPath("/recipe/jwt"), data)
+        response = await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/jwt"), data
+        )
 
-        if response['status'] == 'OK':
-            return CreateJwtOkResult(response['jwt'])
+        if response["status"] == "OK":
+            return CreateJwtOkResult(response["jwt"])
         return CreateJwtResultUnsupportedAlgorithm()
 
     async def get_jwks(self, user_context: Dict[str, Any]) -> GetJWKSResult:
-        response = await self.querier.send_get_request(NormalisedURLPath("/recipe/jwt/jwks"), {})
+        response = await self.querier.send_get_request(
+            NormalisedURLPath("/recipe/jwt/jwks"), {}
+        )
 
         keys: List[JsonWebKey] = []
-        for key in response['keys']:
-            keys.append(JsonWebKey(
-                key['kty'],
-                key['kid'],
-                key['n'],
-                key['e'],
-                key['alg'],
-                key['use']
-            ))
+        for key in response["keys"]:
+            keys.append(
+                JsonWebKey(
+                    key["kty"], key["kid"], key["n"], key["e"], key["alg"], key["use"]
+                )
+            )
         return GetJWKSResult(keys)
