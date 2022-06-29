@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- Mark tests as skipped if core version requirements are not met.
 - Use [black](https://github.com/psf/black) instead of `autopep8` to format code.
 
 ### Breaking change
