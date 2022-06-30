@@ -6,8 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## Features:
-- Adds default user_context for API calls that contains the request object. It can be used in APIs / functions override.
+### Features:
+- Adds default `user_context` for API calls that contains the request object. It can be used in APIs / functions override like this:
 
 ```python
 def apis_override_email_password(param: APIInterface):
