@@ -44,7 +44,14 @@ from supertokens_python.recipe.thirdpartypasswordless.types import (
     PasswordlessLoginSMSTemplateVars,
 )
 from supertokens_python.utils import is_version_gte
-from tests.utils import clean_st, reset, setup_st, sign_in_up_request_phone, start_st
+from tests.utils import (
+    clean_st,
+    reset,
+    setup_st,
+    sign_in_up_request_phone,
+    start_st,
+    sign_in_up_request_code_resend,
+)
 
 respx_mock = respx.MockRouter
 
@@ -85,6 +92,7 @@ async def test_pless_login_default_backward_compatibility(
     url_with_link_code = ""
     user_input_code = ""
     api_key = ""
+    resend_called = False
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -130,13 +138,43 @@ async def test_pless_login_default_backward_compatibility(
             side_effect=api_side_effect
         )
         resp = sign_in_up_request_phone(driver_config_client, "+919909909998", True)
+        body = resp.json()
+
+        assert resp.status_code == 200
+        assert mocked_route.called
+
+    def code_resend_api_side_effect(request: httpx.Request):
+        nonlocal app_name, phone_number, code_lifetime, url_with_link_code, user_input_code, resend_called
+        body = json.loads(request.content)["smsInput"]
+
+        assert (
+            body["userInputCode"] != user_input_code
+        )  # Defaukt resend generates a new code
+
+        app_name = body["appName"]
+        phone_number = body["phoneNumber"]
+        code_lifetime = body["codeLifetime"]
+        url_with_link_code = body["urlWithLinkCode"]
+        user_input_code = body["userInputCode"]
+        resend_called = True
+
+        return httpx.Response(200, json={})
+
+    with respx_mock(assert_all_mocked=False) as mocker:
+        mocker.route(host="localhost").pass_through()
+        mocked_route = mocker.post(SUPERTOKENS_SMS_SERVICE_URL).mock(
+            side_effect=code_resend_api_side_effect
+        )
+        resp = sign_in_up_request_code_resend(
+            driver_config_client, body["deviceId"], body["preAuthSessionId"], True
+        )
 
         assert resp.status_code == 200
         assert mocked_route.called
 
         assert app_name == "ST"
         assert phone_number == "+919909909998"
-        assert all([url_with_link_code, user_input_code, code_lifetime])
+        assert all([url_with_link_code, user_input_code, code_lifetime, resend_called])
         assert code_lifetime > 0
         assert api_key is None
 
@@ -248,6 +286,23 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
         return
 
     resp = sign_in_up_request_phone(driver_config_client, "+919909909998", True)
+    body = resp.json()
+
+    assert resp.status_code == 200
+
+    assert phone == "+919909909998"
+    assert all([url_with_link_code, user_input_code, code_lifetime])
+    assert code_lifetime > 0
+
+    # Resend
+    phone = ""
+    code_lifetime = 0
+    url_with_link_code = ""
+    user_input_code = ""
+
+    resp = sign_in_up_request_code_resend(
+        driver_config_client, body["deviceId"], body["preAuthSessionId"]
+    )
 
     assert resp.status_code == 200
 
@@ -264,6 +319,7 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
     url_with_link_code = ""
     user_input_code = ""
     app_name = ""
+    resend_called = False
 
     def sms_delivery_override(
         oi: SMSDeliveryInterface[PasswordlessLoginSMSTemplateVars],
@@ -325,6 +381,32 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
             side_effect=api_side_effect
         )
         resp = sign_in_up_request_phone(driver_config_client, "+919909909998", True)
+        body = resp.json()
+
+        assert resp.status_code == 200
+        assert mocked_route.called
+
+    def code_resend_api_side_effect(request: httpx.Request):
+        nonlocal app_name, phone, code_lifetime, url_with_link_code, user_input_code, resend_called
+        body = json.loads(request.content)["smsInput"]
+
+        app_name = body["appName"]
+        phone = body["phoneNumber"]
+        code_lifetime = body["codeLifetime"]
+        url_with_link_code = body["urlWithLinkCode"]
+        user_input_code = body["userInputCode"]
+        resend_called = True
+
+        return httpx.Response(200, json={})
+
+    with respx_mock(assert_all_mocked=False) as mocker:
+        mocker.route(host="localhost").pass_through()
+        mocked_route = mocker.post(SUPERTOKENS_SMS_SERVICE_URL).mock(
+            side_effect=code_resend_api_side_effect
+        )
+        resp = sign_in_up_request_code_resend(
+            driver_config_client, body["deviceId"], body["preAuthSessionId"], True
+        )
 
         assert resp.status_code == 200
         assert mocked_route.called
@@ -336,8 +418,8 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
 
 
 @mark.asyncio
-async def test_pless_login_smtp_service(driver_config_client: TestClient):
-    "Passwordless login: test smtp service"
+async def test_pless_login_twilio_service(driver_config_client: TestClient):
+    "Passwordless login: test twilio service"
     phone = ""
     code_lifetime = 0
     user_input_code = ""
@@ -452,6 +534,36 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         )
 
         resp = sign_in_up_request_phone(driver_config_client, "+919909909998", True)
+        body = resp.json()
+
+        assert resp.status_code == 200
+
+        assert phone == "+919909909998"
+        assert all([outer_override_called, get_content_called, send_raw_email_called])
+        assert code_lifetime > 0
+        assert twilio_api_called
+
+    # Resend:
+    phone = ""
+    code_lifetime = 0
+    user_input_code = ""
+    get_content_called, send_raw_email_called, outer_override_called = (
+        False,
+        False,
+        False,
+    )
+    twilio_api_called = False
+
+    m: requests_mock.Mocker
+    with requests_mock.Mocker(real_http=True) as m:
+        m.post(
+            "https://api.twilio.com/2010-04-01/Accounts/ACTWILIO_ACCOUNT_SID/Messages.json",
+            json=json_callback,
+        )
+
+        resp = sign_in_up_request_code_resend(
+            driver_config_client, body["deviceId"], body["preAuthSessionId"], True
+        )
 
         assert resp.status_code == 200
 

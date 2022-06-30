@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
+- Update tests to cover `resend_code` feature in `passwordless` and `thirdpartypasswordless` recipe.
+- Update usermetadata tests to ensure that utf8 chars are supported.
+- Mark tests as skipped if core version requirements are not met.
+- Use [black](https://github.com/psf/black) instead of `autopep8` to format code.
 
 ### Features:
 - Adds default `user_context` for API calls that contains the request object. It can be used in APIs / functions override like this:
@@ -53,8 +57,6 @@ init(
     ],
 )
 ```
-
-- Use [black](https://github.com/psf/black) instead of `autopep8` to format code.
 
 ### Breaking change
 - Change request arg type in session recipe functions from Any to BaseRequest.

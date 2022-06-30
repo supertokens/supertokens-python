@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from pytest import mark
+from pytest import mark, skip
 from supertokens_python.querier import Querier
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.recipe import userroles
@@ -50,7 +50,7 @@ async def test_get_users_that_have_role():
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.14"):
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
-        return
+        skip()
 
     users = ["user1", "user2", "user3"]
     role = "role"
@@ -89,7 +89,7 @@ async def test_get_users_for_unknown_role():
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.14"):
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
-        return
+        skip()
 
     role = "role"
 

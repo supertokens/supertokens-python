@@ -16,7 +16,7 @@ from typing import Any, Dict
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from pytest import fixture, mark, raises
+from pytest import fixture, mark, raises, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.exceptions import GeneralError
 from supertokens_python.framework.fastapi import get_middleware
@@ -92,7 +92,7 @@ async def test_passwordless_otp(driver_config_client: TestClient):
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.11"):
         # If the version less than 2.11.0, passwordless OTP doesn't exist. So skip the test
-        return
+        skip()
 
     create_code_json = driver_config_client.post(
         url="/auth/signinup/code",
@@ -162,7 +162,7 @@ async def test_passworldless_delete_user_phone(driver_config_client: TestClient)
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.11"):
         # If the version less than 2.11, passwordless OTP doesn't exist. So skip the test
-        return
+        skip()
 
     create_code_json = driver_config_client.post(
         url="/auth/signinup/code",
@@ -236,7 +236,7 @@ async def test_passworldless_delete_user_email(driver_config_client: TestClient)
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.11"):
         # If the version less than 2.11, passwordless OTP doesn't exist. So skip the test
-        return
+        skip()
 
     create_code_json = driver_config_client.post(
         url="/auth/signinup/code",
@@ -312,7 +312,7 @@ async def test_passworldless_delete_user_email_and_phone_throws_error(
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.11"):
         # If the version less than 2.11, passwordless OTP doesn't exist. So skip the test
-        return
+        skip()
 
     create_code_json = driver_config_client.post(
         url="/auth/signinup/code",

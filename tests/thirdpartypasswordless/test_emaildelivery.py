@@ -68,6 +68,7 @@ from tests.utils import (
     reset,
     setup_st,
     sign_in_up_request,
+    sign_in_up_request_code_resend,
     start_st,
 )
 
@@ -557,6 +558,7 @@ async def test_pless_login_default_backward_compatibility(
     code_lifetime = 0
     url_with_link_code = ""
     user_input_code = ""
+    resend_called = False
 
     init(
         supertokens_config=SupertokensConfig("http://localhost:3567"),
@@ -599,13 +601,41 @@ async def test_pless_login_default_backward_compatibility(
             "https://api.supertokens.io/0/st/auth/passwordless/login"
         ).mock(side_effect=api_side_effect)
         resp = sign_in_up_request(driver_config_client, "test@example.com", True)
+        body = resp.json()
+
+        assert resp.status_code == 200
+        assert mocked_route.called
+
+    def code_resend_api_side_effect(request: httpx.Request):
+        nonlocal app_name, email, code_lifetime, url_with_link_code, user_input_code, resend_called
+        body = json.loads(request.content)
+
+        assert body["userInputCode"] != user_input_code  # Resend generates a new code
+
+        app_name = body["appName"]
+        email = body["email"]
+        code_lifetime = body["codeLifetime"]
+        url_with_link_code = body["urlWithLinkCode"]
+        user_input_code = body["userInputCode"]
+        resend_called = True
+
+        return httpx.Response(200, json={})
+
+    with respx_mock(assert_all_mocked=False) as mocker:
+        mocker.route(host="localhost").pass_through()
+        mocked_route = mocker.post(
+            "https://api.supertokens.io/0/st/auth/passwordless/login"
+        ).mock(side_effect=code_resend_api_side_effect)
+        resp = sign_in_up_request_code_resend(
+            driver_config_client, body["deviceId"], body["preAuthSessionId"], True
+        )
 
         assert resp.status_code == 200
         assert mocked_route.called
 
         assert app_name == "ST"
         assert email == "test@example.com"
-        assert all([url_with_link_code, user_input_code, code_lifetime])
+        assert all([url_with_link_code, user_input_code, code_lifetime, resend_called])
         assert code_lifetime > 0
 
 
@@ -716,6 +746,23 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
         return
 
     resp = sign_in_up_request(driver_config_client, "test@example.com", True)
+    body = resp.json()
+
+    assert resp.status_code == 200
+
+    assert email == "test@example.com"
+    assert all([url_with_link_code, user_input_code, code_lifetime])
+    assert code_lifetime > 0
+
+    # Resend
+    email = ""
+    code_lifetime = 0
+    url_with_link_code = ""
+    user_input_code = ""
+
+    resp = sign_in_up_request_code_resend(
+        driver_config_client, body["deviceId"], body["preAuthSessionId"]
+    )
 
     assert resp.status_code == 200
 
@@ -733,6 +780,7 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
     url_with_link_code = ""
     user_input_code = ""
     app_name = ""
+    resend_called = False
 
     def email_delivery_override(oi: EmailDeliveryInterface[EmailTemplateVars]):
         oi_send_email = oi.send_email
@@ -792,13 +840,39 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
             "https://api.supertokens.io/0/st/auth/passwordless/login"
         ).mock(side_effect=api_side_effect)
         resp = sign_in_up_request(driver_config_client, "test@example.com", True)
+        body = resp.json()
+
+        assert resp.status_code == 200
+        assert mocked_route.called
+
+    def code_resend_api_side_effect(request: httpx.Request):
+        nonlocal app_name, email, code_lifetime, url_with_link_code, user_input_code, resend_called
+        body = json.loads(request.content)
+
+        app_name = body["appName"]
+        email = body["email"]
+        code_lifetime = body["codeLifetime"]
+        url_with_link_code = body["urlWithLinkCode"]
+        user_input_code = body["userInputCode"]
+        resend_called = True
+
+        return httpx.Response(200, json={})
+
+    with respx_mock(assert_all_mocked=False) as mocker:
+        mocker.route(host="localhost").pass_through()
+        mocked_route = mocker.post(
+            "https://api.supertokens.io/0/st/auth/passwordless/login"
+        ).mock(side_effect=code_resend_api_side_effect)
+        resp = sign_in_up_request_code_resend(
+            driver_config_client, body["deviceId"], body["preAuthSessionId"], True
+        )
 
         assert resp.status_code == 200
         assert mocked_route.called
 
         assert email == "test@example.com"
         assert app_name == "ST"
-        assert all([url_with_link_code, user_input_code, code_lifetime])
+        assert all([url_with_link_code, user_input_code, code_lifetime, resend_called])
         assert code_lifetime > 0
 
 
@@ -903,6 +977,27 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         return
 
     resp = sign_in_up_request(driver_config_client, "test@example.com", True)
+    body = resp.json()
+
+    assert resp.status_code == 200
+
+    assert email == "test@example.com"
+    assert all([outer_override_called, get_content_called, send_raw_email_called])
+    assert code_lifetime > 0
+
+    # Resend:
+    email = ""
+    code_lifetime = 0
+    user_input_code = ""
+    get_content_called, send_raw_email_called, outer_override_called = (
+        False,
+        False,
+        False,
+    )
+
+    resp = sign_in_up_request_code_resend(
+        driver_config_client, body["deviceId"], body["preAuthSessionId"], True
+    )
 
     assert resp.status_code == 200
 
