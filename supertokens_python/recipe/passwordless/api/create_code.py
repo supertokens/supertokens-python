@@ -23,7 +23,7 @@ from supertokens_python.recipe.passwordless.utils import (
     ContactPhoneOnlyConfig,
 )
 from supertokens_python.types import GeneralErrorResponse
-from supertokens_python.utils import send_200_response
+from supertokens_python.utils import default_user_context, send_200_response
 
 
 async def create_code(api_implementation: APIInterface, api_options: APIOptions):
@@ -99,7 +99,13 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
             phone_number = phone_number_formatted
         except Exception:
             phone_number = phone_number.strip()
+
+    user_context = default_user_context(api_options.request)
+
     result = await api_implementation.create_code_post(
-        email=email, phone_number=phone_number, api_options=api_options, user_context={}
+        email=email,
+        phone_number=phone_number,
+        api_options=api_options,
+        user_context=user_context,
     )
     return send_200_response(result.to_json(), api_options.response)

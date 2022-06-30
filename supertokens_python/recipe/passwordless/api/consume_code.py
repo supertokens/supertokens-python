@@ -13,7 +13,7 @@
 # under the License.
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
-from supertokens_python.utils import send_200_response
+from supertokens_python.utils import default_user_context, send_200_response
 
 
 async def consume_code(api_implementation: APIInterface, api_options: APIOptions):
@@ -49,7 +49,14 @@ async def consume_code(api_implementation: APIInterface, api_options: APIOptions
         )
 
     pre_auth_session_id = body["preAuthSessionId"]
+    user_context = default_user_context(api_options.request)
+
     result = await api_implementation.consume_code_post(
-        pre_auth_session_id, user_input_code, device_id, link_code, api_options, {}
+        pre_auth_session_id,
+        user_input_code,
+        device_id,
+        link_code,
+        api_options,
+        user_context,
     )
     return send_200_response(result.to_json(), api_options.response)

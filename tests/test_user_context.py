@@ -169,3 +169,103 @@ async def test_user_context(driver_config_client: TestClient):
     assert res.status_code == 200
     assert works
     assert signUpContextWorks
+
+
+@mark.asyncio
+async def test_default_context(driver_config_client: TestClient):
+    signin_api_context_works, signin_context_works, create_new_session_context_works = (
+        False,
+        False,
+        False,
+    )
+
+    def apis_override_email_password(param: APIInterface):
+        og_sign_in_post = param.sign_in_post
+
+        async def sign_in_post(
+            form_fields: List[FormField],
+            api_options: APIOptions,
+            user_context: Dict[str, Any],
+        ):
+            req = user_context.get("_default", {}).get("request")
+            if req:
+                nonlocal signin_api_context_works
+                signin_api_context_works = True
+
+            return await og_sign_in_post(form_fields, api_options, user_context)
+
+        param.sign_in_post = sign_in_post
+        return param
+
+    def functions_override_email_password(param: RecipeInterface):
+        og_sign_in = param.sign_in
+
+        async def sign_in(email: str, password: str, user_context: Dict[str, Any]):
+            req = user_context.get("_default", {}).get("request")
+            if req:
+                nonlocal signin_context_works
+                signin_context_works = True
+
+            return await og_sign_in(email, password, user_context)
+
+        param.sign_in = sign_in
+        return param
+
+    def functions_override_session(param: SRecipeInterface):
+        og_create_new_session = param.create_new_session
+
+        async def create_new_session(
+            request: Any,
+            user_id: str,
+            access_token_payload: Union[None, Dict[str, Any]],
+            session_data: Union[None, Dict[str, Any]],
+            user_context: Dict[str, Any],
+        ):
+            req = user_context.get("_default", {}).get("request")
+            if req:
+                nonlocal create_new_session_context_works
+                create_new_session_context_works = True
+
+            response = await og_create_new_session(
+                request, user_id, access_token_payload, session_data, user_context
+            )
+            return response
+
+        param.create_new_session = create_new_session
+        return param
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            emailpassword.init(
+                override=emailpassword.InputOverrideConfig(
+                    apis=apis_override_email_password,
+                    functions=functions_override_email_password,
+                )
+            ),
+            session.init(
+                override=session.InputOverrideConfig(
+                    functions=functions_override_session
+                )
+            ),
+        ],
+    )
+    start_st()
+
+    await sign_up("random@gmail.com", "validpass123", {"manualCall": True})
+    res = sign_in_request(driver_config_client, "random@gmail.com", "validpass123")
+
+    assert res.status_code == 200
+    assert all(
+        [
+            signin_api_context_works,
+            signin_context_works,
+            create_new_session_context_works,
+        ]
+    )
