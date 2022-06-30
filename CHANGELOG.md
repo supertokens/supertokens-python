@@ -18,7 +18,8 @@ def apis_override_email_password(param: APIInterface):
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ):
-        if user_context["_default"]["request"] is not None:
+        req = user_context.get("_default", {}).get("request")
+        if req:
             # do something with the request
 
         return await og_sign_in_post(form_fields, api_options, user_context)
@@ -30,7 +31,8 @@ def functions_override_email_password(param: RecipeInterface):
     og_sign_in = param.sign_in
 
     async def sign_in(email: str, password: str, user_context: Dict[str, Any]):
-        if user_context["_default"]["request"] is not None:
+        req = user_context.get("_default", {}).get("request")
+        if req:
             # do something with the request
 
         return await og_sign_in(email, password, user_context)
