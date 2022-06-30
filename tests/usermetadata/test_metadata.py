@@ -14,7 +14,7 @@
 
 from typing import Any, Dict
 
-from pytest import mark
+from pytest import mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import usermetadata
@@ -60,7 +60,7 @@ async def test_that_usermetadata_recipe_works_as_expected():
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.13"):
         # If the version less than 2.13, user metadata doesn't exist. So skip the test
-        return
+        skip()
 
     TEST_USER_ID = "userId"
     TEST_METADATA: Dict[str, Any] = {
@@ -114,7 +114,7 @@ async def test_usermetadata_recipe_shallow_merge():
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.13"):
         # If the version less than 2.13, user metadata doesn't exist. So skip the test
-        return
+        skip()
 
     TEST_USER_ID = "userId"
 
@@ -190,7 +190,7 @@ async def test_recipe_override():
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.13"):
         # If the version less than 2.13, user metadata doesn't exist. So skip the test
-        return
+        skip()
 
     res = await get_user_metadata("userId")
     assert res.metadata == {}

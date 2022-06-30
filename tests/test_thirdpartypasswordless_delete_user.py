@@ -14,7 +14,7 @@
 
 from typing import Any, Dict
 
-from pytest import fixture, mark
+from pytest import fixture, mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
@@ -99,7 +99,7 @@ async def test_tp_passworldless_delete_user_info(driver_config_client: TestClien
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.11"):
         # If the version less than 2.11.0, passwordless OTP doesn't exist. So skip the test
-        return
+        skip()
 
     create_code_json = driver_config_client.post(
         url="/auth/signinup/code",
