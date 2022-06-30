@@ -22,6 +22,8 @@ from typing import Any, Dict, List
 
 from fastapi.testclient import TestClient
 from requests.models import Response
+from yaml import FullLoader, dump, load
+
 from supertokens_python import Supertokens
 from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
@@ -38,7 +40,6 @@ from supertokens_python.recipe.thirdpartypasswordless import (
 )
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
-from yaml import FullLoader, dump, load
 
 INSTALLATION_PATH = environ["SUPERTOKENS_PATH"]
 SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + "/.started"
@@ -277,6 +278,23 @@ def sign_in_up_request_phone(app: TestClient, phone: str, use_server: bool = Fal
             url="/auth/signinup/code",
             headers={"Content-Type": "application/json"},
             json={"phoneNumber": phone},
+        )
+        return response
+    finally:
+        if use_server:
+            environ["SUPERTOKENS_ENV"] = "testing"
+
+
+def sign_in_up_request_code_resend(
+    app: TestClient, device_id: str, preauth_sesion_id: str, use_server: bool = False
+):
+    if use_server:
+        environ["SUPERTOKENS_ENV"] = "production"
+    try:
+        response = app.post(
+            url="/auth/signinup/code/resend",
+            headers={"Content-Type": "application/json"},
+            json={"deviceId": device_id, "preAuthSessionId": preauth_sesion_id},
         )
         return response
     finally:
