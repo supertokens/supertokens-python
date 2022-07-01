@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mark tests as skipped if core version requirements are not met.
 - Use [black](https://github.com/psf/black) instead of `autopep8` to format code.
 
+### Breaking changes:
+- Changes session function recipe interfaces to not throw an `UNAUTHORISED` error when the input is a session_handle: https://github.com/supertokens/backend/issues/83
+  - `get_session_information` now returns `None` if the session does not exist.
+  - `update_session_data` now returns `False` if the input `session_handle` does not exist.
+  - `update_access_token_payload` now returns `False` if the input `session_handle` does not exist.
+  - `regenerate_access_token` now returns `None` if the input access token's `session_handle` does not exist.
+  - The `session_class` functions have not changed in behaviour and still throw `UNAUTHORISED` error. This works cause the `session_class` works on the current session and not some other session.
+
+
 ### Features:
 - Adds default `user_context` for API calls that contains the request object. It can be used in APIs / functions override like this:
 

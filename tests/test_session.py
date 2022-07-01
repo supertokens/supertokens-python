@@ -185,6 +185,7 @@ async def test_creating_many_sessions_for_one_user_and_looping():
 
     for handle in session_handles:
         info = await get_session_information(handle)
+        assert info is not None
         assert info.user_id == "someUser"
         assert info.access_token_payload["someKey"] == "someValue"
 
@@ -192,5 +193,6 @@ async def test_creating_many_sessions_for_one_user_and_looping():
 
     for handle in session_handles:
         info = await get_session_information(handle)
+        assert info is not None
         assert info.user_id == "someUser"
         assert info.access_token_payload["someKey2"] == "someValue"

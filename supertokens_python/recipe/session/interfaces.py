@@ -121,7 +121,7 @@ class RecipeInterface(ABC):
     @abstractmethod
     async def get_session_information(
         self, session_handle: str, user_context: Dict[str, Any]
-    ) -> SessionInformationResult:
+    ) -> Union[SessionInformationResult, None]:
         pass
 
     @abstractmethod
@@ -130,7 +130,7 @@ class RecipeInterface(ABC):
         session_handle: str,
         new_session_data: Dict[str, Any],
         user_context: Dict[str, Any],
-    ) -> None:
+    ) -> bool:
         pass
 
     @abstractmethod
@@ -139,7 +139,7 @@ class RecipeInterface(ABC):
         session_handle: str,
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
-    ) -> None:
+    ) -> bool:
         pass
 
     @abstractmethod
@@ -156,7 +156,7 @@ class RecipeInterface(ABC):
         access_token: str,
         new_access_token_payload: Union[Dict[str, Any], None],
         user_context: Dict[str, Any],
-    ) -> RegenerateAccessTokenOkResult:
+    ) -> Union[RegenerateAccessTokenOkResult, None]:
         pass
 
 

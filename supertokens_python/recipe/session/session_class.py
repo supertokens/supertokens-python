@@ -13,6 +13,8 @@
 # under the License.
 from typing import Any, Dict, Union
 
+from supertokens_python.recipe.session.exceptions import raise_unauthorised_exception
+
 from .interfaces import SessionContainer
 
 
@@ -33,6 +35,9 @@ class Session(SessionContainer):
         session_info = await self.recipe_implementation.get_session_information(
             self.session_handle, user_context
         )
+        if session_info is None:
+            raise_unauthorised_exception("Session information does not exist.")
+
         return session_info.session_data
 
     async def update_session_data(
@@ -42,9 +47,11 @@ class Session(SessionContainer):
     ) -> None:
         if user_context is None:
             user_context = {}
-        return await self.recipe_implementation.update_session_data(
+        updated = await self.recipe_implementation.update_session_data(
             self.session_handle, new_session_data, user_context
         )
+        if not updated:
+            raise_unauthorised_exception("Session does not exist anymore.")
 
     async def update_access_token_payload(
         self,
@@ -56,6 +63,9 @@ class Session(SessionContainer):
         response = await self.recipe_implementation.regenerate_access_token(
             self.access_token, new_access_token_payload, user_context
         )
+        if response is None:
+            raise_unauthorised_exception("Session information does not exist.")
+
         self.access_token_payload = response.session.user_data_in_jwt
         if response.access_token is not None:
             self.access_token = response.access_token.token
@@ -84,15 +94,21 @@ class Session(SessionContainer):
     ) -> int:
         if user_context is None:
             user_context = {}
-        result = await self.recipe_implementation.get_session_information(
+        session_info = await self.recipe_implementation.get_session_information(
             self.session_handle, user_context
         )
-        return result.time_created
+        if session_info is None:
+            raise_unauthorised_exception("Session information does not exist.")
+
+        return session_info.time_created
 
     async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -> int:
         if user_context is None:
             user_context = {}
-        result = await self.recipe_implementation.get_session_information(
+        session_info = await self.recipe_implementation.get_session_information(
             self.session_handle, user_context
         )
-        return result.expiry
+        if session_info is None:
+            raise_unauthorised_exception("Session information does not exist.")
+
+        return session_info.expiry

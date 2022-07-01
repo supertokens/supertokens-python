@@ -127,10 +127,13 @@ def get_recipe_implementation_with_jwt(
         session_handle: str,
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
-    ) -> None:
+    ) -> bool:
         session_information = await original_implementation.get_session_information(
             session_handle, user_context
         )
+        if session_information is None:
+            return False
+
         access_token_payload = session_information.access_token_payload
 
         if ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY not in access_token_payload:

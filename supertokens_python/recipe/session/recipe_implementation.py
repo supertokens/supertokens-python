@@ -309,7 +309,7 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_session_information(
         self, session_handle: str, user_context: Dict[str, Any]
-    ) -> SessionInformationResult:
+    ) -> Union[SessionInformationResult, None]:
         return await session_functions.get_session_information(self, session_handle)
 
     async def update_session_data(
@@ -317,8 +317,8 @@ class RecipeImplementation(RecipeInterface):
         session_handle: str,
         new_session_data: Dict[str, Any],
         user_context: Dict[str, Any],
-    ) -> None:
-        await session_functions.update_session_data(
+    ) -> bool:
+        return await session_functions.update_session_data(
             self, session_handle, new_session_data
         )
 
@@ -327,8 +327,8 @@ class RecipeImplementation(RecipeInterface):
         session_handle: str,
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
-    ) -> None:
-        await session_functions.update_access_token_payload(
+    ) -> bool:
+        return await session_functions.update_access_token_payload(
             self, session_handle, new_access_token_payload
         )
 
@@ -343,7 +343,7 @@ class RecipeImplementation(RecipeInterface):
         access_token: str,
         new_access_token_payload: Union[Dict[str, Any], None],
         user_context: Dict[str, Any],
-    ) -> RegenerateAccessTokenOkResult:
+    ) -> Union[RegenerateAccessTokenOkResult, None]:
         if new_access_token_payload is None:
             new_access_token_payload = {}
         response: Dict[str, Any] = await self.querier.send_post_request(
@@ -351,7 +351,7 @@ class RecipeImplementation(RecipeInterface):
             {"accessToken": access_token, "userDataInJWT": new_access_token_payload},
         )
         if response["status"] == "UNAUTHORISED":
-            raise_unauthorised_exception(response["message"])
+            return None
         access_token_obj: Union[None, AccessTokenObj] = None
         if "accessToken" in response:
             access_token_obj = AccessTokenObj(

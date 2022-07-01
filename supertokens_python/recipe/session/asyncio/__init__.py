@@ -17,6 +17,7 @@ from supertokens_python.recipe.openid.interfaces import (
     GetOpenIdDiscoveryConfigurationResult,
 )
 from supertokens_python.recipe.session.interfaces import (
+    RegenerateAccessTokenOkResult,
     SessionContainer,
     SessionInformationResult,
 )
@@ -121,7 +122,7 @@ async def revoke_multiple_sessions(
 
 async def get_session_information(
     session_handle: str, user_context: Union[None, Dict[str, Any]] = None
-) -> SessionInformationResult:
+) -> Union[SessionInformationResult, None]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.get_session_information(
@@ -133,7 +134,7 @@ async def update_session_data(
     session_handle: str,
     new_session_data: Dict[str, Any],
     user_context: Union[None, Dict[str, Any]] = None,
-) -> None:
+) -> bool:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.update_session_data(
@@ -145,7 +146,7 @@ async def update_access_token_payload(
     session_handle: str,
     new_access_token_payload: Dict[str, Any],
     user_context: Union[None, Dict[str, Any]] = None,
-) -> None:
+) -> bool:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(
@@ -205,9 +206,9 @@ async def regenerate_access_token(
     access_token: str,
     new_access_token_payload: Union[Dict[str, Any], None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
-):
+) -> Union[RegenerateAccessTokenOkResult, None]:
     if user_context is None:
         user_context = {}
-    await SessionRecipe.get_instance().recipe_implementation.regenerate_access_token(
+    return await SessionRecipe.get_instance().recipe_implementation.regenerate_access_token(
         access_token, new_access_token_payload, user_context
     )
