@@ -218,6 +218,16 @@ workflows:
               only: /dev-v[0-9]+(\.[0-9]+)*/
             branches:
               ignore: /.*/
+      - test-website-django2x:
+          requires:
+            - test-dev-tag-as-not-passed
+          context:
+            - slack-notification
+          filters:
+            tags:
+              only: /dev-v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
       - test-authreact-fastapi:
           requires:
             - test-dev-tag-as-not-passed
@@ -263,6 +273,7 @@ workflows:
             - test-website-fastapi
             - test-website-flask
             - test-website-django
+            - test-website-django2x
             - test-authreact-fastapi
             - test-authreact-flask
             - test-authreact-django
