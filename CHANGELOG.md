@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update usermetadata tests to ensure that utf8 chars are supported.
 - Mark tests as skipped if core version requirements are not met.
 - Use [black](https://github.com/psf/black) instead of `autopep8` to format code.
+- Add frontend integration tests for `django2x`
 
 ### Breaking changes:
 - Changes session function recipe interfaces to not throw an `UNAUTHORISED` error when the input is a session_handle: https://github.com/supertokens/backend/issues/83
