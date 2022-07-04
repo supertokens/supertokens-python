@@ -36,7 +36,7 @@ class Session(SessionContainer):
             self.session_handle, user_context
         )
         if session_info is None:
-            raise_unauthorised_exception("Session information does not exist.")
+            raise_unauthorised_exception("Session does not exist anymore.")
 
         return session_info.session_data
 
@@ -64,7 +64,7 @@ class Session(SessionContainer):
             self.access_token, new_access_token_payload, user_context
         )
         if response is None:
-            raise_unauthorised_exception("Session information does not exist.")
+            raise_unauthorised_exception("Session does not exist anymore.")
 
         self.access_token_payload = response.session.user_data_in_jwt
         if response.access_token is not None:
@@ -98,7 +98,7 @@ class Session(SessionContainer):
             self.session_handle, user_context
         )
         if session_info is None:
-            raise_unauthorised_exception("Session information does not exist.")
+            raise_unauthorised_exception("Session does not exist anymore.")
 
         return session_info.time_created
 
@@ -109,6 +109,6 @@ class Session(SessionContainer):
             self.session_handle, user_context
         )
         if session_info is None:
-            raise_unauthorised_exception("Session information does not exist.")
+            raise_unauthorised_exception("Session does not exist anymore.")
 
         return session_info.expiry
