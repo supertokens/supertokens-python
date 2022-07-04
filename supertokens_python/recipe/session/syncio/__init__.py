@@ -24,7 +24,11 @@ from ...jwt.interfaces import (
     CreateJwtResultUnsupportedAlgorithm,
     GetJWKSResult,
 )
-from ..interfaces import SessionContainer, SessionInformationResult
+from ..interfaces import (
+    RegenerateAccessTokenOkResult,
+    SessionContainer,
+    SessionInformationResult,
+)
 
 
 def create_new_session(
@@ -116,7 +120,7 @@ def revoke_multiple_sessions(
 
 def get_session_information(
     session_handle: str, user_context: Union[None, Dict[str, Any]] = None
-) -> SessionInformationResult:
+) -> Union[SessionInformationResult, None]:
     from supertokens_python.recipe.session.asyncio import (
         get_session_information as async_get_session_information,
     )
@@ -128,7 +132,7 @@ def update_session_data(
     session_handle: str,
     new_session_data: Dict[str, Any],
     user_context: Union[None, Dict[str, Any]] = None,
-) -> None:
+) -> bool:
     from supertokens_python.recipe.session.asyncio import (
         update_session_data as async_update_session_data,
     )
@@ -142,7 +146,7 @@ def update_access_token_payload(
     session_handle: str,
     new_access_token_payload: Dict[str, Any],
     user_context: Union[None, Dict[str, Any]] = None,
-) -> None:
+) -> bool:
     from supertokens_python.recipe.session.asyncio import (
         update_access_token_payload as async_update_access_token_payload,
     )
@@ -184,7 +188,7 @@ def regenerate_access_token(
     access_token: str,
     new_access_token_payload: Union[Dict[str, Any], None] = None,
     user_context: Union[None, Dict[str, Any]] = None,
-):
+) -> Union[RegenerateAccessTokenOkResult, None]:
     from supertokens_python.recipe.session.asyncio import (
         regenerate_access_token as async_regenerate_access_token,
     )

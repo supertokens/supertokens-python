@@ -300,31 +300,35 @@ async def update_session_data(
     recipe_implementation: RecipeImplementation,
     session_handle: str,
     new_session_data: Dict[str, Any],
-):
+) -> bool:
     response = await recipe_implementation.querier.send_put_request(
         NormalisedURLPath("/recipe/session/data"),
         {"sessionHandle": session_handle, "userDataInDatabase": new_session_data},
     )
     if response["status"] == "UNAUTHORISED":
-        raise_unauthorised_exception(response["message"])
+        return False
+
+    return True
 
 
 async def update_access_token_payload(
     recipe_implementation: RecipeImplementation,
     session_handle: str,
     new_access_token_payload: Dict[str, Any],
-):
+) -> bool:
     response = await recipe_implementation.querier.send_put_request(
         NormalisedURLPath("/recipe/jwt/data"),
         {"sessionHandle": session_handle, "userDataInJWT": new_access_token_payload},
     )
     if response["status"] == "UNAUTHORISED":
-        raise_unauthorised_exception(response["message"])
+        return False
+
+    return True
 
 
 async def get_session_information(
     recipe_implementation: RecipeImplementation, session_handle: str
-) -> SessionInformationResult:
+) -> Union[SessionInformationResult, None]:
     response = await recipe_implementation.querier.send_get_request(
         NormalisedURLPath("/recipe/session"), {"sessionHandle": session_handle}
     )
@@ -337,4 +341,4 @@ async def get_session_information(
             response["userDataInJWT"],
             response["timeCreated"],
         )
-    raise_unauthorised_exception(response["message"])
+    return None

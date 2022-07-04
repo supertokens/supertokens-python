@@ -13,6 +13,7 @@
 # under the License.
 
 from pytest import mark
+from typing import List
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 from supertokens_python.recipe import session
@@ -21,6 +22,8 @@ from supertokens_python.recipe.session.asyncio import (
     get_all_session_handles_for_user,
     get_session_information,
     update_access_token_payload,
+    update_session_data,
+    regenerate_access_token,
 )
 from supertokens_python.recipe.session.recipe_implementation import RecipeImplementation
 from supertokens_python.recipe.session.session_functions import (
@@ -157,40 +160,54 @@ async def test_creating_many_sessions_for_one_user_and_looping():
     if not isinstance(s.recipe_implementation, RecipeImplementation):
         raise Exception("Should never come here")
 
-    await create_new_session(
-        s.recipe_implementation, "someUser", {"someKey": "someValue"}, {}
-    )
-    await create_new_session(
-        s.recipe_implementation, "someUser", {"someKey": "someValue"}, {}
-    )
-    await create_new_session(
-        s.recipe_implementation, "someUser", {"someKey": "someValue"}, {}
-    )
-    await create_new_session(
-        s.recipe_implementation, "someUser", {"someKey": "someValue"}, {}
-    )
-    await create_new_session(
-        s.recipe_implementation, "someUser", {"someKey": "someValue"}, {}
-    )
-    await create_new_session(
-        s.recipe_implementation, "someUser", {"someKey": "someValue"}, {}
-    )
-    await create_new_session(
-        s.recipe_implementation, "someUser", {"someKey": "someValue"}, {}
-    )
+    access_tokens: List[str] = []
+    for _ in range(7):
+        new_session = await create_new_session(
+            s.recipe_implementation, "someUser", {"someKey": "someValue"}, {}
+        )
+        access_tokens.append(new_session["accessToken"]["token"])
 
     session_handles = await get_all_session_handles_for_user("someUser")
 
     assert len(session_handles) == 7
 
-    for handle in session_handles:
+    for i, handle in enumerate(session_handles):
         info = await get_session_information(handle)
+        assert info is not None
         assert info.user_id == "someUser"
         assert info.access_token_payload["someKey"] == "someValue"
 
-        await update_access_token_payload(handle, {"someKey2": "someValue"})
+        is_updated = await update_access_token_payload(
+            handle, {"someKey2": "someValue"}
+        )
+        assert is_updated
 
+        is_updated = await update_session_data(handle, {"foo": "bar"})
+        assert is_updated
+
+    # Confirm that update funcs worked:
     for handle in session_handles:
         info = await get_session_information(handle)
+        assert info is not None
         assert info.user_id == "someUser"
-        assert info.access_token_payload["someKey2"] == "someValue"
+        assert info.access_token_payload == {"someKey2": "someValue"}
+        assert info.session_data == {"foo": "bar"}
+
+    # Regenerate access token with new access_token_payload
+    for i, token in enumerate(access_tokens):
+        result = await regenerate_access_token(token, {"bar": "baz"})
+        assert result is not None
+        assert (
+            result.session.handle == session_handles[i]
+        )  # Session handle should remain the same
+
+        # Confirm that update worked:
+        info = await get_session_information(result.session.handle)
+        assert info is not None
+        assert info.access_token_payload == {"bar": "baz"}
+
+    # Try updating invalid handles:
+    is_updated = await update_access_token_payload("invalidHandle", {"foo": "bar"})
+    assert is_updated is False
+    is_updated = await update_session_data("invalidHandle", {"foo": "bar"})
+    assert is_updated is False
