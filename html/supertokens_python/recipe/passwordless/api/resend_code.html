@@ -40,9 +40,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.passwordless.interfaces import (APIInterface,
-                                                               APIOptions)
-from supertokens_python.utils import send_200_response
+from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
+from supertokens_python.utils import default_user_context, send_200_response
 
 
 async def resend_code(api_implementation: APIInterface, api_options: APIOptions):
@@ -53,16 +52,19 @@ async def resend_code(api_implementation: APIInterface, api_options: APIOptions)
     if body is None:
         raise_bad_input_exception(&#34;Please provide a JSON body&#34;)
 
-    if &#39;preAuthSessionId&#39; not in body:
-        raise_bad_input_exception(&#39;Please provide preAuthSessionId&#39;)
+    if &#34;preAuthSessionId&#34; not in body:
+        raise_bad_input_exception(&#34;Please provide preAuthSessionId&#34;)
 
-    if &#39;deviceId&#39; not in body:
-        raise_bad_input_exception(&#39;Please provide deviceId&#39;)
+    if &#34;deviceId&#34; not in body:
+        raise_bad_input_exception(&#34;Please provide deviceId&#34;)
 
-    pre_auth_session_id = body[&#39;preAuthSessionId&#39;]
-    device_id = body[&#39;deviceId&#39;]
+    pre_auth_session_id = body[&#34;preAuthSessionId&#34;]
+    device_id = body[&#34;deviceId&#34;]
+    user_context = default_user_context(api_options.request)
 
-    result = await api_implementation.resend_code_post(device_id, pre_auth_session_id, api_options, {})
+    result = await api_implementation.resend_code_post(
+        device_id, pre_auth_session_id, api_options, user_context
+    )
     return send_200_response(result.to_json(), api_options.response)</code></pre>
 </details>
 </section>
@@ -90,16 +92,19 @@ async def resend_code(api_implementation: APIInterface, api_options: APIOptions)
     if body is None:
         raise_bad_input_exception(&#34;Please provide a JSON body&#34;)
 
-    if &#39;preAuthSessionId&#39; not in body:
-        raise_bad_input_exception(&#39;Please provide preAuthSessionId&#39;)
+    if &#34;preAuthSessionId&#34; not in body:
+        raise_bad_input_exception(&#34;Please provide preAuthSessionId&#34;)
 
-    if &#39;deviceId&#39; not in body:
-        raise_bad_input_exception(&#39;Please provide deviceId&#39;)
+    if &#34;deviceId&#34; not in body:
+        raise_bad_input_exception(&#34;Please provide deviceId&#34;)
 
-    pre_auth_session_id = body[&#39;preAuthSessionId&#39;]
-    device_id = body[&#39;deviceId&#39;]
+    pre_auth_session_id = body[&#34;preAuthSessionId&#34;]
+    device_id = body[&#34;deviceId&#34;]
+    user_context = default_user_context(api_options.request)
 
-    result = await api_implementation.resend_code_post(device_id, pre_auth_session_id, api_options, {})
+    result = await api_implementation.resend_code_post(
+        device_id, pre_auth_session_id, api_options, user_context
+    )
     return send_200_response(result.to_json(), api_options.response)</code></pre>
 </details>
 </dd>

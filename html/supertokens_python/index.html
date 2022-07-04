@@ -52,14 +52,17 @@ SupertokensConfig = supertokens.SupertokensConfig
 AppInfo = supertokens.AppInfo
 
 
-def init(app_info: InputAppInfo,
-         framework: Literal[&#39;fastapi&#39;, &#39;flask&#39;, &#39;django&#39;],
-         supertokens_config: SupertokensConfig,
-         recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
-         mode: Union[Literal[&#39;asgi&#39;, &#39;wsgi&#39;], None] = None,
-         telemetry: Union[bool, None] = None):
-    return Supertokens.init(app_info, framework,
-                            supertokens_config, recipe_list, mode, telemetry)
+def init(
+    app_info: InputAppInfo,
+    framework: Literal[&#34;fastapi&#34;, &#34;flask&#34;, &#34;django&#34;],
+    supertokens_config: SupertokensConfig,
+    recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
+    mode: Union[Literal[&#34;asgi&#34;, &#34;wsgi&#34;], None] = None,
+    telemetry: Union[bool, None] = None,
+):
+    return Supertokens.init(
+        app_info, framework, supertokens_config, recipe_list, mode, telemetry
+    )
 
 
 def get_all_cors_headers() -&gt; List[str]:
@@ -166,14 +169,17 @@ def get_all_cors_headers() -&gt; List[str]:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def init(app_info: InputAppInfo,
-         framework: Literal[&#39;fastapi&#39;, &#39;flask&#39;, &#39;django&#39;],
-         supertokens_config: SupertokensConfig,
-         recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
-         mode: Union[Literal[&#39;asgi&#39;, &#39;wsgi&#39;], None] = None,
-         telemetry: Union[bool, None] = None):
-    return Supertokens.init(app_info, framework,
-                            supertokens_config, recipe_list, mode, telemetry)</code></pre>
+<pre><code class="python">def init(
+    app_info: InputAppInfo,
+    framework: Literal[&#34;fastapi&#34;, &#34;flask&#34;, &#34;django&#34;],
+    supertokens_config: SupertokensConfig,
+    recipe_list: List[Callable[[supertokens.AppInfo], RecipeModule]],
+    mode: Union[Literal[&#34;asgi&#34;, &#34;wsgi&#34;], None] = None,
+    telemetry: Union[bool, None] = None,
+):
+    return Supertokens.init(
+        app_info, framework, supertokens_config, recipe_list, mode, telemetry
+    )</code></pre>
 </details>
 </dd>
 </dl>

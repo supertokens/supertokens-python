@@ -44,31 +44,31 @@ from __future__ import annotations
 from typing import Any, Dict, List, Union
 
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.emailpassword.constants import \
-    FORM_FIELD_EMAIL_ID
-from supertokens_python.recipe.emailpassword.exceptions import \
-    raise_form_field_exception
-from supertokens_python.recipe.emailpassword.types import (ErrorFormField,
-                                                           FormField,
-                                                           NormalisedFormField)
+from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_EMAIL_ID
+from supertokens_python.recipe.emailpassword.exceptions import (
+    raise_form_field_exception,
+)
+from supertokens_python.recipe.emailpassword.types import (
+    ErrorFormField,
+    FormField,
+    NormalisedFormField,
+)
 from supertokens_python.utils import find_first_occurrence_in_list
 
 
-async def validate_form_or_throw_error(inputs: List[FormField], config_form_fields: List[NormalisedFormField]):
+async def validate_form_or_throw_error(
+    inputs: List[FormField], config_form_fields: List[NormalisedFormField]
+):
     validation_errors: List[ErrorFormField] = []
     if len(config_form_fields) != len(inputs):
-        raise_bad_input_exception(
-            &#39;Are you sending too many / too few formFields?&#39;)
+        raise_bad_input_exception(&#34;Are you sending too many / too few formFields?&#34;)
 
     for field in config_form_fields:
         input_field: Union[None, FormField] = find_first_occurrence_in_list(
-            lambda x: x.id == field.id, inputs)
-        if input_field is None or (
-                input_field.value == &#39;&#39; and not field.optional):
-            validation_errors.append(
-                ErrorFormField(
-                    field.id,
-                    &#39;Field is not optional&#39;))
+            lambda x: x.id == field.id, inputs
+        )
+        if input_field is None or (input_field.value == &#34;&#34; and not field.optional):
+            validation_errors.append(ErrorFormField(field.id, &#34;Field is not optional&#34;))
         else:
             error = await field.validate(input_field.value)
             if error is not None:
@@ -76,31 +76,34 @@ async def validate_form_or_throw_error(inputs: List[FormField], config_form_fiel
 
     if len(validation_errors) != 0:
         # raise BadInputError(msg=&#34;Error in input formFields&#34;)
-        raise_form_field_exception(
-            &#39;Error in input formFields&#39;,
-            validation_errors)
+        raise_form_field_exception(&#34;Error in input formFields&#34;, validation_errors)
 
 
-async def validate_form_fields_or_throw_error(config_form_fields: List[NormalisedFormField], form_fields_raw: Any) -&gt; \
-        List[FormField]:
+async def validate_form_fields_or_throw_error(
+    config_form_fields: List[NormalisedFormField], form_fields_raw: Any
+) -&gt; List[FormField]:
     if form_fields_raw is None:
-        raise_bad_input_exception(&#39;Missing input param: formFields&#39;)
+        raise_bad_input_exception(&#34;Missing input param: formFields&#34;)
 
     if not isinstance(form_fields_raw, List):
-        raise_bad_input_exception(&#39;formFields must be an array&#39;)
+        raise_bad_input_exception(&#34;formFields must be an array&#34;)
 
     form_fields: List[FormField] = []
 
     form_fields_list_raw: List[Dict[str, Any]] = form_fields_raw
     for current_form_field in form_fields_list_raw:
-        if &#39;id&#39; not in current_form_field or not isinstance(current_form_field[&#39;id&#39;],
-                                                            str) or &#39;value&#39; not in current_form_field:
+        if (
+            &#34;id&#34; not in current_form_field
+            or not isinstance(current_form_field[&#34;id&#34;], str)
+            or &#34;value&#34; not in current_form_field
+        ):
             raise_bad_input_exception(
-                &#39;All elements of formFields must contain an \&#39;id\&#39; and \&#39;value\&#39; field&#39;)
-        value = current_form_field[&#39;value&#39;]
-        if current_form_field[&#39;id&#39;] == FORM_FIELD_EMAIL_ID:
+                &#34;All elements of formFields must contain an &#39;id&#39; and &#39;value&#39; field&#34;
+            )
+        value = current_form_field[&#34;value&#34;]
+        if current_form_field[&#34;id&#34;] == FORM_FIELD_EMAIL_ID:
             value = value.strip()
-        form_fields.append(FormField(current_form_field[&#39;id&#39;], value))
+        form_fields.append(FormField(current_form_field[&#34;id&#34;], value))
 
     await validate_form_or_throw_error(form_fields, config_form_fields)
     return form_fields</code></pre>
@@ -122,26 +125,31 @@ async def validate_form_fields_or_throw_error(config_form_fields: List[Normalise
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def validate_form_fields_or_throw_error(config_form_fields: List[NormalisedFormField], form_fields_raw: Any) -&gt; \
-        List[FormField]:
+<pre><code class="python">async def validate_form_fields_or_throw_error(
+    config_form_fields: List[NormalisedFormField], form_fields_raw: Any
+) -&gt; List[FormField]:
     if form_fields_raw is None:
-        raise_bad_input_exception(&#39;Missing input param: formFields&#39;)
+        raise_bad_input_exception(&#34;Missing input param: formFields&#34;)
 
     if not isinstance(form_fields_raw, List):
-        raise_bad_input_exception(&#39;formFields must be an array&#39;)
+        raise_bad_input_exception(&#34;formFields must be an array&#34;)
 
     form_fields: List[FormField] = []
 
     form_fields_list_raw: List[Dict[str, Any]] = form_fields_raw
     for current_form_field in form_fields_list_raw:
-        if &#39;id&#39; not in current_form_field or not isinstance(current_form_field[&#39;id&#39;],
-                                                            str) or &#39;value&#39; not in current_form_field:
+        if (
+            &#34;id&#34; not in current_form_field
+            or not isinstance(current_form_field[&#34;id&#34;], str)
+            or &#34;value&#34; not in current_form_field
+        ):
             raise_bad_input_exception(
-                &#39;All elements of formFields must contain an \&#39;id\&#39; and \&#39;value\&#39; field&#39;)
-        value = current_form_field[&#39;value&#39;]
-        if current_form_field[&#39;id&#39;] == FORM_FIELD_EMAIL_ID:
+                &#34;All elements of formFields must contain an &#39;id&#39; and &#39;value&#39; field&#34;
+            )
+        value = current_form_field[&#34;value&#34;]
+        if current_form_field[&#34;id&#34;] == FORM_FIELD_EMAIL_ID:
             value = value.strip()
-        form_fields.append(FormField(current_form_field[&#39;id&#39;], value))
+        form_fields.append(FormField(current_form_field[&#34;id&#34;], value))
 
     await validate_form_or_throw_error(form_fields, config_form_fields)
     return form_fields</code></pre>
@@ -156,21 +164,19 @@ async def validate_form_fields_or_throw_error(config_form_fields: List[Normalise
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def validate_form_or_throw_error(inputs: List[FormField], config_form_fields: List[NormalisedFormField]):
+<pre><code class="python">async def validate_form_or_throw_error(
+    inputs: List[FormField], config_form_fields: List[NormalisedFormField]
+):
     validation_errors: List[ErrorFormField] = []
     if len(config_form_fields) != len(inputs):
-        raise_bad_input_exception(
-            &#39;Are you sending too many / too few formFields?&#39;)
+        raise_bad_input_exception(&#34;Are you sending too many / too few formFields?&#34;)
 
     for field in config_form_fields:
         input_field: Union[None, FormField] = find_first_occurrence_in_list(
-            lambda x: x.id == field.id, inputs)
-        if input_field is None or (
-                input_field.value == &#39;&#39; and not field.optional):
-            validation_errors.append(
-                ErrorFormField(
-                    field.id,
-                    &#39;Field is not optional&#39;))
+            lambda x: x.id == field.id, inputs
+        )
+        if input_field is None or (input_field.value == &#34;&#34; and not field.optional):
+            validation_errors.append(ErrorFormField(field.id, &#34;Field is not optional&#34;))
         else:
             error = await field.validate(input_field.value)
             if error is not None:
@@ -178,9 +184,7 @@ async def validate_form_fields_or_throw_error(config_form_fields: List[Normalise
 
     if len(validation_errors) != 0:
         # raise BadInputError(msg=&#34;Error in input formFields&#34;)
-        raise_form_field_exception(
-            &#39;Error in input formFields&#39;,
-            validation_errors)</code></pre>
+        raise_form_field_exception(&#34;Error in input formFields&#34;, validation_errors)</code></pre>
 </details>
 </dd>
 </dl>

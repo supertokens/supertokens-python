@@ -52,9 +52,11 @@ if TYPE_CHECKING:
     from ...recipe_module import RecipeModule
 
 
-def init(jwt_validity_seconds: Union[int, None] = None,
-         issuer: Union[str, None] = None,
-         override: Union[InputOverrideConfig, None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
+def init(
+    jwt_validity_seconds: Union[int, None] = None,
+    issuer: Union[str, None] = None,
+    override: Union[InputOverrideConfig, None] = None,
+) -&gt; Callable[[AppInfo], RecipeModule]:
     return OpenIdRecipe.init(jwt_validity_seconds, issuer, override)</code></pre>
 </details>
 </section>
@@ -113,9 +115,11 @@ def init(jwt_validity_seconds: Union[int, None] = None,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def init(jwt_validity_seconds: Union[int, None] = None,
-         issuer: Union[str, None] = None,
-         override: Union[InputOverrideConfig, None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
+<pre><code class="python">def init(
+    jwt_validity_seconds: Union[int, None] = None,
+    issuer: Union[str, None] = None,
+    override: Union[InputOverrideConfig, None] = None,
+) -&gt; Callable[[AppInfo], RecipeModule]:
     return OpenIdRecipe.init(jwt_validity_seconds, issuer, override)</code></pre>
 </details>
 </dd>

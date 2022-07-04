@@ -43,195 +43,345 @@
 from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.passwordless.interfaces import (
-    DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError)
+    DeleteUserInfoOkResult,
+    DeleteUserInfoUnknownUserIdError,
+)
 
 from .. import interfaces
 from ..recipe import ThirdPartyPasswordlessRecipe
-from ..types import (EmailTemplateVars,
-                     SMSTemplateVars, User)
+from ..types import EmailTemplateVars, SMSTemplateVars, User
 
 
-async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+async def create_email_verification_token(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+):
     if user_context is None:
         user_context = {}
-    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(user_id, user_context)
+    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(
+        user_id, user_context
+    )
     return await ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.create_email_verification_token(
-        user_id, email, user_context)
-
-
-async def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any]] = None):
-    if user_context is None:
-        user_context = {}
-    return ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
-        token, user_context)
-
-
-async def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    if user_context is None:
-        user_context = {}
-    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(user_id, user_context)
-    return await ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.is_email_verified(
-        user_id, email, user_context)
-
-
-async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    if user_context is None:
-        user_context = {}
-    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(user_id, user_context)
-    return await ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.unverify_email(
-        user_id, email, user_context)
-
-
-async def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    if user_context is None:
-        user_context = {}
-    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(user_id, user_context)
-    return await ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.revoke_email_verification_tokens(
-        user_id, email, user_context)
-
-
-async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[None, User]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_id(user_id, user_context)
-
-
-async def get_user_by_third_party_info(third_party_id: str, third_party_user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
-
-
-async def thirdparty_sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Union[None, Dict[str, Any]] = None):
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)
-
-
-async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[User]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_users_by_email(email, user_context)
-
-
-async def create_code(email: Union[None, str] = None,
-                      phone_number: Union[None, str] = None,
-                      user_input_code: Union[None, str] = None,
-                      user_context: Union[None, Dict[str, Any]] = None) -&gt; interfaces.CreateCodeOkResult:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.create_code(email=email, phone_number=phone_number, user_input_code=user_input_code, user_context=user_context)
-
-
-async def create_new_code_for_device(device_id: str,
-                                     user_input_code: Union[str, None] = None,
-                                     user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[interfaces.CreateNewCodeForDeviceOkResult, interfaces.CreateNewCodeForDeviceRestartFlowError, interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.create_new_code_for_device(device_id=device_id, user_input_code=user_input_code, user_context=user_context)
-
-
-async def consume_code(pre_auth_session_id: str,
-                       user_input_code: Union[str, None] = None,
-                       device_id: Union[str, None] = None,
-                       link_code: Union[str, None] = None,
-                       user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[interfaces.ConsumeCodeOkResult, interfaces.ConsumeCodeIncorrectUserInputCodeError, interfaces.ConsumeCodeExpiredUserInputCodeError, interfaces.ConsumeCodeRestartFlowError]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.consume_code(pre_auth_session_id=pre_auth_session_id, user_input_code=user_input_code, device_id=device_id, link_code=link_code, user_context=user_context)
-
-
-async def get_user_by_phone_number(phone_number: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[User, None]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_phone_number(phone_number=phone_number, user_context=user_context)
-
-
-async def update_passwordless_user(user_id: str,
-                                   email: Union[str, None] = None,
-                                   phone_number: Union[str, None] = None,
-                                   user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[interfaces.PasswordlessUpdateUserOkResult, interfaces.PasswordlessUpdateUserUnknownUserIdError, interfaces.PasswordlessUpdateUserEmailAlreadyExistsError, interfaces.PasswordlessUpdateUserPhoneNumberAlreadyExistsError]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.update_passwordless_user(user_id=user_id, email=email, phone_number=phone_number, user_context=user_context)
-
-
-async def delete_email_for_passwordless_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_passwordless_user(user_id=user_id, user_context=user_context)
-
-
-async def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(user_id=user_id, user_context=user_context)
-
-
-async def revoke_all_codes(email: Union[str, None] = None,
-                           phone_number: Union[str, None] = None,
-                           user_context: Union[None, Dict[str, Any]] = None) -&gt; interfaces.RevokeAllCodesOkResult:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.revoke_all_codes(email=email, phone_number=phone_number, user_context=user_context)
-
-
-async def revoke_code(code_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; interfaces.RevokeCodeOkResult:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.revoke_code(code_id=code_id, user_context=user_context)
-
-
-async def list_codes_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[interfaces.DeviceType]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_email(email=email, user_context=user_context)
-
-
-async def list_codes_by_phone_number(phone_number: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[interfaces.DeviceType]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_phone_number(phone_number=phone_number, user_context=user_context)
-
-
-async def list_codes_by_device_id(device_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[interfaces.DeviceType, None]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_device_id(device_id=device_id, user_context=user_context)
-
-
-async def list_codes_by_pre_auth_session_id(pre_auth_session_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[interfaces.DeviceType, None]:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_pre_auth_session_id(pre_auth_session_id=pre_auth_session_id, user_context=user_context)
-
-
-async def create_magic_link(email: Union[str, None], phone_number: Union[str, None], user_context: Union[None, Dict[str, Any]] = None) -&gt; str:
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.create_magic_link(email=email, phone_number=phone_number, user_context=user_context)
-
-
-async def passwordlessSigninup(email: Union[str, None], phone_number: Union[str, None], user_context: Union[None, Dict[str, Any]] = None) -&gt; interfaces.ConsumeCodeOkResult:
-    if user_context is None:
-        user_context = {}
-    result = await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.signinup(email=email, phone_number=phone_number, user_context=user_context)
-    return interfaces.ConsumeCodeOkResult(
-        result.created_new_user,
-        User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined)
+        user_id, email, user_context
     )
 
 
-async def send_email(input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
+async def verify_email_using_token(
+    token: str, user_context: Union[None, Dict[str, Any]] = None
+):
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(input_, user_context)
+    return ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
+        token, user_context
+    )
 
 
-async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
+async def is_email_verified(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+):
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(input_, user_context)</code></pre>
+    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(
+        user_id, user_context
+    )
+    return await ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.is_email_verified(
+        user_id, email, user_context
+    )
+
+
+async def unverify_email(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+):
+    if user_context is None:
+        user_context = {}
+    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(
+        user_id, user_context
+    )
+    return await ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.unverify_email(
+        user_id, email, user_context
+    )
+
+
+async def revoke_email_verification_tokens(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+):
+    if user_context is None:
+        user_context = {}
+    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(
+        user_id, user_context
+    )
+    return await ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.revoke_email_verification_tokens(
+        user_id, email, user_context
+    )
+
+
+async def get_user_by_id(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[None, User]:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_id(
+        user_id, user_context
+    )
+
+
+async def get_user_by_third_party_info(
+    third_party_id: str,
+    third_party_user_id: str,
+    user_context: Union[None, Dict[str, Any]] = None,
+):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(
+        third_party_id, third_party_user_id, user_context
+    )
+
+
+async def thirdparty_sign_in_up(
+    third_party_id: str,
+    third_party_user_id: str,
+    email: str,
+    email_verified: bool,
+    user_context: Union[None, Dict[str, Any]] = None,
+):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.thirdparty_sign_in_up(
+        third_party_id, third_party_user_id, email, email_verified, user_context
+    )
+
+
+async def get_users_by_email(
+    email: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; List[User]:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_users_by_email(
+        email, user_context
+    )
+
+
+async def create_code(
+    email: Union[None, str] = None,
+    phone_number: Union[None, str] = None,
+    user_input_code: Union[None, str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; interfaces.CreateCodeOkResult:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.create_code(
+        email=email,
+        phone_number=phone_number,
+        user_input_code=user_input_code,
+        user_context=user_context,
+    )
+
+
+async def create_new_code_for_device(
+    device_id: str,
+    user_input_code: Union[str, None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[
+    interfaces.CreateNewCodeForDeviceOkResult,
+    interfaces.CreateNewCodeForDeviceRestartFlowError,
+    interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
+]:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.create_new_code_for_device(
+        device_id=device_id, user_input_code=user_input_code, user_context=user_context
+    )
+
+
+async def consume_code(
+    pre_auth_session_id: str,
+    user_input_code: Union[str, None] = None,
+    device_id: Union[str, None] = None,
+    link_code: Union[str, None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[
+    interfaces.ConsumeCodeOkResult,
+    interfaces.ConsumeCodeIncorrectUserInputCodeError,
+    interfaces.ConsumeCodeExpiredUserInputCodeError,
+    interfaces.ConsumeCodeRestartFlowError,
+]:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.consume_code(
+        pre_auth_session_id=pre_auth_session_id,
+        user_input_code=user_input_code,
+        device_id=device_id,
+        link_code=link_code,
+        user_context=user_context,
+    )
+
+
+async def get_user_by_phone_number(
+    phone_number: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[User, None]:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_phone_number(
+        phone_number=phone_number, user_context=user_context
+    )
+
+
+async def update_passwordless_user(
+    user_id: str,
+    email: Union[str, None] = None,
+    phone_number: Union[str, None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[
+    interfaces.PasswordlessUpdateUserOkResult,
+    interfaces.PasswordlessUpdateUserUnknownUserIdError,
+    interfaces.PasswordlessUpdateUserEmailAlreadyExistsError,
+    interfaces.PasswordlessUpdateUserPhoneNumberAlreadyExistsError,
+]:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.update_passwordless_user(
+        user_id=user_id,
+        email=email,
+        phone_number=phone_number,
+        user_context=user_context,
+    )
+
+
+async def delete_email_for_passwordless_user(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_passwordless_user(
+        user_id=user_id, user_context=user_context
+    )
+
+
+async def delete_phone_number_for_user(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(
+        user_id=user_id, user_context=user_context
+    )
+
+
+async def revoke_all_codes(
+    email: Union[str, None] = None,
+    phone_number: Union[str, None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; interfaces.RevokeAllCodesOkResult:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.revoke_all_codes(
+        email=email, phone_number=phone_number, user_context=user_context
+    )
+
+
+async def revoke_code(
+    code_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; interfaces.RevokeCodeOkResult:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.revoke_code(
+        code_id=code_id, user_context=user_context
+    )
+
+
+async def list_codes_by_email(
+    email: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; List[interfaces.DeviceType]:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_email(
+        email=email, user_context=user_context
+    )
+
+
+async def list_codes_by_phone_number(
+    phone_number: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; List[interfaces.DeviceType]:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_phone_number(
+        phone_number=phone_number, user_context=user_context
+    )
+
+
+async def list_codes_by_device_id(
+    device_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[interfaces.DeviceType, None]:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_device_id(
+        device_id=device_id, user_context=user_context
+    )
+
+
+async def list_codes_by_pre_auth_session_id(
+    pre_auth_session_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[interfaces.DeviceType, None]:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_pre_auth_session_id(
+        pre_auth_session_id=pre_auth_session_id, user_context=user_context
+    )
+
+
+async def create_magic_link(
+    email: Union[str, None],
+    phone_number: Union[str, None],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; str:
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.create_magic_link(
+        email=email, phone_number=phone_number, user_context=user_context
+    )
+
+
+async def passwordlessSigninup(
+    email: Union[str, None],
+    phone_number: Union[str, None],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; interfaces.ConsumeCodeOkResult:
+    if user_context is None:
+        user_context = {}
+    result = (
+        await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.signinup(
+            email=email, phone_number=phone_number, user_context=user_context
+        )
+    )
+    return interfaces.ConsumeCodeOkResult(
+        result.created_new_user,
+        User(
+            result.user.user_id,
+            result.user.email,
+            result.user.phone_number,
+            None,
+            result.user.time_joined,
+        ),
+    )
+
+
+async def send_email(
+    input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
+        input_, user_context
+    )
+
+
+async def send_sms(
+    input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyPasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(
+        input_, user_context
+    )</code></pre>
 </details>
 </section>
 <section>
@@ -250,14 +400,27 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def consume_code(pre_auth_session_id: str,
-                       user_input_code: Union[str, None] = None,
-                       device_id: Union[str, None] = None,
-                       link_code: Union[str, None] = None,
-                       user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[interfaces.ConsumeCodeOkResult, interfaces.ConsumeCodeIncorrectUserInputCodeError, interfaces.ConsumeCodeExpiredUserInputCodeError, interfaces.ConsumeCodeRestartFlowError]:
+<pre><code class="python">async def consume_code(
+    pre_auth_session_id: str,
+    user_input_code: Union[str, None] = None,
+    device_id: Union[str, None] = None,
+    link_code: Union[str, None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[
+    interfaces.ConsumeCodeOkResult,
+    interfaces.ConsumeCodeIncorrectUserInputCodeError,
+    interfaces.ConsumeCodeExpiredUserInputCodeError,
+    interfaces.ConsumeCodeRestartFlowError,
+]:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.consume_code(pre_auth_session_id=pre_auth_session_id, user_input_code=user_input_code, device_id=device_id, link_code=link_code, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.consume_code(
+        pre_auth_session_id=pre_auth_session_id,
+        user_input_code=user_input_code,
+        device_id=device_id,
+        link_code=link_code,
+        user_context=user_context,
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.create_code"><code class="name flex">
@@ -269,13 +432,20 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_code(email: Union[None, str] = None,
-                      phone_number: Union[None, str] = None,
-                      user_input_code: Union[None, str] = None,
-                      user_context: Union[None, Dict[str, Any]] = None) -&gt; interfaces.CreateCodeOkResult:
+<pre><code class="python">async def create_code(
+    email: Union[None, str] = None,
+    phone_number: Union[None, str] = None,
+    user_input_code: Union[None, str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; interfaces.CreateCodeOkResult:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.create_code(email=email, phone_number=phone_number, user_input_code=user_input_code, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.create_code(
+        email=email,
+        phone_number=phone_number,
+        user_input_code=user_input_code,
+        user_context=user_context,
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.create_email_verification_token"><code class="name flex">
@@ -287,12 +457,17 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_email_verification_token(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def create_email_verification_token(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+):
     if user_context is None:
         user_context = {}
-    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(user_id, user_context)
+    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(
+        user_id, user_context
+    )
     return await ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.create_email_verification_token(
-        user_id, email, user_context)</code></pre>
+        user_id, email, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.create_magic_link"><code class="name flex">
@@ -304,10 +479,16 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_magic_link(email: Union[str, None], phone_number: Union[str, None], user_context: Union[None, Dict[str, Any]] = None) -&gt; str:
+<pre><code class="python">async def create_magic_link(
+    email: Union[str, None],
+    phone_number: Union[str, None],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; str:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.create_magic_link(email=email, phone_number=phone_number, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.create_magic_link(
+        email=email, phone_number=phone_number, user_context=user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.create_new_code_for_device"><code class="name flex">
@@ -319,12 +500,20 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_new_code_for_device(device_id: str,
-                                     user_input_code: Union[str, None] = None,
-                                     user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[interfaces.CreateNewCodeForDeviceOkResult, interfaces.CreateNewCodeForDeviceRestartFlowError, interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
+<pre><code class="python">async def create_new_code_for_device(
+    device_id: str,
+    user_input_code: Union[str, None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[
+    interfaces.CreateNewCodeForDeviceOkResult,
+    interfaces.CreateNewCodeForDeviceRestartFlowError,
+    interfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
+]:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.create_new_code_for_device(device_id=device_id, user_input_code=user_input_code, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.create_new_code_for_device(
+        device_id=device_id, user_input_code=user_input_code, user_context=user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.delete_email_for_passwordless_user"><code class="name flex">
@@ -336,10 +525,14 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def delete_email_for_passwordless_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+<pre><code class="python">async def delete_email_for_passwordless_user(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_passwordless_user(user_id=user_id, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_email_for_passwordless_user(
+        user_id=user_id, user_context=user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.delete_phone_number_for_user"><code class="name flex">
@@ -351,10 +544,14 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def delete_phone_number_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
+<pre><code class="python">async def delete_phone_number_for_user(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[DeleteUserInfoOkResult, DeleteUserInfoUnknownUserIdError]:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(user_id=user_id, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.delete_phone_number_for_user(
+        user_id=user_id, user_context=user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.get_user_by_id"><code class="name flex">
@@ -366,10 +563,14 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_user_by_id(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[None, User]:
+<pre><code class="python">async def get_user_by_id(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[None, User]:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_id(user_id, user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_id(
+        user_id, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.get_user_by_phone_number"><code class="name flex">
@@ -381,10 +582,14 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_user_by_phone_number(phone_number: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[User, None]:
+<pre><code class="python">async def get_user_by_phone_number(
+    phone_number: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[User, None]:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_phone_number(phone_number=phone_number, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_phone_number(
+        phone_number=phone_number, user_context=user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.get_user_by_third_party_info"><code class="name flex">
@@ -396,10 +601,16 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_user_by_third_party_info(third_party_id: str, third_party_user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def get_user_by_third_party_info(
+    third_party_id: str,
+    third_party_user_id: str,
+    user_context: Union[None, Dict[str, Any]] = None,
+):
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_user_by_thirdparty_info(
+        third_party_id, third_party_user_id, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.get_users_by_email"><code class="name flex">
@@ -411,10 +622,14 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_users_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[User]:
+<pre><code class="python">async def get_users_by_email(
+    email: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; List[User]:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_users_by_email(email, user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.get_users_by_email(
+        email, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.is_email_verified"><code class="name flex">
@@ -426,12 +641,17 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def is_email_verified(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+):
     if user_context is None:
         user_context = {}
-    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(user_id, user_context)
+    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(
+        user_id, user_context
+    )
     return await ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.is_email_verified(
-        user_id, email, user_context)</code></pre>
+        user_id, email, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.list_codes_by_device_id"><code class="name flex">
@@ -443,10 +663,14 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def list_codes_by_device_id(device_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[interfaces.DeviceType, None]:
+<pre><code class="python">async def list_codes_by_device_id(
+    device_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[interfaces.DeviceType, None]:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_device_id(device_id=device_id, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_device_id(
+        device_id=device_id, user_context=user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.list_codes_by_email"><code class="name flex">
@@ -458,10 +682,14 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def list_codes_by_email(email: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[interfaces.DeviceType]:
+<pre><code class="python">async def list_codes_by_email(
+    email: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; List[interfaces.DeviceType]:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_email(email=email, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_email(
+        email=email, user_context=user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.list_codes_by_phone_number"><code class="name flex">
@@ -473,10 +701,14 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def list_codes_by_phone_number(phone_number: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[interfaces.DeviceType]:
+<pre><code class="python">async def list_codes_by_phone_number(
+    phone_number: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; List[interfaces.DeviceType]:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_phone_number(phone_number=phone_number, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_phone_number(
+        phone_number=phone_number, user_context=user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.list_codes_by_pre_auth_session_id"><code class="name flex">
@@ -488,10 +720,14 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def list_codes_by_pre_auth_session_id(pre_auth_session_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[interfaces.DeviceType, None]:
+<pre><code class="python">async def list_codes_by_pre_auth_session_id(
+    pre_auth_session_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[interfaces.DeviceType, None]:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_pre_auth_session_id(pre_auth_session_id=pre_auth_session_id, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.list_codes_by_pre_auth_session_id(
+        pre_auth_session_id=pre_auth_session_id, user_context=user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.passwordlessSigninup"><code class="name flex">
@@ -503,13 +739,27 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def passwordlessSigninup(email: Union[str, None], phone_number: Union[str, None], user_context: Union[None, Dict[str, Any]] = None) -&gt; interfaces.ConsumeCodeOkResult:
+<pre><code class="python">async def passwordlessSigninup(
+    email: Union[str, None],
+    phone_number: Union[str, None],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; interfaces.ConsumeCodeOkResult:
     if user_context is None:
         user_context = {}
-    result = await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.signinup(email=email, phone_number=phone_number, user_context=user_context)
+    result = (
+        await ThirdPartyPasswordlessRecipe.get_instance().passwordless_recipe.signinup(
+            email=email, phone_number=phone_number, user_context=user_context
+        )
+    )
     return interfaces.ConsumeCodeOkResult(
         result.created_new_user,
-        User(result.user.user_id, result.user.email, result.user.phone_number, None, result.user.time_joined)
+        User(
+            result.user.user_id,
+            result.user.email,
+            result.user.phone_number,
+            None,
+            result.user.time_joined,
+        ),
     )</code></pre>
 </details>
 </dd>
@@ -522,12 +772,16 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_all_codes(email: Union[str, None] = None,
-                           phone_number: Union[str, None] = None,
-                           user_context: Union[None, Dict[str, Any]] = None) -&gt; interfaces.RevokeAllCodesOkResult:
+<pre><code class="python">async def revoke_all_codes(
+    email: Union[str, None] = None,
+    phone_number: Union[str, None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; interfaces.RevokeAllCodesOkResult:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.revoke_all_codes(email=email, phone_number=phone_number, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.revoke_all_codes(
+        email=email, phone_number=phone_number, user_context=user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.revoke_code"><code class="name flex">
@@ -539,10 +793,14 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_code(code_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; interfaces.RevokeCodeOkResult:
+<pre><code class="python">async def revoke_code(
+    code_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; interfaces.RevokeCodeOkResult:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.revoke_code(code_id=code_id, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.revoke_code(
+        code_id=code_id, user_context=user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.revoke_email_verification_tokens"><code class="name flex">
@@ -554,12 +812,17 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_email_verification_tokens(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def revoke_email_verification_tokens(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+):
     if user_context is None:
         user_context = {}
-    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(user_id, user_context)
+    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(
+        user_id, user_context
+    )
     return await ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.revoke_email_verification_tokens(
-        user_id, email, user_context)</code></pre>
+        user_id, email, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.send_email"><code class="name flex">
@@ -571,10 +834,14 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_email(input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def send_email(
+    input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+):
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(input_, user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
+        input_, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.send_sms"><code class="name flex">
@@ -586,10 +853,14 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def send_sms(
+    input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] = None
+):
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(input_, user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().sms_delivery.ingredient_interface_impl.send_sms(
+        input_, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.thirdparty_sign_in_up"><code class="name flex">
@@ -601,10 +872,18 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def thirdparty_sign_in_up(third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def thirdparty_sign_in_up(
+    third_party_id: str,
+    third_party_user_id: str,
+    email: str,
+    email_verified: bool,
+    user_context: Union[None, Dict[str, Any]] = None,
+):
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.thirdparty_sign_in_up(
+        third_party_id, third_party_user_id, email, email_verified, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.unverify_email"><code class="name flex">
@@ -616,12 +895,17 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def unverify_email(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+):
     if user_context is None:
         user_context = {}
-    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(user_id, user_context)
+    email = await ThirdPartyPasswordlessRecipe.get_instance().get_email_for_user_id(
+        user_id, user_context
+    )
     return await ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.unverify_email(
-        user_id, email, user_context)</code></pre>
+        user_id, email, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.update_passwordless_user"><code class="name flex">
@@ -633,13 +917,25 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_passwordless_user(user_id: str,
-                                   email: Union[str, None] = None,
-                                   phone_number: Union[str, None] = None,
-                                   user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[interfaces.PasswordlessUpdateUserOkResult, interfaces.PasswordlessUpdateUserUnknownUserIdError, interfaces.PasswordlessUpdateUserEmailAlreadyExistsError, interfaces.PasswordlessUpdateUserPhoneNumberAlreadyExistsError]:
+<pre><code class="python">async def update_passwordless_user(
+    user_id: str,
+    email: Union[str, None] = None,
+    phone_number: Union[str, None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[
+    interfaces.PasswordlessUpdateUserOkResult,
+    interfaces.PasswordlessUpdateUserUnknownUserIdError,
+    interfaces.PasswordlessUpdateUserEmailAlreadyExistsError,
+    interfaces.PasswordlessUpdateUserPhoneNumberAlreadyExistsError,
+]:
     if user_context is None:
         user_context = {}
-    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.update_passwordless_user(user_id=user_id, email=email, phone_number=phone_number, user_context=user_context)</code></pre>
+    return await ThirdPartyPasswordlessRecipe.get_instance().recipe_implementation.update_passwordless_user(
+        user_id=user_id,
+        email=email,
+        phone_number=phone_number,
+        user_context=user_context,
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.asyncio.verify_email_using_token"><code class="name flex">
@@ -651,11 +947,14 @@ async def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def verify_email_using_token(token: str, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def verify_email_using_token(
+    token: str, user_context: Union[None, Dict[str, Any]] = None
+):
     if user_context is None:
         user_context = {}
     return ThirdPartyPasswordlessRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
-        token, user_context)</code></pre>
+        token, user_context
+    )</code></pre>
 </details>
 </dd>
 </dl>

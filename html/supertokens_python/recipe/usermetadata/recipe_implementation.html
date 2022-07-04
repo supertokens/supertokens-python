@@ -46,8 +46,7 @@ from typing import Any, Dict
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 
-from .interfaces import (ClearUserMetadataResult, MetadataResult,
-                         RecipeInterface)
+from .interfaces import ClearUserMetadataResult, MetadataResult, RecipeInterface
 
 
 class RecipeImplementation(RecipeInterface):
@@ -55,19 +54,34 @@ class RecipeImplementation(RecipeInterface):
         super().__init__()
         self.querier = querier
 
-    async def get_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -&gt; MetadataResult:
+    async def get_user_metadata(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; MetadataResult:
         params = {&#34;userId&#34;: user_id}
-        response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params)
-        return MetadataResult(metadata=response[&#39;metadata&#39;])
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params
+        )
+        return MetadataResult(metadata=response[&#34;metadata&#34;])
 
-    async def update_user_metadata(self, user_id: str, metadata_update: Dict[str, Any], user_context: Dict[str, Any]) -&gt; MetadataResult:
+    async def update_user_metadata(
+        self,
+        user_id: str,
+        metadata_update: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; MetadataResult:
         params = {&#34;userId&#34;: user_id, &#34;metadataUpdate&#34;: metadata_update}
-        response = await self.querier.send_put_request(NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params)
-        return MetadataResult(metadata=response[&#39;metadata&#39;])
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params
+        )
+        return MetadataResult(metadata=response[&#34;metadata&#34;])
 
-    async def clear_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -&gt; ClearUserMetadataResult:
+    async def clear_user_metadata(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; ClearUserMetadataResult:
         params = {&#34;userId&#34;: user_id}
-        await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/user/metadata/remove&#34;), params)
+        await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/user/metadata/remove&#34;), params
+        )
         return ClearUserMetadataResult()</code></pre>
 </details>
 </section>
@@ -96,19 +110,34 @@ inheritance.</p></div>
         super().__init__()
         self.querier = querier
 
-    async def get_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -&gt; MetadataResult:
+    async def get_user_metadata(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; MetadataResult:
         params = {&#34;userId&#34;: user_id}
-        response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params)
-        return MetadataResult(metadata=response[&#39;metadata&#39;])
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params
+        )
+        return MetadataResult(metadata=response[&#34;metadata&#34;])
 
-    async def update_user_metadata(self, user_id: str, metadata_update: Dict[str, Any], user_context: Dict[str, Any]) -&gt; MetadataResult:
+    async def update_user_metadata(
+        self,
+        user_id: str,
+        metadata_update: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; MetadataResult:
         params = {&#34;userId&#34;: user_id, &#34;metadataUpdate&#34;: metadata_update}
-        response = await self.querier.send_put_request(NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params)
-        return MetadataResult(metadata=response[&#39;metadata&#39;])
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params
+        )
+        return MetadataResult(metadata=response[&#34;metadata&#34;])
 
-    async def clear_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -&gt; ClearUserMetadataResult:
+    async def clear_user_metadata(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; ClearUserMetadataResult:
         params = {&#34;userId&#34;: user_id}
-        await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/user/metadata/remove&#34;), params)
+        await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/user/metadata/remove&#34;), params
+        )
         return ClearUserMetadataResult()</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -127,9 +156,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def clear_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -&gt; ClearUserMetadataResult:
+<pre><code class="python">async def clear_user_metadata(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; ClearUserMetadataResult:
     params = {&#34;userId&#34;: user_id}
-    await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/user/metadata/remove&#34;), params)
+    await self.querier.send_post_request(
+        NormalisedURLPath(&#34;/recipe/user/metadata/remove&#34;), params
+    )
     return ClearUserMetadataResult()</code></pre>
 </details>
 </dd>
@@ -142,10 +175,14 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -&gt; MetadataResult:
+<pre><code class="python">async def get_user_metadata(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; MetadataResult:
     params = {&#34;userId&#34;: user_id}
-    response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params)
-    return MetadataResult(metadata=response[&#39;metadata&#39;])</code></pre>
+    response = await self.querier.send_get_request(
+        NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params
+    )
+    return MetadataResult(metadata=response[&#34;metadata&#34;])</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.usermetadata.recipe_implementation.RecipeImplementation.update_user_metadata"><code class="name flex">
@@ -157,10 +194,17 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_user_metadata(self, user_id: str, metadata_update: Dict[str, Any], user_context: Dict[str, Any]) -&gt; MetadataResult:
+<pre><code class="python">async def update_user_metadata(
+    self,
+    user_id: str,
+    metadata_update: Dict[str, Any],
+    user_context: Dict[str, Any],
+) -&gt; MetadataResult:
     params = {&#34;userId&#34;: user_id, &#34;metadataUpdate&#34;: metadata_update}
-    response = await self.querier.send_put_request(NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params)
-    return MetadataResult(metadata=response[&#39;metadata&#39;])</code></pre>
+    response = await self.querier.send_put_request(
+        NormalisedURLPath(&#34;/recipe/user/metadata&#34;), params
+    )
+    return MetadataResult(metadata=response[&#34;metadata&#34;])</code></pre>
 </details>
 </dd>
 </dl>

@@ -53,86 +53,104 @@ from .types import ThirdPartyInfo, User
 
 
 class RecipeImplementation(RecipeInterface):
-
     def __init__(self, querier: Querier):
         super().__init__()
         self.querier = querier
 
-    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
-        params = {
-            &#39;userId&#39;: user_id
-        }
-        response = await self.querier.send_get_request(NormalisedURLPath(&#39;/recipe/user&#39;), params)
-        if &#39;status&#39; in response and response[&#39;status&#39;] == &#39;OK&#39;:
+    async def get_user_by_id(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[User, None]:
+        params = {&#34;userId&#34;: user_id}
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/user&#34;), params
+        )
+        if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return User(
-                response[&#39;user&#39;][&#39;id&#39;],
-                response[&#39;user&#39;][&#39;email&#39;],
-                response[&#39;user&#39;][&#39;timeJoined&#39;],
+                response[&#34;user&#34;][&#34;id&#34;],
+                response[&#34;user&#34;][&#34;email&#34;],
+                response[&#34;user&#34;][&#34;timeJoined&#34;],
                 ThirdPartyInfo(
-                    response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;userId&#39;],
-                    response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;id&#39;]
-                )
+                    response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;userId&#34;],
+                    response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;id&#34;],
+                ),
             )
         return None
 
-    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
-        response = await self.querier.send_get_request(NormalisedURLPath(&#39;/recipe/users/by-email&#39;), {&#39;email&#39;: email})
+    async def get_users_by_email(
+        self, email: str, user_context: Dict[str, Any]
+    ) -&gt; List[User]:
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/users/by-email&#34;), {&#34;email&#34;: email}
+        )
         users: List[User] = []
-        users_list: List[Dict[str, Any]] = response[&#39;users&#39;] if &#39;users&#39; in response else []
+        users_list: List[Dict[str, Any]] = (
+            response[&#34;users&#34;] if &#34;users&#34; in response else []
+        )
         for user in users_list:
             users.append(
                 User(
-                    user[&#39;id&#39;],
-                    user[&#39;email&#39;],
-                    user[&#39;timeJoined&#39;],
+                    user[&#34;id&#34;],
+                    user[&#34;email&#34;],
+                    user[&#34;timeJoined&#34;],
                     ThirdPartyInfo(
-                        user[&#39;thirdParty&#39;][&#39;userId&#39;],
-                        user[&#39;thirdParty&#39;][&#39;id&#39;]
-                    )
+                        user[&#34;thirdParty&#34;][&#34;userId&#34;], user[&#34;thirdParty&#34;][&#34;id&#34;]
+                    ),
                 )
             )
         return users
 
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_thirdparty_info(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[User, None]:
         params = {
-            &#39;thirdPartyId&#39;: third_party_id,
-            &#39;thirdPartyUserId&#39;: third_party_user_id
+            &#34;thirdPartyId&#34;: third_party_id,
+            &#34;thirdPartyUserId&#34;: third_party_user_id,
         }
-        response = await self.querier.send_get_request(NormalisedURLPath(&#39;/recipe/user&#39;), params)
-        if &#39;status&#39; in response and response[&#39;status&#39;] == &#39;OK&#39;:
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/user&#34;), params
+        )
+        if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return User(
-                response[&#39;user&#39;][&#39;id&#39;],
-                response[&#39;user&#39;][&#39;email&#39;],
-                response[&#39;user&#39;][&#39;timeJoined&#39;],
+                response[&#34;user&#34;][&#34;id&#34;],
+                response[&#34;user&#34;][&#34;email&#34;],
+                response[&#34;user&#34;][&#34;timeJoined&#34;],
                 ThirdPartyInfo(
-                    response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;userId&#39;],
-                    response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;id&#39;]
-                )
+                    response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;userId&#34;],
+                    response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;id&#34;],
+                ),
             )
         return None
 
-    async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
+    async def sign_in_up(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        email_verified: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; SignInUpOkResult:
         data = {
-            &#39;thirdPartyId&#39;: third_party_id,
-            &#39;thirdPartyUserId&#39;: third_party_user_id,
-            &#39;email&#39;: {
-                &#39;id&#39;: email,
-                &#39;isVerified&#39;: email_verified
-            }
+            &#34;thirdPartyId&#34;: third_party_id,
+            &#34;thirdPartyUserId&#34;: third_party_user_id,
+            &#34;email&#34;: {&#34;id&#34;: email, &#34;isVerified&#34;: email_verified},
         }
-        response = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/signinup&#39;), data)
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/signinup&#34;), data
+        )
         return SignInUpOkResult(
             User(
-                response[&#39;user&#39;][&#39;id&#39;],
-                response[&#39;user&#39;][&#39;email&#39;],
-                response[&#39;user&#39;][&#39;timeJoined&#39;],
+                response[&#34;user&#34;][&#34;id&#34;],
+                response[&#34;user&#34;][&#34;email&#34;],
+                response[&#34;user&#34;][&#34;timeJoined&#34;],
                 ThirdPartyInfo(
-                    response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;userId&#39;],
-                    response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;id&#39;]
-                )
+                    response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;userId&#34;],
+                    response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;id&#34;],
+                ),
             ),
-            response[&#39;createdNewUser&#39;]
+            response[&#34;createdNewUser&#34;],
         )</code></pre>
 </details>
 </section>
@@ -157,86 +175,104 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class RecipeImplementation(RecipeInterface):
-
     def __init__(self, querier: Querier):
         super().__init__()
         self.querier = querier
 
-    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
-        params = {
-            &#39;userId&#39;: user_id
-        }
-        response = await self.querier.send_get_request(NormalisedURLPath(&#39;/recipe/user&#39;), params)
-        if &#39;status&#39; in response and response[&#39;status&#39;] == &#39;OK&#39;:
+    async def get_user_by_id(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[User, None]:
+        params = {&#34;userId&#34;: user_id}
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/user&#34;), params
+        )
+        if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return User(
-                response[&#39;user&#39;][&#39;id&#39;],
-                response[&#39;user&#39;][&#39;email&#39;],
-                response[&#39;user&#39;][&#39;timeJoined&#39;],
+                response[&#34;user&#34;][&#34;id&#34;],
+                response[&#34;user&#34;][&#34;email&#34;],
+                response[&#34;user&#34;][&#34;timeJoined&#34;],
                 ThirdPartyInfo(
-                    response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;userId&#39;],
-                    response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;id&#39;]
-                )
+                    response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;userId&#34;],
+                    response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;id&#34;],
+                ),
             )
         return None
 
-    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
-        response = await self.querier.send_get_request(NormalisedURLPath(&#39;/recipe/users/by-email&#39;), {&#39;email&#39;: email})
+    async def get_users_by_email(
+        self, email: str, user_context: Dict[str, Any]
+    ) -&gt; List[User]:
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/users/by-email&#34;), {&#34;email&#34;: email}
+        )
         users: List[User] = []
-        users_list: List[Dict[str, Any]] = response[&#39;users&#39;] if &#39;users&#39; in response else []
+        users_list: List[Dict[str, Any]] = (
+            response[&#34;users&#34;] if &#34;users&#34; in response else []
+        )
         for user in users_list:
             users.append(
                 User(
-                    user[&#39;id&#39;],
-                    user[&#39;email&#39;],
-                    user[&#39;timeJoined&#39;],
+                    user[&#34;id&#34;],
+                    user[&#34;email&#34;],
+                    user[&#34;timeJoined&#34;],
                     ThirdPartyInfo(
-                        user[&#39;thirdParty&#39;][&#39;userId&#39;],
-                        user[&#39;thirdParty&#39;][&#39;id&#39;]
-                    )
+                        user[&#34;thirdParty&#34;][&#34;userId&#34;], user[&#34;thirdParty&#34;][&#34;id&#34;]
+                    ),
                 )
             )
         return users
 
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_thirdparty_info(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[User, None]:
         params = {
-            &#39;thirdPartyId&#39;: third_party_id,
-            &#39;thirdPartyUserId&#39;: third_party_user_id
+            &#34;thirdPartyId&#34;: third_party_id,
+            &#34;thirdPartyUserId&#34;: third_party_user_id,
         }
-        response = await self.querier.send_get_request(NormalisedURLPath(&#39;/recipe/user&#39;), params)
-        if &#39;status&#39; in response and response[&#39;status&#39;] == &#39;OK&#39;:
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/user&#34;), params
+        )
+        if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
             return User(
-                response[&#39;user&#39;][&#39;id&#39;],
-                response[&#39;user&#39;][&#39;email&#39;],
-                response[&#39;user&#39;][&#39;timeJoined&#39;],
+                response[&#34;user&#34;][&#34;id&#34;],
+                response[&#34;user&#34;][&#34;email&#34;],
+                response[&#34;user&#34;][&#34;timeJoined&#34;],
                 ThirdPartyInfo(
-                    response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;userId&#39;],
-                    response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;id&#39;]
-                )
+                    response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;userId&#34;],
+                    response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;id&#34;],
+                ),
             )
         return None
 
-    async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
+    async def sign_in_up(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        email_verified: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; SignInUpOkResult:
         data = {
-            &#39;thirdPartyId&#39;: third_party_id,
-            &#39;thirdPartyUserId&#39;: third_party_user_id,
-            &#39;email&#39;: {
-                &#39;id&#39;: email,
-                &#39;isVerified&#39;: email_verified
-            }
+            &#34;thirdPartyId&#34;: third_party_id,
+            &#34;thirdPartyUserId&#34;: third_party_user_id,
+            &#34;email&#34;: {&#34;id&#34;: email, &#34;isVerified&#34;: email_verified},
         }
-        response = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/signinup&#39;), data)
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/signinup&#34;), data
+        )
         return SignInUpOkResult(
             User(
-                response[&#39;user&#39;][&#39;id&#39;],
-                response[&#39;user&#39;][&#39;email&#39;],
-                response[&#39;user&#39;][&#39;timeJoined&#39;],
+                response[&#34;user&#34;][&#34;id&#34;],
+                response[&#34;user&#34;][&#34;email&#34;],
+                response[&#34;user&#34;][&#34;timeJoined&#34;],
                 ThirdPartyInfo(
-                    response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;userId&#39;],
-                    response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;id&#39;]
-                )
+                    response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;userId&#34;],
+                    response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;id&#34;],
+                ),
             ),
-            response[&#39;createdNewUser&#39;]
+            response[&#34;createdNewUser&#34;],
         )</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -255,20 +291,22 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
-    params = {
-        &#39;userId&#39;: user_id
-    }
-    response = await self.querier.send_get_request(NormalisedURLPath(&#39;/recipe/user&#39;), params)
-    if &#39;status&#39; in response and response[&#39;status&#39;] == &#39;OK&#39;:
+<pre><code class="python">async def get_user_by_id(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; Union[User, None]:
+    params = {&#34;userId&#34;: user_id}
+    response = await self.querier.send_get_request(
+        NormalisedURLPath(&#34;/recipe/user&#34;), params
+    )
+    if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
         return User(
-            response[&#39;user&#39;][&#39;id&#39;],
-            response[&#39;user&#39;][&#39;email&#39;],
-            response[&#39;user&#39;][&#39;timeJoined&#39;],
+            response[&#34;user&#34;][&#34;id&#34;],
+            response[&#34;user&#34;][&#34;email&#34;],
+            response[&#34;user&#34;][&#34;timeJoined&#34;],
             ThirdPartyInfo(
-                response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;userId&#39;],
-                response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;id&#39;]
-            )
+                response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;userId&#34;],
+                response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;id&#34;],
+            ),
         )
     return None</code></pre>
 </details>
@@ -282,21 +320,28 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+<pre><code class="python">async def get_user_by_thirdparty_info(
+    self,
+    third_party_id: str,
+    third_party_user_id: str,
+    user_context: Dict[str, Any],
+) -&gt; Union[User, None]:
     params = {
-        &#39;thirdPartyId&#39;: third_party_id,
-        &#39;thirdPartyUserId&#39;: third_party_user_id
+        &#34;thirdPartyId&#34;: third_party_id,
+        &#34;thirdPartyUserId&#34;: third_party_user_id,
     }
-    response = await self.querier.send_get_request(NormalisedURLPath(&#39;/recipe/user&#39;), params)
-    if &#39;status&#39; in response and response[&#39;status&#39;] == &#39;OK&#39;:
+    response = await self.querier.send_get_request(
+        NormalisedURLPath(&#34;/recipe/user&#34;), params
+    )
+    if &#34;status&#34; in response and response[&#34;status&#34;] == &#34;OK&#34;:
         return User(
-            response[&#39;user&#39;][&#39;id&#39;],
-            response[&#39;user&#39;][&#39;email&#39;],
-            response[&#39;user&#39;][&#39;timeJoined&#39;],
+            response[&#34;user&#34;][&#34;id&#34;],
+            response[&#34;user&#34;][&#34;email&#34;],
+            response[&#34;user&#34;][&#34;timeJoined&#34;],
             ThirdPartyInfo(
-                response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;userId&#39;],
-                response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;id&#39;]
-            )
+                response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;userId&#34;],
+                response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;id&#34;],
+            ),
         )
     return None</code></pre>
 </details>
@@ -310,20 +355,25 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
-    response = await self.querier.send_get_request(NormalisedURLPath(&#39;/recipe/users/by-email&#39;), {&#39;email&#39;: email})
+<pre><code class="python">async def get_users_by_email(
+    self, email: str, user_context: Dict[str, Any]
+) -&gt; List[User]:
+    response = await self.querier.send_get_request(
+        NormalisedURLPath(&#34;/recipe/users/by-email&#34;), {&#34;email&#34;: email}
+    )
     users: List[User] = []
-    users_list: List[Dict[str, Any]] = response[&#39;users&#39;] if &#39;users&#39; in response else []
+    users_list: List[Dict[str, Any]] = (
+        response[&#34;users&#34;] if &#34;users&#34; in response else []
+    )
     for user in users_list:
         users.append(
             User(
-                user[&#39;id&#39;],
-                user[&#39;email&#39;],
-                user[&#39;timeJoined&#39;],
+                user[&#34;id&#34;],
+                user[&#34;email&#34;],
+                user[&#34;timeJoined&#34;],
                 ThirdPartyInfo(
-                    user[&#39;thirdParty&#39;][&#39;userId&#39;],
-                    user[&#39;thirdParty&#39;][&#39;id&#39;]
-                )
+                    user[&#34;thirdParty&#34;][&#34;userId&#34;], user[&#34;thirdParty&#34;][&#34;id&#34;]
+                ),
             )
         )
     return users</code></pre>
@@ -338,28 +388,33 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                     email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
+<pre><code class="python">async def sign_in_up(
+    self,
+    third_party_id: str,
+    third_party_user_id: str,
+    email: str,
+    email_verified: bool,
+    user_context: Dict[str, Any],
+) -&gt; SignInUpOkResult:
     data = {
-        &#39;thirdPartyId&#39;: third_party_id,
-        &#39;thirdPartyUserId&#39;: third_party_user_id,
-        &#39;email&#39;: {
-            &#39;id&#39;: email,
-            &#39;isVerified&#39;: email_verified
-        }
+        &#34;thirdPartyId&#34;: third_party_id,
+        &#34;thirdPartyUserId&#34;: third_party_user_id,
+        &#34;email&#34;: {&#34;id&#34;: email, &#34;isVerified&#34;: email_verified},
     }
-    response = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/signinup&#39;), data)
+    response = await self.querier.send_post_request(
+        NormalisedURLPath(&#34;/recipe/signinup&#34;), data
+    )
     return SignInUpOkResult(
         User(
-            response[&#39;user&#39;][&#39;id&#39;],
-            response[&#39;user&#39;][&#39;email&#39;],
-            response[&#39;user&#39;][&#39;timeJoined&#39;],
+            response[&#34;user&#34;][&#34;id&#34;],
+            response[&#34;user&#34;][&#34;email&#34;],
+            response[&#34;user&#34;][&#34;timeJoined&#34;],
             ThirdPartyInfo(
-                response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;userId&#39;],
-                response[&#39;user&#39;][&#39;thirdParty&#39;][&#39;id&#39;]
-            )
+                response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;userId&#34;],
+                response[&#34;user&#34;][&#34;thirdParty&#34;][&#34;id&#34;],
+            ),
         ),
-        response[&#39;createdNewUser&#39;]
+        response[&#34;createdNewUser&#34;],
     )</code></pre>
 </details>
 </dd>

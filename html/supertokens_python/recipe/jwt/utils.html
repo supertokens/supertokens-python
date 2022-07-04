@@ -48,8 +48,11 @@ if TYPE_CHECKING:
 
 
 class OverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
-                                        None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+    ):
         self.functions = functions
         self.apis = apis
 
@@ -61,8 +64,9 @@ class JWTConfig:
 
 
 def validate_and_normalise_user_input(
-        jwt_validity_seconds: Union[int, None] = None,
-        override: Union[OverrideConfig, None] = None):
+    jwt_validity_seconds: Union[int, None] = None,
+    override: Union[OverrideConfig, None] = None,
+):
     if jwt_validity_seconds is not None and not isinstance(jwt_validity_seconds, int):  # type: ignore
         raise ValueError(&#34;jwt_validity_seconds must be an integer or None&#34;)
 
@@ -94,8 +98,9 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def validate_and_normalise_user_input(
-        jwt_validity_seconds: Union[int, None] = None,
-        override: Union[OverrideConfig, None] = None):
+    jwt_validity_seconds: Union[int, None] = None,
+    override: Union[OverrideConfig, None] = None,
+):
     if jwt_validity_seconds is not None and not isinstance(jwt_validity_seconds, int):  # type: ignore
         raise ValueError(&#34;jwt_validity_seconds must be an integer or None&#34;)
 
@@ -142,8 +147,11 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class OverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
-                                        None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+    ):
         self.functions = functions
         self.apis = apis</code></pre>
 </details>

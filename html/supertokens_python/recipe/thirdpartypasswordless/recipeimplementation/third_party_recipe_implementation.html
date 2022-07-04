@@ -43,22 +43,23 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Union
 
-from supertokens_python.recipe.thirdparty.interfaces import (RecipeInterface,
-                                                             SignInUpOkResult)
+from supertokens_python.recipe.thirdparty.interfaces import (
+    RecipeInterface,
+    SignInUpOkResult,
+)
 from supertokens_python.recipe.thirdparty.types import User
 
-from ..interfaces import \
-    RecipeInterface as ThirdPartyPasswordlessRecipeInterface
+from ..interfaces import RecipeInterface as ThirdPartyPasswordlessRecipeInterface
 
 
 class RecipeImplementation(RecipeInterface):
-
-    def __init__(
-            self, recipe_implementation: ThirdPartyPasswordlessRecipeInterface):
+    def __init__(self, recipe_implementation: ThirdPartyPasswordlessRecipeInterface):
         super().__init__()
         self.recipe_implementation = recipe_implementation
 
-    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_id(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[User, None]:
         user = await self.recipe_implementation.get_user_by_id(user_id, user_context)
         if user is None or user.third_party_info is None:
             return None
@@ -66,9 +67,16 @@ class RecipeImplementation(RecipeInterface):
         if user.email is None:
             raise Exception(&#34;Should never come here&#34;)
 
-        return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
+        return User(
+            user_id=user.user_id,
+            email=user.email,
+            time_joined=user.time_joined,
+            third_party_info=user.third_party_info,
+        )
 
-    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
+    async def get_users_by_email(
+        self, email: str, user_context: Dict[str, Any]
+    ) -&gt; List[User]:
         users = await self.recipe_implementation.get_users_by_email(email, user_context)
         users_result: List[User] = []
 
@@ -77,23 +85,50 @@ class RecipeImplementation(RecipeInterface):
                 if user.email is None:
                     raise Exception(&#34;Should never come here&#34;)
 
-                users_result.append(User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info))
+                users_result.append(
+                    User(
+                        user_id=user.user_id,
+                        email=user.email,
+                        time_joined=user.time_joined,
+                        third_party_info=user.third_party_info,
+                    )
+                )
 
         return users_result
 
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
-        user = await self.recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
+    async def get_user_by_thirdparty_info(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[User, None]:
+        user = await self.recipe_implementation.get_user_by_thirdparty_info(
+            third_party_id, third_party_user_id, user_context
+        )
         if user is None or user.third_party_info is None:
             return None
 
         if user.email is None:
             raise Exception(&#34;Should never come here&#34;)
 
-        return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
+        return User(
+            user_id=user.user_id,
+            email=user.email,
+            time_joined=user.time_joined,
+            third_party_info=user.third_party_info,
+        )
 
-    async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
-        return await self.recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)</code></pre>
+    async def sign_in_up(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        email_verified: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; SignInUpOkResult:
+        return await self.recipe_implementation.thirdparty_sign_in_up(
+            third_party_id, third_party_user_id, email, email_verified, user_context
+        )</code></pre>
 </details>
 </section>
 <section>
@@ -117,13 +152,13 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class RecipeImplementation(RecipeInterface):
-
-    def __init__(
-            self, recipe_implementation: ThirdPartyPasswordlessRecipeInterface):
+    def __init__(self, recipe_implementation: ThirdPartyPasswordlessRecipeInterface):
         super().__init__()
         self.recipe_implementation = recipe_implementation
 
-    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_id(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[User, None]:
         user = await self.recipe_implementation.get_user_by_id(user_id, user_context)
         if user is None or user.third_party_info is None:
             return None
@@ -131,9 +166,16 @@ inheritance.</p></div>
         if user.email is None:
             raise Exception(&#34;Should never come here&#34;)
 
-        return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
+        return User(
+            user_id=user.user_id,
+            email=user.email,
+            time_joined=user.time_joined,
+            third_party_info=user.third_party_info,
+        )
 
-    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
+    async def get_users_by_email(
+        self, email: str, user_context: Dict[str, Any]
+    ) -&gt; List[User]:
         users = await self.recipe_implementation.get_users_by_email(email, user_context)
         users_result: List[User] = []
 
@@ -142,23 +184,50 @@ inheritance.</p></div>
                 if user.email is None:
                     raise Exception(&#34;Should never come here&#34;)
 
-                users_result.append(User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info))
+                users_result.append(
+                    User(
+                        user_id=user.user_id,
+                        email=user.email,
+                        time_joined=user.time_joined,
+                        third_party_info=user.third_party_info,
+                    )
+                )
 
         return users_result
 
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
-        user = await self.recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
+    async def get_user_by_thirdparty_info(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[User, None]:
+        user = await self.recipe_implementation.get_user_by_thirdparty_info(
+            third_party_id, third_party_user_id, user_context
+        )
         if user is None or user.third_party_info is None:
             return None
 
         if user.email is None:
             raise Exception(&#34;Should never come here&#34;)
 
-        return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)
+        return User(
+            user_id=user.user_id,
+            email=user.email,
+            time_joined=user.time_joined,
+            third_party_info=user.third_party_info,
+        )
 
-    async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
-        return await self.recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)</code></pre>
+    async def sign_in_up(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        email_verified: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; SignInUpOkResult:
+        return await self.recipe_implementation.thirdparty_sign_in_up(
+            third_party_id, third_party_user_id, email, email_verified, user_context
+        )</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -176,7 +245,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+<pre><code class="python">async def get_user_by_id(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; Union[User, None]:
     user = await self.recipe_implementation.get_user_by_id(user_id, user_context)
     if user is None or user.third_party_info is None:
         return None
@@ -184,7 +255,12 @@ inheritance.</p></div>
     if user.email is None:
         raise Exception(&#34;Should never come here&#34;)
 
-    return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)</code></pre>
+    return User(
+        user_id=user.user_id,
+        email=user.email,
+        time_joined=user.time_joined,
+        third_party_info=user.third_party_info,
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_user_by_thirdparty_info"><code class="name flex">
@@ -196,15 +272,27 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
-    user = await self.recipe_implementation.get_user_by_thirdparty_info(third_party_id, third_party_user_id, user_context)
+<pre><code class="python">async def get_user_by_thirdparty_info(
+    self,
+    third_party_id: str,
+    third_party_user_id: str,
+    user_context: Dict[str, Any],
+) -&gt; Union[User, None]:
+    user = await self.recipe_implementation.get_user_by_thirdparty_info(
+        third_party_id, third_party_user_id, user_context
+    )
     if user is None or user.third_party_info is None:
         return None
 
     if user.email is None:
         raise Exception(&#34;Should never come here&#34;)
 
-    return User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info)</code></pre>
+    return User(
+        user_id=user.user_id,
+        email=user.email,
+        time_joined=user.time_joined,
+        third_party_info=user.third_party_info,
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.get_users_by_email"><code class="name flex">
@@ -216,7 +304,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
+<pre><code class="python">async def get_users_by_email(
+    self, email: str, user_context: Dict[str, Any]
+) -&gt; List[User]:
     users = await self.recipe_implementation.get_users_by_email(email, user_context)
     users_result: List[User] = []
 
@@ -225,7 +315,14 @@ inheritance.</p></div>
             if user.email is None:
                 raise Exception(&#34;Should never come here&#34;)
 
-            users_result.append(User(user_id=user.user_id, email=user.email, time_joined=user.time_joined, third_party_info=user.third_party_info))
+            users_result.append(
+                User(
+                    user_id=user.user_id,
+                    email=user.email,
+                    time_joined=user.time_joined,
+                    third_party_info=user.third_party_info,
+                )
+            )
 
     return users_result</code></pre>
 </details>
@@ -239,9 +336,17 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                     email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
-    return await self.recipe_implementation.thirdparty_sign_in_up(third_party_id, third_party_user_id, email, email_verified, user_context)</code></pre>
+<pre><code class="python">async def sign_in_up(
+    self,
+    third_party_id: str,
+    third_party_user_id: str,
+    email: str,
+    email_verified: bool,
+    user_context: Dict[str, Any],
+) -&gt; SignInUpOkResult:
+    return await self.recipe_implementation.thirdparty_sign_in_up(
+        third_party_id, third_party_user_id, email, email_verified, user_context
+    )</code></pre>
 </details>
 </dd>
 </dl>

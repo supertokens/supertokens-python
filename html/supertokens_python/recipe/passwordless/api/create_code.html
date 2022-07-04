@@ -44,12 +44,14 @@ from typing import Union
 import phonenumbers  # type: ignore
 from phonenumbers import format_number, parse  # type: ignore
 from supertokens_python.exceptions import raise_bad_input_exception
-from supertokens_python.recipe.passwordless.interfaces import (APIInterface,
-                                                               APIOptions)
+from supertokens_python.recipe.passwordless.interfaces import APIInterface, APIOptions
 from supertokens_python.recipe.passwordless.utils import (
-    ContactEmailOnlyConfig, ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig)
+    ContactEmailOnlyConfig,
+    ContactEmailOrPhoneConfig,
+    ContactPhoneOnlyConfig,
+)
 from supertokens_python.types import GeneralErrorResponse
-from supertokens_python.utils import send_200_response
+from supertokens_python.utils import default_user_context, send_200_response
 
 
 async def create_code(api_implementation: APIInterface, api_options: APIOptions):
@@ -64,53 +66,76 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
     email: Union[str, None] = None
     phone_number: Union[str, None] = None
 
-    if (&#39;email&#39; in body and &#39;phoneNumber&#39; in body) or (
-            &#39;email&#39; not in body and &#39;phoneNumber&#39; not in body):
-        raise_bad_input_exception(
-            &#39;Please provide exactly one of email or phoneNumber&#39;)
+    if (&#34;email&#34; in body and &#34;phoneNumber&#34; in body) or (
+        &#34;email&#34; not in body and &#34;phoneNumber&#34; not in body
+    ):
+        raise_bad_input_exception(&#34;Please provide exactly one of email or phoneNumber&#34;)
 
-    if &#39;email&#39; not in body and isinstance(
-            api_options.config.contact_config, ContactEmailOnlyConfig):
+    if &#34;email&#34; not in body and isinstance(
+        api_options.config.contact_config, ContactEmailOnlyConfig
+    ):
         raise_bad_input_exception(
-            &#39;Please provide an email since you have set the contactMethod to &#34;EMAIL&#34;&#39;)
+            &#39;Please provide an email since you have set the contactMethod to &#34;EMAIL&#34;&#39;
+        )
 
-    if &#39;phoneNumber&#39; not in body and isinstance(
-            api_options.config.contact_config, ContactPhoneOnlyConfig):
+    if &#34;phoneNumber&#34; not in body and isinstance(
+        api_options.config.contact_config, ContactPhoneOnlyConfig
+    ):
         raise_bad_input_exception(
-            &#39;Please provide a phoneNumber since you have set the contactMethod to &#34;PHONE&#34;&#39;)
+            &#39;Please provide a phoneNumber since you have set the contactMethod to &#34;PHONE&#34;&#39;
+        )
 
-    if &#39;email&#39; in body:
-        email = body[&#39;email&#39;]
-    if &#39;phoneNumber&#39; in body:
-        phone_number = body[&#39;phoneNumber&#39;]
+    if &#34;email&#34; in body:
+        email = body[&#34;email&#34;]
+    if &#34;phoneNumber&#34; in body:
+        phone_number = body[&#34;phoneNumber&#34;]
 
     if email is not None and (
-        isinstance(api_options.config.contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig))
+        isinstance(
+            api_options.config.contact_config,
+            (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig),
+        )
     ):
         email = email.strip()
-        validation_error = await api_options.config.contact_config.validate_email_address(email)
+        validation_error = (
+            await api_options.config.contact_config.validate_email_address(email)
+        )
         if validation_error is not None:
             api_options.response.set_json_content(
-                GeneralErrorResponse(validation_error).to_json())
+                GeneralErrorResponse(validation_error).to_json()
+            )
             return api_options.response
 
     if phone_number is not None and (
-        isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig))
+        isinstance(
+            api_options.config.contact_config,
+            (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig),
+        )
     ):
-        validation_error = await api_options.config.contact_config.validate_phone_number(phone_number)
+        validation_error = (
+            await api_options.config.contact_config.validate_phone_number(phone_number)
+        )
         if validation_error is not None:
             api_options.response.set_json_content(
-                GeneralErrorResponse(validation_error).to_json())
+                GeneralErrorResponse(validation_error).to_json()
+            )
             return api_options.response
         try:
             phone_number_formatted: str = format_number(
-                parse(phone_number, None),
-                phonenumbers.PhoneNumberFormat.E164)  # type: ignore
+                parse(phone_number, None), phonenumbers.PhoneNumberFormat.E164
+            )  # type: ignore
             phone_number = phone_number_formatted
         except Exception:
             phone_number = phone_number.strip()
+
+    user_context = default_user_context(api_options.request)
+
     result = await api_implementation.create_code_post(
-        email=email, phone_number=phone_number, api_options=api_options, user_context={})
+        email=email,
+        phone_number=phone_number,
+        api_options=api_options,
+        user_context=user_context,
+    )
     return send_200_response(result.to_json(), api_options.response)</code></pre>
 </details>
 </section>
@@ -142,53 +167,76 @@ async def create_code(api_implementation: APIInterface, api_options: APIOptions)
     email: Union[str, None] = None
     phone_number: Union[str, None] = None
 
-    if (&#39;email&#39; in body and &#39;phoneNumber&#39; in body) or (
-            &#39;email&#39; not in body and &#39;phoneNumber&#39; not in body):
-        raise_bad_input_exception(
-            &#39;Please provide exactly one of email or phoneNumber&#39;)
+    if (&#34;email&#34; in body and &#34;phoneNumber&#34; in body) or (
+        &#34;email&#34; not in body and &#34;phoneNumber&#34; not in body
+    ):
+        raise_bad_input_exception(&#34;Please provide exactly one of email or phoneNumber&#34;)
 
-    if &#39;email&#39; not in body and isinstance(
-            api_options.config.contact_config, ContactEmailOnlyConfig):
+    if &#34;email&#34; not in body and isinstance(
+        api_options.config.contact_config, ContactEmailOnlyConfig
+    ):
         raise_bad_input_exception(
-            &#39;Please provide an email since you have set the contactMethod to &#34;EMAIL&#34;&#39;)
+            &#39;Please provide an email since you have set the contactMethod to &#34;EMAIL&#34;&#39;
+        )
 
-    if &#39;phoneNumber&#39; not in body and isinstance(
-            api_options.config.contact_config, ContactPhoneOnlyConfig):
+    if &#34;phoneNumber&#34; not in body and isinstance(
+        api_options.config.contact_config, ContactPhoneOnlyConfig
+    ):
         raise_bad_input_exception(
-            &#39;Please provide a phoneNumber since you have set the contactMethod to &#34;PHONE&#34;&#39;)
+            &#39;Please provide a phoneNumber since you have set the contactMethod to &#34;PHONE&#34;&#39;
+        )
 
-    if &#39;email&#39; in body:
-        email = body[&#39;email&#39;]
-    if &#39;phoneNumber&#39; in body:
-        phone_number = body[&#39;phoneNumber&#39;]
+    if &#34;email&#34; in body:
+        email = body[&#34;email&#34;]
+    if &#34;phoneNumber&#34; in body:
+        phone_number = body[&#34;phoneNumber&#34;]
 
     if email is not None and (
-        isinstance(api_options.config.contact_config, (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig))
+        isinstance(
+            api_options.config.contact_config,
+            (ContactEmailOnlyConfig, ContactEmailOrPhoneConfig),
+        )
     ):
         email = email.strip()
-        validation_error = await api_options.config.contact_config.validate_email_address(email)
+        validation_error = (
+            await api_options.config.contact_config.validate_email_address(email)
+        )
         if validation_error is not None:
             api_options.response.set_json_content(
-                GeneralErrorResponse(validation_error).to_json())
+                GeneralErrorResponse(validation_error).to_json()
+            )
             return api_options.response
 
     if phone_number is not None and (
-        isinstance(api_options.config.contact_config, (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig))
+        isinstance(
+            api_options.config.contact_config,
+            (ContactEmailOrPhoneConfig, ContactPhoneOnlyConfig),
+        )
     ):
-        validation_error = await api_options.config.contact_config.validate_phone_number(phone_number)
+        validation_error = (
+            await api_options.config.contact_config.validate_phone_number(phone_number)
+        )
         if validation_error is not None:
             api_options.response.set_json_content(
-                GeneralErrorResponse(validation_error).to_json())
+                GeneralErrorResponse(validation_error).to_json()
+            )
             return api_options.response
         try:
             phone_number_formatted: str = format_number(
-                parse(phone_number, None),
-                phonenumbers.PhoneNumberFormat.E164)  # type: ignore
+                parse(phone_number, None), phonenumbers.PhoneNumberFormat.E164
+            )  # type: ignore
             phone_number = phone_number_formatted
         except Exception:
             phone_number = phone_number.strip()
+
+    user_context = default_user_context(api_options.request)
+
     result = await api_implementation.create_code_post(
-        email=email, phone_number=phone_number, api_options=api_options, user_context={})
+        email=email,
+        phone_number=phone_number,
+        api_options=api_options,
+        user_context=user_context,
+    )
     return send_200_response(result.to_json(), api_options.response)</code></pre>
 </details>
 </dd>

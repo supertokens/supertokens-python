@@ -35,21 +35,30 @@ class MetadataResult(ABC):
         self.metadata = metadata
 
 
-class ClearUserMetadataResult():
+class ClearUserMetadataResult:
     pass
 
 
 class RecipeInterface(ABC):
     @abstractmethod
-    async def get_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -&gt; MetadataResult:
+    async def get_user_metadata(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; MetadataResult:
         pass
 
     @abstractmethod
-    async def update_user_metadata(self, user_id: str, metadata_update: Dict[str, Any], user_context: Dict[str, Any]) -&gt; MetadataResult:
+    async def update_user_metadata(
+        self,
+        user_id: str,
+        metadata_update: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; MetadataResult:
         pass
 
     @abstractmethod
-    async def clear_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -&gt; ClearUserMetadataResult:
+    async def clear_user_metadata(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; ClearUserMetadataResult:
         pass
 
 
@@ -93,7 +102,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ClearUserMetadataResult():
+<pre><code class="python">class ClearUserMetadataResult:
     pass</code></pre>
 </details>
 </dd>
@@ -129,15 +138,24 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class RecipeInterface(ABC):
     @abstractmethod
-    async def get_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -&gt; MetadataResult:
+    async def get_user_metadata(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; MetadataResult:
         pass
 
     @abstractmethod
-    async def update_user_metadata(self, user_id: str, metadata_update: Dict[str, Any], user_context: Dict[str, Any]) -&gt; MetadataResult:
+    async def update_user_metadata(
+        self,
+        user_id: str,
+        metadata_update: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; MetadataResult:
         pass
 
     @abstractmethod
-    async def clear_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -&gt; ClearUserMetadataResult:
+    async def clear_user_metadata(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; ClearUserMetadataResult:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -160,7 +178,9 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def clear_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -&gt; ClearUserMetadataResult:
+async def clear_user_metadata(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; ClearUserMetadataResult:
     pass</code></pre>
 </details>
 </dd>
@@ -174,7 +194,9 @@ async def clear_user_metadata(self, user_id: str, user_context: Dict[str, Any]) 
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -&gt; MetadataResult:
+async def get_user_metadata(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; MetadataResult:
     pass</code></pre>
 </details>
 </dd>
@@ -188,7 +210,12 @@ async def get_user_metadata(self, user_id: str, user_context: Dict[str, Any]) -&
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def update_user_metadata(self, user_id: str, metadata_update: Dict[str, Any], user_context: Dict[str, Any]) -&gt; MetadataResult:
+async def update_user_metadata(
+    self,
+    user_id: str,
+    metadata_update: Dict[str, Any],
+    user_context: Dict[str, Any],
+) -&gt; MetadataResult:
     pass</code></pre>
 </details>
 </dd>

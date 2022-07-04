@@ -41,94 +41,164 @@
 # under the License.
 from typing import Any, Dict, List, Union
 
-from supertokens_python.recipe.openid.interfaces import \
-    GetOpenIdDiscoveryConfigurationResult
+from supertokens_python.recipe.openid.interfaces import (
+    GetOpenIdDiscoveryConfigurationResult,
+)
 from supertokens_python.recipe.session.interfaces import (
-    SessionContainer, SessionInformationResult)
+    RegenerateAccessTokenOkResult,
+    SessionContainer,
+    SessionInformationResult,
+)
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.utils import FRAMEWORKS
 
-from ...jwt.interfaces import CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult
+from ...jwt.interfaces import (
+    CreateJwtOkResult,
+    CreateJwtResultUnsupportedAlgorithm,
+    GetJWKSResult,
+)
 
 
-async def create_new_session(request: Any, user_id: str, access_token_payload: Union[Dict[str, Any], None] = None, session_data: Union[Dict[str, Any], None] = None, user_context: Union[None, Dict[str, Any]] = None) -&gt; SessionContainer:
+async def create_new_session(
+    request: Any,
+    user_id: str,
+    access_token_payload: Union[Dict[str, Any], None] = None,
+    session_data: Union[Dict[str, Any], None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; SessionContainer:
     if user_context is None:
         user_context = {}
-    if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-        request = FRAMEWORKS[SessionRecipe.get_instance(
-        ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.create_new_session(request, user_id, access_token_payload, session_data, user_context=user_context)
+    if not hasattr(request, &#34;wrapper_used&#34;) or not request.wrapper_used:
+        request = FRAMEWORKS[
+            SessionRecipe.get_instance().app_info.framework
+        ].wrap_request(request)
+    return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
+        request, user_id, access_token_payload, session_data, user_context=user_context
+    )
 
 
-async def get_session(request: Any, anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[SessionContainer, None]:
+async def get_session(
+    request: Any,
+    anti_csrf_check: Union[bool, None] = None,
+    session_required: bool = True,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[SessionContainer, None]:
     if user_context is None:
         user_context = {}
-    if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-        request = FRAMEWORKS[SessionRecipe.get_instance(
-        ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.get_session(request, anti_csrf_check, session_required, user_context)
+    if not hasattr(request, &#34;wrapper_used&#34;) or not request.wrapper_used:
+        request = FRAMEWORKS[
+            SessionRecipe.get_instance().app_info.framework
+        ].wrap_request(request)
+    return await SessionRecipe.get_instance().recipe_implementation.get_session(
+        request, anti_csrf_check, session_required, user_context
+    )
 
 
-async def refresh_session(request: Any, user_context: Union[None, Dict[str, Any]] = None) -&gt; SessionContainer:
+async def refresh_session(
+    request: Any, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; SessionContainer:
     if user_context is None:
         user_context = {}
-    if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-        request = FRAMEWORKS[SessionRecipe.get_instance(
-        ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.refresh_session(request, user_context)
+    if not hasattr(request, &#34;wrapper_used&#34;) or not request.wrapper_used:
+        request = FRAMEWORKS[
+            SessionRecipe.get_instance().app_info.framework
+        ].wrap_request(request)
+    return await SessionRecipe.get_instance().recipe_implementation.refresh_session(
+        request, user_context
+    )
 
 
-async def revoke_session(session_handle: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; bool:
+async def revoke_session(
+    session_handle: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; bool:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle, user_context)
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_session(
+        session_handle, user_context
+    )
 
 
-async def revoke_all_sessions_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[str]:
+async def revoke_all_sessions_for_user(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; List[str]:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(user_id, user_context)
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(
+        user_id, user_context
+    )
 
 
-async def get_all_session_handles_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[str]:
+async def get_all_session_handles_for_user(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; List[str]:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(user_id, user_context)
+    return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(
+        user_id, user_context
+    )
 
 
-async def revoke_multiple_sessions(session_handles: List[str], user_context: Union[None, Dict[str, Any]] = None) -&gt; List[str]:
+async def revoke_multiple_sessions(
+    session_handles: List[str], user_context: Union[None, Dict[str, Any]] = None
+) -&gt; List[str]:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.revoke_multiple_sessions(session_handles, user_context)
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_multiple_sessions(
+        session_handles, user_context
+    )
 
 
-async def get_session_information(session_handle: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; SessionInformationResult:
+async def get_session_information(
+    session_handle: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[SessionInformationResult, None]:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.get_session_information(session_handle, user_context)
+    return await SessionRecipe.get_instance().recipe_implementation.get_session_information(
+        session_handle, user_context
+    )
 
 
-async def update_session_data(session_handle: str, new_session_data: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
+async def update_session_data(
+    session_handle: str,
+    new_session_data: Dict[str, Any],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; bool:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.update_session_data(session_handle, new_session_data, user_context)
+    return await SessionRecipe.get_instance().recipe_implementation.update_session_data(
+        session_handle, new_session_data, user_context
+    )
 
 
-async def update_access_token_payload(session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
+async def update_access_token_payload(
+    session_handle: str,
+    new_access_token_payload: Dict[str, Any],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; bool:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(session_handle, new_access_token_payload, user_context)
+    return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(
+        session_handle, new_access_token_payload, user_context
+    )
 
 
-async def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
+async def create_jwt(
+    payload: Dict[str, Any],
+    validity_seconds: Union[None, int] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if user_context is None:
         user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
     if openid_recipe is not None:
-        return await openid_recipe.recipe_implementation.create_jwt(payload, validity_seconds, user_context=user_context)
+        return await openid_recipe.recipe_implementation.create_jwt(
+            payload, validity_seconds, user_context=user_context
+        )
 
-    raise Exception(&#39;create_jwt cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config when initialising the Session recipe&#39;)
+    raise Exception(
+        &#34;create_jwt cannot be used without enabling the JWT feature. Please set &#39;enable: True&#39; for jwt config when initialising the Session recipe&#34;
+    )
 
 
 async def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -&gt; GetJWKSResult:
@@ -138,25 +208,38 @@ async def get_jwks(user_context: Union[None, Dict[str, Any]] = None) -&gt; GetJW
     if openid_recipe is not None:
         return await openid_recipe.recipe_implementation.get_jwks(user_context)
 
-    raise Exception(&#39;get_jwks cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config when initialising the Session recipe&#39;)
+    raise Exception(
+        &#34;get_jwks cannot be used without enabling the JWT feature. Please set &#39;enable: True&#39; for jwt config when initialising the Session recipe&#34;
+    )
 
 
-async def get_open_id_discovery_configuration(user_context: Union[None, Dict[str, Any]] = None) -&gt; GetOpenIdDiscoveryConfigurationResult:
+async def get_open_id_discovery_configuration(
+    user_context: Union[None, Dict[str, Any]] = None
+) -&gt; GetOpenIdDiscoveryConfigurationResult:
     if user_context is None:
         user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
     if openid_recipe is not None:
         return await openid_recipe.recipe_implementation.get_open_id_discovery_configuration(
-            user_context)
+            user_context
+        )
 
-    raise Exception(&#39;get_open_id_discovery_configuration cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config when initialising the Session recipe&#39;)
+    raise Exception(
+        &#34;get_open_id_discovery_configuration cannot be used without enabling the JWT feature. Please set &#39;enable: True&#39; for jwt config when initialising the Session recipe&#34;
+    )
 
 
-async def regenerate_access_token(access_token: str, new_access_token_payload: Union[Dict[str, Any], None] = None, user_context: Union[None, Dict[str, Any]] = None):
+async def regenerate_access_token(
+    access_token: str,
+    new_access_token_payload: Union[Dict[str, Any], None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[RegenerateAccessTokenOkResult, None]:
     if user_context is None:
         user_context = {}
-    await SessionRecipe.get_instance().recipe_implementation.regenerate_access_token(access_token, new_access_token_payload, user_context)</code></pre>
+    return await SessionRecipe.get_instance().recipe_implementation.regenerate_access_token(
+        access_token, new_access_token_payload, user_context
+    )</code></pre>
 </details>
 </section>
 <section>
@@ -175,15 +258,23 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_jwt(payload: Dict[str, Any], validity_seconds: Union[None, int] = None, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
+<pre><code class="python">async def create_jwt(
+    payload: Dict[str, Any],
+    validity_seconds: Union[None, int] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     if user_context is None:
         user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
     if openid_recipe is not None:
-        return await openid_recipe.recipe_implementation.create_jwt(payload, validity_seconds, user_context=user_context)
+        return await openid_recipe.recipe_implementation.create_jwt(
+            payload, validity_seconds, user_context=user_context
+        )
 
-    raise Exception(&#39;create_jwt cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config when initialising the Session recipe&#39;)</code></pre>
+    raise Exception(
+        &#34;create_jwt cannot be used without enabling the JWT feature. Please set &#39;enable: True&#39; for jwt config when initialising the Session recipe&#34;
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.create_new_session"><code class="name flex">
@@ -195,13 +286,22 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_new_session(request: Any, user_id: str, access_token_payload: Union[Dict[str, Any], None] = None, session_data: Union[Dict[str, Any], None] = None, user_context: Union[None, Dict[str, Any]] = None) -&gt; SessionContainer:
+<pre><code class="python">async def create_new_session(
+    request: Any,
+    user_id: str,
+    access_token_payload: Union[Dict[str, Any], None] = None,
+    session_data: Union[Dict[str, Any], None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; SessionContainer:
     if user_context is None:
         user_context = {}
-    if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-        request = FRAMEWORKS[SessionRecipe.get_instance(
-        ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.create_new_session(request, user_id, access_token_payload, session_data, user_context=user_context)</code></pre>
+    if not hasattr(request, &#34;wrapper_used&#34;) or not request.wrapper_used:
+        request = FRAMEWORKS[
+            SessionRecipe.get_instance().app_info.framework
+        ].wrap_request(request)
+    return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
+        request, user_id, access_token_payload, session_data, user_context=user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_all_session_handles_for_user"><code class="name flex">
@@ -213,10 +313,14 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_all_session_handles_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[str]:
+<pre><code class="python">async def get_all_session_handles_for_user(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; List[str]:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(user_id, user_context)</code></pre>
+    return await SessionRecipe.get_instance().recipe_implementation.get_all_session_handles_for_user(
+        user_id, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_jwks"><code class="name flex">
@@ -235,7 +339,9 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
     if openid_recipe is not None:
         return await openid_recipe.recipe_implementation.get_jwks(user_context)
 
-    raise Exception(&#39;get_jwks cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config when initialising the Session recipe&#39;)</code></pre>
+    raise Exception(
+        &#34;get_jwks cannot be used without enabling the JWT feature. Please set &#39;enable: True&#39; for jwt config when initialising the Session recipe&#34;
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_open_id_discovery_configuration"><code class="name flex">
@@ -247,16 +353,21 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_open_id_discovery_configuration(user_context: Union[None, Dict[str, Any]] = None) -&gt; GetOpenIdDiscoveryConfigurationResult:
+<pre><code class="python">async def get_open_id_discovery_configuration(
+    user_context: Union[None, Dict[str, Any]] = None
+) -&gt; GetOpenIdDiscoveryConfigurationResult:
     if user_context is None:
         user_context = {}
     openid_recipe = SessionRecipe.get_instance().openid_recipe
 
     if openid_recipe is not None:
         return await openid_recipe.recipe_implementation.get_open_id_discovery_configuration(
-            user_context)
+            user_context
+        )
 
-    raise Exception(&#39;get_open_id_discovery_configuration cannot be used without enabling the JWT feature. Please set \&#39;enable: True\&#39; for jwt config when initialising the Session recipe&#39;)</code></pre>
+    raise Exception(
+        &#34;get_open_id_discovery_configuration cannot be used without enabling the JWT feature. Please set &#39;enable: True&#39; for jwt config when initialising the Session recipe&#34;
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_session"><code class="name flex">
@@ -268,17 +379,25 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_session(request: Any, anti_csrf_check: Union[bool, None] = None, session_required: bool = True, user_context: Union[None, Dict[str, Any]] = None) -&gt; Union[SessionContainer, None]:
+<pre><code class="python">async def get_session(
+    request: Any,
+    anti_csrf_check: Union[bool, None] = None,
+    session_required: bool = True,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[SessionContainer, None]:
     if user_context is None:
         user_context = {}
-    if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-        request = FRAMEWORKS[SessionRecipe.get_instance(
-        ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.get_session(request, anti_csrf_check, session_required, user_context)</code></pre>
+    if not hasattr(request, &#34;wrapper_used&#34;) or not request.wrapper_used:
+        request = FRAMEWORKS[
+            SessionRecipe.get_instance().app_info.framework
+        ].wrap_request(request)
+    return await SessionRecipe.get_instance().recipe_implementation.get_session(
+        request, anti_csrf_check, session_required, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.get_session_information"><code class="name flex">
-<span>async def <span class="ident">get_session_information</span></span>(<span>session_handle: str, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionInformationResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionInformationResult">SessionInformationResult</a></span>
+<span>async def <span class="ident">get_session_information</span></span>(<span>session_handle: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionInformationResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionInformationResult">SessionInformationResult</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -286,10 +405,14 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_session_information(session_handle: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; SessionInformationResult:
+<pre><code class="python">async def get_session_information(
+    session_handle: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; Union[SessionInformationResult, None]:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.get_session_information(session_handle, user_context)</code></pre>
+    return await SessionRecipe.get_instance().recipe_implementation.get_session_information(
+        session_handle, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.refresh_session"><code class="name flex">
@@ -301,17 +424,22 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def refresh_session(request: Any, user_context: Union[None, Dict[str, Any]] = None) -&gt; SessionContainer:
+<pre><code class="python">async def refresh_session(
+    request: Any, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; SessionContainer:
     if user_context is None:
         user_context = {}
-    if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-        request = FRAMEWORKS[SessionRecipe.get_instance(
-        ).app_info.framework].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.refresh_session(request, user_context)</code></pre>
+    if not hasattr(request, &#34;wrapper_used&#34;) or not request.wrapper_used:
+        request = FRAMEWORKS[
+            SessionRecipe.get_instance().app_info.framework
+        ].wrap_request(request)
+    return await SessionRecipe.get_instance().recipe_implementation.refresh_session(
+        request, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.regenerate_access_token"><code class="name flex">
-<span>async def <span class="ident">regenerate_access_token</span></span>(<span>access_token: str, new_access_token_payload: Optional[Dict[str, Any]] = None, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>async def <span class="ident">regenerate_access_token</span></span>(<span>access_token: str, new_access_token_payload: Optional[Dict[str, Any]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult" href="../interfaces.html#supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult">RegenerateAccessTokenOkResult</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -319,10 +447,16 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def regenerate_access_token(access_token: str, new_access_token_payload: Union[Dict[str, Any], None] = None, user_context: Union[None, Dict[str, Any]] = None):
+<pre><code class="python">async def regenerate_access_token(
+    access_token: str,
+    new_access_token_payload: Union[Dict[str, Any], None] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; Union[RegenerateAccessTokenOkResult, None]:
     if user_context is None:
         user_context = {}
-    await SessionRecipe.get_instance().recipe_implementation.regenerate_access_token(access_token, new_access_token_payload, user_context)</code></pre>
+    return await SessionRecipe.get_instance().recipe_implementation.regenerate_access_token(
+        access_token, new_access_token_payload, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.revoke_all_sessions_for_user"><code class="name flex">
@@ -334,10 +468,14 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_all_sessions_for_user(user_id: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; List[str]:
+<pre><code class="python">async def revoke_all_sessions_for_user(
+    user_id: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; List[str]:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(user_id, user_context)</code></pre>
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_all_sessions_for_user(
+        user_id, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.revoke_multiple_sessions"><code class="name flex">
@@ -349,10 +487,14 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_multiple_sessions(session_handles: List[str], user_context: Union[None, Dict[str, Any]] = None) -&gt; List[str]:
+<pre><code class="python">async def revoke_multiple_sessions(
+    session_handles: List[str], user_context: Union[None, Dict[str, Any]] = None
+) -&gt; List[str]:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.revoke_multiple_sessions(session_handles, user_context)</code></pre>
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_multiple_sessions(
+        session_handles, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.revoke_session"><code class="name flex">
@@ -364,14 +506,18 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_session(session_handle: str, user_context: Union[None, Dict[str, Any]] = None) -&gt; bool:
+<pre><code class="python">async def revoke_session(
+    session_handle: str, user_context: Union[None, Dict[str, Any]] = None
+) -&gt; bool:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.revoke_session(session_handle, user_context)</code></pre>
+    return await SessionRecipe.get_instance().recipe_implementation.revoke_session(
+        session_handle, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.update_access_token_payload"><code class="name flex">
-<span>async def <span class="ident">update_access_token_payload</span></span>(<span>session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
+<span>async def <span class="ident">update_access_token_payload</span></span>(<span>session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -379,14 +525,20 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_access_token_payload(session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
+<pre><code class="python">async def update_access_token_payload(
+    session_handle: str,
+    new_access_token_payload: Dict[str, Any],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; bool:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(session_handle, new_access_token_payload, user_context)</code></pre>
+    return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(
+        session_handle, new_access_token_payload, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.asyncio.update_session_data"><code class="name flex">
-<span>async def <span class="ident">update_session_data</span></span>(<span>session_handle: str, new_session_data: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
+<span>async def <span class="ident">update_session_data</span></span>(<span>session_handle: str, new_session_data: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -394,10 +546,16 @@ async def regenerate_access_token(access_token: str, new_access_token_payload: U
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_session_data(session_handle: str, new_session_data: Dict[str, Any], user_context: Union[None, Dict[str, Any]] = None) -&gt; None:
+<pre><code class="python">async def update_session_data(
+    session_handle: str,
+    new_session_data: Dict[str, Any],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -&gt; bool:
     if user_context is None:
         user_context = {}
-    return await SessionRecipe.get_instance().recipe_implementation.update_session_data(session_handle, new_session_data, user_context)</code></pre>
+    return await SessionRecipe.get_instance().recipe_implementation.update_session_data(
+        session_handle, new_session_data, user_context
+    )</code></pre>
 </details>
 </dd>
 </dl>

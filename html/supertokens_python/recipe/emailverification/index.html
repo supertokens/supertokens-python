@@ -60,7 +60,9 @@ if TYPE_CHECKING:
     from ...recipe_module import RecipeModule
 
 
-def init(config: ParentRecipeEmailVerificationConfig) -&gt; Callable[[AppInfo], RecipeModule]:
+def init(
+    config: ParentRecipeEmailVerificationConfig,
+) -&gt; Callable[[AppInfo], RecipeModule]:
     return EmailVerificationRecipe.init(config)</code></pre>
 </details>
 </section>
@@ -127,7 +129,9 @@ def init(config: ParentRecipeEmailVerificationConfig) -&gt; Callable[[AppInfo], 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def init(config: ParentRecipeEmailVerificationConfig) -&gt; Callable[[AppInfo], RecipeModule]:
+<pre><code class="python">def init(
+    config: ParentRecipeEmailVerificationConfig,
+) -&gt; Callable[[AppInfo], RecipeModule]:
     return EmailVerificationRecipe.init(config)</code></pre>
 </details>
 </dd>

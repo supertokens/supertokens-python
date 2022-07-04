@@ -55,16 +55,24 @@ class Provider(abc.ABC):
         self.is_default: bool = is_default
 
     @abc.abstractmethod
-    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
+    async def get_profile_info(
+        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+    ) -&gt; UserInfo:
         pass
 
     @abc.abstractmethod
-    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(
+        self, user_context: Dict[str, Any]
+    ) -&gt; AuthorisationRedirectAPI:
         pass
 
     @abc.abstractmethod
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
+        self,
+        redirect_uri: str,
+        auth_code_from_request: str,
+        user_context: Dict[str, Any],
+    ) -&gt; AccessTokenAPI:
         pass
 
     @abc.abstractmethod
@@ -102,16 +110,24 @@ inheritance.</p></div>
         self.is_default: bool = is_default
 
     @abc.abstractmethod
-    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
+    async def get_profile_info(
+        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+    ) -&gt; UserInfo:
         pass
 
     @abc.abstractmethod
-    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(
+        self, user_context: Dict[str, Any]
+    ) -&gt; AuthorisationRedirectAPI:
         pass
 
     @abc.abstractmethod
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
+        self,
+        redirect_uri: str,
+        auth_code_from_request: str,
+        user_context: Dict[str, Any],
+    ) -&gt; AccessTokenAPI:
         pass
 
     @abc.abstractmethod
@@ -148,7 +164,11 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">@abc.abstractmethod
 def get_access_token_api_info(
-        self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
+    self,
+    redirect_uri: str,
+    auth_code_from_request: str,
+    user_context: Dict[str, Any],
+) -&gt; AccessTokenAPI:
     pass</code></pre>
 </details>
 </dd>
@@ -162,7 +182,9 @@ def get_access_token_api_info(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abc.abstractmethod
-def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
+def get_authorisation_redirect_api_info(
+    self, user_context: Dict[str, Any]
+) -&gt; AuthorisationRedirectAPI:
     pass</code></pre>
 </details>
 </dd>
@@ -190,7 +212,9 @@ def get_client_id(self, user_context: Dict[str, Any]) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abc.abstractmethod
-async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
+async def get_profile_info(
+    self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+) -&gt; UserInfo:
     pass</code></pre>
 </details>
 </dd>

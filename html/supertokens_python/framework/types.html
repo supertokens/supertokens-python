@@ -56,7 +56,6 @@ class FrameworkEnum(Enum):
 
 
 class Framework(ABC):
-
     @abstractmethod
     def wrap_request(self, unwrapped: Any) -&gt; Union[BaseRequest, None]:
         pass</code></pre>
@@ -82,7 +81,6 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Framework(ABC):
-
     @abstractmethod
     def wrap_request(self, unwrapped: Any) -&gt; Union[BaseRequest, None]:
         pass</code></pre>

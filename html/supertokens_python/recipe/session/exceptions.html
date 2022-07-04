@@ -66,7 +66,7 @@ class SuperTokensSessionError(SuperTokensError):
 
 class TokenTheftError(SuperTokensSessionError):
     def __init__(self, user_id: str, session_handle: str):
-        super().__init__(&#39;token theft detected&#39;)
+        super().__init__(&#34;token theft detected&#34;)
         self.user_id = user_id
         self.session_handle = session_handle
 
@@ -172,7 +172,7 @@ class TryRefreshTokenError(SuperTokensSessionError):
 </summary>
 <pre><code class="python">class TokenTheftError(SuperTokensSessionError):
     def __init__(self, user_id: str, session_handle: str):
-        super().__init__(&#39;token theft detected&#39;)
+        super().__init__(&#34;token theft detected&#34;)
         self.user_id = user_id
         self.session_handle = session_handle</code></pre>
 </details>

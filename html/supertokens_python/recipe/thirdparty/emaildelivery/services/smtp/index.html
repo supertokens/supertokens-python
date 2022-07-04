@@ -42,22 +42,32 @@
 
 from typing import Any, Dict, Callable, Union
 
-from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface, SMTPSettings
-from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import \
-    SMTPService as EmailVerificationSMTPService
-from supertokens_python.recipe.thirdparty.types import \
-    EmailTemplateVars, SMTPOverrideInput
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryInterface,
+    SMTPSettings,
+)
+from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import (
+    SMTPService as EmailVerificationSMTPService,
+)
+from supertokens_python.recipe.thirdparty.types import (
+    EmailTemplateVars,
+    SMTPOverrideInput,
+)
 
 
 class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
     ev_smtp_service: EmailVerificationSMTPService
 
-    def __init__(self, smtp_settings: SMTPSettings,
-                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -&gt; None:
+    def __init__(
+        self,
+        smtp_settings: SMTPSettings,
+        override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None,
+    ) -&gt; None:
         self.ev_smtp_service = EmailVerificationSMTPService(smtp_settings, override)
 
-    async def send_email(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+    async def send_email(
+        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+    ) -&gt; None:
         await self.ev_smtp_service.send_email(template_vars, user_context)</code></pre>
 </details>
 </section>
@@ -84,11 +94,16 @@ inheritance.</p></div>
 <pre><code class="python">class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
     ev_smtp_service: EmailVerificationSMTPService
 
-    def __init__(self, smtp_settings: SMTPSettings,
-                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -&gt; None:
+    def __init__(
+        self,
+        smtp_settings: SMTPSettings,
+        override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None,
+    ) -&gt; None:
         self.ev_smtp_service = EmailVerificationSMTPService(smtp_settings, override)
 
-    async def send_email(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+    async def send_email(
+        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+    ) -&gt; None:
         await self.ev_smtp_service.send_email(template_vars, user_context)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -115,7 +130,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_email(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+<pre><code class="python">async def send_email(
+    self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+) -&gt; None:
     await self.ev_smtp_service.send_email(template_vars, user_context)</code></pre>
 </details>
 </dd>

@@ -45,7 +45,7 @@ from typing import Any, Callable, Dict, Generic, TypeVar, Union
 
 from twilio.rest import Client  # type: ignore
 
-_T = TypeVar(&#39;_T&#39;)
+_T = TypeVar(&#34;_T&#34;)
 
 
 class SMSDeliveryInterface(ABC, Generic[_T]):
@@ -56,8 +56,11 @@ class SMSDeliveryInterface(ABC, Generic[_T]):
 
 class SMSDeliveryConfig(ABC, Generic[_T]):
     def __init__(
-            self, service: Union[SMSDeliveryInterface[_T], None] = None,
-            override: Union[Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None] = None,
+        self,
+        service: Union[SMSDeliveryInterface[_T], None] = None,
+        override: Union[
+            Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None
+        ] = None,
     ) -&gt; None:
         self.service = service
         self.override = override
@@ -65,21 +68,25 @@ class SMSDeliveryConfig(ABC, Generic[_T]):
 
 class SMSDeliveryConfigWithService(ABC, Generic[_T]):
     def __init__(
-            self, service: SMSDeliveryInterface[_T],
-            override: Union[Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None] = None,
+        self,
+        service: SMSDeliveryInterface[_T],
+        override: Union[
+            Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None
+        ] = None,
     ) -&gt; None:
         self.service = service
         self.override = override
 
 
 class TwilioSettings:
-    def __init__(self,
-                 account_sid: str,
-                 auth_token: str,
-                 from_: Union[str, None] = None,
-                 messaging_service_sid: Union[str, None] = None,
-                 opts: Union[Dict[str, Any], None] = None,
-                 ) -&gt; None:
+    def __init__(
+        self,
+        account_sid: str,
+        auth_token: str,
+        from_: Union[str, None] = None,
+        messaging_service_sid: Union[str, None] = None,
+        opts: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
         &#34;&#34;&#34;
         Note: `self.otps` can be used to override values passed to the Twilio Client.
         Read docs from `twilio.rest.Client.__init__` to discover possible args.
@@ -104,16 +111,19 @@ class TwilioServiceInterface(ABC, Generic[_T]):
         self.twilio_client = twilio_client  # type: ignore
 
     @abstractmethod
-    async def send_raw_sms(self,
-                           content: SMSContent,
-                           user_context: Dict[str, Any],
-                           from_: Union[str, None] = None,
-                           messaging_service_sid: Union[str, None] = None,
-                           ) -&gt; None:
+    async def send_raw_sms(
+        self,
+        content: SMSContent,
+        user_context: Dict[str, Any],
+        from_: Union[str, None] = None,
+        messaging_service_sid: Union[str, None] = None,
+    ) -&gt; None:
         pass
 
     @abstractmethod
-    async def get_content(self, template_vars: _T, user_context: Dict[str, Any]) -&gt; SMSContent:
+    async def get_content(
+        self, template_vars: _T, user_context: Dict[str, Any]
+    ) -&gt; SMSContent:
         pass</code></pre>
 </details>
 </section>
@@ -155,8 +165,11 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class SMSDeliveryConfig(ABC, Generic[_T]):
     def __init__(
-            self, service: Union[SMSDeliveryInterface[_T], None] = None,
-            override: Union[Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None] = None,
+        self,
+        service: Union[SMSDeliveryInterface[_T], None] = None,
+        override: Union[
+            Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None
+        ] = None,
     ) -&gt; None:
         self.service = service
         self.override = override</code></pre>
@@ -180,8 +193,11 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class SMSDeliveryConfigWithService(ABC, Generic[_T]):
     def __init__(
-            self, service: SMSDeliveryInterface[_T],
-            override: Union[Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None] = None,
+        self,
+        service: SMSDeliveryInterface[_T],
+        override: Union[
+            Callable[[SMSDeliveryInterface[_T]], SMSDeliveryInterface[_T]], None
+        ] = None,
     ) -&gt; None:
         self.service = service
         self.override = override</code></pre>
@@ -255,16 +271,19 @@ inheritance.</p></div>
         self.twilio_client = twilio_client  # type: ignore
 
     @abstractmethod
-    async def send_raw_sms(self,
-                           content: SMSContent,
-                           user_context: Dict[str, Any],
-                           from_: Union[str, None] = None,
-                           messaging_service_sid: Union[str, None] = None,
-                           ) -&gt; None:
+    async def send_raw_sms(
+        self,
+        content: SMSContent,
+        user_context: Dict[str, Any],
+        from_: Union[str, None] = None,
+        messaging_service_sid: Union[str, None] = None,
+    ) -&gt; None:
         pass
 
     @abstractmethod
-    async def get_content(self, template_vars: _T, user_context: Dict[str, Any]) -&gt; SMSContent:
+    async def get_content(
+        self, template_vars: _T, user_context: Dict[str, Any]
+    ) -&gt; SMSContent:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -288,7 +307,9 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_content(self, template_vars: _T, user_context: Dict[str, Any]) -&gt; SMSContent:
+async def get_content(
+    self, template_vars: _T, user_context: Dict[str, Any]
+) -&gt; SMSContent:
     pass</code></pre>
 </details>
 </dd>
@@ -302,12 +323,13 @@ async def get_content(self, template_vars: _T, user_context: Dict[str, Any]) -&g
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def send_raw_sms(self,
-                       content: SMSContent,
-                       user_context: Dict[str, Any],
-                       from_: Union[str, None] = None,
-                       messaging_service_sid: Union[str, None] = None,
-                       ) -&gt; None:
+async def send_raw_sms(
+    self,
+    content: SMSContent,
+    user_context: Dict[str, Any],
+    from_: Union[str, None] = None,
+    messaging_service_sid: Union[str, None] = None,
+) -&gt; None:
     pass</code></pre>
 </details>
 </dd>
@@ -326,13 +348,14 @@ Read docs from <code>twilio.rest.Client.__init__</code> to discover possible arg
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class TwilioSettings:
-    def __init__(self,
-                 account_sid: str,
-                 auth_token: str,
-                 from_: Union[str, None] = None,
-                 messaging_service_sid: Union[str, None] = None,
-                 opts: Union[Dict[str, Any], None] = None,
-                 ) -&gt; None:
+    def __init__(
+        self,
+        account_sid: str,
+        auth_token: str,
+        from_: Union[str, None] = None,
+        messaging_service_sid: Union[str, None] = None,
+        opts: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
         &#34;&#34;&#34;
         Note: `self.otps` can be used to override values passed to the Twilio Client.
         Read docs from `twilio.rest.Client.__init__` to discover possible args.

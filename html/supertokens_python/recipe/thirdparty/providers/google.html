@@ -46,69 +46,88 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
 from httpx import AsyncClient
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import (
-    AccessTokenAPI, AuthorisationRedirectAPI, UserInfo, UserInfoEmail)
+    AccessTokenAPI,
+    AuthorisationRedirectAPI,
+    UserInfo,
+    UserInfoEmail,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
 
 
 class Google(Provider):
-    def __init__(self, client_id: str, client_secret: str, scope: Union[None, List[str]] = None,
-                 authorisation_redirect: Union[None, Dict[str, Union[str, Callable[[
-                     BaseRequest], str]]]] = None,
-                 is_default: bool = False):
-        super().__init__(&#39;google&#39;, is_default)
-        default_scopes = [&#39;https://www.googleapis.com/auth/userinfo.email&#39;]
+    def __init__(
+        self,
+        client_id: str,
+        client_secret: str,
+        scope: Union[None, List[str]] = None,
+        authorisation_redirect: Union[
+            None, Dict[str, Union[str, Callable[[BaseRequest], str]]]
+        ] = None,
+        is_default: bool = False,
+    ):
+        super().__init__(&#34;google&#34;, is_default)
+        default_scopes = [&#34;https://www.googleapis.com/auth/userinfo.email&#34;]
         if scope is None:
             scope = default_scopes
         self.client_id = client_id
         self.client_secret = client_secret
         self.scopes = list(set(scope))
-        self.access_token_api_url = &#39;https://accounts.google.com/o/oauth2/token&#39;
-        self.authorisation_redirect_url = &#39;https://accounts.google.com/o/oauth2/v2/auth&#39;
+        self.access_token_api_url = &#34;https://accounts.google.com/o/oauth2/token&#34;
+        self.authorisation_redirect_url = &#34;https://accounts.google.com/o/oauth2/v2/auth&#34;
         self.authorisation_redirect_params = {}
         if authorisation_redirect is not None:
             self.authorisation_redirect_params = authorisation_redirect
 
-    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
-        access_token: str = auth_code_response[&#39;access_token&#39;]
-        params = {
-            &#39;alt&#39;: &#39;json&#39;
-        }
-        headers = {
-            &#39;Authorization&#39;: &#39;Bearer &#39; + access_token
-        }
+    async def get_profile_info(
+        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+    ) -&gt; UserInfo:
+        access_token: str = auth_code_response[&#34;access_token&#34;]
+        params = {&#34;alt&#34;: &#34;json&#34;}
+        headers = {&#34;Authorization&#34;: &#34;Bearer &#34; + access_token}
         async with AsyncClient() as client:
-            response = await client.get(url=&#39;https://www.googleapis.com/oauth2/v1/userinfo&#39;, params=params,
-                                        headers=headers)
+            response = await client.get(
+                url=&#34;https://www.googleapis.com/oauth2/v1/userinfo&#34;,
+                params=params,
+                headers=headers,
+            )
             user_info = response.json()
-            user_id = user_info[&#39;id&#39;]
-            if &#39;email&#39; not in user_info or user_info[&#39;email&#39;] is None:
+            user_id = user_info[&#34;id&#34;]
+            if &#34;email&#34; not in user_info or user_info[&#34;email&#34;] is None:
                 return UserInfo(user_id)
-            is_email_verified = user_info[&#39;verified_email&#39;] if &#39;verified_email&#39; in user_info else False
-            return UserInfo(user_id, UserInfoEmail(
-                user_info[&#39;email&#39;], is_email_verified))
+            is_email_verified = (
+                user_info[&#34;verified_email&#34;] if &#34;verified_email&#34; in user_info else False
+            )
+            return UserInfo(
+                user_id, UserInfoEmail(user_info[&#34;email&#34;], is_email_verified)
+            )
 
-    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(
+        self, user_context: Dict[str, Any]
+    ) -&gt; AuthorisationRedirectAPI:
         params = {
-            &#39;scope&#39;: &#39; &#39;.join(self.scopes),
-            &#39;response_type&#39;: &#39;code&#39;,
-            &#39;client_id&#39;: self.client_id,
-            &#39;access_type&#39;: &#39;offline&#39;,
-            &#39;include_granted_scopes&#39;: &#39;true&#39;,
-            **self.authorisation_redirect_params
+            &#34;scope&#34;: &#34; &#34;.join(self.scopes),
+            &#34;response_type&#34;: &#34;code&#34;,
+            &#34;client_id&#34;: self.client_id,
+            &#34;access_type&#34;: &#34;offline&#34;,
+            &#34;include_granted_scopes&#34;: &#34;true&#34;,
+            **self.authorisation_redirect_params,
         }
-        return AuthorisationRedirectAPI(
-            self.authorisation_redirect_url, params)
+        return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
 
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
+        self,
+        redirect_uri: str,
+        auth_code_from_request: str,
+        user_context: Dict[str, Any],
+    ) -&gt; AccessTokenAPI:
         params = {
-            &#39;client_id&#39;: self.client_id,
-            &#39;client_secret&#39;: self.client_secret,
-            &#39;grant_type&#39;: &#39;authorization_code&#39;,
-            &#39;code&#39;: auth_code_from_request,
-            &#39;redirect_uri&#39;: redirect_uri
+            &#34;client_id&#34;: self.client_id,
+            &#34;client_secret&#34;: self.client_secret,
+            &#34;grant_type&#34;: &#34;authorization_code&#34;,
+            &#34;code&#34;: auth_code_from_request,
+            &#34;redirect_uri&#34;: redirect_uri,
         }
         return AccessTokenAPI(self.access_token_api_url, params)
 
@@ -140,62 +159,77 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Google(Provider):
-    def __init__(self, client_id: str, client_secret: str, scope: Union[None, List[str]] = None,
-                 authorisation_redirect: Union[None, Dict[str, Union[str, Callable[[
-                     BaseRequest], str]]]] = None,
-                 is_default: bool = False):
-        super().__init__(&#39;google&#39;, is_default)
-        default_scopes = [&#39;https://www.googleapis.com/auth/userinfo.email&#39;]
+    def __init__(
+        self,
+        client_id: str,
+        client_secret: str,
+        scope: Union[None, List[str]] = None,
+        authorisation_redirect: Union[
+            None, Dict[str, Union[str, Callable[[BaseRequest], str]]]
+        ] = None,
+        is_default: bool = False,
+    ):
+        super().__init__(&#34;google&#34;, is_default)
+        default_scopes = [&#34;https://www.googleapis.com/auth/userinfo.email&#34;]
         if scope is None:
             scope = default_scopes
         self.client_id = client_id
         self.client_secret = client_secret
         self.scopes = list(set(scope))
-        self.access_token_api_url = &#39;https://accounts.google.com/o/oauth2/token&#39;
-        self.authorisation_redirect_url = &#39;https://accounts.google.com/o/oauth2/v2/auth&#39;
+        self.access_token_api_url = &#34;https://accounts.google.com/o/oauth2/token&#34;
+        self.authorisation_redirect_url = &#34;https://accounts.google.com/o/oauth2/v2/auth&#34;
         self.authorisation_redirect_params = {}
         if authorisation_redirect is not None:
             self.authorisation_redirect_params = authorisation_redirect
 
-    async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
-        access_token: str = auth_code_response[&#39;access_token&#39;]
-        params = {
-            &#39;alt&#39;: &#39;json&#39;
-        }
-        headers = {
-            &#39;Authorization&#39;: &#39;Bearer &#39; + access_token
-        }
+    async def get_profile_info(
+        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+    ) -&gt; UserInfo:
+        access_token: str = auth_code_response[&#34;access_token&#34;]
+        params = {&#34;alt&#34;: &#34;json&#34;}
+        headers = {&#34;Authorization&#34;: &#34;Bearer &#34; + access_token}
         async with AsyncClient() as client:
-            response = await client.get(url=&#39;https://www.googleapis.com/oauth2/v1/userinfo&#39;, params=params,
-                                        headers=headers)
+            response = await client.get(
+                url=&#34;https://www.googleapis.com/oauth2/v1/userinfo&#34;,
+                params=params,
+                headers=headers,
+            )
             user_info = response.json()
-            user_id = user_info[&#39;id&#39;]
-            if &#39;email&#39; not in user_info or user_info[&#39;email&#39;] is None:
+            user_id = user_info[&#34;id&#34;]
+            if &#34;email&#34; not in user_info or user_info[&#34;email&#34;] is None:
                 return UserInfo(user_id)
-            is_email_verified = user_info[&#39;verified_email&#39;] if &#39;verified_email&#39; in user_info else False
-            return UserInfo(user_id, UserInfoEmail(
-                user_info[&#39;email&#39;], is_email_verified))
+            is_email_verified = (
+                user_info[&#34;verified_email&#34;] if &#34;verified_email&#34; in user_info else False
+            )
+            return UserInfo(
+                user_id, UserInfoEmail(user_info[&#34;email&#34;], is_email_verified)
+            )
 
-    def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
+    def get_authorisation_redirect_api_info(
+        self, user_context: Dict[str, Any]
+    ) -&gt; AuthorisationRedirectAPI:
         params = {
-            &#39;scope&#39;: &#39; &#39;.join(self.scopes),
-            &#39;response_type&#39;: &#39;code&#39;,
-            &#39;client_id&#39;: self.client_id,
-            &#39;access_type&#39;: &#39;offline&#39;,
-            &#39;include_granted_scopes&#39;: &#39;true&#39;,
-            **self.authorisation_redirect_params
+            &#34;scope&#34;: &#34; &#34;.join(self.scopes),
+            &#34;response_type&#34;: &#34;code&#34;,
+            &#34;client_id&#34;: self.client_id,
+            &#34;access_type&#34;: &#34;offline&#34;,
+            &#34;include_granted_scopes&#34;: &#34;true&#34;,
+            **self.authorisation_redirect_params,
         }
-        return AuthorisationRedirectAPI(
-            self.authorisation_redirect_url, params)
+        return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
 
     def get_access_token_api_info(
-            self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
+        self,
+        redirect_uri: str,
+        auth_code_from_request: str,
+        user_context: Dict[str, Any],
+    ) -&gt; AccessTokenAPI:
         params = {
-            &#39;client_id&#39;: self.client_id,
-            &#39;client_secret&#39;: self.client_secret,
-            &#39;grant_type&#39;: &#39;authorization_code&#39;,
-            &#39;code&#39;: auth_code_from_request,
-            &#39;redirect_uri&#39;: redirect_uri
+            &#34;client_id&#34;: self.client_id,
+            &#34;client_secret&#34;: self.client_secret,
+            &#34;grant_type&#34;: &#34;authorization_code&#34;,
+            &#34;code&#34;: auth_code_from_request,
+            &#34;redirect_uri&#34;: redirect_uri,
         }
         return AccessTokenAPI(self.access_token_api_url, params)
 
@@ -222,13 +256,17 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_access_token_api_info(
-        self, redirect_uri: str, auth_code_from_request: str, user_context: Dict[str, Any]) -&gt; AccessTokenAPI:
+    self,
+    redirect_uri: str,
+    auth_code_from_request: str,
+    user_context: Dict[str, Any],
+) -&gt; AccessTokenAPI:
     params = {
-        &#39;client_id&#39;: self.client_id,
-        &#39;client_secret&#39;: self.client_secret,
-        &#39;grant_type&#39;: &#39;authorization_code&#39;,
-        &#39;code&#39;: auth_code_from_request,
-        &#39;redirect_uri&#39;: redirect_uri
+        &#34;client_id&#34;: self.client_id,
+        &#34;client_secret&#34;: self.client_secret,
+        &#34;grant_type&#34;: &#34;authorization_code&#34;,
+        &#34;code&#34;: auth_code_from_request,
+        &#34;redirect_uri&#34;: redirect_uri,
     }
     return AccessTokenAPI(self.access_token_api_url, params)</code></pre>
 </details>
@@ -242,17 +280,18 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_authorisation_redirect_api_info(self, user_context: Dict[str, Any]) -&gt; AuthorisationRedirectAPI:
+<pre><code class="python">def get_authorisation_redirect_api_info(
+    self, user_context: Dict[str, Any]
+) -&gt; AuthorisationRedirectAPI:
     params = {
-        &#39;scope&#39;: &#39; &#39;.join(self.scopes),
-        &#39;response_type&#39;: &#39;code&#39;,
-        &#39;client_id&#39;: self.client_id,
-        &#39;access_type&#39;: &#39;offline&#39;,
-        &#39;include_granted_scopes&#39;: &#39;true&#39;,
-        **self.authorisation_redirect_params
+        &#34;scope&#34;: &#34; &#34;.join(self.scopes),
+        &#34;response_type&#34;: &#34;code&#34;,
+        &#34;client_id&#34;: self.client_id,
+        &#34;access_type&#34;: &#34;offline&#34;,
+        &#34;include_granted_scopes&#34;: &#34;true&#34;,
+        **self.authorisation_redirect_params,
     }
-    return AuthorisationRedirectAPI(
-        self.authorisation_redirect_url, params)</code></pre>
+    return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.google.Google.get_client_id"><code class="name flex">
@@ -277,24 +316,28 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_profile_info(self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]) -&gt; UserInfo:
-    access_token: str = auth_code_response[&#39;access_token&#39;]
-    params = {
-        &#39;alt&#39;: &#39;json&#39;
-    }
-    headers = {
-        &#39;Authorization&#39;: &#39;Bearer &#39; + access_token
-    }
+<pre><code class="python">async def get_profile_info(
+    self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
+) -&gt; UserInfo:
+    access_token: str = auth_code_response[&#34;access_token&#34;]
+    params = {&#34;alt&#34;: &#34;json&#34;}
+    headers = {&#34;Authorization&#34;: &#34;Bearer &#34; + access_token}
     async with AsyncClient() as client:
-        response = await client.get(url=&#39;https://www.googleapis.com/oauth2/v1/userinfo&#39;, params=params,
-                                    headers=headers)
+        response = await client.get(
+            url=&#34;https://www.googleapis.com/oauth2/v1/userinfo&#34;,
+            params=params,
+            headers=headers,
+        )
         user_info = response.json()
-        user_id = user_info[&#39;id&#39;]
-        if &#39;email&#39; not in user_info or user_info[&#39;email&#39;] is None:
+        user_id = user_info[&#34;id&#34;]
+        if &#34;email&#34; not in user_info or user_info[&#34;email&#34;] is None:
             return UserInfo(user_id)
-        is_email_verified = user_info[&#39;verified_email&#39;] if &#39;verified_email&#39; in user_info else False
-        return UserInfo(user_id, UserInfoEmail(
-            user_info[&#39;email&#39;], is_email_verified))</code></pre>
+        is_email_verified = (
+            user_info[&#34;verified_email&#34;] if &#34;verified_email&#34; in user_info else False
+        )
+        return UserInfo(
+            user_id, UserInfoEmail(user_info[&#34;email&#34;], is_email_verified)
+        )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.providers.google.Google.get_redirect_uri"><code class="name flex">

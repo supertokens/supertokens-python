@@ -41,46 +41,74 @@
 # under the License.
 from typing import Any, Dict, Union
 
+from supertokens_python.recipe.session.exceptions import raise_unauthorised_exception
+
 from .interfaces import SessionContainer
 
 
 class Session(SessionContainer):
-
     async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None:
         if user_context is None:
             user_context = {}
-        if await self.recipe_implementation.revoke_session(self.session_handle, user_context):
+        if await self.recipe_implementation.revoke_session(
+            self.session_handle, user_context
+        ):
             self.remove_cookies = True
 
-    async def get_session_data(self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+    async def get_session_data(
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Dict[str, Any]:
         if user_context is None:
             user_context = {}
-        session_info = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
+        session_info = await self.recipe_implementation.get_session_information(
+            self.session_handle, user_context
+        )
+        if session_info is None:
+            raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
+
         return session_info.session_data
 
-    async def update_session_data(self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+    async def update_session_data(
+        self,
+        new_session_data: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
         if user_context is None:
             user_context = {}
-        return await self.recipe_implementation.update_session_data(self.session_handle, new_session_data, user_context)
+        updated = await self.recipe_implementation.update_session_data(
+            self.session_handle, new_session_data, user_context
+        )
+        if not updated:
+            raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
-    async def update_access_token_payload(self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+    async def update_access_token_payload(
+        self,
+        new_access_token_payload: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
         if user_context is None:
             user_context = {}
-        response = await self.recipe_implementation.regenerate_access_token(self.access_token, new_access_token_payload, user_context)
+        response = await self.recipe_implementation.regenerate_access_token(
+            self.access_token, new_access_token_payload, user_context
+        )
+        if response is None:
+            raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
+
         self.access_token_payload = response.session.user_data_in_jwt
         if response.access_token is not None:
             self.access_token = response.access_token.token
             self.new_access_token_info = {
-                &#39;token&#39;: response.access_token.token,
-                &#39;expiry&#39;: response.access_token.expiry,
-                &#39;createdTime&#39;: response.access_token.created_time
+                &#34;token&#34;: response.access_token.token,
+                &#34;expiry&#34;: response.access_token.expiry,
+                &#34;createdTime&#34;: response.access_token.created_time,
             }
 
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
         return self.user_id
 
     def get_access_token_payload(
-            self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Dict[str, Any]:
         return self.access_token_payload
 
     def get_handle(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
@@ -89,17 +117,29 @@ class Session(SessionContainer):
     def get_access_token(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
         return self.access_token
 
-    async def get_time_created(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+    async def get_time_created(
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; int:
         if user_context is None:
             user_context = {}
-        result = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
-        return result.time_created
+        session_info = await self.recipe_implementation.get_session_information(
+            self.session_handle, user_context
+        )
+        if session_info is None:
+            raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
+
+        return session_info.time_created
 
     async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
         if user_context is None:
             user_context = {}
-        result = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
-        return result.expiry</code></pre>
+        session_info = await self.recipe_implementation.get_session_information(
+            self.session_handle, user_context
+        )
+        if session_info is None:
+            raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
+
+        return session_info.expiry</code></pre>
 </details>
 </section>
 <section>
@@ -123,42 +163,68 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Session(SessionContainer):
-
     async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None:
         if user_context is None:
             user_context = {}
-        if await self.recipe_implementation.revoke_session(self.session_handle, user_context):
+        if await self.recipe_implementation.revoke_session(
+            self.session_handle, user_context
+        ):
             self.remove_cookies = True
 
-    async def get_session_data(self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+    async def get_session_data(
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Dict[str, Any]:
         if user_context is None:
             user_context = {}
-        session_info = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
+        session_info = await self.recipe_implementation.get_session_information(
+            self.session_handle, user_context
+        )
+        if session_info is None:
+            raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
+
         return session_info.session_data
 
-    async def update_session_data(self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+    async def update_session_data(
+        self,
+        new_session_data: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
         if user_context is None:
             user_context = {}
-        return await self.recipe_implementation.update_session_data(self.session_handle, new_session_data, user_context)
+        updated = await self.recipe_implementation.update_session_data(
+            self.session_handle, new_session_data, user_context
+        )
+        if not updated:
+            raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
-    async def update_access_token_payload(self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+    async def update_access_token_payload(
+        self,
+        new_access_token_payload: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
         if user_context is None:
             user_context = {}
-        response = await self.recipe_implementation.regenerate_access_token(self.access_token, new_access_token_payload, user_context)
+        response = await self.recipe_implementation.regenerate_access_token(
+            self.access_token, new_access_token_payload, user_context
+        )
+        if response is None:
+            raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
+
         self.access_token_payload = response.session.user_data_in_jwt
         if response.access_token is not None:
             self.access_token = response.access_token.token
             self.new_access_token_info = {
-                &#39;token&#39;: response.access_token.token,
-                &#39;expiry&#39;: response.access_token.expiry,
-                &#39;createdTime&#39;: response.access_token.created_time
+                &#34;token&#34;: response.access_token.token,
+                &#34;expiry&#34;: response.access_token.expiry,
+                &#34;createdTime&#34;: response.access_token.created_time,
             }
 
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
         return self.user_id
 
     def get_access_token_payload(
-            self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Dict[str, Any]:
         return self.access_token_payload
 
     def get_handle(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
@@ -167,17 +233,29 @@ inheritance.</p></div>
     def get_access_token(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
         return self.access_token
 
-    async def get_time_created(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+    async def get_time_created(
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; int:
         if user_context is None:
             user_context = {}
-        result = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
-        return result.time_created
+        session_info = await self.recipe_implementation.get_session_information(
+            self.session_handle, user_context
+        )
+        if session_info is None:
+            raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
+
+        return session_info.time_created
 
     async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
         if user_context is None:
             user_context = {}
-        result = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
-        return result.expiry</code></pre>
+        session_info = await self.recipe_implementation.get_session_information(
+            self.session_handle, user_context
+        )
+        if session_info is None:
+            raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
+
+        return session_info.expiry</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -209,7 +287,8 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_access_token_payload(
-        self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+    self, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Dict[str, Any]:
     return self.access_token_payload</code></pre>
 </details>
 </dd>
@@ -225,8 +304,13 @@ inheritance.</p></div>
 <pre><code class="python">async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
     if user_context is None:
         user_context = {}
-    result = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
-    return result.expiry</code></pre>
+    session_info = await self.recipe_implementation.get_session_information(
+        self.session_handle, user_context
+    )
+    if session_info is None:
+        raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
+
+    return session_info.expiry</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_handle"><code class="name flex">
@@ -251,10 +335,17 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_session_data(self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+<pre><code class="python">async def get_session_data(
+    self, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Dict[str, Any]:
     if user_context is None:
         user_context = {}
-    session_info = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
+    session_info = await self.recipe_implementation.get_session_information(
+        self.session_handle, user_context
+    )
+    if session_info is None:
+        raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
+
     return session_info.session_data</code></pre>
 </details>
 </dd>
@@ -267,11 +358,18 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_time_created(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+<pre><code class="python">async def get_time_created(
+    self, user_context: Union[Dict[str, Any], None] = None
+) -&gt; int:
     if user_context is None:
         user_context = {}
-    result = await self.recipe_implementation.get_session_information(self.session_handle, user_context)
-    return result.time_created</code></pre>
+    session_info = await self.recipe_implementation.get_session_information(
+        self.session_handle, user_context
+    )
+    if session_info is None:
+        raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
+
+    return session_info.time_created</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.get_user_id"><code class="name flex">
@@ -299,7 +397,9 @@ inheritance.</p></div>
 <pre><code class="python">async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None:
     if user_context is None:
         user_context = {}
-    if await self.recipe_implementation.revoke_session(self.session_handle, user_context):
+    if await self.recipe_implementation.revoke_session(
+        self.session_handle, user_context
+    ):
         self.remove_cookies = True</code></pre>
 </details>
 </dd>
@@ -312,17 +412,26 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_access_token_payload(self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+<pre><code class="python">async def update_access_token_payload(
+    self,
+    new_access_token_payload: Dict[str, Any],
+    user_context: Union[Dict[str, Any], None] = None,
+) -&gt; None:
     if user_context is None:
         user_context = {}
-    response = await self.recipe_implementation.regenerate_access_token(self.access_token, new_access_token_payload, user_context)
+    response = await self.recipe_implementation.regenerate_access_token(
+        self.access_token, new_access_token_payload, user_context
+    )
+    if response is None:
+        raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
+
     self.access_token_payload = response.session.user_data_in_jwt
     if response.access_token is not None:
         self.access_token = response.access_token.token
         self.new_access_token_info = {
-            &#39;token&#39;: response.access_token.token,
-            &#39;expiry&#39;: response.access_token.expiry,
-            &#39;createdTime&#39;: response.access_token.created_time
+            &#34;token&#34;: response.access_token.token,
+            &#34;expiry&#34;: response.access_token.expiry,
+            &#34;createdTime&#34;: response.access_token.created_time,
         }</code></pre>
 </details>
 </dd>
@@ -335,10 +444,18 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_session_data(self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+<pre><code class="python">async def update_session_data(
+    self,
+    new_session_data: Dict[str, Any],
+    user_context: Union[Dict[str, Any], None] = None,
+) -&gt; None:
     if user_context is None:
         user_context = {}
-    return await self.recipe_implementation.update_session_data(self.session_handle, new_session_data, user_context)</code></pre>
+    updated = await self.recipe_implementation.update_session_data(
+        self.session_handle, new_session_data, user_context
+    )
+    if not updated:
+        raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)</code></pre>
 </details>
 </dd>
 </dl>

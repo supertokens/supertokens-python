@@ -44,20 +44,26 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.thirdparty.interfaces import (APIInterface,
-                                                                 APIOptions)
+    from supertokens_python.recipe.thirdparty.interfaces import APIInterface, APIOptions
+
+from supertokens_python.utils import default_user_context
 
 
-async def handle_apple_redirect_api(api_implementation: APIInterface, api_options: APIOptions):
+async def handle_apple_redirect_api(
+    api_implementation: APIInterface, api_options: APIOptions
+):
     if api_implementation.disable_apple_redirect_handler_post:
         return None
     body = await api_options.request.form_data()
 
-    code = body[&#39;code&#39;] if &#39;code&#39; in body else &#34;&#34;
-    state = body[&#39;state&#39;] if &#39;state&#39; in body else &#34;&#34;
+    code = body[&#34;code&#34;] if &#34;code&#34; in body else &#34;&#34;
+    state = body[&#34;state&#34;] if &#34;state&#34; in body else &#34;&#34;
+    user_context = default_user_context(api_options.request)
 
     # this will redirect the user...
-    await api_implementation.apple_redirect_handler_post(code, state, api_options, {})
+    await api_implementation.apple_redirect_handler_post(
+        code, state, api_options, user_context
+    )
 
     return api_options.response</code></pre>
 </details>
@@ -78,16 +84,21 @@ async def handle_apple_redirect_api(api_implementation: APIInterface, api_option
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def handle_apple_redirect_api(api_implementation: APIInterface, api_options: APIOptions):
+<pre><code class="python">async def handle_apple_redirect_api(
+    api_implementation: APIInterface, api_options: APIOptions
+):
     if api_implementation.disable_apple_redirect_handler_post:
         return None
     body = await api_options.request.form_data()
 
-    code = body[&#39;code&#39;] if &#39;code&#39; in body else &#34;&#34;
-    state = body[&#39;state&#39;] if &#39;state&#39; in body else &#34;&#34;
+    code = body[&#34;code&#34;] if &#34;code&#34; in body else &#34;&#34;
+    state = body[&#34;state&#34;] if &#34;state&#34; in body else &#34;&#34;
+    user_context = default_user_context(api_options.request)
 
     # this will redirect the user...
-    await api_implementation.apple_redirect_handler_post(code, state, api_options, {})
+    await api_implementation.apple_redirect_handler_post(
+        code, state, api_options, user_context
+    )
 
     return api_options.response</code></pre>
 </details>

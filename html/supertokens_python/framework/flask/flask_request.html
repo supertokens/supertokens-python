@@ -67,7 +67,7 @@ class FlaskRequest(BaseRequest):
 
     def method(self) -&gt; str:
         if isinstance(self.request, dict):
-            temp: str = self.request[&#39;REQUEST_METHOD&#39;]
+            temp: str = self.request[&#34;REQUEST_METHOD&#34;]
             return temp
         return self.request.method  # type: ignore
 
@@ -81,21 +81,24 @@ class FlaskRequest(BaseRequest):
 
     def get_session(self) -&gt; Union[SessionContainer, None]:
         from flask import g
-        if hasattr(g, &#39;supertokens&#39;):
+
+        if hasattr(g, &#34;supertokens&#34;):
             return g.supertokens
         return None
 
     def set_session(self, session: SessionContainer):
         from flask import g
+
         g.supertokens = session
 
     def set_session_as_none(self):
         from flask import g
+
         g.supertokens = None
 
     def get_path(self) -&gt; str:
         if isinstance(self.request, dict):
-            temp: str = self.request[&#39;PATH_INFO&#39;]
+            temp: str = self.request[&#34;PATH_INFO&#34;]
             return temp
         return self.request.base_url
 
@@ -141,7 +144,7 @@ inheritance.</p></div>
 
     def method(self) -&gt; str:
         if isinstance(self.request, dict):
-            temp: str = self.request[&#39;REQUEST_METHOD&#39;]
+            temp: str = self.request[&#34;REQUEST_METHOD&#34;]
             return temp
         return self.request.method  # type: ignore
 
@@ -155,21 +158,24 @@ inheritance.</p></div>
 
     def get_session(self) -&gt; Union[SessionContainer, None]:
         from flask import g
-        if hasattr(g, &#39;supertokens&#39;):
+
+        if hasattr(g, &#34;supertokens&#34;):
             return g.supertokens
         return None
 
     def set_session(self, session: SessionContainer):
         from flask import g
+
         g.supertokens = session
 
     def set_session_as_none(self):
         from flask import g
+
         g.supertokens = None
 
     def get_path(self) -&gt; str:
         if isinstance(self.request, dict):
-            temp: str = self.request[&#39;PATH_INFO&#39;]
+            temp: str = self.request[&#34;PATH_INFO&#34;]
             return temp
         return self.request.base_url
 
@@ -251,7 +257,7 @@ specific ones.</p></div>
 </summary>
 <pre><code class="python">def get_path(self) -&gt; str:
     if isinstance(self.request, dict):
-        temp: str = self.request[&#39;PATH_INFO&#39;]
+        temp: str = self.request[&#34;PATH_INFO&#34;]
         return temp
     return self.request.base_url</code></pre>
 </details>
@@ -280,7 +286,8 @@ specific ones.</p></div>
 </summary>
 <pre><code class="python">def get_session(self) -&gt; Union[SessionContainer, None]:
     from flask import g
-    if hasattr(g, &#39;supertokens&#39;):
+
+    if hasattr(g, &#34;supertokens&#34;):
         return g.supertokens
     return None</code></pre>
 </details>
@@ -312,7 +319,7 @@ specific ones.</p></div>
 </summary>
 <pre><code class="python">def method(self) -&gt; str:
     if isinstance(self.request, dict):
-        temp: str = self.request[&#39;REQUEST_METHOD&#39;]
+        temp: str = self.request[&#34;REQUEST_METHOD&#34;]
         return temp
     return self.request.method  # type: ignore</code></pre>
 </details>
@@ -328,6 +335,7 @@ specific ones.</p></div>
 </summary>
 <pre><code class="python">def set_session(self, session: SessionContainer):
     from flask import g
+
     g.supertokens = session</code></pre>
 </details>
 </dd>

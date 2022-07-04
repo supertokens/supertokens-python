@@ -44,13 +44,16 @@ from typing import Any, Dict, Union
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe.jwt.interfaces import (
-    CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult)
+    CreateJwtOkResult,
+    CreateJwtResultUnsupportedAlgorithm,
+    GetJWKSResult,
+)
 from supertokens_python.types import APIResponse, GeneralErrorResponse
 
 from .utils import OpenIdConfig
 
 
-class GetOpenIdDiscoveryConfigurationResult():
+class GetOpenIdDiscoveryConfigurationResult:
     def __init__(self, issuer: str, jwks_uri: str):
         self.issuer = issuer
         self.jwks_uri = jwks_uri
@@ -61,7 +64,12 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
+    async def create_jwt(
+        self,
+        payload: Dict[str, Any],
+        validity_seconds: Union[int, None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
 
     @abstractmethod
@@ -69,13 +77,21 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_open_id_discovery_configuration(self, user_context: Dict[str, Any]) -&gt; GetOpenIdDiscoveryConfigurationResult:
+    async def get_open_id_discovery_configuration(
+        self, user_context: Dict[str, Any]
+    ) -&gt; GetOpenIdDiscoveryConfigurationResult:
         pass
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
-                 config: OpenIdConfig, recipe_implementation: RecipeInterface):
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        recipe_id: str,
+        config: OpenIdConfig,
+        recipe_implementation: RecipeInterface,
+    ):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -84,18 +100,14 @@ class APIOptions:
 
 
 class OpenIdDiscoveryConfigurationGetResponse(APIResponse):
-    status: str = &#39;OK&#39;
+    status: str = &#34;OK&#34;
 
     def __init__(self, issuer: str, jwks_uri: str):
         self.issuer = issuer
         self.jwks_uri = jwks_uri
 
     def to_json(self):
-        return {
-            &#39;status&#39;: self.status,
-            &#39;issuer&#39;: self.issuer,
-            &#39;jwks_uri&#39;: self.jwks_uri
-        }
+        return {&#34;status&#34;: self.status, &#34;issuer&#34;: self.issuer, &#34;jwks_uri&#34;: self.jwks_uri}
 
 
 class APIInterface:
@@ -103,7 +115,9 @@ class APIInterface:
         self.disable_open_id_discovery_configuration_get = False
 
     @abstractmethod
-    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[OpenIdDiscoveryConfigurationGetResponse, GeneralErrorResponse]:
+    async def open_id_discovery_configuration_get(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; Union[OpenIdDiscoveryConfigurationGetResponse, GeneralErrorResponse]:
         pass</code></pre>
 </details>
 </section>
@@ -130,7 +144,9 @@ class APIInterface:
         self.disable_open_id_discovery_configuration_get = False
 
     @abstractmethod
-    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[OpenIdDiscoveryConfigurationGetResponse, GeneralErrorResponse]:
+    async def open_id_discovery_configuration_get(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; Union[OpenIdDiscoveryConfigurationGetResponse, GeneralErrorResponse]:
         pass</code></pre>
 </details>
 <h3>Subclasses</h3>
@@ -149,7 +165,9 @@ class APIInterface:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[OpenIdDiscoveryConfigurationGetResponse, GeneralErrorResponse]:
+async def open_id_discovery_configuration_get(
+    self, api_options: APIOptions, user_context: Dict[str, Any]
+) -&gt; Union[OpenIdDiscoveryConfigurationGetResponse, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
@@ -166,8 +184,14 @@ async def open_id_discovery_configuration_get(self, api_options: APIOptions, use
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class APIOptions:
-    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
-                 config: OpenIdConfig, recipe_implementation: RecipeInterface):
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        recipe_id: str,
+        config: OpenIdConfig,
+        recipe_implementation: RecipeInterface,
+    ):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -185,7 +209,7 @@ async def open_id_discovery_configuration_get(self, api_options: APIOptions, use
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class GetOpenIdDiscoveryConfigurationResult():
+<pre><code class="python">class GetOpenIdDiscoveryConfigurationResult:
     def __init__(self, issuer: str, jwks_uri: str):
         self.issuer = issuer
         self.jwks_uri = jwks_uri</code></pre>
@@ -203,18 +227,14 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class OpenIdDiscoveryConfigurationGetResponse(APIResponse):
-    status: str = &#39;OK&#39;
+    status: str = &#34;OK&#34;
 
     def __init__(self, issuer: str, jwks_uri: str):
         self.issuer = issuer
         self.jwks_uri = jwks_uri
 
     def to_json(self):
-        return {
-            &#39;status&#39;: self.status,
-            &#39;issuer&#39;: self.issuer,
-            &#39;jwks_uri&#39;: self.jwks_uri
-        }</code></pre>
+        return {&#34;status&#34;: self.status, &#34;issuer&#34;: self.issuer, &#34;jwks_uri&#34;: self.jwks_uri}</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -240,11 +260,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_json(self):
-    return {
-        &#39;status&#39;: self.status,
-        &#39;issuer&#39;: self.issuer,
-        &#39;jwks_uri&#39;: self.jwks_uri
-    }</code></pre>
+    return {&#34;status&#34;: self.status, &#34;issuer&#34;: self.issuer, &#34;jwks_uri&#34;: self.jwks_uri}</code></pre>
 </details>
 </dd>
 </dl>
@@ -264,7 +280,12 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
+    async def create_jwt(
+        self,
+        payload: Dict[str, Any],
+        validity_seconds: Union[int, None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
 
     @abstractmethod
@@ -272,7 +293,9 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def get_open_id_discovery_configuration(self, user_context: Dict[str, Any]) -&gt; GetOpenIdDiscoveryConfigurationResult:
+    async def get_open_id_discovery_configuration(
+        self, user_context: Dict[str, Any]
+    ) -&gt; GetOpenIdDiscoveryConfigurationResult:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -295,7 +318,12 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
+async def create_jwt(
+    self,
+    payload: Dict[str, Any],
+    validity_seconds: Union[int, None],
+    user_context: Dict[str, Any],
+) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     pass</code></pre>
 </details>
 </dd>
@@ -323,7 +351,9 @@ async def get_jwks(self, user_context: Dict[str, Any]) -&gt; GetJWKSResult:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_open_id_discovery_configuration(self, user_context: Dict[str, Any]) -&gt; GetOpenIdDiscoveryConfigurationResult:
+async def get_open_id_discovery_configuration(
+    self, user_context: Dict[str, Any]
+) -&gt; GetOpenIdDiscoveryConfigurationResult:
     pass</code></pre>
 </details>
 </dd>

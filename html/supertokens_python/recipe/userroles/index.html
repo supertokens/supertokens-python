@@ -52,7 +52,9 @@ if TYPE_CHECKING:
     from ...recipe_module import RecipeModule
 
 
-def init(override: Union[utils.InputOverrideConfig, None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
+def init(
+    override: Union[utils.InputOverrideConfig, None] = None
+) -&gt; Callable[[AppInfo], RecipeModule]:
     return UserRolesRecipe.init(override)</code></pre>
 </details>
 </section>
@@ -103,7 +105,9 @@ def init(override: Union[utils.InputOverrideConfig, None] = None) -&gt; Callable
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def init(override: Union[utils.InputOverrideConfig, None] = None) -&gt; Callable[[AppInfo], RecipeModule]:
+<pre><code class="python">def init(
+    override: Union[utils.InputOverrideConfig, None] = None
+) -&gt; Callable[[AppInfo], RecipeModule]:
     return UserRolesRecipe.init(override)</code></pre>
 </details>
 </dd>

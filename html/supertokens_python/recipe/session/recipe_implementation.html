@@ -43,23 +43,33 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict
 
+from supertokens_python.framework.request import BaseRequest
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
-from supertokens_python.utils import (FRAMEWORKS, execute_async,
-                                      frontend_has_interceptor,
-                                      get_timestamp_ms, normalise_http_method)
+from supertokens_python.utils import (
+    execute_async,
+    frontend_has_interceptor,
+    get_timestamp_ms,
+    normalise_http_method,
+)
 
 from . import session_functions
-from .cookie_and_header import (get_access_token_from_cookie,
-                                get_anti_csrf_header,
-                                get_id_refresh_token_from_cookie,
-                                get_refresh_token_from_cookie, get_rid_header)
-from .exceptions import (raise_try_refresh_token_exception,
-                         raise_unauthorised_exception)
-from .interfaces import (AccessTokenObj, RecipeInterface,
-                         RegenerateAccessTokenOkResult,
-                         SessionInformationResult, SessionObj)
+from .cookie_and_header import (
+    get_access_token_from_cookie,
+    get_anti_csrf_header,
+    get_id_refresh_token_from_cookie,
+    get_refresh_token_from_cookie,
+    get_rid_header,
+)
+from .exceptions import raise_try_refresh_token_exception, raise_unauthorised_exception
+from .interfaces import (
+    AccessTokenObj,
+    RecipeInterface,
+    RegenerateAccessTokenOkResult,
+    SessionInformationResult,
+    SessionObj,
+)
 from .session_class import Session
 
 if TYPE_CHECKING:
@@ -73,13 +83,12 @@ from .interfaces import SessionContainer
 
 
 class HandshakeInfo:
-
     def __init__(self, info: Dict[str, Any]):
-        self.access_token_blacklisting_enabled = info[&#39;accessTokenBlacklistingEnabled&#39;]
+        self.access_token_blacklisting_enabled = info[&#34;accessTokenBlacklistingEnabled&#34;]
         self.raw_jwt_signing_public_key_list: List[Dict[str, Any]] = []
-        self.anti_csrf = info[&#39;antiCsrf&#39;]
-        self.access_token_validity = info[&#39;accessTokenValidity&#39;]
-        self.refresh_token_validity = info[&#39;refreshTokenValidity&#39;]
+        self.anti_csrf = info[&#34;antiCsrf&#34;]
+        self.access_token_validity = info[&#34;accessTokenValidity&#34;]
+        self.refresh_token_validity = info[&#34;refreshTokenValidity&#34;]
 
     def set_jwt_signing_public_key_list(self, updated_list: List[Dict[str, Any]]):
         self.raw_jwt_signing_public_key_list = updated_list
@@ -87,7 +96,10 @@ class HandshakeInfo:
     def get_jwt_signing_public_key_list(self) -&gt; List[Dict[str, Any]]:
         time_now = get_timestamp_ms()
         return [
-            key for key in self.raw_jwt_signing_public_key_list if key[&#39;expiryTime&#39;] &gt; time_now]
+            key
+            for key in self.raw_jwt_signing_public_key_list
+            if key[&#34;expiryTime&#34;] &gt; time_now
+        ]
 
 
 class RecipeImplementation(RecipeInterface):
@@ -109,154 +121,244 @@ class RecipeImplementation(RecipeInterface):
             pass
 
     async def get_handshake_info(self, force_refetch: bool = False) -&gt; HandshakeInfo:
-        if self.handshake_info is None or len(
-                self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
+        if (
+            self.handshake_info is None
+            or len(self.handshake_info.get_jwt_signing_public_key_list()) == 0
+            or force_refetch
+        ):
             ProcessState.get_instance().add_state(
-                AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO)
-            response = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/handshake&#39;), {})
-            self.handshake_info = HandshakeInfo({
-                **response,
-                &#39;antiCsrf&#39;: self.config.anti_csrf
-            })
+                AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO
+            )
+            response = await self.querier.send_post_request(
+                NormalisedURLPath(&#34;/recipe/handshake&#34;), {}
+            )
+            self.handshake_info = HandshakeInfo(
+                {**response, &#34;antiCsrf&#34;: self.config.anti_csrf}
+            )
 
-            self.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;],
-                                                    response[&#39;jwtSigningPublicKey&#39;],
-                                                    response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
+            self.update_jwt_signing_public_key_info(
+                response[&#34;jwtSigningPublicKeyList&#34;],
+                response[&#34;jwtSigningPublicKey&#34;],
+                response[&#34;jwtSigningPublicKeyExpiryTime&#34;],
+            )
 
         return self.handshake_info
 
     def update_jwt_signing_public_key_info(
-            self, key_list: Union[List[Dict[str, Any]], None], public_key: str, expiry_time: int):
+        self,
+        key_list: Union[List[Dict[str, Any]], None],
+        public_key: str,
+        expiry_time: int,
+    ):
         if key_list is None:
-            key_list = [{
-                &#39;publicKey&#39;: public_key,
-                &#39;expiryTime&#39;: expiry_time,
-                &#39;createdAt&#39;: get_timestamp_ms()
-            }]
+            key_list = [
+                {
+                    &#34;publicKey&#34;: public_key,
+                    &#34;expiryTime&#34;: expiry_time,
+                    &#34;createdAt&#34;: get_timestamp_ms(),
+                }
+            ]
 
         if self.handshake_info is not None:
             self.handshake_info.set_jwt_signing_public_key_list(key_list)
 
-    async def create_new_session(self, request: Any, user_id: str,
-                                 access_token_payload: Union[None, Dict[str, Any]],
-                                 session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) -&gt; SessionContainer:
-        if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-            request = FRAMEWORKS[self.config.framework].wrap_request(request)
-        session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
-        access_token = session[&#39;accessToken&#39;]
-        refresh_token = session[&#39;refreshToken&#39;]
-        id_refresh_token = session[&#39;idRefreshToken&#39;]
-        new_session = Session(self, access_token[&#39;token&#39;], session[&#39;session&#39;][&#39;handle&#39;],
-                              session[&#39;session&#39;][&#39;userId&#39;], session[&#39;session&#39;][&#39;userDataInJWT&#39;])
+    async def create_new_session(
+        self,
+        request: BaseRequest,
+        user_id: str,
+        access_token_payload: Union[None, Dict[str, Any]],
+        session_data: Union[None, Dict[str, Any]],
+        user_context: Dict[str, Any],
+    ) -&gt; SessionContainer:
+        session = await session_functions.create_new_session(
+            self, user_id, access_token_payload, session_data
+        )
+        access_token = session[&#34;accessToken&#34;]
+        refresh_token = session[&#34;refreshToken&#34;]
+        id_refresh_token = session[&#34;idRefreshToken&#34;]
+        new_session = Session(
+            self,
+            access_token[&#34;token&#34;],
+            session[&#34;session&#34;][&#34;handle&#34;],
+            session[&#34;session&#34;][&#34;userId&#34;],
+            session[&#34;session&#34;][&#34;userDataInJWT&#34;],
+        )
         new_session.new_access_token_info = access_token
         new_session.new_refresh_token_info = refresh_token
         new_session.new_id_refresh_token_info = id_refresh_token
-        if &#39;antiCsrfToken&#39; in session and session[&#39;antiCsrfToken&#39;] is not None:
-            new_session.new_anti_csrf_token = session[&#39;antiCsrfToken&#39;]
+        if &#34;antiCsrfToken&#34; in session and session[&#34;antiCsrfToken&#34;] is not None:
+            new_session.new_anti_csrf_token = session[&#34;antiCsrfToken&#34;]
         request.set_session(new_session)
-        return request.get_session()
+        return new_session
 
-    async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
-                          session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
+    async def get_session(
+        self,
+        request: BaseRequest,
+        anti_csrf_check: Union[bool, None],
+        session_required: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[SessionContainer, None]:
         log_debug_message(&#34;getSession: Started&#34;)
-        if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-            request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
-        log_debug_message(&#34;getSession: rid in header: %s&#34;, str(frontend_has_interceptor(request)))
+        log_debug_message(
+            &#34;getSession: rid in header: %s&#34;, str(frontend_has_interceptor(request))
+        )
         log_debug_message(&#34;getSession: request method: %s&#34;, request.method())
 
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
             if not session_required:
-                log_debug_message(&#34;getSession: returning None because idRefreshToken is undefined and session_required is false&#34;)
+                log_debug_message(
+                    &#34;getSession: returning None because idRefreshToken is undefined and session_required is false&#34;
+                )
                 return None
-            log_debug_message(&#34;getSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;)
-            raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the request as cookies?&#39;, False)
+            log_debug_message(
+                &#34;getSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;
+            )
+            raise_unauthorised_exception(
+                &#34;Session does not exist. Are you sending the session tokens in the request as cookies?&#34;,
+                False,
+            )
         access_token: Union[str, None] = get_access_token_from_cookie(request)
         if access_token is None:
-            if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
-                    request.method()) == &#39;get&#39;:
+            if (
+                session_required is True
+                or frontend_has_interceptor(request)
+                or normalise_http_method(request.method()) == &#34;get&#34;
+            ):
                 log_debug_message(
                     &#34;getSession: Returning try refresh token because access token from cookies is undefined&#34;
                 )
                 raise_try_refresh_token_exception(
-                    &#39;Access token has expired. Please call the refresh API&#39;)
+                    &#34;Access token has expired. Please call the refresh API&#34;
+                )
             return None
         anti_csrf_token = get_anti_csrf_header(request)
         if anti_csrf_check is None:
-            anti_csrf_check = normalise_http_method(request.method()) != &#39;get&#39;
+            anti_csrf_check = normalise_http_method(request.method()) != &#34;get&#34;
 
-        log_debug_message(&#34;getSession: Value of doAntiCsrfCheck is: %s&#34;, str(anti_csrf_check))
-        new_session = await session_functions.get_session(self, access_token, anti_csrf_token, anti_csrf_check,
-                                                          get_rid_header(request) is not None)
-        if &#39;accessToken&#39; in new_session:
-            access_token = new_session[&#39;accessToken&#39;][&#39;token&#39;]
+        log_debug_message(
+            &#34;getSession: Value of doAntiCsrfCheck is: %s&#34;, str(anti_csrf_check)
+        )
+        new_session = await session_functions.get_session(
+            self,
+            access_token,
+            anti_csrf_token,
+            anti_csrf_check,
+            get_rid_header(request) is not None,
+        )
+        if &#34;accessToken&#34; in new_session:
+            access_token = new_session[&#34;accessToken&#34;][&#34;token&#34;]
 
         if access_token is None:
             raise Exception(&#34;Should never come here&#34;)
-        session = Session(self, access_token, new_session[&#39;session&#39;][&#39;handle&#39;],
-                          new_session[&#39;session&#39;][&#39;userId&#39;], new_session[&#39;session&#39;][&#39;userDataInJWT&#39;])
+        session = Session(
+            self,
+            access_token,
+            new_session[&#34;session&#34;][&#34;handle&#34;],
+            new_session[&#34;session&#34;][&#34;userId&#34;],
+            new_session[&#34;session&#34;][&#34;userDataInJWT&#34;],
+        )
 
-        if &#39;accessToken&#39; in new_session:
-            session.new_access_token_info = new_session[&#39;accessToken&#39;]
+        if &#34;accessToken&#34; in new_session:
+            session.new_access_token_info = new_session[&#34;accessToken&#34;]
 
         log_debug_message(&#34;getSession: Success!&#34;)
         request.set_session(session)
         return request.get_session()
 
-    async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt; SessionContainer:
+    async def refresh_session(
+        self, request: BaseRequest, user_context: Dict[str, Any]
+    ) -&gt; SessionContainer:
         log_debug_message(&#34;refreshSession: Started&#34;)
-        if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-            request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
-            log_debug_message(&#34;refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;)
-            raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the request &#39;
-                                         &#39;as cookies?&#39;, False)
+            log_debug_message(
+                &#34;refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;
+            )
+            raise_unauthorised_exception(
+                &#34;Session does not exist. Are you sending the session tokens in the request &#34;
+                &#34;as cookies?&#34;,
+                False,
+            )
         refresh_token = get_refresh_token_from_cookie(request)
         if refresh_token is None:
-            log_debug_message(&#34;refreshSession: UNAUTHORISED because refresh token from cookies is undefined&#34;)
-            raise_unauthorised_exception(&#39;Refresh token not found. Are you sending the refresh token in the &#39;
-                                         &#39;request as a cookie?&#39;)
+            log_debug_message(
+                &#34;refreshSession: UNAUTHORISED because refresh token from cookies is undefined&#34;
+            )
+            raise_unauthorised_exception(
+                &#34;Refresh token not found. Are you sending the refresh token in the &#34;
+                &#34;request as a cookie?&#34;
+            )
         anti_csrf_token = get_anti_csrf_header(request)
-        new_session = await session_functions.refresh_session(self, refresh_token, anti_csrf_token,
-                                                              get_rid_header(request) is not None)
-        access_token = new_session[&#39;accessToken&#39;]
-        refresh_token = new_session[&#39;refreshToken&#39;]
-        id_refresh_token = new_session[&#39;idRefreshToken&#39;]
-        session = Session(self, access_token[&#39;token&#39;], new_session[&#39;session&#39;][&#39;handle&#39;],
-                          new_session[&#39;session&#39;][&#39;userId&#39;], new_session[&#39;session&#39;][&#39;userDataInJWT&#39;])
+        new_session = await session_functions.refresh_session(
+            self, refresh_token, anti_csrf_token, get_rid_header(request) is not None
+        )
+        access_token = new_session[&#34;accessToken&#34;]
+        refresh_token = new_session[&#34;refreshToken&#34;]
+        id_refresh_token = new_session[&#34;idRefreshToken&#34;]
+        session = Session(
+            self,
+            access_token[&#34;token&#34;],
+            new_session[&#34;session&#34;][&#34;handle&#34;],
+            new_session[&#34;session&#34;][&#34;userId&#34;],
+            new_session[&#34;session&#34;][&#34;userDataInJWT&#34;],
+        )
         session.new_access_token_info = access_token
         session.new_refresh_token_info = refresh_token
         session.new_id_refresh_token_info = id_refresh_token
-        if &#39;antiCsrfToken&#39; in new_session and new_session[&#39;antiCsrfToken&#39;] is not None:
-            session.new_anti_csrf_token = new_session[&#39;antiCsrfToken&#39;]
+        if &#34;antiCsrfToken&#34; in new_session and new_session[&#34;antiCsrfToken&#34;] is not None:
+            session.new_anti_csrf_token = new_session[&#34;antiCsrfToken&#34;]
 
         log_debug_message(&#34;refreshSession: Success!&#34;)
         request.set_session(session)
-        return request.get_session()
+        return session
 
-    async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -&gt; bool:
+    async def revoke_session(
+        self, session_handle: str, user_context: Dict[str, Any]
+    ) -&gt; bool:
         return await session_functions.revoke_session(self, session_handle)
 
-    async def revoke_all_sessions_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+    async def revoke_all_sessions_for_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; List[str]:
         return await session_functions.revoke_all_sessions_for_user(self, user_id)
 
-    async def get_all_session_handles_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+    async def get_all_session_handles_for_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; List[str]:
         return await session_functions.get_all_session_handles_for_user(self, user_id)
 
-    async def revoke_multiple_sessions(self, session_handles: List[str], user_context: Dict[str, Any]) -&gt; List[str]:
+    async def revoke_multiple_sessions(
+        self, session_handles: List[str], user_context: Dict[str, Any]
+    ) -&gt; List[str]:
         return await session_functions.revoke_multiple_sessions(self, session_handles)
 
-    async def get_session_information(self, session_handle: str, user_context: Dict[str, Any]) -&gt; SessionInformationResult:
+    async def get_session_information(
+        self, session_handle: str, user_context: Dict[str, Any]
+    ) -&gt; Union[SessionInformationResult, None]:
         return await session_functions.get_session_information(self, session_handle)
 
-    async def update_session_data(self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
-        await session_functions.update_session_data(self, session_handle, new_session_data)
+    async def update_session_data(
+        self,
+        session_handle: str,
+        new_session_data: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        return await session_functions.update_session_data(
+            self, session_handle, new_session_data
+        )
 
-    async def update_access_token_payload(self, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
-        await session_functions.update_access_token_payload(self, session_handle, new_access_token_payload)
+    async def update_access_token_payload(
+        self,
+        session_handle: str,
+        new_access_token_payload: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        return await session_functions.update_access_token_payload(
+            self, session_handle, new_access_token_payload
+        )
 
     async def get_access_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt; int:
         return (await self.get_handshake_info()).access_token_validity
@@ -264,28 +366,31 @@ class RecipeImplementation(RecipeInterface):
     async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt; int:
         return (await self.get_handshake_info()).refresh_token_validity
 
-    async def regenerate_access_token(self,
-                                      access_token: str,
-                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenOkResult:
+    async def regenerate_access_token(
+        self,
+        access_token: str,
+        new_access_token_payload: Union[Dict[str, Any], None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[RegenerateAccessTokenOkResult, None]:
         if new_access_token_payload is None:
             new_access_token_payload = {}
-        response: Dict[str, Any] = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/session/regenerate&#34;), {
-            &#39;accessToken&#39;: access_token,
-            &#39;userDataInJWT&#39;: new_access_token_payload
-        })
-        if response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
-            raise_unauthorised_exception(response[&#39;message&#39;])
+        response: Dict[str, Any] = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/session/regenerate&#34;),
+            {&#34;accessToken&#34;: access_token, &#34;userDataInJWT&#34;: new_access_token_payload},
+        )
+        if response[&#34;status&#34;] == &#34;UNAUTHORISED&#34;:
+            return None
         access_token_obj: Union[None, AccessTokenObj] = None
-        if &#39;accessToken&#39; in response:
+        if &#34;accessToken&#34; in response:
             access_token_obj = AccessTokenObj(
-                response[&#39;accessToken&#39;][&#39;token&#39;],
-                response[&#39;accessToken&#39;][&#39;expiry&#39;],
-                response[&#39;accessToken&#39;][&#39;createdTime&#39;]
+                response[&#34;accessToken&#34;][&#34;token&#34;],
+                response[&#34;accessToken&#34;][&#34;expiry&#34;],
+                response[&#34;accessToken&#34;][&#34;createdTime&#34;],
             )
         session = SessionObj(
-            response[&#39;session&#39;][&#39;handle&#39;],
-            response[&#39;session&#39;][&#39;userId&#39;],
-            response[&#39;session&#39;][&#39;userDataInJWT&#39;]
+            response[&#34;session&#34;][&#34;handle&#34;],
+            response[&#34;session&#34;][&#34;userId&#34;],
+            response[&#34;session&#34;][&#34;userDataInJWT&#34;],
         )
         return RegenerateAccessTokenOkResult(session, access_token_obj)</code></pre>
 </details>
@@ -310,13 +415,12 @@ class RecipeImplementation(RecipeInterface):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class HandshakeInfo:
-
     def __init__(self, info: Dict[str, Any]):
-        self.access_token_blacklisting_enabled = info[&#39;accessTokenBlacklistingEnabled&#39;]
+        self.access_token_blacklisting_enabled = info[&#34;accessTokenBlacklistingEnabled&#34;]
         self.raw_jwt_signing_public_key_list: List[Dict[str, Any]] = []
-        self.anti_csrf = info[&#39;antiCsrf&#39;]
-        self.access_token_validity = info[&#39;accessTokenValidity&#39;]
-        self.refresh_token_validity = info[&#39;refreshTokenValidity&#39;]
+        self.anti_csrf = info[&#34;antiCsrf&#34;]
+        self.access_token_validity = info[&#34;accessTokenValidity&#34;]
+        self.refresh_token_validity = info[&#34;refreshTokenValidity&#34;]
 
     def set_jwt_signing_public_key_list(self, updated_list: List[Dict[str, Any]]):
         self.raw_jwt_signing_public_key_list = updated_list
@@ -324,7 +428,10 @@ class RecipeImplementation(RecipeInterface):
     def get_jwt_signing_public_key_list(self) -&gt; List[Dict[str, Any]]:
         time_now = get_timestamp_ms()
         return [
-            key for key in self.raw_jwt_signing_public_key_list if key[&#39;expiryTime&#39;] &gt; time_now]</code></pre>
+            key
+            for key in self.raw_jwt_signing_public_key_list
+            if key[&#34;expiryTime&#34;] &gt; time_now
+        ]</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -340,7 +447,10 @@ class RecipeImplementation(RecipeInterface):
 <pre><code class="python">def get_jwt_signing_public_key_list(self) -&gt; List[Dict[str, Any]]:
     time_now = get_timestamp_ms()
     return [
-        key for key in self.raw_jwt_signing_public_key_list if key[&#39;expiryTime&#39;] &gt; time_now]</code></pre>
+        key
+        for key in self.raw_jwt_signing_public_key_list
+        if key[&#34;expiryTime&#34;] &gt; time_now
+    ]</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.HandshakeInfo.set_jwt_signing_public_key_list"><code class="name flex">
@@ -388,154 +498,244 @@ inheritance.</p></div>
             pass
 
     async def get_handshake_info(self, force_refetch: bool = False) -&gt; HandshakeInfo:
-        if self.handshake_info is None or len(
-                self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
+        if (
+            self.handshake_info is None
+            or len(self.handshake_info.get_jwt_signing_public_key_list()) == 0
+            or force_refetch
+        ):
             ProcessState.get_instance().add_state(
-                AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO)
-            response = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/handshake&#39;), {})
-            self.handshake_info = HandshakeInfo({
-                **response,
-                &#39;antiCsrf&#39;: self.config.anti_csrf
-            })
+                AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO
+            )
+            response = await self.querier.send_post_request(
+                NormalisedURLPath(&#34;/recipe/handshake&#34;), {}
+            )
+            self.handshake_info = HandshakeInfo(
+                {**response, &#34;antiCsrf&#34;: self.config.anti_csrf}
+            )
 
-            self.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;],
-                                                    response[&#39;jwtSigningPublicKey&#39;],
-                                                    response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
+            self.update_jwt_signing_public_key_info(
+                response[&#34;jwtSigningPublicKeyList&#34;],
+                response[&#34;jwtSigningPublicKey&#34;],
+                response[&#34;jwtSigningPublicKeyExpiryTime&#34;],
+            )
 
         return self.handshake_info
 
     def update_jwt_signing_public_key_info(
-            self, key_list: Union[List[Dict[str, Any]], None], public_key: str, expiry_time: int):
+        self,
+        key_list: Union[List[Dict[str, Any]], None],
+        public_key: str,
+        expiry_time: int,
+    ):
         if key_list is None:
-            key_list = [{
-                &#39;publicKey&#39;: public_key,
-                &#39;expiryTime&#39;: expiry_time,
-                &#39;createdAt&#39;: get_timestamp_ms()
-            }]
+            key_list = [
+                {
+                    &#34;publicKey&#34;: public_key,
+                    &#34;expiryTime&#34;: expiry_time,
+                    &#34;createdAt&#34;: get_timestamp_ms(),
+                }
+            ]
 
         if self.handshake_info is not None:
             self.handshake_info.set_jwt_signing_public_key_list(key_list)
 
-    async def create_new_session(self, request: Any, user_id: str,
-                                 access_token_payload: Union[None, Dict[str, Any]],
-                                 session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) -&gt; SessionContainer:
-        if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-            request = FRAMEWORKS[self.config.framework].wrap_request(request)
-        session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
-        access_token = session[&#39;accessToken&#39;]
-        refresh_token = session[&#39;refreshToken&#39;]
-        id_refresh_token = session[&#39;idRefreshToken&#39;]
-        new_session = Session(self, access_token[&#39;token&#39;], session[&#39;session&#39;][&#39;handle&#39;],
-                              session[&#39;session&#39;][&#39;userId&#39;], session[&#39;session&#39;][&#39;userDataInJWT&#39;])
+    async def create_new_session(
+        self,
+        request: BaseRequest,
+        user_id: str,
+        access_token_payload: Union[None, Dict[str, Any]],
+        session_data: Union[None, Dict[str, Any]],
+        user_context: Dict[str, Any],
+    ) -&gt; SessionContainer:
+        session = await session_functions.create_new_session(
+            self, user_id, access_token_payload, session_data
+        )
+        access_token = session[&#34;accessToken&#34;]
+        refresh_token = session[&#34;refreshToken&#34;]
+        id_refresh_token = session[&#34;idRefreshToken&#34;]
+        new_session = Session(
+            self,
+            access_token[&#34;token&#34;],
+            session[&#34;session&#34;][&#34;handle&#34;],
+            session[&#34;session&#34;][&#34;userId&#34;],
+            session[&#34;session&#34;][&#34;userDataInJWT&#34;],
+        )
         new_session.new_access_token_info = access_token
         new_session.new_refresh_token_info = refresh_token
         new_session.new_id_refresh_token_info = id_refresh_token
-        if &#39;antiCsrfToken&#39; in session and session[&#39;antiCsrfToken&#39;] is not None:
-            new_session.new_anti_csrf_token = session[&#39;antiCsrfToken&#39;]
+        if &#34;antiCsrfToken&#34; in session and session[&#34;antiCsrfToken&#34;] is not None:
+            new_session.new_anti_csrf_token = session[&#34;antiCsrfToken&#34;]
         request.set_session(new_session)
-        return request.get_session()
+        return new_session
 
-    async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
-                          session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
+    async def get_session(
+        self,
+        request: BaseRequest,
+        anti_csrf_check: Union[bool, None],
+        session_required: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[SessionContainer, None]:
         log_debug_message(&#34;getSession: Started&#34;)
-        if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-            request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
-        log_debug_message(&#34;getSession: rid in header: %s&#34;, str(frontend_has_interceptor(request)))
+        log_debug_message(
+            &#34;getSession: rid in header: %s&#34;, str(frontend_has_interceptor(request))
+        )
         log_debug_message(&#34;getSession: request method: %s&#34;, request.method())
 
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
             if not session_required:
-                log_debug_message(&#34;getSession: returning None because idRefreshToken is undefined and session_required is false&#34;)
+                log_debug_message(
+                    &#34;getSession: returning None because idRefreshToken is undefined and session_required is false&#34;
+                )
                 return None
-            log_debug_message(&#34;getSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;)
-            raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the request as cookies?&#39;, False)
+            log_debug_message(
+                &#34;getSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;
+            )
+            raise_unauthorised_exception(
+                &#34;Session does not exist. Are you sending the session tokens in the request as cookies?&#34;,
+                False,
+            )
         access_token: Union[str, None] = get_access_token_from_cookie(request)
         if access_token is None:
-            if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
-                    request.method()) == &#39;get&#39;:
+            if (
+                session_required is True
+                or frontend_has_interceptor(request)
+                or normalise_http_method(request.method()) == &#34;get&#34;
+            ):
                 log_debug_message(
                     &#34;getSession: Returning try refresh token because access token from cookies is undefined&#34;
                 )
                 raise_try_refresh_token_exception(
-                    &#39;Access token has expired. Please call the refresh API&#39;)
+                    &#34;Access token has expired. Please call the refresh API&#34;
+                )
             return None
         anti_csrf_token = get_anti_csrf_header(request)
         if anti_csrf_check is None:
-            anti_csrf_check = normalise_http_method(request.method()) != &#39;get&#39;
+            anti_csrf_check = normalise_http_method(request.method()) != &#34;get&#34;
 
-        log_debug_message(&#34;getSession: Value of doAntiCsrfCheck is: %s&#34;, str(anti_csrf_check))
-        new_session = await session_functions.get_session(self, access_token, anti_csrf_token, anti_csrf_check,
-                                                          get_rid_header(request) is not None)
-        if &#39;accessToken&#39; in new_session:
-            access_token = new_session[&#39;accessToken&#39;][&#39;token&#39;]
+        log_debug_message(
+            &#34;getSession: Value of doAntiCsrfCheck is: %s&#34;, str(anti_csrf_check)
+        )
+        new_session = await session_functions.get_session(
+            self,
+            access_token,
+            anti_csrf_token,
+            anti_csrf_check,
+            get_rid_header(request) is not None,
+        )
+        if &#34;accessToken&#34; in new_session:
+            access_token = new_session[&#34;accessToken&#34;][&#34;token&#34;]
 
         if access_token is None:
             raise Exception(&#34;Should never come here&#34;)
-        session = Session(self, access_token, new_session[&#39;session&#39;][&#39;handle&#39;],
-                          new_session[&#39;session&#39;][&#39;userId&#39;], new_session[&#39;session&#39;][&#39;userDataInJWT&#39;])
+        session = Session(
+            self,
+            access_token,
+            new_session[&#34;session&#34;][&#34;handle&#34;],
+            new_session[&#34;session&#34;][&#34;userId&#34;],
+            new_session[&#34;session&#34;][&#34;userDataInJWT&#34;],
+        )
 
-        if &#39;accessToken&#39; in new_session:
-            session.new_access_token_info = new_session[&#39;accessToken&#39;]
+        if &#34;accessToken&#34; in new_session:
+            session.new_access_token_info = new_session[&#34;accessToken&#34;]
 
         log_debug_message(&#34;getSession: Success!&#34;)
         request.set_session(session)
         return request.get_session()
 
-    async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt; SessionContainer:
+    async def refresh_session(
+        self, request: BaseRequest, user_context: Dict[str, Any]
+    ) -&gt; SessionContainer:
         log_debug_message(&#34;refreshSession: Started&#34;)
-        if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-            request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
         id_refresh_token = get_id_refresh_token_from_cookie(request)
         if id_refresh_token is None:
-            log_debug_message(&#34;refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;)
-            raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the request &#39;
-                                         &#39;as cookies?&#39;, False)
+            log_debug_message(
+                &#34;refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;
+            )
+            raise_unauthorised_exception(
+                &#34;Session does not exist. Are you sending the session tokens in the request &#34;
+                &#34;as cookies?&#34;,
+                False,
+            )
         refresh_token = get_refresh_token_from_cookie(request)
         if refresh_token is None:
-            log_debug_message(&#34;refreshSession: UNAUTHORISED because refresh token from cookies is undefined&#34;)
-            raise_unauthorised_exception(&#39;Refresh token not found. Are you sending the refresh token in the &#39;
-                                         &#39;request as a cookie?&#39;)
+            log_debug_message(
+                &#34;refreshSession: UNAUTHORISED because refresh token from cookies is undefined&#34;
+            )
+            raise_unauthorised_exception(
+                &#34;Refresh token not found. Are you sending the refresh token in the &#34;
+                &#34;request as a cookie?&#34;
+            )
         anti_csrf_token = get_anti_csrf_header(request)
-        new_session = await session_functions.refresh_session(self, refresh_token, anti_csrf_token,
-                                                              get_rid_header(request) is not None)
-        access_token = new_session[&#39;accessToken&#39;]
-        refresh_token = new_session[&#39;refreshToken&#39;]
-        id_refresh_token = new_session[&#39;idRefreshToken&#39;]
-        session = Session(self, access_token[&#39;token&#39;], new_session[&#39;session&#39;][&#39;handle&#39;],
-                          new_session[&#39;session&#39;][&#39;userId&#39;], new_session[&#39;session&#39;][&#39;userDataInJWT&#39;])
+        new_session = await session_functions.refresh_session(
+            self, refresh_token, anti_csrf_token, get_rid_header(request) is not None
+        )
+        access_token = new_session[&#34;accessToken&#34;]
+        refresh_token = new_session[&#34;refreshToken&#34;]
+        id_refresh_token = new_session[&#34;idRefreshToken&#34;]
+        session = Session(
+            self,
+            access_token[&#34;token&#34;],
+            new_session[&#34;session&#34;][&#34;handle&#34;],
+            new_session[&#34;session&#34;][&#34;userId&#34;],
+            new_session[&#34;session&#34;][&#34;userDataInJWT&#34;],
+        )
         session.new_access_token_info = access_token
         session.new_refresh_token_info = refresh_token
         session.new_id_refresh_token_info = id_refresh_token
-        if &#39;antiCsrfToken&#39; in new_session and new_session[&#39;antiCsrfToken&#39;] is not None:
-            session.new_anti_csrf_token = new_session[&#39;antiCsrfToken&#39;]
+        if &#34;antiCsrfToken&#34; in new_session and new_session[&#34;antiCsrfToken&#34;] is not None:
+            session.new_anti_csrf_token = new_session[&#34;antiCsrfToken&#34;]
 
         log_debug_message(&#34;refreshSession: Success!&#34;)
         request.set_session(session)
-        return request.get_session()
+        return session
 
-    async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -&gt; bool:
+    async def revoke_session(
+        self, session_handle: str, user_context: Dict[str, Any]
+    ) -&gt; bool:
         return await session_functions.revoke_session(self, session_handle)
 
-    async def revoke_all_sessions_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+    async def revoke_all_sessions_for_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; List[str]:
         return await session_functions.revoke_all_sessions_for_user(self, user_id)
 
-    async def get_all_session_handles_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+    async def get_all_session_handles_for_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; List[str]:
         return await session_functions.get_all_session_handles_for_user(self, user_id)
 
-    async def revoke_multiple_sessions(self, session_handles: List[str], user_context: Dict[str, Any]) -&gt; List[str]:
+    async def revoke_multiple_sessions(
+        self, session_handles: List[str], user_context: Dict[str, Any]
+    ) -&gt; List[str]:
         return await session_functions.revoke_multiple_sessions(self, session_handles)
 
-    async def get_session_information(self, session_handle: str, user_context: Dict[str, Any]) -&gt; SessionInformationResult:
+    async def get_session_information(
+        self, session_handle: str, user_context: Dict[str, Any]
+    ) -&gt; Union[SessionInformationResult, None]:
         return await session_functions.get_session_information(self, session_handle)
 
-    async def update_session_data(self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
-        await session_functions.update_session_data(self, session_handle, new_session_data)
+    async def update_session_data(
+        self,
+        session_handle: str,
+        new_session_data: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        return await session_functions.update_session_data(
+            self, session_handle, new_session_data
+        )
 
-    async def update_access_token_payload(self, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
-        await session_functions.update_access_token_payload(self, session_handle, new_access_token_payload)
+    async def update_access_token_payload(
+        self,
+        session_handle: str,
+        new_access_token_payload: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        return await session_functions.update_access_token_payload(
+            self, session_handle, new_access_token_payload
+        )
 
     async def get_access_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt; int:
         return (await self.get_handshake_info()).access_token_validity
@@ -543,28 +743,31 @@ inheritance.</p></div>
     async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt; int:
         return (await self.get_handshake_info()).refresh_token_validity
 
-    async def regenerate_access_token(self,
-                                      access_token: str,
-                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenOkResult:
+    async def regenerate_access_token(
+        self,
+        access_token: str,
+        new_access_token_payload: Union[Dict[str, Any], None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[RegenerateAccessTokenOkResult, None]:
         if new_access_token_payload is None:
             new_access_token_payload = {}
-        response: Dict[str, Any] = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/session/regenerate&#34;), {
-            &#39;accessToken&#39;: access_token,
-            &#39;userDataInJWT&#39;: new_access_token_payload
-        })
-        if response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
-            raise_unauthorised_exception(response[&#39;message&#39;])
+        response: Dict[str, Any] = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/session/regenerate&#34;),
+            {&#34;accessToken&#34;: access_token, &#34;userDataInJWT&#34;: new_access_token_payload},
+        )
+        if response[&#34;status&#34;] == &#34;UNAUTHORISED&#34;:
+            return None
         access_token_obj: Union[None, AccessTokenObj] = None
-        if &#39;accessToken&#39; in response:
+        if &#34;accessToken&#34; in response:
             access_token_obj = AccessTokenObj(
-                response[&#39;accessToken&#39;][&#39;token&#39;],
-                response[&#39;accessToken&#39;][&#39;expiry&#39;],
-                response[&#39;accessToken&#39;][&#39;createdTime&#39;]
+                response[&#34;accessToken&#34;][&#34;token&#34;],
+                response[&#34;accessToken&#34;][&#34;expiry&#34;],
+                response[&#34;accessToken&#34;][&#34;createdTime&#34;],
             )
         session = SessionObj(
-            response[&#39;session&#39;][&#39;handle&#39;],
-            response[&#39;session&#39;][&#39;userId&#39;],
-            response[&#39;session&#39;][&#39;userDataInJWT&#39;]
+            response[&#34;session&#34;][&#34;handle&#34;],
+            response[&#34;session&#34;][&#34;userId&#34;],
+            response[&#34;session&#34;][&#34;userDataInJWT&#34;],
         )
         return RegenerateAccessTokenOkResult(session, access_token_obj)</code></pre>
 </details>
@@ -576,7 +779,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>self, request: Any, user_id: str, access_token_payload: Union[None, Dict[str, Any]], session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) ‑> SessionContainer</span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>self, request: BaseRequest, user_id: str, access_token_payload: Union[None, Dict[str, Any]], session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) ‑> SessionContainer</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -584,24 +787,34 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_new_session(self, request: Any, user_id: str,
-                             access_token_payload: Union[None, Dict[str, Any]],
-                             session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) -&gt; SessionContainer:
-    if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-        request = FRAMEWORKS[self.config.framework].wrap_request(request)
-    session = await session_functions.create_new_session(self, user_id, access_token_payload, session_data)
-    access_token = session[&#39;accessToken&#39;]
-    refresh_token = session[&#39;refreshToken&#39;]
-    id_refresh_token = session[&#39;idRefreshToken&#39;]
-    new_session = Session(self, access_token[&#39;token&#39;], session[&#39;session&#39;][&#39;handle&#39;],
-                          session[&#39;session&#39;][&#39;userId&#39;], session[&#39;session&#39;][&#39;userDataInJWT&#39;])
+<pre><code class="python">async def create_new_session(
+    self,
+    request: BaseRequest,
+    user_id: str,
+    access_token_payload: Union[None, Dict[str, Any]],
+    session_data: Union[None, Dict[str, Any]],
+    user_context: Dict[str, Any],
+) -&gt; SessionContainer:
+    session = await session_functions.create_new_session(
+        self, user_id, access_token_payload, session_data
+    )
+    access_token = session[&#34;accessToken&#34;]
+    refresh_token = session[&#34;refreshToken&#34;]
+    id_refresh_token = session[&#34;idRefreshToken&#34;]
+    new_session = Session(
+        self,
+        access_token[&#34;token&#34;],
+        session[&#34;session&#34;][&#34;handle&#34;],
+        session[&#34;session&#34;][&#34;userId&#34;],
+        session[&#34;session&#34;][&#34;userDataInJWT&#34;],
+    )
     new_session.new_access_token_info = access_token
     new_session.new_refresh_token_info = refresh_token
     new_session.new_id_refresh_token_info = id_refresh_token
-    if &#39;antiCsrfToken&#39; in session and session[&#39;antiCsrfToken&#39;] is not None:
-        new_session.new_anti_csrf_token = session[&#39;antiCsrfToken&#39;]
+    if &#34;antiCsrfToken&#34; in session and session[&#34;antiCsrfToken&#34;] is not None:
+        new_session.new_anti_csrf_token = session[&#34;antiCsrfToken&#34;]
     request.set_session(new_session)
-    return request.get_session()</code></pre>
+    return new_session</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_access_token_lifetime_ms"><code class="name flex">
@@ -626,7 +839,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_all_session_handles_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+<pre><code class="python">async def get_all_session_handles_for_user(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; List[str]:
     return await session_functions.get_all_session_handles_for_user(self, user_id)</code></pre>
 </details>
 </dd>
@@ -640,19 +855,26 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def get_handshake_info(self, force_refetch: bool = False) -&gt; HandshakeInfo:
-    if self.handshake_info is None or len(
-            self.handshake_info.get_jwt_signing_public_key_list()) == 0 or force_refetch:
+    if (
+        self.handshake_info is None
+        or len(self.handshake_info.get_jwt_signing_public_key_list()) == 0
+        or force_refetch
+    ):
         ProcessState.get_instance().add_state(
-            AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO)
-        response = await self.querier.send_post_request(NormalisedURLPath(&#39;/recipe/handshake&#39;), {})
-        self.handshake_info = HandshakeInfo({
-            **response,
-            &#39;antiCsrf&#39;: self.config.anti_csrf
-        })
+            AllowedProcessStates.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO
+        )
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/handshake&#34;), {}
+        )
+        self.handshake_info = HandshakeInfo(
+            {**response, &#34;antiCsrf&#34;: self.config.anti_csrf}
+        )
 
-        self.update_jwt_signing_public_key_info(response[&#39;jwtSigningPublicKeyList&#39;],
-                                                response[&#39;jwtSigningPublicKey&#39;],
-                                                response[&#39;jwtSigningPublicKeyExpiryTime&#39;])
+        self.update_jwt_signing_public_key_info(
+            response[&#34;jwtSigningPublicKeyList&#34;],
+            response[&#34;jwtSigningPublicKey&#34;],
+            response[&#34;jwtSigningPublicKeyExpiryTime&#34;],
+        )
 
     return self.handshake_info</code></pre>
 </details>
@@ -671,7 +893,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_session"><code class="name flex">
-<span>async def <span class="ident">get_session</span></span>(<span>self, request: Any, anti_csrf_check: Union[bool, None], session_required: bool, user_context: Dict[str, Any]) ‑> Union[SessionContainer, None]</span>
+<span>async def <span class="ident">get_session</span></span>(<span>self, request: BaseRequest, anti_csrf_check: Union[bool, None], session_required: bool, user_context: Dict[str, Any]) ‑> Union[SessionContainer, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -679,49 +901,77 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
-                      session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
+<pre><code class="python">async def get_session(
+    self,
+    request: BaseRequest,
+    anti_csrf_check: Union[bool, None],
+    session_required: bool,
+    user_context: Dict[str, Any],
+) -&gt; Union[SessionContainer, None]:
     log_debug_message(&#34;getSession: Started&#34;)
-    if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-        request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
-    log_debug_message(&#34;getSession: rid in header: %s&#34;, str(frontend_has_interceptor(request)))
+    log_debug_message(
+        &#34;getSession: rid in header: %s&#34;, str(frontend_has_interceptor(request))
+    )
     log_debug_message(&#34;getSession: request method: %s&#34;, request.method())
 
     id_refresh_token = get_id_refresh_token_from_cookie(request)
     if id_refresh_token is None:
         if not session_required:
-            log_debug_message(&#34;getSession: returning None because idRefreshToken is undefined and session_required is false&#34;)
+            log_debug_message(
+                &#34;getSession: returning None because idRefreshToken is undefined and session_required is false&#34;
+            )
             return None
-        log_debug_message(&#34;getSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;)
-        raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the request as cookies?&#39;, False)
+        log_debug_message(
+            &#34;getSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;
+        )
+        raise_unauthorised_exception(
+            &#34;Session does not exist. Are you sending the session tokens in the request as cookies?&#34;,
+            False,
+        )
     access_token: Union[str, None] = get_access_token_from_cookie(request)
     if access_token is None:
-        if session_required is True or frontend_has_interceptor(request) or normalise_http_method(
-                request.method()) == &#39;get&#39;:
+        if (
+            session_required is True
+            or frontend_has_interceptor(request)
+            or normalise_http_method(request.method()) == &#34;get&#34;
+        ):
             log_debug_message(
                 &#34;getSession: Returning try refresh token because access token from cookies is undefined&#34;
             )
             raise_try_refresh_token_exception(
-                &#39;Access token has expired. Please call the refresh API&#39;)
+                &#34;Access token has expired. Please call the refresh API&#34;
+            )
         return None
     anti_csrf_token = get_anti_csrf_header(request)
     if anti_csrf_check is None:
-        anti_csrf_check = normalise_http_method(request.method()) != &#39;get&#39;
+        anti_csrf_check = normalise_http_method(request.method()) != &#34;get&#34;
 
-    log_debug_message(&#34;getSession: Value of doAntiCsrfCheck is: %s&#34;, str(anti_csrf_check))
-    new_session = await session_functions.get_session(self, access_token, anti_csrf_token, anti_csrf_check,
-                                                      get_rid_header(request) is not None)
-    if &#39;accessToken&#39; in new_session:
-        access_token = new_session[&#39;accessToken&#39;][&#39;token&#39;]
+    log_debug_message(
+        &#34;getSession: Value of doAntiCsrfCheck is: %s&#34;, str(anti_csrf_check)
+    )
+    new_session = await session_functions.get_session(
+        self,
+        access_token,
+        anti_csrf_token,
+        anti_csrf_check,
+        get_rid_header(request) is not None,
+    )
+    if &#34;accessToken&#34; in new_session:
+        access_token = new_session[&#34;accessToken&#34;][&#34;token&#34;]
 
     if access_token is None:
         raise Exception(&#34;Should never come here&#34;)
-    session = Session(self, access_token, new_session[&#39;session&#39;][&#39;handle&#39;],
-                      new_session[&#39;session&#39;][&#39;userId&#39;], new_session[&#39;session&#39;][&#39;userDataInJWT&#39;])
+    session = Session(
+        self,
+        access_token,
+        new_session[&#34;session&#34;][&#34;handle&#34;],
+        new_session[&#34;session&#34;][&#34;userId&#34;],
+        new_session[&#34;session&#34;][&#34;userDataInJWT&#34;],
+    )
 
-    if &#39;accessToken&#39; in new_session:
-        session.new_access_token_info = new_session[&#39;accessToken&#39;]
+    if &#34;accessToken&#34; in new_session:
+        session.new_access_token_info = new_session[&#34;accessToken&#34;]
 
     log_debug_message(&#34;getSession: Success!&#34;)
     request.set_session(session)
@@ -729,7 +979,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.get_session_information"><code class="name flex">
-<span>async def <span class="ident">get_session_information</span></span>(<span>self, session_handle: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionInformationResult" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionInformationResult">SessionInformationResult</a></span>
+<span>async def <span class="ident">get_session_information</span></span>(<span>self, session_handle: str, user_context: Dict[str, Any]) ‑> Union[SessionInformationResult, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -737,12 +987,14 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_session_information(self, session_handle: str, user_context: Dict[str, Any]) -&gt; SessionInformationResult:
+<pre><code class="python">async def get_session_information(
+    self, session_handle: str, user_context: Dict[str, Any]
+) -&gt; Union[SessionInformationResult, None]:
     return await session_functions.get_session_information(self, session_handle)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.refresh_session"><code class="name flex">
-<span>async def <span class="ident">refresh_session</span></span>(<span>self, request: Any, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+<span>async def <span class="ident">refresh_session</span></span>(<span>self, request: BaseRequest, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -750,42 +1002,57 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt; SessionContainer:
+<pre><code class="python">async def refresh_session(
+    self, request: BaseRequest, user_context: Dict[str, Any]
+) -&gt; SessionContainer:
     log_debug_message(&#34;refreshSession: Started&#34;)
-    if not hasattr(request, &#39;wrapper_used&#39;) or not request.wrapper_used:
-        request = FRAMEWORKS[self.config.framework].wrap_request(request)
 
     id_refresh_token = get_id_refresh_token_from_cookie(request)
     if id_refresh_token is None:
-        log_debug_message(&#34;refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;)
-        raise_unauthorised_exception(&#39;Session does not exist. Are you sending the session tokens in the request &#39;
-                                     &#39;as cookies?&#39;, False)
+        log_debug_message(
+            &#34;refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined&#34;
+        )
+        raise_unauthorised_exception(
+            &#34;Session does not exist. Are you sending the session tokens in the request &#34;
+            &#34;as cookies?&#34;,
+            False,
+        )
     refresh_token = get_refresh_token_from_cookie(request)
     if refresh_token is None:
-        log_debug_message(&#34;refreshSession: UNAUTHORISED because refresh token from cookies is undefined&#34;)
-        raise_unauthorised_exception(&#39;Refresh token not found. Are you sending the refresh token in the &#39;
-                                     &#39;request as a cookie?&#39;)
+        log_debug_message(
+            &#34;refreshSession: UNAUTHORISED because refresh token from cookies is undefined&#34;
+        )
+        raise_unauthorised_exception(
+            &#34;Refresh token not found. Are you sending the refresh token in the &#34;
+            &#34;request as a cookie?&#34;
+        )
     anti_csrf_token = get_anti_csrf_header(request)
-    new_session = await session_functions.refresh_session(self, refresh_token, anti_csrf_token,
-                                                          get_rid_header(request) is not None)
-    access_token = new_session[&#39;accessToken&#39;]
-    refresh_token = new_session[&#39;refreshToken&#39;]
-    id_refresh_token = new_session[&#39;idRefreshToken&#39;]
-    session = Session(self, access_token[&#39;token&#39;], new_session[&#39;session&#39;][&#39;handle&#39;],
-                      new_session[&#39;session&#39;][&#39;userId&#39;], new_session[&#39;session&#39;][&#39;userDataInJWT&#39;])
+    new_session = await session_functions.refresh_session(
+        self, refresh_token, anti_csrf_token, get_rid_header(request) is not None
+    )
+    access_token = new_session[&#34;accessToken&#34;]
+    refresh_token = new_session[&#34;refreshToken&#34;]
+    id_refresh_token = new_session[&#34;idRefreshToken&#34;]
+    session = Session(
+        self,
+        access_token[&#34;token&#34;],
+        new_session[&#34;session&#34;][&#34;handle&#34;],
+        new_session[&#34;session&#34;][&#34;userId&#34;],
+        new_session[&#34;session&#34;][&#34;userDataInJWT&#34;],
+    )
     session.new_access_token_info = access_token
     session.new_refresh_token_info = refresh_token
     session.new_id_refresh_token_info = id_refresh_token
-    if &#39;antiCsrfToken&#39; in new_session and new_session[&#39;antiCsrfToken&#39;] is not None:
-        session.new_anti_csrf_token = new_session[&#39;antiCsrfToken&#39;]
+    if &#34;antiCsrfToken&#34; in new_session and new_session[&#34;antiCsrfToken&#34;] is not None:
+        session.new_anti_csrf_token = new_session[&#34;antiCsrfToken&#34;]
 
     log_debug_message(&#34;refreshSession: Success!&#34;)
     request.set_session(session)
-    return request.get_session()</code></pre>
+    return session</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.regenerate_access_token"><code class="name flex">
-<span>async def <span class="ident">regenerate_access_token</span></span>(<span>self, access_token: str, new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) ‑> RegenerateAccessTokenOkResult</span>
+<span>async def <span class="ident">regenerate_access_token</span></span>(<span>self, access_token: str, new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) ‑> Union[RegenerateAccessTokenOkResult, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -793,28 +1060,31 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def regenerate_access_token(self,
-                                  access_token: str,
-                                  new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenOkResult:
+<pre><code class="python">async def regenerate_access_token(
+    self,
+    access_token: str,
+    new_access_token_payload: Union[Dict[str, Any], None],
+    user_context: Dict[str, Any],
+) -&gt; Union[RegenerateAccessTokenOkResult, None]:
     if new_access_token_payload is None:
         new_access_token_payload = {}
-    response: Dict[str, Any] = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/session/regenerate&#34;), {
-        &#39;accessToken&#39;: access_token,
-        &#39;userDataInJWT&#39;: new_access_token_payload
-    })
-    if response[&#39;status&#39;] == &#39;UNAUTHORISED&#39;:
-        raise_unauthorised_exception(response[&#39;message&#39;])
+    response: Dict[str, Any] = await self.querier.send_post_request(
+        NormalisedURLPath(&#34;/recipe/session/regenerate&#34;),
+        {&#34;accessToken&#34;: access_token, &#34;userDataInJWT&#34;: new_access_token_payload},
+    )
+    if response[&#34;status&#34;] == &#34;UNAUTHORISED&#34;:
+        return None
     access_token_obj: Union[None, AccessTokenObj] = None
-    if &#39;accessToken&#39; in response:
+    if &#34;accessToken&#34; in response:
         access_token_obj = AccessTokenObj(
-            response[&#39;accessToken&#39;][&#39;token&#39;],
-            response[&#39;accessToken&#39;][&#39;expiry&#39;],
-            response[&#39;accessToken&#39;][&#39;createdTime&#39;]
+            response[&#34;accessToken&#34;][&#34;token&#34;],
+            response[&#34;accessToken&#34;][&#34;expiry&#34;],
+            response[&#34;accessToken&#34;][&#34;createdTime&#34;],
         )
     session = SessionObj(
-        response[&#39;session&#39;][&#39;handle&#39;],
-        response[&#39;session&#39;][&#39;userId&#39;],
-        response[&#39;session&#39;][&#39;userDataInJWT&#39;]
+        response[&#34;session&#34;][&#34;handle&#34;],
+        response[&#34;session&#34;][&#34;userId&#34;],
+        response[&#34;session&#34;][&#34;userDataInJWT&#34;],
     )
     return RegenerateAccessTokenOkResult(session, access_token_obj)</code></pre>
 </details>
@@ -828,7 +1098,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_all_sessions_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+<pre><code class="python">async def revoke_all_sessions_for_user(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; List[str]:
     return await session_functions.revoke_all_sessions_for_user(self, user_id)</code></pre>
 </details>
 </dd>
@@ -841,7 +1113,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_multiple_sessions(self, session_handles: List[str], user_context: Dict[str, Any]) -&gt; List[str]:
+<pre><code class="python">async def revoke_multiple_sessions(
+    self, session_handles: List[str], user_context: Dict[str, Any]
+) -&gt; List[str]:
     return await session_functions.revoke_multiple_sessions(self, session_handles)</code></pre>
 </details>
 </dd>
@@ -854,12 +1128,14 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -&gt; bool:
+<pre><code class="python">async def revoke_session(
+    self, session_handle: str, user_context: Dict[str, Any]
+) -&gt; bool:
     return await session_functions.revoke_session(self, session_handle)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_access_token_payload"><code class="name flex">
-<span>async def <span class="ident">update_access_token_payload</span></span>(<span>self, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">update_access_token_payload</span></span>(<span>self, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -867,8 +1143,15 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_access_token_payload(self, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
-    await session_functions.update_access_token_payload(self, session_handle, new_access_token_payload)</code></pre>
+<pre><code class="python">async def update_access_token_payload(
+    self,
+    session_handle: str,
+    new_access_token_payload: Dict[str, Any],
+    user_context: Dict[str, Any],
+) -&gt; bool:
+    return await session_functions.update_access_token_payload(
+        self, session_handle, new_access_token_payload
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_jwt_signing_public_key_info"><code class="name flex">
@@ -881,20 +1164,26 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def update_jwt_signing_public_key_info(
-        self, key_list: Union[List[Dict[str, Any]], None], public_key: str, expiry_time: int):
+    self,
+    key_list: Union[List[Dict[str, Any]], None],
+    public_key: str,
+    expiry_time: int,
+):
     if key_list is None:
-        key_list = [{
-            &#39;publicKey&#39;: public_key,
-            &#39;expiryTime&#39;: expiry_time,
-            &#39;createdAt&#39;: get_timestamp_ms()
-        }]
+        key_list = [
+            {
+                &#34;publicKey&#34;: public_key,
+                &#34;expiryTime&#34;: expiry_time,
+                &#34;createdAt&#34;: get_timestamp_ms(),
+            }
+        ]
 
     if self.handshake_info is not None:
         self.handshake_info.set_jwt_signing_public_key_list(key_list)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.recipe_implementation.RecipeImplementation.update_session_data"><code class="name flex">
-<span>async def <span class="ident">update_session_data</span></span>(<span>self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">update_session_data</span></span>(<span>self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -902,8 +1191,15 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def update_session_data(self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
-    await session_functions.update_session_data(self, session_handle, new_session_data)</code></pre>
+<pre><code class="python">async def update_session_data(
+    self,
+    session_handle: str,
+    new_session_data: Dict[str, Any],
+    user_context: Dict[str, Any],
+) -&gt; bool:
+    return await session_functions.update_session_data(
+        self, session_handle, new_session_data
+    )</code></pre>
 </details>
 </dd>
 </dl>

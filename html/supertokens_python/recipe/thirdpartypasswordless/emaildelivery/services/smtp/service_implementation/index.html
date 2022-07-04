@@ -42,21 +42,28 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    Transporter)
-from supertokens_python.ingredients.emaildelivery.types import EmailContent, SMTPServiceInterface
-from supertokens_python.recipe.emailverification.emaildelivery.services.smtp.service_implementation import \
-    ServiceImplementation as EVServiceImplementation
-from supertokens_python.recipe.emailverification.types import VerificationEmailTemplateVars
-from supertokens_python.recipe.passwordless.emaildelivery.services.smtp.service_implementation import \
-    ServiceImplementation as PlessServiceImplementation
-from supertokens_python.recipe.thirdpartypasswordless.types import \
-    EmailTemplateVars
+from supertokens_python.ingredients.emaildelivery.services.smtp import Transporter
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailContent,
+    SMTPServiceInterface,
+)
+from supertokens_python.recipe.emailverification.emaildelivery.services.smtp.service_implementation import (
+    ServiceImplementation as EVServiceImplementation,
+)
+from supertokens_python.recipe.emailverification.types import (
+    VerificationEmailTemplateVars,
+)
+from supertokens_python.recipe.passwordless.emaildelivery.services.smtp.service_implementation import (
+    ServiceImplementation as PlessServiceImplementation,
+)
+from supertokens_python.recipe.thirdpartypasswordless.types import EmailTemplateVars
 
-from .email_verification_implementation import \
-    ServiceImplementation as DerivedEVServiceImplementation
-from .passwordless_implementation import \
-    ServiceImplementation as DerivedPlessServiceImplementation
+from .email_verification_implementation import (
+    ServiceImplementation as DerivedEVServiceImplementation,
+)
+from .passwordless_implementation import (
+    ServiceImplementation as DerivedPlessServiceImplementation,
+)
 
 
 class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
@@ -69,8 +76,12 @@ class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
         self.ev_get_content = email_verification_service_impl.get_content
 
         derived_ev_service_implementation = DerivedEVServiceImplementation(self)
-        email_verification_service_impl.send_raw_email = derived_ev_service_implementation.send_raw_email
-        email_verification_service_impl.get_content = derived_ev_service_implementation.get_content
+        email_verification_service_impl.send_raw_email = (
+            derived_ev_service_implementation.send_raw_email
+        )
+        email_verification_service_impl.get_content = (
+            derived_ev_service_implementation.get_content
+        )
 
         # Passwordless:
         pless_service_impl = PlessServiceImplementation(transporter)
@@ -78,13 +89,21 @@ class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
         self.pless_get_content = pless_service_impl.get_content
 
         derived_pless_service_implementation = DerivedPlessServiceImplementation(self)
-        pless_service_impl.send_raw_email = derived_pless_service_implementation.send_raw_email
-        pless_service_impl.get_content = derived_pless_service_implementation.get_content
+        pless_service_impl.send_raw_email = (
+            derived_pless_service_implementation.send_raw_email
+        )
+        pless_service_impl.get_content = (
+            derived_pless_service_implementation.get_content
+        )
 
-    async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -&gt; None:
+    async def send_raw_email(
+        self, content: EmailContent, user_context: Dict[str, Any]
+    ) -&gt; None:
         await self.transporter.send_email(content, user_context)
 
-    async def get_content(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -&gt; EmailContent:
+    async def get_content(
+        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+    ) -&gt; EmailContent:
         if isinstance(template_vars, VerificationEmailTemplateVars):
             return await self.ev_get_content(template_vars, user_context)
 
@@ -132,8 +151,12 @@ inheritance.</p></div>
         self.ev_get_content = email_verification_service_impl.get_content
 
         derived_ev_service_implementation = DerivedEVServiceImplementation(self)
-        email_verification_service_impl.send_raw_email = derived_ev_service_implementation.send_raw_email
-        email_verification_service_impl.get_content = derived_ev_service_implementation.get_content
+        email_verification_service_impl.send_raw_email = (
+            derived_ev_service_implementation.send_raw_email
+        )
+        email_verification_service_impl.get_content = (
+            derived_ev_service_implementation.get_content
+        )
 
         # Passwordless:
         pless_service_impl = PlessServiceImplementation(transporter)
@@ -141,13 +164,21 @@ inheritance.</p></div>
         self.pless_get_content = pless_service_impl.get_content
 
         derived_pless_service_implementation = DerivedPlessServiceImplementation(self)
-        pless_service_impl.send_raw_email = derived_pless_service_implementation.send_raw_email
-        pless_service_impl.get_content = derived_pless_service_implementation.get_content
+        pless_service_impl.send_raw_email = (
+            derived_pless_service_implementation.send_raw_email
+        )
+        pless_service_impl.get_content = (
+            derived_pless_service_implementation.get_content
+        )
 
-    async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -&gt; None:
+    async def send_raw_email(
+        self, content: EmailContent, user_context: Dict[str, Any]
+    ) -&gt; None:
         await self.transporter.send_email(content, user_context)
 
-    async def get_content(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -&gt; EmailContent:
+    async def get_content(
+        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+    ) -&gt; EmailContent:
         if isinstance(template_vars, VerificationEmailTemplateVars):
             return await self.ev_get_content(template_vars, user_context)
 
@@ -170,7 +201,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_content(self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]) -&gt; EmailContent:
+<pre><code class="python">async def get_content(
+    self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+) -&gt; EmailContent:
     if isinstance(template_vars, VerificationEmailTemplateVars):
         return await self.ev_get_content(template_vars, user_context)
 
@@ -186,7 +219,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_raw_email(self, content: EmailContent, user_context: Dict[str, Any]) -&gt; None:
+<pre><code class="python">async def send_raw_email(
+    self, content: EmailContent, user_context: Dict[str, Any]
+) -&gt; None:
     await self.transporter.send_email(content, user_context)</code></pre>
 </details>
 </dd>

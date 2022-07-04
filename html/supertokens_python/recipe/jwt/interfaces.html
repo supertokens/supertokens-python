@@ -58,16 +58,16 @@ class JsonWebKey:
         self.use = use
 
 
-class CreateJwtOkResult():
+class CreateJwtOkResult:
     def __init__(self, jwt: str):
         self.jwt = jwt
 
 
-class CreateJwtResultUnsupportedAlgorithm():
+class CreateJwtResultUnsupportedAlgorithm:
     pass
 
 
-class GetJWKSResult():
+class GetJWKSResult:
     def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys
 
@@ -77,7 +77,12 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
+    async def create_jwt(
+        self,
+        payload: Dict[str, Any],
+        validity_seconds: Union[int, None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
 
     @abstractmethod
@@ -86,8 +91,14 @@ class RecipeInterface(ABC):
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
-                 config: JWTConfig, recipe_implementation: RecipeInterface):
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        recipe_id: str,
+        config: JWTConfig,
+        recipe_implementation: RecipeInterface,
+    ):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -96,7 +107,7 @@ class APIOptions:
 
 
 class JWKSGetResponse(APIResponse):
-    status: str = &#39;OK&#39;
+    status: str = &#34;OK&#34;
 
     def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys
@@ -104,19 +115,18 @@ class JWKSGetResponse(APIResponse):
     def to_json(self) -&gt; Dict[str, Any]:
         keys: List[Dict[str, Any]] = []
         for key in self.keys:
-            keys.append({
-                &#39;kty&#39;: key.kty,
-                &#39;kid&#39;: key.kid,
-                &#39;n&#39;: key.n,
-                &#39;e&#39;: key.e,
-                &#39;alg&#39;: key.alg,
-                &#39;use&#39;: key.use,
-            })
+            keys.append(
+                {
+                    &#34;kty&#34;: key.kty,
+                    &#34;kid&#34;: key.kid,
+                    &#34;n&#34;: key.n,
+                    &#34;e&#34;: key.e,
+                    &#34;alg&#34;: key.alg,
+                    &#34;use&#34;: key.use,
+                }
+            )
 
-        return {
-            &#39;status&#39;: self.status,
-            &#39;keys&#39;: keys
-        }
+        return {&#34;status&#34;: self.status, &#34;keys&#34;: keys}
 
 
 class APIInterface:
@@ -124,7 +134,9 @@ class APIInterface:
         self.disable_jwks_get = False
 
     @abstractmethod
-    async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[JWKSGetResponse, GeneralErrorResponse]:
+    async def jwks_get(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; Union[JWKSGetResponse, GeneralErrorResponse]:
         pass</code></pre>
 </details>
 </section>
@@ -151,7 +163,9 @@ class APIInterface:
         self.disable_jwks_get = False
 
     @abstractmethod
-    async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[JWKSGetResponse, GeneralErrorResponse]:
+    async def jwks_get(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; Union[JWKSGetResponse, GeneralErrorResponse]:
         pass</code></pre>
 </details>
 <h3>Subclasses</h3>
@@ -170,7 +184,9 @@ class APIInterface:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[JWKSGetResponse, GeneralErrorResponse]:
+async def jwks_get(
+    self, api_options: APIOptions, user_context: Dict[str, Any]
+) -&gt; Union[JWKSGetResponse, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
@@ -187,8 +203,14 @@ async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) 
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class APIOptions:
-    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
-                 config: JWTConfig, recipe_implementation: RecipeInterface):
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        recipe_id: str,
+        config: JWTConfig,
+        recipe_implementation: RecipeInterface,
+    ):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -206,7 +228,7 @@ async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CreateJwtOkResult():
+<pre><code class="python">class CreateJwtOkResult:
     def __init__(self, jwt: str):
         self.jwt = jwt</code></pre>
 </details>
@@ -220,7 +242,7 @@ async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CreateJwtResultUnsupportedAlgorithm():
+<pre><code class="python">class CreateJwtResultUnsupportedAlgorithm:
     pass</code></pre>
 </details>
 </dd>
@@ -234,7 +256,7 @@ async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class GetJWKSResult():
+<pre><code class="python">class GetJWKSResult:
     def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys</code></pre>
 </details>
@@ -251,7 +273,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class JWKSGetResponse(APIResponse):
-    status: str = &#39;OK&#39;
+    status: str = &#34;OK&#34;
 
     def __init__(self, keys: List[JsonWebKey]):
         self.keys = keys
@@ -259,19 +281,18 @@ inheritance.</p></div>
     def to_json(self) -&gt; Dict[str, Any]:
         keys: List[Dict[str, Any]] = []
         for key in self.keys:
-            keys.append({
-                &#39;kty&#39;: key.kty,
-                &#39;kid&#39;: key.kid,
-                &#39;n&#39;: key.n,
-                &#39;e&#39;: key.e,
-                &#39;alg&#39;: key.alg,
-                &#39;use&#39;: key.use,
-            })
+            keys.append(
+                {
+                    &#34;kty&#34;: key.kty,
+                    &#34;kid&#34;: key.kid,
+                    &#34;n&#34;: key.n,
+                    &#34;e&#34;: key.e,
+                    &#34;alg&#34;: key.alg,
+                    &#34;use&#34;: key.use,
+                }
+            )
 
-        return {
-            &#39;status&#39;: self.status,
-            &#39;keys&#39;: keys
-        }</code></pre>
+        return {&#34;status&#34;: self.status, &#34;keys&#34;: keys}</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -299,19 +320,18 @@ inheritance.</p></div>
 <pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
     keys: List[Dict[str, Any]] = []
     for key in self.keys:
-        keys.append({
-            &#39;kty&#39;: key.kty,
-            &#39;kid&#39;: key.kid,
-            &#39;n&#39;: key.n,
-            &#39;e&#39;: key.e,
-            &#39;alg&#39;: key.alg,
-            &#39;use&#39;: key.use,
-        })
+        keys.append(
+            {
+                &#34;kty&#34;: key.kty,
+                &#34;kid&#34;: key.kid,
+                &#34;n&#34;: key.n,
+                &#34;e&#34;: key.e,
+                &#34;alg&#34;: key.alg,
+                &#34;use&#34;: key.use,
+            }
+        )
 
-    return {
-        &#39;status&#39;: self.status,
-        &#39;keys&#39;: keys
-    }</code></pre>
+    return {&#34;status&#34;: self.status, &#34;keys&#34;: keys}</code></pre>
 </details>
 </dd>
 </dl>
@@ -351,7 +371,12 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
+    async def create_jwt(
+        self,
+        payload: Dict[str, Any],
+        validity_seconds: Union[int, None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
 
     @abstractmethod
@@ -378,7 +403,12 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
+async def create_jwt(
+    self,
+    payload: Dict[str, Any],
+    validity_seconds: Union[int, None],
+    user_context: Dict[str, Any],
+) -&gt; Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     pass</code></pre>
 </details>
 </dd>

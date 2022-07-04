@@ -61,29 +61,47 @@ class FastApiResponse(BaseResponse):
     def set_html_content(self, content: str):
         if not self.response_sent:
             body = bytes(content, &#34;utf-8&#34;)
-            self.set_header(&#39;Content-Length&#39;, str(len(body)))
-            self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+            self.set_header(&#34;Content-Length&#34;, str(len(body)))
+            self.set_header(&#34;Content-Type&#34;, &#34;text/html&#34;)
             self.response.body = body
             self.response_sent = True
 
-    def set_cookie(self, key: str,
-                   value: str,
-                   expires: int,
-                   path: str = &#34;/&#34;,
-                   domain: Union[str, None] = None,
-                   secure: bool = False,
-                   httponly: bool = False,
-                   samesite: str = &#34;lax&#34;):
+    def set_cookie(
+        self,
+        key: str,
+        value: str,
+        expires: int,
+        path: str = &#34;/&#34;,
+        domain: Union[str, None] = None,
+        secure: bool = False,
+        httponly: bool = False,
+        samesite: str = &#34;lax&#34;,
+    ):
         if domain is None:
             # we do ceil because if we do floor, we tests may fail where the access
             # token lifetime is set to 1 second
-            self.response.set_cookie(key=key, value=value, expires=ceil((expires - int(time() * 1000)) / 1000),
-                                     path=path, secure=secure, httponly=httponly, samesite=samesite)
+            self.response.set_cookie(
+                key=key,
+                value=value,
+                expires=ceil((expires - int(time() * 1000)) / 1000),
+                path=path,
+                secure=secure,
+                httponly=httponly,
+                samesite=samesite,
+            )
         else:
             # we do ceil because if we do floor, we tests may fail where the access
             # token lifetime is set to 1 second
-            self.response.set_cookie(key=key, value=value, expires=ceil((expires - int(time() * 1000)) / 1000),
-                                     path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
+            self.response.set_cookie(
+                key=key,
+                value=value,
+                expires=ceil((expires - int(time() * 1000)) / 1000),
+                path=path,
+                domain=domain,
+                secure=secure,
+                httponly=httponly,
+                samesite=samesite,
+            )
 
     def set_header(self, key: str, value: str):
         self.response.headers[key] = value
@@ -105,8 +123,8 @@ class FastApiResponse(BaseResponse):
                 indent=None,
                 separators=(&#34;,&#34;, &#34;:&#34;),
             ).encode(&#34;utf-8&#34;)
-            self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
-            self.set_header(&#39;Content-Length&#39;, str(len(body)))
+            self.set_header(&#34;Content-Type&#34;, &#34;application/json; charset=utf-8&#34;)
+            self.set_header(&#34;Content-Length&#34;, str(len(body)))
             self.response.body = body
             self.response_sent = True</code></pre>
 </details>
@@ -145,29 +163,47 @@ inheritance.</p></div>
     def set_html_content(self, content: str):
         if not self.response_sent:
             body = bytes(content, &#34;utf-8&#34;)
-            self.set_header(&#39;Content-Length&#39;, str(len(body)))
-            self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+            self.set_header(&#34;Content-Length&#34;, str(len(body)))
+            self.set_header(&#34;Content-Type&#34;, &#34;text/html&#34;)
             self.response.body = body
             self.response_sent = True
 
-    def set_cookie(self, key: str,
-                   value: str,
-                   expires: int,
-                   path: str = &#34;/&#34;,
-                   domain: Union[str, None] = None,
-                   secure: bool = False,
-                   httponly: bool = False,
-                   samesite: str = &#34;lax&#34;):
+    def set_cookie(
+        self,
+        key: str,
+        value: str,
+        expires: int,
+        path: str = &#34;/&#34;,
+        domain: Union[str, None] = None,
+        secure: bool = False,
+        httponly: bool = False,
+        samesite: str = &#34;lax&#34;,
+    ):
         if domain is None:
             # we do ceil because if we do floor, we tests may fail where the access
             # token lifetime is set to 1 second
-            self.response.set_cookie(key=key, value=value, expires=ceil((expires - int(time() * 1000)) / 1000),
-                                     path=path, secure=secure, httponly=httponly, samesite=samesite)
+            self.response.set_cookie(
+                key=key,
+                value=value,
+                expires=ceil((expires - int(time() * 1000)) / 1000),
+                path=path,
+                secure=secure,
+                httponly=httponly,
+                samesite=samesite,
+            )
         else:
             # we do ceil because if we do floor, we tests may fail where the access
             # token lifetime is set to 1 second
-            self.response.set_cookie(key=key, value=value, expires=ceil((expires - int(time() * 1000)) / 1000),
-                                     path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
+            self.response.set_cookie(
+                key=key,
+                value=value,
+                expires=ceil((expires - int(time() * 1000)) / 1000),
+                path=path,
+                domain=domain,
+                secure=secure,
+                httponly=httponly,
+                samesite=samesite,
+            )
 
     def set_header(self, key: str, value: str):
         self.response.headers[key] = value
@@ -189,8 +225,8 @@ inheritance.</p></div>
                 indent=None,
                 separators=(&#34;,&#34;, &#34;:&#34;),
             ).encode(&#34;utf-8&#34;)
-            self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
-            self.set_header(&#39;Content-Length&#39;, str(len(body)))
+            self.set_header(&#34;Content-Type&#34;, &#34;application/json; charset=utf-8&#34;)
+            self.set_header(&#34;Content-Length&#34;, str(len(body)))
             self.response.body = body
             self.response_sent = True</code></pre>
 </details>
@@ -230,24 +266,42 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def set_cookie(self, key: str,
-               value: str,
-               expires: int,
-               path: str = &#34;/&#34;,
-               domain: Union[str, None] = None,
-               secure: bool = False,
-               httponly: bool = False,
-               samesite: str = &#34;lax&#34;):
+<pre><code class="python">def set_cookie(
+    self,
+    key: str,
+    value: str,
+    expires: int,
+    path: str = &#34;/&#34;,
+    domain: Union[str, None] = None,
+    secure: bool = False,
+    httponly: bool = False,
+    samesite: str = &#34;lax&#34;,
+):
     if domain is None:
         # we do ceil because if we do floor, we tests may fail where the access
         # token lifetime is set to 1 second
-        self.response.set_cookie(key=key, value=value, expires=ceil((expires - int(time() * 1000)) / 1000),
-                                 path=path, secure=secure, httponly=httponly, samesite=samesite)
+        self.response.set_cookie(
+            key=key,
+            value=value,
+            expires=ceil((expires - int(time() * 1000)) / 1000),
+            path=path,
+            secure=secure,
+            httponly=httponly,
+            samesite=samesite,
+        )
     else:
         # we do ceil because if we do floor, we tests may fail where the access
         # token lifetime is set to 1 second
-        self.response.set_cookie(key=key, value=value, expires=ceil((expires - int(time() * 1000)) / 1000),
-                                 path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)</code></pre>
+        self.response.set_cookie(
+            key=key,
+            value=value,
+            expires=ceil((expires - int(time() * 1000)) / 1000),
+            path=path,
+            domain=domain,
+            secure=secure,
+            httponly=httponly,
+            samesite=samesite,
+        )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_response.FastApiResponse.set_header"><code class="name flex">
@@ -275,8 +329,8 @@ inheritance.</p></div>
 <pre><code class="python">def set_html_content(self, content: str):
     if not self.response_sent:
         body = bytes(content, &#34;utf-8&#34;)
-        self.set_header(&#39;Content-Length&#39;, str(len(body)))
-        self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+        self.set_header(&#34;Content-Length&#34;, str(len(body)))
+        self.set_header(&#34;Content-Type&#34;, &#34;text/html&#34;)
         self.response.body = body
         self.response_sent = True</code></pre>
 </details>
@@ -299,8 +353,8 @@ inheritance.</p></div>
             indent=None,
             separators=(&#34;,&#34;, &#34;:&#34;),
         ).encode(&#34;utf-8&#34;)
-        self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
-        self.set_header(&#39;Content-Length&#39;, str(len(body)))
+        self.set_header(&#34;Content-Type&#34;, &#34;application/json; charset=utf-8&#34;)
+        self.set_header(&#34;Content-Length&#34;, str(len(body)))
         self.response.body = body
         self.response_sent = True</code></pre>
 </details>

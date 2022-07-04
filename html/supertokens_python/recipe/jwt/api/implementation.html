@@ -41,12 +41,17 @@
 # under the License.
 from typing import Any, Dict
 
-from supertokens_python.recipe.jwt.interfaces import (APIInterface, APIOptions,
-                                                      JWKSGetResponse)
+from supertokens_python.recipe.jwt.interfaces import (
+    APIInterface,
+    APIOptions,
+    JWKSGetResponse,
+)
 
 
 class APIImplementation(APIInterface):
-    async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; JWKSGetResponse:
+    async def jwks_get(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; JWKSGetResponse:
         response = await api_options.recipe_implementation.get_jwks(user_context)
         return JWKSGetResponse(response.keys)</code></pre>
 </details>
@@ -70,7 +75,9 @@ class APIImplementation(APIInterface):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class APIImplementation(APIInterface):
-    async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; JWKSGetResponse:
+    async def jwks_get(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; JWKSGetResponse:
         response = await api_options.recipe_implementation.get_jwks(user_context)
         return JWKSGetResponse(response.keys)</code></pre>
 </details>
@@ -89,7 +96,9 @@ class APIImplementation(APIInterface):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def jwks_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; JWKSGetResponse:
+<pre><code class="python">async def jwks_get(
+    self, api_options: APIOptions, user_context: Dict[str, Any]
+) -&gt; JWKSGetResponse:
     response = await api_options.recipe_implementation.get_jwks(user_context)
     return JWKSGetResponse(response.keys)</code></pre>
 </details>
