@@ -296,7 +296,7 @@ def config(
                 website_domain="http://localhost.org:8080",
             ),
             framework="django",
-            mode="asgi",
+            mode="wsgi",
             recipe_list=[
                 session.init(
                     error_handlers=InputErrorHandlers(on_unauthorised=unauthorised_f),
