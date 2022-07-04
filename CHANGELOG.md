@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update usermetadata tests to ensure that utf8 chars are supported.
 - Mark tests as skipped if core version requirements are not met.
 - Use [black](https://github.com/psf/black) instead of `autopep8` to format code.
+- Add frontend integration tests for `django2x`
 
 ### Features:
 - Adds default `user_context` for API calls that contains the request object. It can be used in APIs / functions override like this:
