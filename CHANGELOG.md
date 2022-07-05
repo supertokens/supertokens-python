@@ -14,7 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use [black](https://github.com/psf/black) instead of `autopep8` to format code.
 - Add frontend integration tests for `django2x`
 
+### Bug fix:
+
+- Clears cookies when `revoke_session` is called using the session container, even if the session did not exist from before: https://github.com/supertokens/supertokens-node/issues/343
+
 ### Breaking changes:
+- Change request arg type in session recipe functions from Any to BaseRequest.
 - Changes session function recipe interfaces to not throw an `UNAUTHORISED` error when the input is a session_handle: https://github.com/supertokens/backend/issues/83
   - `get_session_information` now returns `None` if the session does not exist.
   - `update_session_data` now returns `False` if the input `session_handle` does not exist.
@@ -71,8 +76,6 @@ init(
 )
 ```
 
-### Breaking change
-- Change request arg type in session recipe functions from Any to BaseRequest.
 
 ### Documentation
 - Add more details in the `CONTRIBUTING.md` to make it beginner friendly.

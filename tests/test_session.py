@@ -12,18 +12,29 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from pytest import mark
 from typing import List
+
+from fastapi import FastAPI
+from fastapi.requests import Request
+from fastapi.testclient import TestClient
+from pytest import fixture, mark
+
 from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.framework.fastapi.fastapi_middleware import get_middleware
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.asyncio import (
     get_all_session_handles_for_user,
     get_session_information,
+    regenerate_access_token,
+)
+from supertokens_python.recipe.session.asyncio import (
+    revoke_session as asyncio_revoke_session,
+)
+from supertokens_python.recipe.session.asyncio import (
     update_access_token_payload,
     update_session_data,
-    regenerate_access_token,
 )
 from supertokens_python.recipe.session.recipe_implementation import RecipeImplementation
 from supertokens_python.recipe.session.session_functions import (
@@ -32,7 +43,6 @@ from supertokens_python.recipe.session.session_functions import (
     refresh_session,
     revoke_session,
 )
-
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
@@ -211,3 +221,60 @@ async def test_creating_many_sessions_for_one_user_and_looping():
     assert is_updated is False
     is_updated = await update_session_data("invalidHandle", {"foo": "bar"})
     assert is_updated is False
+
+
+@fixture(scope="function")
+async def driver_config_client():
+    app = FastAPI()
+    app.add_middleware(get_middleware())
+
+    @app.get("/")
+    async def home(_request: Request):  # type: ignore
+        return {"hello": "world"}
+
+    return TestClient(app)
+
+
+@mark.asyncio
+async def test_signout_api_works_even_if_session_is_deleted_after_creation(
+    driver_config_client: TestClient,
+):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
+        ),
+        framework="fastapi",
+        recipe_list=[session.init(anti_csrf="VIA_TOKEN")],
+    )
+    start_st()
+
+    s = SessionRecipe.get_instance()
+    if not isinstance(s.recipe_implementation, RecipeImplementation):
+        raise Exception("Should never come here")
+    user_id = "user_id"
+
+    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+
+    session_handle = response["session"]["handle"]
+
+    revoked = await asyncio_revoke_session(session_handle)
+    assert revoked
+
+    signout_response = driver_config_client.post(
+        url="/auth/signout",
+        cookies={
+            "sAccessToken": response["accessToken"]["token"],
+            "sIdRefreshToken": response["idRefreshToken"]["token"],
+        },
+        headers={"anti-csrf": response.get("antiCsrfToken", "")},
+    )
+
+    assert signout_response.json() == {"status": "OK"}
+
+    assert (
+        signout_response.headers["set-cookie"]
+        == """sAccessToken=""; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Path=/; SameSite=lax; Secure, sIdRefreshToken=""; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Path=/; SameSite=lax; Secure, sRefreshToken=""; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Path=/auth/session/refresh; SameSite=lax; Secure"""
+    )
