@@ -25,9 +25,6 @@ from supertokens_python.process_state import AllowedProcessStates, ProcessState
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.asyncio import (
-    create_new_session as asyncio_create_new_session,
-)
-from supertokens_python.recipe.session.asyncio import (
     get_all_session_handles_for_user,
     get_session_information,
     regenerate_access_token,
@@ -231,19 +228,9 @@ async def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
-    @app.get("/create")
-    async def create(request: Request):  # type: ignore
-        session = await asyncio_create_new_session(request, "", {}, {})
-        session_handle = session.get_handle()
-        return {"session_handle": session_handle, "access_token": session.access_token}
-
-    @app.get("/revoke")
-    async def revoke(request: Request):  # type: ignore
-        # session_handle = request.json()["session_handle"]
-        # await asyncio_get_session(request, True, True)
-        session = await asyncio_create_new_session(request, "", {}, {})
-        session_handle = session.get_handle()
-        return {"session_handle": session_handle, "access_token": session.access_token}
+    @app.get("/")
+    async def home(_request: Request):  # type: ignore
+        return {"hello": "world"}
 
     return TestClient(app)
 
