@@ -54,7 +54,6 @@ uvicorn mysite.asgi:application --port 8080 &
 pid=$!
 uvicorn mysite.asgi:application --port 8082 &
 pid2=$!
-echo "django2x pid: " $pid ", pid2: " $pid2
 cd ../../../../supertokens-website/test/server
 npm i -d  
 npm i git+https://github.com:supertokens/supertokens-node.git#$3  

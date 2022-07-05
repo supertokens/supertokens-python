@@ -31,7 +31,7 @@ extras_require = {
     "django": (
         [
             "django-cors-headers==3.11.0",
-            "django==3.2.12",
+            "django==3",
             "django-stubs==1.9.0",
             "uvicorn==0.18.2",
             "python-dotenv==0.19.2",
@@ -40,7 +40,7 @@ extras_require = {
     "django2x": (
         [
             "django-cors-headers==2.0",
-            "django==2.2",
+            "django==2",
             "django-stubs==1.9.0",
             "python-dotenv==0.19.2",
         ]

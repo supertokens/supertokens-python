@@ -14,7 +14,7 @@
 
 from typing import List
 
-from pytest import mark, skip
+from pytest import mark
 from tests.utils import clean_st, reset, setup_st, start_st
 
 from supertokens_python import InputAppInfo, SupertokensConfig
@@ -75,8 +75,8 @@ async def test_supertokens_functions():
 
     version = await Querier.get_instance().get_api_version()
     if not is_version_gte(version, "2.10"):
-        # If the version less than 2.10, delete user feature didn't exist, so skip the test
-        skip()
+        # If the version is less than 2.10, delete user feature doesn't exist, so mark the test successful
+        return
 
     # Delete the 2nd user (bar@example.com)
     await st_asyncio.delete_user(user_ids[1])
