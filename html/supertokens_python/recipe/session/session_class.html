@@ -50,10 +50,10 @@ class Session(SessionContainer):
     async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None:
         if user_context is None:
             user_context = {}
-        if await self.recipe_implementation.revoke_session(
+        await self.recipe_implementation.revoke_session(
             self.session_handle, user_context
-        ):
-            self.remove_cookies = True
+        )
+        self.remove_cookies = True
 
     async def get_session_data(
         self, user_context: Union[Dict[str, Any], None] = None
@@ -166,10 +166,10 @@ inheritance.</p></div>
     async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None:
         if user_context is None:
             user_context = {}
-        if await self.recipe_implementation.revoke_session(
+        await self.recipe_implementation.revoke_session(
             self.session_handle, user_context
-        ):
-            self.remove_cookies = True
+        )
+        self.remove_cookies = True
 
     async def get_session_data(
         self, user_context: Union[Dict[str, Any], None] = None
@@ -397,10 +397,10 @@ inheritance.</p></div>
 <pre><code class="python">async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None:
     if user_context is None:
         user_context = {}
-    if await self.recipe_implementation.revoke_session(
+    await self.recipe_implementation.revoke_session(
         self.session_handle, user_context
-    ):
-        self.remove_cookies = True</code></pre>
+    )
+    self.remove_cookies = True</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.update_access_token_payload"><code class="name flex">
