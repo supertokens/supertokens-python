@@ -14,15 +14,17 @@
 
 from typing import List
 
-from pytest import mark
+from pytest import mark, skip
 from tests.utils import clean_st, reset, setup_st, start_st
 
 from supertokens_python import InputAppInfo, SupertokensConfig
 from supertokens_python import asyncio as st_asyncio
 from supertokens_python import init
+from supertokens_python.querier import Querier
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword import asyncio as ep_asyncio
 from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
+from supertokens_python.utils import is_version_gte
 
 
 def setup_function(_):
@@ -70,6 +72,11 @@ async def test_supertokens_functions():
     users_desc = (await st_asyncio.get_users_newest_first(limit=10)).users
     emails_desc = [user.email for user in users_desc]
     assert emails_desc == emails[::-1]
+
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.10"):
+        # If the version less than 2.10, delete user feature didn't exist, so skip the test
+        skip()
 
     # Delete the 2nd user (bar@example.com)
     await st_asyncio.delete_user(user_ids[1])
