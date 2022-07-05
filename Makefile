@@ -34,6 +34,9 @@ with-fastapi:
 with-django:
 	pip3 install -e .[django]
 
+with-django2x:
+	pip3 install -e .[django2x]
+
 with-flask:
 	pip3 install -e .[flask]
 
