@@ -64,6 +64,7 @@ exclude_list = [
     "Makefile",
     ".pylintrc",
     "dev-requirements.txt",
+    "docs-templates",
 ]
 
 setup(
