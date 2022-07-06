@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Documentation:
+- Added `pdoc` template files to project inside `docs-templates` directory
+- Updated `build-docs` in Makefile to use `docs-templates` as the template directory while generating docs using `pdoc`
+- Updated `html.mako` template to have a single `h1` tag
+
 ## [0.10.0] - 2022-07-04
 
 - Update tests to cover `resend_code` feature in `passwordless` and `thirdpartypasswordless` recipe.
