@@ -20,6 +20,7 @@ from subprocess import DEVNULL, run
 from time import sleep
 from typing import Any, Dict, List
 
+from fastapi.testclient import TestClient
 from requests.models import Response
 from supertokens_python import Supertokens
 from supertokens_python.process_state import ProcessState
@@ -34,9 +35,8 @@ from supertokens_python.recipe.thirdpartyemailpassword import \
 from supertokens_python.recipe.thirdpartypasswordless import \
     ThirdPartyPasswordlessRecipe
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
+from supertokens_python.recipe.userroles import UserRolesRecipe
 from yaml import FullLoader, dump, load
-
-from fastapi.testclient import TestClient
 
 INSTALLATION_PATH = environ['SUPERTOKENS_PATH']
 SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + '/.started'
@@ -183,6 +183,7 @@ def reset():
     PasswordlessRecipe.reset()
     JWTRecipe.reset()
     UserMetadataRecipe.reset()
+    UserRolesRecipe.reset()
     ThirdPartyPasswordlessRecipe.reset()
     PasswordlessRecipe.reset()
 
