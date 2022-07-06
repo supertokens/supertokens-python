@@ -50,9 +50,9 @@ cd supertokens-website
 git checkout $2
 cd ../project/tests/frontendIntegration/django2x
 export PYTHONPATH="${PYTHONPATH}:/root/project"
-python manage.py runserver 8080 &
+python3 manage.py runserver 8080 &
 pid=$!
-python manage.py runserver 8082 &
+python3 manage.py runserver 8082 &
 pid2=$!
 cd ../../../../supertokens-website/test/server
 npm i -d  
