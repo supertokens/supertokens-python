@@ -64,8 +64,7 @@ class ProcessState:
         return ProcessState.__instance
 
     def add_state(self, state: AllowedProcessStates):
-        if (&#39;SUPERTOKENS_ENV&#39; in environ) and (
-                environ[&#39;SUPERTOKENS_ENV&#39;] == &#39;testing&#39;):
+        if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
             self.history.append(state)
 
     def reset(self):
@@ -143,8 +142,7 @@ class ProcessState:
         return ProcessState.__instance
 
     def add_state(self, state: AllowedProcessStates):
-        if (&#39;SUPERTOKENS_ENV&#39; in environ) and (
-                environ[&#39;SUPERTOKENS_ENV&#39;] == &#39;testing&#39;):
+        if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
             self.history.append(state)
 
     def reset(self):
@@ -181,8 +179,7 @@ def get_instance():
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def add_state(self, state: AllowedProcessStates):
-    if (&#39;SUPERTOKENS_ENV&#39; in environ) and (
-            environ[&#39;SUPERTOKENS_ENV&#39;] == &#39;testing&#39;):
+    if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
         self.history.append(state)</code></pre>
 </details>
 </dd>

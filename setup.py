@@ -13,24 +13,38 @@ extras_require = {
     # we use to develop the SDK with otherwise we get
     # a bunch of type errors on make dev-install depending
     # on changes in these frameworks
-    'fastapi': ([
-        'respx==0.16.3',
-        'Fastapi',
-        'uvicorn==0.13.4',
-        'python-dotenv==0.19.2',
-    ]),
-    'flask': ([
-        'flask_cors',
-        'Flask',
-        'python-dotenv==0.19.2',
-    ]),
-    'django': ([
-        'django-cors-headers==3.11.0',
-        'django',
-        'django-stubs==1.9.0',
-        'uvicorn==0.13.4',
-        'python-dotenv==0.19.2',
-    ]),
+    "fastapi": (
+        [
+            "respx==0.16.3",
+            "Fastapi",
+            "uvicorn==0.18.2",
+            "python-dotenv==0.19.2",
+        ]
+    ),
+    "flask": (
+        [
+            "flask_cors",
+            "Flask",
+            "python-dotenv==0.19.2",
+        ]
+    ),
+    "django": (
+        [
+            "django-cors-headers==3.11.0",
+            "django>=3",
+            "django-stubs==1.9.0",
+            "uvicorn==0.18.2",
+            "python-dotenv==0.19.2",
+        ]
+    ),
+    "django2x": (
+        [
+            "django-cors-headers==2.0",
+            "django>=2,<3",
+            "django-stubs==1.9.0",
+            "python-dotenv==0.19.2",
+        ]
+    ),
 }
 
 exclude_list = [
@@ -49,12 +63,12 @@ exclude_list = [
     "pyrightconfig.json",
     "Makefile",
     ".pylintrc",
-    "dev-requirements.txt"
+    "dev-requirements.txt",
 ]
 
 setup(
     name="supertokens_python",
-    version="0.9.1",
+    version="0.10.0",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -63,9 +77,11 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/supertokens/supertokens-python",
     packages=find_packages(exclude=exclude_list),
-    package_data={'supertokens_python': [
-        'py.typed',
-    ]},
+    package_data={
+        "supertokens_python": [
+            "py.typed",
+        ]
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
@@ -84,18 +100,19 @@ setup(
         "PyJWT>=2.0.0 ,<2.4.0",
         "httpx>=0.15.0 ,<0.23.0",
         "pycryptodome==3.10.*",
-        'jsonschema==3.2.0',
+        "jsonschema==3.2.0",
         "tldextract==3.1.0",
         "asgiref==3.4.1",
-        'typing_extensions==4.1.1',
-        'Deprecated==1.2.13',
-        'cryptography==35.0',
-        'phonenumbers==8.12.48',
-        'Werkzeug>=2.0 ,<2.1.0', # flask depends on this and flask has > '2.0' for this. However, the version before 2.1.0 breaks our lib.
+        "typing_extensions==4.1.1",
+        "Deprecated==1.2.13",
+        "cryptography==35.0",
+        "phonenumbers==8.12.48",
+        # flask depends on this and flask has > '2.0' for this. However, the version before 2.1.0 breaks our lib.
+        "Werkzeug>=2.0 ,<2.1.0",
         "twilio==7.9.1",
         "aiosmtplib==1.1.6",
     ],
-    python_requires='>=3.7',
+    python_requires=">=3.7",
     include_package_data=True,
-    extras_require=extras_require
+    extras_require=extras_require,
 )

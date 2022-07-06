@@ -30,8 +30,7 @@ class NormalisedURLPath:
         return self.__value.startswith(other.get_as_string_dangerous())
 
     def append(self, other: NormalisedURLPath) -> NormalisedURLPath:
-        return NormalisedURLPath(
-            self.__value + other.get_as_string_dangerous())
+        return NormalisedURLPath(self.__value + other.get_as_string_dangerous())
 
     def get_as_string_dangerous(self) -> str:
         return self.__value
@@ -40,20 +39,21 @@ class NormalisedURLPath:
         return self.__value == other.get_as_string_dangerous()
 
     def is_a_recipe_path(self) -> bool:
-        return self.__value == '/recipe' or self.__value.startswith('/recipe/')
+        return self.__value == "/recipe" or self.__value.startswith("/recipe/")
 
 
 def normalise_url_path_or_throw_error(input_str: str) -> str:
     input_str = input_str.strip().lower()
 
     try:
-        if (not input_str.startswith('http://')
-            ) and (not input_str.startswith('https://')):
-            raise Exception('converting to proper URL')
+        if (not input_str.startswith("http://")) and (
+            not input_str.startswith("https://")
+        ):
+            raise Exception("converting to proper URL")
         url_obj = urlparse(input_str)
         input_str = url_obj.path
 
-        if input_str.endswith('/'):
+        if input_str.endswith("/"):
             return input_str[:-1]
 
         return input_str
@@ -61,32 +61,25 @@ def normalise_url_path_or_throw_error(input_str: str) -> str:
         pass
 
     if (
-            (
-                domain_given(input_str)
-                or
-                input_str.startswith('localhost')
-            )
-            and
-            (not input_str.startswith('http://'))
-            and
-            (not input_str.startswith('https://'))
+        (domain_given(input_str) or input_str.startswith("localhost"))
+        and (not input_str.startswith("http://"))
+        and (not input_str.startswith("https://"))
     ):
-        input_str = 'http://' + input_str
+        input_str = "http://" + input_str
         return normalise_url_path_or_throw_error(input_str)
 
-    if not input_str.startswith('/'):
-        input_str = '/' + input_str
+    if not input_str.startswith("/"):
+        input_str = "/" + input_str
 
     try:
-        urlparse('http://example.com' + input_str)
-        return normalise_url_path_or_throw_error(
-            'http://example.com' + input_str)
+        urlparse("http://example.com" + input_str)
+        return normalise_url_path_or_throw_error("http://example.com" + input_str)
     except Exception:
-        raise_general_exception('Please provide a valid URL path')
+        raise_general_exception("Please provide a valid URL path")
 
 
 def domain_given(input_str: str) -> bool:
-    if ('.' not in input_str) or (input_str.startswith('/')):
+    if ("." not in input_str) or (input_str.startswith("/")):
         return False
 
     try:
@@ -98,7 +91,7 @@ def domain_given(input_str: str) -> bool:
         pass
 
     try:
-        url = urlparse('http://' + input_str)
+        url = urlparse("http://" + input_str)
         if url.hostname is None:
             raise Exception("Should never come here")
         return url.hostname.find(".") != -1

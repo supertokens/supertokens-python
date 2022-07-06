@@ -22,6 +22,8 @@ from typing import Any, Dict, List
 
 from fastapi.testclient import TestClient
 from requests.models import Response
+from yaml import FullLoader, dump, load
+
 from supertokens_python import Supertokens
 from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
@@ -30,76 +32,79 @@ from supertokens_python.recipe.jwt import JWTRecipe
 from supertokens_python.recipe.passwordless import PasswordlessRecipe
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
-from supertokens_python.recipe.thirdpartyemailpassword import \
-    ThirdPartyEmailPasswordRecipe
-from supertokens_python.recipe.thirdpartypasswordless import \
-    ThirdPartyPasswordlessRecipe
+from supertokens_python.recipe.thirdpartyemailpassword import (
+    ThirdPartyEmailPasswordRecipe,
+)
+from supertokens_python.recipe.thirdpartypasswordless import (
+    ThirdPartyPasswordlessRecipe,
+)
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
-from yaml import FullLoader, dump, load
 
-INSTALLATION_PATH = environ['SUPERTOKENS_PATH']
-SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + '/.started'
-LICENSE_FILE_PATH = INSTALLATION_PATH + '/licenseKey'
-CONFIG_YAML_FILE_PATH = INSTALLATION_PATH + '/config.yaml'
-ORIGINAL_LICENSE_FILE_PATH = INSTALLATION_PATH + '/temp/licenseKey'
-ORIGINAL_CONFIG_YAML_FILE_PATH = INSTALLATION_PATH + '/temp/config.yaml'
-WEB_SERVER_TEMP_DIR = INSTALLATION_PATH + '/webserver-temp'
-API_VERSION_TEST_NON_SUPPORTED_SV = ['0.0', '1.0', '1.1', '2.1']
-API_VERSION_TEST_NON_SUPPORTED_CV = ['0.1', '0.2', '1.2', '2.0', '3.0']
-API_VERSION_TEST_MULTIPLE_SUPPORTED_SV = ['0.0', '1.0', '1.1', '2.1']
-API_VERSION_TEST_MULTIPLE_SUPPORTED_CV = ['0.1', '0.2', '1.1', '2.1', '3.0']
-API_VERSION_TEST_MULTIPLE_SUPPORTED_RESULT = '2.1'
-API_VERSION_TEST_SINGLE_SUPPORTED_SV = ['0.0', '1.0', '1.1', '2.0']
-API_VERSION_TEST_SINGLE_SUPPORTED_CV = ['0.1', '0.2', '1.1', '2.1', '3.0']
-API_VERSION_TEST_SINGLE_SUPPORTED_RESULT = '1.1'
-API_VERSION_TEST_BASIC_RESULT = ['2.0', '2.1', '2.2', '2.3', '2.9']
-SUPPORTED_CORE_DRIVER_INTERFACE_FILE = './coreDriverInterfaceSupported.json'
-TEST_ENABLE_ANTI_CSRF_CONFIG_KEY = 'enable_anti_csrf'
-TEST_ACCESS_TOKEN_PATH_VALUE = '/test'
-TEST_ACCESS_TOKEN_PATH_CONFIG_KEY = 'access_token_path'
-TEST_REFRESH_TOKEN_PATH_KEY_VALUE = '/refresh'
-TEST_REFRESH_TOKEN_PATH_KEY_VALUE_TEST_DECORATOR = '/refresh'
-TEST_REFRESH_TOKEN_PATH_CONFIG_KEY = 'refresh_api_path'
+INSTALLATION_PATH = environ["SUPERTOKENS_PATH"]
+SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + "/.started"
+LICENSE_FILE_PATH = INSTALLATION_PATH + "/licenseKey"
+CONFIG_YAML_FILE_PATH = INSTALLATION_PATH + "/config.yaml"
+ORIGINAL_LICENSE_FILE_PATH = INSTALLATION_PATH + "/temp/licenseKey"
+ORIGINAL_CONFIG_YAML_FILE_PATH = INSTALLATION_PATH + "/temp/config.yaml"
+WEB_SERVER_TEMP_DIR = INSTALLATION_PATH + "/webserver-temp"
+API_VERSION_TEST_NON_SUPPORTED_SV = ["0.0", "1.0", "1.1", "2.1"]
+API_VERSION_TEST_NON_SUPPORTED_CV = ["0.1", "0.2", "1.2", "2.0", "3.0"]
+API_VERSION_TEST_MULTIPLE_SUPPORTED_SV = ["0.0", "1.0", "1.1", "2.1"]
+API_VERSION_TEST_MULTIPLE_SUPPORTED_CV = ["0.1", "0.2", "1.1", "2.1", "3.0"]
+API_VERSION_TEST_MULTIPLE_SUPPORTED_RESULT = "2.1"
+API_VERSION_TEST_SINGLE_SUPPORTED_SV = ["0.0", "1.0", "1.1", "2.0"]
+API_VERSION_TEST_SINGLE_SUPPORTED_CV = ["0.1", "0.2", "1.1", "2.1", "3.0"]
+API_VERSION_TEST_SINGLE_SUPPORTED_RESULT = "1.1"
+API_VERSION_TEST_BASIC_RESULT = ["2.0", "2.1", "2.2", "2.3", "2.9"]
+SUPPORTED_CORE_DRIVER_INTERFACE_FILE = "./coreDriverInterfaceSupported.json"
+TEST_ENABLE_ANTI_CSRF_CONFIG_KEY = "enable_anti_csrf"
+TEST_ACCESS_TOKEN_PATH_VALUE = "/test"
+TEST_ACCESS_TOKEN_PATH_CONFIG_KEY = "access_token_path"
+TEST_REFRESH_TOKEN_PATH_KEY_VALUE = "/refresh"
+TEST_REFRESH_TOKEN_PATH_KEY_VALUE_TEST_DECORATOR = "/refresh"
+TEST_REFRESH_TOKEN_PATH_CONFIG_KEY = "refresh_api_path"
 TEST_SESSION_EXPIRED_STATUS_CODE_VALUE = 401
-TEST_SESSION_EXPIRED_STATUS_CODE_CONFIG_KEY = 'session_expired_status_code'
-TEST_COOKIE_DOMAIN_VALUE = 'test.supertokens.io'
-TEST_COOKIE_DOMAIN_CONFIG_KEY = 'cookie_domain'
+TEST_SESSION_EXPIRED_STATUS_CODE_CONFIG_KEY = "session_expired_status_code"
+TEST_COOKIE_DOMAIN_VALUE = "test.supertokens.io"
+TEST_COOKIE_DOMAIN_CONFIG_KEY = "cookie_domain"
 TEST_ACCESS_TOKEN_MAX_AGE_VALUE: str = "7200"  # seconds
-TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY = 'access_token_validity'
+TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY = "access_token_validity"
 TEST_REFRESH_TOKEN_MAX_AGE_VALUE: str = "720"  # minutes
-TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY = 'refresh_token_validity'
-TEST_COOKIE_SAME_SITE_VALUE = 'Lax'
-TEST_COOKIE_SAME_SITE_CONFIG_KEY = 'cookie_same_site'
+TEST_REFRESH_TOKEN_MAX_AGE_CONFIG_KEY = "refresh_token_validity"
+TEST_COOKIE_SAME_SITE_VALUE = "Lax"
+TEST_COOKIE_SAME_SITE_CONFIG_KEY = "cookie_same_site"
 TEST_COOKIE_SECURE_VALUE = False
-TEST_COOKIE_SECURE_CONFIG_KEY = 'cookie_secure'
-TEST_DRIVER_CONFIG_COOKIE_DOMAIN = 'supertokens.io'
+TEST_COOKIE_SECURE_CONFIG_KEY = "cookie_secure"
+TEST_DRIVER_CONFIG_COOKIE_DOMAIN = "supertokens.io"
 TEST_DRIVER_CONFIG_COOKIE_SECURE = False
-TEST_DRIVER_CONFIG_COOKIE_SAME_SITE = 'lax'
-TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH = '/'
-TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH = '/auth/session/refresh'
-ACCESS_CONTROL_EXPOSE_HEADER = 'Access-Control-Expose-Headers'
-ACCESS_CONTROL_EXPOSE_HEADER_ANTI_CSRF_ENABLE = 'front-token, id-refresh-token, anti-csrf'
-ACCESS_CONTROL_EXPOSE_HEADER_ANTI_CSRF_DISABLE = 'id-refresh-token'
+TEST_DRIVER_CONFIG_COOKIE_SAME_SITE = "lax"
+TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH = "/"
+TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH = "/auth/session/refresh"
+ACCESS_CONTROL_EXPOSE_HEADER = "Access-Control-Expose-Headers"
+ACCESS_CONTROL_EXPOSE_HEADER_ANTI_CSRF_ENABLE = (
+    "front-token, id-refresh-token, anti-csrf"
+)
+ACCESS_CONTROL_EXPOSE_HEADER_ANTI_CSRF_DISABLE = "id-refresh-token"
 TEST_ID_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
 
 def set_key_value_in_config(key: str, value: str):
-    f = open(CONFIG_YAML_FILE_PATH, 'r')
+    f = open(CONFIG_YAML_FILE_PATH, "r")
     data = load(f, Loader=FullLoader)
     f.close()
     data[key] = value
-    f = open(CONFIG_YAML_FILE_PATH, 'w')
+    f = open(CONFIG_YAML_FILE_PATH, "w")
     dump(data, f)
     f.close()
 
 
 def drop_key(key: str):
-    f = open(CONFIG_YAML_FILE_PATH, 'r')
+    f = open(CONFIG_YAML_FILE_PATH, "r")
     data = load(f, Loader=FullLoader)
     f.close()
     data.pop(key)
-    f = open(CONFIG_YAML_FILE_PATH, 'w')
+    f = open(CONFIG_YAML_FILE_PATH, "w")
     dump(data, f)
     f.close()
 
@@ -111,32 +116,43 @@ def __stop_st(retry: int = 50):
     process_ids = __get_list_of_process_ids()
     if len(process_ids) != 0:
         if retry == 0:
-            raise Exception('')
+            raise Exception("")
         sleep(0.5)
         __stop_st(retry - 1)
     sleep(1)
 
 
-def start_st(host: str = 'localhost', port: str = '3567'):
+def start_st(host: str = "localhost", port: str = "3567"):
     pid_after = pid_before = __get_list_of_process_ids()
-    run('cd ' + INSTALLATION_PATH + ' && java -Djava.security.egd=file:/dev/urandom -classpath '
-                                    '"./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host='
-        + host + ' port=' + str(port) + ' test_mode &', shell=True, stdout=DEVNULL)
+    run(
+        "cd "
+        + INSTALLATION_PATH
+        + " && java -Djava.security.egd=file:/dev/urandom -classpath "
+        '"./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host='
+        + host
+        + " port="
+        + str(port)
+        + " test_mode &",
+        shell=True,
+        stdout=DEVNULL,
+    )
     for _ in range(35):
         pid_after = __get_list_of_process_ids()
         if len(pid_after) != len(pid_before):
             break
         sleep(0.5)
     if len(pid_after) == len(pid_before):
-        raise Exception('could not start ST process')
+        raise Exception("could not start ST process")
 
 
 def setup_st():
     try:
         run("cd " + INSTALLATION_PATH + " && cp temp/licenseKey ./licenseKey")
     except BaseException:
-        run("cd " + INSTALLATION_PATH +
-            " && cp temp/config.yaml ./config.yaml", shell=True)
+        run(
+            "cd " + INSTALLATION_PATH + " && cp temp/config.yaml ./config.yaml",
+            shell=True,
+        )
 
 
 def clean_st():
@@ -163,7 +179,7 @@ def __get_list_of_process_ids() -> List[str]:
     try:
         processes = scandir(SUPERTOKENS_PROCESS_DIR)
         for process in processes:
-            f = open(SUPERTOKENS_PROCESS_DIR + '/' + process.name, 'r')
+            f = open(SUPERTOKENS_PROCESS_DIR + "/" + process.name, "r")
             process_ids.append(f.readline())
             f.close()
     except FileNotFoundError:
@@ -196,21 +212,17 @@ def get_cookie_from_response(response: Response, cookie_name: str):
 
 
 def extract_all_cookies(response: Response) -> Dict[str, Any]:
-    if response.headers.get('set-cookie') is None:
+    if response.headers.get("set-cookie") is None:
         return {}
-    cookie_headers = SimpleCookie(  # type: ignore
-        response.headers.get('set-cookie'))
+    cookie_headers = SimpleCookie(response.headers.get("set-cookie"))  # type: ignore
     cookies: Dict[str, Any] = {}
     for key, morsel in cookie_headers.items():  # type: ignore
-        cookies[key] = {
-            'value': morsel.value,
-            'name': key
-        }
+        cookies[key] = {"value": morsel.value, "name": key}
         for k, v in morsel.items():
-            if (k in ('secure', 'httponly')) and v == '':
+            if (k in ("secure", "httponly")) and v == "":
                 cookies[key][k] = None
-            elif k == 'samesite':
-                if len(v) > 0 and v[-1] == ',':
+            elif k == "samesite":
+                if len(v) > 0 and v[-1] == ",":
                     v = v[:-1]
                 cookies[key][k] = v
             else:
@@ -219,8 +231,11 @@ def extract_all_cookies(response: Response) -> Dict[str, Any]:
 
 
 def get_unix_timestamp(expiry: str):
-    return int(datetime.strptime(
-        expiry, '%a, %d %b %Y %H:%M:%S GMT').replace(tzinfo=timezone.utc).timestamp())
+    return int(
+        datetime.strptime(expiry, "%a, %d %b %Y %H:%M:%S GMT")
+        .replace(tzinfo=timezone.utc)
+        .timestamp()
+    )
 
 
 def verify_within_5_second_diff(n1: int, n2: int):
@@ -230,117 +245,117 @@ def verify_within_5_second_diff(n1: int, n2: int):
 def sign_up_request(app: TestClient, email: str, password: str):
     return app.post(
         url="/auth/signup",
-        headers={
-            "Content-Type": "application/json"
-        },
+        headers={"Content-Type": "application/json"},
         json={
-            'formFields':
-                [{
-                    "id": "password",
-                    "value": password
-                },
-                    {
-                        "id": "email",
-                        "value": email
-                }]
-        })
+            "formFields": [
+                {"id": "password", "value": password},
+                {"id": "email", "value": email},
+            ]
+        },
+    )
 
 
 def sign_in_up_request(app: TestClient, email: str, use_server: bool = False):
     if use_server:
-        environ['SUPERTOKENS_ENV'] = 'production'
+        environ["SUPERTOKENS_ENV"] = "production"
     try:
         response = app.post(
             url="/auth/signinup/code",
-            headers={
-                "Content-Type": "application/json"
-            },
-            json={
-                "email": email
-            })
-        return response
-    finally:
-        if use_server:
-            environ['SUPERTOKENS_ENV'] = 'testing'
-
-
-def sign_in_up_request_phone(app: TestClient, phone: str, use_server: bool = False):
-    if use_server:
-        environ['SUPERTOKENS_ENV'] = 'production'
-    try:
-        response = app.post(
-            url="/auth/signinup/code",
-            headers={
-                "Content-Type": "application/json"
-            },
-            json={
-                "phoneNumber": phone
-            })
-        return response
-    finally:
-        if use_server:
-            environ['SUPERTOKENS_ENV'] = 'testing'
-
-
-def reset_password_request(app: TestClient, email: str, use_server: bool = False):
-    if use_server:
-        environ['SUPERTOKENS_ENV'] = 'production'
-    try:
-        response = app.post(
-            url="/auth/user/password/reset/token",
-            json={
-                'formFields':
-                    [{
-                        "id": "email",
-                        "value": email
-                    }]
-            }
+            headers={"Content-Type": "application/json"},
+            json={"email": email},
         )
         return response
     finally:
         if use_server:
-            environ['SUPERTOKENS_ENV'] = 'testing'
+            environ["SUPERTOKENS_ENV"] = "testing"
+
+
+def sign_in_up_request_phone(app: TestClient, phone: str, use_server: bool = False):
+    if use_server:
+        environ["SUPERTOKENS_ENV"] = "production"
+    try:
+        response = app.post(
+            url="/auth/signinup/code",
+            headers={"Content-Type": "application/json"},
+            json={"phoneNumber": phone},
+        )
+        return response
+    finally:
+        if use_server:
+            environ["SUPERTOKENS_ENV"] = "testing"
+
+
+def sign_in_up_request_code_resend(
+    app: TestClient, device_id: str, preauth_sesion_id: str, use_server: bool = False
+):
+    if use_server:
+        environ["SUPERTOKENS_ENV"] = "production"
+    try:
+        response = app.post(
+            url="/auth/signinup/code/resend",
+            headers={"Content-Type": "application/json"},
+            json={"deviceId": device_id, "preAuthSessionId": preauth_sesion_id},
+        )
+        return response
+    finally:
+        if use_server:
+            environ["SUPERTOKENS_ENV"] = "testing"
+
+
+def reset_password_request(app: TestClient, email: str, use_server: bool = False):
+    if use_server:
+        environ["SUPERTOKENS_ENV"] = "production"
+    try:
+        response = app.post(
+            url="/auth/user/password/reset/token",
+            json={"formFields": [{"id": "email", "value": email}]},
+        )
+        return response
+    finally:
+        if use_server:
+            environ["SUPERTOKENS_ENV"] = "testing"
 
 
 def sign_in_request(app: TestClient, email: str, password: str):
     return app.post(
         url="/auth/signin",
-        headers={
-            "Content-Type": "application/json"
-        },
+        headers={"Content-Type": "application/json"},
         json={
-            'formFields':
-                [{
-                    "id": "password",
-                    "value": password
-                },
-                    {
-                        "id": "email",
-                        "value": email
-                }]
-        })
+            "formFields": [
+                {"id": "password", "value": password},
+                {"id": "email", "value": email},
+            ]
+        },
+    )
 
 
 def email_verify_token_request(
-        app: TestClient, accessToken: str, idRefreshTokenFromCookie: str, antiCsrf: str, userId: str, use_server: bool = False):
+    app: TestClient,
+    accessToken: str,
+    idRefreshTokenFromCookie: str,
+    antiCsrf: str,
+    userId: str,
+    use_server: bool = False,
+):
     if use_server:
-        environ['SUPERTOKENS_ENV'] = 'production'
+        environ["SUPERTOKENS_ENV"] = "production"
     try:
         headers = {
             "Content-Type": "application/json",
         }
         if antiCsrf:
-            headers['anti-csrf'] = antiCsrf
+            headers["anti-csrf"] = antiCsrf
 
         resp = app.post(
             url="/auth/user/email/verify/token",
             headers=headers,
             cookies={
-                'sAccessToken': accessToken,
-                'sIdRefreshToken': idRefreshTokenFromCookie,
+                "sAccessToken": accessToken,
+                "sIdRefreshToken": idRefreshTokenFromCookie,
             },
-            data=str.encode(userId))
+            data=str.encode(userId),
+        )
         return resp
     finally:
         if use_server:
-            environ['SUPERTOKENS_ENV'] = 'testing'
+            environ["SUPERTOKENS_ENV"] = "testing"

@@ -15,31 +15,43 @@ from __future__ import annotations
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.emailverification.interfaces import (
-    APIInterface, APIOptions)
-from supertokens_python.utils import normalise_http_method, send_200_response
+    APIInterface,
+    APIOptions,
+)
+from supertokens_python.utils import (
+    default_user_context,
+    normalise_http_method,
+    send_200_response,
+)
 
 
-async def handle_email_verify_api(api_implementation: APIInterface, api_options: APIOptions):
-    if normalise_http_method(api_options.request.method()) == 'post':
+async def handle_email_verify_api(
+    api_implementation: APIInterface, api_options: APIOptions
+):
+    if normalise_http_method(api_options.request.method()) == "post":
         if api_implementation.disable_email_verify_post:
             return None
         body = await api_options.request.json()
         if body is None:
-            raise_bad_input_exception(
-                'Please pass JSON input body')
-        if 'token' not in body:
-            raise_bad_input_exception(
-                'Please provide the email verification token')
-        if not isinstance(body['token'], str):
-            raise_bad_input_exception(
-                'The email verification token must be a string')
+            raise_bad_input_exception("Please pass JSON input body")
+        if "token" not in body:
+            raise_bad_input_exception("Please provide the email verification token")
+        if not isinstance(body["token"], str):
+            raise_bad_input_exception("The email verification token must be a string")
 
-        token = body['token']
-        result = await api_implementation.email_verify_post(token, api_options, {})
+        token = body["token"]
+        user_context = default_user_context(api_options.request)
+
+        result = await api_implementation.email_verify_post(
+            token, api_options, user_context
+        )
     else:
         if api_implementation.disable_is_email_verified_get:
             return None
 
-        result = await api_implementation.is_email_verified_get(api_options, {})
+        user_context = default_user_context(api_options.request)
+        result = await api_implementation.is_email_verified_get(
+            api_options, user_context
+        )
 
     return send_200_response(result.to_json(), api_options.response)

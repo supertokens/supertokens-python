@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from pytest import mark
+from pytest import mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.querier import Querier
 from supertokens_python.recipe import userroles
@@ -35,21 +35,21 @@ def teardown_function(_):
 @mark.asyncio
 async def test_create_new_role():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='https://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[userroles.init()]
+        framework="fastapi",
+        recipe_list=[userroles.init()],
     )
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if not is_version_gte(version, '2.14'):
+    if not is_version_gte(version, "2.14"):
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
-        return
+        skip()
 
     role = "role"
 
@@ -62,21 +62,21 @@ async def test_create_new_role():
 @mark.asyncio
 async def test_create_new_role_twice():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='https://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[userroles.init()]
+        framework="fastapi",
+        recipe_list=[userroles.init()],
     )
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if not is_version_gte(version, '2.14'):
+    if not is_version_gte(version, "2.14"):
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
-        return
+        skip()
 
     role = "role"
 
@@ -94,21 +94,21 @@ async def test_create_new_role_twice():
 @mark.asyncio
 async def test_create_new_role_with_permissions():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='https://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[userroles.init()]
+        framework="fastapi",
+        recipe_list=[userroles.init()],
     )
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if not is_version_gte(version, '2.14'):
+    if not is_version_gte(version, "2.14"):
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
-        return
+        skip()
 
     permissions = ["permission1"]
     role = "role"
@@ -127,21 +127,21 @@ async def test_create_new_role_with_permissions():
 @mark.asyncio
 async def test_add_permissions_to_new_role_():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='https://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[userroles.init()]
+        framework="fastapi",
+        recipe_list=[userroles.init()],
     )
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if not is_version_gte(version, '2.14'):
+    if not is_version_gte(version, "2.14"):
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
-        return
+        skip()
 
     permissions = ["permission1", "permission2", "permission3"]
     role = "role"
@@ -165,21 +165,21 @@ async def test_add_permissions_to_new_role_():
 @mark.asyncio
 async def test_add_duplicate_permission():
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
-            app_name='SuperTokens Demo',
-            api_domain='https://api.supertokens.io',
-            website_domain='supertokens.io'
+            app_name="SuperTokens Demo",
+            api_domain="https://api.supertokens.io",
+            website_domain="supertokens.io",
         ),
-        framework='fastapi',
-        recipe_list=[userroles.init()]
+        framework="fastapi",
+        recipe_list=[userroles.init()],
     )
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if not is_version_gte(version, '2.14'):
+    if not is_version_gte(version, "2.14"):
         # If the version less than 2.14, user roles recipe doesn't exist. So skip the test
-        return
+        skip()
 
     permissions = ["permission1", "permission2"]
     role = "role"

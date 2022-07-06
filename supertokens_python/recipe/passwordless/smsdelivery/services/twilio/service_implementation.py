@@ -16,20 +16,26 @@ from __future__ import annotations
 
 from typing import Any, Dict, Union
 
-from supertokens_python.ingredients.smsdelivery.types import SMSContent, TwilioServiceInterface
-from supertokens_python.recipe.passwordless.smsdelivery.services.twilio.passwordless_login import \
-    pless_sms_content
-from supertokens_python.recipe.passwordless.types import \
-    PasswordlessLoginSMSTemplateVars
+from supertokens_python.ingredients.smsdelivery.types import (
+    SMSContent,
+    TwilioServiceInterface,
+)
+from supertokens_python.recipe.passwordless.smsdelivery.services.twilio.passwordless_login import (
+    pless_sms_content,
+)
+from supertokens_python.recipe.passwordless.types import (
+    PasswordlessLoginSMSTemplateVars,
+)
 
 
 class ServiceImplementation(TwilioServiceInterface[PasswordlessLoginSMSTemplateVars]):
-    async def send_raw_sms(self,
-                           content: SMSContent,
-                           user_context: Dict[str, Any],
-                           from_: Union[str, None] = None,
-                           messaging_service_sid: Union[str, None] = None,
-                           ) -> None:
+    async def send_raw_sms(
+        self,
+        content: SMSContent,
+        user_context: Dict[str, Any],
+        from_: Union[str, None] = None,
+        messaging_service_sid: Union[str, None] = None,
+    ) -> None:
         if from_:
             self.twilio_client.messages.create(  # type: ignore
                 to=content.to_phone,
@@ -43,6 +49,10 @@ class ServiceImplementation(TwilioServiceInterface[PasswordlessLoginSMSTemplateV
                 messaging_service_sid=messaging_service_sid,
             )
 
-    async def get_content(self, template_vars: PasswordlessLoginSMSTemplateVars, user_context: Dict[str, Any]) -> SMSContent:
+    async def get_content(
+        self,
+        template_vars: PasswordlessLoginSMSTemplateVars,
+        user_context: Dict[str, Any],
+    ) -> SMSContent:
         _ = user_context
         return pless_sms_content(template_vars)

@@ -21,8 +21,7 @@ from base64 import b64decode, b64encode
 from math import floor
 from re import fullmatch
 from time import time
-from typing import (TYPE_CHECKING, Any, Callable, Coroutine, Dict, List,
-                    TypeVar, Union)
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, TypeVar, Union
 
 from httpx import HTTPStatusError, Response
 
@@ -44,17 +43,21 @@ if TYPE_CHECKING:
 
 
 FRAMEWORKS = {
-    'fastapi': FastapiFramework(),
-    'flask': FlaskFramework(),
-    'django': DjangoFramework(),
+    "fastapi": FastapiFramework(),
+    "flask": FlaskFramework(),
+    "django": DjangoFramework(),
 }
 
 
 def is_an_ip_address(ip_address: str) -> bool:
-    return fullmatch(
-        r'^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|['
-        r'01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$',
-        ip_address) is not None
+    return (
+        fullmatch(
+            r"^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|["
+            r"01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
+            ip_address,
+        )
+        is not None
+    )
 
 
 def normalise_http_method(method: str) -> str:
@@ -69,8 +72,7 @@ def get_header(request: BaseRequest, key: str) -> Union[str, None]:
     return request.get_header(key)
 
 
-def find_max_version(
-        versions_1: List[str], versions_2: List[str]) -> Union[str, None]:
+def find_max_version(versions_1: List[str], versions_2: List[str]) -> Union[str, None]:
     versions = list(set(versions_1) & set(versions_2))
     if len(versions) == 0:
         return None
@@ -89,8 +91,8 @@ def is_version_gte(version: str, minimum_minor_version: str) -> bool:
 
 
 def _get_max_version(v1: str, v2: str) -> str:
-    v1_split = v1.split('.')
-    v2_split = v2.split('.')
+    v1_split = v1.split(".")
+    v2_split = v2.split(".")
     max_loop = min(len(v1_split), len(v2_split))
 
     for i in range(max_loop):
@@ -113,21 +115,22 @@ def is_5xx_error(status_code: int) -> bool:
     return status_code // 100 == 5
 
 
-def send_non_200_response(message: str, status_code: int,
-                          response: BaseResponse) -> BaseResponse:
+def send_non_200_response(
+    message: str, status_code: int, response: BaseResponse
+) -> BaseResponse:
     if status_code < 300:
-        raise_general_exception(
-            'Calling sendNon200Response with status code < 300')
-    log_debug_message("Sending response to client with status code: %s", str(status_code))
+        raise_general_exception("Calling sendNon200Response with status code < 300")
+    log_debug_message(
+        "Sending response to client with status code: %s", str(status_code)
+    )
     response.set_status_code(status_code)
-    response.set_json_content(content={
-        ERROR_MESSAGE_KEY: message
-    })
+    response.set_json_content(content={ERROR_MESSAGE_KEY: message})
     return response
 
 
 def send_200_response(
-        data_json: Dict[str, Any], response: BaseResponse) -> BaseResponse:
+    data_json: Dict[str, Any], response: BaseResponse
+) -> BaseResponse:
     log_debug_message("Sending response to client with status code: 200")
     response.set_json_content(data_json)
     response.set_status_code(200)
@@ -139,11 +142,11 @@ def get_timestamp_ms() -> int:
 
 
 def utf_base64encode(s: str) -> str:
-    return b64encode(s.encode('utf-8')).decode('utf-8')
+    return b64encode(s.encode("utf-8")).decode("utf-8")
 
 
 def utf_base64decode(s: str) -> str:
-    return b64decode(s.encode('utf-8')).decode('utf-8')
+    return b64decode(s.encode("utf-8")).decode("utf-8")
 
 
 def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -> List[_T]:
@@ -151,7 +154,8 @@ def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -> List[
 
 
 def find_first_occurrence_in_list(
-        condition: Callable[[_T], bool], given_list: List[_T]) -> Union[_T, None]:
+    condition: Callable[[_T], bool], given_list: List[_T]
+) -> Union[_T, None]:
     for item in given_list:
         if condition(item):
             return item
@@ -162,14 +166,17 @@ def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
     real_mode = None
     try:
         asyncio.get_running_loop()
-        real_mode = 'asgi'
+        real_mode = "asgi"
     except RuntimeError:
-        real_mode = 'wsgi'
+        real_mode = "wsgi"
 
     if mode != real_mode:
-        warnings.warn('Inconsistent mode detected, check if you are using the right asgi / wsgi mode', category=RuntimeWarning)
+        warnings.warn(
+            "Inconsistent mode detected, check if you are using the right asgi / wsgi mode",
+            category=RuntimeWarning,
+        )
 
-    if real_mode == 'wsgi':
+    if real_mode == "wsgi":
         asyncio.run(func())
     else:
         check_event_loop()
@@ -185,7 +192,9 @@ def deprecated_warn(msg: str):
     warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
 
-def handle_httpx_client_exceptions(e: Exception, input_: Union[Dict[str, Any], None] = None):
+def handle_httpx_client_exceptions(
+    e: Exception, input_: Union[Dict[str, Any], None] = None
+):
     if isinstance(e, HTTPStatusError) and isinstance(e.response, Response):  # type: ignore
         res = e.response  # type: ignore
         log_debug_message("Error status: %s", res.status_code)  # type: ignore
@@ -220,3 +229,7 @@ def humanize_time(ms: int) -> str:
         time_str = f"{h} hour{suffix}"
 
     return time_str
+
+
+def default_user_context(request: BaseRequest) -> Dict[str, Any]:
+    return {"_default": {"request": request}}

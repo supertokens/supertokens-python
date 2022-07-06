@@ -43,10 +43,10 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.smsdelivery.types import \
-    SMSDeliveryInterface
-from supertokens_python.recipe.passwordless.smsdelivery.services.supertokens import \
-    SuperTokensSMSService as PlessSuperTokensService
+from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryInterface
+from supertokens_python.recipe.passwordless.smsdelivery.services.supertokens import (
+    SuperTokensSMSService as PlessSuperTokensService,
+)
 
 from ....types import SMSTemplateVars
 
@@ -57,7 +57,9 @@ class SuperTokensSMSService(SMSDeliveryInterface[SMSTemplateVars]):
     def __init__(self, api_key: str) -&gt; None:
         self.pless_supertokens_service = PlessSuperTokensService(api_key)
 
-    async def send_sms(self, template_vars: SMSTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+    async def send_sms(
+        self, template_vars: SMSTemplateVars, user_context: Dict[str, Any]
+    ) -&gt; None:
         await self.pless_supertokens_service.send_sms(template_vars, user_context)</code></pre>
 </details>
 </section>
@@ -87,7 +89,9 @@ inheritance.</p></div>
     def __init__(self, api_key: str) -&gt; None:
         self.pless_supertokens_service = PlessSuperTokensService(api_key)
 
-    async def send_sms(self, template_vars: SMSTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+    async def send_sms(
+        self, template_vars: SMSTemplateVars, user_context: Dict[str, Any]
+    ) -&gt; None:
         await self.pless_supertokens_service.send_sms(template_vars, user_context)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -114,7 +118,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_sms(self, template_vars: SMSTemplateVars, user_context: Dict[str, Any]) -&gt; None:
+<pre><code class="python">async def send_sms(
+    self, template_vars: SMSTemplateVars, user_context: Dict[str, Any]
+) -&gt; None:
     await self.pless_supertokens_service.send_sms(template_vars, user_context)</code></pre>
 </details>
 </dd>

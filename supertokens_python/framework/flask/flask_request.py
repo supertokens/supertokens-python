@@ -39,7 +39,7 @@ class FlaskRequest(BaseRequest):
 
     def method(self) -> str:
         if isinstance(self.request, dict):
-            temp: str = self.request['REQUEST_METHOD']
+            temp: str = self.request["REQUEST_METHOD"]
             return temp
         return self.request.method  # type: ignore
 
@@ -53,21 +53,24 @@ class FlaskRequest(BaseRequest):
 
     def get_session(self) -> Union[SessionContainer, None]:
         from flask import g
-        if hasattr(g, 'supertokens'):
+
+        if hasattr(g, "supertokens"):
             return g.supertokens
         return None
 
     def set_session(self, session: SessionContainer):
         from flask import g
+
         g.supertokens = session
 
     def set_session_as_none(self):
         from flask import g
+
         g.supertokens = None
 
     def get_path(self) -> str:
         if isinstance(self.request, dict):
-            temp: str = self.request['PATH_INFO']
+            temp: str = self.request["PATH_INFO"]
             return temp
         return self.request.base_url
 

@@ -58,12 +58,22 @@ class FlaskResponse(BaseResponse):
     def set_html_content(self, content: str):
         if not self.response_sent:
             self.response.data = content
-            self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+            self.set_header(&#34;Content-Type&#34;, &#34;text/html&#34;)
             self.response_sent = True
 
-    def set_cookie(self, key: str, value: str, expires: int, path: str = &#34;/&#34;,
-                   domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
+    def set_cookie(
+        self,
+        key: str,
+        value: str,
+        expires: int,
+        path: str = &#34;/&#34;,
+        domain: Union[str, None] = None,
+        secure: bool = False,
+        httponly: bool = False,
+        samesite: str = &#34;lax&#34;,
+    ):
         from werkzeug.http import dump_cookie
+
         if self.response is None:
             cookie = dump_cookie(
                 key,
@@ -73,12 +83,20 @@ class FlaskResponse(BaseResponse):
                 domain=domain,
                 secure=secure,
                 httponly=httponly,
-                samesite=samesite
+                samesite=samesite,
             )
             self.headers.append((&#34;Set-Cookie&#34;, cookie))
         else:
-            self.response.set_cookie(key, value=value, expires=expires / 1000,
-                                     path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
+            self.response.set_cookie(
+                key,
+                value=value,
+                expires=expires / 1000,
+                path=path,
+                domain=domain,
+                secure=secure,
+                httponly=httponly,
+                samesite=samesite,
+            )
 
     def set_header(self, key: str, value: str):
         if self.response is None:
@@ -114,7 +132,7 @@ class FlaskResponse(BaseResponse):
 
     def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:
-            self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
+            self.set_header(&#34;Content-Type&#34;, &#34;application/json; charset=utf-8&#34;)
             self.response.data = json.dumps(
                 content,
                 ensure_ascii=False,
@@ -158,12 +176,22 @@ inheritance.</p></div>
     def set_html_content(self, content: str):
         if not self.response_sent:
             self.response.data = content
-            self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+            self.set_header(&#34;Content-Type&#34;, &#34;text/html&#34;)
             self.response_sent = True
 
-    def set_cookie(self, key: str, value: str, expires: int, path: str = &#34;/&#34;,
-                   domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
+    def set_cookie(
+        self,
+        key: str,
+        value: str,
+        expires: int,
+        path: str = &#34;/&#34;,
+        domain: Union[str, None] = None,
+        secure: bool = False,
+        httponly: bool = False,
+        samesite: str = &#34;lax&#34;,
+    ):
         from werkzeug.http import dump_cookie
+
         if self.response is None:
             cookie = dump_cookie(
                 key,
@@ -173,12 +201,20 @@ inheritance.</p></div>
                 domain=domain,
                 secure=secure,
                 httponly=httponly,
-                samesite=samesite
+                samesite=samesite,
             )
             self.headers.append((&#34;Set-Cookie&#34;, cookie))
         else:
-            self.response.set_cookie(key, value=value, expires=expires / 1000,
-                                     path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)
+            self.response.set_cookie(
+                key,
+                value=value,
+                expires=expires / 1000,
+                path=path,
+                domain=domain,
+                secure=secure,
+                httponly=httponly,
+                samesite=samesite,
+            )
 
     def set_header(self, key: str, value: str):
         if self.response is None:
@@ -214,7 +250,7 @@ inheritance.</p></div>
 
     def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:
-            self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
+            self.set_header(&#34;Content-Type&#34;, &#34;application/json; charset=utf-8&#34;)
             self.response.data = json.dumps(
                 content,
                 ensure_ascii=False,
@@ -296,9 +332,19 @@ when testing to get the test client response data as JSON.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def set_cookie(self, key: str, value: str, expires: int, path: str = &#34;/&#34;,
-               domain: Union[str, None] = None, secure: bool = False, httponly: bool = False, samesite: str = &#34;lax&#34;):
+<pre><code class="python">def set_cookie(
+    self,
+    key: str,
+    value: str,
+    expires: int,
+    path: str = &#34;/&#34;,
+    domain: Union[str, None] = None,
+    secure: bool = False,
+    httponly: bool = False,
+    samesite: str = &#34;lax&#34;,
+):
     from werkzeug.http import dump_cookie
+
     if self.response is None:
         cookie = dump_cookie(
             key,
@@ -308,12 +354,20 @@ when testing to get the test client response data as JSON.</p>
             domain=domain,
             secure=secure,
             httponly=httponly,
-            samesite=samesite
+            samesite=samesite,
         )
         self.headers.append((&#34;Set-Cookie&#34;, cookie))
     else:
-        self.response.set_cookie(key, value=value, expires=expires / 1000,
-                                 path=path, domain=domain, secure=secure, httponly=httponly, samesite=samesite)</code></pre>
+        self.response.set_cookie(
+            key,
+            value=value,
+            expires=expires / 1000,
+            path=path,
+            domain=domain,
+            secure=secure,
+            httponly=httponly,
+            samesite=samesite,
+        )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.flask.flask_response.FlaskResponse.set_header"><code class="name flex">
@@ -352,7 +406,7 @@ when testing to get the test client response data as JSON.</p>
 <pre><code class="python">def set_html_content(self, content: str):
     if not self.response_sent:
         self.response.data = content
-        self.set_header(&#39;Content-Type&#39;, &#39;text/html&#39;)
+        self.set_header(&#34;Content-Type&#34;, &#34;text/html&#34;)
         self.response_sent = True</code></pre>
 </details>
 </dd>
@@ -367,7 +421,7 @@ when testing to get the test client response data as JSON.</p>
 </summary>
 <pre><code class="python">def set_json_content(self, content: Dict[str, Any]):
     if not self.response_sent:
-        self.set_header(&#39;Content-Type&#39;, &#39;application/json; charset=utf-8&#39;)
+        self.set_header(&#34;Content-Type&#34;, &#34;application/json; charset=utf-8&#34;)
         self.response.data = json.dumps(
             content,
             ensure_ascii=False,

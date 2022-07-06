@@ -15,13 +15,19 @@
 from typing import Generic, TypeVar
 
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryConfigWithService, EmailDeliveryInterface)
+    EmailDeliveryConfigWithService,
+    EmailDeliveryInterface,
+)
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 
 class EmailDeliveryIngredient(Generic[_T]):
     ingredient_interface_impl: EmailDeliveryInterface[_T]
 
     def __init__(self, config: EmailDeliveryConfigWithService[_T]) -> None:
-        self.ingredient_interface_impl = config.service if config.override is None else config.override(config.service)
+        self.ingredient_interface_impl = (
+            config.service
+            if config.override is None
+            else config.override(config.service)
+        )

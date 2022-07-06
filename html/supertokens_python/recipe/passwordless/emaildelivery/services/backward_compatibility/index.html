@@ -49,15 +49,18 @@ from typing import Any, Awaitable, Callable, Dict, Union
 from httpx import AsyncClient, HTTPStatusError
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
 from supertokens_python.logger import log_debug_message
-from supertokens_python.recipe.passwordless.types import \
-    PasswordlessLoginEmailTemplateVars
+from supertokens_python.recipe.passwordless.types import (
+    PasswordlessLoginEmailTemplateVars,
+)
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.utils import handle_httpx_client_exceptions
 
 
-def default_create_and_send_custom_email(app_info: AppInfo) -&gt; Callable[[PasswordlessLoginEmailTemplateVars, Dict[str, Any]], Awaitable[None]]:
+def default_create_and_send_custom_email(
+    app_info: AppInfo,
+) -&gt; Callable[[PasswordlessLoginEmailTemplateVars, Dict[str, Any]], Awaitable[None]]:
     async def func(input_: PasswordlessLoginEmailTemplateVars, _: Dict[str, Any]):
-        if (&#39;SUPERTOKENS_ENV&#39; in environ) and (environ[&#39;SUPERTOKENS_ENV&#39;] == &#39;testing&#39;):
+        if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
             return
         data = {
             &#34;email&#34;: input_.email,
@@ -65,12 +68,12 @@ def default_create_and_send_custom_email(app_info: AppInfo) -&gt; Callable[[Pass
             &#34;codeLifetime&#34;: input_.code_life_time,
         }
         if input_.url_with_link_code:
-            data[&#39;urlWithLinkCode&#39;] = input_.url_with_link_code
+            data[&#34;urlWithLinkCode&#34;] = input_.url_with_link_code
         if input_.user_input_code:
-            data[&#39;userInputCode&#39;] = input_.user_input_code
+            data[&#34;userInputCode&#34;] = input_.user_input_code
         try:
             async with AsyncClient() as client:
-                resp = await client.post(&#39;https://api.supertokens.io/0/st/auth/passwordless/login&#39;, json=data, headers={&#39;api-version&#39;: &#39;0&#39;})  # type: ignore
+                resp = await client.post(&#34;https://api.supertokens.io/0/st/auth/passwordless/login&#34;, json=data, headers={&#34;api-version&#34;: &#34;0&#34;})  # type: ignore
                 resp.raise_for_status()
                 log_debug_message(&#34;Passwordless login email sent to %s&#34;, input_.email)
         except Exception as e:
@@ -91,18 +94,33 @@ def default_create_and_send_custom_email(app_info: AppInfo) -&gt; Callable[[Pass
     return func
 
 
-class BackwardCompatibilityService(EmailDeliveryInterface[PasswordlessLoginEmailTemplateVars]):
-    def __init__(self,
-                 app_info: AppInfo,
-                 create_and_send_custom_email: Union[
-                     Callable[[PasswordlessLoginEmailTemplateVars, Dict[str, Any]], Awaitable[None]],
-                     None
-                 ] = None
-                 ) -&gt; None:
-        self.create_and_send_custom_email = create_and_send_custom_email if create_and_send_custom_email is not None else default_create_and_send_custom_email(app_info)
+class BackwardCompatibilityService(
+    EmailDeliveryInterface[PasswordlessLoginEmailTemplateVars]
+):
+    def __init__(
+        self,
+        app_info: AppInfo,
+        create_and_send_custom_email: Union[
+            Callable[
+                [PasswordlessLoginEmailTemplateVars, Dict[str, Any]], Awaitable[None]
+            ],
+            None,
+        ] = None,
+    ) -&gt; None:
+        self.create_and_send_custom_email = (
+            create_and_send_custom_email
+            if create_and_send_custom_email is not None
+            else default_create_and_send_custom_email(app_info)
+        )
 
-    async def send_email(self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
-        await self.create_and_send_custom_email(template_vars, user_context)  # Note: intentionally not using try-except (unlike other recipes)</code></pre>
+    async def send_email(
+        self,
+        template_vars: PasswordlessLoginEmailTemplateVars,
+        user_context: Dict[str, Any],
+    ) -&gt; None:
+        await self.create_and_send_custom_email(
+            template_vars, user_context
+        )  # Note: intentionally not using try-except (unlike other recipes)</code></pre>
 </details>
 </section>
 <section>
@@ -121,9 +139,11 @@ class BackwardCompatibilityService(EmailDeliveryInterface[PasswordlessLoginEmail
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def default_create_and_send_custom_email(app_info: AppInfo) -&gt; Callable[[PasswordlessLoginEmailTemplateVars, Dict[str, Any]], Awaitable[None]]:
+<pre><code class="python">def default_create_and_send_custom_email(
+    app_info: AppInfo,
+) -&gt; Callable[[PasswordlessLoginEmailTemplateVars, Dict[str, Any]], Awaitable[None]]:
     async def func(input_: PasswordlessLoginEmailTemplateVars, _: Dict[str, Any]):
-        if (&#39;SUPERTOKENS_ENV&#39; in environ) and (environ[&#39;SUPERTOKENS_ENV&#39;] == &#39;testing&#39;):
+        if (&#34;SUPERTOKENS_ENV&#34; in environ) and (environ[&#34;SUPERTOKENS_ENV&#34;] == &#34;testing&#34;):
             return
         data = {
             &#34;email&#34;: input_.email,
@@ -131,12 +151,12 @@ class BackwardCompatibilityService(EmailDeliveryInterface[PasswordlessLoginEmail
             &#34;codeLifetime&#34;: input_.code_life_time,
         }
         if input_.url_with_link_code:
-            data[&#39;urlWithLinkCode&#39;] = input_.url_with_link_code
+            data[&#34;urlWithLinkCode&#34;] = input_.url_with_link_code
         if input_.user_input_code:
-            data[&#39;userInputCode&#39;] = input_.user_input_code
+            data[&#34;userInputCode&#34;] = input_.user_input_code
         try:
             async with AsyncClient() as client:
-                resp = await client.post(&#39;https://api.supertokens.io/0/st/auth/passwordless/login&#39;, json=data, headers={&#39;api-version&#39;: &#39;0&#39;})  # type: ignore
+                resp = await client.post(&#34;https://api.supertokens.io/0/st/auth/passwordless/login&#34;, json=data, headers={&#34;api-version&#34;: &#34;0&#34;})  # type: ignore
                 resp.raise_for_status()
                 log_debug_message(&#34;Passwordless login email sent to %s&#34;, input_.email)
         except Exception as e:
@@ -173,18 +193,33 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class BackwardCompatibilityService(EmailDeliveryInterface[PasswordlessLoginEmailTemplateVars]):
-    def __init__(self,
-                 app_info: AppInfo,
-                 create_and_send_custom_email: Union[
-                     Callable[[PasswordlessLoginEmailTemplateVars, Dict[str, Any]], Awaitable[None]],
-                     None
-                 ] = None
-                 ) -&gt; None:
-        self.create_and_send_custom_email = create_and_send_custom_email if create_and_send_custom_email is not None else default_create_and_send_custom_email(app_info)
+<pre><code class="python">class BackwardCompatibilityService(
+    EmailDeliveryInterface[PasswordlessLoginEmailTemplateVars]
+):
+    def __init__(
+        self,
+        app_info: AppInfo,
+        create_and_send_custom_email: Union[
+            Callable[
+                [PasswordlessLoginEmailTemplateVars, Dict[str, Any]], Awaitable[None]
+            ],
+            None,
+        ] = None,
+    ) -&gt; None:
+        self.create_and_send_custom_email = (
+            create_and_send_custom_email
+            if create_and_send_custom_email is not None
+            else default_create_and_send_custom_email(app_info)
+        )
 
-    async def send_email(self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
-        await self.create_and_send_custom_email(template_vars, user_context)  # Note: intentionally not using try-except (unlike other recipes)</code></pre>
+    async def send_email(
+        self,
+        template_vars: PasswordlessLoginEmailTemplateVars,
+        user_context: Dict[str, Any],
+    ) -&gt; None:
+        await self.create_and_send_custom_email(
+            template_vars, user_context
+        )  # Note: intentionally not using try-except (unlike other recipes)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -203,8 +238,14 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_email(self, template_vars: PasswordlessLoginEmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
-    await self.create_and_send_custom_email(template_vars, user_context)  # Note: intentionally not using try-except (unlike other recipes)</code></pre>
+<pre><code class="python">async def send_email(
+    self,
+    template_vars: PasswordlessLoginEmailTemplateVars,
+    user_context: Dict[str, Any],
+) -&gt; None:
+    await self.create_and_send_custom_email(
+        template_vars, user_context
+    )  # Note: intentionally not using try-except (unlike other recipes)</code></pre>
 </details>
 </dd>
 </dl>

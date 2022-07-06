@@ -14,19 +14,21 @@
 
 from typing import Any, Dict
 
-from pytest import fixture, mark
+from pytest import fixture, mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
-from supertokens_python.recipe import (passwordless, session,
-                                       thirdpartypasswordless)
+from supertokens_python.recipe import passwordless, session, thirdpartypasswordless
 from supertokens_python.recipe.passwordless.interfaces import DeleteUserInfoOkResult
-from supertokens_python.recipe.passwordless.utils import \
-    ContactEmailOrPhoneConfig
+from supertokens_python.recipe.passwordless.utils import ContactEmailOrPhoneConfig
 from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
-    delete_email_for_passwordless_user, delete_phone_number_for_user,
-    get_user_by_id, get_user_by_phone_number, get_users_by_email,
-    update_passwordless_user)
+    delete_email_for_passwordless_user,
+    delete_phone_number_for_user,
+    get_user_by_id,
+    get_user_by_phone_number,
+    get_users_by_email,
+    update_passwordless_user,
+)
 from supertokens_python.utils import is_version_gte
 
 from fastapi import FastAPI
@@ -45,7 +47,7 @@ def teardown_function(_):
     clean_st()
 
 
-@fixture(scope='function')
+@fixture(scope="function")
 async def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
@@ -55,66 +57,72 @@ async def driver_config_client():
 
 @mark.asyncio
 async def test_tp_passworldless_delete_user_info(driver_config_client: TestClient):
-    DUMMY_CODE = 'DUMMY_CODE'
+    DUMMY_CODE = "DUMMY_CODE"
 
-    async def save_code_text(_param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]):
+    async def save_code_text(
+        _param: passwordless.CreateAndSendCustomTextMessageParameters, _: Dict[str, Any]
+    ):
         pass
 
-    async def save_code_email(_param: passwordless.CreateAndSendCustomEmailParameters, _: Dict[str, Any]):
+    async def save_code_email(
+        _param: passwordless.CreateAndSendCustomEmailParameters, _: Dict[str, Any]
+    ):
         pass
 
     async def get_custom_user_input_code(_input: Dict[str, Any]) -> str:
         return DUMMY_CODE
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="SuperTokens Demo",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
+        framework="fastapi",
         recipe_list=[
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOrPhoneConfig(
                     create_and_send_custom_text_message=save_code_text,
                     create_and_send_custom_email=save_code_email,
                 ),
-                flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
                 providers=[],
-                get_custom_user_input_code=get_custom_user_input_code
+                get_custom_user_input_code=get_custom_user_input_code,
             ),
-            session.init()
-        ]
+            session.init(),
+        ],
     )
     start_st()
 
     version = await Querier.get_instance().get_api_version()
-    if not is_version_gte(version, '2.11'):
+    if not is_version_gte(version, "2.11"):
         # If the version less than 2.11.0, passwordless OTP doesn't exist. So skip the test
-        return
+        skip()
 
     create_code_json = driver_config_client.post(
         url="/auth/signinup/code",
         json={
             "phoneNumber": "+919494949494",
-        }
+        },
     ).json()
 
     consume_code_json = driver_config_client.post(
         url="/auth/signinup/code/consume",
         json={
-            'preAuthSessionId': create_code_json['preAuthSessionId'],
-            'deviceId': create_code_json['deviceId'],
-            'userInputCode': DUMMY_CODE,
-        }
+            "preAuthSessionId": create_code_json["preAuthSessionId"],
+            "deviceId": create_code_json["deviceId"],
+            "userInputCode": DUMMY_CODE,
+        },
     ).json()
 
-    user_id = consume_code_json['user']['id']
+    user_id = consume_code_json["user"]["id"]
 
     # Update user email as well as phone number
-    await update_passwordless_user(user_id, email='foo@example.com', phone_number='+919494949494')
+    await update_passwordless_user(
+        user_id, email="foo@example.com", phone_number="+919494949494"
+    )
 
     # Check that deleting the user phone number works:
     response = await delete_phone_number_for_user(user_id)
@@ -127,7 +135,9 @@ async def test_tp_passworldless_delete_user_info(driver_config_client: TestClien
     assert user is not None and user.phone_number is None
 
     # Restore user email and phone number
-    await update_passwordless_user(user_id, email='foo@example.com', phone_number='+919494949494')
+    await update_passwordless_user(
+        user_id, email="foo@example.com", phone_number="+919494949494"
+    )
 
     # Check that deleting the user email works:
     response = await delete_email_for_passwordless_user(user_id)

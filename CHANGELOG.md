@@ -6,8 +6,78 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-### Documentation
+## [0.10.0] - 2022-07-04
 
+- Update tests to cover `resend_code` feature in `passwordless` and `thirdpartypasswordless` recipe.
+- Update usermetadata tests to ensure that utf8 chars are supported.
+- Mark tests as skipped if core version requirements are not met.
+- Use [black](https://github.com/psf/black) instead of `autopep8` to format code.
+- Add frontend integration tests for `django2x`
+
+### Bug fix:
+
+- Clears cookies when `revoke_session` is called using the session container, even if the session did not exist from before: https://github.com/supertokens/supertokens-node/issues/343
+
+### Breaking changes:
+- Change request arg type in session recipe functions from Any to BaseRequest.
+- Changes session function recipe interfaces to not throw an `UNAUTHORISED` error when the input is a session_handle: https://github.com/supertokens/backend/issues/83
+  - `get_session_information` now returns `None` if the session does not exist.
+  - `update_session_data` now returns `False` if the input `session_handle` does not exist.
+  - `update_access_token_payload` now returns `False` if the input `session_handle` does not exist.
+  - `regenerate_access_token` now returns `None` if the input access token's `session_handle` does not exist.
+  - The `session_class` functions have not changed in behaviour and still throw `UNAUTHORISED` error. This works cause the `session_class` works on the current session and not some other session.
+
+
+### Features:
+- Adds default `user_context` for API calls that contains the request object. It can be used in APIs / functions override like this:
+
+```python
+def apis_override_email_password(param: APIInterface):
+    og_sign_in_post = param.sign_in_post
+
+    async def sign_in_post(
+        form_fields: List[FormField],
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+    ):
+        req = user_context.get("_default", {}).get("request")
+        if req:
+            # do something with the request
+
+        return await og_sign_in_post(form_fields, api_options, user_context)
+
+    param.sign_in_post = sign_in_post
+    return param
+
+def functions_override_email_password(param: RecipeInterface):
+    og_sign_in = param.sign_in
+
+    async def sign_in(email: str, password: str, user_context: Dict[str, Any]):
+        req = user_context.get("_default", {}).get("request")
+        if req:
+            # do something with the request
+
+        return await og_sign_in(email, password, user_context)
+
+    param.sign_in = sign_in
+    return param
+
+init(
+    ...,
+    recipe_list=[
+        emailpassword.init(
+            override=emailpassword.InputOverrideConfig(
+                apis=apis_override_email_password,
+                functions=functions_override_email_password,
+            )
+        ),
+        session.init(),
+    ],
+)
+```
+
+
+### Documentation
 - Add more details in the `CONTRIBUTING.md` to make it beginner friendly.
 
 

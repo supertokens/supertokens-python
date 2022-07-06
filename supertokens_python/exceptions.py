@@ -17,7 +17,8 @@ from typing import Union
 
 
 def raise_general_exception(
-        msg: Union[str, Exception], previous: Union[None, Exception] = None):
+    msg: Union[str, Exception], previous: Union[None, Exception] = None
+):
     if isinstance(msg, SuperTokensError):
         raise msg
     if isinstance(msg, Exception):

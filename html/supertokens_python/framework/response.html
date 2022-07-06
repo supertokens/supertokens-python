@@ -45,7 +45,6 @@ from typing import Any, Dict, Union
 
 
 class BaseResponse(ABC):
-
     @abstractmethod
     def __init__(self, content: Dict[str, Any], status_code: int = 200):
         self.content = content
@@ -53,15 +52,18 @@ class BaseResponse(ABC):
         self.wrapper_used = True
 
     @abstractmethod
-    def set_cookie(self, key: str,
-                   value: str,
-                   #    max_age: Union[int, None] = None,
-                   expires: int,
-                   path: str = &#34;/&#34;,
-                   domain: Union[str, None] = None,
-                   secure: bool = False,
-                   httponly: bool = False,
-                   samesite: str = &#34;lax&#34;):
+    def set_cookie(
+        self,
+        key: str,
+        value: str,
+        #    max_age: Union[int, None] = None,
+        expires: int,
+        path: str = &#34;/&#34;,
+        domain: Union[str, None] = None,
+        secure: bool = False,
+        httponly: bool = False,
+        samesite: str = &#34;lax&#34;,
+    ):
         pass
 
     @abstractmethod
@@ -106,7 +108,6 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class BaseResponse(ABC):
-
     @abstractmethod
     def __init__(self, content: Dict[str, Any], status_code: int = 200):
         self.content = content
@@ -114,15 +115,18 @@ inheritance.</p></div>
         self.wrapper_used = True
 
     @abstractmethod
-    def set_cookie(self, key: str,
-                   value: str,
-                   #    max_age: Union[int, None] = None,
-                   expires: int,
-                   path: str = &#34;/&#34;,
-                   domain: Union[str, None] = None,
-                   secure: bool = False,
-                   httponly: bool = False,
-                   samesite: str = &#34;lax&#34;):
+    def set_cookie(
+        self,
+        key: str,
+        value: str,
+        #    max_age: Union[int, None] = None,
+        expires: int,
+        path: str = &#34;/&#34;,
+        domain: Union[str, None] = None,
+        secure: bool = False,
+        httponly: bool = False,
+        samesite: str = &#34;lax&#34;,
+    ):
         pass
 
     @abstractmethod
@@ -181,15 +185,18 @@ def get_header(self, key: str) -&gt; Union[str, None]:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def set_cookie(self, key: str,
-               value: str,
-               #    max_age: Union[int, None] = None,
-               expires: int,
-               path: str = &#34;/&#34;,
-               domain: Union[str, None] = None,
-               secure: bool = False,
-               httponly: bool = False,
-               samesite: str = &#34;lax&#34;):
+def set_cookie(
+    self,
+    key: str,
+    value: str,
+    #    max_age: Union[int, None] = None,
+    expires: int,
+    path: str = &#34;/&#34;,
+    domain: Union[str, None] = None,
+    secure: bool = False,
+    httponly: bool = False,
+    samesite: str = &#34;lax&#34;,
+):
     pass</code></pre>
 </details>
 </dd>

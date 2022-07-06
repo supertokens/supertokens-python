@@ -15,12 +15,18 @@ from typing import Any, Dict, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.jwt import asyncio
-from supertokens_python.recipe.jwt.interfaces import (CreateJwtOkResult,
-                                                      CreateJwtResultUnsupportedAlgorithm,
-                                                      GetJWKSResult)
+from supertokens_python.recipe.jwt.interfaces import (
+    CreateJwtOkResult,
+    CreateJwtResultUnsupportedAlgorithm,
+    GetJWKSResult,
+)
 
 
-def create_jwt(payload: Union[None, Dict[str, Any]] = None, validity_seconds: Union[None, int] = None, user_context: Union[Dict[str, Any], None] = None) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
+def create_jwt(
+    payload: Union[None, Dict[str, Any]] = None,
+    validity_seconds: Union[None, int] = None,
+    user_context: Union[Dict[str, Any], None] = None,
+) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
     return sync(asyncio.create_jwt(payload, validity_seconds, user_context))
 
 

@@ -49,8 +49,7 @@ from base64 import b64decode, b64encode
 from math import floor
 from re import fullmatch
 from time import time
-from typing import (TYPE_CHECKING, Any, Callable, Coroutine, Dict, List,
-                    TypeVar, Union)
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, TypeVar, Union
 
 from httpx import HTTPStatusError, Response
 
@@ -72,17 +71,21 @@ if TYPE_CHECKING:
 
 
 FRAMEWORKS = {
-    &#39;fastapi&#39;: FastapiFramework(),
-    &#39;flask&#39;: FlaskFramework(),
-    &#39;django&#39;: DjangoFramework(),
+    &#34;fastapi&#34;: FastapiFramework(),
+    &#34;flask&#34;: FlaskFramework(),
+    &#34;django&#34;: DjangoFramework(),
 }
 
 
 def is_an_ip_address(ip_address: str) -&gt; bool:
-    return fullmatch(
-        r&#39;^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[&#39;
-        r&#39;01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$&#39;,
-        ip_address) is not None
+    return (
+        fullmatch(
+            r&#34;^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[&#34;
+            r&#34;01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$&#34;,
+            ip_address,
+        )
+        is not None
+    )
 
 
 def normalise_http_method(method: str) -&gt; str:
@@ -97,8 +100,7 @@ def get_header(request: BaseRequest, key: str) -&gt; Union[str, None]:
     return request.get_header(key)
 
 
-def find_max_version(
-        versions_1: List[str], versions_2: List[str]) -&gt; Union[str, None]:
+def find_max_version(versions_1: List[str], versions_2: List[str]) -&gt; Union[str, None]:
     versions = list(set(versions_1) &amp; set(versions_2))
     if len(versions) == 0:
         return None
@@ -117,8 +119,8 @@ def is_version_gte(version: str, minimum_minor_version: str) -&gt; bool:
 
 
 def _get_max_version(v1: str, v2: str) -&gt; str:
-    v1_split = v1.split(&#39;.&#39;)
-    v2_split = v2.split(&#39;.&#39;)
+    v1_split = v1.split(&#34;.&#34;)
+    v2_split = v2.split(&#34;.&#34;)
     max_loop = min(len(v1_split), len(v2_split))
 
     for i in range(max_loop):
@@ -141,21 +143,22 @@ def is_5xx_error(status_code: int) -&gt; bool:
     return status_code // 100 == 5
 
 
-def send_non_200_response(message: str, status_code: int,
-                          response: BaseResponse) -&gt; BaseResponse:
+def send_non_200_response(
+    message: str, status_code: int, response: BaseResponse
+) -&gt; BaseResponse:
     if status_code &lt; 300:
-        raise_general_exception(
-            &#39;Calling sendNon200Response with status code &lt; 300&#39;)
-    log_debug_message(&#34;Sending response to client with status code: %s&#34;, str(status_code))
+        raise_general_exception(&#34;Calling sendNon200Response with status code &lt; 300&#34;)
+    log_debug_message(
+        &#34;Sending response to client with status code: %s&#34;, str(status_code)
+    )
     response.set_status_code(status_code)
-    response.set_json_content(content={
-        ERROR_MESSAGE_KEY: message
-    })
+    response.set_json_content(content={ERROR_MESSAGE_KEY: message})
     return response
 
 
 def send_200_response(
-        data_json: Dict[str, Any], response: BaseResponse) -&gt; BaseResponse:
+    data_json: Dict[str, Any], response: BaseResponse
+) -&gt; BaseResponse:
     log_debug_message(&#34;Sending response to client with status code: 200&#34;)
     response.set_json_content(data_json)
     response.set_status_code(200)
@@ -167,11 +170,11 @@ def get_timestamp_ms() -&gt; int:
 
 
 def utf_base64encode(s: str) -&gt; str:
-    return b64encode(s.encode(&#39;utf-8&#39;)).decode(&#39;utf-8&#39;)
+    return b64encode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)
 
 
 def utf_base64decode(s: str) -&gt; str:
-    return b64decode(s.encode(&#39;utf-8&#39;)).decode(&#39;utf-8&#39;)
+    return b64decode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)
 
 
 def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -&gt; List[_T]:
@@ -179,7 +182,8 @@ def get_filtered_list(func: Callable[[_T], bool], given_list: List[_T]) -&gt; Li
 
 
 def find_first_occurrence_in_list(
-        condition: Callable[[_T], bool], given_list: List[_T]) -&gt; Union[_T, None]:
+    condition: Callable[[_T], bool], given_list: List[_T]
+) -&gt; Union[_T, None]:
     for item in given_list:
         if condition(item):
             return item
@@ -190,14 +194,17 @@ def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
     real_mode = None
     try:
         asyncio.get_running_loop()
-        real_mode = &#39;asgi&#39;
+        real_mode = &#34;asgi&#34;
     except RuntimeError:
-        real_mode = &#39;wsgi&#39;
+        real_mode = &#34;wsgi&#34;
 
     if mode != real_mode:
-        warnings.warn(&#39;Inconsistent mode detected, check if you are using the right asgi / wsgi mode&#39;, category=RuntimeWarning)
+        warnings.warn(
+            &#34;Inconsistent mode detected, check if you are using the right asgi / wsgi mode&#34;,
+            category=RuntimeWarning,
+        )
 
-    if real_mode == &#39;wsgi&#39;:
+    if real_mode == &#34;wsgi&#34;:
         asyncio.run(func())
     else:
         check_event_loop()
@@ -213,7 +220,9 @@ def deprecated_warn(msg: str):
     warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
 
-def handle_httpx_client_exceptions(e: Exception, input_: Union[Dict[str, Any], None] = None):
+def handle_httpx_client_exceptions(
+    e: Exception, input_: Union[Dict[str, Any], None] = None
+):
     if isinstance(e, HTTPStatusError) and isinstance(e.response, Response):  # type: ignore
         res = e.response  # type: ignore
         log_debug_message(&#34;Error status: %s&#34;, res.status_code)  # type: ignore
@@ -247,7 +256,11 @@ def humanize_time(ms: int) -&gt; str:
             h = int(h)
         time_str = f&#34;{h} hour{suffix}&#34;
 
-    return time_str</code></pre>
+    return time_str
+
+
+def default_user_context(request: BaseRequest) -&gt; Dict[str, Any]:
+    return {&#34;_default&#34;: {&#34;request&#34;: request}}</code></pre>
 </details>
 </section>
 <section>
@@ -257,6 +270,19 @@ def humanize_time(ms: int) -&gt; str:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="supertokens_python.utils.default_user_context"><code class="name flex">
+<span>def <span class="ident">default_user_context</span></span>(<span>request: BaseRequest) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def default_user_context(request: BaseRequest) -&gt; Dict[str, Any]:
+    return {&#34;_default&#34;: {&#34;request&#34;: request}}</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.utils.deprecated_warn"><code class="name flex">
 <span>def <span class="ident">deprecated_warn</span></span>(<span>msg: str)</span>
 </code></dt>
@@ -283,14 +309,17 @@ def humanize_time(ms: int) -&gt; str:
     real_mode = None
     try:
         asyncio.get_running_loop()
-        real_mode = &#39;asgi&#39;
+        real_mode = &#34;asgi&#34;
     except RuntimeError:
-        real_mode = &#39;wsgi&#39;
+        real_mode = &#34;wsgi&#34;
 
     if mode != real_mode:
-        warnings.warn(&#39;Inconsistent mode detected, check if you are using the right asgi / wsgi mode&#39;, category=RuntimeWarning)
+        warnings.warn(
+            &#34;Inconsistent mode detected, check if you are using the right asgi / wsgi mode&#34;,
+            category=RuntimeWarning,
+        )
 
-    if real_mode == &#39;wsgi&#39;:
+    if real_mode == &#34;wsgi&#34;:
         asyncio.run(func())
     else:
         check_event_loop()
@@ -308,7 +337,8 @@ def humanize_time(ms: int) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def find_first_occurrence_in_list(
-        condition: Callable[[_T], bool], given_list: List[_T]) -&gt; Union[_T, None]:
+    condition: Callable[[_T], bool], given_list: List[_T]
+) -&gt; Union[_T, None]:
     for item in given_list:
         if condition(item):
             return item
@@ -324,8 +354,7 @@ def humanize_time(ms: int) -&gt; str:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def find_max_version(
-        versions_1: List[str], versions_2: List[str]) -&gt; Union[str, None]:
+<pre><code class="python">def find_max_version(versions_1: List[str], versions_2: List[str]) -&gt; Union[str, None]:
     versions = list(set(versions_1) &amp; set(versions_2))
     if len(versions) == 0:
         return None
@@ -412,7 +441,9 @@ def humanize_time(ms: int) -&gt; str:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def handle_httpx_client_exceptions(e: Exception, input_: Union[Dict[str, Any], None] = None):
+<pre><code class="python">def handle_httpx_client_exceptions(
+    e: Exception, input_: Union[Dict[str, Any], None] = None
+):
     if isinstance(e, HTTPStatusError) and isinstance(e.response, Response):  # type: ignore
         res = e.response  # type: ignore
         log_debug_message(&#34;Error status: %s&#34;, res.status_code)  # type: ignore
@@ -494,10 +525,14 @@ def humanize_time(ms: int) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def is_an_ip_address(ip_address: str) -&gt; bool:
-    return fullmatch(
-        r&#39;^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[&#39;
-        r&#39;01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$&#39;,
-        ip_address) is not None</code></pre>
+    return (
+        fullmatch(
+            r&#34;^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[&#34;
+            r&#34;01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$&#34;,
+            ip_address,
+        )
+        is not None
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.is_version_gte"><code class="name flex">
@@ -537,7 +572,8 @@ def humanize_time(ms: int) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def send_200_response(
-        data_json: Dict[str, Any], response: BaseResponse) -&gt; BaseResponse:
+    data_json: Dict[str, Any], response: BaseResponse
+) -&gt; BaseResponse:
     log_debug_message(&#34;Sending response to client with status code: 200&#34;)
     response.set_json_content(data_json)
     response.set_status_code(200)
@@ -553,16 +589,16 @@ def humanize_time(ms: int) -&gt; str:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def send_non_200_response(message: str, status_code: int,
-                          response: BaseResponse) -&gt; BaseResponse:
+<pre><code class="python">def send_non_200_response(
+    message: str, status_code: int, response: BaseResponse
+) -&gt; BaseResponse:
     if status_code &lt; 300:
-        raise_general_exception(
-            &#39;Calling sendNon200Response with status code &lt; 300&#39;)
-    log_debug_message(&#34;Sending response to client with status code: %s&#34;, str(status_code))
+        raise_general_exception(&#34;Calling sendNon200Response with status code &lt; 300&#34;)
+    log_debug_message(
+        &#34;Sending response to client with status code: %s&#34;, str(status_code)
+    )
     response.set_status_code(status_code)
-    response.set_json_content(content={
-        ERROR_MESSAGE_KEY: message
-    })
+    response.set_json_content(content={ERROR_MESSAGE_KEY: message})
     return response</code></pre>
 </details>
 </dd>
@@ -576,7 +612,7 @@ def humanize_time(ms: int) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def utf_base64decode(s: str) -&gt; str:
-    return b64decode(s.encode(&#39;utf-8&#39;)).decode(&#39;utf-8&#39;)</code></pre>
+    return b64decode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.utf_base64encode"><code class="name flex">
@@ -589,7 +625,7 @@ def humanize_time(ms: int) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def utf_base64encode(s: str) -&gt; str:
-    return b64encode(s.encode(&#39;utf-8&#39;)).decode(&#39;utf-8&#39;)</code></pre>
+    return b64encode(s.encode(&#34;utf-8&#34;)).decode(&#34;utf-8&#34;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -610,6 +646,7 @@ def humanize_time(ms: int) -&gt; str:
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="supertokens_python.utils.default_user_context" href="#supertokens_python.utils.default_user_context">default_user_context</a></code></li>
 <li><code><a title="supertokens_python.utils.deprecated_warn" href="#supertokens_python.utils.deprecated_warn">deprecated_warn</a></code></li>
 <li><code><a title="supertokens_python.utils.execute_async" href="#supertokens_python.utils.execute_async">execute_async</a></code></li>
 <li><code><a title="supertokens_python.utils.find_first_occurrence_in_list" href="#supertokens_python.utils.find_first_occurrence_in_list">find_first_occurrence_in_list</a></code></li>

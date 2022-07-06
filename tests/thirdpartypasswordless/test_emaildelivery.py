@@ -24,33 +24,53 @@ from pytest import fixture, mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailContent, EmailDeliveryConfig, EmailDeliveryInterface,
-    SMTPServiceInterface, SMTPSettings, SMTPSettingsFrom)
+    EmailContent,
+    EmailDeliveryConfig,
+    EmailDeliveryInterface,
+    SMTPServiceInterface,
+    SMTPSettings,
+    SMTPSettingsFrom,
+)
 from supertokens_python.querier import Querier
-from supertokens_python.recipe import (passwordless, session,
-                                       thirdpartypasswordless)
-from supertokens_python.recipe.emailverification.interfaces import \
-    CreateEmailVerificationTokenEmailAlreadyVerifiedError
+from supertokens_python.recipe import passwordless, session, thirdpartypasswordless
+from supertokens_python.recipe.emailverification.interfaces import (
+    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
+)
 from supertokens_python.recipe.passwordless import ContactEmailOnlyConfig
-from supertokens_python.recipe.passwordless.types import \
-    PasswordlessLoginEmailTemplateVars
+from supertokens_python.recipe.passwordless.types import (
+    PasswordlessLoginEmailTemplateVars,
+)
 from supertokens_python.recipe.session import SessionRecipe
-from supertokens_python.recipe.session.recipe_implementation import \
-    RecipeImplementation as SessionRecipeImplementation
-from supertokens_python.recipe.session.session_functions import \
-    create_new_session
+from supertokens_python.recipe.session.recipe_implementation import (
+    RecipeImplementation as SessionRecipeImplementation,
+)
+from supertokens_python.recipe.session.session_functions import create_new_session
 from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
-    create_email_verification_token, passwordlessSigninup,
-    thirdparty_sign_in_up)
-from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp import \
-    SMTPService
-from supertokens_python.recipe.thirdpartypasswordless.interfaces import \
-    ThirdPartySignInUpOkResult
+    create_email_verification_token,
+    passwordlessSigninup,
+    thirdparty_sign_in_up,
+)
+from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp import (
+    SMTPService,
+)
+from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
+    ThirdPartySignInUpOkResult,
+)
 from supertokens_python.recipe.thirdpartypasswordless.types import (
-    EmailTemplateVars, User, VerificationEmailTemplateVars)
+    EmailTemplateVars,
+    User,
+    VerificationEmailTemplateVars,
+)
 from supertokens_python.utils import is_version_gte
-from tests.utils import (clean_st, email_verify_token_request, reset, setup_st,
-                         sign_in_up_request, start_st)
+from tests.utils import (
+    clean_st,
+    email_verify_token_request,
+    reset,
+    setup_st,
+    sign_in_up_request,
+    sign_in_up_request_code_resend,
+    start_st,
+)
 
 respx_mock = respx.MockRouter
 
@@ -66,45 +86,52 @@ def teardown_function(_):
     clean_st()
 
 
-@fixture(scope='function')
+@fixture(scope="function")
 async def driver_config_client():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
-    @app.get('/login')
+    @app.get("/login")
     async def login(_request: Request):  # type: ignore
-        user_id = 'userId'
+        user_id = "userId"
         # await create_new_session(request, user_id, {}, {})
-        return {'userId': user_id}
+        return {"userId": user_id}
 
     return TestClient(app)
 
 
 @mark.asyncio
-async def test_email_verify_default_backward_compatibility(driver_config_client: TestClient):
+async def test_email_verify_default_backward_compatibility(
+    driver_config_client: TestClient,
+):
     "Email verify: test default backward compatibility api being called"
     app_name = ""
     email = ""
     email_verify_url = ""
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=ContactEmailOnlyConfig(),
-            flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
-            providers=[],
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=ContactEmailOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                providers=[],
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
-    resp = await thirdparty_sign_in_up("supertokens", "test-user-id", "test@example.com", False)
+    resp = await thirdparty_sign_in_up(
+        "supertokens", "test-user-id", "test@example.com", False
+    )
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
@@ -130,9 +157,9 @@ async def test_email_verify_default_backward_compatibility(driver_config_client:
         ).mock(side_effect=api_side_effect)
         resp = email_verify_token_request(
             driver_config_client,
-            response['accessToken']['token'],
-            response['idRefreshToken']['token'],
-            response.get('antiCsrf', ""),
+            response["accessToken"]["token"],
+            response["idRefreshToken"]["token"],
+            response.get("antiCsrf", ""),
             user_id,
             True,
         )
@@ -151,32 +178,39 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     email = ""
     email_verify_url = ""
 
-    async def create_and_send_custom_email(input_: User, email_verification_link: str, _: Dict[str, Any]):
+    async def create_and_send_custom_email(
+        input_: User, email_verification_link: str, _: Dict[str, Any]
+    ):
         nonlocal email, email_verify_url
         email = input_.email
         email_verify_url = email_verification_link
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=ContactEmailOnlyConfig(),
-            flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
-            providers=[],
-            email_verification_feature=thirdpartypasswordless.InputEmailVerificationConfig(
-                create_and_send_custom_email=create_and_send_custom_email,
-            )
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=ContactEmailOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                providers=[],
+                email_verification_feature=thirdpartypasswordless.InputEmailVerificationConfig(
+                    create_and_send_custom_email=create_and_send_custom_email,
+                ),
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
-    resp = await thirdparty_sign_in_up("supertokens", "test-user-id", "test@example.com", False)
+    resp = await thirdparty_sign_in_up(
+        "supertokens", "test-user-id", "test@example.com", False
+    )
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
@@ -187,9 +221,9 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
 
     resp = email_verify_token_request(
         driver_config_client,
-        response['accessToken']['token'],
-        response['idRefreshToken']['token'],
-        response.get('antiCsrf', ""),
+        response["accessToken"]["token"],
+        response["idRefreshToken"]["token"],
+        response.get("antiCsrf", ""),
         user_id,
         True,
     )
@@ -210,7 +244,9 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
     def email_delivery_override(oi: EmailDeliveryInterface[EmailTemplateVars]):
         oi_send_email = oi.send_email
 
-        async def send_email(template_vars: EmailTemplateVars, user_context: Dict[str, Any]):
+        async def send_email(
+            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        ):
             nonlocal email, email_verify_url
             assert isinstance(template_vars, VerificationEmailTemplateVars)
             email = template_vars.user.email
@@ -221,27 +257,32 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=ContactEmailOnlyConfig(),
-            flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
-            providers=[],
-            email_delivery=EmailDeliveryConfig(
-                service=None,
-                override=email_delivery_override,
-            )
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=ContactEmailOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                providers=[],
+                email_delivery=EmailDeliveryConfig(
+                    service=None,
+                    override=email_delivery_override,
+                ),
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
-    resp = await thirdparty_sign_in_up("supertokens", "test-user-id", "test@example.com", False)
+    resp = await thirdparty_sign_in_up(
+        "supertokens", "test-user-id", "test@example.com", False
+    )
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
@@ -265,9 +306,9 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
         ).mock(side_effect=api_side_effect)
         resp = email_verify_token_request(
             driver_config_client,
-            response['accessToken']['token'],
-            response['idRefreshToken']['token'],
-            response.get('antiCsrf', ""),
+            response["accessToken"]["token"],
+            response["idRefreshToken"]["token"],
+            response.get("antiCsrf", ""),
             user_id,
             True,
         )
@@ -285,10 +326,16 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     "Email verify: test smtp service"
     email = ""
     email_verify_url = ""
-    get_content_called, send_raw_email_called, outer_override_called = False, False, False
+    get_content_called, send_raw_email_called, outer_override_called = (
+        False,
+        False,
+        False,
+    )
 
     def smtp_service_override(oi: SMTPServiceInterface[EmailTemplateVars]):
-        async def send_raw_email_override(content: EmailContent, _user_context: Dict[str, Any]):
+        async def send_raw_email_override(
+            content: EmailContent, _user_context: Dict[str, Any]
+        ):
             nonlocal send_raw_email_called, email
             send_raw_email_called = True
 
@@ -298,8 +345,9 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
             email = content.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(template_vars: EmailTemplateVars,
-                                       _user_context: Dict[str, Any]) -> EmailContent:
+        async def get_content_override(
+            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
+        ) -> EmailContent:
             nonlocal get_content_called, email_verify_url
             get_content_called = True
 
@@ -329,12 +377,14 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
         override=smtp_service_override,
     )
 
-    def email_delivery_override(oi: EmailDeliveryInterface[EmailTemplateVars]) -> \
-            EmailDeliveryInterface[EmailTemplateVars]:
+    def email_delivery_override(
+        oi: EmailDeliveryInterface[EmailTemplateVars],
+    ) -> EmailDeliveryInterface[EmailTemplateVars]:
         oi_send_email = oi.send_email
 
-        async def send_email_override(template_vars: EmailTemplateVars,
-                                      user_context: Dict[str, Any]):
+        async def send_email_override(
+            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        ):
             nonlocal outer_override_called
             outer_override_called = True
             await oi_send_email(template_vars, user_context)
@@ -343,27 +393,32 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=ContactEmailOnlyConfig(),
-            flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
-            providers=[],
-            email_delivery=EmailDeliveryConfig(
-                service=email_delivery_service,
-                override=email_delivery_override,
-            )
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=ContactEmailOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                providers=[],
+                email_delivery=EmailDeliveryConfig(
+                    service=email_delivery_service,
+                    override=email_delivery_override,
+                ),
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
-    resp = await thirdparty_sign_in_up("supertokens", "test-user-id", "test@example.com", False)
+    resp = await thirdparty_sign_in_up(
+        "supertokens", "test-user-id", "test@example.com", False
+    )
 
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
@@ -375,9 +430,9 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
 
     resp = email_verify_token_request(
         driver_config_client,
-        response['accessToken']['token'],
-        response['idRefreshToken']['token'],
-        response.get('antiCsrf', ""),
+        response["accessToken"]["token"],
+        response["idRefreshToken"]["token"],
+        response.get("antiCsrf", ""),
         user_id,
         True,
     )
@@ -392,15 +447,22 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
 @mark.asyncio
 async def test_email_verify_for_pless_user_no_callback():
     "Email verify: test pless user shouldn't trigger callback"
-    get_content_called, send_raw_email_called, outer_override_called = False, False, False
+    get_content_called, send_raw_email_called, outer_override_called = (
+        False,
+        False,
+        False,
+    )
 
     def smtp_service_override(oi: SMTPServiceInterface[EmailTemplateVars]):
-        async def send_raw_email_override(_content: EmailContent, _user_context: Dict[str, Any]):
+        async def send_raw_email_override(
+            _content: EmailContent, _user_context: Dict[str, Any]
+        ):
             nonlocal send_raw_email_called
             send_raw_email_called = True
 
-        async def get_content_override(template_vars: EmailTemplateVars,
-                                       _user_context: Dict[str, Any]) -> EmailContent:
+        async def get_content_override(
+            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
+        ) -> EmailContent:
             nonlocal get_content_called
             get_content_called = True
 
@@ -429,12 +491,14 @@ async def test_email_verify_for_pless_user_no_callback():
         override=smtp_service_override,
     )
 
-    def email_delivery_override(oi: EmailDeliveryInterface[EmailTemplateVars]) -> \
-            EmailDeliveryInterface[EmailTemplateVars]:
+    def email_delivery_override(
+        oi: EmailDeliveryInterface[EmailTemplateVars],
+    ) -> EmailDeliveryInterface[EmailTemplateVars]:
         oi_send_email = oi.send_email
 
-        async def send_email_override(template_vars: EmailTemplateVars,
-                                      user_context: Dict[str, Any]):
+        async def send_email_override(
+            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        ):
             nonlocal outer_override_called
             outer_override_called = True
             await oi_send_email(template_vars, user_context)
@@ -443,23 +507,26 @@ async def test_email_verify_for_pless_user_no_callback():
         return oi
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=ContactEmailOnlyConfig(),
-            flow_type='USER_INPUT_CODE_AND_MAGIC_LINK',
-            providers=[],
-            email_delivery=EmailDeliveryConfig(
-                service=email_delivery_service,
-                override=email_delivery_override,
-            )
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=ContactEmailOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                providers=[],
+                email_delivery=EmailDeliveryConfig(
+                    service=email_delivery_service,
+                    override=email_delivery_override,
+                ),
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -468,35 +535,47 @@ async def test_email_verify_for_pless_user_no_callback():
         return
 
     pless_response = await passwordlessSigninup("test@example.com", None, {})
-    create_token = await create_email_verification_token(pless_response.user.user_id, {})
+    create_token = await create_email_verification_token(
+        pless_response.user.user_id, {}
+    )
 
-    assert isinstance(create_token, CreateEmailVerificationTokenEmailAlreadyVerifiedError)
+    assert isinstance(
+        create_token, CreateEmailVerificationTokenEmailAlreadyVerifiedError
+    )
 
-    assert all([outer_override_called, get_content_called, send_raw_email_called]) is False
+    assert (
+        all([outer_override_called, get_content_called, send_raw_email_called]) is False
+    )
 
 
 @mark.asyncio
-async def test_pless_login_default_backward_compatibility(driver_config_client: TestClient):
+async def test_pless_login_default_backward_compatibility(
+    driver_config_client: TestClient,
+):
     "Passwordless login: test default backward compatibility api being called"
     app_name = ""
     email = ""
     code_lifetime = 0
     url_with_link_code = ""
     user_input_code = ""
+    resend_called = False
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=passwordless.ContactEmailOnlyConfig(),
-            flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=passwordless.ContactEmailOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -518,21 +597,52 @@ async def test_pless_login_default_backward_compatibility(driver_config_client: 
 
     with respx_mock(assert_all_mocked=False) as mocker:
         mocker.route(host="localhost").pass_through()
-        mocked_route = mocker.post("https://api.supertokens.io/0/st/auth/passwordless/login").mock(
-            side_effect=api_side_effect)
+        mocked_route = mocker.post(
+            "https://api.supertokens.io/0/st/auth/passwordless/login"
+        ).mock(side_effect=api_side_effect)
         resp = sign_in_up_request(driver_config_client, "test@example.com", True)
+        body = resp.json()
+
+        assert resp.status_code == 200
+        assert mocked_route.called
+
+    def code_resend_api_side_effect(request: httpx.Request):
+        nonlocal app_name, email, code_lifetime, url_with_link_code, user_input_code, resend_called
+        body = json.loads(request.content)
+
+        assert body["userInputCode"] != user_input_code  # Resend generates a new code
+
+        app_name = body["appName"]
+        email = body["email"]
+        code_lifetime = body["codeLifetime"]
+        url_with_link_code = body["urlWithLinkCode"]
+        user_input_code = body["userInputCode"]
+        resend_called = True
+
+        return httpx.Response(200, json={})
+
+    with respx_mock(assert_all_mocked=False) as mocker:
+        mocker.route(host="localhost").pass_through()
+        mocked_route = mocker.post(
+            "https://api.supertokens.io/0/st/auth/passwordless/login"
+        ).mock(side_effect=code_resend_api_side_effect)
+        resp = sign_in_up_request_code_resend(
+            driver_config_client, body["deviceId"], body["preAuthSessionId"], True
+        )
 
         assert resp.status_code == 200
         assert mocked_route.called
 
         assert app_name == "ST"
         assert email == "test@example.com"
-        assert all([url_with_link_code, user_input_code, code_lifetime])
+        assert all([url_with_link_code, user_input_code, code_lifetime, resend_called])
         assert code_lifetime > 0
 
 
 @mark.asyncio
-async def test_pless_login_default_backward_compatibility_no_suppress_error(driver_config_client: TestClient):
+async def test_pless_login_default_backward_compatibility_no_suppress_error(
+    driver_config_client: TestClient,
+):
     "Passwordless login: test default backward compatibility api being called, error message sent back to user"
     app_name = ""
     email = ""
@@ -541,18 +651,21 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(driv
     user_input_code = ""
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=passwordless.ContactEmailOnlyConfig(),
-            flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-        ), session.init()]
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=passwordless.ContactEmailOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+            ),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -574,7 +687,9 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(driv
 
     with respx_mock(assert_all_mocked=False) as mocker:
         mocker.route(host="localhost").pass_through()
-        mocked_route = mocker.post("https://api.supertokens.io/0/st/auth/passwordless/login").mock(side_effect=api_side_effect)
+        mocked_route = mocker.post(
+            "https://api.supertokens.io/0/st/auth/passwordless/login"
+        ).mock(side_effect=api_side_effect)
         try:
             sign_in_up_request(driver_config_client, "test@example.com", True)
         except Exception as e:
@@ -595,7 +710,9 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
     url_with_link_code = ""
     user_input_code = ""
 
-    async def create_and_send_custom_email(input_: EmailTemplateVars, _: Dict[str, Any]):
+    async def create_and_send_custom_email(
+        input_: EmailTemplateVars, _: Dict[str, Any]
+    ):
         nonlocal email, code_lifetime, url_with_link_code, user_input_code
         assert isinstance(input_, PasswordlessLoginEmailTemplateVars)
         email = input_.email
@@ -604,20 +721,23 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
         user_input_code = input_.user_input_code
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=passwordless.ContactEmailOnlyConfig(
-                create_and_send_custom_email=create_and_send_custom_email,
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=passwordless.ContactEmailOnlyConfig(
+                    create_and_send_custom_email=create_and_send_custom_email,
+                ),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             ),
-            flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-        ), session.init()]
+            session.init(),
+        ],
     )
     start_st()
 
@@ -626,6 +746,23 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
         return
 
     resp = sign_in_up_request(driver_config_client, "test@example.com", True)
+    body = resp.json()
+
+    assert resp.status_code == 200
+
+    assert email == "test@example.com"
+    assert all([url_with_link_code, user_input_code, code_lifetime])
+    assert code_lifetime > 0
+
+    # Resend
+    email = ""
+    code_lifetime = 0
+    url_with_link_code = ""
+    user_input_code = ""
+
+    resp = sign_in_up_request_code_resend(
+        driver_config_client, body["deviceId"], body["preAuthSessionId"]
+    )
 
     assert resp.status_code == 200
 
@@ -643,11 +780,14 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
     url_with_link_code = ""
     user_input_code = ""
     app_name = ""
+    resend_called = False
 
     def email_delivery_override(oi: EmailDeliveryInterface[EmailTemplateVars]):
         oi_send_email = oi.send_email
 
-        async def send_email(template_vars: EmailTemplateVars, user_context: Dict[str, Any]):
+        async def send_email(
+            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        ):
             nonlocal email, url_with_link_code, user_input_code, code_lifetime
             assert isinstance(template_vars, PasswordlessLoginEmailTemplateVars)
             email = template_vars.email
@@ -661,22 +801,25 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=passwordless.ContactEmailOnlyConfig(),
-            flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-            email_delivery=EmailDeliveryConfig(
-                service=None,
-                override=email_delivery_override,
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=passwordless.ContactEmailOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                email_delivery=EmailDeliveryConfig(
+                    service=None,
+                    override=email_delivery_override,
+                ),
             ),
-        ), session.init()]
+            session.init(),
+        ],
     )
     start_st()
 
@@ -693,16 +836,43 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
 
     with respx_mock(assert_all_mocked=False) as mocker:
         mocker.route(host="localhost").pass_through()
-        mocked_route = mocker.post("https://api.supertokens.io/0/st/auth/passwordless/login").mock(
-            side_effect=api_side_effect)
+        mocked_route = mocker.post(
+            "https://api.supertokens.io/0/st/auth/passwordless/login"
+        ).mock(side_effect=api_side_effect)
         resp = sign_in_up_request(driver_config_client, "test@example.com", True)
+        body = resp.json()
+
+        assert resp.status_code == 200
+        assert mocked_route.called
+
+    def code_resend_api_side_effect(request: httpx.Request):
+        nonlocal app_name, email, code_lifetime, url_with_link_code, user_input_code, resend_called
+        body = json.loads(request.content)
+
+        app_name = body["appName"]
+        email = body["email"]
+        code_lifetime = body["codeLifetime"]
+        url_with_link_code = body["urlWithLinkCode"]
+        user_input_code = body["userInputCode"]
+        resend_called = True
+
+        return httpx.Response(200, json={})
+
+    with respx_mock(assert_all_mocked=False) as mocker:
+        mocker.route(host="localhost").pass_through()
+        mocked_route = mocker.post(
+            "https://api.supertokens.io/0/st/auth/passwordless/login"
+        ).mock(side_effect=code_resend_api_side_effect)
+        resp = sign_in_up_request_code_resend(
+            driver_config_client, body["deviceId"], body["preAuthSessionId"], True
+        )
 
         assert resp.status_code == 200
         assert mocked_route.called
 
         assert email == "test@example.com"
         assert app_name == "ST"
-        assert all([url_with_link_code, user_input_code, code_lifetime])
+        assert all([url_with_link_code, user_input_code, code_lifetime, resend_called])
         assert code_lifetime > 0
 
 
@@ -712,10 +882,16 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
     email = ""
     code_lifetime = 0
     user_input_code = ""
-    get_content_called, send_raw_email_called, outer_override_called = False, False, False
+    get_content_called, send_raw_email_called, outer_override_called = (
+        False,
+        False,
+        False,
+    )
 
     def smtp_service_override(oi: SMTPServiceInterface[EmailTemplateVars]):
-        async def send_raw_email_override(content: EmailContent, _user_context: Dict[str, Any]):
+        async def send_raw_email_override(
+            content: EmailContent, _user_context: Dict[str, Any]
+        ):
             nonlocal send_raw_email_called, email, user_input_code
             send_raw_email_called = True
 
@@ -725,8 +901,9 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
             email = content.to_email
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
-        async def get_content_override(template_vars: EmailTemplateVars,
-                                       _user_context: Dict[str, Any]) -> EmailContent:
+        async def get_content_override(
+            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
+        ) -> EmailContent:
             nonlocal get_content_called, user_input_code, code_lifetime
             get_content_called = True
 
@@ -757,12 +934,14 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         override=smtp_service_override,
     )
 
-    def email_delivery_override(oi: EmailDeliveryInterface[EmailTemplateVars]) -> \
-            EmailDeliveryInterface[EmailTemplateVars]:
+    def email_delivery_override(
+        oi: EmailDeliveryInterface[EmailTemplateVars],
+    ) -> EmailDeliveryInterface[EmailTemplateVars]:
         oi_send_email = oi.send_email
 
-        async def send_email_override(template_vars: EmailTemplateVars,
-                                      user_context: Dict[str, Any]):
+        async def send_email_override(
+            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        ):
             nonlocal outer_override_called
             outer_override_called = True
             await oi_send_email(template_vars, user_context)
@@ -771,22 +950,25 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         return oi
 
     init(
-        supertokens_config=SupertokensConfig('http://localhost:3567'),
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
         app_info=InputAppInfo(
             app_name="ST",
             api_domain="http://api.supertokens.io",
             website_domain="http://supertokens.io",
-            api_base_path="/auth"
+            api_base_path="/auth",
         ),
-        framework='fastapi',
-        recipe_list=[thirdpartypasswordless.init(
-            contact_config=passwordless.ContactEmailOnlyConfig(),
-            flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-            email_delivery=EmailDeliveryConfig(
-                service=email_delivery_service,
-                override=email_delivery_override,
+        framework="fastapi",
+        recipe_list=[
+            thirdpartypasswordless.init(
+                contact_config=passwordless.ContactEmailOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                email_delivery=EmailDeliveryConfig(
+                    service=email_delivery_service,
+                    override=email_delivery_override,
+                ),
             ),
-        ), session.init()]
+            session.init(),
+        ],
     )
     start_st()
 
@@ -795,6 +977,27 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
         return
 
     resp = sign_in_up_request(driver_config_client, "test@example.com", True)
+    body = resp.json()
+
+    assert resp.status_code == 200
+
+    assert email == "test@example.com"
+    assert all([outer_override_called, get_content_called, send_raw_email_called])
+    assert code_lifetime > 0
+
+    # Resend:
+    email = ""
+    code_lifetime = 0
+    user_input_code = ""
+    get_content_called, send_raw_email_called, outer_override_called = (
+        False,
+        False,
+        False,
+    )
+
+    resp = sign_in_up_request_code_resend(
+        driver_config_client, body["deviceId"], body["preAuthSessionId"], True
+    )
 
     assert resp.status_code == 200
 

@@ -17,32 +17,32 @@ import os
 import django
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", __file__)
-SECRET_KEY = 'this_is_a_random_string'
+SECRET_KEY = "this_is_a_random_string"
 
 django.setup()
 
 
 REST_FRAMEWORK: Any = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [],
-    'DEFAULT_PERMISSION_CLASSES': [],
-    'UNAUTHENTICATED_USER': None,
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "DEFAULT_PERMISSION_CLASSES": [],
+    "UNAUTHENTICATED_USER": None,
 }
 DATABASES = {
-    'default': {
+    "default": {
         # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or
         # 'oracle'.
-        'ENGINE': 'django.db.backends.sqlite3',
+        "ENGINE": "django.db.backends.sqlite3",
         # Or path to database file if using sqlite3.
-        'NAME': 'sqlite.db',
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
+        "NAME": "sqlite.db",
+        "USER": "",  # Not used with sqlite3.
+        "PASSWORD": "",  # Not used with sqlite3.
         # Set to empty string for localhost. Not used with sqlite3.
-        'HOST': '',
+        "HOST": "",
         # Set to empty string for default. Not used with sqlite3.
-        'PORT': '',
+        "PORT": "",
     }
 }
 
 MIDDLEWARE = [
-    'supertokens-Fastapi.core.framework.django.django_middleware.middleware',
+    "supertokens-Fastapi.core.framework.django.django_middleware.middleware",
 ]

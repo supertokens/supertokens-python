@@ -53,34 +53,44 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 
 
 class InputOverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-                 apis: Union[Callable[[APIInterface],
-                                      APIInterface], None] = None,
-                 jwt_feature: Union[JWTOverrideConfig, None] = None):
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+        jwt_feature: Union[JWTOverrideConfig, None] = None,
+    ):
         self.functions = functions
         self.apis = apis
         self.jwt_feature = jwt_feature
 
 
 class OverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
-                                        None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+    ):
         self.functions = functions
         self.apis = apis
 
 
 class OpenIdConfig:
-    def __init__(self, override: OverrideConfig,
-                 issuer_domain: NormalisedURLDomain, issuer_path: NormalisedURLPath):
+    def __init__(
+        self,
+        override: OverrideConfig,
+        issuer_domain: NormalisedURLDomain,
+        issuer_path: NormalisedURLPath,
+    ):
         self.override = override
         self.issuer_domain = issuer_domain
         self.issuer_path = issuer_path
 
 
 def validate_and_normalise_user_input(
-        app_info: AppInfo,
-        issuer: Union[str, None] = None,
-        override: Union[InputOverrideConfig, None] = None):
+    app_info: AppInfo,
+    issuer: Union[str, None] = None,
+    override: Union[InputOverrideConfig, None] = None,
+):
     if issuer is None:
         issuer_domain = app_info.api_domain
         issuer_path = app_info.api_base_path
@@ -90,16 +100,20 @@ def validate_and_normalise_user_input(
 
     if not issuer_path.equals(app_info.api_base_path):
         raise Exception(
-            &#39;The path of the issuer URL must be equal to the apiBasePath. The default value is /auth&#39;)
+            &#34;The path of the issuer URL must be equal to the apiBasePath. The default value is /auth&#34;
+        )
 
     if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError(&#39;override must be an instance of InputOverrideConfig or None&#39;)
+        raise ValueError(&#34;override must be an instance of InputOverrideConfig or None&#34;)
 
     if override is None:
         override = InputOverrideConfig()
 
-    return OpenIdConfig(OverrideConfig(
-        functions=override.functions, apis=override.apis), issuer_domain, issuer_path)</code></pre>
+    return OpenIdConfig(
+        OverrideConfig(functions=override.functions, apis=override.apis),
+        issuer_domain,
+        issuer_path,
+    )</code></pre>
 </details>
 </section>
 <section>
@@ -119,9 +133,10 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def validate_and_normalise_user_input(
-        app_info: AppInfo,
-        issuer: Union[str, None] = None,
-        override: Union[InputOverrideConfig, None] = None):
+    app_info: AppInfo,
+    issuer: Union[str, None] = None,
+    override: Union[InputOverrideConfig, None] = None,
+):
     if issuer is None:
         issuer_domain = app_info.api_domain
         issuer_path = app_info.api_base_path
@@ -131,16 +146,20 @@ def validate_and_normalise_user_input(
 
     if not issuer_path.equals(app_info.api_base_path):
         raise Exception(
-            &#39;The path of the issuer URL must be equal to the apiBasePath. The default value is /auth&#39;)
+            &#34;The path of the issuer URL must be equal to the apiBasePath. The default value is /auth&#34;
+        )
 
     if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
-        raise ValueError(&#39;override must be an instance of InputOverrideConfig or None&#39;)
+        raise ValueError(&#34;override must be an instance of InputOverrideConfig or None&#34;)
 
     if override is None:
         override = InputOverrideConfig()
 
-    return OpenIdConfig(OverrideConfig(
-        functions=override.functions, apis=override.apis), issuer_domain, issuer_path)</code></pre>
+    return OpenIdConfig(
+        OverrideConfig(functions=override.functions, apis=override.apis),
+        issuer_domain,
+        issuer_path,
+    )</code></pre>
 </details>
 </dd>
 </dl>
@@ -159,10 +178,12 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class InputOverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-                 apis: Union[Callable[[APIInterface],
-                                      APIInterface], None] = None,
-                 jwt_feature: Union[JWTOverrideConfig, None] = None):
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+        jwt_feature: Union[JWTOverrideConfig, None] = None,
+    ):
         self.functions = functions
         self.apis = apis
         self.jwt_feature = jwt_feature</code></pre>
@@ -179,8 +200,12 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class OpenIdConfig:
-    def __init__(self, override: OverrideConfig,
-                 issuer_domain: NormalisedURLDomain, issuer_path: NormalisedURLPath):
+    def __init__(
+        self,
+        override: OverrideConfig,
+        issuer_domain: NormalisedURLDomain,
+        issuer_path: NormalisedURLPath,
+    ):
         self.override = override
         self.issuer_domain = issuer_domain
         self.issuer_path = issuer_path</code></pre>
@@ -197,8 +222,11 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class OverrideConfig:
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface],
-                                        None] = None, apis: Union[Callable[[APIInterface], APIInterface], None] = None):
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+    ):
         self.functions = functions
         self.apis = apis</code></pre>
 </details>

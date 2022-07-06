@@ -69,42 +69,46 @@ def sanitize_number(n: Any) -&gt; Union[Union[int, float], None]:
 
 
 def get_info_from_access_token(
-        token: str, jwt_signing_public_key: str, do_anti_csrf_check: bool):
+    token: str, jwt_signing_public_key: str, do_anti_csrf_check: bool
+):
     try:
         payload = get_payload(token, jwt_signing_public_key)
-        session_handle = sanitize_string(payload.get(&#39;sessionHandle&#39;))
-        user_id = sanitize_string(payload.get(&#39;userId&#39;))
-        refresh_token_hash_1 = sanitize_string(
-            payload.get(&#39;refreshTokenHash1&#39;))
+        session_handle = sanitize_string(payload.get(&#34;sessionHandle&#34;))
+        user_id = sanitize_string(payload.get(&#34;userId&#34;))
+        refresh_token_hash_1 = sanitize_string(payload.get(&#34;refreshTokenHash1&#34;))
         parent_refresh_token_hash_1 = sanitize_string(
-            payload.get(&#39;parentRefreshTokenHash1&#39;))
-        user_data = payload.get(&#39;userData&#39;)
-        anti_csrf_token = sanitize_string(payload.get(&#39;antiCsrfToken&#39;))
-        expiry_time = sanitize_number(payload.get(&#39;expiryTime&#39;))
-        time_created = sanitize_number(payload.get(&#39;timeCreated&#39;))
+            payload.get(&#34;parentRefreshTokenHash1&#34;)
+        )
+        user_data = payload.get(&#34;userData&#34;)
+        anti_csrf_token = sanitize_string(payload.get(&#34;antiCsrfToken&#34;))
+        expiry_time = sanitize_number(payload.get(&#34;expiryTime&#34;))
+        time_created = sanitize_number(payload.get(&#34;timeCreated&#34;))
 
-        if (session_handle is None) or \
-                (user_data is None) or \
-                (refresh_token_hash_1 is None) or \
-                (user_data is None) or \
-                (anti_csrf_token is None and do_anti_csrf_check) or \
-                (expiry_time is None) or \
-                (time_created is None):
+        if (
+            (session_handle is None)
+            or (user_data is None)
+            or (refresh_token_hash_1 is None)
+            or (user_data is None)
+            or (anti_csrf_token is None and do_anti_csrf_check)
+            or (expiry_time is None)
+            or (time_created is None)
+        ):
             raise Exception(
-                &#39;Access token does not contain all the information. Maybe the structure has changed?&#39;)
+                &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
+            )
 
         if expiry_time &lt; get_timestamp_ms():
-            raise Exception(&#39;Access token expired&#39;)
+            raise Exception(&#34;Access token expired&#34;)
 
         return {
-            &#39;sessionHandle&#39;: session_handle,
-            &#39;userId&#39;: user_id,
-            &#39;refreshTokenHash1&#39;: refresh_token_hash_1,
-            &#39;parentRefreshTokenHash1&#39;: parent_refresh_token_hash_1,
-            &#39;userData&#39;: user_data,
-            &#39;antiCsrfToken&#39;: anti_csrf_token,
-            &#39;expiryTime&#39;: expiry_time,
-            &#39;timeCreated&#39;: time_created
+            &#34;sessionHandle&#34;: session_handle,
+            &#34;userId&#34;: user_id,
+            &#34;refreshTokenHash1&#34;: refresh_token_hash_1,
+            &#34;parentRefreshTokenHash1&#34;: parent_refresh_token_hash_1,
+            &#34;userData&#34;: user_data,
+            &#34;antiCsrfToken&#34;: anti_csrf_token,
+            &#34;expiryTime&#34;: expiry_time,
+            &#34;timeCreated&#34;: time_created,
         }
     except Exception as e:
         log_debug_message(
@@ -130,42 +134,46 @@ def get_info_from_access_token(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_info_from_access_token(
-        token: str, jwt_signing_public_key: str, do_anti_csrf_check: bool):
+    token: str, jwt_signing_public_key: str, do_anti_csrf_check: bool
+):
     try:
         payload = get_payload(token, jwt_signing_public_key)
-        session_handle = sanitize_string(payload.get(&#39;sessionHandle&#39;))
-        user_id = sanitize_string(payload.get(&#39;userId&#39;))
-        refresh_token_hash_1 = sanitize_string(
-            payload.get(&#39;refreshTokenHash1&#39;))
+        session_handle = sanitize_string(payload.get(&#34;sessionHandle&#34;))
+        user_id = sanitize_string(payload.get(&#34;userId&#34;))
+        refresh_token_hash_1 = sanitize_string(payload.get(&#34;refreshTokenHash1&#34;))
         parent_refresh_token_hash_1 = sanitize_string(
-            payload.get(&#39;parentRefreshTokenHash1&#39;))
-        user_data = payload.get(&#39;userData&#39;)
-        anti_csrf_token = sanitize_string(payload.get(&#39;antiCsrfToken&#39;))
-        expiry_time = sanitize_number(payload.get(&#39;expiryTime&#39;))
-        time_created = sanitize_number(payload.get(&#39;timeCreated&#39;))
+            payload.get(&#34;parentRefreshTokenHash1&#34;)
+        )
+        user_data = payload.get(&#34;userData&#34;)
+        anti_csrf_token = sanitize_string(payload.get(&#34;antiCsrfToken&#34;))
+        expiry_time = sanitize_number(payload.get(&#34;expiryTime&#34;))
+        time_created = sanitize_number(payload.get(&#34;timeCreated&#34;))
 
-        if (session_handle is None) or \
-                (user_data is None) or \
-                (refresh_token_hash_1 is None) or \
-                (user_data is None) or \
-                (anti_csrf_token is None and do_anti_csrf_check) or \
-                (expiry_time is None) or \
-                (time_created is None):
+        if (
+            (session_handle is None)
+            or (user_data is None)
+            or (refresh_token_hash_1 is None)
+            or (user_data is None)
+            or (anti_csrf_token is None and do_anti_csrf_check)
+            or (expiry_time is None)
+            or (time_created is None)
+        ):
             raise Exception(
-                &#39;Access token does not contain all the information. Maybe the structure has changed?&#39;)
+                &#34;Access token does not contain all the information. Maybe the structure has changed?&#34;
+            )
 
         if expiry_time &lt; get_timestamp_ms():
-            raise Exception(&#39;Access token expired&#39;)
+            raise Exception(&#34;Access token expired&#34;)
 
         return {
-            &#39;sessionHandle&#39;: session_handle,
-            &#39;userId&#39;: user_id,
-            &#39;refreshTokenHash1&#39;: refresh_token_hash_1,
-            &#39;parentRefreshTokenHash1&#39;: parent_refresh_token_hash_1,
-            &#39;userData&#39;: user_data,
-            &#39;antiCsrfToken&#39;: anti_csrf_token,
-            &#39;expiryTime&#39;: expiry_time,
-            &#39;timeCreated&#39;: time_created
+            &#34;sessionHandle&#34;: session_handle,
+            &#34;userId&#34;: user_id,
+            &#34;refreshTokenHash1&#34;: refresh_token_hash_1,
+            &#34;parentRefreshTokenHash1&#34;: parent_refresh_token_hash_1,
+            &#34;userData&#34;: user_data,
+            &#34;antiCsrfToken&#34;: anti_csrf_token,
+            &#34;expiryTime&#34;: expiry_time,
+            &#34;timeCreated&#34;: time_created,
         }
     except Exception as e:
         log_debug_message(

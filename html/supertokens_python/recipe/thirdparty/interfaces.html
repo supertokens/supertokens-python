@@ -45,8 +45,9 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from ...types import APIResponse, GeneralErrorResponse
-from ..emailverification.interfaces import \
-    RecipeInterface as EmailVerificationRecipeInterface
+from ..emailverification.interfaces import (
+    RecipeInterface as EmailVerificationRecipeInterface,
+)
 from .provider import Provider
 
 if TYPE_CHECKING:
@@ -58,7 +59,7 @@ if TYPE_CHECKING:
     from .utils import ThirdPartyConfig
 
 
-class SignInUpOkResult():
+class SignInUpOkResult:
     def __init__(self, user: User, created_new_user: bool):
         self.user = user
         self.created_new_user = created_new_user
@@ -69,27 +70,50 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_id(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
+    async def get_users_by_email(
+        self, email: str, user_context: Dict[str, Any]
+    ) -&gt; List[User]:
         pass
 
     @abstractmethod
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str,
-                                          user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_thirdparty_info(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[User, None]:
         pass
 
     @abstractmethod
-    async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
+    async def sign_in_up(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        email_verified: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; SignInUpOkResult:
         pass
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
-                 config: ThirdPartyConfig, recipe_implementation: RecipeInterface, providers: List[Provider], app_info: AppInfo, email_verification_recipe_implementation: EmailVerificationRecipeInterface):
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        recipe_id: str,
+        config: ThirdPartyConfig,
+        recipe_implementation: RecipeInterface,
+        providers: List[Provider],
+        app_info: AppInfo,
+        email_verification_recipe_implementation: EmailVerificationRecipeInterface,
+    ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
@@ -97,15 +121,21 @@ class APIOptions:
         self.providers: List[Provider] = providers
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info: AppInfo = app_info
-        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = email_verification_recipe_implementation
+        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = (
+            email_verification_recipe_implementation
+        )
 
 
 class SignInUpPostOkResult(APIResponse):
-    status: str = &#39;OK&#39;
+    status: str = &#34;OK&#34;
 
-    def __init__(self, user: User, created_new_user: bool,
-                 auth_code_response: Dict[str, Any],
-                 session: SessionContainer):
+    def __init__(
+        self,
+        user: User,
+        created_new_user: bool,
+        auth_code_response: Dict[str, Any],
+        session: SessionContainer,
+    ):
         self.user = user
         self.created_new_user = created_new_user
         self.auth_code_response = auth_code_response
@@ -113,40 +143,35 @@ class SignInUpPostOkResult(APIResponse):
 
     def to_json(self) -&gt; Dict[str, Any]:
         return {
-            &#39;status&#39;: self.status,
-            &#39;user&#39;: {
-                &#39;id&#39;: self.user.user_id,
-                &#39;email&#39;: self.user.email,
-                &#39;timeJoined&#39;: self.user.time_joined,
-                &#39;thirdParty&#39;: {
-                    &#39;id&#39;: self.user.third_party_info.id,
-                    &#39;userId&#39;: self.user.third_party_info.user_id
-                }
+            &#34;status&#34;: self.status,
+            &#34;user&#34;: {
+                &#34;id&#34;: self.user.user_id,
+                &#34;email&#34;: self.user.email,
+                &#34;timeJoined&#34;: self.user.time_joined,
+                &#34;thirdParty&#34;: {
+                    &#34;id&#34;: self.user.third_party_info.id,
+                    &#34;userId&#34;: self.user.third_party_info.user_id,
+                },
             },
-            &#39;createdNewUser&#39;: self.created_new_user
+            &#34;createdNewUser&#34;: self.created_new_user,
         }
 
 
 class SignInUpPostNoEmailGivenByProviderResponse(APIResponse):
-    status: str = &#39;NO_EMAIL_GIVEN_BY_PROVIDER&#39;
+    status: str = &#34;NO_EMAIL_GIVEN_BY_PROVIDER&#34;
 
     def to_json(self) -&gt; Dict[str, Any]:
-        return {
-            &#39;status&#39;: self.status
-        }
+        return {&#34;status&#34;: self.status}
 
 
 class AuthorisationUrlGetOkResult(APIResponse):
-    status: str = &#39;OK&#39;
+    status: str = &#34;OK&#34;
 
     def __init__(self, url: str):
         self.url = url
 
     def to_json(self):
-        return {
-            &#39;status&#39;: self.status,
-            &#39;url&#39;: self.url
-        }
+        return {&#34;status&#34;: self.status, &#34;url&#34;: self.url}
 
 
 class APIInterface:
@@ -156,17 +181,36 @@ class APIInterface:
         self.disable_apple_redirect_handler_post = False
 
     @abstractmethod
-    async def authorisation_url_get(self, provider: Provider,
-                                    api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
+    async def authorisation_url_get(
+        self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
-    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
-                              user_context: Dict[str, Any]) -&gt; Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
+    async def sign_in_up_post(
+        self,
+        provider: Provider,
+        code: str,
+        redirect_uri: str,
+        client_id: Union[str, None],
+        auth_code_response: Union[Dict[str, Any], None],
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        SignInUpPostOkResult,
+        SignInUpPostNoEmailGivenByProviderResponse,
+        GeneralErrorResponse,
+    ]:
         pass
 
     @abstractmethod
-    async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions, user_context: Dict[str, Any]):
+    async def apple_redirect_handler_post(
+        self,
+        code: str,
+        state: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+    ):
         pass</code></pre>
 </details>
 </section>
@@ -195,17 +239,36 @@ class APIInterface:
         self.disable_apple_redirect_handler_post = False
 
     @abstractmethod
-    async def authorisation_url_get(self, provider: Provider,
-                                    api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
+    async def authorisation_url_get(
+        self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
-    async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
-                              user_context: Dict[str, Any]) -&gt; Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
+    async def sign_in_up_post(
+        self,
+        provider: Provider,
+        code: str,
+        redirect_uri: str,
+        client_id: Union[str, None],
+        auth_code_response: Union[Dict[str, Any], None],
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        SignInUpPostOkResult,
+        SignInUpPostNoEmailGivenByProviderResponse,
+        GeneralErrorResponse,
+    ]:
         pass
 
     @abstractmethod
-    async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions, user_context: Dict[str, Any]):
+    async def apple_redirect_handler_post(
+        self,
+        code: str,
+        state: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+    ):
         pass</code></pre>
 </details>
 <h3>Subclasses</h3>
@@ -224,7 +287,13 @@ class APIInterface:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def apple_redirect_handler_post(self, code: str, state: str, api_options: APIOptions, user_context: Dict[str, Any]):
+async def apple_redirect_handler_post(
+    self,
+    code: str,
+    state: str,
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+):
     pass</code></pre>
 </details>
 </dd>
@@ -238,8 +307,9 @@ async def apple_redirect_handler_post(self, code: str, state: str, api_options: 
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def authorisation_url_get(self, provider: Provider,
-                                api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
+async def authorisation_url_get(
+    self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]
+) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
@@ -253,8 +323,20 @@ async def authorisation_url_get(self, provider: Provider,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None], api_options: APIOptions,
-                          user_context: Dict[str, Any]) -&gt; Union[SignInUpPostOkResult, SignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
+async def sign_in_up_post(
+    self,
+    provider: Provider,
+    code: str,
+    redirect_uri: str,
+    client_id: Union[str, None],
+    auth_code_response: Union[Dict[str, Any], None],
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[
+    SignInUpPostOkResult,
+    SignInUpPostNoEmailGivenByProviderResponse,
+    GeneralErrorResponse,
+]:
     pass</code></pre>
 </details>
 </dd>
@@ -271,8 +353,17 @@ async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class APIOptions:
-    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
-                 config: ThirdPartyConfig, recipe_implementation: RecipeInterface, providers: List[Provider], app_info: AppInfo, email_verification_recipe_implementation: EmailVerificationRecipeInterface):
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        recipe_id: str,
+        config: ThirdPartyConfig,
+        recipe_implementation: RecipeInterface,
+        providers: List[Provider],
+        app_info: AppInfo,
+        email_verification_recipe_implementation: EmailVerificationRecipeInterface,
+    ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
@@ -280,7 +371,9 @@ async def sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str
         self.providers: List[Provider] = providers
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info: AppInfo = app_info
-        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = email_verification_recipe_implementation</code></pre>
+        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = (
+            email_verification_recipe_implementation
+        )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult"><code class="flex name class">
@@ -295,16 +388,13 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class AuthorisationUrlGetOkResult(APIResponse):
-    status: str = &#39;OK&#39;
+    status: str = &#34;OK&#34;
 
     def __init__(self, url: str):
         self.url = url
 
     def to_json(self):
-        return {
-            &#39;status&#39;: self.status,
-            &#39;url&#39;: self.url
-        }</code></pre>
+        return {&#34;status&#34;: self.status, &#34;url&#34;: self.url}</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -330,10 +420,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_json(self):
-    return {
-        &#39;status&#39;: self.status,
-        &#39;url&#39;: self.url
-    }</code></pre>
+    return {&#34;status&#34;: self.status, &#34;url&#34;: self.url}</code></pre>
 </details>
 </dd>
 </dl>
@@ -353,21 +440,35 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_id(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
+    async def get_users_by_email(
+        self, email: str, user_context: Dict[str, Any]
+    ) -&gt; List[User]:
         pass
 
     @abstractmethod
-    async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str,
-                                          user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_thirdparty_info(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[User, None]:
         pass
 
     @abstractmethod
-    async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                         email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
+    async def sign_in_up(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        email_verified: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; SignInUpOkResult:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -392,7 +493,9 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+async def get_user_by_id(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; Union[User, None]:
     pass</code></pre>
 </details>
 </dd>
@@ -406,8 +509,12 @@ async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt;
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_user_id: str,
-                                      user_context: Dict[str, Any]) -&gt; Union[User, None]:
+async def get_user_by_thirdparty_info(
+    self,
+    third_party_id: str,
+    third_party_user_id: str,
+    user_context: Dict[str, Any],
+) -&gt; Union[User, None]:
     pass</code></pre>
 </details>
 </dd>
@@ -421,7 +528,9 @@ async def get_user_by_thirdparty_info(self, third_party_id: str, third_party_use
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
+async def get_users_by_email(
+    self, email: str, user_context: Dict[str, Any]
+) -&gt; List[User]:
     pass</code></pre>
 </details>
 </dd>
@@ -435,8 +544,14 @@ async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&g
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                     email_verified: bool, user_context: Dict[str, Any]) -&gt; SignInUpOkResult:
+async def sign_in_up(
+    self,
+    third_party_id: str,
+    third_party_user_id: str,
+    email: str,
+    email_verified: bool,
+    user_context: Dict[str, Any],
+) -&gt; SignInUpOkResult:
     pass</code></pre>
 </details>
 </dd>
@@ -452,7 +567,7 @@ async def sign_in_up(self, third_party_id: str, third_party_user_id: str, email:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SignInUpOkResult():
+<pre><code class="python">class SignInUpOkResult:
     def __init__(self, user: User, created_new_user: bool):
         self.user = user
         self.created_new_user = created_new_user</code></pre>
@@ -469,12 +584,10 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class SignInUpPostNoEmailGivenByProviderResponse(APIResponse):
-    status: str = &#39;NO_EMAIL_GIVEN_BY_PROVIDER&#39;
+    status: str = &#34;NO_EMAIL_GIVEN_BY_PROVIDER&#34;
 
     def to_json(self) -&gt; Dict[str, Any]:
-        return {
-            &#39;status&#39;: self.status
-        }</code></pre>
+        return {&#34;status&#34;: self.status}</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -500,9 +613,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#39;status&#39;: self.status
-    }</code></pre>
+    return {&#34;status&#34;: self.status}</code></pre>
 </details>
 </dd>
 </dl>
@@ -519,11 +630,15 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class SignInUpPostOkResult(APIResponse):
-    status: str = &#39;OK&#39;
+    status: str = &#34;OK&#34;
 
-    def __init__(self, user: User, created_new_user: bool,
-                 auth_code_response: Dict[str, Any],
-                 session: SessionContainer):
+    def __init__(
+        self,
+        user: User,
+        created_new_user: bool,
+        auth_code_response: Dict[str, Any],
+        session: SessionContainer,
+    ):
         self.user = user
         self.created_new_user = created_new_user
         self.auth_code_response = auth_code_response
@@ -531,17 +646,17 @@ inheritance.</p></div>
 
     def to_json(self) -&gt; Dict[str, Any]:
         return {
-            &#39;status&#39;: self.status,
-            &#39;user&#39;: {
-                &#39;id&#39;: self.user.user_id,
-                &#39;email&#39;: self.user.email,
-                &#39;timeJoined&#39;: self.user.time_joined,
-                &#39;thirdParty&#39;: {
-                    &#39;id&#39;: self.user.third_party_info.id,
-                    &#39;userId&#39;: self.user.third_party_info.user_id
-                }
+            &#34;status&#34;: self.status,
+            &#34;user&#34;: {
+                &#34;id&#34;: self.user.user_id,
+                &#34;email&#34;: self.user.email,
+                &#34;timeJoined&#34;: self.user.time_joined,
+                &#34;thirdParty&#34;: {
+                    &#34;id&#34;: self.user.third_party_info.id,
+                    &#34;userId&#34;: self.user.third_party_info.user_id,
+                },
             },
-            &#39;createdNewUser&#39;: self.created_new_user
+            &#34;createdNewUser&#34;: self.created_new_user,
         }</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -569,17 +684,17 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
     return {
-        &#39;status&#39;: self.status,
-        &#39;user&#39;: {
-            &#39;id&#39;: self.user.user_id,
-            &#39;email&#39;: self.user.email,
-            &#39;timeJoined&#39;: self.user.time_joined,
-            &#39;thirdParty&#39;: {
-                &#39;id&#39;: self.user.third_party_info.id,
-                &#39;userId&#39;: self.user.third_party_info.user_id
-            }
+        &#34;status&#34;: self.status,
+        &#34;user&#34;: {
+            &#34;id&#34;: self.user.user_id,
+            &#34;email&#34;: self.user.email,
+            &#34;timeJoined&#34;: self.user.time_joined,
+            &#34;thirdParty&#34;: {
+                &#34;id&#34;: self.user.third_party_info.id,
+                &#34;userId&#34;: self.user.third_party_info.user_id,
+            },
         },
-        &#39;createdNewUser&#39;: self.created_new_user
+        &#34;createdNewUser&#34;: self.created_new_user,
     }</code></pre>
 </details>
 </dd>

@@ -31,7 +31,8 @@ class DjangoRequest(BaseRequest):
         self.request = request
 
     def get_query_param(
-            self, key: str, default: Union[str, None] = None) -> Union[str, None]:
+        self, key: str, default: Union[str, None] = None
+    ) -> Union[str, None]:
         return self.request.GET.get(key, default)
 
     async def json(self) -> Union[Any, None]:
@@ -50,8 +51,8 @@ class DjangoRequest(BaseRequest):
         return self.request.COOKIES.get(key)
 
     def get_header(self, key: str) -> Union[None, str]:
-        key = key.replace('-', '_')
-        key = 'HTTP_' + key
+        key = key.replace("-", "_")
+        key = "HTTP_" + key
         return self.request.META.get(key.upper())
 
     def get_session(self) -> Union[SessionContainer, None]:
@@ -67,4 +68,4 @@ class DjangoRequest(BaseRequest):
         return self.request.path
 
     async def form_data(self):
-        return dict(parse_qsl(self.request.body.decode('utf-8')))
+        return dict(parse_qsl(self.request.body.decode("utf-8")))

@@ -36,8 +36,7 @@ class ProcessState:
         return ProcessState.__instance
 
     def add_state(self, state: AllowedProcessStates):
-        if ('SUPERTOKENS_ENV' in environ) and (
-                environ['SUPERTOKENS_ENV'] == 'testing'):
+        if ("SUPERTOKENS_ENV" in environ) and (environ["SUPERTOKENS_ENV"] == "testing"):
             self.history.append(state)
 
     def reset(self):

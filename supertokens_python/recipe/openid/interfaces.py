@@ -16,13 +16,16 @@ from typing import Any, Dict, Union
 
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe.jwt.interfaces import (
-    CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm, GetJWKSResult)
+    CreateJwtOkResult,
+    CreateJwtResultUnsupportedAlgorithm,
+    GetJWKSResult,
+)
 from supertokens_python.types import APIResponse, GeneralErrorResponse
 
 from .utils import OpenIdConfig
 
 
-class GetOpenIdDiscoveryConfigurationResult():
+class GetOpenIdDiscoveryConfigurationResult:
     def __init__(self, issuer: str, jwks_uri: str):
         self.issuer = issuer
         self.jwks_uri = jwks_uri
@@ -33,7 +36,12 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_jwt(self, payload: Dict[str, Any], validity_seconds: Union[int, None], user_context: Dict[str, Any]) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
+    async def create_jwt(
+        self,
+        payload: Dict[str, Any],
+        validity_seconds: Union[int, None],
+        user_context: Dict[str, Any],
+    ) -> Union[CreateJwtOkResult, CreateJwtResultUnsupportedAlgorithm]:
         pass
 
     @abstractmethod
@@ -41,13 +49,21 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_open_id_discovery_configuration(self, user_context: Dict[str, Any]) -> GetOpenIdDiscoveryConfigurationResult:
+    async def get_open_id_discovery_configuration(
+        self, user_context: Dict[str, Any]
+    ) -> GetOpenIdDiscoveryConfigurationResult:
         pass
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: BaseResponse, recipe_id: str,
-                 config: OpenIdConfig, recipe_implementation: RecipeInterface):
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: BaseResponse,
+        recipe_id: str,
+        config: OpenIdConfig,
+        recipe_implementation: RecipeInterface,
+    ):
         self.request = request
         self.response = response
         self.recipe_id = recipe_id
@@ -56,18 +72,14 @@ class APIOptions:
 
 
 class OpenIdDiscoveryConfigurationGetResponse(APIResponse):
-    status: str = 'OK'
+    status: str = "OK"
 
     def __init__(self, issuer: str, jwks_uri: str):
         self.issuer = issuer
         self.jwks_uri = jwks_uri
 
     def to_json(self):
-        return {
-            'status': self.status,
-            'issuer': self.issuer,
-            'jwks_uri': self.jwks_uri
-        }
+        return {"status": self.status, "issuer": self.issuer, "jwks_uri": self.jwks_uri}
 
 
 class APIInterface:
@@ -75,5 +87,7 @@ class APIInterface:
         self.disable_open_id_discovery_configuration_get = False
 
     @abstractmethod
-    async def open_id_discovery_configuration_get(self, api_options: APIOptions, user_context: Dict[str, Any]) -> Union[OpenIdDiscoveryConfigurationGetResponse, GeneralErrorResponse]:
+    async def open_id_discovery_configuration_get(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -> Union[OpenIdDiscoveryConfigurationGetResponse, GeneralErrorResponse]:
         pass

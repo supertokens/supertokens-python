@@ -46,15 +46,20 @@ from typing import Any, Dict, List, Union
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 
-from .interfaces import (AddRoleToUserOkResult,
-                         CreateNewRoleOrAddPermissionsOkResult,
-                         DeleteRoleOkResult, GetAllRolesOkResult,
-                         GetPermissionsForRoleOkResult,
-                         GetRolesForUserOkResult,
-                         GetRolesThatHavePermissionOkResult,
-                         GetUsersThatHaveRoleOkResult, RecipeInterface,
-                         RemovePermissionsFromRoleOkResult,
-                         RemoveUserRoleOkResult, UnknownRoleError)
+from .interfaces import (
+    AddRoleToUserOkResult,
+    CreateNewRoleOrAddPermissionsOkResult,
+    DeleteRoleOkResult,
+    GetAllRolesOkResult,
+    GetPermissionsForRoleOkResult,
+    GetRolesForUserOkResult,
+    GetRolesThatHavePermissionOkResult,
+    GetUsersThatHaveRoleOkResult,
+    RecipeInterface,
+    RemovePermissionsFromRoleOkResult,
+    RemoveUserRoleOkResult,
+    UnknownRoleError,
+)
 
 
 class RecipeImplementation(RecipeInterface):
@@ -62,67 +67,108 @@ class RecipeImplementation(RecipeInterface):
         super().__init__()
         self.querier = querier
 
-    async def add_role_to_user(self, user_id: str, role: str, user_context: Dict[str, Any]) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
+    async def add_role_to_user(
+        self, user_id: str, role: str, user_context: Dict[str, Any]
+    ) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
         params = {&#34;userId&#34;: user_id, &#34;role&#34;: role}
-        response = await self.querier.send_put_request(NormalisedURLPath(&#34;/recipe/user/role&#34;), params)
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/user/role&#34;), params
+        )
         if response.get(&#34;status&#34;) == &#34;OK&#34;:
-            return AddRoleToUserOkResult(did_user_already_have_role=response[&#34;didUserAlreadyHaveRole&#34;])
+            return AddRoleToUserOkResult(
+                did_user_already_have_role=response[&#34;didUserAlreadyHaveRole&#34;]
+            )
         return UnknownRoleError()
 
-    async def remove_user_role(self, user_id: str, role: str, user_context: Dict[str, Any]) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
+    async def remove_user_role(
+        self, user_id: str, role: str, user_context: Dict[str, Any]
+    ) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
         params = {&#34;userId&#34;: user_id, &#34;role&#34;: role}
-        response = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/user/role/remove&#34;), params)
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/user/role/remove&#34;), params
+        )
         if response[&#34;status&#34;] == &#34;OK&#34;:
-            return RemoveUserRoleOkResult(did_user_have_role=response[&#34;didUserHaveRole&#34;])
+            return RemoveUserRoleOkResult(
+                did_user_have_role=response[&#34;didUserHaveRole&#34;]
+            )
         return UnknownRoleError()
 
-    async def get_roles_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; GetRolesForUserOkResult:
+    async def get_roles_for_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; GetRolesForUserOkResult:
         params = {&#34;userId&#34;: user_id}
-        response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/user/roles&#34;), params)
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/user/roles&#34;), params
+        )
         return GetRolesForUserOkResult(roles=response[&#34;roles&#34;])
 
-    async def get_users_that_have_role(self, role: str, user_context: Dict[str, Any]) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
+    async def get_users_that_have_role(
+        self, role: str, user_context: Dict[str, Any]
+    ) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
         params = {&#34;role&#34;: role}
-        response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/role/users&#34;), params)
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/role/users&#34;), params
+        )
         if response.get(&#34;status&#34;) == &#34;OK&#34;:
             return GetUsersThatHaveRoleOkResult(users=response[&#34;users&#34;])
         return UnknownRoleError()
 
-    async def create_new_role_or_add_permissions(self, role: str, permissions: List[str],
-                                                 user_context: Dict[str, Any]) -&gt; CreateNewRoleOrAddPermissionsOkResult:
+    async def create_new_role_or_add_permissions(
+        self, role: str, permissions: List[str], user_context: Dict[str, Any]
+    ) -&gt; CreateNewRoleOrAddPermissionsOkResult:
         params = {&#34;role&#34;: role, &#34;permissions&#34;: permissions}
-        response = await self.querier.send_put_request(NormalisedURLPath(&#34;/recipe/role&#34;), params)
-        return CreateNewRoleOrAddPermissionsOkResult(created_new_role=response[&#34;createdNewRole&#34;])
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/role&#34;), params
+        )
+        return CreateNewRoleOrAddPermissionsOkResult(
+            created_new_role=response[&#34;createdNewRole&#34;]
+        )
 
-    async def get_permissions_for_role(self, role: str, user_context: Dict[str, Any]) -&gt; Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
+    async def get_permissions_for_role(
+        self, role: str, user_context: Dict[str, Any]
+    ) -&gt; Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
         params = {&#34;role&#34;: role}
-        response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/role/permissions&#34;), params)
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/role/permissions&#34;), params
+        )
         if response.get(&#34;status&#34;) == &#34;OK&#34;:
             return GetPermissionsForRoleOkResult(permissions=response[&#34;permissions&#34;])
         return UnknownRoleError()
 
-    async def remove_permissions_from_role(self, role: str, permissions: List[str],
-                                           user_context: Dict[str, Any]) -&gt; Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
+    async def remove_permissions_from_role(
+        self, role: str, permissions: List[str], user_context: Dict[str, Any]
+    ) -&gt; Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
         params = {&#34;role&#34;: role, &#34;permissions&#34;: permissions}
-        response = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/role/permissions/remove&#34;), params)
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/role/permissions/remove&#34;), params
+        )
         if response.get(&#34;status&#34;) == &#34;OK&#34;:
             return RemovePermissionsFromRoleOkResult()
         return UnknownRoleError()
 
-    async def get_roles_that_have_permission(self, permission: str,
-                                             user_context: Dict[str, Any]) -&gt; GetRolesThatHavePermissionOkResult:
+    async def get_roles_that_have_permission(
+        self, permission: str, user_context: Dict[str, Any]
+    ) -&gt; GetRolesThatHavePermissionOkResult:
         params = {&#34;permission&#34;: permission}
-        response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/permission/roles&#34;), params)
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/permission/roles&#34;), params
+        )
         return GetRolesThatHavePermissionOkResult(roles=response[&#34;roles&#34;])
 
-    async def delete_role(self, role: str, user_context: Dict[str, Any]) -&gt; DeleteRoleOkResult:
+    async def delete_role(
+        self, role: str, user_context: Dict[str, Any]
+    ) -&gt; DeleteRoleOkResult:
         params = {&#34;role&#34;: role}
-        response = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/role/remove&#34;), params)
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/role/remove&#34;), params
+        )
         return DeleteRoleOkResult(did_role_exist=response[&#34;didRoleExist&#34;])
 
     async def get_all_roles(self, user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
         params = {}
-        response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/roles&#34;), params)
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/roles&#34;), params
+        )
         return GetAllRolesOkResult(roles=response[&#34;roles&#34;])</code></pre>
 </details>
 </section>
@@ -151,67 +197,108 @@ inheritance.</p></div>
         super().__init__()
         self.querier = querier
 
-    async def add_role_to_user(self, user_id: str, role: str, user_context: Dict[str, Any]) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
+    async def add_role_to_user(
+        self, user_id: str, role: str, user_context: Dict[str, Any]
+    ) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
         params = {&#34;userId&#34;: user_id, &#34;role&#34;: role}
-        response = await self.querier.send_put_request(NormalisedURLPath(&#34;/recipe/user/role&#34;), params)
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/user/role&#34;), params
+        )
         if response.get(&#34;status&#34;) == &#34;OK&#34;:
-            return AddRoleToUserOkResult(did_user_already_have_role=response[&#34;didUserAlreadyHaveRole&#34;])
+            return AddRoleToUserOkResult(
+                did_user_already_have_role=response[&#34;didUserAlreadyHaveRole&#34;]
+            )
         return UnknownRoleError()
 
-    async def remove_user_role(self, user_id: str, role: str, user_context: Dict[str, Any]) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
+    async def remove_user_role(
+        self, user_id: str, role: str, user_context: Dict[str, Any]
+    ) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
         params = {&#34;userId&#34;: user_id, &#34;role&#34;: role}
-        response = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/user/role/remove&#34;), params)
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/user/role/remove&#34;), params
+        )
         if response[&#34;status&#34;] == &#34;OK&#34;:
-            return RemoveUserRoleOkResult(did_user_have_role=response[&#34;didUserHaveRole&#34;])
+            return RemoveUserRoleOkResult(
+                did_user_have_role=response[&#34;didUserHaveRole&#34;]
+            )
         return UnknownRoleError()
 
-    async def get_roles_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; GetRolesForUserOkResult:
+    async def get_roles_for_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; GetRolesForUserOkResult:
         params = {&#34;userId&#34;: user_id}
-        response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/user/roles&#34;), params)
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/user/roles&#34;), params
+        )
         return GetRolesForUserOkResult(roles=response[&#34;roles&#34;])
 
-    async def get_users_that_have_role(self, role: str, user_context: Dict[str, Any]) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
+    async def get_users_that_have_role(
+        self, role: str, user_context: Dict[str, Any]
+    ) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
         params = {&#34;role&#34;: role}
-        response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/role/users&#34;), params)
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/role/users&#34;), params
+        )
         if response.get(&#34;status&#34;) == &#34;OK&#34;:
             return GetUsersThatHaveRoleOkResult(users=response[&#34;users&#34;])
         return UnknownRoleError()
 
-    async def create_new_role_or_add_permissions(self, role: str, permissions: List[str],
-                                                 user_context: Dict[str, Any]) -&gt; CreateNewRoleOrAddPermissionsOkResult:
+    async def create_new_role_or_add_permissions(
+        self, role: str, permissions: List[str], user_context: Dict[str, Any]
+    ) -&gt; CreateNewRoleOrAddPermissionsOkResult:
         params = {&#34;role&#34;: role, &#34;permissions&#34;: permissions}
-        response = await self.querier.send_put_request(NormalisedURLPath(&#34;/recipe/role&#34;), params)
-        return CreateNewRoleOrAddPermissionsOkResult(created_new_role=response[&#34;createdNewRole&#34;])
+        response = await self.querier.send_put_request(
+            NormalisedURLPath(&#34;/recipe/role&#34;), params
+        )
+        return CreateNewRoleOrAddPermissionsOkResult(
+            created_new_role=response[&#34;createdNewRole&#34;]
+        )
 
-    async def get_permissions_for_role(self, role: str, user_context: Dict[str, Any]) -&gt; Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
+    async def get_permissions_for_role(
+        self, role: str, user_context: Dict[str, Any]
+    ) -&gt; Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
         params = {&#34;role&#34;: role}
-        response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/role/permissions&#34;), params)
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/role/permissions&#34;), params
+        )
         if response.get(&#34;status&#34;) == &#34;OK&#34;:
             return GetPermissionsForRoleOkResult(permissions=response[&#34;permissions&#34;])
         return UnknownRoleError()
 
-    async def remove_permissions_from_role(self, role: str, permissions: List[str],
-                                           user_context: Dict[str, Any]) -&gt; Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
+    async def remove_permissions_from_role(
+        self, role: str, permissions: List[str], user_context: Dict[str, Any]
+    ) -&gt; Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
         params = {&#34;role&#34;: role, &#34;permissions&#34;: permissions}
-        response = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/role/permissions/remove&#34;), params)
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/role/permissions/remove&#34;), params
+        )
         if response.get(&#34;status&#34;) == &#34;OK&#34;:
             return RemovePermissionsFromRoleOkResult()
         return UnknownRoleError()
 
-    async def get_roles_that_have_permission(self, permission: str,
-                                             user_context: Dict[str, Any]) -&gt; GetRolesThatHavePermissionOkResult:
+    async def get_roles_that_have_permission(
+        self, permission: str, user_context: Dict[str, Any]
+    ) -&gt; GetRolesThatHavePermissionOkResult:
         params = {&#34;permission&#34;: permission}
-        response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/permission/roles&#34;), params)
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/permission/roles&#34;), params
+        )
         return GetRolesThatHavePermissionOkResult(roles=response[&#34;roles&#34;])
 
-    async def delete_role(self, role: str, user_context: Dict[str, Any]) -&gt; DeleteRoleOkResult:
+    async def delete_role(
+        self, role: str, user_context: Dict[str, Any]
+    ) -&gt; DeleteRoleOkResult:
         params = {&#34;role&#34;: role}
-        response = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/role/remove&#34;), params)
+        response = await self.querier.send_post_request(
+            NormalisedURLPath(&#34;/recipe/role/remove&#34;), params
+        )
         return DeleteRoleOkResult(did_role_exist=response[&#34;didRoleExist&#34;])
 
     async def get_all_roles(self, user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
         params = {}
-        response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/roles&#34;), params)
+        response = await self.querier.send_get_request(
+            NormalisedURLPath(&#34;/recipe/roles&#34;), params
+        )
         return GetAllRolesOkResult(roles=response[&#34;roles&#34;])</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -230,11 +317,17 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def add_role_to_user(self, user_id: str, role: str, user_context: Dict[str, Any]) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
+<pre><code class="python">async def add_role_to_user(
+    self, user_id: str, role: str, user_context: Dict[str, Any]
+) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
     params = {&#34;userId&#34;: user_id, &#34;role&#34;: role}
-    response = await self.querier.send_put_request(NormalisedURLPath(&#34;/recipe/user/role&#34;), params)
+    response = await self.querier.send_put_request(
+        NormalisedURLPath(&#34;/recipe/user/role&#34;), params
+    )
     if response.get(&#34;status&#34;) == &#34;OK&#34;:
-        return AddRoleToUserOkResult(did_user_already_have_role=response[&#34;didUserAlreadyHaveRole&#34;])
+        return AddRoleToUserOkResult(
+            did_user_already_have_role=response[&#34;didUserAlreadyHaveRole&#34;]
+        )
     return UnknownRoleError()</code></pre>
 </details>
 </dd>
@@ -247,11 +340,16 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_new_role_or_add_permissions(self, role: str, permissions: List[str],
-                                             user_context: Dict[str, Any]) -&gt; CreateNewRoleOrAddPermissionsOkResult:
+<pre><code class="python">async def create_new_role_or_add_permissions(
+    self, role: str, permissions: List[str], user_context: Dict[str, Any]
+) -&gt; CreateNewRoleOrAddPermissionsOkResult:
     params = {&#34;role&#34;: role, &#34;permissions&#34;: permissions}
-    response = await self.querier.send_put_request(NormalisedURLPath(&#34;/recipe/role&#34;), params)
-    return CreateNewRoleOrAddPermissionsOkResult(created_new_role=response[&#34;createdNewRole&#34;])</code></pre>
+    response = await self.querier.send_put_request(
+        NormalisedURLPath(&#34;/recipe/role&#34;), params
+    )
+    return CreateNewRoleOrAddPermissionsOkResult(
+        created_new_role=response[&#34;createdNewRole&#34;]
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.recipe_implementation.RecipeImplementation.delete_role"><code class="name flex">
@@ -263,9 +361,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def delete_role(self, role: str, user_context: Dict[str, Any]) -&gt; DeleteRoleOkResult:
+<pre><code class="python">async def delete_role(
+    self, role: str, user_context: Dict[str, Any]
+) -&gt; DeleteRoleOkResult:
     params = {&#34;role&#34;: role}
-    response = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/role/remove&#34;), params)
+    response = await self.querier.send_post_request(
+        NormalisedURLPath(&#34;/recipe/role/remove&#34;), params
+    )
     return DeleteRoleOkResult(did_role_exist=response[&#34;didRoleExist&#34;])</code></pre>
 </details>
 </dd>
@@ -280,7 +382,9 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">async def get_all_roles(self, user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
     params = {}
-    response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/roles&#34;), params)
+    response = await self.querier.send_get_request(
+        NormalisedURLPath(&#34;/recipe/roles&#34;), params
+    )
     return GetAllRolesOkResult(roles=response[&#34;roles&#34;])</code></pre>
 </details>
 </dd>
@@ -293,9 +397,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_permissions_for_role(self, role: str, user_context: Dict[str, Any]) -&gt; Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
+<pre><code class="python">async def get_permissions_for_role(
+    self, role: str, user_context: Dict[str, Any]
+) -&gt; Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
     params = {&#34;role&#34;: role}
-    response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/role/permissions&#34;), params)
+    response = await self.querier.send_get_request(
+        NormalisedURLPath(&#34;/recipe/role/permissions&#34;), params
+    )
     if response.get(&#34;status&#34;) == &#34;OK&#34;:
         return GetPermissionsForRoleOkResult(permissions=response[&#34;permissions&#34;])
     return UnknownRoleError()</code></pre>
@@ -310,9 +418,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_roles_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; GetRolesForUserOkResult:
+<pre><code class="python">async def get_roles_for_user(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; GetRolesForUserOkResult:
     params = {&#34;userId&#34;: user_id}
-    response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/user/roles&#34;), params)
+    response = await self.querier.send_get_request(
+        NormalisedURLPath(&#34;/recipe/user/roles&#34;), params
+    )
     return GetRolesForUserOkResult(roles=response[&#34;roles&#34;])</code></pre>
 </details>
 </dd>
@@ -325,10 +437,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_roles_that_have_permission(self, permission: str,
-                                         user_context: Dict[str, Any]) -&gt; GetRolesThatHavePermissionOkResult:
+<pre><code class="python">async def get_roles_that_have_permission(
+    self, permission: str, user_context: Dict[str, Any]
+) -&gt; GetRolesThatHavePermissionOkResult:
     params = {&#34;permission&#34;: permission}
-    response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/permission/roles&#34;), params)
+    response = await self.querier.send_get_request(
+        NormalisedURLPath(&#34;/recipe/permission/roles&#34;), params
+    )
     return GetRolesThatHavePermissionOkResult(roles=response[&#34;roles&#34;])</code></pre>
 </details>
 </dd>
@@ -341,9 +456,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_users_that_have_role(self, role: str, user_context: Dict[str, Any]) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
+<pre><code class="python">async def get_users_that_have_role(
+    self, role: str, user_context: Dict[str, Any]
+) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     params = {&#34;role&#34;: role}
-    response = await self.querier.send_get_request(NormalisedURLPath(&#34;/recipe/role/users&#34;), params)
+    response = await self.querier.send_get_request(
+        NormalisedURLPath(&#34;/recipe/role/users&#34;), params
+    )
     if response.get(&#34;status&#34;) == &#34;OK&#34;:
         return GetUsersThatHaveRoleOkResult(users=response[&#34;users&#34;])
     return UnknownRoleError()</code></pre>
@@ -358,10 +477,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def remove_permissions_from_role(self, role: str, permissions: List[str],
-                                       user_context: Dict[str, Any]) -&gt; Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
+<pre><code class="python">async def remove_permissions_from_role(
+    self, role: str, permissions: List[str], user_context: Dict[str, Any]
+) -&gt; Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
     params = {&#34;role&#34;: role, &#34;permissions&#34;: permissions}
-    response = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/role/permissions/remove&#34;), params)
+    response = await self.querier.send_post_request(
+        NormalisedURLPath(&#34;/recipe/role/permissions/remove&#34;), params
+    )
     if response.get(&#34;status&#34;) == &#34;OK&#34;:
         return RemovePermissionsFromRoleOkResult()
     return UnknownRoleError()</code></pre>
@@ -376,11 +498,17 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def remove_user_role(self, user_id: str, role: str, user_context: Dict[str, Any]) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
+<pre><code class="python">async def remove_user_role(
+    self, user_id: str, role: str, user_context: Dict[str, Any]
+) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
     params = {&#34;userId&#34;: user_id, &#34;role&#34;: role}
-    response = await self.querier.send_post_request(NormalisedURLPath(&#34;/recipe/user/role/remove&#34;), params)
+    response = await self.querier.send_post_request(
+        NormalisedURLPath(&#34;/recipe/user/role/remove&#34;), params
+    )
     if response[&#34;status&#34;] == &#34;OK&#34;:
-        return RemoveUserRoleOkResult(did_user_have_role=response[&#34;didUserHaveRole&#34;])
+        return RemoveUserRoleOkResult(
+            did_user_have_role=response[&#34;didUserHaveRole&#34;]
+        )
     return UnknownRoleError()</code></pre>
 </details>
 </dd>

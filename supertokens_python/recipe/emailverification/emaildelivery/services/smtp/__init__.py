@@ -14,11 +14,16 @@
 
 from typing import Any, Dict, Callable, Union
 
-from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    Transporter)
-from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface, SMTPServiceInterface, SMTPSettings
-from supertokens_python.recipe.emailverification.types import VerificationEmailTemplateVars, SMTPOverrideInput
+from supertokens_python.ingredients.emaildelivery.services.smtp import Transporter
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryInterface,
+    SMTPServiceInterface,
+    SMTPSettings,
+)
+from supertokens_python.recipe.emailverification.types import (
+    VerificationEmailTemplateVars,
+    SMTPOverrideInput,
+)
 
 from .service_implementation import ServiceImplementation
 
@@ -26,12 +31,19 @@ from .service_implementation import ServiceImplementation
 class SMTPService(EmailDeliveryInterface[VerificationEmailTemplateVars]):
     service_implementation: SMTPServiceInterface[VerificationEmailTemplateVars]
 
-    def __init__(self, smtp_settings: SMTPSettings,
-                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -> None:
+    def __init__(
+        self,
+        smtp_settings: SMTPSettings,
+        override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None,
+    ) -> None:
         transporter = Transporter(smtp_settings)
         oi = ServiceImplementation(transporter)
         self.service_implementation = oi if override is None else override(oi)
 
-    async def send_email(self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]) -> None:
-        content = await self.service_implementation.get_content(template_vars, user_context)
+    async def send_email(
+        self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
+    ) -> None:
+        content = await self.service_implementation.get_content(
+            template_vars, user_context
+        )
         await self.service_implementation.send_raw_email(content, user_context)

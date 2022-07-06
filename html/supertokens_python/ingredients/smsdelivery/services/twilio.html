@@ -43,7 +43,7 @@ from typing import TypeVar
 
 from supertokens_python.ingredients.smsdelivery.types import TwilioSettings
 
-_T = TypeVar(&#39;_T&#39;)
+_T = TypeVar(&#34;_T&#34;)
 
 
 def normalize_twilio_settings(twilio_settings: TwilioSettings) -&gt; TwilioSettings:
@@ -51,7 +51,9 @@ def normalize_twilio_settings(twilio_settings: TwilioSettings) -&gt; TwilioSetti
     messaging_service_sid = twilio_settings.messaging_service_sid
 
     if (from_ and messaging_service_sid) or (not from_ and not messaging_service_sid):
-        raise Exception(&#39;Please pass exactly one of &#34;from&#34; and &#34;messaging_service_sid&#34; config for twilio_settings.&#39;)
+        raise Exception(
+            &#39;Please pass exactly one of &#34;from&#34; and &#34;messaging_service_sid&#34; config for twilio_settings.&#39;
+        )
 
     return twilio_settings</code></pre>
 </details>
@@ -77,7 +79,9 @@ def normalize_twilio_settings(twilio_settings: TwilioSettings) -&gt; TwilioSetti
     messaging_service_sid = twilio_settings.messaging_service_sid
 
     if (from_ and messaging_service_sid) or (not from_ and not messaging_service_sid):
-        raise Exception(&#39;Please pass exactly one of &#34;from&#34; and &#34;messaging_service_sid&#34; config for twilio_settings.&#39;)
+        raise Exception(
+            &#39;Please pass exactly one of &#34;from&#34; and &#34;messaging_service_sid&#34; config for twilio_settings.&#39;
+        )
 
     return twilio_settings</code></pre>
 </details>

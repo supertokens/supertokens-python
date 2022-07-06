@@ -15,7 +15,7 @@ from typing import TypeVar
 
 from supertokens_python.ingredients.smsdelivery.types import TwilioSettings
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 
 def normalize_twilio_settings(twilio_settings: TwilioSettings) -> TwilioSettings:
@@ -23,6 +23,8 @@ def normalize_twilio_settings(twilio_settings: TwilioSettings) -> TwilioSettings
     messaging_service_sid = twilio_settings.messaging_service_sid
 
     if (from_ and messaging_service_sid) or (not from_ and not messaging_service_sid):
-        raise Exception('Please pass exactly one of "from" and "messaging_service_sid" config for twilio_settings.')
+        raise Exception(
+            'Please pass exactly one of "from" and "messaging_service_sid" config for twilio_settings.'
+        )
 
     return twilio_settings

@@ -46,16 +46,28 @@ from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.types import UsersResponse
 
 
-def get_users_oldest_first(limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
-                           include_recipe_ids: Union[None, List[str]] = None) -&gt; UsersResponse:
-    return sync(Supertokens.get_instance().get_users(
-        &#39;ASC&#39;, limit, pagination_token, include_recipe_ids))
+def get_users_oldest_first(
+    limit: Union[int, None] = None,
+    pagination_token: Union[str, None] = None,
+    include_recipe_ids: Union[None, List[str]] = None,
+) -&gt; UsersResponse:
+    return sync(
+        Supertokens.get_instance().get_users(
+            &#34;ASC&#34;, limit, pagination_token, include_recipe_ids
+        )
+    )
 
 
-def get_users_newest_first(limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
-                           include_recipe_ids: Union[None, List[str]] = None) -&gt; UsersResponse:
-    return sync(Supertokens.get_instance().get_users(
-        &#39;DESC&#39;, limit, pagination_token, include_recipe_ids))
+def get_users_newest_first(
+    limit: Union[int, None] = None,
+    pagination_token: Union[str, None] = None,
+    include_recipe_ids: Union[None, List[str]] = None,
+) -&gt; UsersResponse:
+    return sync(
+        Supertokens.get_instance().get_users(
+            &#34;DESC&#34;, limit, pagination_token, include_recipe_ids
+        )
+    )
 
 
 def get_user_count(include_recipe_ids: Union[None, List[str]] = None) -&gt; int:
@@ -108,10 +120,16 @@ def delete_user(user_id: str) -&gt; None:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_users_newest_first(limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
-                           include_recipe_ids: Union[None, List[str]] = None) -&gt; UsersResponse:
-    return sync(Supertokens.get_instance().get_users(
-        &#39;DESC&#39;, limit, pagination_token, include_recipe_ids))</code></pre>
+<pre><code class="python">def get_users_newest_first(
+    limit: Union[int, None] = None,
+    pagination_token: Union[str, None] = None,
+    include_recipe_ids: Union[None, List[str]] = None,
+) -&gt; UsersResponse:
+    return sync(
+        Supertokens.get_instance().get_users(
+            &#34;DESC&#34;, limit, pagination_token, include_recipe_ids
+        )
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.syncio.get_users_oldest_first"><code class="name flex">
@@ -123,10 +141,16 @@ def delete_user(user_id: str) -&gt; None:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_users_oldest_first(limit: Union[int, None] = None, pagination_token: Union[str, None] = None,
-                           include_recipe_ids: Union[None, List[str]] = None) -&gt; UsersResponse:
-    return sync(Supertokens.get_instance().get_users(
-        &#39;ASC&#39;, limit, pagination_token, include_recipe_ids))</code></pre>
+<pre><code class="python">def get_users_oldest_first(
+    limit: Union[int, None] = None,
+    pagination_token: Union[str, None] = None,
+    include_recipe_ids: Union[None, List[str]] = None,
+) -&gt; UsersResponse:
+    return sync(
+        Supertokens.get_instance().get_users(
+            &#34;ASC&#34;, limit, pagination_token, include_recipe_ids
+        )
+    )</code></pre>
 </details>
 </dd>
 </dl>

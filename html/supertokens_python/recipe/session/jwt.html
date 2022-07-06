@@ -50,8 +50,8 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature.pkcs1_15 import PKCS115_SigScheme
 from supertokens_python.utils import utf_base64decode, utf_base64encode
 
-_key_start = &#39;-----BEGIN PUBLIC KEY-----\n&#39;
-_key_end = &#39;\n-----END PUBLIC KEY-----&#39;
+_key_start = &#34;-----BEGIN PUBLIC KEY-----\n&#34;
+_key_end = &#34;\n-----END PUBLIC KEY-----&#34;
 
 &#34;&#34;&#34;
 why separators is used in dumps:
@@ -60,11 +60,15 @@ why separators is used in dumps:
 
 we require the non-spaced version, else the base64 encoding string will end up different than required
 &#34;&#34;&#34;
-_allowed_headers = [utf_base64encode(dumps({
-    &#39;alg&#39;: &#39;RS256&#39;,
-    &#39;typ&#39;: &#39;JWT&#39;,
-    &#39;version&#39;: &#39;2&#39;
-}, separators=(&#39;,&#39;, &#39;:&#39;), sort_keys=True))]
+_allowed_headers = [
+    utf_base64encode(
+        dumps(
+            {&#34;alg&#34;: &#34;RS256&#34;, &#34;typ&#34;: &#34;JWT&#34;, &#34;version&#34;: &#34;2&#34;},
+            separators=(&#34;,&#34;, &#34;:&#34;),
+            sort_keys=True,
+        )
+    )
+]
 
 
 def get_payload(jwt: str, signing_public_key: str):
@@ -77,16 +81,12 @@ def get_payload(jwt: str, signing_public_key: str):
         raise Exception(&#34;jwt header mismatch&#34;)
 
     public_key = RSA.import_key(
-        _key_start +
-        &#34;\n&#34;.join(
-            wrap(
-                signing_public_key,
-                width=64)) +
-        _key_end)
+        _key_start + &#34;\n&#34;.join(wrap(signing_public_key, width=64)) + _key_end
+    )
     verifier = PKCS115_SigScheme(public_key)
-    to_verify = SHA256.new((header + &#34;.&#34; + payload).encode(&#39;utf-8&#39;))
+    to_verify = SHA256.new((header + &#34;.&#34; + payload).encode(&#34;utf-8&#34;))
     try:
-        verifier.verify(to_verify, b64decode(signature.encode(&#39;utf-8&#39;)))
+        verifier.verify(to_verify, b64decode(signature.encode(&#34;utf-8&#34;)))
     except BaseException:
         raise Exception(&#34;jwt verification failed&#34;)
 
@@ -128,16 +128,12 @@ def get_payload_without_verifying(jwt: str) -&gt; Dict[str, Any]:
         raise Exception(&#34;jwt header mismatch&#34;)
 
     public_key = RSA.import_key(
-        _key_start +
-        &#34;\n&#34;.join(
-            wrap(
-                signing_public_key,
-                width=64)) +
-        _key_end)
+        _key_start + &#34;\n&#34;.join(wrap(signing_public_key, width=64)) + _key_end
+    )
     verifier = PKCS115_SigScheme(public_key)
-    to_verify = SHA256.new((header + &#34;.&#34; + payload).encode(&#39;utf-8&#39;))
+    to_verify = SHA256.new((header + &#34;.&#34; + payload).encode(&#34;utf-8&#34;))
     try:
-        verifier.verify(to_verify, b64decode(signature.encode(&#39;utf-8&#39;)))
+        verifier.verify(to_verify, b64decode(signature.encode(&#34;utf-8&#34;)))
     except BaseException:
         raise Exception(&#34;jwt verification failed&#34;)
 

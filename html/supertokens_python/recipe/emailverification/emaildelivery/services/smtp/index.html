@@ -42,11 +42,16 @@
 
 from typing import Any, Dict, Callable, Union
 
-from supertokens_python.ingredients.emaildelivery.services.smtp import (
-    Transporter)
-from supertokens_python.ingredients.emaildelivery.types import \
-    EmailDeliveryInterface, SMTPServiceInterface, SMTPSettings
-from supertokens_python.recipe.emailverification.types import VerificationEmailTemplateVars, SMTPOverrideInput
+from supertokens_python.ingredients.emaildelivery.services.smtp import Transporter
+from supertokens_python.ingredients.emaildelivery.types import (
+    EmailDeliveryInterface,
+    SMTPServiceInterface,
+    SMTPSettings,
+)
+from supertokens_python.recipe.emailverification.types import (
+    VerificationEmailTemplateVars,
+    SMTPOverrideInput,
+)
 
 from .service_implementation import ServiceImplementation
 
@@ -54,14 +59,21 @@ from .service_implementation import ServiceImplementation
 class SMTPService(EmailDeliveryInterface[VerificationEmailTemplateVars]):
     service_implementation: SMTPServiceInterface[VerificationEmailTemplateVars]
 
-    def __init__(self, smtp_settings: SMTPSettings,
-                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -&gt; None:
+    def __init__(
+        self,
+        smtp_settings: SMTPSettings,
+        override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None,
+    ) -&gt; None:
         transporter = Transporter(smtp_settings)
         oi = ServiceImplementation(transporter)
         self.service_implementation = oi if override is None else override(oi)
 
-    async def send_email(self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
-        content = await self.service_implementation.get_content(template_vars, user_context)
+    async def send_email(
+        self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
+    ) -&gt; None:
+        content = await self.service_implementation.get_content(
+            template_vars, user_context
+        )
         await self.service_implementation.send_raw_email(content, user_context)</code></pre>
 </details>
 </section>
@@ -103,14 +115,21 @@ inheritance.</p></div>
 <pre><code class="python">class SMTPService(EmailDeliveryInterface[VerificationEmailTemplateVars]):
     service_implementation: SMTPServiceInterface[VerificationEmailTemplateVars]
 
-    def __init__(self, smtp_settings: SMTPSettings,
-                 override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None) -&gt; None:
+    def __init__(
+        self,
+        smtp_settings: SMTPSettings,
+        override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None,
+    ) -&gt; None:
         transporter = Transporter(smtp_settings)
         oi = ServiceImplementation(transporter)
         self.service_implementation = oi if override is None else override(oi)
 
-    async def send_email(self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
-        content = await self.service_implementation.get_content(template_vars, user_context)
+    async def send_email(
+        self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
+    ) -&gt; None:
+        content = await self.service_implementation.get_content(
+            template_vars, user_context
+        )
         await self.service_implementation.send_raw_email(content, user_context)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -137,8 +156,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_email(self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]) -&gt; None:
-    content = await self.service_implementation.get_content(template_vars, user_context)
+<pre><code class="python">async def send_email(
+    self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
+) -&gt; None:
+    content = await self.service_implementation.get_content(
+        template_vars, user_context
+    )
     await self.service_implementation.send_raw_email(content, user_context)</code></pre>
 </details>
 </dd>

@@ -1,6 +1,6 @@
 # Django3 example
 
-This is an example to show how to use supertokens-python library with django2 framework. This example works with django version 2.2.23 and python version 3.8. 
+This is an example to show how to use supertokens-python library with django3 framework. This example works with django version 3.2.12 and python version 3.8. 
 
 ## Installation
 

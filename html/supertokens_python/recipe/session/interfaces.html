@@ -67,15 +67,22 @@ class AccessTokenObj:
         self.created_time = created_time
 
 
-class RegenerateAccessTokenOkResult():
-    def __init__(self, session: SessionObj,
-                 access_token: Union[AccessTokenObj, None]):
+class RegenerateAccessTokenOkResult:
+    def __init__(self, session: SessionObj, access_token: Union[AccessTokenObj, None]):
         self.session = session
         self.access_token = access_token
 
 
-class SessionInformationResult():
-    def __init__(self, session_handle: str, user_id: str, session_data: Dict[str, Any], expiry: int, access_token_payload: Dict[str, Any], time_created: int):
+class SessionInformationResult:
+    def __init__(
+        self,
+        session_handle: str,
+        user_id: str,
+        session_data: Dict[str, Any],
+        expiry: int,
+        access_token_payload: Dict[str, Any],
+        time_created: int,
+    ):
         self.session_handle: str = session_handle
         self.user_id: str = user_id
         self.session_data: Dict[str, Any] = session_data
@@ -89,47 +96,78 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def create_new_session(self, request: Any, user_id: str,
-                                 access_token_payload: Union[None, Dict[str, Any]],
-                                 session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) -&gt; SessionContainer:
+    async def create_new_session(
+        self,
+        request: BaseRequest,
+        user_id: str,
+        access_token_payload: Union[None, Dict[str, Any]],
+        session_data: Union[None, Dict[str, Any]],
+        user_context: Dict[str, Any],
+    ) -&gt; SessionContainer:
         pass
 
     @abstractmethod
-    async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
-                          session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
+    async def get_session(
+        self,
+        request: BaseRequest,
+        anti_csrf_check: Union[bool, None],
+        session_required: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[SessionContainer, None]:
         pass
 
     @abstractmethod
-    async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt; SessionContainer:
+    async def refresh_session(
+        self, request: BaseRequest, user_context: Dict[str, Any]
+    ) -&gt; SessionContainer:
         pass
 
     @abstractmethod
-    async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -&gt; bool:
+    async def revoke_session(
+        self, session_handle: str, user_context: Dict[str, Any]
+    ) -&gt; bool:
         pass
 
     @abstractmethod
-    async def revoke_all_sessions_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+    async def revoke_all_sessions_for_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; List[str]:
         pass
 
     @abstractmethod
-    async def get_all_session_handles_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+    async def get_all_session_handles_for_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; List[str]:
         pass
 
     @abstractmethod
-    async def revoke_multiple_sessions(self, session_handles: List[str], user_context: Dict[str, Any]) -&gt; List[str]:
+    async def revoke_multiple_sessions(
+        self, session_handles: List[str], user_context: Dict[str, Any]
+    ) -&gt; List[str]:
         pass
 
     @abstractmethod
-    async def get_session_information(self, session_handle: str, user_context: Dict[str, Any]) -&gt; SessionInformationResult:
+    async def get_session_information(
+        self, session_handle: str, user_context: Dict[str, Any]
+    ) -&gt; Union[SessionInformationResult, None]:
         pass
 
     @abstractmethod
-    async def update_session_data(self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
+    async def update_session_data(
+        self,
+        session_handle: str,
+        new_session_data: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
         pass
 
     @abstractmethod
-    async def update_access_token_payload(self, session_handle: str,
-                                          new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
+    async def update_access_token_payload(
+        self,
+        session_handle: str,
+        new_access_token_payload: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
         pass
 
     @abstractmethod
@@ -141,25 +179,32 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def regenerate_access_token(self,
-                                      access_token: str,
-                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenOkResult:
+    async def regenerate_access_token(
+        self,
+        access_token: str,
+        new_access_token_payload: Union[Dict[str, Any], None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[RegenerateAccessTokenOkResult, None]:
         pass
 
 
 class SignOutOkayResponse(APIResponse):
     def __init__(self):
-        self.status = &#39;OK&#39;
+        self.status = &#34;OK&#34;
 
     def to_json(self) -&gt; Dict[str, Any]:
-        return {
-            &#39;status&#39;: self.status
-        }
+        return {&#34;status&#34;: self.status}
 
 
 class APIOptions:
-    def __init__(self, request: BaseRequest, response: Union[None, BaseResponse],
-                 recipe_id: str, config: SessionConfig, recipe_implementation: RecipeInterface):
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: Union[None, BaseResponse],
+        recipe_id: str,
+        config: SessionConfig,
+        recipe_implementation: RecipeInterface,
+    ):
         self.request: BaseRequest = request
         self.response: Union[None, BaseResponse] = response
         self.recipe_id: str = recipe_id
@@ -177,22 +222,37 @@ class APIInterface(ABC):
     # frontend anyway
 
     @abstractmethod
-    async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; None:
+    async def refresh_post(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; None:
         pass
 
     @abstractmethod
-    async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
+    async def signout_post(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
-    async def verify_session(self, api_options: APIOptions,
-                             anti_csrf_check: Union[bool, None],
-                             session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
+    async def verify_session(
+        self,
+        api_options: APIOptions,
+        anti_csrf_check: Union[bool, None],
+        session_required: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[SessionContainer, None]:
         pass
 
 
 class SessionContainer(ABC):
-    def __init__(self, recipe_implementation: RecipeInterface, access_token: str, session_handle: str, user_id: str, access_token_payload: Dict[str, Any]):
+    def __init__(
+        self,
+        recipe_implementation: RecipeInterface,
+        access_token: str,
+        session_handle: str,
+        user_id: str,
+        access_token_payload: Dict[str, Any],
+    ):
         self.recipe_implementation = recipe_implementation
         self.access_token = access_token
         self.session_handle = session_handle
@@ -209,15 +269,25 @@ class SessionContainer(ABC):
         pass
 
     @abstractmethod
-    async def get_session_data(self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+    async def get_session_data(
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Dict[str, Any]:
         pass
 
     @abstractmethod
-    async def update_session_data(self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+    async def update_session_data(
+        self,
+        new_session_data: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
         pass
 
     @abstractmethod
-    async def update_access_token_payload(self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+    async def update_access_token_payload(
+        self,
+        new_access_token_payload: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
         pass
 
     @abstractmethod
@@ -226,7 +296,8 @@ class SessionContainer(ABC):
 
     @abstractmethod
     def get_access_token_payload(
-            self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Dict[str, Any]:
         pass
 
     @abstractmethod
@@ -238,7 +309,9 @@ class SessionContainer(ABC):
         pass
 
     @abstractmethod
-    async def get_time_created(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+    async def get_time_created(
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; int:
         pass
 
     @abstractmethod
@@ -249,23 +322,34 @@ class SessionContainer(ABC):
         return sync(self.get_expiry(user_context))
 
     def sync_revoke_session(
-            self, user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; None:
         return sync(self.revoke_session(user_context=user_context))
 
     def sync_get_session_data(
-            self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Dict[str, Any]:
         return sync(self.get_session_data(user_context))
 
     def sync_get_time_created(
-            self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; int:
         return sync(self.get_time_created(user_context))
 
     def sync_update_access_token_payload(
-            self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
-        return sync(self.update_access_token_payload(new_access_token_payload, user_context))
+        self,
+        new_access_token_payload: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
+        return sync(
+            self.update_access_token_payload(new_access_token_payload, user_context)
+        )
 
     def sync_update_session_data(
-            self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+        self,
+        new_session_data: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
         return sync(self.update_session_data(new_session_data, user_context))
 
     # This is there so that we can do session[&#34;...&#34;] to access some of the members of this class
@@ -302,17 +386,25 @@ inheritance.</p></div>
     # frontend anyway
 
     @abstractmethod
-    async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; None:
+    async def refresh_post(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; None:
         pass
 
     @abstractmethod
-    async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
+    async def signout_post(
+        self, api_options: APIOptions, user_context: Dict[str, Any]
+    ) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
-    async def verify_session(self, api_options: APIOptions,
-                             anti_csrf_check: Union[bool, None],
-                             session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
+    async def verify_session(
+        self,
+        api_options: APIOptions,
+        anti_csrf_check: Union[bool, None],
+        session_required: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[SessionContainer, None]:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -335,7 +427,9 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; None:
+async def refresh_post(
+    self, api_options: APIOptions, user_context: Dict[str, Any]
+) -&gt; None:
     pass</code></pre>
 </details>
 </dd>
@@ -349,7 +443,9 @@ async def refresh_post(self, api_options: APIOptions, user_context: Dict[str, An
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def signout_post(self, api_options: APIOptions, user_context: Dict[str, Any]) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
+async def signout_post(
+    self, api_options: APIOptions, user_context: Dict[str, Any]
+) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
@@ -363,9 +459,13 @@ async def signout_post(self, api_options: APIOptions, user_context: Dict[str, An
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def verify_session(self, api_options: APIOptions,
-                         anti_csrf_check: Union[bool, None],
-                         session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
+async def verify_session(
+    self,
+    api_options: APIOptions,
+    anti_csrf_check: Union[bool, None],
+    session_required: bool,
+    user_context: Dict[str, Any],
+) -&gt; Union[SessionContainer, None]:
     pass</code></pre>
 </details>
 </dd>
@@ -382,8 +482,14 @@ async def verify_session(self, api_options: APIOptions,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class APIOptions:
-    def __init__(self, request: BaseRequest, response: Union[None, BaseResponse],
-                 recipe_id: str, config: SessionConfig, recipe_implementation: RecipeInterface):
+    def __init__(
+        self,
+        request: BaseRequest,
+        response: Union[None, BaseResponse],
+        recipe_id: str,
+        config: SessionConfig,
+        recipe_implementation: RecipeInterface,
+    ):
         self.request: BaseRequest = request
         self.response: Union[None, BaseResponse] = response
         self.recipe_id: str = recipe_id
@@ -423,47 +529,78 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def create_new_session(self, request: Any, user_id: str,
-                                 access_token_payload: Union[None, Dict[str, Any]],
-                                 session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) -&gt; SessionContainer:
+    async def create_new_session(
+        self,
+        request: BaseRequest,
+        user_id: str,
+        access_token_payload: Union[None, Dict[str, Any]],
+        session_data: Union[None, Dict[str, Any]],
+        user_context: Dict[str, Any],
+    ) -&gt; SessionContainer:
         pass
 
     @abstractmethod
-    async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
-                          session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
+    async def get_session(
+        self,
+        request: BaseRequest,
+        anti_csrf_check: Union[bool, None],
+        session_required: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[SessionContainer, None]:
         pass
 
     @abstractmethod
-    async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt; SessionContainer:
+    async def refresh_session(
+        self, request: BaseRequest, user_context: Dict[str, Any]
+    ) -&gt; SessionContainer:
         pass
 
     @abstractmethod
-    async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -&gt; bool:
+    async def revoke_session(
+        self, session_handle: str, user_context: Dict[str, Any]
+    ) -&gt; bool:
         pass
 
     @abstractmethod
-    async def revoke_all_sessions_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+    async def revoke_all_sessions_for_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; List[str]:
         pass
 
     @abstractmethod
-    async def get_all_session_handles_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+    async def get_all_session_handles_for_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; List[str]:
         pass
 
     @abstractmethod
-    async def revoke_multiple_sessions(self, session_handles: List[str], user_context: Dict[str, Any]) -&gt; List[str]:
+    async def revoke_multiple_sessions(
+        self, session_handles: List[str], user_context: Dict[str, Any]
+    ) -&gt; List[str]:
         pass
 
     @abstractmethod
-    async def get_session_information(self, session_handle: str, user_context: Dict[str, Any]) -&gt; SessionInformationResult:
+    async def get_session_information(
+        self, session_handle: str, user_context: Dict[str, Any]
+    ) -&gt; Union[SessionInformationResult, None]:
         pass
 
     @abstractmethod
-    async def update_session_data(self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
+    async def update_session_data(
+        self,
+        session_handle: str,
+        new_session_data: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
         pass
 
     @abstractmethod
-    async def update_access_token_payload(self, session_handle: str,
-                                          new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
+    async def update_access_token_payload(
+        self,
+        session_handle: str,
+        new_access_token_payload: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
         pass
 
     @abstractmethod
@@ -475,9 +612,12 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def regenerate_access_token(self,
-                                      access_token: str,
-                                      new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenOkResult:
+    async def regenerate_access_token(
+        self,
+        access_token: str,
+        new_access_token_payload: Union[Dict[str, Any], None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[RegenerateAccessTokenOkResult, None]:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -491,7 +631,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.create_new_session"><code class="name flex">
-<span>async def <span class="ident">create_new_session</span></span>(<span>self, request: Any, user_id: str, access_token_payload: Union[None, Dict[str, Any]], session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+<span>async def <span class="ident">create_new_session</span></span>(<span>self, request: BaseRequest, user_id: str, access_token_payload: Union[None, Dict[str, Any]], session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -500,9 +640,14 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def create_new_session(self, request: Any, user_id: str,
-                             access_token_payload: Union[None, Dict[str, Any]],
-                             session_data: Union[None, Dict[str, Any]], user_context: Dict[str, Any]) -&gt; SessionContainer:
+async def create_new_session(
+    self,
+    request: BaseRequest,
+    user_id: str,
+    access_token_payload: Union[None, Dict[str, Any]],
+    session_data: Union[None, Dict[str, Any]],
+    user_context: Dict[str, Any],
+) -&gt; SessionContainer:
     pass</code></pre>
 </details>
 </dd>
@@ -530,7 +675,9 @@ async def get_access_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt;
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_all_session_handles_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+async def get_all_session_handles_for_user(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; List[str]:
     pass</code></pre>
 </details>
 </dd>
@@ -549,7 +696,7 @@ async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.get_session"><code class="name flex">
-<span>async def <span class="ident">get_session</span></span>(<span>self, request: Any, anti_csrf_check: Union[bool, None], session_required: bool, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
+<span>async def <span class="ident">get_session</span></span>(<span>self, request: BaseRequest, anti_csrf_check: Union[bool, None], session_required: bool, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -558,13 +705,18 @@ async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
-                      session_required: bool, user_context: Dict[str, Any]) -&gt; Union[SessionContainer, None]:
+async def get_session(
+    self,
+    request: BaseRequest,
+    anti_csrf_check: Union[bool, None],
+    session_required: bool,
+    user_context: Dict[str, Any],
+) -&gt; Union[SessionContainer, None]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.get_session_information"><code class="name flex">
-<span>async def <span class="ident">get_session_information</span></span>(<span>self, session_handle: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionInformationResult" href="#supertokens_python.recipe.session.interfaces.SessionInformationResult">SessionInformationResult</a></span>
+<span>async def <span class="ident">get_session_information</span></span>(<span>self, session_handle: str, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionInformationResult" href="#supertokens_python.recipe.session.interfaces.SessionInformationResult">SessionInformationResult</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -573,12 +725,14 @@ async def get_session(self, request: Any, anti_csrf_check: Union[bool, None],
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_session_information(self, session_handle: str, user_context: Dict[str, Any]) -&gt; SessionInformationResult:
+async def get_session_information(
+    self, session_handle: str, user_context: Dict[str, Any]
+) -&gt; Union[SessionInformationResult, None]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.refresh_session"><code class="name flex">
-<span>async def <span class="ident">refresh_session</span></span>(<span>self, request: Any, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
+<span>async def <span class="ident">refresh_session</span></span>(<span>self, request: BaseRequest, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -587,12 +741,14 @@ async def get_session_information(self, session_handle: str, user_context: Dict[
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt; SessionContainer:
+async def refresh_session(
+    self, request: BaseRequest, user_context: Dict[str, Any]
+) -&gt; SessionContainer:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.regenerate_access_token"><code class="name flex">
-<span>async def <span class="ident">regenerate_access_token</span></span>(<span>self, access_token: str, new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult" href="#supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult">RegenerateAccessTokenOkResult</a></span>
+<span>async def <span class="ident">regenerate_access_token</span></span>(<span>self, access_token: str, new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult" href="#supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult">RegenerateAccessTokenOkResult</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -601,9 +757,12 @@ async def refresh_session(self, request: Any, user_context: Dict[str, Any]) -&gt
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def regenerate_access_token(self,
-                                  access_token: str,
-                                  new_access_token_payload: Union[Dict[str, Any], None], user_context: Dict[str, Any]) -&gt; RegenerateAccessTokenOkResult:
+async def regenerate_access_token(
+    self,
+    access_token: str,
+    new_access_token_payload: Union[Dict[str, Any], None],
+    user_context: Dict[str, Any],
+) -&gt; Union[RegenerateAccessTokenOkResult, None]:
     pass</code></pre>
 </details>
 </dd>
@@ -617,7 +776,9 @@ async def regenerate_access_token(self,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def revoke_all_sessions_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+async def revoke_all_sessions_for_user(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; List[str]:
     pass</code></pre>
 </details>
 </dd>
@@ -631,7 +792,9 @@ async def revoke_all_sessions_for_user(self, user_id: str, user_context: Dict[st
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def revoke_multiple_sessions(self, session_handles: List[str], user_context: Dict[str, Any]) -&gt; List[str]:
+async def revoke_multiple_sessions(
+    self, session_handles: List[str], user_context: Dict[str, Any]
+) -&gt; List[str]:
     pass</code></pre>
 </details>
 </dd>
@@ -645,12 +808,14 @@ async def revoke_multiple_sessions(self, session_handles: List[str], user_contex
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]) -&gt; bool:
+async def revoke_session(
+    self, session_handle: str, user_context: Dict[str, Any]
+) -&gt; bool:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.update_access_token_payload"><code class="name flex">
-<span>async def <span class="ident">update_access_token_payload</span></span>(<span>self, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">update_access_token_payload</span></span>(<span>self, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -659,13 +824,17 @@ async def revoke_session(self, session_handle: str, user_context: Dict[str, Any]
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def update_access_token_payload(self, session_handle: str,
-                                      new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
+async def update_access_token_payload(
+    self,
+    session_handle: str,
+    new_access_token_payload: Dict[str, Any],
+    user_context: Dict[str, Any],
+) -&gt; bool:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.update_session_data"><code class="name flex">
-<span>async def <span class="ident">update_session_data</span></span>(<span>self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">update_session_data</span></span>(<span>self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -674,7 +843,12 @@ async def update_access_token_payload(self, session_handle: str,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def update_session_data(self, session_handle: str, new_session_data: Dict[str, Any], user_context: Dict[str, Any]) -&gt; None:
+async def update_session_data(
+    self,
+    session_handle: str,
+    new_session_data: Dict[str, Any],
+    user_context: Dict[str, Any],
+) -&gt; bool:
     pass</code></pre>
 </details>
 </dd>
@@ -690,9 +864,8 @@ async def update_session_data(self, session_handle: str, new_session_data: Dict[
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RegenerateAccessTokenOkResult():
-    def __init__(self, session: SessionObj,
-                 access_token: Union[AccessTokenObj, None]):
+<pre><code class="python">class RegenerateAccessTokenOkResult:
+    def __init__(self, session: SessionObj, access_token: Union[AccessTokenObj, None]):
         self.session = session
         self.access_token = access_token</code></pre>
 </details>
@@ -709,7 +882,14 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class SessionContainer(ABC):
-    def __init__(self, recipe_implementation: RecipeInterface, access_token: str, session_handle: str, user_id: str, access_token_payload: Dict[str, Any]):
+    def __init__(
+        self,
+        recipe_implementation: RecipeInterface,
+        access_token: str,
+        session_handle: str,
+        user_id: str,
+        access_token_payload: Dict[str, Any],
+    ):
         self.recipe_implementation = recipe_implementation
         self.access_token = access_token
         self.session_handle = session_handle
@@ -726,15 +906,25 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def get_session_data(self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+    async def get_session_data(
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Dict[str, Any]:
         pass
 
     @abstractmethod
-    async def update_session_data(self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+    async def update_session_data(
+        self,
+        new_session_data: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
         pass
 
     @abstractmethod
-    async def update_access_token_payload(self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+    async def update_access_token_payload(
+        self,
+        new_access_token_payload: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
         pass
 
     @abstractmethod
@@ -743,7 +933,8 @@ inheritance.</p></div>
 
     @abstractmethod
     def get_access_token_payload(
-            self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Dict[str, Any]:
         pass
 
     @abstractmethod
@@ -755,7 +946,9 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def get_time_created(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+    async def get_time_created(
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; int:
         pass
 
     @abstractmethod
@@ -766,23 +959,34 @@ inheritance.</p></div>
         return sync(self.get_expiry(user_context))
 
     def sync_revoke_session(
-            self, user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; None:
         return sync(self.revoke_session(user_context=user_context))
 
     def sync_get_session_data(
-            self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Dict[str, Any]:
         return sync(self.get_session_data(user_context))
 
     def sync_get_time_created(
-            self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+        self, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; int:
         return sync(self.get_time_created(user_context))
 
     def sync_update_access_token_payload(
-            self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
-        return sync(self.update_access_token_payload(new_access_token_payload, user_context))
+        self,
+        new_access_token_payload: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
+        return sync(
+            self.update_access_token_payload(new_access_token_payload, user_context)
+        )
 
     def sync_update_session_data(
-            self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+        self,
+        new_session_data: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; None:
         return sync(self.update_session_data(new_session_data, user_context))
 
     # This is there so that we can do session[&#34;...&#34;] to access some of the members of this class
@@ -824,7 +1028,8 @@ def get_access_token(self, user_context: Union[Dict[str, Any], None] = None) -&g
 </summary>
 <pre><code class="python">@abstractmethod
 def get_access_token_payload(
-        self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+    self, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Dict[str, Any]:
     pass</code></pre>
 </details>
 </dd>
@@ -866,7 +1071,9 @@ def get_handle(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_session_data(self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+async def get_session_data(
+    self, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Dict[str, Any]:
     pass</code></pre>
 </details>
 </dd>
@@ -880,7 +1087,9 @@ async def get_session_data(self, user_context: Union[Dict[str, Any], None] = Non
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_time_created(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+async def get_time_created(
+    self, user_context: Union[Dict[str, Any], None] = None
+) -&gt; int:
     pass</code></pre>
 </details>
 </dd>
@@ -935,7 +1144,8 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sync_get_session_data(
-        self, user_context: Union[Dict[str, Any], None] = None) -&gt; Dict[str, Any]:
+    self, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Dict[str, Any]:
     return sync(self.get_session_data(user_context))</code></pre>
 </details>
 </dd>
@@ -949,7 +1159,8 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sync_get_time_created(
-        self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+    self, user_context: Union[Dict[str, Any], None] = None
+) -&gt; int:
     return sync(self.get_time_created(user_context))</code></pre>
 </details>
 </dd>
@@ -963,7 +1174,8 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sync_revoke_session(
-        self, user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+    self, user_context: Union[Dict[str, Any], None] = None
+) -&gt; None:
     return sync(self.revoke_session(user_context=user_context))</code></pre>
 </details>
 </dd>
@@ -977,8 +1189,13 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sync_update_access_token_payload(
-        self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
-    return sync(self.update_access_token_payload(new_access_token_payload, user_context))</code></pre>
+    self,
+    new_access_token_payload: Dict[str, Any],
+    user_context: Union[Dict[str, Any], None] = None,
+) -&gt; None:
+    return sync(
+        self.update_access_token_payload(new_access_token_payload, user_context)
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_update_session_data"><code class="name flex">
@@ -991,7 +1208,10 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sync_update_session_data(
-        self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+    self,
+    new_session_data: Dict[str, Any],
+    user_context: Union[Dict[str, Any], None] = None,
+) -&gt; None:
     return sync(self.update_session_data(new_session_data, user_context))</code></pre>
 </details>
 </dd>
@@ -1005,7 +1225,11 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def update_access_token_payload(self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+async def update_access_token_payload(
+    self,
+    new_access_token_payload: Dict[str, Any],
+    user_context: Union[Dict[str, Any], None] = None,
+) -&gt; None:
     pass</code></pre>
 </details>
 </dd>
@@ -1019,7 +1243,11 @@ async def update_access_token_payload(self, new_access_token_payload: Dict[str, 
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def update_session_data(self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) -&gt; None:
+async def update_session_data(
+    self,
+    new_session_data: Dict[str, Any],
+    user_context: Union[Dict[str, Any], None] = None,
+) -&gt; None:
     pass</code></pre>
 </details>
 </dd>
@@ -1035,8 +1263,16 @@ async def update_session_data(self, new_session_data: Dict[str, Any], user_conte
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SessionInformationResult():
-    def __init__(self, session_handle: str, user_id: str, session_data: Dict[str, Any], expiry: int, access_token_payload: Dict[str, Any], time_created: int):
+<pre><code class="python">class SessionInformationResult:
+    def __init__(
+        self,
+        session_handle: str,
+        user_id: str,
+        session_data: Dict[str, Any],
+        expiry: int,
+        access_token_payload: Dict[str, Any],
+        time_created: int,
+    ):
         self.session_handle: str = session_handle
         self.user_id: str = user_id
         self.session_data: Dict[str, Any] = session_data
@@ -1074,12 +1310,10 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class SignOutOkayResponse(APIResponse):
     def __init__(self):
-        self.status = &#39;OK&#39;
+        self.status = &#34;OK&#34;
 
     def to_json(self) -&gt; Dict[str, Any]:
-        return {
-            &#39;status&#39;: self.status
-        }</code></pre>
+        return {&#34;status&#34;: self.status}</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1098,9 +1332,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    return {
-        &#39;status&#39;: self.status
-    }</code></pre>
+    return {&#34;status&#34;: self.status}</code></pre>
 </details>
 </dd>
 </dl>

@@ -14,12 +14,20 @@
 from __future__ import annotations
 
 from supertokens_python.recipe.emailverification.interfaces import (
-    APIInterface, APIOptions)
-from supertokens_python.utils import send_200_response
+    APIInterface,
+    APIOptions,
+)
+from supertokens_python.utils import default_user_context, send_200_response
 
 
-async def handle_generate_email_verify_token_api(api_implementation: APIInterface, api_options: APIOptions):
+async def handle_generate_email_verify_token_api(
+    api_implementation: APIInterface, api_options: APIOptions
+):
     if api_implementation.disable_generate_email_verify_token_post:
         return None
-    result = await api_implementation.generate_email_verify_token_post(api_options, {})
+    user_context = default_user_context(api_options.request)
+
+    result = await api_implementation.generate_email_verify_token_post(
+        api_options, user_context
+    )
     return send_200_response(result.to_json(), api_options.response)

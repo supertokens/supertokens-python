@@ -20,25 +20,33 @@ from supertokens_python.ingredients.emaildelivery.types import EmailContent
 from supertokens_python.supertokens import Supertokens
 from supertokens_python.utils import humanize_time
 
-from .pless_login_email import (magic_link_body, otp_and_magic_link_body,
-                                otp_body)
+from .pless_login_email import magic_link_body, otp_and_magic_link_body, otp_body
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.passwordless.interfaces import \
-        PasswordlessLoginEmailTemplateVars
+    from supertokens_python.recipe.passwordless.interfaces import (
+        PasswordlessLoginEmailTemplateVars,
+    )
 
 
 def pless_email_content(input_: PasswordlessLoginEmailTemplateVars) -> EmailContent:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
     code_lifetime = humanize_time(input_.code_life_time)
-    body = get_pless_email_html(app_name, code_lifetime, input_.email, input_.url_with_link_code, input_.user_input_code)
+    body = get_pless_email_html(
+        app_name,
+        code_lifetime,
+        input_.email,
+        input_.url_with_link_code,
+        input_.user_input_code,
+    )
     content_result = EmailContent(body, "Login to your account", input_.email, True)
     return content_result
 
 
 def get_pless_email_html(
-    app_name: str, code_lifetime: str, email: str,
+    app_name: str,
+    code_lifetime: str,
+    email: str,
     url_with_link_code: Union[str, None] = None,
     user_input_code: Union[str, None] = None,
 ):

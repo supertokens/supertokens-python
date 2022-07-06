@@ -15,18 +15,28 @@
 from string import Template
 
 from supertokens_python.ingredients.emaildelivery.types import EmailContent
-from supertokens_python.recipe.emailverification.types import VerificationEmailTemplateVars
+from supertokens_python.recipe.emailverification.types import (
+    VerificationEmailTemplateVars,
+)
 from supertokens_python.supertokens import Supertokens
 
 from .email_verify_email import html_template
 
 
-def get_email_verify_email_content(email_input: VerificationEmailTemplateVars) -> EmailContent:
+def get_email_verify_email_content(
+    email_input: VerificationEmailTemplateVars,
+) -> EmailContent:
     supertokens = Supertokens.get_instance()
     app_name = supertokens.app_info.app_name
-    body = get_email_verify_email_html(app_name, email_input.user.email, email_input.email_verify_link)
-    return EmailContent(body, "Email verification instructions", email_input.user.email, is_html=True)
+    body = get_email_verify_email_html(
+        app_name, email_input.user.email, email_input.email_verify_link
+    )
+    return EmailContent(
+        body, "Email verification instructions", email_input.user.email, is_html=True
+    )
 
 
 def get_email_verify_email_html(app_name: str, email: str, verification_link: str):
-    return Template(html_template).substitute(appname=app_name, verificationLink=verification_link, toEmail=email)
+    return Template(html_template).substitute(
+        appname=app_name, verificationLink=verification_link, toEmail=email
+    )

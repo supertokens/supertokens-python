@@ -29,80 +29,121 @@
 <pre><code class="python">from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.userroles.interfaces import (
-    AddRoleToUserOkResult, CreateNewRoleOrAddPermissionsOkResult,
-    DeleteRoleOkResult, GetAllRolesOkResult, GetPermissionsForRoleOkResult,
-    GetRolesForUserOkResult, GetRolesThatHavePermissionOkResult,
-    GetUsersThatHaveRoleOkResult, RemovePermissionsFromRoleOkResult,
-    RemoveUserRoleOkResult, UnknownRoleError)
+    AddRoleToUserOkResult,
+    CreateNewRoleOrAddPermissionsOkResult,
+    DeleteRoleOkResult,
+    GetAllRolesOkResult,
+    GetPermissionsForRoleOkResult,
+    GetRolesForUserOkResult,
+    GetRolesThatHavePermissionOkResult,
+    GetUsersThatHaveRoleOkResult,
+    RemovePermissionsFromRoleOkResult,
+    RemoveUserRoleOkResult,
+    UnknownRoleError,
+)
 from supertokens_python.recipe.userroles.recipe import UserRolesRecipe
 
 
-async def add_role_to_user(user_id: str, role: str,
-                           user_context: Union[Dict[str, Any], None] = None) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
+async def add_role_to_user(
+    user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.add_role_to_user(user_id, role, user_context)
+    return await UserRolesRecipe.get_instance().recipe_implementation.add_role_to_user(
+        user_id, role, user_context
+    )
 
 
-async def remove_user_role(user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
+async def remove_user_role(
+    user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.remove_user_role(user_id, role, user_context)
+    return await UserRolesRecipe.get_instance().recipe_implementation.remove_user_role(
+        user_id, role, user_context
+    )
 
 
-async def get_roles_for_user(user_id: str, user_context: Union[Dict[str, Any], None] = None) -&gt; GetRolesForUserOkResult:
+async def get_roles_for_user(
+    user_id: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; GetRolesForUserOkResult:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.get_roles_for_user(user_id, user_context)
+    return (
+        await UserRolesRecipe.get_instance().recipe_implementation.get_roles_for_user(
+            user_id, user_context
+        )
+    )
 
 
-async def get_users_that_have_role(role: str, user_context: Union[Dict[str, Any], None] = None) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
+async def get_users_that_have_role(
+    role: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.get_users_that_have_role(role, user_context)
+    return await UserRolesRecipe.get_instance().recipe_implementation.get_users_that_have_role(
+        role, user_context
+    )
 
 
-async def create_new_role_or_add_permissions(role: str, permissions: List[str],
-                                             user_context: Union[Dict[str, Any], None] = None) -&gt; CreateNewRoleOrAddPermissionsOkResult:
+async def create_new_role_or_add_permissions(
+    role: str, permissions: List[str], user_context: Union[Dict[str, Any], None] = None
+) -&gt; CreateNewRoleOrAddPermissionsOkResult:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.create_new_role_or_add_permissions(role,
-                                                                                                         permissions,
-                                                                                                         user_context)
+    return await UserRolesRecipe.get_instance().recipe_implementation.create_new_role_or_add_permissions(
+        role, permissions, user_context
+    )
 
 
-async def get_permissions_for_role(role: str, user_context: Union[Dict[str, Any], None] = None) -&gt; Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
+async def get_permissions_for_role(
+    role: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.get_permissions_for_role(role, user_context)
+    return await UserRolesRecipe.get_instance().recipe_implementation.get_permissions_for_role(
+        role, user_context
+    )
 
 
-async def remove_permissions_from_role(role: str, permissions: List[str],
-                                       user_context: Union[Dict[str, Any], None] = None) -&gt; Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
+async def remove_permissions_from_role(
+    role: str, permissions: List[str], user_context: Union[Dict[str, Any], None] = None
+) -&gt; Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.remove_permissions_from_role(role, permissions,
-                                                                                                   user_context)
+    return await UserRolesRecipe.get_instance().recipe_implementation.remove_permissions_from_role(
+        role, permissions, user_context
+    )
 
 
-async def get_roles_that_have_permission(permission: str,
-                                         user_context: Union[Dict[str, Any], None] = None) -&gt; GetRolesThatHavePermissionOkResult:
+async def get_roles_that_have_permission(
+    permission: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; GetRolesThatHavePermissionOkResult:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.get_roles_that_have_permission(permission,
-                                                                                                     user_context)
+    return await UserRolesRecipe.get_instance().recipe_implementation.get_roles_that_have_permission(
+        permission, user_context
+    )
 
 
-async def delete_role(role: str, user_context: Union[Dict[str, Any], None] = None) -&gt; DeleteRoleOkResult:
+async def delete_role(
+    role: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; DeleteRoleOkResult:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.delete_role(role, user_context)
+    return await UserRolesRecipe.get_instance().recipe_implementation.delete_role(
+        role, user_context
+    )
 
 
-async def get_all_roles(user_context: Union[Dict[str, Any], None] = None) -&gt; GetAllRolesOkResult:
+async def get_all_roles(
+    user_context: Union[Dict[str, Any], None] = None
+) -&gt; GetAllRolesOkResult:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.get_all_roles(user_context)</code></pre>
+    return await UserRolesRecipe.get_instance().recipe_implementation.get_all_roles(
+        user_context
+    )</code></pre>
 </details>
 </section>
 <section>
@@ -121,11 +162,14 @@ async def get_all_roles(user_context: Union[Dict[str, Any], None] = None) -&gt; 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def add_role_to_user(user_id: str, role: str,
-                           user_context: Union[Dict[str, Any], None] = None) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
+<pre><code class="python">async def add_role_to_user(
+    user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Union[AddRoleToUserOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.add_role_to_user(user_id, role, user_context)</code></pre>
+    return await UserRolesRecipe.get_instance().recipe_implementation.add_role_to_user(
+        user_id, role, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.asyncio.create_new_role_or_add_permissions"><code class="name flex">
@@ -137,13 +181,14 @@ async def get_all_roles(user_context: Union[Dict[str, Any], None] = None) -&gt; 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def create_new_role_or_add_permissions(role: str, permissions: List[str],
-                                             user_context: Union[Dict[str, Any], None] = None) -&gt; CreateNewRoleOrAddPermissionsOkResult:
+<pre><code class="python">async def create_new_role_or_add_permissions(
+    role: str, permissions: List[str], user_context: Union[Dict[str, Any], None] = None
+) -&gt; CreateNewRoleOrAddPermissionsOkResult:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.create_new_role_or_add_permissions(role,
-                                                                                                         permissions,
-                                                                                                         user_context)</code></pre>
+    return await UserRolesRecipe.get_instance().recipe_implementation.create_new_role_or_add_permissions(
+        role, permissions, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.asyncio.delete_role"><code class="name flex">
@@ -155,10 +200,14 @@ async def get_all_roles(user_context: Union[Dict[str, Any], None] = None) -&gt; 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def delete_role(role: str, user_context: Union[Dict[str, Any], None] = None) -&gt; DeleteRoleOkResult:
+<pre><code class="python">async def delete_role(
+    role: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; DeleteRoleOkResult:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.delete_role(role, user_context)</code></pre>
+    return await UserRolesRecipe.get_instance().recipe_implementation.delete_role(
+        role, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.asyncio.get_all_roles"><code class="name flex">
@@ -170,10 +219,14 @@ async def get_all_roles(user_context: Union[Dict[str, Any], None] = None) -&gt; 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_all_roles(user_context: Union[Dict[str, Any], None] = None) -&gt; GetAllRolesOkResult:
+<pre><code class="python">async def get_all_roles(
+    user_context: Union[Dict[str, Any], None] = None
+) -&gt; GetAllRolesOkResult:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.get_all_roles(user_context)</code></pre>
+    return await UserRolesRecipe.get_instance().recipe_implementation.get_all_roles(
+        user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.asyncio.get_permissions_for_role"><code class="name flex">
@@ -185,10 +238,14 @@ async def get_all_roles(user_context: Union[Dict[str, Any], None] = None) -&gt; 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_permissions_for_role(role: str, user_context: Union[Dict[str, Any], None] = None) -&gt; Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
+<pre><code class="python">async def get_permissions_for_role(
+    role: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.get_permissions_for_role(role, user_context)</code></pre>
+    return await UserRolesRecipe.get_instance().recipe_implementation.get_permissions_for_role(
+        role, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.asyncio.get_roles_for_user"><code class="name flex">
@@ -200,10 +257,16 @@ async def get_all_roles(user_context: Union[Dict[str, Any], None] = None) -&gt; 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_roles_for_user(user_id: str, user_context: Union[Dict[str, Any], None] = None) -&gt; GetRolesForUserOkResult:
+<pre><code class="python">async def get_roles_for_user(
+    user_id: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; GetRolesForUserOkResult:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.get_roles_for_user(user_id, user_context)</code></pre>
+    return (
+        await UserRolesRecipe.get_instance().recipe_implementation.get_roles_for_user(
+            user_id, user_context
+        )
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.asyncio.get_roles_that_have_permission"><code class="name flex">
@@ -215,12 +278,14 @@ async def get_all_roles(user_context: Union[Dict[str, Any], None] = None) -&gt; 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_roles_that_have_permission(permission: str,
-                                         user_context: Union[Dict[str, Any], None] = None) -&gt; GetRolesThatHavePermissionOkResult:
+<pre><code class="python">async def get_roles_that_have_permission(
+    permission: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; GetRolesThatHavePermissionOkResult:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.get_roles_that_have_permission(permission,
-                                                                                                     user_context)</code></pre>
+    return await UserRolesRecipe.get_instance().recipe_implementation.get_roles_that_have_permission(
+        permission, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.asyncio.get_users_that_have_role"><code class="name flex">
@@ -232,10 +297,14 @@ async def get_all_roles(user_context: Union[Dict[str, Any], None] = None) -&gt; 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_users_that_have_role(role: str, user_context: Union[Dict[str, Any], None] = None) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
+<pre><code class="python">async def get_users_that_have_role(
+    role: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.get_users_that_have_role(role, user_context)</code></pre>
+    return await UserRolesRecipe.get_instance().recipe_implementation.get_users_that_have_role(
+        role, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.asyncio.remove_permissions_from_role"><code class="name flex">
@@ -247,12 +316,14 @@ async def get_all_roles(user_context: Union[Dict[str, Any], None] = None) -&gt; 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def remove_permissions_from_role(role: str, permissions: List[str],
-                                       user_context: Union[Dict[str, Any], None] = None) -&gt; Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
+<pre><code class="python">async def remove_permissions_from_role(
+    role: str, permissions: List[str], user_context: Union[Dict[str, Any], None] = None
+) -&gt; Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.remove_permissions_from_role(role, permissions,
-                                                                                                   user_context)</code></pre>
+    return await UserRolesRecipe.get_instance().recipe_implementation.remove_permissions_from_role(
+        role, permissions, user_context
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.asyncio.remove_user_role"><code class="name flex">
@@ -264,10 +335,14 @@ async def get_all_roles(user_context: Union[Dict[str, Any], None] = None) -&gt; 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def remove_user_role(user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
+<pre><code class="python">async def remove_user_role(
+    user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
     if user_context is None:
         user_context = {}
-    return await UserRolesRecipe.get_instance().recipe_implementation.remove_user_role(user_id, role, user_context)</code></pre>
+    return await UserRolesRecipe.get_instance().recipe_implementation.remove_user_role(
+        user_id, role, user_context
+    )</code></pre>
 </details>
 </dd>
 </dl>

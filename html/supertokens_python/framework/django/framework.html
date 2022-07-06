@@ -51,10 +51,9 @@ if TYPE_CHECKING:
 
 
 class DjangoFramework(Framework):
-
     def wrap_request(self, unwrapped: HttpRequest):
-        from supertokens_python.framework.django.django_request import \
-            DjangoRequest
+        from supertokens_python.framework.django.django_request import DjangoRequest
+
         return DjangoRequest(unwrapped)</code></pre>
 </details>
 </section>
@@ -78,10 +77,9 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class DjangoFramework(Framework):
-
     def wrap_request(self, unwrapped: HttpRequest):
-        from supertokens_python.framework.django.django_request import \
-            DjangoRequest
+        from supertokens_python.framework.django.django_request import DjangoRequest
+
         return DjangoRequest(unwrapped)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -101,8 +99,8 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def wrap_request(self, unwrapped: HttpRequest):
-    from supertokens_python.framework.django.django_request import \
-        DjangoRequest
+    from supertokens_python.framework.django.django_request import DjangoRequest
+
     return DjangoRequest(unwrapped)</code></pre>
 </details>
 </dd>

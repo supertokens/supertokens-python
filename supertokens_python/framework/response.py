@@ -17,7 +17,6 @@ from typing import Any, Dict, Union
 
 
 class BaseResponse(ABC):
-
     @abstractmethod
     def __init__(self, content: Dict[str, Any], status_code: int = 200):
         self.content = content
@@ -25,15 +24,18 @@ class BaseResponse(ABC):
         self.wrapper_used = True
 
     @abstractmethod
-    def set_cookie(self, key: str,
-                   value: str,
-                   #    max_age: Union[int, None] = None,
-                   expires: int,
-                   path: str = "/",
-                   domain: Union[str, None] = None,
-                   secure: bool = False,
-                   httponly: bool = False,
-                   samesite: str = "lax"):
+    def set_cookie(
+        self,
+        key: str,
+        value: str,
+        #    max_age: Union[int, None] = None,
+        expires: int,
+        path: str = "/",
+        domain: Union[str, None] = None,
+        secure: bool = False,
+        httponly: bool = False,
+        samesite: str = "lax",
+    ):
         pass
 
     @abstractmethod

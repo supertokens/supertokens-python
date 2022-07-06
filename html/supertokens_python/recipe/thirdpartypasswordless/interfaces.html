@@ -30,8 +30,7 @@
 from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.thirdparty import \
-    interfaces as ThirdPartyInterfaces
+from supertokens_python.recipe.thirdparty import interfaces as ThirdPartyInterfaces
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.types import APIResponse, GeneralErrorResponse
 
@@ -43,18 +42,32 @@ ThirdPartyAPIOptions = ThirdPartyInterfaces.APIOptions
 PasswordlessAPIOptions = PlessInterfaces.APIOptions
 
 ConsumeCodePostRestartFlowError = PlessInterfaces.ConsumeCodePostRestartFlowError
-ConsumeCodePostIncorrectUserInputCodeError = PlessInterfaces.ConsumeCodePostIncorrectUserInputCodeError
-ConsumeCodePostExpiredUserInputCodeError = PlessInterfaces.ConsumeCodePostExpiredUserInputCodeError
-ConsumeCodeExpiredUserInputCodeError = PlessInterfaces.ConsumeCodeExpiredUserInputCodeError
-ConsumeCodeIncorrectUserInputCodeError = PlessInterfaces.ConsumeCodeIncorrectUserInputCodeError
+ConsumeCodePostIncorrectUserInputCodeError = (
+    PlessInterfaces.ConsumeCodePostIncorrectUserInputCodeError
+)
+ConsumeCodePostExpiredUserInputCodeError = (
+    PlessInterfaces.ConsumeCodePostExpiredUserInputCodeError
+)
+ConsumeCodeExpiredUserInputCodeError = (
+    PlessInterfaces.ConsumeCodeExpiredUserInputCodeError
+)
+ConsumeCodeIncorrectUserInputCodeError = (
+    PlessInterfaces.ConsumeCodeIncorrectUserInputCodeError
+)
 ConsumeCodeRestartFlowError = PlessInterfaces.ConsumeCodeRestartFlowError
 CreateCodeOkResult = PlessInterfaces.CreateCodeOkResult
 CreateCodePostOkResult = PlessInterfaces.CreateCodePostOkResult
 CreateNewCodeForDeviceOkResult = PlessInterfaces.CreateNewCodeForDeviceOkResult
-CreateNewCodeForDeviceRestartFlowError = PlessInterfaces.CreateNewCodeForDeviceRestartFlowError
-CreateNewCodeForDeviceUserInputCodeAlreadyUsedError = PlessInterfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError
+CreateNewCodeForDeviceRestartFlowError = (
+    PlessInterfaces.CreateNewCodeForDeviceRestartFlowError
+)
+CreateNewCodeForDeviceUserInputCodeAlreadyUsedError = (
+    PlessInterfaces.CreateNewCodeForDeviceUserInputCodeAlreadyUsedError
+)
 PasswordlessDeleteUserInfoOkResult = PlessInterfaces.DeleteUserInfoOkResult
-PasswordlessDeleteUserInfoUnknownUserIdError = PlessInterfaces.DeleteUserInfoUnknownUserIdError
+PasswordlessDeleteUserInfoUnknownUserIdError = (
+    PlessInterfaces.DeleteUserInfoUnknownUserIdError
+)
 DeviceType = PlessInterfaces.DeviceType
 PasswordlessEmailExistsGetOkResult = PlessInterfaces.EmailExistsGetOkResult
 PasswordlessPhoneNumberExistsGetOkResult = PlessInterfaces.PhoneNumberExistsGetOkResult
@@ -62,17 +75,23 @@ ResendCodePostOkResult = PlessInterfaces.ResendCodePostOkResult
 ResendCodePostRestartFlowError = PlessInterfaces.ResendCodePostRestartFlowError
 RevokeAllCodesOkResult = PlessInterfaces.RevokeAllCodesOkResult
 RevokeCodeOkResult = PlessInterfaces.RevokeCodeOkResult
-PasswordlessUpdateUserEmailAlreadyExistsError = PlessInterfaces.UpdateUserEmailAlreadyExistsError
+PasswordlessUpdateUserEmailAlreadyExistsError = (
+    PlessInterfaces.UpdateUserEmailAlreadyExistsError
+)
 PasswordlessUpdateUserOkResult = PlessInterfaces.UpdateUserOkResult
-PasswordlessUpdateUserPhoneNumberAlreadyExistsError = PlessInterfaces.UpdateUserPhoneNumberAlreadyExistsError
+PasswordlessUpdateUserPhoneNumberAlreadyExistsError = (
+    PlessInterfaces.UpdateUserPhoneNumberAlreadyExistsError
+)
 PasswordlessUpdateUserUnknownUserIdError = PlessInterfaces.UpdateUserUnknownUserIdError
 
 AuthorisationUrlGetOkResult = ThirdPartyInterfaces.AuthorisationUrlGetOkResult
 ThirdPartySignInUpOkResult = ThirdPartyInterfaces.SignInUpOkResult
-ThirdPartySignInUpPostNoEmailGivenByProviderResponse = ThirdPartyInterfaces.SignInUpPostNoEmailGivenByProviderResponse
+ThirdPartySignInUpPostNoEmailGivenByProviderResponse = (
+    ThirdPartyInterfaces.SignInUpPostNoEmailGivenByProviderResponse
+)
 
 
-class ConsumeCodeOkResult():
+class ConsumeCodeOkResult:
     def __init__(self, created_new_user: bool, user: User):
         self.created_new_user = created_new_user
         self.user = user
@@ -83,93 +102,155 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_id(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
+    async def get_users_by_email(
+        self, email: str, user_context: Dict[str, Any]
+    ) -&gt; List[User]:
         pass
 
     @abstractmethod
-    async def get_user_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_phone_number(
+        self, phone_number: str, user_context: Dict[str, Any]
+    ) -&gt; Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_user_by_thirdparty_info(self, third_party_id: str,
-                                          third_party_user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_thirdparty_info(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[User, None]:
         pass
 
     @abstractmethod
-    async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -&gt; ThirdPartySignInUpOkResult:
+    async def thirdparty_sign_in_up(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        email_verified: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; ThirdPartySignInUpOkResult:
         pass
 
     @abstractmethod
-    async def create_code(self,
-                          email: Union[None, str],
-                          phone_number: Union[None, str],
-                          user_input_code: Union[None, str],
-                          user_context: Dict[str, Any]) -&gt; CreateCodeOkResult:
+    async def create_code(
+        self,
+        email: Union[None, str],
+        phone_number: Union[None, str],
+        user_input_code: Union[None, str],
+        user_context: Dict[str, Any],
+    ) -&gt; CreateCodeOkResult:
         pass
 
     @abstractmethod
-    async def create_new_code_for_device(self,
-                                         device_id: str,
-                                         user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -&gt; Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
+    async def create_new_code_for_device(
+        self,
+        device_id: str,
+        user_input_code: Union[str, None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        CreateNewCodeForDeviceOkResult,
+        CreateNewCodeForDeviceRestartFlowError,
+        CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
+    ]:
         pass
 
     @abstractmethod
-    async def consume_code(self,
-                           pre_auth_session_id: str,
-                           user_input_code: Union[str, None],
-                           device_id: Union[str, None],
-                           link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -&gt; Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeExpiredUserInputCodeError, ConsumeCodeRestartFlowError]:
+    async def consume_code(
+        self,
+        pre_auth_session_id: str,
+        user_input_code: Union[str, None],
+        device_id: Union[str, None],
+        link_code: Union[str, None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        ConsumeCodeOkResult,
+        ConsumeCodeIncorrectUserInputCodeError,
+        ConsumeCodeExpiredUserInputCodeError,
+        ConsumeCodeRestartFlowError,
+    ]:
         pass
 
     @abstractmethod
-    async def update_passwordless_user(self, user_id: str,
-                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; Union[PasswordlessUpdateUserOkResult, PasswordlessUpdateUserUnknownUserIdError, PasswordlessUpdateUserEmailAlreadyExistsError, PasswordlessUpdateUserPhoneNumberAlreadyExistsError]:
+    async def update_passwordless_user(
+        self,
+        user_id: str,
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        PasswordlessUpdateUserOkResult,
+        PasswordlessUpdateUserUnknownUserIdError,
+        PasswordlessUpdateUserEmailAlreadyExistsError,
+        PasswordlessUpdateUserPhoneNumberAlreadyExistsError,
+    ]:
         pass
 
     @abstractmethod
-    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdError]:
+    async def delete_email_for_passwordless_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[
+        PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdError
+    ]:
         pass
 
     @abstractmethod
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdError]:
+    async def delete_phone_number_for_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[
+        PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdError
+    ]:
         pass
 
     @abstractmethod
-    async def revoke_all_codes(self,
-                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesOkResult:
+    async def revoke_all_codes(
+        self,
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        user_context: Dict[str, Any],
+    ) -&gt; RevokeAllCodesOkResult:
         pass
 
     @abstractmethod
-    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeOkResult:
+    async def revoke_code(
+        self, code_id: str, user_context: Dict[str, Any]
+    ) -&gt; RevokeCodeOkResult:
         pass
 
     @abstractmethod
-    async def list_codes_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[DeviceType]:
+    async def list_codes_by_email(
+        self, email: str, user_context: Dict[str, Any]
+    ) -&gt; List[DeviceType]:
         pass
 
     @abstractmethod
-    async def list_codes_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -&gt; List[DeviceType]:
+    async def list_codes_by_phone_number(
+        self, phone_number: str, user_context: Dict[str, Any]
+    ) -&gt; List[DeviceType]:
         pass
 
     @abstractmethod
-    async def list_codes_by_device_id(self, device_id: str, user_context: Dict[str, Any]) -&gt; Union[DeviceType, None]:
+    async def list_codes_by_device_id(
+        self, device_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[DeviceType, None]:
         pass
 
     @abstractmethod
-    async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str,
-                                                user_context: Dict[str, Any]) -&gt; Union[DeviceType, None]:
+    async def list_codes_by_pre_auth_session_id(
+        self, pre_auth_session_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[DeviceType, None]:
         pass
 
 
 class ConsumeCodePostOkResult(APIResponse):
-    status: str = &#39;OK&#39;
+    status: str = &#34;OK&#34;
 
     def __init__(self, created_new_user: bool, user: User, session: SessionContainer):
         self.created_new_user = created_new_user
@@ -177,33 +258,28 @@ class ConsumeCodePostOkResult(APIResponse):
         self.session = session
 
     def to_json(self):
-        user = {
-            &#39;id&#39;: self.user.user_id,
-            &#39;time_joined&#39;: self.user.time_joined
-        }
+        user = {&#34;id&#34;: self.user.user_id, &#34;time_joined&#34;: self.user.time_joined}
         if self.user.email is not None:
-            user = {
-                **user,
-                &#39;email&#39;: self.user.email
-            }
+            user = {**user, &#34;email&#34;: self.user.email}
         if self.user.phone_number is not None:
-            user = {
-                **user,
-                &#39;phoneNumber&#39;: self.user.phone_number
-            }
+            user = {**user, &#34;phoneNumber&#34;: self.user.phone_number}
         return {
-            &#39;status&#39;: self.status,
-            &#39;createdNewUser&#39;: self.created_new_user,
-            &#39;user&#39;: user
+            &#34;status&#34;: self.status,
+            &#34;createdNewUser&#34;: self.created_new_user,
+            &#34;user&#34;: user,
         }
 
 
 class ThirdPartySignInUpPostOkResult(APIResponse):
-    status: str = &#39;OK&#39;
+    status: str = &#34;OK&#34;
 
-    def __init__(self, user: User, created_new_user: bool,
-                 auth_code_response: Dict[str, Any],
-                 session: SessionContainer):
+    def __init__(
+        self,
+        user: User,
+        created_new_user: bool,
+        auth_code_response: Dict[str, Any],
+        session: SessionContainer,
+    ):
         self.user = user
         self.created_new_user = created_new_user
         self.auth_code_response = auth_code_response
@@ -211,20 +287,20 @@ class ThirdPartySignInUpPostOkResult(APIResponse):
 
     def to_json(self) -&gt; Dict[str, Any]:
         if self.user.third_party_info is None:
-            raise ValueError(&#39;Third Party Info cannot be None&#39;)
+            raise ValueError(&#34;Third Party Info cannot be None&#34;)
 
         return {
-            &#39;status&#39;: self.status,
-            &#39;user&#39;: {
-                &#39;id&#39;: self.user.user_id,
-                &#39;email&#39;: self.user.email,
-                &#39;timeJoined&#39;: self.user.time_joined,
-                &#39;thirdParty&#39;: {
-                    &#39;id&#39;: self.user.third_party_info.id,
-                    &#39;userId&#39;: self.user.third_party_info.user_id
-                }
+            &#34;status&#34;: self.status,
+            &#34;user&#34;: {
+                &#34;id&#34;: self.user.user_id,
+                &#34;email&#34;: self.user.email,
+                &#34;timeJoined&#34;: self.user.time_joined,
+                &#34;thirdParty&#34;: {
+                    &#34;id&#34;: self.user.third_party_info.id,
+                    &#34;userId&#34;: self.user.third_party_info.user_id,
+                },
             },
-            &#39;createdNewUser&#39;: self.created_new_user
+            &#34;createdNewUser&#34;: self.created_new_user,
         }
 
 
@@ -240,58 +316,97 @@ class APIInterface(ABC):
         self.disable_passwordless_user_phone_number_exists_get = False
 
     @abstractmethod
-    async def authorisation_url_get(self, provider: Provider,
-                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
+    async def authorisation_url_get(
+        self,
+        provider: Provider,
+        api_options: ThirdPartyAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
-    async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -&gt; Union[ThirdPartySignInUpPostOkResult, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
+    async def thirdparty_sign_in_up_post(
+        self,
+        provider: Provider,
+        code: str,
+        redirect_uri: str,
+        client_id: Union[str, None],
+        auth_code_response: Union[Dict[str, Any], None],
+        api_options: ThirdPartyAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        ThirdPartySignInUpPostOkResult,
+        ThirdPartySignInUpPostNoEmailGivenByProviderResponse,
+        GeneralErrorResponse,
+    ]:
         pass
 
     @abstractmethod
-    async def apple_redirect_handler_post(self, code: str, state: str,
-                                          api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]):
+    async def apple_redirect_handler_post(
+        self,
+        code: str,
+        state: str,
+        api_options: ThirdPartyAPIOptions,
+        user_context: Dict[str, Any],
+    ):
         pass
 
     @abstractmethod
-    async def create_code_post(self,
-                               email: Union[str, None],
-                               phone_number: Union[str, None],
-                               api_options: PasswordlessAPIOptions,
-                               user_context: Dict[str, Any]) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
+    async def create_code_post(
+        self,
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        api_options: PasswordlessAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
-    async def resend_code_post(self,
-                               device_id: str,
-                               pre_auth_session_id: str,
-                               api_options: PasswordlessAPIOptions,
-                               user_context: Dict[str, Any]) -&gt; Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse]:
+    async def resend_code_post(
+        self,
+        device_id: str,
+        pre_auth_session_id: str,
+        api_options: PasswordlessAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse
+    ]:
         pass
 
     @abstractmethod
-    async def consume_code_post(self,
-                                pre_auth_session_id: str,
-                                user_input_code: Union[str, None],
-                                device_id: Union[str, None],
-                                link_code: Union[str, None],
-                                api_options: PasswordlessAPIOptions,
-                                user_context: Dict[str, Any]) -&gt; Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, GeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
+    async def consume_code_post(
+        self,
+        pre_auth_session_id: str,
+        user_input_code: Union[str, None],
+        device_id: Union[str, None],
+        link_code: Union[str, None],
+        api_options: PasswordlessAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        ConsumeCodePostOkResult,
+        ConsumeCodePostRestartFlowError,
+        GeneralErrorResponse,
+        ConsumeCodePostIncorrectUserInputCodeError,
+        ConsumeCodePostExpiredUserInputCodeError,
+    ]:
         pass
 
     @abstractmethod
-    async def passwordless_user_email_exists_get(self,
-                                                 email: str,
-                                                 api_options: PasswordlessAPIOptions,
-                                                 user_context: Dict[str, Any]) -&gt; Union[PasswordlessEmailExistsGetOkResult, GeneralErrorResponse]:
+    async def passwordless_user_email_exists_get(
+        self,
+        email: str,
+        api_options: PasswordlessAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[PasswordlessEmailExistsGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
-    async def passwordless_user_phone_number_exists_get(self,
-                                                        phone_number: str,
-                                                        api_options: PasswordlessAPIOptions,
-                                                        user_context: Dict[str, Any]) -&gt; Union[PasswordlessPhoneNumberExistsGetOkResult, GeneralErrorResponse]:
+    async def passwordless_user_phone_number_exists_get(
+        self,
+        phone_number: str,
+        api_options: PasswordlessAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[PasswordlessPhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         pass</code></pre>
 </details>
 </section>
@@ -326,58 +441,97 @@ inheritance.</p></div>
         self.disable_passwordless_user_phone_number_exists_get = False
 
     @abstractmethod
-    async def authorisation_url_get(self, provider: Provider,
-                                    api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
+    async def authorisation_url_get(
+        self,
+        provider: Provider,
+        api_options: ThirdPartyAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
-    async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                         api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -&gt; Union[ThirdPartySignInUpPostOkResult, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
+    async def thirdparty_sign_in_up_post(
+        self,
+        provider: Provider,
+        code: str,
+        redirect_uri: str,
+        client_id: Union[str, None],
+        auth_code_response: Union[Dict[str, Any], None],
+        api_options: ThirdPartyAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        ThirdPartySignInUpPostOkResult,
+        ThirdPartySignInUpPostNoEmailGivenByProviderResponse,
+        GeneralErrorResponse,
+    ]:
         pass
 
     @abstractmethod
-    async def apple_redirect_handler_post(self, code: str, state: str,
-                                          api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]):
+    async def apple_redirect_handler_post(
+        self,
+        code: str,
+        state: str,
+        api_options: ThirdPartyAPIOptions,
+        user_context: Dict[str, Any],
+    ):
         pass
 
     @abstractmethod
-    async def create_code_post(self,
-                               email: Union[str, None],
-                               phone_number: Union[str, None],
-                               api_options: PasswordlessAPIOptions,
-                               user_context: Dict[str, Any]) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
+    async def create_code_post(
+        self,
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        api_options: PasswordlessAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
-    async def resend_code_post(self,
-                               device_id: str,
-                               pre_auth_session_id: str,
-                               api_options: PasswordlessAPIOptions,
-                               user_context: Dict[str, Any]) -&gt; Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse]:
+    async def resend_code_post(
+        self,
+        device_id: str,
+        pre_auth_session_id: str,
+        api_options: PasswordlessAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse
+    ]:
         pass
 
     @abstractmethod
-    async def consume_code_post(self,
-                                pre_auth_session_id: str,
-                                user_input_code: Union[str, None],
-                                device_id: Union[str, None],
-                                link_code: Union[str, None],
-                                api_options: PasswordlessAPIOptions,
-                                user_context: Dict[str, Any]) -&gt; Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, GeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
+    async def consume_code_post(
+        self,
+        pre_auth_session_id: str,
+        user_input_code: Union[str, None],
+        device_id: Union[str, None],
+        link_code: Union[str, None],
+        api_options: PasswordlessAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        ConsumeCodePostOkResult,
+        ConsumeCodePostRestartFlowError,
+        GeneralErrorResponse,
+        ConsumeCodePostIncorrectUserInputCodeError,
+        ConsumeCodePostExpiredUserInputCodeError,
+    ]:
         pass
 
     @abstractmethod
-    async def passwordless_user_email_exists_get(self,
-                                                 email: str,
-                                                 api_options: PasswordlessAPIOptions,
-                                                 user_context: Dict[str, Any]) -&gt; Union[PasswordlessEmailExistsGetOkResult, GeneralErrorResponse]:
+    async def passwordless_user_email_exists_get(
+        self,
+        email: str,
+        api_options: PasswordlessAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[PasswordlessEmailExistsGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
-    async def passwordless_user_phone_number_exists_get(self,
-                                                        phone_number: str,
-                                                        api_options: PasswordlessAPIOptions,
-                                                        user_context: Dict[str, Any]) -&gt; Union[PasswordlessPhoneNumberExistsGetOkResult, GeneralErrorResponse]:
+    async def passwordless_user_phone_number_exists_get(
+        self,
+        phone_number: str,
+        api_options: PasswordlessAPIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[PasswordlessPhoneNumberExistsGetOkResult, GeneralErrorResponse]:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -400,8 +554,13 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def apple_redirect_handler_post(self, code: str, state: str,
-                                      api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]):
+async def apple_redirect_handler_post(
+    self,
+    code: str,
+    state: str,
+    api_options: ThirdPartyAPIOptions,
+    user_context: Dict[str, Any],
+):
     pass</code></pre>
 </details>
 </dd>
@@ -415,8 +574,12 @@ async def apple_redirect_handler_post(self, code: str, state: str,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def authorisation_url_get(self, provider: Provider,
-                                api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
+async def authorisation_url_get(
+    self,
+    provider: Provider,
+    api_options: ThirdPartyAPIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
@@ -430,13 +593,21 @@ async def authorisation_url_get(self, provider: Provider,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def consume_code_post(self,
-                            pre_auth_session_id: str,
-                            user_input_code: Union[str, None],
-                            device_id: Union[str, None],
-                            link_code: Union[str, None],
-                            api_options: PasswordlessAPIOptions,
-                            user_context: Dict[str, Any]) -&gt; Union[ConsumeCodePostOkResult, ConsumeCodePostRestartFlowError, GeneralErrorResponse, ConsumeCodePostIncorrectUserInputCodeError, ConsumeCodePostExpiredUserInputCodeError]:
+async def consume_code_post(
+    self,
+    pre_auth_session_id: str,
+    user_input_code: Union[str, None],
+    device_id: Union[str, None],
+    link_code: Union[str, None],
+    api_options: PasswordlessAPIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[
+    ConsumeCodePostOkResult,
+    ConsumeCodePostRestartFlowError,
+    GeneralErrorResponse,
+    ConsumeCodePostIncorrectUserInputCodeError,
+    ConsumeCodePostExpiredUserInputCodeError,
+]:
     pass</code></pre>
 </details>
 </dd>
@@ -450,11 +621,13 @@ async def consume_code_post(self,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def create_code_post(self,
-                           email: Union[str, None],
-                           phone_number: Union[str, None],
-                           api_options: PasswordlessAPIOptions,
-                           user_context: Dict[str, Any]) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
+async def create_code_post(
+    self,
+    email: Union[str, None],
+    phone_number: Union[str, None],
+    api_options: PasswordlessAPIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[CreateCodePostOkResult, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
@@ -468,10 +641,12 @@ async def create_code_post(self,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def passwordless_user_email_exists_get(self,
-                                             email: str,
-                                             api_options: PasswordlessAPIOptions,
-                                             user_context: Dict[str, Any]) -&gt; Union[PasswordlessEmailExistsGetOkResult, GeneralErrorResponse]:
+async def passwordless_user_email_exists_get(
+    self,
+    email: str,
+    api_options: PasswordlessAPIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[PasswordlessEmailExistsGetOkResult, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
@@ -485,10 +660,12 @@ async def passwordless_user_email_exists_get(self,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def passwordless_user_phone_number_exists_get(self,
-                                                    phone_number: str,
-                                                    api_options: PasswordlessAPIOptions,
-                                                    user_context: Dict[str, Any]) -&gt; Union[PasswordlessPhoneNumberExistsGetOkResult, GeneralErrorResponse]:
+async def passwordless_user_phone_number_exists_get(
+    self,
+    phone_number: str,
+    api_options: PasswordlessAPIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[PasswordlessPhoneNumberExistsGetOkResult, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
@@ -502,11 +679,15 @@ async def passwordless_user_phone_number_exists_get(self,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def resend_code_post(self,
-                           device_id: str,
-                           pre_auth_session_id: str,
-                           api_options: PasswordlessAPIOptions,
-                           user_context: Dict[str, Any]) -&gt; Union[ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse]:
+async def resend_code_post(
+    self,
+    device_id: str,
+    pre_auth_session_id: str,
+    api_options: PasswordlessAPIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[
+    ResendCodePostOkResult, ResendCodePostRestartFlowError, GeneralErrorResponse
+]:
     pass</code></pre>
 </details>
 </dd>
@@ -520,8 +701,20 @@ async def resend_code_post(self,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redirect_uri: str, client_id: Union[str, None], auth_code_response: Union[Dict[str, Any], None],
-                                     api_options: ThirdPartyAPIOptions, user_context: Dict[str, Any]) -&gt; Union[ThirdPartySignInUpPostOkResult, ThirdPartySignInUpPostNoEmailGivenByProviderResponse, GeneralErrorResponse]:
+async def thirdparty_sign_in_up_post(
+    self,
+    provider: Provider,
+    code: str,
+    redirect_uri: str,
+    client_id: Union[str, None],
+    auth_code_response: Union[Dict[str, Any], None],
+    api_options: ThirdPartyAPIOptions,
+    user_context: Dict[str, Any],
+) -&gt; Union[
+    ThirdPartySignInUpPostOkResult,
+    ThirdPartySignInUpPostNoEmailGivenByProviderResponse,
+    GeneralErrorResponse,
+]:
     pass</code></pre>
 </details>
 </dd>
@@ -537,7 +730,7 @@ async def thirdparty_sign_in_up_post(self, provider: Provider, code: str, redire
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ConsumeCodeOkResult():
+<pre><code class="python">class ConsumeCodeOkResult:
     def __init__(self, created_new_user: bool, user: User):
         self.created_new_user = created_new_user
         self.user = user</code></pre>
@@ -555,7 +748,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ConsumeCodePostOkResult(APIResponse):
-    status: str = &#39;OK&#39;
+    status: str = &#34;OK&#34;
 
     def __init__(self, created_new_user: bool, user: User, session: SessionContainer):
         self.created_new_user = created_new_user
@@ -563,24 +756,15 @@ inheritance.</p></div>
         self.session = session
 
     def to_json(self):
-        user = {
-            &#39;id&#39;: self.user.user_id,
-            &#39;time_joined&#39;: self.user.time_joined
-        }
+        user = {&#34;id&#34;: self.user.user_id, &#34;time_joined&#34;: self.user.time_joined}
         if self.user.email is not None:
-            user = {
-                **user,
-                &#39;email&#39;: self.user.email
-            }
+            user = {**user, &#34;email&#34;: self.user.email}
         if self.user.phone_number is not None:
-            user = {
-                **user,
-                &#39;phoneNumber&#39;: self.user.phone_number
-            }
+            user = {**user, &#34;phoneNumber&#34;: self.user.phone_number}
         return {
-            &#39;status&#39;: self.status,
-            &#39;createdNewUser&#39;: self.created_new_user,
-            &#39;user&#39;: user
+            &#34;status&#34;: self.status,
+            &#34;createdNewUser&#34;: self.created_new_user,
+            &#34;user&#34;: user,
         }</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -607,24 +791,15 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_json(self):
-    user = {
-        &#39;id&#39;: self.user.user_id,
-        &#39;time_joined&#39;: self.user.time_joined
-    }
+    user = {&#34;id&#34;: self.user.user_id, &#34;time_joined&#34;: self.user.time_joined}
     if self.user.email is not None:
-        user = {
-            **user,
-            &#39;email&#39;: self.user.email
-        }
+        user = {**user, &#34;email&#34;: self.user.email}
     if self.user.phone_number is not None:
-        user = {
-            **user,
-            &#39;phoneNumber&#39;: self.user.phone_number
-        }
+        user = {**user, &#34;phoneNumber&#34;: self.user.phone_number}
     return {
-        &#39;status&#39;: self.status,
-        &#39;createdNewUser&#39;: self.created_new_user,
-        &#39;user&#39;: user
+        &#34;status&#34;: self.status,
+        &#34;createdNewUser&#34;: self.created_new_user,
+        &#34;user&#34;: user,
     }</code></pre>
 </details>
 </dd>
@@ -645,88 +820,150 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_id(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
+    async def get_users_by_email(
+        self, email: str, user_context: Dict[str, Any]
+    ) -&gt; List[User]:
         pass
 
     @abstractmethod
-    async def get_user_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_phone_number(
+        self, phone_number: str, user_context: Dict[str, Any]
+    ) -&gt; Union[User, None]:
         pass
 
     @abstractmethod
-    async def get_user_by_thirdparty_info(self, third_party_id: str,
-                                          third_party_user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+    async def get_user_by_thirdparty_info(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        user_context: Dict[str, Any],
+    ) -&gt; Union[User, None]:
         pass
 
     @abstractmethod
-    async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                    email_verified: bool, user_context: Dict[str, Any]) -&gt; ThirdPartySignInUpOkResult:
+    async def thirdparty_sign_in_up(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        email_verified: bool,
+        user_context: Dict[str, Any],
+    ) -&gt; ThirdPartySignInUpOkResult:
         pass
 
     @abstractmethod
-    async def create_code(self,
-                          email: Union[None, str],
-                          phone_number: Union[None, str],
-                          user_input_code: Union[None, str],
-                          user_context: Dict[str, Any]) -&gt; CreateCodeOkResult:
+    async def create_code(
+        self,
+        email: Union[None, str],
+        phone_number: Union[None, str],
+        user_input_code: Union[None, str],
+        user_context: Dict[str, Any],
+    ) -&gt; CreateCodeOkResult:
         pass
 
     @abstractmethod
-    async def create_new_code_for_device(self,
-                                         device_id: str,
-                                         user_input_code: Union[str, None],
-                                         user_context: Dict[str, Any]) -&gt; Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
+    async def create_new_code_for_device(
+        self,
+        device_id: str,
+        user_input_code: Union[str, None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        CreateNewCodeForDeviceOkResult,
+        CreateNewCodeForDeviceRestartFlowError,
+        CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
+    ]:
         pass
 
     @abstractmethod
-    async def consume_code(self,
-                           pre_auth_session_id: str,
-                           user_input_code: Union[str, None],
-                           device_id: Union[str, None],
-                           link_code: Union[str, None],
-                           user_context: Dict[str, Any]) -&gt; Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeExpiredUserInputCodeError, ConsumeCodeRestartFlowError]:
+    async def consume_code(
+        self,
+        pre_auth_session_id: str,
+        user_input_code: Union[str, None],
+        device_id: Union[str, None],
+        link_code: Union[str, None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        ConsumeCodeOkResult,
+        ConsumeCodeIncorrectUserInputCodeError,
+        ConsumeCodeExpiredUserInputCodeError,
+        ConsumeCodeRestartFlowError,
+    ]:
         pass
 
     @abstractmethod
-    async def update_passwordless_user(self, user_id: str,
-                                       email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; Union[PasswordlessUpdateUserOkResult, PasswordlessUpdateUserUnknownUserIdError, PasswordlessUpdateUserEmailAlreadyExistsError, PasswordlessUpdateUserPhoneNumberAlreadyExistsError]:
+    async def update_passwordless_user(
+        self,
+        user_id: str,
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[
+        PasswordlessUpdateUserOkResult,
+        PasswordlessUpdateUserUnknownUserIdError,
+        PasswordlessUpdateUserEmailAlreadyExistsError,
+        PasswordlessUpdateUserPhoneNumberAlreadyExistsError,
+    ]:
         pass
 
     @abstractmethod
-    async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdError]:
+    async def delete_email_for_passwordless_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[
+        PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdError
+    ]:
         pass
 
     @abstractmethod
-    async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdError]:
+    async def delete_phone_number_for_user(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[
+        PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdError
+    ]:
         pass
 
     @abstractmethod
-    async def revoke_all_codes(self,
-                               email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesOkResult:
+    async def revoke_all_codes(
+        self,
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        user_context: Dict[str, Any],
+    ) -&gt; RevokeAllCodesOkResult:
         pass
 
     @abstractmethod
-    async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeOkResult:
+    async def revoke_code(
+        self, code_id: str, user_context: Dict[str, Any]
+    ) -&gt; RevokeCodeOkResult:
         pass
 
     @abstractmethod
-    async def list_codes_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[DeviceType]:
+    async def list_codes_by_email(
+        self, email: str, user_context: Dict[str, Any]
+    ) -&gt; List[DeviceType]:
         pass
 
     @abstractmethod
-    async def list_codes_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -&gt; List[DeviceType]:
+    async def list_codes_by_phone_number(
+        self, phone_number: str, user_context: Dict[str, Any]
+    ) -&gt; List[DeviceType]:
         pass
 
     @abstractmethod
-    async def list_codes_by_device_id(self, device_id: str, user_context: Dict[str, Any]) -&gt; Union[DeviceType, None]:
+    async def list_codes_by_device_id(
+        self, device_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[DeviceType, None]:
         pass
 
     @abstractmethod
-    async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str,
-                                                user_context: Dict[str, Any]) -&gt; Union[DeviceType, None]:
+    async def list_codes_by_pre_auth_session_id(
+        self, pre_auth_session_id: str, user_context: Dict[str, Any]
+    ) -&gt; Union[DeviceType, None]:
         pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -749,12 +986,19 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def consume_code(self,
-                       pre_auth_session_id: str,
-                       user_input_code: Union[str, None],
-                       device_id: Union[str, None],
-                       link_code: Union[str, None],
-                       user_context: Dict[str, Any]) -&gt; Union[ConsumeCodeOkResult, ConsumeCodeIncorrectUserInputCodeError, ConsumeCodeExpiredUserInputCodeError, ConsumeCodeRestartFlowError]:
+async def consume_code(
+    self,
+    pre_auth_session_id: str,
+    user_input_code: Union[str, None],
+    device_id: Union[str, None],
+    link_code: Union[str, None],
+    user_context: Dict[str, Any],
+) -&gt; Union[
+    ConsumeCodeOkResult,
+    ConsumeCodeIncorrectUserInputCodeError,
+    ConsumeCodeExpiredUserInputCodeError,
+    ConsumeCodeRestartFlowError,
+]:
     pass</code></pre>
 </details>
 </dd>
@@ -768,11 +1012,13 @@ async def consume_code(self,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def create_code(self,
-                      email: Union[None, str],
-                      phone_number: Union[None, str],
-                      user_input_code: Union[None, str],
-                      user_context: Dict[str, Any]) -&gt; CreateCodeOkResult:
+async def create_code(
+    self,
+    email: Union[None, str],
+    phone_number: Union[None, str],
+    user_input_code: Union[None, str],
+    user_context: Dict[str, Any],
+) -&gt; CreateCodeOkResult:
     pass</code></pre>
 </details>
 </dd>
@@ -786,10 +1032,16 @@ async def create_code(self,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def create_new_code_for_device(self,
-                                     device_id: str,
-                                     user_input_code: Union[str, None],
-                                     user_context: Dict[str, Any]) -&gt; Union[CreateNewCodeForDeviceOkResult, CreateNewCodeForDeviceRestartFlowError, CreateNewCodeForDeviceUserInputCodeAlreadyUsedError]:
+async def create_new_code_for_device(
+    self,
+    device_id: str,
+    user_input_code: Union[str, None],
+    user_context: Dict[str, Any],
+) -&gt; Union[
+    CreateNewCodeForDeviceOkResult,
+    CreateNewCodeForDeviceRestartFlowError,
+    CreateNewCodeForDeviceUserInputCodeAlreadyUsedError,
+]:
     pass</code></pre>
 </details>
 </dd>
@@ -803,7 +1055,11 @@ async def create_new_code_for_device(self,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def delete_email_for_passwordless_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdError]:
+async def delete_email_for_passwordless_user(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; Union[
+    PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdError
+]:
     pass</code></pre>
 </details>
 </dd>
@@ -817,7 +1073,11 @@ async def delete_email_for_passwordless_user(self, user_id: str, user_context: D
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdError]:
+async def delete_phone_number_for_user(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; Union[
+    PasswordlessDeleteUserInfoOkResult, PasswordlessDeleteUserInfoUnknownUserIdError
+]:
     pass</code></pre>
 </details>
 </dd>
@@ -831,7 +1091,9 @@ async def delete_phone_number_for_user(self, user_id: str, user_context: Dict[st
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+async def get_user_by_id(
+    self, user_id: str, user_context: Dict[str, Any]
+) -&gt; Union[User, None]:
     pass</code></pre>
 </details>
 </dd>
@@ -845,7 +1107,9 @@ async def get_user_by_id(self, user_id: str, user_context: Dict[str, Any]) -&gt;
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_user_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+async def get_user_by_phone_number(
+    self, phone_number: str, user_context: Dict[str, Any]
+) -&gt; Union[User, None]:
     pass</code></pre>
 </details>
 </dd>
@@ -859,8 +1123,12 @@ async def get_user_by_phone_number(self, phone_number: str, user_context: Dict[s
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_user_by_thirdparty_info(self, third_party_id: str,
-                                      third_party_user_id: str, user_context: Dict[str, Any]) -&gt; Union[User, None]:
+async def get_user_by_thirdparty_info(
+    self,
+    third_party_id: str,
+    third_party_user_id: str,
+    user_context: Dict[str, Any],
+) -&gt; Union[User, None]:
     pass</code></pre>
 </details>
 </dd>
@@ -874,7 +1142,9 @@ async def get_user_by_thirdparty_info(self, third_party_id: str,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[User]:
+async def get_users_by_email(
+    self, email: str, user_context: Dict[str, Any]
+) -&gt; List[User]:
     pass</code></pre>
 </details>
 </dd>
@@ -888,7 +1158,9 @@ async def get_users_by_email(self, email: str, user_context: Dict[str, Any]) -&g
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def list_codes_by_device_id(self, device_id: str, user_context: Dict[str, Any]) -&gt; Union[DeviceType, None]:
+async def list_codes_by_device_id(
+    self, device_id: str, user_context: Dict[str, Any]
+) -&gt; Union[DeviceType, None]:
     pass</code></pre>
 </details>
 </dd>
@@ -902,7 +1174,9 @@ async def list_codes_by_device_id(self, device_id: str, user_context: Dict[str, 
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def list_codes_by_email(self, email: str, user_context: Dict[str, Any]) -&gt; List[DeviceType]:
+async def list_codes_by_email(
+    self, email: str, user_context: Dict[str, Any]
+) -&gt; List[DeviceType]:
     pass</code></pre>
 </details>
 </dd>
@@ -916,7 +1190,9 @@ async def list_codes_by_email(self, email: str, user_context: Dict[str, Any]) -&
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def list_codes_by_phone_number(self, phone_number: str, user_context: Dict[str, Any]) -&gt; List[DeviceType]:
+async def list_codes_by_phone_number(
+    self, phone_number: str, user_context: Dict[str, Any]
+) -&gt; List[DeviceType]:
     pass</code></pre>
 </details>
 </dd>
@@ -930,8 +1206,9 @@ async def list_codes_by_phone_number(self, phone_number: str, user_context: Dict
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str,
-                                            user_context: Dict[str, Any]) -&gt; Union[DeviceType, None]:
+async def list_codes_by_pre_auth_session_id(
+    self, pre_auth_session_id: str, user_context: Dict[str, Any]
+) -&gt; Union[DeviceType, None]:
     pass</code></pre>
 </details>
 </dd>
@@ -945,8 +1222,12 @@ async def list_codes_by_pre_auth_session_id(self, pre_auth_session_id: str,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def revoke_all_codes(self,
-                           email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; RevokeAllCodesOkResult:
+async def revoke_all_codes(
+    self,
+    email: Union[str, None],
+    phone_number: Union[str, None],
+    user_context: Dict[str, Any],
+) -&gt; RevokeAllCodesOkResult:
     pass</code></pre>
 </details>
 </dd>
@@ -960,7 +1241,9 @@ async def revoke_all_codes(self,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; RevokeCodeOkResult:
+async def revoke_code(
+    self, code_id: str, user_context: Dict[str, Any]
+) -&gt; RevokeCodeOkResult:
     pass</code></pre>
 </details>
 </dd>
@@ -974,8 +1257,14 @@ async def revoke_code(self, code_id: str, user_context: Dict[str, Any]) -&gt; Re
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: str, email: str,
-                                email_verified: bool, user_context: Dict[str, Any]) -&gt; ThirdPartySignInUpOkResult:
+async def thirdparty_sign_in_up(
+    self,
+    third_party_id: str,
+    third_party_user_id: str,
+    email: str,
+    email_verified: bool,
+    user_context: Dict[str, Any],
+) -&gt; ThirdPartySignInUpOkResult:
     pass</code></pre>
 </details>
 </dd>
@@ -989,8 +1278,18 @@ async def thirdparty_sign_in_up(self, third_party_id: str, third_party_user_id: 
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def update_passwordless_user(self, user_id: str,
-                                   email: Union[str, None], phone_number: Union[str, None], user_context: Dict[str, Any]) -&gt; Union[PasswordlessUpdateUserOkResult, PasswordlessUpdateUserUnknownUserIdError, PasswordlessUpdateUserEmailAlreadyExistsError, PasswordlessUpdateUserPhoneNumberAlreadyExistsError]:
+async def update_passwordless_user(
+    self,
+    user_id: str,
+    email: Union[str, None],
+    phone_number: Union[str, None],
+    user_context: Dict[str, Any],
+) -&gt; Union[
+    PasswordlessUpdateUserOkResult,
+    PasswordlessUpdateUserUnknownUserIdError,
+    PasswordlessUpdateUserEmailAlreadyExistsError,
+    PasswordlessUpdateUserPhoneNumberAlreadyExistsError,
+]:
     pass</code></pre>
 </details>
 </dd>
@@ -1008,11 +1307,15 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ThirdPartySignInUpPostOkResult(APIResponse):
-    status: str = &#39;OK&#39;
+    status: str = &#34;OK&#34;
 
-    def __init__(self, user: User, created_new_user: bool,
-                 auth_code_response: Dict[str, Any],
-                 session: SessionContainer):
+    def __init__(
+        self,
+        user: User,
+        created_new_user: bool,
+        auth_code_response: Dict[str, Any],
+        session: SessionContainer,
+    ):
         self.user = user
         self.created_new_user = created_new_user
         self.auth_code_response = auth_code_response
@@ -1020,20 +1323,20 @@ inheritance.</p></div>
 
     def to_json(self) -&gt; Dict[str, Any]:
         if self.user.third_party_info is None:
-            raise ValueError(&#39;Third Party Info cannot be None&#39;)
+            raise ValueError(&#34;Third Party Info cannot be None&#34;)
 
         return {
-            &#39;status&#39;: self.status,
-            &#39;user&#39;: {
-                &#39;id&#39;: self.user.user_id,
-                &#39;email&#39;: self.user.email,
-                &#39;timeJoined&#39;: self.user.time_joined,
-                &#39;thirdParty&#39;: {
-                    &#39;id&#39;: self.user.third_party_info.id,
-                    &#39;userId&#39;: self.user.third_party_info.user_id
-                }
+            &#34;status&#34;: self.status,
+            &#34;user&#34;: {
+                &#34;id&#34;: self.user.user_id,
+                &#34;email&#34;: self.user.email,
+                &#34;timeJoined&#34;: self.user.time_joined,
+                &#34;thirdParty&#34;: {
+                    &#34;id&#34;: self.user.third_party_info.id,
+                    &#34;userId&#34;: self.user.third_party_info.user_id,
+                },
             },
-            &#39;createdNewUser&#39;: self.created_new_user
+            &#34;createdNewUser&#34;: self.created_new_user,
         }</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -1061,20 +1364,20 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
     if self.user.third_party_info is None:
-        raise ValueError(&#39;Third Party Info cannot be None&#39;)
+        raise ValueError(&#34;Third Party Info cannot be None&#34;)
 
     return {
-        &#39;status&#39;: self.status,
-        &#39;user&#39;: {
-            &#39;id&#39;: self.user.user_id,
-            &#39;email&#39;: self.user.email,
-            &#39;timeJoined&#39;: self.user.time_joined,
-            &#39;thirdParty&#39;: {
-                &#39;id&#39;: self.user.third_party_info.id,
-                &#39;userId&#39;: self.user.third_party_info.user_id
-            }
+        &#34;status&#34;: self.status,
+        &#34;user&#34;: {
+            &#34;id&#34;: self.user.user_id,
+            &#34;email&#34;: self.user.email,
+            &#34;timeJoined&#34;: self.user.time_joined,
+            &#34;thirdParty&#34;: {
+                &#34;id&#34;: self.user.third_party_info.id,
+                &#34;userId&#34;: self.user.third_party_info.user_id,
+            },
         },
-        &#39;createdNewUser&#39;: self.created_new_user
+        &#34;createdNewUser&#34;: self.created_new_user,
     }</code></pre>
 </details>
 </dd>

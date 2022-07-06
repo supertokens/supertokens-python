@@ -22,7 +22,15 @@ class ThirdPartyInfo:
 
 
 class User:
-    def __init__(self, recipe_id: str, user_id: str, time_joined: int, email: Union[str, None], phone_number: Union[str, None], third_party_info: Union[ThirdPartyInfo, None]):
+    def __init__(
+        self,
+        recipe_id: str,
+        user_id: str,
+        time_joined: int,
+        email: Union[str, None],
+        phone_number: Union[str, None],
+        third_party_info: Union[ThirdPartyInfo, None],
+    ):
         self.recipe_id = recipe_id
         self.user_id = user_id
         self.email = email
@@ -32,8 +40,7 @@ class User:
 
 
 class UsersResponse:
-    def __init__(self, users: List[User],
-                 next_pagination_token: Union[str, None]):
+    def __init__(self, users: List[User], next_pagination_token: Union[str, None]):
         self.users: List[User] = users
         self.next_pagination_token: Union[str, None] = next_pagination_token
 
@@ -46,11 +53,8 @@ class APIResponse(ABC):
 
 class GeneralErrorResponse(APIResponse):
     def __init__(self, message: str):
-        self.status = 'GENERAL_ERROR'
+        self.status = "GENERAL_ERROR"
         self.message = message
 
     def to_json(self) -> Dict[str, Any]:
-        return {
-            'status': self.status,
-            'message': self.message
-        }
+        return {"status": self.status, "message": self.message}

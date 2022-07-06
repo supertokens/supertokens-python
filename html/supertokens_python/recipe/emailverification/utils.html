@@ -45,9 +45,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict
 
 from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryConfig, EmailDeliveryConfigWithService)
-from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import \
-    BackwardCompatibilityService
+    EmailDeliveryConfig,
+    EmailDeliveryConfigWithService,
+)
+from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import (
+    BackwardCompatibilityService,
+)
 from supertokens_python.utils import deprecated_warn
 
 if TYPE_CHECKING:
@@ -59,29 +62,44 @@ if TYPE_CHECKING:
     from .types import User, VerificationEmailTemplateVars
 
 
-def default_get_email_verification_url(app_info: AppInfo) -&gt; Callable[[User, Dict[str, Any]], Awaitable[str]]:
+def default_get_email_verification_url(
+    app_info: AppInfo,
+) -&gt; Callable[[User, Dict[str, Any]], Awaitable[str]]:
     async def func(_: User, __: Dict[str, Any]):
-        return app_info.website_domain.get_as_string_dangerous(
-        ) + app_info.website_base_path.get_as_string_dangerous() + &#39;/verify-email&#39;
+        return (
+            app_info.website_domain.get_as_string_dangerous()
+            + app_info.website_base_path.get_as_string_dangerous()
+            + &#34;/verify-email&#34;
+        )
+
     return func
 
 
 class OverrideConfig:
-
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-                 apis: Union[Callable[[APIInterface], APIInterface], None] = None):
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+    ):
         self.functions = functions
         self.apis = apis
 
 
 class ParentRecipeEmailVerificationConfig:
-    def __init__(self,
-                 get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
-                 override: Union[OverrideConfig, None] = None,
-                 get_email_verification_url: Union[Callable[[User, Dict[str, Any]], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[User, str, Dict[str, Any]], Awaitable[None]], None] = None,
-                 email_delivery: Union[EmailDeliveryConfig[VerificationEmailTemplateVars], None] = None,
-                 ):
+    def __init__(
+        self,
+        get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
+        override: Union[OverrideConfig, None] = None,
+        get_email_verification_url: Union[
+            Callable[[User, Dict[str, Any]], Awaitable[str]], None
+        ] = None,
+        create_and_send_custom_email: Union[
+            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
+        ] = None,
+        email_delivery: Union[
+            EmailDeliveryConfig[VerificationEmailTemplateVars], None
+        ] = None,
+    ):
         self.override = override
         self.get_email_verification_url = get_email_verification_url
         self.get_email_for_user_id = get_email_for_user_id
@@ -90,16 +108,21 @@ class ParentRecipeEmailVerificationConfig:
 
         if create_and_send_custom_email:
             # Note: This will appear twice because `InputEmailVerificationConfig` will also produce same warning.
-            deprecated_warn(&#34;create_and_send_custom_email is deprecated. Please use email delivery config instead&#34;)
+            deprecated_warn(
+                &#34;create_and_send_custom_email is deprecated. Please use email delivery config instead&#34;
+            )
 
 
 class EmailVerificationConfig:
-    def __init__(self,
-                 override: OverrideConfig,
-                 get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
-                 get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
-                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]],
-                 ):
+    def __init__(
+        self,
+        override: OverrideConfig,
+        get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
+        get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
+        get_email_delivery_config: Callable[
+            [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
+        ],
+    ):
         self.get_email_for_user_id = get_email_for_user_id
         self.get_email_verification_url = get_email_verification_url
         self.override = override
@@ -107,19 +130,34 @@ class EmailVerificationConfig:
 
 
 def validate_and_normalise_user_input(
-        app_info: AppInfo, config: ParentRecipeEmailVerificationConfig) -&gt; EmailVerificationConfig:
+    app_info: AppInfo, config: ParentRecipeEmailVerificationConfig
+) -&gt; EmailVerificationConfig:
     if not isinstance(config, ParentRecipeEmailVerificationConfig):  # type: ignore
-        raise ValueError(&#39;config must be an instance of ParentRecipeEmailVerificationConfig&#39;)
+        raise ValueError(
+            &#34;config must be an instance of ParentRecipeEmailVerificationConfig&#34;
+        )
 
-    get_email_verification_url = config.get_email_verification_url if config.get_email_verification_url is not None \
+    get_email_verification_url = (
+        config.get_email_verification_url
+        if config.get_email_verification_url is not None
         else default_get_email_verification_url(app_info)
+    )
 
-    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[VerificationEmailTemplateVars]:
-        email_service = config.email_delivery.service if config.email_delivery is not None else None
+    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[
+        VerificationEmailTemplateVars
+    ]:
+        email_service = (
+            config.email_delivery.service if config.email_delivery is not None else None
+        )
         if email_service is None:
-            email_service = BackwardCompatibilityService(app_info, config.create_and_send_custom_email)
+            email_service = BackwardCompatibilityService(
+                app_info, config.create_and_send_custom_email
+            )
 
-        if config.email_delivery is not None and config.email_delivery.override is not None:
+        if (
+            config.email_delivery is not None
+            and config.email_delivery.override is not None
+        ):
             override = config.email_delivery.override
         else:
             override = None
@@ -128,7 +166,7 @@ def validate_and_normalise_user_input(
     override = config.override
 
     if override is not None and not isinstance(override, OverrideConfig):  # type: ignore
-        raise ValueError(&#39;override must be of type OverrideConfig or None&#39;)
+        raise ValueError(&#34;override must be of type OverrideConfig or None&#34;)
 
     if override is None:
         override = OverrideConfig()
@@ -157,10 +195,16 @@ def validate_and_normalise_user_input(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def default_get_email_verification_url(app_info: AppInfo) -&gt; Callable[[User, Dict[str, Any]], Awaitable[str]]:
+<pre><code class="python">def default_get_email_verification_url(
+    app_info: AppInfo,
+) -&gt; Callable[[User, Dict[str, Any]], Awaitable[str]]:
     async def func(_: User, __: Dict[str, Any]):
-        return app_info.website_domain.get_as_string_dangerous(
-        ) + app_info.website_base_path.get_as_string_dangerous() + &#39;/verify-email&#39;
+        return (
+            app_info.website_domain.get_as_string_dangerous()
+            + app_info.website_base_path.get_as_string_dangerous()
+            + &#34;/verify-email&#34;
+        )
+
     return func</code></pre>
 </details>
 </dd>
@@ -174,19 +218,34 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def validate_and_normalise_user_input(
-        app_info: AppInfo, config: ParentRecipeEmailVerificationConfig) -&gt; EmailVerificationConfig:
+    app_info: AppInfo, config: ParentRecipeEmailVerificationConfig
+) -&gt; EmailVerificationConfig:
     if not isinstance(config, ParentRecipeEmailVerificationConfig):  # type: ignore
-        raise ValueError(&#39;config must be an instance of ParentRecipeEmailVerificationConfig&#39;)
+        raise ValueError(
+            &#34;config must be an instance of ParentRecipeEmailVerificationConfig&#34;
+        )
 
-    get_email_verification_url = config.get_email_verification_url if config.get_email_verification_url is not None \
+    get_email_verification_url = (
+        config.get_email_verification_url
+        if config.get_email_verification_url is not None
         else default_get_email_verification_url(app_info)
+    )
 
-    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[VerificationEmailTemplateVars]:
-        email_service = config.email_delivery.service if config.email_delivery is not None else None
+    def get_email_delivery_config() -&gt; EmailDeliveryConfigWithService[
+        VerificationEmailTemplateVars
+    ]:
+        email_service = (
+            config.email_delivery.service if config.email_delivery is not None else None
+        )
         if email_service is None:
-            email_service = BackwardCompatibilityService(app_info, config.create_and_send_custom_email)
+            email_service = BackwardCompatibilityService(
+                app_info, config.create_and_send_custom_email
+            )
 
-        if config.email_delivery is not None and config.email_delivery.override is not None:
+        if (
+            config.email_delivery is not None
+            and config.email_delivery.override is not None
+        ):
             override = config.email_delivery.override
         else:
             override = None
@@ -195,7 +254,7 @@ def validate_and_normalise_user_input(
     override = config.override
 
     if override is not None and not isinstance(override, OverrideConfig):  # type: ignore
-        raise ValueError(&#39;override must be of type OverrideConfig or None&#39;)
+        raise ValueError(&#34;override must be of type OverrideConfig or None&#34;)
 
     if override is None:
         override = OverrideConfig()
@@ -224,12 +283,15 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class EmailVerificationConfig:
-    def __init__(self,
-                 override: OverrideConfig,
-                 get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
-                 get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
-                 get_email_delivery_config: Callable[[], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]],
-                 ):
+    def __init__(
+        self,
+        override: OverrideConfig,
+        get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
+        get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
+        get_email_delivery_config: Callable[
+            [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
+        ],
+    ):
         self.get_email_for_user_id = get_email_for_user_id
         self.get_email_verification_url = get_email_verification_url
         self.override = override
@@ -247,9 +309,11 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class OverrideConfig:
-
-    def __init__(self, functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
-                 apis: Union[Callable[[APIInterface], APIInterface], None] = None):
+    def __init__(
+        self,
+        functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
+        apis: Union[Callable[[APIInterface], APIInterface], None] = None,
+    ):
         self.functions = functions
         self.apis = apis</code></pre>
 </details>
@@ -265,13 +329,20 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ParentRecipeEmailVerificationConfig:
-    def __init__(self,
-                 get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
-                 override: Union[OverrideConfig, None] = None,
-                 get_email_verification_url: Union[Callable[[User, Dict[str, Any]], Awaitable[str]], None] = None,
-                 create_and_send_custom_email: Union[Callable[[User, str, Dict[str, Any]], Awaitable[None]], None] = None,
-                 email_delivery: Union[EmailDeliveryConfig[VerificationEmailTemplateVars], None] = None,
-                 ):
+    def __init__(
+        self,
+        get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
+        override: Union[OverrideConfig, None] = None,
+        get_email_verification_url: Union[
+            Callable[[User, Dict[str, Any]], Awaitable[str]], None
+        ] = None,
+        create_and_send_custom_email: Union[
+            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
+        ] = None,
+        email_delivery: Union[
+            EmailDeliveryConfig[VerificationEmailTemplateVars], None
+        ] = None,
+    ):
         self.override = override
         self.get_email_verification_url = get_email_verification_url
         self.get_email_for_user_id = get_email_for_user_id
@@ -280,7 +351,9 @@ def validate_and_normalise_user_input(
 
         if create_and_send_custom_email:
             # Note: This will appear twice because `InputEmailVerificationConfig` will also produce same warning.
-            deprecated_warn(&#34;create_and_send_custom_email is deprecated. Please use email delivery config instead&#34;)</code></pre>
+            deprecated_warn(
+                &#34;create_and_send_custom_email is deprecated. Please use email delivery config instead&#34;
+            )</code></pre>
 </details>
 </dd>
 </dl>

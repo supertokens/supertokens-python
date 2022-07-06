@@ -49,14 +49,14 @@ if TYPE_CHECKING:
 
 
 class BaseRequest(ABC):
-
     def __init__(self):
         self.wrapper_used = True
         self.request = None
 
     @abstractmethod
     def get_query_param(
-            self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
+        self, key: str, default: Union[str, None] = None
+    ) -&gt; Union[str, None]:
         pass
 
     @abstractmethod
@@ -119,14 +119,14 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class BaseRequest(ABC):
-
     def __init__(self):
         self.wrapper_used = True
         self.request = None
 
     @abstractmethod
     def get_query_param(
-            self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
+        self, key: str, default: Union[str, None] = None
+    ) -&gt; Union[str, None]:
         pass
 
     @abstractmethod
@@ -247,7 +247,8 @@ def get_path(self) -&gt; str:
 </summary>
 <pre><code class="python">@abstractmethod
 def get_query_param(
-        self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
+    self, key: str, default: Union[str, None] = None
+) -&gt; Union[str, None]:
     pass</code></pre>
 </details>
 </dd>

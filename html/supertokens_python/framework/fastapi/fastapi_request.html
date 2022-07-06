@@ -59,7 +59,8 @@ class FastApiRequest(BaseRequest):
         self.request = request
 
     def get_query_param(
-            self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
+        self, key: str, default: Union[str, None] = None
+    ) -&gt; Union[str, None]:
         return self.request.query_params.get(key, default)
 
     async def json(self) -&gt; Union[Any, None]:
@@ -90,7 +91,7 @@ class FastApiRequest(BaseRequest):
         return self.request.url.path
 
     async def form_data(self):
-        return dict(parse_qsl((await self.request.body()).decode(&#39;utf-8&#39;)))</code></pre>
+        return dict(parse_qsl((await self.request.body()).decode(&#34;utf-8&#34;)))</code></pre>
 </details>
 </section>
 <section>
@@ -122,7 +123,8 @@ inheritance.</p></div>
         self.request = request
 
     def get_query_param(
-            self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
+        self, key: str, default: Union[str, None] = None
+    ) -&gt; Union[str, None]:
         return self.request.query_params.get(key, default)
 
     async def json(self) -&gt; Union[Any, None]:
@@ -153,7 +155,7 @@ inheritance.</p></div>
         return self.request.url.path
 
     async def form_data(self):
-        return dict(parse_qsl((await self.request.body()).decode(&#39;utf-8&#39;)))</code></pre>
+        return dict(parse_qsl((await self.request.body()).decode(&#34;utf-8&#34;)))</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -180,7 +182,7 @@ any functionality that is common to both <code>Request</code> and <code>WebSocke
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def form_data(self):
-    return dict(parse_qsl((await self.request.body()).decode(&#39;utf-8&#39;)))</code></pre>
+    return dict(parse_qsl((await self.request.body()).decode(&#34;utf-8&#34;)))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_cookie"><code class="name flex">
@@ -232,7 +234,8 @@ any functionality that is common to both <code>Request</code> and <code>WebSocke
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_query_param(
-        self, key: str, default: Union[str, None] = None) -&gt; Union[str, None]:
+    self, key: str, default: Union[str, None] = None
+) -&gt; Union[str, None]:
     return self.request.query_params.get(key, default)</code></pre>
 </details>
 </dd>
