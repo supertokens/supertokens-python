@@ -1,2 +1,2 @@
 django==2.2
-django-cors-headers==2.0
+django-cors-headers==3.11
