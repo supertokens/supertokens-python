@@ -1,4 +1,3 @@
-set -x
 coreInfo=`curl -s -X GET \
 "https://api.supertokens.io/0/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$1" \
 -H 'api-version: 0'`
