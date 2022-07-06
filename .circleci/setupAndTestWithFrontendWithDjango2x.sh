@@ -1,3 +1,4 @@
+set -x
 coreInfo=`curl -s -X GET \
 "https://api.supertokens.io/0/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$1" \
 -H 'api-version: 0'`
@@ -50,9 +51,9 @@ cd supertokens-website
 git checkout $2
 cd ../project/tests/frontendIntegration/django2x
 export PYTHONPATH="${PYTHONPATH}:/root/project"
-python3 manage.py runserver 8080 &
+gunicorn mysite.wsgi --bind 0.0.0.0:8080 &
 pid=$!
-python3 manage.py runserver 8082 &
+gunicorn mysite.wsgi --bind 0.0.0.0:8082 &
 pid2=$!
 cd ../../../../supertokens-website/test/server
 npm i -d  

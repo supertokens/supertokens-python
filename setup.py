@@ -42,6 +42,7 @@ extras_require = {
             "django-cors-headers==2.0",
             "django>=2,<3",
             "django-stubs==1.9.0",
+            "gunicorn==20.1.0",
             "python-dotenv==0.19.2",
         ]
     ),
