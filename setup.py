@@ -15,7 +15,7 @@ extras_require = {
     # on changes in these frameworks
     "fastapi": (
         [
-            "respx==0.16.3",
+            "respx==0.19.2",
             "Fastapi",
             "uvicorn==0.18.2",
             "python-dotenv==0.19.2",
@@ -100,14 +100,14 @@ setup(
     keywords="",
     install_requires=[
         "PyJWT>=2.0.0 ,<2.4.0",
-        "httpx>=0.15.0 ,<0.23.0",
+        "httpx>=0.15.0 ,<0.24.0",
         "pycryptodome==3.10.*",
         "jsonschema==3.2.0",
         "tldextract==3.1.0",
-        "asgiref==3.4.1",
+        "asgiref>=3.4.1,<4",
         "typing_extensions==4.1.1",
         "Deprecated==1.2.13",
-        "cryptography==35.0",
+        "cryptography>=35.0,<37.0",
         "phonenumbers==8.12.48",
         # flask depends on this and flask has > '2.0' for this. However, the version before 2.1.0 breaks our lib.
         "Werkzeug>=2.0 ,<2.1.0",

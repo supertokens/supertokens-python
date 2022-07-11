@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Bug fix:
 
 - Clears cookies when `revoke_session` is called using the session container, even if the session did not exist from before: https://github.com/supertokens/supertokens-node/issues/343
+- Relax version requirements for `httpx`, `cryptography`, and `asgiref` to fix https://github.com/supertokens/supertokens-python/issues/207
 
 ### Breaking changes:
 - Change request arg type in session recipe functions from Any to BaseRequest.

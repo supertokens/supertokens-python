@@ -54,7 +54,7 @@ class Facebook(Provider):
 
         params = {"access_token": access_token, "fields": "id,email", "format": "json"}
         async with AsyncClient() as client:
-            response = await client.get(
+            response = await client.get(  # type:ignore
                 url="https://graph.facebook.com/me", params=params
             )
             user_info = response.json()

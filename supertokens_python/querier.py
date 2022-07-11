@@ -81,7 +81,7 @@ class Querier:
             if Querier.__api_key is not None:
                 headers = {API_KEY_HEADER: Querier.__api_key}
             async with AsyncClient() as client:
-                return await client.get(url, headers=headers)
+                return await client.get(url, headers=headers)  # type:ignore
 
         response = await self.__send_request_helper(
             NormalisedURLPath(API_VERSION), "GET", f, len(self.__hosts)
@@ -133,7 +133,7 @@ class Querier:
 
         async def f(url: str) -> Response:
             async with AsyncClient() as client:
-                return await client.get(
+                return await client.get(  # type:ignore
                     url,
                     params=params,
                     headers=await self.__get_headers_with_api_version(path),
@@ -169,7 +169,7 @@ class Querier:
     async def send_delete_request(self, path: NormalisedURLPath):
         async def f(url: str) -> Response:
             async with AsyncClient() as client:
-                return await client.delete(
+                return await client.delete(  # type:ignore
                     url, headers=await self.__get_headers_with_api_version(path)
                 )
 
