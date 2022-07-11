@@ -68,7 +68,7 @@ six==1.16.0
 sniffio==1.2.0
 sqlparse==0.4.2
 starlette==0.14.2
--e git+https://github.com/supertokens/supertokens-python.git@445181dba8869f33b1a90c58778c7777d5ab560c#egg=supertokens_python
+-e git+https://github.com/supertokens/supertokens-python.git@e989cfd244dc5ed2437e49ab6b476f7e9bd16861#egg=supertokens_python
 tldextract==3.1.0
 toml==0.10.2
 tomli==2.0.1
