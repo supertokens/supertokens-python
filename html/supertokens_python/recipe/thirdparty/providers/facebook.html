@@ -82,7 +82,7 @@ class Facebook(Provider):
 
         params = {&#34;access_token&#34;: access_token, &#34;fields&#34;: &#34;id,email&#34;, &#34;format&#34;: &#34;json&#34;}
         async with AsyncClient() as client:
-            response = await client.get(
+            response = await client.get(  # type:ignore
                 url=&#34;https://graph.facebook.com/me&#34;, params=params
             )
             user_info = response.json()
@@ -168,7 +168,7 @@ inheritance.</p></div>
 
         params = {&#34;access_token&#34;: access_token, &#34;fields&#34;: &#34;id,email&#34;, &#34;format&#34;: &#34;json&#34;}
         async with AsyncClient() as client:
-            response = await client.get(
+            response = await client.get(  # type:ignore
                 url=&#34;https://graph.facebook.com/me&#34;, params=params
             )
             user_info = response.json()
@@ -287,7 +287,7 @@ inheritance.</p></div>
 
     params = {&#34;access_token&#34;: access_token, &#34;fields&#34;: &#34;id,email&#34;, &#34;format&#34;: &#34;json&#34;}
     async with AsyncClient() as client:
-        response = await client.get(
+        response = await client.get(  # type:ignore
             url=&#34;https://graph.facebook.com/me&#34;, params=params
         )
         user_info = response.json()

@@ -183,7 +183,7 @@ class Apple(Provider):
             self.APPLE_PUBLIC_KEYS
         ) == 0:
             async with AsyncClient() as client:
-                response = await client.get(self.APPLE_PUBLIC_KEY_URL)
+                response = await client.get(self.APPLE_PUBLIC_KEY_URL)  # type:ignore
                 key_payload = response.json()
                 for key in key_payload[&#34;keys&#34;]:
                     self.APPLE_PUBLIC_KEYS.append(RSAAlgorithm.from_jwk(key))  # type: ignore
@@ -343,7 +343,7 @@ inheritance.</p></div>
             self.APPLE_PUBLIC_KEYS
         ) == 0:
             async with AsyncClient() as client:
-                response = await client.get(self.APPLE_PUBLIC_KEY_URL)
+                response = await client.get(self.APPLE_PUBLIC_KEY_URL)  # type:ignore
                 key_payload = response.json()
                 for key in key_payload[&#34;keys&#34;]:
                     self.APPLE_PUBLIC_KEYS.append(RSAAlgorithm.from_jwk(key))  # type: ignore
