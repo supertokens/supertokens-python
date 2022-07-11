@@ -15,7 +15,7 @@ extras_require = {
     # on changes in these frameworks
     "fastapi": (
         [
-            "respx==0.16.3",
+            "respx==0.19.2",
             "Fastapi",
             "uvicorn==0.18.2",
             "python-dotenv==0.19.2",
