@@ -104,10 +104,10 @@ setup(
         "pycryptodome==3.10.*",
         "jsonschema==3.2.0",
         "tldextract==3.1.0",
-        "asgiref==3.4.1",
+        "asgiref>=3.4.1,<4",
         "typing_extensions==4.1.1",
         "Deprecated==1.2.13",
-        "cryptography==35.0",
+        "cryptography>=35.0,<37.0",
         "phonenumbers==8.12.48",
         # flask depends on this and flask has > '2.0' for this. However, the version before 2.1.0 breaks our lib.
         "Werkzeug>=2.0 ,<2.1.0",
