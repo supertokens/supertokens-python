@@ -59,7 +59,7 @@ class Discord(Provider):
         access_token: str = auth_code_response["access_token"]
         headers = {"Authorization": "Bearer " + access_token}
         async with AsyncClient() as client:
-            response = await client.get(
+            response = await client.get(  # type:ignore
                 url=self.base_url + "/api/users/@me", headers=headers
             )
             user_info = response.json()

@@ -59,7 +59,7 @@ class Google(Provider):
         params = {"alt": "json"}
         headers = {"Authorization": "Bearer " + access_token}
         async with AsyncClient() as client:
-            response = await client.get(
+            response = await client.get(  # type: ignore
                 url="https://www.googleapis.com/oauth2/v1/userinfo",
                 params=params,
                 headers=headers,
