@@ -87,7 +87,7 @@ class Google(Provider):
         params = {&#34;alt&#34;: &#34;json&#34;}
         headers = {&#34;Authorization&#34;: &#34;Bearer &#34; + access_token}
         async with AsyncClient() as client:
-            response = await client.get(
+            response = await client.get(  # type: ignore
                 url=&#34;https://www.googleapis.com/oauth2/v1/userinfo&#34;,
                 params=params,
                 headers=headers,
@@ -189,7 +189,7 @@ inheritance.</p></div>
         params = {&#34;alt&#34;: &#34;json&#34;}
         headers = {&#34;Authorization&#34;: &#34;Bearer &#34; + access_token}
         async with AsyncClient() as client:
-            response = await client.get(
+            response = await client.get(  # type: ignore
                 url=&#34;https://www.googleapis.com/oauth2/v1/userinfo&#34;,
                 params=params,
                 headers=headers,
@@ -323,7 +323,7 @@ inheritance.</p></div>
     params = {&#34;alt&#34;: &#34;json&#34;}
     headers = {&#34;Authorization&#34;: &#34;Bearer &#34; + access_token}
     async with AsyncClient() as client:
-        response = await client.get(
+        response = await client.get(  # type: ignore
             url=&#34;https://www.googleapis.com/oauth2/v1/userinfo&#34;,
             params=params,
             headers=headers,
@@ -359,7 +359,7 @@ inheritance.</p></div>
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
+<h2>Index</h2>
 <div class="toc">
 <ul></ul>
 </div>

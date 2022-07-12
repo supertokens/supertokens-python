@@ -92,10 +92,10 @@ class Github(Provider):
             &#34;Accept&#34;: &#34;application/vnd.github.v3+json&#34;,
         }
         async with AsyncClient() as client:
-            response_user = await client.get(
+            response_user = await client.get(  # type:ignore
                 url=&#34;https://api.github.com/user&#34;, params=params, headers=headers
             )
-            response_email = await client.get(
+            response_email = await client.get(  # type:ignore
                 url=&#34;https://api.github.com/user/emails&#34;, params=params, headers=headers
             )
             user_info = response_user.json()
@@ -202,10 +202,10 @@ inheritance.</p></div>
             &#34;Accept&#34;: &#34;application/vnd.github.v3+json&#34;,
         }
         async with AsyncClient() as client:
-            response_user = await client.get(
+            response_user = await client.get(  # type:ignore
                 url=&#34;https://api.github.com/user&#34;, params=params, headers=headers
             )
-            response_email = await client.get(
+            response_email = await client.get(  # type:ignore
                 url=&#34;https://api.github.com/user/emails&#34;, params=params, headers=headers
             )
             user_info = response_user.json()
@@ -340,10 +340,10 @@ inheritance.</p></div>
         &#34;Accept&#34;: &#34;application/vnd.github.v3+json&#34;,
     }
     async with AsyncClient() as client:
-        response_user = await client.get(
+        response_user = await client.get(  # type:ignore
             url=&#34;https://api.github.com/user&#34;, params=params, headers=headers
         )
-        response_email = await client.get(
+        response_email = await client.get(  # type:ignore
             url=&#34;https://api.github.com/user/emails&#34;, params=params, headers=headers
         )
         user_info = response_user.json()
@@ -385,7 +385,7 @@ inheritance.</p></div>
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
+<h2>Index</h2>
 <div class="toc">
 <ul></ul>
 </div>

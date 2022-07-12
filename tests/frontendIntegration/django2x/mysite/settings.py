@@ -61,6 +61,7 @@ CORS_ALLOW_HEADERS: List[str] = list(default_headers) + [  # type: ignore
 # Application definition
 
 INSTALLED_APPS = [
+    "corsheaders",  # Add corsheaders django app
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

@@ -87,7 +87,7 @@ class Discord(Provider):
         access_token: str = auth_code_response[&#34;access_token&#34;]
         headers = {&#34;Authorization&#34;: &#34;Bearer &#34; + access_token}
         async with AsyncClient() as client:
-            response = await client.get(
+            response = await client.get(  # type:ignore
                 url=self.base_url + &#34;/api/users/@me&#34;, headers=headers
             )
             user_info = response.json()
@@ -185,7 +185,7 @@ inheritance.</p></div>
         access_token: str = auth_code_response[&#34;access_token&#34;]
         headers = {&#34;Authorization&#34;: &#34;Bearer &#34; + access_token}
         async with AsyncClient() as client:
-            response = await client.get(
+            response = await client.get(  # type:ignore
                 url=self.base_url + &#34;/api/users/@me&#34;, headers=headers
             )
             user_info = response.json()
@@ -312,7 +312,7 @@ inheritance.</p></div>
     access_token: str = auth_code_response[&#34;access_token&#34;]
     headers = {&#34;Authorization&#34;: &#34;Bearer &#34; + access_token}
     async with AsyncClient() as client:
-        response = await client.get(
+        response = await client.get(  # type:ignore
             url=self.base_url + &#34;/api/users/@me&#34;, headers=headers
         )
         user_info = response.json()
@@ -346,7 +346,7 @@ inheritance.</p></div>
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
+<h2>Index</h2>
 <div class="toc">
 <ul></ul>
 </div>
