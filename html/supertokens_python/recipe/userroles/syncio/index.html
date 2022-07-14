@@ -67,7 +67,7 @@ def add_role_to_user(
 
 
 def remove_user_role(
-    user_id: str, role: str, user_context: Dict[str, Any]
+    user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import remove_user_role
 
@@ -75,7 +75,7 @@ def remove_user_role(
 
 
 def get_roles_for_user(
-    user_id: str, user_context: Dict[str, Any]
+    user_id: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; GetRolesForUserOkResult:
     from supertokens_python.recipe.userroles.asyncio import get_roles_for_user
 
@@ -83,7 +83,7 @@ def get_roles_for_user(
 
 
 def get_users_that_have_role(
-    role: str, user_context: Dict[str, Any]
+    role: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import get_users_that_have_role
 
@@ -91,7 +91,7 @@ def get_users_that_have_role(
 
 
 def create_new_role_or_add_permissions(
-    role: str, permissions: List[str], user_context: Dict[str, Any]
+    role: str, permissions: List[str], user_context: Union[Dict[str, Any], None] = None
 ) -&gt; CreateNewRoleOrAddPermissionsOkResult:
     from supertokens_python.recipe.userroles.asyncio import (
         create_new_role_or_add_permissions,
@@ -101,7 +101,7 @@ def create_new_role_or_add_permissions(
 
 
 def get_permissions_for_role(
-    role: str, user_context: Dict[str, Any]
+    role: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import get_permissions_for_role
 
@@ -109,7 +109,7 @@ def get_permissions_for_role(
 
 
 def remove_permissions_from_role(
-    role: str, permissions: List[str], user_context: Dict[str, Any]
+    role: str, permissions: List[str], user_context: Union[Dict[str, Any], None] = None
 ) -&gt; Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import remove_permissions_from_role
 
@@ -117,7 +117,7 @@ def remove_permissions_from_role(
 
 
 def get_roles_that_have_permission(
-    permission: str, user_context: Dict[str, Any]
+    permission: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; GetRolesThatHavePermissionOkResult:
     from supertokens_python.recipe.userroles.asyncio import (
         get_roles_that_have_permission,
@@ -126,13 +126,17 @@ def get_roles_that_have_permission(
     return sync(get_roles_that_have_permission(permission, user_context))
 
 
-def delete_role(role: str, user_context: Dict[str, Any]) -&gt; DeleteRoleOkResult:
+def delete_role(
+    role: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; DeleteRoleOkResult:
     from supertokens_python.recipe.userroles.asyncio import delete_role
 
     return sync(delete_role(role, user_context))
 
 
-def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
+def get_all_roles(
+    user_context: Union[Dict[str, Any], None] = None
+) -&gt; GetAllRolesOkResult:
     from supertokens_python.recipe.userroles.asyncio import get_all_roles
 
     return sync(get_all_roles(user_context))</code></pre>
@@ -163,7 +167,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.syncio.create_new_role_or_add_permissions"><code class="name flex">
-<span>def <span class="ident">create_new_role_or_add_permissions</span></span>(<span>role: str, permissions: List[str], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.userroles.interfaces.CreateNewRoleOrAddPermissionsOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.CreateNewRoleOrAddPermissionsOkResult">CreateNewRoleOrAddPermissionsOkResult</a></span>
+<span>def <span class="ident">create_new_role_or_add_permissions</span></span>(<span>role: str, permissions: List[str], user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.userroles.interfaces.CreateNewRoleOrAddPermissionsOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.CreateNewRoleOrAddPermissionsOkResult">CreateNewRoleOrAddPermissionsOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -172,7 +176,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def create_new_role_or_add_permissions(
-    role: str, permissions: List[str], user_context: Dict[str, Any]
+    role: str, permissions: List[str], user_context: Union[Dict[str, Any], None] = None
 ) -&gt; CreateNewRoleOrAddPermissionsOkResult:
     from supertokens_python.recipe.userroles.asyncio import (
         create_new_role_or_add_permissions,
@@ -182,7 +186,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.syncio.delete_role"><code class="name flex">
-<span>def <span class="ident">delete_role</span></span>(<span>role: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.userroles.interfaces.DeleteRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.DeleteRoleOkResult">DeleteRoleOkResult</a></span>
+<span>def <span class="ident">delete_role</span></span>(<span>role: str, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.userroles.interfaces.DeleteRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.DeleteRoleOkResult">DeleteRoleOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -190,14 +194,16 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def delete_role(role: str, user_context: Dict[str, Any]) -&gt; DeleteRoleOkResult:
+<pre><code class="python">def delete_role(
+    role: str, user_context: Union[Dict[str, Any], None] = None
+) -&gt; DeleteRoleOkResult:
     from supertokens_python.recipe.userroles.asyncio import delete_role
 
     return sync(delete_role(role, user_context))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.syncio.get_all_roles"><code class="name flex">
-<span>def <span class="ident">get_all_roles</span></span>(<span>user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.userroles.interfaces.GetAllRolesOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetAllRolesOkResult">GetAllRolesOkResult</a></span>
+<span>def <span class="ident">get_all_roles</span></span>(<span>user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.userroles.interfaces.GetAllRolesOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetAllRolesOkResult">GetAllRolesOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -205,14 +211,16 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
+<pre><code class="python">def get_all_roles(
+    user_context: Union[Dict[str, Any], None] = None
+) -&gt; GetAllRolesOkResult:
     from supertokens_python.recipe.userroles.asyncio import get_all_roles
 
     return sync(get_all_roles(user_context))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.syncio.get_permissions_for_role"><code class="name flex">
-<span>def <span class="ident">get_permissions_for_role</span></span>(<span>role: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.GetPermissionsForRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetPermissionsForRoleOkResult">GetPermissionsForRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
+<span>def <span class="ident">get_permissions_for_role</span></span>(<span>role: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.GetPermissionsForRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetPermissionsForRoleOkResult">GetPermissionsForRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -221,7 +229,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_permissions_for_role(
-    role: str, user_context: Dict[str, Any]
+    role: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import get_permissions_for_role
 
@@ -229,7 +237,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.syncio.get_roles_for_user"><code class="name flex">
-<span>def <span class="ident">get_roles_for_user</span></span>(<span>user_id: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult">GetRolesForUserOkResult</a></span>
+<span>def <span class="ident">get_roles_for_user</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetRolesForUserOkResult">GetRolesForUserOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -238,7 +246,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_roles_for_user(
-    user_id: str, user_context: Dict[str, Any]
+    user_id: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; GetRolesForUserOkResult:
     from supertokens_python.recipe.userroles.asyncio import get_roles_for_user
 
@@ -246,7 +254,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.syncio.get_roles_that_have_permission"><code class="name flex">
-<span>def <span class="ident">get_roles_that_have_permission</span></span>(<span>permission: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.userroles.interfaces.GetRolesThatHavePermissionOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetRolesThatHavePermissionOkResult">GetRolesThatHavePermissionOkResult</a></span>
+<span>def <span class="ident">get_roles_that_have_permission</span></span>(<span>permission: str, user_context: Optional[Dict[str, Any]] = None) ‑> <a title="supertokens_python.recipe.userroles.interfaces.GetRolesThatHavePermissionOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetRolesThatHavePermissionOkResult">GetRolesThatHavePermissionOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -255,7 +263,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_roles_that_have_permission(
-    permission: str, user_context: Dict[str, Any]
+    permission: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; GetRolesThatHavePermissionOkResult:
     from supertokens_python.recipe.userroles.asyncio import (
         get_roles_that_have_permission,
@@ -265,7 +273,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.syncio.get_users_that_have_role"><code class="name flex">
-<span>def <span class="ident">get_users_that_have_role</span></span>(<span>role: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult">GetUsersThatHaveRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
+<span>def <span class="ident">get_users_that_have_role</span></span>(<span>role: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.GetUsersThatHaveRoleOkResult">GetUsersThatHaveRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -274,7 +282,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_users_that_have_role(
-    role: str, user_context: Dict[str, Any]
+    role: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import get_users_that_have_role
 
@@ -282,7 +290,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.syncio.remove_permissions_from_role"><code class="name flex">
-<span>def <span class="ident">remove_permissions_from_role</span></span>(<span>role: str, permissions: List[str], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.RemovePermissionsFromRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.RemovePermissionsFromRoleOkResult">RemovePermissionsFromRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
+<span>def <span class="ident">remove_permissions_from_role</span></span>(<span>role: str, permissions: List[str], user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.RemovePermissionsFromRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.RemovePermissionsFromRoleOkResult">RemovePermissionsFromRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -291,7 +299,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def remove_permissions_from_role(
-    role: str, permissions: List[str], user_context: Dict[str, Any]
+    role: str, permissions: List[str], user_context: Union[Dict[str, Any], None] = None
 ) -&gt; Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import remove_permissions_from_role
 
@@ -299,7 +307,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.syncio.remove_user_role"><code class="name flex">
-<span>def <span class="ident">remove_user_role</span></span>(<span>user_id: str, role: str, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult">RemoveUserRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
+<span>def <span class="ident">remove_user_role</span></span>(<span>user_id: str, role: str, user_context: Optional[Dict[str, Any]] = None) ‑> Union[<a title="supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.RemoveUserRoleOkResult">RemoveUserRoleOkResult</a>, <a title="supertokens_python.recipe.userroles.interfaces.UnknownRoleError" href="../interfaces.html#supertokens_python.recipe.userroles.interfaces.UnknownRoleError">UnknownRoleError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -308,7 +316,7 @@ def get_all_roles(user_context: Dict[str, Any]) -&gt; GetAllRolesOkResult:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def remove_user_role(
-    user_id: str, role: str, user_context: Dict[str, Any]
+    user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
 ) -&gt; Union[RemoveUserRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import remove_user_role
 
