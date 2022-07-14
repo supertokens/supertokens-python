@@ -14,7 +14,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from asyncio import iscoroutinefunction
+from typing import TYPE_CHECKING, Any, Dict, Generic, List, TypeVar, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.types import APIResponse, GeneralErrorResponse
@@ -327,3 +328,88 @@ class SessionContainer(ABC):
     # This is there so that we can do session["..."] to access some of the members of this class
     def __getitem__(self, item: str):
         return getattr(self, item)
+
+
+# Session claims:
+_T = TypeVar("_T")
+JSONObject = Dict[str, Any]
+
+
+JSONPrimitive = Union[str, int, bool, None, Dict[str, Any]]
+
+FetchValueReturnType = Union[_T, None]
+
+
+class SessionClaim(ABC, Generic[_T]):
+    def __init__(self, key: str) -> None:
+        self.key = key
+
+    # fetchValue(userId: string, userContext: any): Promise<T | undefined> | T | undefined;
+    # Union[Promise[FetchValueReturnType], FetchValueReturnType]
+    def fetch_value(
+        self, user_id: str, user_context: Union[Dict[str, Any], None] = None
+    ) -> Any:
+        pass
+
+    @abstractmethod
+    def add_to_payload_(
+        self,
+        payload: JSONObject,
+        value: _T,
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -> JSONObject:
+        """Saves the provided value into the payload, by cloning and updating the entire object"""
+
+    @abstractmethod
+    def remove_from_payload_by_merge_(
+        self, payload: JSONObject, user_context: Dict[str, Any]
+    ) -> JSONObject:
+        """Removes the claim from the payload by setting it to null, so mergeIntoAccessTokenPayload clears it"""
+
+    @abstractmethod
+    def remove_from_payload(
+        self, payload: JSONObject, user_context: Dict[str, Any]
+    ) -> JSONObject:
+        """Gets the value of the claim stored in the payload
+
+        Returns:
+            JSONObject: Claim value
+        """
+
+    @abstractmethod
+    def get_value_from_payload(
+        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+    ) -> Union[_T, None]:
+        pass
+
+    async def build(
+        self, user_id: str, user_context: Union[Dict[str, Any], None] = None
+    ) -> JSONObject:
+        if iscoroutinefunction(self.fetch_value):
+            value = await self.fetch_value(user_id, user_context)
+        else:
+            value = self.fetch_value(  # pylint: disable=assignment-from-no-return
+                user_id, user_context
+            )
+
+        if value is None:
+            return {}
+
+        return self.add_to_payload_({}, value, user_context)
+
+
+class SessionClaimValidator(ABC):
+    id: str
+    claim: SessionClaim[Any]
+
+    @abstractmethod
+    def should_refetch(
+        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+    ) -> Any:
+        pass
+
+    @abstractmethod
+    def validate(
+        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+    ) -> Any:
+        pass
