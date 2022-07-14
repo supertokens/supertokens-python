@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Bug fix
+- Make `user_context` optional in userroles recipe syncio functions. 
+
 ## [0.10.1] - 2022-07-11
 
 ### Documentation:
