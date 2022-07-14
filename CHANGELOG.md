@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Bug fix
+- Make `user_context` optional in userroles recipe syncio functions. 
+
 ## [0.10.1] - 2022-07-11
 
 ### Documentation:
@@ -27,7 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Bug fix:
 
 - Clears cookies when `revoke_session` is called using the session container, even if the session did not exist from before: https://github.com/supertokens/supertokens-node/issues/343
-- Make `user_context` optional in userroles recipe syncio functions. 
 
 ### Breaking changes:
 - Change request arg type in session recipe functions from Any to BaseRequest.
