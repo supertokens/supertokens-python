@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 SUPPORTED_CDI_VERSIONS = ["2.9", "2.10", "2.11", "2.12", "2.13", "2.14"]
-VERSION = "0.10.1"
+VERSION = "0.10.2"
 TELEMETRY = "/telemetry"
 USER_COUNT = "/users/count"
 USER_DELETE = "/user/remove"
