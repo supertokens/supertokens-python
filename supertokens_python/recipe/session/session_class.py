@@ -11,11 +11,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, List, TypeVar
 
 from supertokens_python.recipe.session.exceptions import raise_unauthorised_exception
 
-from .interfaces import SessionContainer
+from .interfaces import SessionContainer, SessionClaimValidator, SessionClaim
+
+
+_T = TypeVar("_T")
 
 
 class Session(SessionContainer):
@@ -55,7 +58,7 @@ class Session(SessionContainer):
 
     async def update_access_token_payload(
         self,
-        new_access_token_payload: Dict[str, Any],
+        new_access_token_payload: Union[Dict[str, Any], None],
         user_context: Union[Dict[str, Any], None] = None,
     ) -> None:
         if user_context is None:
@@ -112,3 +115,54 @@ class Session(SessionContainer):
             raise_unauthorised_exception("Session does not exist anymore.")
 
         return session_info.expiry
+
+    async def assert_claims(
+        self,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -> None:
+        # TODO: Implement this
+        pass
+
+    async def fetch_and_set_claim(
+        self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
+    ) -> None:
+        update = await claim.build(self.get_user_id(), user_context)
+        return await self.merge_into_access_token_payload(update, user_context)
+
+    async def set_claim_value(
+        self,
+        claim: SessionClaim[_T],
+        value: _T,
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -> None:
+        update = claim.add_to_payload_({}, value, user_context)
+        return await self.merge_into_access_token_payload(update, user_context)
+
+    async def get_claim_value(
+        self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
+    ) -> Union[Any, None]:
+        return claim.get_value_from_payload(
+            self.get_access_token_payload(), user_context
+        )
+
+    async def remove_claim(
+        self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
+    ) -> None:
+        if user_context is None:
+            user_context = {}
+        update = claim.remove_from_payload_by_merge_({}, user_context)
+        return await self.merge_into_access_token_payload(update, user_context)
+
+    async def merge_into_access_token_payload(
+        self, access_token_payload_update: Dict[str, Any], user_context: Any
+    ) -> None:
+        update_payload = {
+            **self.get_access_token_payload(),
+            **access_token_payload_update,
+        }
+        for k in access_token_payload_update.keys():
+            if access_token_payload_update[k] is None:
+                del update_payload[k]
+
+        await self.update_access_token_payload(update_payload, user_context)

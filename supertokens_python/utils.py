@@ -41,6 +41,7 @@ _T = TypeVar("_T")
 if TYPE_CHECKING:
     pass
 
+Promise = Coroutine[Any, Any, _T]
 
 FRAMEWORKS = {
     "fastapi": FastapiFramework(),

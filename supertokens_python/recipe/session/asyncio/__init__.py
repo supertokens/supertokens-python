@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, TypeVar
 
 from supertokens_python.recipe.openid.interfaces import (
     GetOpenIdDiscoveryConfigurationResult,
@@ -20,15 +20,17 @@ from supertokens_python.recipe.session.interfaces import (
     RegenerateAccessTokenOkResult,
     SessionContainer,
     SessionInformationResult,
+    SessionClaim,
 )
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.utils import FRAMEWORKS
-
 from ...jwt.interfaces import (
     CreateJwtOkResult,
     CreateJwtResultUnsupportedAlgorithm,
     GetJWKSResult,
 )
+
+_T = TypeVar("_T")
 
 
 async def create_new_session(
@@ -46,6 +48,43 @@ async def create_new_session(
         ].wrap_request(request)
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
         request, user_id, access_token_payload, session_data, user_context=user_context
+    )
+
+
+async def get_claim_value(
+    session_handle: str,
+    claim: SessionClaim[_T],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Union[_T, None]:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.get_claim_value(
+        session_handle, claim, user_context
+    )
+
+
+async def set_claim_value(
+    session_handle: str,
+    claim: SessionClaim[_T],
+    value: _T,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> bool:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.set_claim_value(
+        session_handle, claim, value, user_context
+    )
+
+
+async def remove_claim(
+    session_handle: str,
+    claim: SessionClaim[Any],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> bool:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.remove_claim(
+        session_handle, claim, user_context
     )
 
 

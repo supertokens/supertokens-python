@@ -39,7 +39,13 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api.implementation import APIImplementation
 from .constants import SESSION_REFRESH, SIGNOUT
-from .interfaces import APIInterface, APIOptions, RecipeInterface
+from .interfaces import (
+    APIInterface,
+    APIOptions,
+    RecipeInterface,
+    SessionClaim,
+    SessionClaimValidator,
+)
 from .recipe_implementation import RecipeImplementation
 from .utils import (
     InputErrorHandlers,
@@ -137,6 +143,9 @@ class SessionRecipe(RecipeModule):
             if self.config.override.apis is None
             else self.config.override.apis(api_implementation)
         )
+
+        self.claims_added_by_other_recipes: List[SessionClaim[Any]] = []
+        self.claim_validators_added_by_other_recipes: List[SessionClaimValidator] = []
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
@@ -277,6 +286,22 @@ class SessionRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         SessionRecipe.__instance = None
+
+    def add_claim_from_other_recipe(self, claim: SessionClaim[Any]):
+        self.claims_added_by_other_recipes.append(claim)
+
+    def get_claims_added_by_other_recipes(self) -> List[SessionClaim[Any]]:
+        return self.claims_added_by_other_recipes
+
+    def add_claim_validator_from_other_recipe(
+        self, claim_validator: SessionClaimValidator
+    ):
+        self.claim_validators_added_by_other_recipes.append(claim_validator)
+
+    def get_claim_validators_added_by_other_recipes(
+        self,
+    ) -> List[SessionClaimValidator]:
+        return self.claim_validators_added_by_other_recipes
 
     async def verify_session(
         self,

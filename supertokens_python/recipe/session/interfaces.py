@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any, Dict, Generic, List, TypeVar, Union
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.types import APIResponse, GeneralErrorResponse
 
+from ...utils import Promise
 from .utils import SessionConfig
 
 if TYPE_CHECKING:
@@ -77,6 +78,15 @@ class RecipeInterface(ABC):
         session_data: Union[None, Dict[str, Any]],
         user_context: Dict[str, Any],
     ) -> SessionContainer:
+        pass
+
+    @abstractmethod
+    async def get_global_claim_validators(
+        self,
+        user_id: str,
+        claim_validators_added_by_other_recipes: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -> Union[SessionClaimValidator, Promise[SessionClaimValidator]]:
         pass
 
     @abstractmethod
@@ -152,6 +162,43 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
+    async def fetch_and_set_claim(
+        self,
+        session_handle: str,
+        claim: SessionClaim[Any],
+        user_context: Dict[str, Any],
+    ) -> bool:
+        pass
+
+    @abstractmethod
+    async def set_claim_value(
+        self,
+        session_handle: str,
+        claim: SessionClaim[_T],
+        value: _T,
+        user_context: Dict[str, Any],
+    ) -> bool:
+        pass
+
+    @abstractmethod
+    async def get_claim_value(
+        self,
+        session_handle: str,
+        claim: SessionClaim[Any],
+        user_context: Dict[str, Any],
+    ):
+        pass
+
+    @abstractmethod
+    async def remove_claim(
+        self,
+        session_handle: str,
+        claim: SessionClaim[Any],
+        user_context: Dict[str, Any],
+    ) -> bool:
+        pass
+
+    @abstractmethod
     async def regenerate_access_token(
         self,
         access_token: str,
@@ -217,7 +264,7 @@ class APIInterface(ABC):
         pass
 
 
-class SessionContainer(ABC):
+class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def __init__(
         self,
         recipe_implementation: RecipeInterface,
@@ -261,6 +308,12 @@ class SessionContainer(ABC):
         new_access_token_payload: Dict[str, Any],
         user_context: Union[Dict[str, Any], None] = None,
     ) -> None:
+        """DEPRECATED: Use merge_into_access_token_payload instead"""
+
+    @abstractmethod
+    async def merge_into_access_token_payload(
+        self, access_token_payload_update: Dict[str, Any], user_context: Any
+    ) -> None:
         pass
 
     @abstractmethod
@@ -289,6 +342,41 @@ class SessionContainer(ABC):
 
     @abstractmethod
     async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -> int:
+        pass
+
+    @abstractmethod
+    async def assert_claims(
+        self,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -> None:
+        pass
+
+    @abstractmethod
+    async def fetch_and_set_claim(
+        self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
+    ) -> None:
+        pass
+
+    @abstractmethod
+    async def set_claim_value(
+        self,
+        claim: SessionClaim[_T],
+        value: _T,
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -> None:
+        pass
+
+    @abstractmethod
+    async def get_claim_value(
+        self, claim: SessionClaim[_T], user_context: Union[Dict[str, Any], None] = None
+    ) -> Union[_T, None]:
+        pass
+
+    @abstractmethod
+    async def remove_claim(
+        self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
+    ) -> None:
         pass
 
     def sync_get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -> int:
@@ -333,7 +421,6 @@ class SessionContainer(ABC):
 # Session claims:
 _T = TypeVar("_T")
 JSONObject = Dict[str, Any]
-
 
 JSONPrimitive = Union[str, int, bool, None, Dict[str, Any]]
 
