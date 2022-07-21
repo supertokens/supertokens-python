@@ -14,14 +14,23 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from asyncio import iscoroutinefunction
-from typing import TYPE_CHECKING, Any, Dict, Generic, List, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Generic,
+    List,
+    TypeVar,
+    Union,
+    Callable,
+    Optional,
+)
 
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.types import APIResponse, GeneralErrorResponse
+from supertokens_python.types import APIResponse, GeneralErrorResponse, MaybeAwaitable
 
-from ...utils import Promise
 from .utils import SessionConfig
+from ...utils import resolve
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -81,12 +90,12 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_global_claim_validators(
+    def get_global_claim_validators(
         self,
         user_id: str,
         claim_validators_added_by_other_recipes: List[SessionClaimValidator],
         user_context: Dict[str, Any],
-    ) -> Union[SessionClaimValidator, Promise[SessionClaimValidator]]:
+    ) -> MaybeAwaitable[List[SessionClaimValidator]]:
         pass
 
     @abstractmethod
@@ -95,8 +104,28 @@ class RecipeInterface(ABC):
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        override_global_claim_validators: Optional[
+            Callable[
+                [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ],
         user_context: Dict[str, Any],
     ) -> Union[SessionContainer, None]:
+        pass
+
+    @abstractmethod
+    async def assert_claims(
+        self,
+        session: SessionContainer,
+        override_global_claim_validators: Optional[
+            Callable[
+                [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ],
+        user_context: Dict[str, Any],
+    ) -> None:
         pass
 
     @abstractmethod
@@ -259,6 +288,12 @@ class APIInterface(ABC):
         api_options: APIOptions,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        override_global_claim_validators: Optional[
+            Callable[
+                [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ],
         user_context: Dict[str, Any],
     ) -> Union[SessionContainer, None]:
         pass
@@ -431,11 +466,9 @@ class SessionClaim(ABC, Generic[_T]):
     def __init__(self, key: str) -> None:
         self.key = key
 
-    # fetchValue(userId: string, userContext: any): Promise<T | undefined> | T | undefined;
-    # Union[Promise[FetchValueReturnType], FetchValueReturnType]
     def fetch_value(
-        self, user_id: str, user_context: Union[Dict[str, Any], None] = None
-    ) -> Any:
+        self, user_id: str, user_context: Optional[Dict[str, Any]] = None
+    ) -> MaybeAwaitable[Optional[_T]]:
         pass
 
     @abstractmethod
@@ -472,12 +505,7 @@ class SessionClaim(ABC, Generic[_T]):
     async def build(
         self, user_id: str, user_context: Union[Dict[str, Any], None] = None
     ) -> JSONObject:
-        if iscoroutinefunction(self.fetch_value):
-            value = await self.fetch_value(user_id, user_context)
-        else:
-            value = self.fetch_value(  # pylint: disable=assignment-from-no-return
-                user_id, user_context
-            )
+        value = await resolve(self.fetch_value(user_id, user_context))
 
         if value is None:
             return {}
@@ -485,18 +513,38 @@ class SessionClaim(ABC, Generic[_T]):
         return self.add_to_payload_({}, value, user_context)
 
 
-class SessionClaimValidator(ABC):
-    id: str
-    claim: SessionClaim[Any]
+# class ClaimValidationResultValid:
+#     def __init__(self):
+#         self.is_valid = True
+#
+# class ClaimValidationResultInvalid:
+#     def __init__(self, reason: str):
+#         self.is_valid = False
+#         self.reason = reason
+#
+# ClaimValidationResult = Union[ClaimValidationResultValid, ClaimValidationResultInvalid]
 
-    @abstractmethod
-    def should_refetch(
-        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-    ) -> Any:
-        pass
+
+ClaimValidationResult = Dict[str, Any]
+
+
+class SessionClaimValidator(ABC):
+    claim: Optional[SessionClaim[Any]] = None
+    id: str
+
+    def __init__(self, id_: Optional[str] = None):
+        if id_ is not None:
+            self.id = id_
 
     @abstractmethod
     def validate(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-    ) -> Any:
+    ) -> MaybeAwaitable[ClaimValidationResult]:
         pass
+
+    def should_refetch(
+        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+    ) -> MaybeAwaitable[bool]:
+        # TODO: Verify if this is the right way to do this
+        # TODO: How to ensure that we always have a claim object if this is defined and vice versa.
+        raise NotImplementedError()

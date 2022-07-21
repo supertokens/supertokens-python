@@ -12,12 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Callable, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.openid.interfaces import (
     GetOpenIdDiscoveryConfigurationResult,
 )
+from supertokens_python.types import MaybeAwaitable
 
 from ...jwt.interfaces import (
     CreateJwtOkResult,
@@ -28,6 +29,7 @@ from ..interfaces import (
     RegenerateAccessTokenOkResult,
     SessionContainer,
     SessionInformationResult,
+    SessionClaimValidator,
 )
 
 
@@ -57,6 +59,12 @@ def get_session(
     request: Any,
     anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    override_global_claim_validators: Optional[
+        Callable[
+            [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[SessionContainer, None]:
     from supertokens_python.recipe.session.asyncio import (
@@ -64,7 +72,13 @@ def get_session(
     )
 
     return sync(
-        async_get_session(request, anti_csrf_check, session_required, user_context)
+        async_get_session(
+            request,
+            anti_csrf_check,
+            session_required,
+            override_global_claim_validators,
+            user_context,
+        )
     )
 
 

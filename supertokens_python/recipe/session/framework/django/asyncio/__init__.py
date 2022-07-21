@@ -12,13 +12,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from functools import wraps
-from typing import Any, Callable, Dict, TypeVar, Union, cast
+from typing import Any, Callable, Dict, TypeVar, Union, cast, List, Optional
 
 from supertokens_python import Supertokens
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.framework.django.django_request import DjangoRequest
 from supertokens_python.framework.django.django_response import DjangoResponse
-from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session import SessionRecipe, SessionContainer
+from supertokens_python.recipe.session.interfaces import SessionClaimValidator
+from supertokens_python.types import MaybeAwaitable
 
 _T = TypeVar("_T", bound=Callable[..., Any])
 
@@ -27,6 +29,12 @@ def verify_session(
     anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
     user_context: Union[None, Dict[str, Any]] = None,
+    override_global_claim_validators: Optional[
+        Callable[
+            [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
 ) -> Callable[[_T], _T]:
     if user_context is None:
         user_context = {}
@@ -42,7 +50,11 @@ def verify_session(
                 baseRequest = DjangoRequest(request)
                 recipe = SessionRecipe.get_instance()
                 session = await recipe.verify_session(
-                    baseRequest, anti_csrf_check, session_required, user_context
+                    baseRequest,
+                    anti_csrf_check,
+                    session_required,
+                    override_global_claim_validators,
+                    user_context,
                 )
                 if session is None:
                     if session_required:

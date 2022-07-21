@@ -13,17 +13,28 @@
 # under the License.
 
 import time
-from typing import Any, Dict, TypeVar, Union
+from typing import Any, Dict, TypeVar, Union, Callable, Optional
 
+from supertokens_python.types import MaybeAwaitable
 from ..interfaces import JSONObject, JSONPrimitive, SessionClaim, SessionClaimValidator
 
 _T = TypeVar("_T")
 
 
 class PrimitiveClaim(SessionClaim[JSONPrimitive]):
-    def __init__(self, key: str, fetch_value: Any) -> None:
+    def __init__(
+        self,
+        key: str,
+        fetch_value: Optional[
+            Callable[
+                [str, Optional[Dict[str, Any]]],
+                MaybeAwaitable[Optional[JSONPrimitive]],
+            ]
+        ] = None,
+    ) -> None:
         super().__init__(key)
-        self.fetch_value = fetch_value
+        if fetch_value is not None:
+            self.fetch_value = fetch_value  # type: ignore
 
         claim = self
 
@@ -32,8 +43,8 @@ class PrimitiveClaim(SessionClaim[JSONPrimitive]):
         ) -> SessionClaimValidator:
             class HasValueSCV(SessionClaimValidator):
                 def __init__(self):
+                    super().__init__(id_ or claim.key)
                     self.claim = claim
-                    self.id_ = id_ or claim.key
 
                 def should_refetch(
                     self,
@@ -69,8 +80,8 @@ class PrimitiveClaim(SessionClaim[JSONPrimitive]):
         ) -> SessionClaimValidator:
             class HasFreshValueSCV(SessionClaimValidator):
                 def __init__(self):
+                    super().__init__(id_ or (claim.key + "-fresh-val"))
                     self.claim = claim
-                    self.id_ = id_ or (claim.key + "-fresh-val")
 
                 def should_refetch(
                     self,
@@ -118,6 +129,9 @@ class PrimitiveClaim(SessionClaim[JSONPrimitive]):
             def __init__(self) -> None:
                 self.has_value = has_value
                 self.has_fresh_value = has_fresh_value
+
+            # def __setattr__(self, k: str, v: Any):
+            #     super().__setattr__(k, v)
 
         self.validators = Validators()
 

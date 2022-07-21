@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Dict, List, Union, TypeVar
+from typing import Any, Dict, List, Union, TypeVar, Callable, Optional
 
 from supertokens_python.recipe.openid.interfaces import (
     GetOpenIdDiscoveryConfigurationResult,
@@ -21,8 +21,10 @@ from supertokens_python.recipe.session.interfaces import (
     SessionContainer,
     SessionInformationResult,
     SessionClaim,
+    SessionClaimValidator,
 )
 from supertokens_python.recipe.session.recipe import SessionRecipe
+from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import FRAMEWORKS
 from ...jwt.interfaces import (
     CreateJwtOkResult,
@@ -92,6 +94,12 @@ async def get_session(
     request: Any,
     anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    override_global_claim_validators: Optional[
+        Callable[
+            [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Union[SessionContainer, None]:
     if user_context is None:
@@ -100,9 +108,22 @@ async def get_session(
         request = FRAMEWORKS[
             SessionRecipe.get_instance().app_info.framework
         ].wrap_request(request)
-    return await SessionRecipe.get_instance().recipe_implementation.get_session(
-        request, anti_csrf_check, session_required, user_context
+
+    session_recipe_impl = SessionRecipe.get_instance().recipe_implementation
+    session = await session_recipe_impl.get_session(
+        request,
+        anti_csrf_check,
+        session_required,
+        override_global_claim_validators,
+        user_context,
     )
+
+    if session is not None:
+        await session_recipe_impl.assert_claims(
+            session, override_global_claim_validators, user_context
+        )
+
+    return session
 
 
 async def refresh_session(

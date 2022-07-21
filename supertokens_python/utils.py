@@ -21,7 +21,17 @@ from base64 import b64decode, b64encode
 from math import floor
 from re import fullmatch
 from time import time
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Coroutine,
+    Dict,
+    List,
+    TypeVar,
+    Union,
+    Awaitable,
+)
 
 from httpx import HTTPStatusError, Response
 
@@ -35,13 +45,12 @@ from supertokens_python.logger import log_debug_message
 
 from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER
 from .exceptions import raise_general_exception
+from .types import MaybeAwaitable
 
 _T = TypeVar("_T")
 
 if TYPE_CHECKING:
     pass
-
-Promise = Coroutine[Any, Any, _T]
 
 FRAMEWORKS = {
     "fastapi": FastapiFramework(),
@@ -117,7 +126,7 @@ def is_5xx_error(status_code: int) -> bool:
 
 
 def send_non_200_response(
-    message: str, status_code: int, response: BaseResponse
+    body: Dict[str, Any], status_code: int, response: BaseResponse
 ) -> BaseResponse:
     if status_code < 300:
         raise_general_exception("Calling sendNon200Response with status code < 300")
@@ -125,8 +134,14 @@ def send_non_200_response(
         "Sending response to client with status code: %s", str(status_code)
     )
     response.set_status_code(status_code)
-    response.set_json_content(content={ERROR_MESSAGE_KEY: message})
+    response.set_json_content(content=body)
     return response
+
+
+def send_non_200_response_with_message(
+    message: str, status_code: int, response: BaseResponse
+):
+    return send_non_200_response({ERROR_MESSAGE_KEY: message}, status_code, response)
 
 
 def send_200_response(
@@ -234,3 +249,10 @@ def humanize_time(ms: int) -> str:
 
 def default_user_context(request: BaseRequest) -> Dict[str, Any]:
     return {"_default": {"request": request}}
+
+
+async def resolve(obj: MaybeAwaitable[_T]) -> _T:
+    """Returns value or value of awaitable object passed"""
+    if isinstance(obj, Awaitable):
+        return await obj  # type: ignore
+    return obj  # type: ignore

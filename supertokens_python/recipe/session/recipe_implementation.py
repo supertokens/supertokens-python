@@ -13,20 +13,19 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, TypeVar, Callable, Optional
 
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 from supertokens_python.utils import (
-    Promise,
     execute_async,
     frontend_has_interceptor,
     get_timestamp_ms,
     normalise_http_method,
+    resolve,
 )
-
 from . import session_functions
 from .cookie_and_header import (
     get_access_token_from_cookie,
@@ -46,6 +45,7 @@ from .interfaces import (
     SessionObj,
 )
 from .session_class import Session
+from ...types import MaybeAwaitable
 
 if TYPE_CHECKING:
     from typing import List, Union
@@ -168,13 +168,61 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         request.set_session(new_session)
         return new_session
 
+    async def assert_claims(
+        self,
+        session: SessionContainer,
+        override_global_claim_validators: Optional[
+            Callable[
+                [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ],
+        user_context: Dict[str, Any],
+    ) -> None:
+        # TODO: FIXME
+        # This leads to circular import, so avoiding:
+        # session_recipe = SessionRecipe.get_instance()
+        # claim_validators_added_by_other_recipes = (
+        #     session_recipe.get_claim_validators_added_by_other_recipes()
+        # )
+        claim_validators_added_by_other_recipes = []
+
+        global_claim_validators = await resolve(
+            self.get_global_claim_validators(
+                session.get_user_id(),
+                claim_validators_added_by_other_recipes,
+                user_context,
+            )
+        )
+        if override_global_claim_validators is not None:
+            req_claim_validators = await resolve(
+                override_global_claim_validators(
+                    session, global_claim_validators, user_context
+                )
+            )
+        else:
+            req_claim_validators = global_claim_validators
+
+        log_debug_message(
+            "getSession: required validator is %s",
+            ",".join([c.id for c in req_claim_validators]),
+        )
+        await session.assert_claims(req_claim_validators, user_context)
+        log_debug_message("getSession: claim assertion successful")
+
     async def get_session(
         self,
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        override_global_claim_validators: Optional[
+            Callable[
+                [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ],
         user_context: Dict[str, Any],
-    ) -> Union[SessionContainer, None]:
+    ) -> Optional[SessionContainer]:
         log_debug_message("getSession: Started")
 
         log_debug_message(
@@ -408,14 +456,13 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             session_info.access_token_payload, user_context
         )
 
-    async def get_global_claim_validators(
+    def get_global_claim_validators(
         self,
         user_id: str,
         claim_validators_added_by_other_recipes: List[SessionClaimValidator],
         user_context: Dict[str, Any],
-    ) -> Union[SessionClaimValidator, Promise[SessionClaimValidator]]:
-        # TODO: Implement this
-        return claim_validators_added_by_other_recipes[0]
+    ) -> MaybeAwaitable[List[SessionClaimValidator]]:
+        return claim_validators_added_by_other_recipes
 
     async def remove_claim(
         self,

@@ -14,14 +14,20 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union, Callable, Optional
 
 from supertokens_python.framework.response import BaseResponse
 from typing_extensions import Literal
 
 from .api import handle_refresh_api, handle_signout_api
 from .cookie_and_header import get_cors_allowed_headers
-from .exceptions import SuperTokensSessionError, TokenTheftError, UnauthorisedError
+from .exceptions import (
+    SuperTokensSessionError,
+    TokenTheftError,
+    UnauthorisedError,
+    InvalidClaimsError,
+)
+from ...types import MaybeAwaitable
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
@@ -45,6 +51,7 @@ from .interfaces import (
     RecipeInterface,
     SessionClaim,
     SessionClaimValidator,
+    SessionContainer,
 )
 from .recipe_implementation import RecipeImplementation
 from .utils import (
@@ -225,6 +232,11 @@ class SessionRecipe(RecipeModule):
             return await self.config.error_handlers.on_token_theft_detected(
                 self, request, err.session_handle, err.user_id, response
             )
+        if isinstance(err, InvalidClaimsError):
+            log_debug_message("errorHandler: returning INVALID_CLAIMS")
+            return await self.config.error_handlers.on_invalid_claim(
+                self, request, err.payload, response
+            )
         log_debug_message("errorHandler: returning TRY_REFRESH_TOKEN")
         return await self.config.error_handlers.on_try_refresh_token(
             request, str(err), response
@@ -308,6 +320,12 @@ class SessionRecipe(RecipeModule):
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        override_global_claim_validators: Optional[
+            Callable[
+                [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ],
         user_context: Dict[str, Any],
     ):
         return await self.api_implementation.verify_session(
@@ -316,5 +334,6 @@ class SessionRecipe(RecipeModule):
             ),
             anti_csrf_check,
             session_required,
+            override_global_claim_validators,
             user_context,
         )

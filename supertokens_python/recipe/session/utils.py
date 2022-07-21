@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Union, List, Dict
 from urllib.parse import urlparse
 
 from supertokens_python.exceptions import raise_general_exception
@@ -22,7 +22,12 @@ from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.openid import (
     InputOverrideConfig as OpenIdInputOverrideConfig,
 )
-from supertokens_python.utils import is_an_ip_address, send_non_200_response
+from supertokens_python.utils import (
+    is_an_ip_address,
+    send_non_200_response,
+    send_non_200_response_with_message,
+    resolve,
+)
 from tldextract import extract  # type: ignore
 from typing_extensions import Literal
 
@@ -123,10 +128,15 @@ class ErrorHandlers:
             [BaseRequest, str, BaseResponse],
             Union[BaseResponse, Awaitable[BaseResponse]],
         ],
+        on_invalid_claim: Callable[
+            [BaseRequest, List[Dict[str, Any]], BaseResponse],
+            Union[BaseResponse, Awaitable[BaseResponse]],
+        ],
     ):
         self.__on_token_theft_detected = on_token_theft_detected
         self.__on_try_refresh_token = on_try_refresh_token
         self.__on_unauthorised = on_unauthorised
+        self.__on_invalid_claim = on_invalid_claim
 
     async def on_token_theft_detected(
         self,
@@ -136,14 +146,9 @@ class ErrorHandlers:
         user_id: str,
         response: BaseResponse,
     ) -> BaseResponse:
-        result: Union[None, BaseResponse] = None
-        temp = self.__on_token_theft_detected(
-            request, session_handle, user_id, response
+        result = await resolve(
+            self.__on_token_theft_detected(request, session_handle, user_id, response)
         )
-        if isinstance(temp, Awaitable):
-            result = await temp
-        else:
-            result = temp
         log_debug_message("Clearing cookies because of TOKEN_THEFT_DETECTED response")
         clear_cookies(recipe, result)
         return result
@@ -151,12 +156,7 @@ class ErrorHandlers:
     async def on_try_refresh_token(
         self, request: BaseRequest, message: str, response: BaseResponse
     ):
-        result: Union[None, BaseResponse] = None
-        temp = self.__on_try_refresh_token(request, message, response)
-        if isinstance(temp, Awaitable):
-            result = await temp
-        else:
-            result = temp
+        result = await resolve(self.__on_try_refresh_token(request, message, response))
         return result
 
     async def on_unauthorised(
@@ -167,15 +167,23 @@ class ErrorHandlers:
         message: str,
         response: BaseResponse,
     ):
-        result: Union[None, BaseResponse] = None
-        temp = self.__on_unauthorised(request, message, response)
-        if isinstance(temp, Awaitable):
-            result = await temp
-        else:
-            result = temp
+        result = await resolve(self.__on_unauthorised(request, message, response))
         if do_clear_cookies:
             log_debug_message("Clearing cookies because of UNAUTHORISED response")
             clear_cookies(recipe, result)
+        return result
+
+    async def on_invalid_claim(
+        self,
+        recipe: SessionRecipe,
+        request: BaseRequest,
+        claim_validation_errors: List[Dict[str, Any]],
+        response: BaseResponse,
+    ):
+        _ = recipe
+        result = await resolve(
+            self.__on_invalid_claim(request, claim_validation_errors, response)
+        )
         return result
 
 
@@ -196,13 +204,25 @@ class InputErrorHandlers(ErrorHandlers):
             ],
             None,
         ] = None,
+        on_invalid_claim: Union[
+            Callable[
+                [BaseRequest, List[Dict[str, Any]], BaseResponse],
+                Union[BaseResponse, Awaitable[BaseResponse]],
+            ],
+            None,
+        ] = None,
     ):
         if on_token_theft_detected is None:
             on_token_theft_detected = default_token_theft_detected_callback
         if on_unauthorised is None:
             on_unauthorised = default_unauthorised_callback
+        if on_invalid_claim is None:
+            on_invalid_claim = default_invalid_claim_callback
         super().__init__(
-            on_token_theft_detected, default_try_refresh_token_callback, on_unauthorised
+            on_token_theft_detected,
+            default_try_refresh_token_callback,
+            on_unauthorised,
+            on_invalid_claim,
         )
 
 
@@ -211,7 +231,7 @@ async def default_unauthorised_callback(
 ) -> BaseResponse:
     from .recipe import SessionRecipe
 
-    return send_non_200_response(
+    return send_non_200_response_with_message(
         "unauthorised",
         SessionRecipe.get_instance().config.session_expired_status_code,
         response,
@@ -223,7 +243,7 @@ async def default_try_refresh_token_callback(
 ) -> BaseResponse:
     from .recipe import SessionRecipe
 
-    return send_non_200_response(
+    return send_non_200_response_with_message(
         "try refresh token",
         SessionRecipe.get_instance().config.session_expired_status_code,
         response,
@@ -238,9 +258,23 @@ async def default_token_theft_detected_callback(
     await SessionRecipe.get_instance().recipe_implementation.revoke_session(
         session_handle, {}
     )
-    return send_non_200_response(
+    return send_non_200_response_with_message(
         "token theft detected",
         SessionRecipe.get_instance().config.session_expired_status_code,
+        response,
+    )
+
+
+async def default_invalid_claim_callback(
+    _: BaseRequest,
+    claim_validation_errors: List[Dict[str, Any]],
+    response: BaseResponse,
+) -> BaseResponse:
+    from .recipe import SessionRecipe
+
+    return send_non_200_response(
+        {"message": "invalid claim", "claimValidationErrors": claim_validation_errors},
+        SessionRecipe.get_instance().config.invalid_claim_status_code,
         response,
     )
 
@@ -302,6 +336,7 @@ class SessionConfig:
         framework: str,
         mode: str,
         jwt: JWTConfig,
+        invalid_claim_status_code: int,
     ):
         self.refresh_token_path = refresh_token_path
         self.cookie_domain = cookie_domain
@@ -314,6 +349,7 @@ class SessionConfig:
         self.framework = framework
         self.mode = mode
         self.jwt = jwt
+        self.invalid_claim_status_code = invalid_claim_status_code
 
 
 def validate_and_normalise_user_input(
@@ -326,6 +362,7 @@ def validate_and_normalise_user_input(
     error_handlers: Union[ErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
     jwt: Union[JWTConfig, None] = None,
+    invalid_claim_status_code: Union[int, None] = None,
 ):
     if anti_csrf not in {"VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE", None}:
         raise ValueError(
@@ -418,4 +455,5 @@ def validate_and_normalise_user_input(
         app_info.framework,
         app_info.mode,
         jwt,
+        invalid_claim_status_code if (invalid_claim_status_code is not None) else 403,
     )

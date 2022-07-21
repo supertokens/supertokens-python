@@ -12,7 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, TypeVar, Awaitable
+
+_T = TypeVar("_T")
 
 
 class ThirdPartyInfo:
@@ -58,3 +60,6 @@ class GeneralErrorResponse(APIResponse):
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status, "message": self.message}
+
+
+MaybeAwaitable = Union[Awaitable[_T], _T]

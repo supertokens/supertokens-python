@@ -19,7 +19,7 @@ from shutil import rmtree
 from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 from fastapi.testclient import TestClient
 from requests.models import Response
@@ -396,7 +396,7 @@ def get_core_api_version() -> str:
 
     try:
         # If ST has been already initialized:
-        core_version: str = loop.run_until_complete(asyncio.gather(get_api_version()))  # type: ignore
+        core_version = cast(loop.run_until_complete(asyncio.gather(get_api_version())), str)  # type: ignore
         return core_version
     except Exception:
         pass

@@ -66,6 +66,7 @@ st_init_common_args = {
         api_base_path="/auth",
     ),
     "framework": "fastapi",
+    "mode": "asgi",
 }
 
 st_init_args = {

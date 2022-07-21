@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Union
+from typing import Union, Any, List
 
 from supertokens_python.exceptions import SuperTokensError
 
@@ -51,3 +51,21 @@ class UnauthorisedError(SuperTokensSessionError):
 
 class TryRefreshTokenError(SuperTokensSessionError):
     pass
+
+
+class InvalidClaimsError(SuperTokensSessionError):
+    def __init__(self, msg: str, payload: List[ClaimValidationError]):
+        super().__init__(msg)
+        self.payload = [
+            p.__dict__ for p in payload
+        ]  # Must be JSON serializable as it will be used in response
+
+
+class ClaimValidationError:
+    def __init__(self, id_: str, reason: Any):
+        self.id = id_
+        self.reason = reason
+
+
+def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]):
+    raise InvalidClaimsError(msg, payload)
