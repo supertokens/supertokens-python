@@ -1,4 +1,4 @@
-from typing import List, Any, Dict, Union, Awaitable
+from typing import List, Any, Dict, Union
 from unittest.mock import patch, AsyncMock
 
 from fastapi import FastAPI, Depends
@@ -88,18 +88,18 @@ def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidato
 class AlwaysValidValidator(SessionClaimValidator):
     id = "always-valid-validator"
 
-    def validate(
+    async def validate(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-    ) -> Union[ClaimValidationResult, Awaitable[ClaimValidationResult]]:
+    ) -> ClaimValidationResult:
         return {"isValid": True}
 
 
 class AlwaysInvalidValidator(SessionClaimValidator):
     id = "always-invalid-validator"
 
-    def validate(
+    async def validate(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-    ):
+    ) -> ClaimValidationResult:
         return {"isValid": False, "reason": "foo"}
 
 
@@ -163,9 +163,9 @@ async def fastapi_client():
             super().__init__("test_id")
             self.is_valid = is_valid
 
-        def validate(
+        async def validate(
             self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-        ) -> Union[ClaimValidationResult, Awaitable[ClaimValidationResult]]:
+        ) -> ClaimValidationResult:
             if self.is_valid:
                 return {"isValid": True}
             return {"isValid": False, "reason": "test_reason"}

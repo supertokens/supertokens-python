@@ -13,8 +13,12 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Union, List, Dict
+import json
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Union, List, Dict, Optional
 from urllib.parse import urlparse
+
+from tldextract import extract  # type: ignore
+from typing_extensions import Literal
 
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.framework import BaseResponse
@@ -28,21 +32,25 @@ from supertokens_python.utils import (
     send_non_200_response_with_message,
     resolve,
 )
-from tldextract import extract  # type: ignore
-from typing_extensions import Literal
-
 from .constants import SESSION_REFRESH
 from .cookie_and_header import clear_cookies
+from .exceptions import ClaimValidationError
 from .with_jwt.constants import (
     ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY,
     JWT_RESERVED_KEY_USE_ERROR_MESSAGE,
 )
+from ...types import MaybeAwaitable
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
     from supertokens_python.supertokens import AppInfo
 
-    from .interfaces import APIInterface, RecipeInterface
+    from .interfaces import (
+        APIInterface,
+        RecipeInterface,
+        SessionContainer,
+        SessionClaimValidator,
+    )
     from .recipe import SessionRecipe
 
 from supertokens_python.logger import log_debug_message
@@ -457,3 +465,95 @@ def validate_and_normalise_user_input(
         jwt,
         invalid_claim_status_code if (invalid_claim_status_code is not None) else 403,
     )
+
+
+async def get_required_claim_validators(
+    session: SessionContainer,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ],
+    user_context: Dict[str, Any],
+) -> List[SessionClaimValidator]:
+    claim_validators_added_by_other_recipes = (
+        SessionRecipe.get_claim_validators_added_by_other_recipes()
+    )
+    global_claim_validators = await resolve(
+        SessionRecipe.get_instance().recipe_implementation.get_global_claim_validators(
+            session.get_user_id(),
+            claim_validators_added_by_other_recipes,
+            user_context,
+        )
+    )
+
+    if override_global_claim_validators is not None:
+        return await resolve(
+            override_global_claim_validators(
+                global_claim_validators, session, user_context
+            )
+        )
+
+    return global_claim_validators
+
+
+async def update_claims_in_payload_if_needed(
+    claim_validators: List[SessionClaimValidator],
+    new_access_token_payload: Dict[str, Any],
+    user_id: str,
+    user_context: Dict[str, Any],
+):
+    for validator in claim_validators:
+        log_debug_message(
+            "update_claims_in_payload_if_needed checking %s", validator.id
+        )
+        if (
+            hasattr(validator, "claim")
+            and (validator.claim is not None)
+            and (
+                await resolve(
+                    validator.should_refetch(new_access_token_payload, user_context)
+                )
+            )
+        ):
+            log_debug_message(
+                "update_claims_in_payload_if_needed refetching %s", validator.id
+            )
+            value = await resolve(validator.claim.fetch_value(user_id, user_context))
+            log_debug_message(
+                "update_claims_in_payload_if_needed %s refetch res %s",
+                validator.id,
+                json.dumps(value),
+            )
+            if value is not None:
+                new_access_token_payload = validator.claim.add_to_payload_(
+                    new_access_token_payload,
+                    value,
+                    user_context,
+                )
+
+    return new_access_token_payload
+
+
+async def validate_claims_in_payload(
+    claim_validators: List[SessionClaimValidator],
+    new_access_token_payload: Dict[str, Any],
+    user_context: Dict[str, Any],
+):
+    validation_errors: List[ClaimValidationError] = []
+    for validator in claim_validators:
+        claim_validation_res = await validator.validate(
+            new_access_token_payload, user_context
+        )
+        log_debug_message(
+            "validate_claims_in_payload %s validate res %s",
+            validator.id,
+            json.dumps(claim_validation_res),
+        )
+        if not claim_validation_res.get("isValid"):
+            validation_errors.append(
+                ClaimValidationError(validator.id, claim_validation_res["reason"])
+            )
+
+    return validation_errors

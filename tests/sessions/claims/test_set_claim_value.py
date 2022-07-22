@@ -11,7 +11,7 @@ from supertokens_python.recipe.session.asyncio import (
     set_claim_value,
 )
 from supertokens_python.recipe.session.session_class import Session
-from tests.sessions.claims.utils import TrueClaim, st_init_args
+from tests.sessions.claims.utils import TrueClaim, st_init_args_with_TrueClaim
 from tests.utils import setup_function, teardown_function
 from tests.utils import start_st
 
@@ -49,7 +49,7 @@ async def test_should_merge_the_right_value():
 
 
 async def test_should_overwrite_claim_value():
-    init(**st_init_args)  # type: ignore
+    init(**st_init_args_with_TrueClaim)  # type: ignore
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
@@ -70,7 +70,7 @@ async def test_should_overwrite_claim_value():
 
 
 async def test_should_overwrite_claim_value_using_session_handle():
-    init(**st_init_args)  # type: ignore
+    init(**st_init_args_with_TrueClaim)  # type: ignore
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
@@ -95,7 +95,7 @@ async def test_should_overwrite_claim_value_using_session_handle():
 
 
 async def test_should_work_ok_for_non_existing_handles():
-    init(**st_init_args)  # type: ignore
+    init(**st_init_args_with_TrueClaim)  # type: ignore
     start_st()
 
     res = await set_claim_value("non-existing-handle", TrueClaim, "NEW_TRUE")

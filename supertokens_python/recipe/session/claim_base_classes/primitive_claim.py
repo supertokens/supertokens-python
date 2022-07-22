@@ -53,7 +53,7 @@ class PrimitiveClaim(SessionClaim[JSONPrimitive]):
                 ):
                     return claim.get_value_from_payload(payload, user_context) is None
 
-                def validate(
+                async def validate(
                     self,
                     payload: JSONObject,
                     user_context: Union[Dict[str, Any], None] = None,
@@ -93,23 +93,26 @@ class PrimitiveClaim(SessionClaim[JSONPrimitive]):
                         claim.get_value_from_payload(payload, user_context) is None
                     ) or (payload[claim.key]["t"] < time.time() - max_age_in_sec * 1000)
 
-                def validate(
+                async def validate(
                     self,
                     payload: JSONObject,
                     user_context: Union[Dict[str, Any], None] = None,
                 ):
                     claim_val = claim.get_value_from_payload(payload, user_context)
-                    if claim_val != val:
+                    if claim_val is None:
                         return {
                             "isValid": False,
                             "reason": {
-                                "message": "wrong value",
+                                "message": "value does not exist",
                                 "expectedValue": val,
                                 "actualValue": claim_val,
                             },
                         }
 
-                    age_in_sec = (time.time() - payload[claim.key]["t"]) / 1000
+                    age_in_sec = (
+                        time.time()
+                        - float(claim.get_last_refetch_time(payload, user_context) or 0)
+                    ) / 1000
                     if age_in_sec > max_age_in_sec:
                         return {
                             "isValid": False,
@@ -117,6 +120,15 @@ class PrimitiveClaim(SessionClaim[JSONPrimitive]):
                                 "message": "expired",
                                 "ageInSeconds": age_in_sec,
                                 "maxAgeInSeconds": max_age_in_sec,
+                            },
+                        }
+                    if claim_val != val:
+                        return {
+                            "isValid": False,
+                            "reason": {
+                                "message": "wrong value",
+                                "expectedValue": val,
+                                "actualValue": claim_val,
                             },
                         }
 

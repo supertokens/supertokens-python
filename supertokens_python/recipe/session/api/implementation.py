@@ -23,6 +23,7 @@ from supertokens_python.recipe.session.interfaces import (
 )
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import normalise_http_method
+from ..utils import get_required_claim_validators
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import APIOptions
@@ -67,7 +68,7 @@ class APIImplementation(APIInterface):
         session_required: bool,
         override_global_claim_validators: Optional[
             Callable[
-                [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
                 MaybeAwaitable[List[SessionClaimValidator]],
             ]
         ],
@@ -91,9 +92,14 @@ class APIImplementation(APIInterface):
         )
 
         if session is not None:
-            await api_options.recipe_implementation.assert_claims(
+            claim_validators = await get_required_claim_validators(
                 session,
                 override_global_claim_validators,
+                user_context,
+            )
+            await api_options.recipe_implementation.assert_claims(
+                session,
+                claim_validators,
                 user_context,
             )
 
