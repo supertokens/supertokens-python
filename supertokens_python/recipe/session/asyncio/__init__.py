@@ -22,10 +22,15 @@ from supertokens_python.recipe.session.interfaces import (
     SessionInformationResult,
     SessionClaim,
     SessionClaimValidator,
+    SessionDoesntExistError,
+    ValidateClaimsOkResult,
+    JSONObject,
+    GetClaimValueOkResult,
 )
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.types import MaybeAwaitable
-from supertokens_python.utils import FRAMEWORKS
+from supertokens_python.utils import FRAMEWORKS, resolve
+from ..utils import get_required_claim_validators
 from ...jwt.interfaces import (
     CreateJwtOkResult,
     CreateJwtResultUnsupportedAlgorithm,
@@ -53,11 +58,118 @@ async def create_new_session(
     )
 
 
+async def validate_claims_for_session_handle(
+    session_handle: str,
+    override_global_claim_validators: Optional[
+        Callable[
+            [
+                List[SessionClaimValidator],
+                SessionInformationResult,
+                Dict[str, Any],
+            ],  # Prev. 2nd arg was SessionContainer
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Union[SessionDoesntExistError, ValidateClaimsOkResult]:
+    if user_context is None:
+        user_context = {}
+
+    recipe_impl = SessionRecipe.get_instance().recipe_implementation
+    session_info = await recipe_impl.get_session_information(
+        session_handle, user_context
+    )
+
+    if session_info is None:
+        return SessionDoesntExistError()
+
+    claim_validators_added_by_other_recipes = (
+        SessionRecipe.get_claim_validators_added_by_other_recipes()
+    )
+    global_claim_validators = await resolve(
+        recipe_impl.get_global_claim_validators(
+            session_info.user_id,
+            claim_validators_added_by_other_recipes,
+            user_context,
+        )
+    )
+
+    if override_global_claim_validators is not None:
+        claim_validators = await resolve(
+            override_global_claim_validators(
+                global_claim_validators, session_info, user_context
+            )
+        )
+    else:
+        claim_validators = global_claim_validators
+
+    return await recipe_impl.validate_claims_for_session_handle(
+        session_info, claim_validators, user_context
+    )
+
+
+async def validate_claims_in_jwt_payload(
+    user_id: str,
+    jwt_payload: JSONObject,
+    override_global_claim_validators: Optional[
+        Callable[
+            [
+                List[SessionClaimValidator],
+                str,
+                Dict[str, Any],
+            ],  # Prev. 2nd arg was SessionContainer
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+):
+    if user_context is None:
+        user_context = {}
+
+    recipe_impl = SessionRecipe.get_instance().recipe_implementation
+
+    claim_validators_added_by_other_recipes = (
+        SessionRecipe.get_claim_validators_added_by_other_recipes()
+    )
+    global_claim_validators = await resolve(
+        recipe_impl.get_global_claim_validators(
+            user_id,
+            claim_validators_added_by_other_recipes,
+            user_context,
+        )
+    )
+
+    if override_global_claim_validators is not None:
+        claim_validators = await resolve(
+            override_global_claim_validators(
+                global_claim_validators, user_id, user_context
+            )
+        )
+    else:
+        claim_validators = global_claim_validators
+
+    return await recipe_impl.validate_claims_in_jwt_payload(
+        user_id, jwt_payload, claim_validators, user_context
+    )
+
+
+async def fetch_and_set_claim(
+    session_handle: str,
+    claim: SessionClaim[Any],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> bool:
+    if user_context is None:
+        user_context = {}
+    return await SessionRecipe.get_instance().recipe_implementation.fetch_and_set_claim(
+        session_handle, claim, user_context
+    )
+
+
 async def get_claim_value(
     session_handle: str,
     claim: SessionClaim[_T],
     user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[_T, None]:
+) -> Union[SessionDoesntExistError, GetClaimValueOkResult[_T]]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.get_claim_value(
@@ -96,7 +208,7 @@ async def get_session(
     session_required: bool = True,
     override_global_claim_validators: Optional[
         Callable[
-            [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
             MaybeAwaitable[List[SessionClaimValidator]],
         ]
     ] = None,
@@ -119,9 +231,10 @@ async def get_session(
     )
 
     if session is not None:
-        await session_recipe_impl.assert_claims(
+        claim_validators = await get_required_claim_validators(
             session, override_global_claim_validators, user_context
         )
+        await session_recipe_impl.assert_claims(session, claim_validators, user_context)
 
     return session
 

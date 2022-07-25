@@ -7,7 +7,7 @@ from supertokens_python.recipe import session
 from supertokens_python.recipe.session.asyncio import create_new_session
 from tests.utils import setup_function, teardown_function, start_st, min_api_version
 from .utils import (
-    st_init_args,
+    st_init_args_with_TrueClaim,
     NoneClaim,
     get_st_init_args,
     session_functions_override_with_claim,
@@ -22,7 +22,7 @@ timestamp = time.time()
 
 @min_api_version("2.13")
 async def test_create_access_token_payload_with_session_claims():
-    init(**st_init_args)  # type:ignore
+    init(**st_init_args_with_TrueClaim)  # type:ignore
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
@@ -49,7 +49,7 @@ async def test_should_create_access_token_payload_with_session_claims_with_an_no
 @min_api_version("2.13")
 async def test_should_merge_claims_and_passed_access_token_payload_obj():
     new_st_init = {
-        **st_init_args,
+        **st_init_args_with_TrueClaim,
         "recipe_list": [
             session.init(
                 override=session.InputOverrideConfig(

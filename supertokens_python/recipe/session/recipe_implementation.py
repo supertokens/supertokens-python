@@ -13,6 +13,7 @@
 # under the License.
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Any, Dict, TypeVar, Callable, Optional
 
 from supertokens_python.framework.request import BaseRequest
@@ -24,7 +25,6 @@ from supertokens_python.utils import (
     frontend_has_interceptor,
     get_timestamp_ms,
     normalise_http_method,
-    resolve,
 )
 from . import session_functions
 from .cookie_and_header import (
@@ -43,16 +43,24 @@ from .interfaces import (
     SessionClaimValidator,
     SessionInformationResult,
     SessionObj,
+    ValidateClaimsOkResult,
+    SessionDoesntExistError,
+    JSONObject,
+    GetClaimValueOkResult,
 )
 from .session_class import Session
 from ...types import MaybeAwaitable
+from .utils import (
+    SessionConfig,
+    update_claims_in_payload_if_needed,
+    validate_claims_in_payload,
+)
 
 if TYPE_CHECKING:
     from typing import List, Union
 
     from supertokens_python.querier import Querier
 
-    from .utils import SessionConfig
 
 from .interfaces import SessionContainer
 
@@ -171,44 +179,62 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     async def assert_claims(
         self,
         session: SessionContainer,
-        override_global_claim_validators: Optional[
-            Callable[
-                [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
-                MaybeAwaitable[List[SessionClaimValidator]],
-            ]
-        ],
+        claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
     ) -> None:
-        # TODO: FIXME
-        # This leads to circular import, so avoiding:
-        # session_recipe = SessionRecipe.get_instance()
-        # claim_validators_added_by_other_recipes = (
-        #     session_recipe.get_claim_validators_added_by_other_recipes()
-        # )
-        claim_validators_added_by_other_recipes = []
+        log_debug_message(
+            "get_session: required validator ids %s",
+            ",".join([c.id for c in claim_validators]),
+        )
+        await session.assert_claims(claim_validators, user_context)
+        log_debug_message("get_session: claim assertion successful")
 
-        global_claim_validators = await resolve(
-            self.get_global_claim_validators(
-                session.get_user_id(),
-                claim_validators_added_by_other_recipes,
+    async def validate_claims_for_session_handle(
+        self,
+        session_info: SessionInformationResult,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -> Union[ValidateClaimsOkResult, SessionDoesntExistError]:
+        original_session_claim_payload_json = json.dumps(
+            session_info.access_token_payload
+        )
+
+        new_access_token_payload = await update_claims_in_payload_if_needed(
+            claim_validators,
+            session_info.access_token_payload,
+            session_info.user_id,
+            user_context,
+        )
+
+        if json.dumps(new_access_token_payload) != original_session_claim_payload_json:
+            await self.merge_into_access_token_payload(
+                session_info.session_handle,
+                new_access_token_payload,
                 user_context,
             )
-        )
-        if override_global_claim_validators is not None:
-            req_claim_validators = await resolve(
-                override_global_claim_validators(
-                    session, global_claim_validators, user_context
-                )
-            )
-        else:
-            req_claim_validators = global_claim_validators
 
-        log_debug_message(
-            "getSession: required validator is %s",
-            ",".join([c.id for c in req_claim_validators]),
+        invalid_claims = await validate_claims_in_payload(
+            claim_validators,
+            new_access_token_payload,
+            user_context,
         )
-        await session.assert_claims(req_claim_validators, user_context)
-        log_debug_message("getSession: claim assertion successful")
+
+        return ValidateClaimsOkResult(invalid_claims)
+
+    async def validate_claims_in_jwt_payload(
+        self,
+        user_id: str,
+        jwt_payload: JSONObject,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -> ValidateClaimsOkResult:
+        invalid_claims = await validate_claims_in_payload(
+            claim_validators,
+            jwt_payload,
+            user_context,
+        )
+
+        return ValidateClaimsOkResult(invalid_claims)
 
     async def get_session(
         self,
@@ -217,7 +243,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         session_required: bool,
         override_global_claim_validators: Optional[
             Callable[
-                [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
                 MaybeAwaitable[List[SessionClaimValidator]],
             ]
         ],
@@ -447,13 +473,15 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         session_handle: str,
         claim: SessionClaim[Any],
         user_context: Dict[str, Any],
-    ):
+    ) -> Union[SessionDoesntExistError, GetClaimValueOkResult[Any]]:
         session_info = await self.get_session_information(session_handle, user_context)
         if session_info is None:
-            raise Exception("Session does not exist")
+            return SessionDoesntExistError()
 
-        return claim.get_value_from_payload(
-            session_info.access_token_payload, user_context
+        return GetClaimValueOkResult(
+            value=claim.get_value_from_payload(
+                session_info.access_token_payload, user_context
+            )
         )
 
     def get_global_claim_validators(

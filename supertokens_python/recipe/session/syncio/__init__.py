@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, List, Union, Callable, Optional
+from typing import Any, Dict, List, Union, Callable, Optional, TypeVar
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.openid.interfaces import (
@@ -30,6 +30,11 @@ from ..interfaces import (
     SessionContainer,
     SessionInformationResult,
     SessionClaimValidator,
+    SessionClaim,
+    JSONObject,
+    ValidateClaimsOkResult,
+    SessionDoesntExistError,
+    GetClaimValueOkResult,
 )
 
 
@@ -61,7 +66,7 @@ def get_session(
     session_required: bool = True,
     override_global_claim_validators: Optional[
         Callable[
-            [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
             MaybeAwaitable[List[SessionClaimValidator]],
         ]
     ] = None,
@@ -210,5 +215,100 @@ def regenerate_access_token(
     return sync(
         async_regenerate_access_token(
             access_token, new_access_token_payload, user_context
+        )
+    )
+
+
+_T = TypeVar("_T")
+
+
+def fetch_and_set_claim(
+    session_handle: str,
+    claim: SessionClaim[Any],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> bool:
+    from supertokens_python.recipe.session.asyncio import (
+        fetch_and_set_claim as async_fetch_and_set_claim,
+    )
+
+    return sync(async_fetch_and_set_claim(session_handle, claim, user_context))
+
+
+def set_claim_value(
+    session_handle: str,
+    claim: SessionClaim[_T],
+    value: _T,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> bool:
+    from supertokens_python.recipe.session.asyncio import (
+        set_claim_value as async_set_claim_value,
+    )
+
+    return sync(async_set_claim_value(session_handle, claim, value, user_context))
+
+
+def get_claim_value(
+    session_handle: str,
+    claim: SessionClaim[_T],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Union[SessionDoesntExistError, GetClaimValueOkResult[_T]]:
+    from supertokens_python.recipe.session.asyncio import (
+        get_claim_value as async_get_claim_value,
+    )
+
+    return sync(async_get_claim_value(session_handle, claim, user_context))
+
+
+def remove_claim(
+    session_handle: str,
+    claim: SessionClaim[Any],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> bool:
+    from supertokens_python.recipe.session.asyncio import (
+        remove_claim as async_remove_claim,
+    )
+
+    return sync(async_remove_claim(session_handle, claim, user_context))
+
+
+def validate_claims_for_session_handle(
+    session_handle: str,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionInformationResult, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> Union[SessionDoesntExistError, ValidateClaimsOkResult]:
+    from supertokens_python.recipe.session.asyncio import (
+        validate_claims_for_session_handle as async_validate_claims_for_session_handle,
+    )
+
+    return sync(
+        async_validate_claims_for_session_handle(
+            session_handle, override_global_claim_validators, user_context
+        )
+    )
+
+
+def validate_claims_in_jwt_payload(
+    user_id: str,
+    jwt_payload: JSONObject,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], str, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+):
+    from supertokens_python.recipe.session.asyncio import (
+        validate_claims_in_jwt_payload as async_validate_claims_in_jwt_payload,
+    )
+
+    return sync(
+        async_validate_claims_in_jwt_payload(
+            user_id, jwt_payload, override_global_claim_validators, user_context
         )
     )

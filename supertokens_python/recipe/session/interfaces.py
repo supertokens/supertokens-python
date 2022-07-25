@@ -28,7 +28,7 @@ from typing import (
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.types import APIResponse, GeneralErrorResponse, MaybeAwaitable
-
+from .exceptions import ClaimValidationError
 from .utils import SessionConfig
 from ...utils import resolve
 
@@ -74,7 +74,29 @@ class SessionInformationResult:
         self.time_created: int = time_created
 
 
-class RecipeInterface(ABC):
+_T = TypeVar("_T")
+JSONObject = Dict[str, Any]
+
+JSONPrimitive = Union[str, int, bool, None, Dict[str, Any]]
+
+FetchValueReturnType = Union[_T, None]
+
+
+class SessionDoesntExistError:
+    pass
+
+
+class GetClaimValueOkResult(Generic[_T]):
+    def __init__(self, value: Optional[_T]):
+        self.value = value
+
+
+class ValidateClaimsOkResult:
+    def __init__(self, invalid_claims: List[ClaimValidationError]):
+        self.invalid_claims = invalid_claims
+
+
+class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     def __init__(self):
         pass
 
@@ -106,7 +128,7 @@ class RecipeInterface(ABC):
         session_required: bool,
         override_global_claim_validators: Optional[
             Callable[
-                [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
                 MaybeAwaitable[List[SessionClaimValidator]],
             ]
         ],
@@ -118,14 +140,28 @@ class RecipeInterface(ABC):
     async def assert_claims(
         self,
         session: SessionContainer,
-        override_global_claim_validators: Optional[
-            Callable[
-                [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
-                MaybeAwaitable[List[SessionClaimValidator]],
-            ]
-        ],
+        claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
     ) -> None:
+        pass
+
+    @abstractmethod
+    async def validate_claims_for_session_handle(
+        self,
+        session_info: SessionInformationResult,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -> Union[ValidateClaimsOkResult, SessionDoesntExistError]:
+        pass
+
+    @abstractmethod
+    async def validate_claims_in_jwt_payload(
+        self,
+        user_id: str,
+        jwt_payload: JSONObject,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -> ValidateClaimsOkResult:
         pass
 
     @abstractmethod
@@ -215,7 +251,7 @@ class RecipeInterface(ABC):
         session_handle: str,
         claim: SessionClaim[Any],
         user_context: Dict[str, Any],
-    ):
+    ) -> Union[SessionDoesntExistError, GetClaimValueOkResult[Any]]:
         pass
 
     @abstractmethod
@@ -290,7 +326,7 @@ class APIInterface(ABC):
         session_required: bool,
         override_global_claim_validators: Optional[
             Callable[
-                [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
                 MaybeAwaitable[List[SessionClaimValidator]],
             ]
         ],
@@ -453,15 +489,6 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         return getattr(self, item)
 
 
-# Session claims:
-_T = TypeVar("_T")
-JSONObject = Dict[str, Any]
-
-JSONPrimitive = Union[str, int, bool, None, Dict[str, Any]]
-
-FetchValueReturnType = Union[_T, None]
-
-
 class SessionClaim(ABC, Generic[_T]):
     def __init__(self, key: str) -> None:
         self.key = key
@@ -537,9 +564,9 @@ class SessionClaimValidator(ABC):
             self.id = id_
 
     @abstractmethod
-    def validate(
+    async def validate(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-    ) -> MaybeAwaitable[ClaimValidationResult]:
+    ) -> ClaimValidationResult:
         pass
 
     def should_refetch(

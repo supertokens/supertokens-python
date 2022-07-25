@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from pytest import mark
 from supertokens_python.recipe.session.claims import PrimitiveClaim
+from supertokens_python.utils import resolve
 
 timestamp = real_time.time()
 val = {"foo": 1}
@@ -132,7 +133,7 @@ async def test_should_return_none_for_empty_payload(time_mock: MagicMock):
 @_test_wrapper
 async def test_validators_should_not_validate_empty_payload(_time_mock: MagicMock):
     claim = PrimitiveClaim("key", sync_fetch_value)
-    res = claim.validators.has_value(val).validate({})  # TODO: missing await
+    res = await claim.validators.has_value(val).validate({})
 
     assert res == {
         "isValid": False,
@@ -148,7 +149,7 @@ async def test_validators_should_not_validate_empty_payload(_time_mock: MagicMoc
 async def test_should_not_validate_mismatching_payload(_time_mock: MagicMock):
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
-    res = claim.validators.has_value(val2).validate(payload)
+    res = await claim.validators.has_value(val2).validate(payload)
 
     assert res == {
         "isValid": False,
@@ -164,7 +165,7 @@ async def test_should_not_validate_mismatching_payload(_time_mock: MagicMock):
 async def test_validator_should_validate_matching_payload(_time_mock: MagicMock):
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
-    res = claim.validators.has_value(val).validate(payload)
+    res = await claim.validators.has_value(val).validate(payload)
 
     assert res == {"isValid": True}
 
@@ -179,21 +180,26 @@ async def test_should_validate_old_values_as_well(time_mock: MagicMock):
     # Increase clock time by 1000
     time_mock.time.return_value += 100 * SECONDS  # type: ignore
 
-    res = claim.validators.has_value(val).validate(payload)
+    res = await claim.validators.has_value(val).validate(payload)
     assert res == {"isValid": True}
 
 
 @_test_wrapper
 async def test_should_refetch_if_value_not_set(_time_mock: MagicMock):
-    claim = PrimitiveClaim("key", sync_fetch_value)
-    assert claim.validators.has_value(val).should_refetch(val2, {}) is True
+    claim = PrimitiveClaim("key", async_fetch_value)
+    assert (
+        await resolve(claim.validators.has_value(val).should_refetch(val2, {})) is True
+    )
 
 
 @_test_wrapper
 async def test_validator_should_not_refetch_if_value_is_set(_time_mock: MagicMock):
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
-    assert claim.validators.has_value(val2).should_refetch(payload, {}) is False
+    assert (
+        await resolve(claim.validators.has_value(val2).should_refetch(payload, {}))
+        is False
+    )
 
 
 # validators.has_fresh_value
@@ -202,7 +208,7 @@ async def test_validator_should_not_refetch_if_value_is_set(_time_mock: MagicMoc
 @_test_wrapper
 async def test_should_not_validate_empty_payload(_time_mock: MagicMock):
     claim = PrimitiveClaim("key", sync_fetch_value)
-    res = claim.validators.has_fresh_value(val, 600).validate({}, {})
+    res = await claim.validators.has_fresh_value(val, 600).validate({}, {})
     assert res == {
         "isValid": False,
         "reason": {
@@ -219,7 +225,7 @@ async def test_has_fresh_value_should_not_validate_mismatching_payload(
 ):
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
-    res = claim.validators.has_fresh_value(val2, 600).validate(payload)
+    res = await claim.validators.has_fresh_value(val2, 600).validate(payload)
     assert res == {
         "isValid": False,
         "reason": {
@@ -234,7 +240,7 @@ async def test_has_fresh_value_should_not_validate_mismatching_payload(
 async def test_should_validate_matching_payload(_time_mock: MagicMock):
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
-    res = claim.validators.has_fresh_value(val, 600).validate(payload)
+    res = await claim.validators.has_fresh_value(val, 600).validate(payload)
     assert res == {"isValid": True}
 
 
@@ -248,7 +254,7 @@ async def test_should_not_validate_old_values_as_well(time_mock: MagicMock):
     # Increase clock time:
     time_mock.time.return_value += 100 * SECONDS  # type: ignore
 
-    res = claim.validators.has_fresh_value(val, 10).validate(payload)
+    res = await claim.validators.has_fresh_value(val, 10).validate(payload)
     assert res == {
         "isValid": False,
         "reason": {

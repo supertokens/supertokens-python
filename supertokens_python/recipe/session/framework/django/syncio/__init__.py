@@ -32,7 +32,7 @@ def verify_session(
     user_context: Union[None, Dict[str, Any]] = None,
     override_global_claim_validators: Optional[
         Callable[
-            [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
             MaybeAwaitable[List[SessionClaimValidator]],
         ]
     ] = None,

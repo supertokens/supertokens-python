@@ -45,17 +45,11 @@ async def test_should_call_validate_with_the_same_payload_object():
     )
 
     class DummyClaimValidator(SessionClaimValidator):
-        def __init__(self):
-            super().__init__("claim_validator_id")
+        id = "claim_validator_id"
 
-        def should_refetch(
+        async def validate(
             self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-        ) -> Any:
-            return True
-
-        def validate(
-            self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-        ) -> Any:
+        ):
             return {"isValid": True}
 
     class DummyClaim(PrimitiveClaim):

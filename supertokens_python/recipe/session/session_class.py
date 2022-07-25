@@ -17,12 +17,10 @@ from typing import Any, Dict, Union, List, TypeVar
 from supertokens_python.recipe.session.exceptions import (
     raise_unauthorised_exception,
     raise_invalid_claims_exception,
-    ClaimValidationError,
 )
 
 from .interfaces import SessionContainer, SessionClaimValidator, SessionClaim
-from supertokens_python.logger import log_debug_message
-from ...utils import resolve
+from .utils import update_claims_in_payload_if_needed, validate_claims_in_payload
 
 _T = TypeVar("_T")
 
@@ -127,56 +125,28 @@ class Session(SessionContainer):
         claim_validators: List[SessionClaimValidator],
         user_context: Union[Dict[str, Any], None] = None,
     ) -> None:
+        if user_context is None:
+            user_context = {}
+
         original_session_claim_payload_json = json.dumps(
             self.get_access_token_payload()
         )
 
-        new_access_token_payload = self.get_access_token_payload()
-        validation_errors: List[ClaimValidationError] = []
-        for validator in claim_validators:
-            log_debug_message("Session.validate_claims checking %s", validator.id)
-            if (
-                hasattr(validator, "claim")
-                and (validator.claim is not None)
-                and (
-                    await resolve(
-                        validator.should_refetch(new_access_token_payload, user_context)
-                    )
-                )
-            ):
-                log_debug_message("Session.validate_claims refetching %s", validator.id)
-                value = await resolve(
-                    validator.claim.fetch_value(self.get_user_id(), user_context)
-                )
-                log_debug_message(
-                    "Session.validate_claims %s refetch res %s",
-                    validator.id,
-                    json.dumps(value),
-                )
-                if value is not None:
-                    new_access_token_payload = validator.claim.add_to_payload_(
-                        new_access_token_payload,
-                        value,
-                        user_context,
-                    )
-
-            claim_validation_res = await resolve(
-                validator.validate(new_access_token_payload, user_context)
-            )
-            log_debug_message(
-                "Session.validate_claims %s validate res %s",
-                validator.id,
-                json.dumps(claim_validation_res),
-            )
-            if not claim_validation_res.get("isValid"):
-                validation_errors.append(
-                    ClaimValidationError(validator.id, claim_validation_res["reason"])
-                )
+        new_access_token_payload = await update_claims_in_payload_if_needed(
+            claim_validators,
+            self.get_access_token_payload(),
+            self.get_user_id(),
+            user_context,
+        )
 
         if json.dumps(new_access_token_payload) != original_session_claim_payload_json:
             await self.merge_into_access_token_payload(
                 new_access_token_payload, user_context
             )
+
+        validation_errors = await validate_claims_in_payload(
+            claim_validators, new_access_token_payload, user_context
+        )
 
         if len(validation_errors) > 0:
             raise_invalid_claims_exception("INVALID_CLAIMS", validation_errors)

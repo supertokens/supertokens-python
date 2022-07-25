@@ -14,7 +14,7 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import TrueClaim
 from tests.utils import start_st, setup_function, teardown_function
-from .test_get_claims_value import st_init_args
+from .test_get_claim_value import st_init_args_with_TrueClaim
 from .utils import time_patch_wrapper
 
 _ = setup_function  # type:ignore
@@ -45,7 +45,7 @@ async def test_should_attempt_to_set_claim_to_none():
 @time_patch_wrapper
 async def test_should_clear_previously_set_claim(time_mock: MagicMock):
     time_mock.time.return_value = timestamp  # type: ignore
-    init(**st_init_args)  # type:ignore
+    init(**st_init_args_with_TrueClaim)  # type:ignore
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
@@ -59,7 +59,7 @@ async def test_should_clear_previously_set_claim(time_mock: MagicMock):
 @time_patch_wrapper
 async def test_should_clear_previously_set_claim_using_handle(time_mock: MagicMock):
     time_mock.time.return_value = timestamp  # type: ignore
-    init(**st_init_args)  # type:ignore
+    init(**st_init_args_with_TrueClaim)  # type:ignore
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
@@ -79,7 +79,7 @@ async def test_should_clear_previously_set_claim_using_handle(time_mock: MagicMo
 
 @time_patch_wrapper
 async def test_should_work_ok_for_non_existing_handle(_time_mock: MagicMock):
-    init(**st_init_args)  # type:ignore
+    init(**st_init_args_with_TrueClaim)  # type:ignore
     start_st()
 
     res = await remove_claim("non-existing-handle", TrueClaim)

@@ -1,5 +1,5 @@
 import time as real_time
-from typing import Dict, Any, Union
+from typing import Dict, Any, Union, Optional
 from unittest.mock import patch
 
 from pytest import mark
@@ -7,6 +7,7 @@ from pytest import mark
 from supertokens_python import InputAppInfo, SupertokensConfig
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe import session
+from supertokens_python.recipe.session import JWTConfig
 from supertokens_python.recipe.session.claims import BooleanClaim, SessionClaim
 from supertokens_python.recipe.session.interfaces import RecipeInterface
 
@@ -69,7 +70,7 @@ st_init_common_args = {
     "mode": "asgi",
 }
 
-st_init_args = {
+st_init_args_with_TrueClaim = {
     **st_init_common_args,
     "recipe_list": [
         session.init(
@@ -81,14 +82,17 @@ st_init_args = {
 }
 
 
-def get_st_init_args(claim: SessionClaim[Any] = TrueClaim):
+def get_st_init_args(
+    claim: SessionClaim[Any] = TrueClaim, jwt: Optional[JWTConfig] = None
+):
     return {
-        **st_init_args,
+        **st_init_args_with_TrueClaim,
         "recipe_list": [
             session.init(
                 override=session.InputOverrideConfig(
                     functions=session_functions_override_with_claim(claim),
-                )
+                ),
+                jwt=jwt,
             ),
         ],
     }

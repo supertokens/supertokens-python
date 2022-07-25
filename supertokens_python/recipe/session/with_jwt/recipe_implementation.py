@@ -93,7 +93,7 @@ def get_recipe_implementation_with_jwt(
         session_required: bool,
         override_global_claim_validators: Optional[
             Callable[
-                [SessionContainer, List[SessionClaimValidator], Dict[str, Any]],
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
                 MaybeAwaitable[List[SessionClaimValidator]],
             ]
         ],
