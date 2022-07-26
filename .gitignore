@@ -15,3 +15,5 @@ lib/
 pyvenv.cfg
 sqlite.db
 .mypy_cache/
+htmlcov/
+.coverage
