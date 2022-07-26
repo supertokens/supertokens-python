@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Bug fix
+- Send 400 instead of 500 on invalid request body or when user passes non-string values as email ID for `/auth/signin`
+
 ## [0.10.2] - 2022-07-14
 ### Bug fix
 - Make `user_context` optional in userroles recipe syncio functions. 
