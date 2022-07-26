@@ -34,8 +34,6 @@ jobs:
             - uses: actions/checkout@v2
               with:
                   persist-credentials: false
-            - name: Debugging with tmate
-              uses: mxschmitt/action-tmate@v3.11
             - name: Make git use https instead of ssh
               run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
             - run: make dev-install && rm -rf src
@@ -55,3 +53,8 @@ jobs:
               run: cd ../supertokens-root && bash ./utils/setupTestEnvLocal
             - name: Run tests
               run: make test
+            - name: Debugging with tmate
+              if: ${{ failure() }}
+              uses: mxschmitt/action-tmate@v3.11
+              with:
+                sudo: false
