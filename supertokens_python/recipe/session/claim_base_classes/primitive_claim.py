@@ -13,9 +13,10 @@
 # under the License.
 
 import time
-from typing import Any, Dict, TypeVar, Union, Callable, Optional
+from typing import Any, Callable, Dict, Optional, TypeVar, Union
 
 from supertokens_python.types import MaybeAwaitable
+
 from ..interfaces import JSONObject, JSONPrimitive, SessionClaim, SessionClaimValidator
 
 _T = TypeVar("_T")
@@ -141,9 +142,6 @@ class PrimitiveClaim(SessionClaim[JSONPrimitive]):
             def __init__(self) -> None:
                 self.has_value = has_value
                 self.has_fresh_value = has_fresh_value
-
-            # def __setattr__(self, k: str, v: Any):
-            #     super().__setattr__(k, v)
 
         self.validators = Validators()
 

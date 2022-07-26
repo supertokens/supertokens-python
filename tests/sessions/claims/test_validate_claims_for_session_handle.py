@@ -25,7 +25,7 @@ from tests.utils import setup_function, teardown_function, start_st
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore
 
-pytest_mark = mark.asyncio
+pytestmark = mark.asyncio
 
 
 async def test_should_return_the_right_validation_errors():

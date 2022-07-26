@@ -1,5 +1,5 @@
 import time
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import patch, MagicMock
 
 from pytest import mark
 
@@ -13,7 +13,7 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import TrueClaim, st_init_args_with_TrueClaim
 from tests.utils import setup_function, teardown_function
-from tests.utils import start_st
+from tests.utils import start_st, AsyncMock
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore

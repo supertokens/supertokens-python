@@ -1,5 +1,5 @@
 from typing import List, Any, Dict, Union
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch
 
 from fastapi import FastAPI, Depends
 from pytest import fixture, mark
@@ -24,7 +24,7 @@ from supertokens_python.recipe.session.interfaces import (
 )
 from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import st_init_common_args, TrueClaim, NoneClaim
-from tests.utils import setup_function, teardown_function, start_st
+from tests.utils import setup_function, teardown_function, start_st, AsyncMock
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore

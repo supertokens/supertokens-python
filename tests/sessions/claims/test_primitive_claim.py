@@ -1,10 +1,12 @@
 import time as real_time
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from pytest import mark
 from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.utils import resolve
+
+from tests.utils import AsyncMock
 
 timestamp = real_time.time()
 val = {"foo": 1}
@@ -207,6 +209,7 @@ async def test_validator_should_not_refetch_if_value_is_set(_time_mock: MagicMoc
 
 @_test_wrapper
 async def test_should_not_validate_empty_payload(_time_mock: MagicMock):
+    # TODO: FIXME
     claim = PrimitiveClaim("key", sync_fetch_value)
     res = await claim.validators.has_fresh_value(val, 600).validate({}, {})
     assert res == {
@@ -282,7 +285,6 @@ async def test_should_not_refetch_if_value_is_set(_time_mock: MagicMock):
 
 @_test_wrapper
 async def test_should_refetch_if_value_is_old(time_mock: MagicMock):
-    # TODO: FIXME
     time_mock.time.return_value = timestamp  # type: ignore
 
     claim = PrimitiveClaim("key", sync_fetch_value)

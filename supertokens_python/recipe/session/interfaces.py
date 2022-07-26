@@ -569,9 +569,11 @@ class SessionClaimValidator(ABC):
     ) -> ClaimValidationResult:
         pass
 
-    def should_refetch(
+    def should_refetch(  # pylint: disable=no-self-use
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
     ) -> MaybeAwaitable[bool]:
         # TODO: Verify if this is the right way to do this
         # TODO: How to ensure that we always have a claim object if this is defined and vice versa.
-        raise NotImplementedError()
+        _ = payload
+        _ = user_context
+        return False

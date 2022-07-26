@@ -1,21 +1,22 @@
 import time as real_time
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import MagicMock, patch
 
 from pytest import mark
-
 from supertokens_python import init
 from supertokens_python.framework import BaseRequest
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.recipe.session.asyncio import (
-    remove_claim,
+    create_new_session,
     get_session_information,
+    remove_claim,
 )
 from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import TrueClaim
-from tests.utils import start_st, setup_function, teardown_function
+from tests.utils import setup_function, start_st, teardown_function
+
 from .test_get_claim_value import st_init_args_with_TrueClaim
 from .utils import time_patch_wrapper
+from tests.utils import AsyncMock
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore
@@ -39,7 +40,7 @@ async def test_should_attempt_to_set_claim_to_none():
         wraps=session.merge_into_access_token_payload,
     ) as mock:
         await session.remove_claim(TrueClaim)
-        mock.assert_called_once_with({"st-true": None}, None)
+        mock.assert_called_once_with({"st-true": None}, {})
 
 
 @time_patch_wrapper

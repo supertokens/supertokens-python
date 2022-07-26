@@ -1,10 +1,11 @@
 import time
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 from pytest import mark
-
 from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import NoneClaim, TrueClaim
+
+from tests.utils import AsyncMock
 
 timestamp = time.time()
 

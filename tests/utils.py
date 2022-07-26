@@ -385,9 +385,9 @@ def get_core_api_version() -> str:
     if core_version:
         return core_version
 
-    from supertokens_python import init, SupertokensConfig, InputAppInfo
-    from supertokens_python.recipe import session
+    from supertokens_python import InputAppInfo, SupertokensConfig, init
     from supertokens_python.querier import Querier
+    from supertokens_python.recipe import session
 
     loop = asyncio.get_event_loop()
 
@@ -435,3 +435,20 @@ def min_api_version(min_version: str) -> Any:
         return mark.skip(f"Requires core api version >= {min_version}")(f)
 
     return wrapper
+
+
+# Import AsyncMock
+try:
+    from unittest.mock import AsyncMock
+
+    _ = AsyncMock
+except ImportError:
+    from unittest.mock import MagicMock
+
+    class AsyncMock(MagicMock):
+        async def __call__(  # pylint: disable=invalid-overridden-method, useless-super-delegation
+            self,  # type: ignore
+            *args,  # type: ignore
+            **kwargs,  # type: ignore
+        ):
+            return super().__call__(*args, **kwargs)

@@ -1,14 +1,14 @@
-from typing import Union, Dict, Any, TypeVar, Optional
-from unittest.mock import AsyncMock, patch
+from typing import Any, Dict, Optional, TypeVar, Union
+from unittest.mock import patch
 
 from pytest import mark
-
 from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.recipe.session.interfaces import (
-    SessionClaimValidator,
     JSONObject,
+    SessionClaimValidator,
 )
 from supertokens_python.recipe.session.session_class import Session
+from tests.utils import AsyncMock
 
 _T = TypeVar("_T")
 
@@ -46,10 +46,12 @@ async def test_should_call_validate_with_the_same_payload_object():
 
     class DummyClaimValidator(SessionClaimValidator):
         id = "claim_validator_id"
+        validate_call_count = 0
 
         async def validate(
             self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
         ):
+            self.validate_call_count += 1
             return {"isValid": True}
 
     class DummyClaim(PrimitiveClaim):
@@ -74,7 +76,6 @@ async def test_should_call_validate_with_the_same_payload_object():
         wraps=session.update_access_token_payload,
     ) as mock:
         await session.assert_claims([dummy_claim.validators.dummy_claim_validator])  # type: ignore
-        params, _ = mock.call_args.args
-        assert params["st-claim"]["t"] > 0
-        params["st-claim"]["t"] = 0
-        assert params == {**payload, "st-claim": {"v": "Hello world", "t": 0}}
+        mock.assert_not_called()
+
+        assert dummy_claim_validator.validate_call_count == 1

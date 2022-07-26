@@ -24,13 +24,13 @@ from time import time
 from typing import (
     TYPE_CHECKING,
     Any,
+    Awaitable,
     Callable,
     Coroutine,
     Dict,
     List,
     TypeVar,
     Union,
-    Awaitable,
 )
 
 from httpx import HTTPStatusError, Response
@@ -51,6 +51,7 @@ _T = TypeVar("_T")
 
 if TYPE_CHECKING:
     pass
+
 
 FRAMEWORKS = {
     "fastapi": FastapiFramework(),
