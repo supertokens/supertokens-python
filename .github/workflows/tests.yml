@@ -51,10 +51,10 @@ jobs:
               run: cd ../supertokens-root && ./loadModules
             - name: Setting up supertokens-root test environment
               run: cd ../supertokens-root && bash ./utils/setupTestEnvLocal
-            - name: Run tests
-              run: make test
             - name: Debugging with tmate
-              if: ${{ failure() }}
+              if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
               uses: mxschmitt/action-tmate@v3.11
               with:
                 sudo: false
+            - name: Run tests
+              run: make test
