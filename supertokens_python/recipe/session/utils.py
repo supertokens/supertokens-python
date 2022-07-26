@@ -477,6 +477,8 @@ async def get_required_claim_validators(
     ],
     user_context: Dict[str, Any],
 ) -> List[SessionClaimValidator]:
+    from .recipe import SessionRecipe
+
     claim_validators_added_by_other_recipes = (
         SessionRecipe.get_claim_validators_added_by_other_recipes()
     )
