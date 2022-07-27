@@ -1,4 +1,3 @@
-import time as real_time
 from unittest.mock import MagicMock, patch
 
 from pytest import mark
@@ -21,10 +20,9 @@ from tests.utils import AsyncMock
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore
 
-timestamp = real_time.time()
+pytestmark = mark.asyncio
 
 
-@mark.asyncio
 async def test_should_attempt_to_set_claim_to_none():
     recipe_implementation_mock = AsyncMock()
     session = Session(
@@ -43,9 +41,7 @@ async def test_should_attempt_to_set_claim_to_none():
         mock.assert_called_once_with({"st-true": None}, {})
 
 
-@time_patch_wrapper
-async def test_should_clear_previously_set_claim(time_mock: MagicMock):
-    time_mock.time.return_value = timestamp  # type: ignore
+async def test_should_clear_previously_set_claim():
     init(**st_init_args_with_TrueClaim)  # type:ignore
     start_st()
 
@@ -54,12 +50,12 @@ async def test_should_clear_previously_set_claim(time_mock: MagicMock):
 
     payload = s.get_access_token_payload()
 
-    assert payload == {"st-true": {"v": True, "t": timestamp}}
+    assert payload["st-true"]["t"] > 0
+    payload["st-true"]["t"] = 0
+    assert payload == {"st-true": {"v": True, "t": 0}}
 
 
-@time_patch_wrapper
-async def test_should_clear_previously_set_claim_using_handle(time_mock: MagicMock):
-    time_mock.time.return_value = timestamp  # type: ignore
+async def test_should_clear_previously_set_claim_using_handle():
     init(**st_init_args_with_TrueClaim)  # type:ignore
     start_st()
 
@@ -67,7 +63,9 @@ async def test_should_clear_previously_set_claim_using_handle(time_mock: MagicMo
     s: SessionContainer = await create_new_session(dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert payload == {"st-true": {"v": True, "t": timestamp}}
+    assert payload["st-true"]["t"] > 0
+    payload["st-true"]["t"] = 0
+    assert payload == {"st-true": {"v": True, "t": 0}}
 
     res = await remove_claim(s.get_handle(), TrueClaim)
     assert res is True
@@ -80,6 +78,7 @@ async def test_should_clear_previously_set_claim_using_handle(time_mock: MagicMo
 
 @time_patch_wrapper
 async def test_should_work_ok_for_non_existing_handle(_time_mock: MagicMock):
+    _time_mock.return_value = 1
     init(**st_init_args_with_TrueClaim)  # type:ignore
     start_st()
 

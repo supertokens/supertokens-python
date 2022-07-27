@@ -1,5 +1,4 @@
-import json
-
+from jwt import decode
 from fastapi import FastAPI
 from fastapi.requests import Request
 from pytest import fixture
@@ -13,10 +12,12 @@ from supertokens_python.recipe.session.asyncio import (
     get_session_information,
     validate_claims_in_jwt_payload,
 )
-from supertokens_python.recipe.session.exceptions import ClaimValidationError
 from supertokens_python.recipe.session.interfaces import ValidateClaimsOkResult
-from supertokens_python.utils import utf_base64decode
-from tests.sessions.claims.utils import get_st_init_args, NoneClaim, TrueClaim
+from tests.sessions.claims.utils import (
+    get_st_init_args,
+    NoneClaim,
+    TrueClaim,
+)
 from tests.utils import setup_function, teardown_function, start_st, min_api_version
 
 _ = setup_function  # type:ignore
@@ -41,6 +42,7 @@ async def fastapi_client():
 async def test_should_create_the_right_access_token_payload_with_claims_and_JWT_enabled(
     fastapi_client: TestClient,
 ):
+    # TODO: FIXME
     init(**get_st_init_args(TrueClaim, jwt=JWTConfig(enable=True)))  # type:ignore
     start_st()
 
@@ -54,12 +56,18 @@ async def test_should_create_the_right_access_token_payload_with_claims_and_JWT_
     assert access_token_payload["jwt"] is not None
     assert access_token_payload["_jwtPName"] == "jwt"
 
-    decoded_jwt = json.loads(utf_base64decode(access_token_payload["jwt"]))
-    assert decoded_jwt == {
-        "sub": "userId",
-        "iss": "https://api.supertokens.io/auth",
-        "_jwtPName": None,
-    }
+    decoded_jwt = decode(
+        jwt=access_token_payload["jwt"], options={"verify_signature": False}
+    )
+
+    assert (
+        decoded_jwt.items()
+        >= {
+            "sub": "userId",
+            "st-true": {"v": True, "t": decoded_jwt["st-true"]["t"]},
+            "iss": "http://api.supertokens.io/auth",
+        }.items()
+    )
 
     assert TrueClaim.get_value_from_payload(access_token_payload) is True
     assert TrueClaim.get_value_from_payload(decoded_jwt) is True
@@ -69,15 +77,16 @@ async def test_should_create_the_right_access_token_payload_with_claims_and_JWT_
         session_info.user_id,
         decoded_jwt,
         lambda _, __, ___: [
-            TrueClaim.validators.has_fresh_value(True, 2),
+            TrueClaim.validators.has_fresh_value(True, 100),
             failing_validator,
         ],
     )
 
-    assert isinstance(res, ValidateClaimsOkResult)
-    assert res.invalid_claims == [
-        ClaimValidationError(
-            failing_validator.id,
-            {"actualValue": None, "expectedValue": True, "message": "wrong value"},
-        )
-    ]
+    assert isinstance(res, ValidateClaimsOkResult) and len(res.invalid_claims) == 1
+    assert res.invalid_claims[0].id == failing_validator.id
+
+    assert res.invalid_claims[0].reason == {
+        "actualValue": None,
+        "expectedValue": True,
+        "message": "wrong value",
+    }

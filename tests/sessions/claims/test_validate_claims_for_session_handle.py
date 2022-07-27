@@ -9,7 +9,6 @@ from supertokens_python.recipe.session.asyncio import (
     create_new_session,
     validate_claims_for_session_handle,
 )
-from supertokens_python.recipe.session.exceptions import ClaimValidationError
 from supertokens_python.recipe.session.interfaces import (
     ValidateClaimsOkResult,
     SessionDoesntExistError,
@@ -40,18 +39,14 @@ async def test_should_return_the_right_validation_errors():
         s.get_handle(),
         lambda _, __, ___: [TrueClaim.validators.has_value(True), failing_validator],
     )
-    assert res == ValidateClaimsOkResult(
-        [
-            ClaimValidationError(
-                failing_validator.id,
-                reason={
-                    "message": "wrong value",
-                    "actualValue": None,
-                    "expectedValue": True,
-                },
-            )
-        ]
-    )
+
+    assert isinstance(res, ValidateClaimsOkResult) and len(res.invalid_claims) == 1
+    assert res.invalid_claims[0].id == failing_validator.id
+    assert res.invalid_claims[0].reason == {
+        "message": "wrong value",
+        "actualValue": None,
+        "expectedValue": True,
+    }
 
 
 async def test_should_work_for_not_existing_handle():

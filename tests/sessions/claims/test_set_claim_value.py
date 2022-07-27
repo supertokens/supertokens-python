@@ -18,11 +18,11 @@ from tests.utils import start_st, AsyncMock
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore
 
-timestamp = time.time()
-
 pytestmark = (
     mark.asyncio
 )  # no need to apply @mark.asyncio on each test because of this!
+
+timestamp = time.time()
 
 
 async def test_should_merge_the_right_value():
@@ -42,10 +42,8 @@ async def test_should_merge_the_right_value():
         await session.set_claim_value(TrueClaim, "NEW_TRUE")
         update, _ = mock.call_args_list[0].args
         assert update["st-true"]["t"] > 0
-        update["st-true"]["t"] = timestamp
-        mock.assert_called_once_with(
-            {"st-true": {"t": timestamp, "v": "NEW_TRUE"}}, None
-        )
+        update["st-true"]["t"] = 0
+        mock.assert_called_once_with({"st-true": {"t": 0, "v": "NEW_TRUE"}}, None)
 
 
 async def test_should_overwrite_claim_value():

@@ -12,10 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import time
 from typing import Any, Callable, Dict, Optional, TypeVar, Union
 
 from supertokens_python.types import MaybeAwaitable
+from supertokens_python.utils import get_timestamp_ms
 
 from ..interfaces import JSONObject, JSONPrimitive, SessionClaim, SessionClaimValidator
 
@@ -92,7 +92,10 @@ class PrimitiveClaim(SessionClaim[JSONPrimitive]):
                     # (claim value is None) OR (value has expired)
                     return (
                         claim.get_value_from_payload(payload, user_context) is None
-                    ) or (payload[claim.key]["t"] < time.time() - max_age_in_sec * 1000)
+                    ) or (
+                        payload[claim.key]["t"]
+                        < get_timestamp_ms() - max_age_in_sec * 1000
+                    )
 
                 async def validate(
                     self,
@@ -109,10 +112,9 @@ class PrimitiveClaim(SessionClaim[JSONPrimitive]):
                                 "actualValue": claim_val,
                             },
                         }
-
                     age_in_sec = (
-                        time.time()
-                        - float(claim.get_last_refetch_time(payload, user_context) or 0)
+                        get_timestamp_ms()
+                        - (claim.get_last_refetch_time(payload, user_context) or 0)
                     ) / 1000
                     if age_in_sec > max_age_in_sec:
                         return {
@@ -151,7 +153,7 @@ class PrimitiveClaim(SessionClaim[JSONPrimitive]):
         value: JSONPrimitive,
         user_context: Union[Dict[str, Any], None] = None,
     ) -> JSONObject:
-        payload[self.key] = {"v": value, "t": time.time()}
+        payload[self.key] = {"v": value, "t": get_timestamp_ms()}
         _ = user_context
 
         return payload

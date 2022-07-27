@@ -1,4 +1,3 @@
-import time
 from unittest.mock import patch
 
 from pytest import mark
@@ -6,8 +5,6 @@ from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import NoneClaim, TrueClaim
 
 from tests.utils import AsyncMock
-
-timestamp = time.time()
 
 pytestmark = (
     mark.asyncio
@@ -49,5 +46,5 @@ async def test_should_update_if_claim_fetch_value_returns_value():
         await session.fetch_and_set_claim(TrueClaim)
         update, _ = mock.call_args_list[0].args
         assert update["st-true"]["t"] > 0
-        update["st-true"]["t"] = timestamp
-        mock.assert_called_once_with({"st-true": {"t": timestamp, "v": True}}, None)
+        update["st-true"]["t"] = 0
+        mock.assert_called_once_with({"st-true": {"t": 0, "v": True}}, None)
