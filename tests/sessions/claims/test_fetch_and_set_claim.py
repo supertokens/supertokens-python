@@ -29,7 +29,7 @@ async def test_should_not_change_if_claim_fetch_value_returns_none():
         mock.assert_called_once_with({}, None)
 
 
-async def test_should_update_if_claim_fetch_value_returns_value():
+async def test_should_update_if_claim_fetch_value_returns_value(timestamp: int):
     recipe_implementation_mock = AsyncMock()
     session = Session(
         recipe_implementation_mock,
@@ -44,7 +44,4 @@ async def test_should_update_if_claim_fetch_value_returns_value():
         wraps=session.merge_into_access_token_payload,
     ) as mock:
         await session.fetch_and_set_claim(TrueClaim)
-        (update, _), _ = mock.call_args_list[0]
-        assert update["st-true"]["t"] > 0
-        update["st-true"]["t"] = 0
-        mock.assert_called_once_with({"st-true": {"t": 0, "v": True}}, None)
+        mock.assert_called_once_with({"st-true": {"t": timestamp, "v": True}}, None)

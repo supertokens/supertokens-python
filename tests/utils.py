@@ -427,6 +427,13 @@ from pytest import mark
 
 
 def min_api_version(min_version: str) -> Any:
+    """
+    Skips the test if the local ST core doesn't satisfy
+    version requirements for the tests.
+
+    Fetches the core version only once throughout the testing session.
+    """
+
     def wrapper(f: Any) -> Any:
         core_api_version = get_core_api_version()
         if is_version_gte(core_api_version, min_version):

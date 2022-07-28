@@ -58,23 +58,12 @@ st_init_common_args = {
     "mode": "asgi",
 }
 
-st_init_args_with_TrueClaim = {
-    **st_init_common_args,
-    "recipe_list": [
-        session.init(
-            override=session.InputOverrideConfig(
-                functions=session_functions_override_with_claim(TrueClaim),
-            )
-        ),
-    ],
-}
-
 
 def get_st_init_args(
     claim: SessionClaim[Any] = TrueClaim, jwt: Optional[JWTConfig] = None
 ):
     return {
-        **st_init_args_with_TrueClaim,
+        **st_init_common_args,
         "recipe_list": [
             session.init(
                 override=session.InputOverrideConfig(

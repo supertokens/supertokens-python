@@ -15,7 +15,7 @@ from supertokens_python.recipe.session.interfaces import (
     SessionDoesntExistError,
 )
 from tests.utils import setup_function, teardown_function, start_st
-from .utils import TrueClaim, st_init_args_with_TrueClaim
+from .utils import TrueClaim, get_st_init_args, st_init_common_args
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore
@@ -24,7 +24,7 @@ pytestmark = mark.asyncio
 
 
 async def test_should_get_the_right_value():
-    init(**st_init_args_with_TrueClaim)  # type:ignore
+    init(**get_st_init_args(TrueClaim))  # type:ignore
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
@@ -35,7 +35,7 @@ async def test_should_get_the_right_value():
 
 
 async def test_should_get_the_right_value_using_session_handle():
-    init(**st_init_args_with_TrueClaim)  # type:ignore
+    init(**get_st_init_args(TrueClaim))  # type:ignore
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
@@ -47,7 +47,7 @@ async def test_should_get_the_right_value_using_session_handle():
 
 
 async def test_should_work_for_non_existing_handle():
-    new_st_init = {**st_init_args_with_TrueClaim, "recipe_list": [session.init()]}
+    new_st_init = {**st_init_common_args, "recipe_list": [session.init()]}
     init(**new_st_init)  # type: ignore
     start_st()
 

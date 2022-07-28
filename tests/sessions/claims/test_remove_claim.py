@@ -10,10 +10,9 @@ from supertokens_python.recipe.session.asyncio import (
     remove_claim,
 )
 from supertokens_python.recipe.session.session_class import Session
-from tests.sessions.claims.utils import TrueClaim
+from tests.sessions.claims.utils import TrueClaim, get_st_init_args
 from tests.utils import setup_function, start_st, teardown_function
 
-from .test_get_claim_value import st_init_args_with_TrueClaim
 from tests.utils import AsyncMock
 
 _ = setup_function  # type:ignore
@@ -40,8 +39,8 @@ async def test_should_attempt_to_set_claim_to_none():
         mock.assert_called_once_with({"st-true": None}, {})
 
 
-async def test_should_clear_previously_set_claim():
-    init(**st_init_args_with_TrueClaim)  # type:ignore
+async def test_should_clear_previously_set_claim(timestamp: int):
+    init(**get_st_init_args(TrueClaim))  # type:ignore
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
@@ -49,22 +48,18 @@ async def test_should_clear_previously_set_claim():
 
     payload = s.get_access_token_payload()
 
-    assert payload["st-true"]["t"] > 0
-    payload["st-true"]["t"] = 0
-    assert payload == {"st-true": {"v": True, "t": 0}}
+    assert payload == {"st-true": {"v": True, "t": timestamp}}
 
 
-async def test_should_clear_previously_set_claim_using_handle():
-    init(**st_init_args_with_TrueClaim)  # type:ignore
+async def test_should_clear_previously_set_claim_using_handle(timestamp: int):
+    init(**get_st_init_args(TrueClaim))  # type:ignore
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
     s: SessionContainer = await create_new_session(dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert payload["st-true"]["t"] > 0
-    payload["st-true"]["t"] = 0
-    assert payload == {"st-true": {"v": True, "t": 0}}
+    assert payload == {"st-true": {"v": True, "t": timestamp}}
 
     res = await remove_claim(s.get_handle(), TrueClaim)
     assert res is True
@@ -76,7 +71,7 @@ async def test_should_clear_previously_set_claim_using_handle():
 
 
 async def test_should_work_ok_for_non_existing_handle():
-    init(**st_init_args_with_TrueClaim)  # type:ignore
+    init(**get_st_init_args(TrueClaim))  # type:ignore
     start_st()
 
     res = await remove_claim("non-existing-handle", TrueClaim)

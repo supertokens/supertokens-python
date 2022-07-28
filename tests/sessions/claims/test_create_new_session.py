@@ -1,4 +1,3 @@
-import time
 from unittest.mock import MagicMock
 
 from supertokens_python import init
@@ -7,7 +6,7 @@ from supertokens_python.recipe import session
 from supertokens_python.recipe.session.asyncio import create_new_session
 from tests.utils import setup_function, teardown_function, start_st, min_api_version
 from .utils import (
-    st_init_args_with_TrueClaim,
+    st_init_common_args,
     NoneClaim,
     get_st_init_args,
     session_functions_override_with_claim,
@@ -17,20 +16,16 @@ from .utils import (
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore
 
-timestamp = time.time()
-
 
 @min_api_version("2.13")
-async def test_create_access_token_payload_with_session_claims():
-    init(**st_init_args_with_TrueClaim)  # type:ignore
+async def test_create_access_token_payload_with_session_claims(timestamp: int):
+    init(**get_st_init_args(TrueClaim))  # type:ignore
     start_st()
 
     dummy_req: BaseRequest = MagicMock()
     s = await create_new_session(dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert payload["st-true"]["t"] > 0
-    payload["st-true"]["t"] = timestamp  # to avoid patching
     assert payload == {"st-true": {"v": True, "t": timestamp}}
 
 
@@ -47,9 +42,9 @@ async def test_should_create_access_token_payload_with_session_claims_with_an_no
 
 
 @min_api_version("2.13")
-async def test_should_merge_claims_and_passed_access_token_payload_obj():
+async def test_should_merge_claims_and_passed_access_token_payload_obj(timestamp: int):
     new_st_init = {
-        **st_init_args_with_TrueClaim,
+        **st_init_common_args,
         "recipe_list": [
             session.init(
                 override=session.InputOverrideConfig(
@@ -67,8 +62,6 @@ async def test_should_merge_claims_and_passed_access_token_payload_obj():
     s = await create_new_session(dummy_req, "someId")
 
     payload = s.get_access_token_payload()
-    assert payload["st-true"]["t"] > 0
-    payload["st-true"]["t"] = timestamp  # to avoid patching
     assert payload == {
         "st-true": {"v": True, "t": timestamp},
         "user-custom-claim": "foo",
