@@ -438,11 +438,11 @@ def min_api_version(min_version: str) -> Any:
 
 
 # Import AsyncMock
-try:
-    from unittest.mock import AsyncMock
+import sys
 
-    _ = AsyncMock
-except ImportError:
+if sys.version_info >= (3, 8):
+    from unittest.mock import AsyncMock  # pylint: disable=unused-import
+else:
     from unittest.mock import MagicMock
 
     class AsyncMock(MagicMock):

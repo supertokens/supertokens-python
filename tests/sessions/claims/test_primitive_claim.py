@@ -1,19 +1,18 @@
-from supertokens_python.utils import get_timestamp_ms as real_get_timestamp_ms
 from unittest.mock import MagicMock
+from pytest import mark
 
 from supertokens_python.recipe.session.claims import PrimitiveClaim
-from supertokens_python.utils import resolve
 
 from tests.utils import AsyncMock
-from .utils import time_patch_wrapper
+from supertokens_python.utils import resolve
 
-timestamp = real_get_timestamp_ms()
 val = {"foo": 1}
 SECONDS = 1_000
 
-
 sync_fetch_value = MagicMock(return_value=val)
 async_fetch_value = AsyncMock(return_value=val)
+
+pytestmark = mark.asyncio
 
 
 def teardown_function(_):
@@ -21,51 +20,38 @@ def teardown_function(_):
     async_fetch_value.reset_mock()
 
 
-@time_patch_wrapper
-async def test_primitive_claim(time_mock: MagicMock):
-    time_mock.return_value = timestamp  # type: ignore
-
+async def test_primitive_claim(timestamp: int):
     claim = PrimitiveClaim("key", sync_fetch_value)
     ctx = {}
     res = await claim.build("user_id", ctx)
     assert res == {"key": {"t": timestamp, "v": val}}
 
 
-@time_patch_wrapper
-async def test_primitive_claim_without_async_fetch_value(time_mock: MagicMock):
-    time_mock.return_value = timestamp  # type: ignore
-
+async def test_primitive_claim_without_async_fetch_value(timestamp: int):
     claim = PrimitiveClaim("key", async_fetch_value)
     ctx = {}
     res = await claim.build("user_id", ctx)
     assert res == {"key": {"t": timestamp, "v": val}}
 
 
-@time_patch_wrapper
-async def test_primitive_claim_matching__add_to_payload(time_mock: MagicMock):
-    time_mock.return_value = timestamp  # type: ignore
-
+async def test_primitive_claim_matching__add_to_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     ctx = {}
     res = await claim.build("user_id", ctx)
     assert res == claim.add_to_payload_({}, val, {})
 
 
-@time_patch_wrapper
-async def test_primitive_claim_fetch_value_params_correct(time_mock: MagicMock):
-    time_mock.return_value = timestamp  # type: ignore
-
+async def test_primitive_claim_fetch_value_params_correct():
     claim = PrimitiveClaim("key", sync_fetch_value)
     user_id, ctx = "user_id", {}
     await claim.build(user_id, ctx)
     assert sync_fetch_value.call_count == 1
-    assert (user_id, ctx) == sync_fetch_value.call_args_list[0].args
+    assert (user_id, ctx) == sync_fetch_value.call_args_list[0][
+        0
+    ]  # extra [0] refers to call params
 
 
-@time_patch_wrapper
-async def test_primitive_claim_fetch_value_none(time_mock: MagicMock):
-    time_mock.return_value = timestamp  # type: ignore
-
+async def test_primitive_claim_fetch_value_none():
     fetch_value_none = MagicMock()
     fetch_value_none.return_value = None
 
@@ -78,20 +64,12 @@ async def test_primitive_claim_fetch_value_none(time_mock: MagicMock):
 # Get value from payload:
 
 
-@time_patch_wrapper
-async def test_get_value_from_empty_payload(time_mock: MagicMock):
-    time_mock.return_value = timestamp  # type: ignore
-
+async def test_get_value_from_empty_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     assert claim.get_value_from_payload({}) is None
 
 
-@time_patch_wrapper
-async def test_should_return_value_set_by__add_to_payload_internal(
-    time_mock: MagicMock,
-):
-    time_mock.return_value = timestamp  # type: ignore
-
+async def test_should_return_value_set_by__add_to_payload_internal():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = claim.add_to_payload_({}, val)
     assert claim.get_value_from_payload(payload) == val
@@ -102,18 +80,12 @@ async def test_should_return_value_set_by__add_to_payload_internal(
 val2 = {"bar": 2}
 
 
-@time_patch_wrapper
-async def test_get_last_refetch_time_empty_payload(time_mock: MagicMock):
-    time_mock.return_value = timestamp  # type: ignore
-
+async def test_get_last_refetch_time_empty_payload():
     claim = PrimitiveClaim("key", async_fetch_value)
     assert claim.get_last_refetch_time({}) is None
 
 
-@time_patch_wrapper
-async def test_should_return_none_for_empty_payload(time_mock: MagicMock):
-    time_mock.return_value = timestamp  # type: ignore
-
+async def test_should_return_none_for_empty_payload(timestamp: int):
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
 
@@ -123,8 +95,7 @@ async def test_should_return_none_for_empty_payload(time_mock: MagicMock):
 # validators.has_value
 
 
-@time_patch_wrapper
-async def test_validators_should_not_validate_empty_payload(_time_mock: MagicMock):
+async def test_validators_should_not_validate_empty_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     res = await claim.validators.has_value(val).validate({})
 
@@ -138,8 +109,7 @@ async def test_validators_should_not_validate_empty_payload(_time_mock: MagicMoc
     }
 
 
-@time_patch_wrapper
-async def test_should_not_validate_mismatching_payload(_time_mock: MagicMock):
+async def test_should_not_validate_mismatching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
     res = await claim.validators.has_value(val2).validate(payload)
@@ -154,8 +124,7 @@ async def test_should_not_validate_mismatching_payload(_time_mock: MagicMock):
     }
 
 
-@time_patch_wrapper
-async def test_validator_should_validate_matching_payload(_time_mock: MagicMock):
+async def test_validator_should_validate_matching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
     res = await claim.validators.has_value(val).validate(payload)
@@ -163,30 +132,25 @@ async def test_validator_should_validate_matching_payload(_time_mock: MagicMock)
     assert res == {"isValid": True}
 
 
-@time_patch_wrapper
-async def test_should_validate_old_values_as_well(time_mock: MagicMock):
-    time_mock.return_value = timestamp  # type: ignore
-
+async def test_should_validate_old_values_as_well(patch_get_timestamp_ms: MagicMock):
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
 
     # Increase clock time by 1000
-    time_mock.return_value += 100  # type: ignore
+    patch_get_timestamp_ms.return_value += 100  # type: ignore
 
     res = await claim.validators.has_value(val).validate(payload)
     assert res == {"isValid": True}
 
 
-@time_patch_wrapper
-async def test_should_refetch_if_value_not_set(_time_mock: MagicMock):
+async def test_should_refetch_if_value_not_set():
     claim = PrimitiveClaim("key", async_fetch_value)
     assert (
         await resolve(claim.validators.has_value(val).should_refetch(val2, {})) is True
     )
 
 
-@time_patch_wrapper
-async def test_validator_should_not_refetch_if_value_is_set(_time_mock: MagicMock):
+async def test_validator_should_not_refetch_if_value_is_set():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
     assert (
@@ -198,8 +162,7 @@ async def test_validator_should_not_refetch_if_value_is_set(_time_mock: MagicMoc
 # validators.has_fresh_value
 
 
-@time_patch_wrapper
-async def test_should_not_validate_empty_payload(_time_mock: MagicMock):
+async def test_should_not_validate_empty_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     res = await claim.validators.has_fresh_value(val, 600).validate({}, {})
     assert res == {
@@ -213,10 +176,7 @@ async def test_should_not_validate_empty_payload(_time_mock: MagicMock):
     }
 
 
-@time_patch_wrapper
-async def test_has_fresh_value_should_not_validate_mismatching_payload(
-    _time_mock: MagicMock,
-):
+async def test_has_fresh_value_should_not_validate_mismatching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
     res = await claim.validators.has_fresh_value(val2, 600).validate(payload)
@@ -230,23 +190,22 @@ async def test_has_fresh_value_should_not_validate_mismatching_payload(
     }
 
 
-@time_patch_wrapper
-async def test_should_validate_matching_payload(_time_mock: MagicMock):
+async def test_should_validate_matching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
     res = await claim.validators.has_fresh_value(val, 600).validate(payload)
     assert res == {"isValid": True}
 
 
-@time_patch_wrapper
-async def test_should_not_validate_old_values_as_well(time_mock: MagicMock):
-    time_mock.return_value = timestamp  # type: ignore
+async def test_should_not_validate_old_values_as_well(
+    patch_get_timestamp_ms: MagicMock,
+):
 
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
 
     # Increase clock time:
-    time_mock.return_value += 100 * SECONDS  # type: ignore
+    patch_get_timestamp_ms.return_value += 100 * SECONDS  # type: ignore
 
     res = await claim.validators.has_fresh_value(val, 10).validate(payload)
     assert res == {
@@ -259,29 +218,25 @@ async def test_should_not_validate_old_values_as_well(time_mock: MagicMock):
     }
 
 
-@time_patch_wrapper
-async def test_should_refetch_if_value_is_not_set(_time_mock: MagicMock):
+async def test_should_refetch_if_value_is_not_set():
     claim = PrimitiveClaim("key", sync_fetch_value)
 
     assert claim.validators.has_fresh_value(val2, 600).should_refetch({}) is True
 
 
-@time_patch_wrapper
-async def test_should_not_refetch_if_value_is_set(_time_mock: MagicMock):
+async def test_should_not_refetch_if_value_is_set():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("userId")
 
     assert claim.validators.has_fresh_value(val2, 600).should_refetch(payload) is False
 
 
-@time_patch_wrapper
-async def test_should_refetch_if_value_is_old(time_mock: MagicMock):
-    time_mock.return_value = timestamp  # type: ignore
+async def test_should_refetch_if_value_is_old(patch_get_timestamp_ms: MagicMock):
 
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("userId")
 
     # Increase clock time:
-    time_mock.return_value += 100 * SECONDS  # type: ignore
+    patch_get_timestamp_ms.return_value += 100 * SECONDS  # type: ignore
 
     assert claim.validators.has_fresh_value(val2, 10).should_refetch(payload) is True

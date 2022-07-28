@@ -40,7 +40,7 @@ async def test_should_merge_the_right_value():
         wraps=session.merge_into_access_token_payload,
     ) as mock:
         await session.set_claim_value(TrueClaim, "NEW_TRUE")
-        update, _ = mock.call_args_list[0].args
+        ((update, _), _) = mock.call_args_list[0]
         assert update["st-true"]["t"] > 0
         update["st-true"]["t"] = 0
         mock.assert_called_once_with({"st-true": {"t": 0, "v": "NEW_TRUE"}}, None)

@@ -12,8 +12,9 @@ from tests.utils import AsyncMock
 
 _T = TypeVar("_T")
 
+pytestmark = mark.asyncio
 
-@mark.asyncio
+
 async def test_should_not_throw_for_empty_array():
     recipe_implementation_mock = AsyncMock()
     session = Session(
@@ -32,7 +33,6 @@ async def test_should_not_throw_for_empty_array():
         mock.assert_not_called()
 
 
-@mark.asyncio
 async def test_should_call_validate_with_the_same_payload_object():
     recipe_implementation_mock = AsyncMock()
     payload = {"custom-key": "custom-value"}

@@ -25,6 +25,7 @@ from supertokens_python.utils import (
     frontend_has_interceptor,
     get_timestamp_ms,
     normalise_http_method,
+    resolve,
 )
 from . import session_functions
 from .cookie_and_header import (
@@ -186,7 +187,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             "get_session: required validator ids %s",
             ",".join([c.id for c in claim_validators]),
         )
-        await session.assert_claims(claim_validators, user_context)
+        await resolve(session.assert_claims(claim_validators, user_context))
         log_debug_message("get_session: claim assertion successful")
 
     async def validate_claims_for_session_handle(

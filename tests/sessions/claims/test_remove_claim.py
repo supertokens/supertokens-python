@@ -14,7 +14,6 @@ from tests.sessions.claims.utils import TrueClaim
 from tests.utils import setup_function, start_st, teardown_function
 
 from .test_get_claim_value import st_init_args_with_TrueClaim
-from .utils import time_patch_wrapper
 from tests.utils import AsyncMock
 
 _ = setup_function  # type:ignore
@@ -76,9 +75,7 @@ async def test_should_clear_previously_set_claim_using_handle():
     assert payload_after == {}
 
 
-@time_patch_wrapper
-async def test_should_work_ok_for_non_existing_handle(_time_mock: MagicMock):
-    _time_mock.return_value = 1
+async def test_should_work_ok_for_non_existing_handle():
     init(**st_init_args_with_TrueClaim)  # type:ignore
     start_st()
 

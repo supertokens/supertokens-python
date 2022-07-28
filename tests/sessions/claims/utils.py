@@ -1,7 +1,4 @@
 from typing import Dict, Any, Union, Optional
-from unittest.mock import patch
-
-from pytest import mark
 
 from supertokens_python import InputAppInfo, SupertokensConfig
 from supertokens_python.framework.request import BaseRequest
@@ -9,18 +6,9 @@ from supertokens_python.recipe import session
 from supertokens_python.recipe.session import JWTConfig
 from supertokens_python.recipe.session.claims import BooleanClaim, SessionClaim
 from supertokens_python.recipe.session.interfaces import RecipeInterface
-from supertokens_python.utils import get_timestamp_ms as real_get_timestamp_ms
 
 TrueClaim = BooleanClaim("st-true", fetch_value=lambda _, __: True)  # type: ignore
 NoneClaim = BooleanClaim("st-none", fetch_value=lambda _, __: None)  # type: ignore
-
-
-def time_patch_wrapper(fn: Any) -> Any:
-    time_patcher = patch(
-        "supertokens_python.recipe.session.claim_base_classes.primitive_claim.get_timestamp_ms",
-        wraps=real_get_timestamp_ms,
-    )
-    return time_patcher(mark.asyncio(fn))  # type: ignore
 
 
 def session_functions_override_with_claim(
@@ -96,9 +84,3 @@ def get_st_init_args(
             ),
         ],
     }
-
-
-def reset_num(d: Dict[str, Any], k: str) -> None:
-    """Asserts that in the provided dict key's value is > 0 and resets it to 0"""
-    assert d[k] > 0
-    d[k] = 0
