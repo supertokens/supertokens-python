@@ -556,12 +556,12 @@ ClaimValidationResult = Dict[str, Any]
 
 
 class SessionClaimValidator(ABC):
-    claim: Optional[SessionClaim[Any]] = None
     id: str
 
     def __init__(self, id_: Optional[str] = None):
         if id_ is not None:
             self.id = id_
+        self.claim: Optional[SessionClaim[Any]] = None
 
     @abstractmethod
     async def validate(
@@ -572,8 +572,5 @@ class SessionClaimValidator(ABC):
     def should_refetch(  # pylint: disable=no-self-use
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
     ) -> MaybeAwaitable[bool]:
-        # TODO: Verify if this is the right way to do this
-        # TODO: How to ensure that we always have a claim object if this is defined and vice versa.
-        _ = payload
-        _ = user_context
+        _, __ = payload, user_context
         return False

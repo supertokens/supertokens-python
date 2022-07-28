@@ -22,6 +22,126 @@ from ..interfaces import JSONObject, JSONPrimitive, SessionClaim, SessionClaimVa
 _T = TypeVar("_T")
 
 
+class HasValueSCV(SessionClaimValidator):
+    def __init__(
+        self, id_: str, claim: SessionClaim[JSONPrimitive], params: Dict[str, Any]
+    ):
+        super().__init__(id_)
+        self.claim: SessionClaim[JSONPrimitive] = claim
+        self.params = params
+
+    def should_refetch(
+        self,
+        payload: JSONObject,
+        user_context: Union[Dict[str, Any], None] = None,
+    ):
+        return self.claim.get_value_from_payload(payload, user_context) is None
+
+    async def validate(
+        self,
+        payload: JSONObject,
+        user_context: Union[Dict[str, Any], None] = None,
+    ):
+        val = self.params["val"]
+        claim_val = self.claim.get_value_from_payload(payload, user_context)
+        is_valid = claim_val == val
+        if is_valid:
+            return {"isValid": True}
+
+        return {
+            "isValid": False,
+            "reason": {
+                "message": "wrong value",
+                "expectedValue": val,
+                "actualValue": claim_val,
+            },
+        }
+
+
+class HasFreshValueSCV(SessionClaimValidator):
+    def __init__(
+        self, id_: str, claim: SessionClaim[JSONPrimitive], params: Dict[str, Any]
+    ):
+        super().__init__(id_)
+        self.claim: SessionClaim[JSONPrimitive] = claim
+        self.params = params
+
+    def should_refetch(
+        self,
+        payload: JSONObject,
+        user_context: Union[Dict[str, Any], None] = None,
+    ):
+        max_age_in_sec: int = self.params["max_age_in_sec"]
+
+        # (claim value is None) OR (value has expired)
+        return (self.claim.get_value_from_payload(payload, user_context) is None) or (
+            payload[self.claim.key]["t"] < (get_timestamp_ms() - max_age_in_sec * 1000)
+        )
+
+    async def validate(
+        self,
+        payload: JSONObject,
+        user_context: Union[Dict[str, Any], None] = None,
+    ):
+        val: str = self.params["val"]
+        max_age_in_sec: int = self.params["max_age_in_sec"]
+
+        claim_val = self.claim.get_value_from_payload(payload, user_context)
+        if claim_val is None:
+            return {
+                "isValid": False,
+                "reason": {
+                    "message": "value does not exist",
+                    "expectedValue": val,
+                    "actualValue": claim_val,
+                },
+            }
+        assert isinstance(self.claim, PrimitiveClaim)
+        age_in_sec = (
+            get_timestamp_ms()
+            - (self.claim.get_last_refetch_time(payload, user_context) or 0)
+        ) / 1000
+        if age_in_sec > max_age_in_sec:
+            return {
+                "isValid": False,
+                "reason": {
+                    "message": "expired",
+                    "ageInSeconds": age_in_sec,
+                    "maxAgeInSeconds": max_age_in_sec,
+                },
+            }
+        if claim_val != val:
+            return {
+                "isValid": False,
+                "reason": {
+                    "message": "wrong value",
+                    "expectedValue": val,
+                    "actualValue": claim_val,
+                },
+            }
+
+        return {"isValid": True}
+
+
+class PrimitiveClaimValidators:
+    def __init__(self, claim: SessionClaim[JSONPrimitive]) -> None:
+        self.claim = claim
+
+    def has_value(
+        self, val: JSONPrimitive, id_: Union[str, None] = None
+    ) -> SessionClaimValidator:
+        return HasValueSCV((id_ or self.claim.key), self.claim, {"val": val})
+
+    def has_fresh_value(
+        self, val: JSONPrimitive, max_age_in_sec: int, id_: Union[str, None] = None
+    ) -> SessionClaimValidator:
+        return HasFreshValueSCV(
+            (id_ or (self.claim.key + "-fresh-val")),
+            self.claim,
+            {"val": val, "max_age_in_sec": max_age_in_sec},
+        )
+
+
 class PrimitiveClaim(SessionClaim[JSONPrimitive]):
     def __init__(
         self,
@@ -38,114 +158,7 @@ class PrimitiveClaim(SessionClaim[JSONPrimitive]):
             self.fetch_value = fetch_value  # type: ignore
 
         claim = self
-
-        def has_value(
-            val: JSONPrimitive, id_: Union[str, None] = None
-        ) -> SessionClaimValidator:
-            class HasValueSCV(SessionClaimValidator):
-                def __init__(self):
-                    super().__init__(id_ or claim.key)
-                    self.claim = claim
-
-                def should_refetch(
-                    self,
-                    payload: JSONObject,
-                    user_context: Union[Dict[str, Any], None] = None,
-                ):
-                    return claim.get_value_from_payload(payload, user_context) is None
-
-                async def validate(
-                    self,
-                    payload: JSONObject,
-                    user_context: Union[Dict[str, Any], None] = None,
-                ):
-                    claim_val = claim.get_value_from_payload(payload, user_context)
-                    is_valid = claim_val == val
-                    if is_valid:
-                        return {"isValid": True}
-
-                    return {
-                        "isValid": False,
-                        "reason": {
-                            "message": "wrong value",
-                            "expectedValue": val,
-                            "actualValue": claim_val,
-                        },
-                    }
-
-            scv = HasValueSCV()
-            return scv
-
-        def has_fresh_value(
-            val: JSONPrimitive, max_age_in_sec: int, id_: Union[str, None] = None
-        ) -> SessionClaimValidator:
-            class HasFreshValueSCV(SessionClaimValidator):
-                def __init__(self):
-                    super().__init__(id_ or (claim.key + "-fresh-val"))
-                    self.claim = claim
-
-                def should_refetch(
-                    self,
-                    payload: JSONObject,
-                    user_context: Union[Dict[str, Any], None] = None,
-                ):
-                    # (claim value is None) OR (value has expired)
-                    return (
-                        claim.get_value_from_payload(payload, user_context) is None
-                    ) or (
-                        payload[claim.key]["t"]
-                        < get_timestamp_ms() - max_age_in_sec * 1000
-                    )
-
-                async def validate(
-                    self,
-                    payload: JSONObject,
-                    user_context: Union[Dict[str, Any], None] = None,
-                ):
-                    claim_val = claim.get_value_from_payload(payload, user_context)
-                    if claim_val is None:
-                        return {
-                            "isValid": False,
-                            "reason": {
-                                "message": "value does not exist",
-                                "expectedValue": val,
-                                "actualValue": claim_val,
-                            },
-                        }
-                    age_in_sec = (
-                        get_timestamp_ms()
-                        - (claim.get_last_refetch_time(payload, user_context) or 0)
-                    ) / 1000
-                    if age_in_sec > max_age_in_sec:
-                        return {
-                            "isValid": False,
-                            "reason": {
-                                "message": "expired",
-                                "ageInSeconds": age_in_sec,
-                                "maxAgeInSeconds": max_age_in_sec,
-                            },
-                        }
-                    if claim_val != val:
-                        return {
-                            "isValid": False,
-                            "reason": {
-                                "message": "wrong value",
-                                "expectedValue": val,
-                                "actualValue": claim_val,
-                            },
-                        }
-
-                    return {"isValid": True}
-
-            scv = HasFreshValueSCV()
-            return scv
-
-        class Validators:
-            def __init__(self) -> None:
-                self.has_value = has_value
-                self.has_fresh_value = has_fresh_value
-
-        self.validators = Validators()
+        self.validators = PrimitiveClaimValidators(claim)
 
     def add_to_payload_(
         self,
