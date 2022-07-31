@@ -12,7 +12,7 @@ from supertokens_python.recipe.session.asyncio import (
 from supertokens_python.recipe.session.interfaces import (
     SessionContainer,
     GetClaimValueOkResult,
-    SessionDoesntExistError,
+    SessionDoesnotExistError,
 )
 from tests.utils import setup_function, teardown_function, start_st
 from .utils import TrueClaim, get_st_init_args, st_init_common_args
@@ -52,4 +52,4 @@ async def test_should_work_for_non_existing_handle():
     start_st()
 
     res = await get_claim_value("non_existing_handle", TrueClaim)
-    assert isinstance(res, SessionDoesntExistError)
+    assert isinstance(res, SessionDoesnotExistError)

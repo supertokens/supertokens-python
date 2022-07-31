@@ -12,7 +12,7 @@ from supertokens_python.recipe.session.asyncio import (
     get_session_information,
     validate_claims_in_jwt_payload,
 )
-from supertokens_python.recipe.session.interfaces import ValidateClaimsOkResult
+from supertokens_python.recipe.session.interfaces import ClaimsValidationResult
 from tests.sessions.claims.utils import (
     get_st_init_args,
     NoneClaim,
@@ -82,7 +82,7 @@ async def test_should_create_the_right_access_token_payload_with_claims_and_JWT_
         ],
     )
 
-    assert isinstance(res, ValidateClaimsOkResult) and len(res.invalid_claims) == 1
+    assert isinstance(res, ClaimsValidationResult) and len(res.invalid_claims) == 1
     assert res.invalid_claims[0].id == failing_validator.id
 
     assert res.invalid_claims[0].reason == {

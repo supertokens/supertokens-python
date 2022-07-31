@@ -13,12 +13,10 @@
 # under the License.
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Dict, Union, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 from jwt import decode
 
-from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import get_timestamp_ms
 
 from .constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
@@ -30,7 +28,7 @@ if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import (
         RecipeInterface,
         SessionContainer,
-        SessionClaimValidator,
+        SessionInformationResult,
     )
     from supertokens_python.framework.types import BaseRequest
 
@@ -91,19 +89,12 @@ def get_recipe_implementation_with_jwt(
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
-        override_global_claim_validators: Optional[
-            Callable[
-                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
-                MaybeAwaitable[List[SessionClaimValidator]],
-            ]
-        ],
         user_context: Dict[str, Any],
     ) -> Union[SessionContainer, None]:
         session_container = await og_get_session(
             request,
             anti_csrf_check,
             session_required,
-            override_global_claim_validators,
             user_context,
         )
         if session_container is None:
@@ -132,27 +123,26 @@ def get_recipe_implementation_with_jwt(
             user_context=user_context,
         )
 
-        await new_session.update_access_token_payload(access_token_payload)
+        await new_session.update_access_token_payload(
+            access_token_payload, user_context
+        )
         return get_session_with_jwt(new_session, openid_recipe_implementation)
 
     og_update_access_token_payload = original_implementation.update_access_token_payload
 
-    async def update_access_token_payload(
-        session_handle: str,
+    async def jwt_aware_update_access_token_payload(
+        session_information: SessionInformationResult,
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> bool:
-        session_information = await original_implementation.get_session_information(
-            session_handle, user_context
-        )
-        if session_information is None:
-            return False
-
+        """DEPRECATED: Use merge_into_access_token_payload instead"""
         access_token_payload = session_information.access_token_payload
 
         if ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY not in access_token_payload:
             return await og_update_access_token_payload(
-                session_handle, new_access_token_payload, user_context
+                session_information.session_handle,
+                new_access_token_payload,
+                user_context,
             )
 
         existing_jwt_property_name = access_token_payload[
@@ -191,11 +181,51 @@ def get_recipe_implementation_with_jwt(
         )
 
         return await og_update_access_token_payload(
-            session_handle, new_access_token_payload, user_context
+            session_information.session_handle, new_access_token_payload, user_context
+        )
+
+    async def update_access_token_payload(
+        session_handle: str,
+        new_access_token_payload: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -> bool:
+        # TODO: Node SDK allows non dict values of new_access_token_payload. But what should we do here?
+
+        session_information = await original_implementation.get_session_information(
+            session_handle, user_context
+        )
+        assert session_information is not None  # TODO: Is this a valid assumption?
+        return await jwt_aware_update_access_token_payload(
+            session_information, new_access_token_payload, user_context
+        )
+
+    async def merge_into_access_token_payload(
+        session_handle: str,
+        access_token_payload_update: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -> bool:
+        session_information = await original_implementation.get_session_information(
+            session_handle, user_context
+        )
+        assert session_information is not None  # TODO: Is this a valid assumption?
+
+        new_access_token_payload = {
+            **session_information.access_token_payload,
+            **access_token_payload_update,
+        }
+        for k in access_token_payload_update.keys():
+            if new_access_token_payload[k] is None:
+                del new_access_token_payload[k]
+
+        return await jwt_aware_update_access_token_payload(
+            session_information, new_access_token_payload, user_context
         )
 
     original_implementation.create_new_session = create_new_session
     original_implementation.get_session = get_session
     original_implementation.refresh_session = refresh_session
     original_implementation.update_access_token_payload = update_access_token_payload
+    original_implementation.merge_into_access_token_payload = (
+        merge_into_access_token_payload
+    )
     return original_implementation

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, TypeVar, Union
+from typing import Any, Dict, TypeVar, Union
 from unittest.mock import patch
 
 from pytest import mark
@@ -45,8 +45,9 @@ async def test_should_call_validate_with_the_same_payload_object():
     )
 
     class DummyClaimValidator(SessionClaimValidator):
-        id = "claim_validator_id"
-        validate_call_count = 0
+        def __init__(self):
+            super().__init__("claim_validator_id")
+            self.validate_call_count = 0
 
         async def validate(
             self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
@@ -54,16 +55,7 @@ async def test_should_call_validate_with_the_same_payload_object():
             self.validate_call_count += 1
             return {"isValid": True}
 
-    class DummyClaim(PrimitiveClaim):
-        def __init__(self):
-            super().__init__("st-claim")
-
-        def fetch_value(
-            self, user_id: str, user_context: Optional[Dict[str, Any]] = None
-        ):
-            return "Hello world"
-
-    dummy_claim = DummyClaim()
+    dummy_claim = PrimitiveClaim("st-claim", lambda _, __: "Hello world")
 
     dummy_claim_validator = DummyClaimValidator()
     dummy_claim_validator.claim = dummy_claim

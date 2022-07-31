@@ -23,13 +23,13 @@ from ...interfaces import SessionContainer, SessionClaimValidator
 def verify_session(
     anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
-    user_context: Union[None, Dict[str, Any]] = None,
     override_global_claim_validators: Optional[
         Callable[
             [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
             MaybeAwaitable[List[SessionClaimValidator]],
         ]
     ] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ) -> Callable[..., Coroutine[Any, Any, Union[SessionContainer, None]]]:
     if user_context is None:
         user_context = {}

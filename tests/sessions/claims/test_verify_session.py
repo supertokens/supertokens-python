@@ -86,7 +86,8 @@ def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidato
 
 
 class AlwaysValidValidator(SessionClaimValidator):
-    id = "always-valid-validator"
+    def __init__(self):
+        super().__init__("always-valid-validator")
 
     async def validate(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
@@ -95,7 +96,8 @@ class AlwaysValidValidator(SessionClaimValidator):
 
 
 class AlwaysInvalidValidator(SessionClaimValidator):
-    id = "always-invalid-validator"
+    def __init__(self):
+        super().__init__("always-invalid-validator")
 
     async def validate(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
@@ -321,7 +323,7 @@ async def test_should_reject_if_assert_claims_returns_an_error(
             [
                 ClaimValidationError(
                     "test_id",
-                    "test_reason",
+                    {"msg": "test_reason"},
                 )
             ],
         )

@@ -36,10 +36,8 @@ async def test_should_merge_the_right_value(timestamp: int):
         "merge_into_access_token_payload",
         wraps=session.merge_into_access_token_payload,
     ) as mock:
-        await session.set_claim_value(TrueClaim, "NEW_TRUE")
-        mock.assert_called_once_with(
-            {"st-true": {"t": timestamp, "v": "NEW_TRUE"}}, None
-        )
+        await session.set_claim_value(TrueClaim, False)
+        mock.assert_called_once_with({"st-true": {"t": timestamp, "v": False}}, None)
 
 
 async def test_should_overwrite_claim_value(timestamp: int):
@@ -52,7 +50,7 @@ async def test_should_overwrite_claim_value(timestamp: int):
     payload = s.get_access_token_payload()
     assert payload == {"st-true": {"t": timestamp, "v": True}}
 
-    await s.set_claim_value(TrueClaim, "NEW_TRUE")
+    await s.set_claim_value(TrueClaim, False)
 
     # Payload should be updated now:
     payload = s.get_access_token_payload()
@@ -69,7 +67,7 @@ async def test_should_overwrite_claim_value_using_session_handle(timestamp: int)
     payload = s.get_access_token_payload()
     assert payload == {"st-true": {"t": timestamp, "v": True}}
 
-    await set_claim_value(s.get_handle(), TrueClaim, "NEW_TRUE")
+    await set_claim_value(s.get_handle(), TrueClaim, False)
 
     # Payload should be updated now:
     # Note that the session var (s) still contains the old payload.
@@ -77,12 +75,12 @@ async def test_should_overwrite_claim_value_using_session_handle(timestamp: int)
     s = await get_session_information(s.get_handle())
     assert s is not None
     payload = s.access_token_payload
-    assert payload == {"st-true": {"t": timestamp, "v": "NEW_TRUE"}}
+    assert payload == {"st-true": {"t": timestamp, "v": False}}
 
 
 async def test_should_work_ok_for_non_existing_handles():
     init(**get_st_init_args(TrueClaim))  # type: ignore
     start_st()
 
-    res = await set_claim_value("non-existing-handle", TrueClaim, "NEW_TRUE")
+    res = await set_claim_value("non-existing-handle", TrueClaim, False)
     assert res is False

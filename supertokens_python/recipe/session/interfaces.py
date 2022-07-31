@@ -82,7 +82,7 @@ JSONPrimitive = Union[str, int, bool, None, Dict[str, Any]]
 FetchValueReturnType = Union[_T, None]
 
 
-class SessionDoesntExistError:
+class SessionDoesnotExistError:
     pass
 
 
@@ -91,7 +91,7 @@ class GetClaimValueOkResult(Generic[_T]):
         self.value = value
 
 
-class ValidateClaimsOkResult:
+class ClaimsValidationResult:
     def __init__(self, invalid_claims: List[ClaimValidationError]):
         self.invalid_claims = invalid_claims
 
@@ -126,12 +126,6 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
-        override_global_claim_validators: Optional[
-            Callable[
-                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
-                MaybeAwaitable[List[SessionClaimValidator]],
-            ]
-        ],
         user_context: Dict[str, Any],
     ) -> Union[SessionContainer, None]:
         pass
@@ -151,7 +145,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         session_info: SessionInformationResult,
         claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
-    ) -> Union[ValidateClaimsOkResult, SessionDoesntExistError]:
+    ) -> Union[ClaimsValidationResult, SessionDoesnotExistError]:
         pass
 
     @abstractmethod
@@ -161,7 +155,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         jwt_payload: JSONObject,
         claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
-    ) -> ValidateClaimsOkResult:
+    ) -> ClaimsValidationResult:
         pass
 
     @abstractmethod
@@ -216,6 +210,16 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> bool:
+        # TODO: Deprecate this method.
+        """DEPRECATED: Use merge_into_access_token_payload instead"""
+
+    @abstractmethod
+    async def merge_into_access_token_payload(
+        self,
+        session_handle: str,
+        access_token_payload_update: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -> bool:
         pass
 
     @abstractmethod
@@ -251,7 +255,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         session_handle: str,
         claim: SessionClaim[Any],
         user_context: Dict[str, Any],
-    ) -> Union[SessionDoesntExistError, GetClaimValueOkResult[Any]]:
+    ) -> Union[SessionDoesnotExistError, GetClaimValueOkResult[Any]]:
         pass
 
     @abstractmethod
@@ -377,13 +381,13 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     async def update_access_token_payload(
         self,
         new_access_token_payload: Dict[str, Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Dict[str, Any],
     ) -> None:
         """DEPRECATED: Use merge_into_access_token_payload instead"""
 
     @abstractmethod
     async def merge_into_access_token_payload(
-        self, access_token_payload_update: Dict[str, Any], user_context: Any
+        self, access_token_payload_update: Dict[str, Any], user_context: Dict[str, Any]
     ) -> None:
         pass
 
@@ -471,7 +475,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def sync_update_access_token_payload(
         self,
         new_access_token_payload: Dict[str, Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Dict[str, Any],
     ) -> None:
         return sync(
             self.update_access_token_payload(new_access_token_payload, user_context)
@@ -484,19 +488,58 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     ) -> None:
         return sync(self.update_session_data(new_session_data, user_context))
 
+    # Session claims sync functions:
+    def sync_assert_claims(
+        self,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -> None:
+        return sync(self.assert_claims(claim_validators, user_context))
+
+    def sync_fetch_and_set_claim(
+        self, claim: SessionClaim[Any], user_context: Dict[str, Any]
+    ) -> None:
+        return sync(self.fetch_and_set_claim(claim, user_context))
+
+    def sync_set_claim_value(
+        self, claim: SessionClaim[_T], value: _T, user_context: Dict[str, Any]
+    ) -> None:
+        return sync(self.set_claim_value(claim, value, user_context))
+
+    def sync_get_claim_value(
+        self, claim: SessionClaim[_T], user_context: Dict[str, Any]
+    ) -> Union[_T, None]:
+        return sync(self.get_claim_value(claim, user_context))
+
+    def sync_remove_claim(
+        self, claim: SessionClaim[Any], user_context: Dict[str, Any]
+    ) -> None:
+        return sync(self.remove_claim(claim, user_context))
+
     # This is there so that we can do session["..."] to access some of the members of this class
     def __getitem__(self, item: str):
         return getattr(self, item)
 
 
 class SessionClaim(ABC, Generic[_T]):
-    def __init__(self, key: str) -> None:
+    def __init__(
+        self,
+        key: str,
+        fetch_value: Callable[
+            [str, Dict[str, Any]],
+            MaybeAwaitable[Optional[_T]],
+        ],
+    ) -> None:
+        """
+        Args:
+            key: The key to use when storing the claim in the payload.
+            fetch_value: a method that fetches the current value of this claim for the user.
+                A None return value signifies that we don't want to update the claim payload and or the claim value is
+                not present in the database. For example, this can happen with a second factor auth claim, where we
+                don't want to add the claim to the session automatically
+        """
         self.key = key
-
-    def fetch_value(
-        self, user_id: str, user_context: Optional[Dict[str, Any]] = None
-    ) -> MaybeAwaitable[Optional[_T]]:
-        pass
+        self.fetch_value = fetch_value
 
     @abstractmethod
     def add_to_payload_(
@@ -511,27 +554,26 @@ class SessionClaim(ABC, Generic[_T]):
     def remove_from_payload_by_merge_(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> JSONObject:
-        """Removes the claim from the payload by setting it to null, so mergeIntoAccessTokenPayload clears it"""
+        """Removes the claim from the payload by setting it to None, so merge_into_access_token_payload can clear it"""
 
     @abstractmethod
     def remove_from_payload(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> JSONObject:
-        """Gets the value of the claim stored in the payload
-
-        Returns:
-            JSONObject: Claim value
-        """
+        """Removes the claim from the payload, by cloning and updating the entire object."""
 
     @abstractmethod
     def get_value_from_payload(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
     ) -> Union[_T, None]:
-        pass
+        """Gets the value of the claim stored in the payload"""
 
     async def build(
         self, user_id: str, user_context: Union[Dict[str, Any], None] = None
     ) -> JSONObject:
+        if user_context is None:
+            user_context = {}
+
         value = await resolve(self.fetch_value(user_id, user_context))
 
         if value is None:
@@ -540,37 +582,24 @@ class SessionClaim(ABC, Generic[_T]):
         return self.add_to_payload_({}, value, user_context)
 
 
-# class ClaimValidationResultValid:
-#     def __init__(self):
-#         self.is_valid = True
-#
-# class ClaimValidationResultInvalid:
-#     def __init__(self, reason: str):
-#         self.is_valid = False
-#         self.reason = reason
-#
-# ClaimValidationResult = Union[ClaimValidationResultValid, ClaimValidationResultInvalid]
-
-
 ClaimValidationResult = Dict[str, Any]
 
 
 class SessionClaimValidator(ABC):
-    id: str
-
-    def __init__(self, id_: Optional[str] = None):
-        if id_ is not None:
-            self.id = id_
-        self.claim: Optional[SessionClaim[Any]] = None
+    def __init__(self, id_: str):
+        self.id = id_
+        self.claim: Optional[
+            SessionClaim[Any]
+        ] = None  # Child class must set this if required.
 
     @abstractmethod
     async def validate(
-        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+        self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> ClaimValidationResult:
         pass
 
     def should_refetch(  # pylint: disable=no-self-use
-        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+        self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> MaybeAwaitable[bool]:
         _, __ = payload, user_context
         return False

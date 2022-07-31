@@ -11,9 +11,35 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from typing import Callable, Optional, Dict, Any, TypeVar
 
-from .primitive_claim import PrimitiveClaim
+from supertokens_python.types import MaybeAwaitable
+from .primitive_claim import PrimitiveClaim, PrimitiveClaimValidators
+
+_T = TypeVar("_T", bound=bool)
 
 
-class BooleanClaim(PrimitiveClaim):
-    pass
+class BooleanClaimValidators(PrimitiveClaimValidators[bool]):
+    def is_true(self, max_age: Optional[int]):
+        if max_age is not None:
+            return self.has_fresh_value(True, max_age)
+        return self.has_value(True)
+
+    def is_false(self, max_age: Optional[int]):
+        if max_age is not None:
+            return self.has_fresh_value(False, max_age)
+        return self.has_value(False)
+
+
+class BooleanClaim(PrimitiveClaim[bool]):
+    def __init__(
+        self,
+        key: str,
+        fetch_value: Callable[
+            [str, Optional[Dict[str, Any]]],
+            MaybeAwaitable[Optional[_T]],
+        ],
+    ):
+        super().__init__(key, fetch_value)
+        claim = self
+        self.validators = BooleanClaimValidators(claim)

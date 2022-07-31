@@ -10,8 +10,8 @@ from supertokens_python.recipe.session.asyncio import (
     validate_claims_for_session_handle,
 )
 from supertokens_python.recipe.session.interfaces import (
-    ValidateClaimsOkResult,
-    SessionDoesntExistError,
+    ClaimsValidationResult,
+    SessionDoesnotExistError,
 )
 from tests.sessions.claims.utils import (
     get_st_init_args,
@@ -40,7 +40,7 @@ async def test_should_return_the_right_validation_errors():
         lambda _, __, ___: [TrueClaim.validators.has_value(True), failing_validator],
     )
 
-    assert isinstance(res, ValidateClaimsOkResult) and len(res.invalid_claims) == 1
+    assert isinstance(res, ClaimsValidationResult) and len(res.invalid_claims) == 1
     assert res.invalid_claims[0].id == failing_validator.id
     assert res.invalid_claims[0].reason == {
         "message": "wrong value",
@@ -57,4 +57,4 @@ async def test_should_work_for_not_existing_handle():
     res = await validate_claims_for_session_handle(
         "non_existing_handle", lambda _, __, ___: []
     )
-    assert isinstance(res, SessionDoesntExistError)
+    assert isinstance(res, SessionDoesnotExistError)

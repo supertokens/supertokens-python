@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Union, Any, List
+from typing import Union, Any, List, Dict
 
 from supertokens_python.exceptions import SuperTokensError
 
@@ -62,7 +62,7 @@ class InvalidClaimsError(SuperTokensSessionError):
 
 
 class ClaimValidationError:
-    def __init__(self, id_: str, reason: Any):
+    def __init__(self, id_: str, reason: Dict[str, Any]):
         self.id = id_
         self.reason = reason
 

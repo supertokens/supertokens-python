@@ -22,8 +22,8 @@ from supertokens_python.recipe.session.interfaces import (
     SessionInformationResult,
     SessionClaim,
     SessionClaimValidator,
-    SessionDoesntExistError,
-    ValidateClaimsOkResult,
+    SessionDoesnotExistError,
+    ClaimsValidationResult,
     JSONObject,
     GetClaimValueOkResult,
 )
@@ -66,12 +66,12 @@ async def validate_claims_for_session_handle(
                 List[SessionClaimValidator],
                 SessionInformationResult,
                 Dict[str, Any],
-            ],  # Prev. 2nd arg was SessionContainer
+            ],
             MaybeAwaitable[List[SessionClaimValidator]],
         ]
     ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[SessionDoesntExistError, ValidateClaimsOkResult]:
+) -> Union[SessionDoesnotExistError, ClaimsValidationResult]:
     if user_context is None:
         user_context = {}
 
@@ -81,7 +81,7 @@ async def validate_claims_for_session_handle(
     )
 
     if session_info is None:
-        return SessionDoesntExistError()
+        return SessionDoesnotExistError()
 
     claim_validators_added_by_other_recipes = (
         SessionRecipe.get_claim_validators_added_by_other_recipes()
@@ -117,7 +117,7 @@ async def validate_claims_in_jwt_payload(
                 List[SessionClaimValidator],
                 str,
                 Dict[str, Any],
-            ],  # Prev. 2nd arg was SessionContainer
+            ],
             MaybeAwaitable[List[SessionClaimValidator]],
         ]
     ] = None,
@@ -169,7 +169,7 @@ async def get_claim_value(
     session_handle: str,
     claim: SessionClaim[_T],
     user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[SessionDoesntExistError, GetClaimValueOkResult[_T]]:
+) -> Union[SessionDoesnotExistError, GetClaimValueOkResult[_T]]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.get_claim_value(
@@ -226,7 +226,6 @@ async def get_session(
         request,
         anti_csrf_check,
         session_required,
-        override_global_claim_validators,
         user_context,
     )
 
@@ -323,6 +322,19 @@ async def update_access_token_payload(
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(
+        session_handle, new_access_token_payload, user_context
+    )
+
+
+async def merge_into_access_token_payload(
+    session_handle: str,
+    new_access_token_payload: Dict[str, Any],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> bool:
+    if user_context is None:
+        user_context = {}
+    # TODO:
+    return await SessionRecipe.get_instance().recipe_implementation.merge_into_access_token_payload(
         session_handle, new_access_token_payload, user_context
     )
 

@@ -97,7 +97,7 @@ async def test_should_return_none_for_empty_payload(timestamp: int):
 
 async def test_validators_should_not_validate_empty_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
-    res = await claim.validators.has_value(val).validate({})
+    res = await claim.validators.has_value(val).validate({}, {})
 
     assert res == {
         "isValid": False,
@@ -112,7 +112,7 @@ async def test_validators_should_not_validate_empty_payload():
 async def test_should_not_validate_mismatching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
-    res = await claim.validators.has_value(val2).validate(payload)
+    res = await claim.validators.has_value(val2).validate(payload, {})
 
     assert res == {
         "isValid": False,
@@ -127,7 +127,7 @@ async def test_should_not_validate_mismatching_payload():
 async def test_validator_should_validate_matching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
-    res = await claim.validators.has_value(val).validate(payload)
+    res = await claim.validators.has_value(val).validate(payload, {})
 
     assert res == {"isValid": True}
 
@@ -139,7 +139,7 @@ async def test_should_validate_old_values_as_well(patch_get_timestamp_ms: MagicM
     # Increase clock time by 1000
     patch_get_timestamp_ms.return_value += 100  # type: ignore
 
-    res = await claim.validators.has_value(val).validate(payload)
+    res = await claim.validators.has_value(val).validate(payload, {})
     assert res == {"isValid": True}
 
 
@@ -179,7 +179,7 @@ async def test_should_not_validate_empty_payload():
 async def test_has_fresh_value_should_not_validate_mismatching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
-    res = await claim.validators.has_fresh_value(val2, 600).validate(payload)
+    res = await claim.validators.has_fresh_value(val2, 600).validate(payload, {})
     assert res == {
         "isValid": False,
         "reason": {
@@ -193,7 +193,7 @@ async def test_has_fresh_value_should_not_validate_mismatching_payload():
 async def test_should_validate_matching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
-    res = await claim.validators.has_fresh_value(val, 600).validate(payload)
+    res = await claim.validators.has_fresh_value(val, 600).validate(payload, {})
     assert res == {"isValid": True}
 
 
@@ -207,7 +207,7 @@ async def test_should_not_validate_old_values_as_well(
     # Increase clock time:
     patch_get_timestamp_ms.return_value += 100 * SECONDS  # type: ignore
 
-    res = await claim.validators.has_fresh_value(val, 10).validate(payload)
+    res = await claim.validators.has_fresh_value(val, 10).validate(payload, {})
     assert res == {
         "isValid": False,
         "reason": {
@@ -221,14 +221,16 @@ async def test_should_not_validate_old_values_as_well(
 async def test_should_refetch_if_value_is_not_set():
     claim = PrimitiveClaim("key", sync_fetch_value)
 
-    assert claim.validators.has_fresh_value(val2, 600).should_refetch({}) is True
+    assert claim.validators.has_fresh_value(val2, 600).should_refetch({}, {}) is True
 
 
 async def test_should_not_refetch_if_value_is_set():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("userId")
 
-    assert claim.validators.has_fresh_value(val2, 600).should_refetch(payload) is False
+    assert (
+        claim.validators.has_fresh_value(val2, 600).should_refetch(payload, {}) is False
+    )
 
 
 async def test_should_refetch_if_value_is_old(patch_get_timestamp_ms: MagicMock):
@@ -239,4 +241,6 @@ async def test_should_refetch_if_value_is_old(patch_get_timestamp_ms: MagicMock)
     # Increase clock time:
     patch_get_timestamp_ms.return_value += 100 * SECONDS  # type: ignore
 
-    assert claim.validators.has_fresh_value(val2, 10).should_refetch(payload) is True
+    assert (
+        claim.validators.has_fresh_value(val2, 10).should_refetch(payload, {}) is True
+    )

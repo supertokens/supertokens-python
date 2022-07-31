@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any, Dict, TypeVar, Callable, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.logger import log_debug_message
@@ -44,8 +44,8 @@ from .interfaces import (
     SessionClaimValidator,
     SessionInformationResult,
     SessionObj,
-    ValidateClaimsOkResult,
-    SessionDoesntExistError,
+    ClaimsValidationResult,
+    SessionDoesnotExistError,
     JSONObject,
     GetClaimValueOkResult,
 )
@@ -64,8 +64,6 @@ if TYPE_CHECKING:
 
 
 from .interfaces import SessionContainer
-
-_T = TypeVar("_T")
 
 
 class HandshakeInfo:
@@ -195,24 +193,26 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         session_info: SessionInformationResult,
         claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
-    ) -> Union[ValidateClaimsOkResult, SessionDoesntExistError]:
+    ) -> Union[ClaimsValidationResult, SessionDoesnotExistError]:
         original_session_claim_payload_json = json.dumps(
             session_info.access_token_payload
         )
 
         new_access_token_payload = await update_claims_in_payload_if_needed(
+            session_info.user_id,
             claim_validators,
             session_info.access_token_payload,
-            session_info.user_id,
             user_context,
         )
 
         if json.dumps(new_access_token_payload) != original_session_claim_payload_json:
-            await self.merge_into_access_token_payload(
+            res = await self.merge_into_access_token_payload(
                 session_info.session_handle,
                 new_access_token_payload,
                 user_context,
             )
+            if res is False:
+                return SessionDoesnotExistError()
 
         invalid_claims = await validate_claims_in_payload(
             claim_validators,
@@ -220,7 +220,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             user_context,
         )
 
-        return ValidateClaimsOkResult(invalid_claims)
+        return ClaimsValidationResult(invalid_claims)
 
     async def validate_claims_in_jwt_payload(
         self,
@@ -228,26 +228,20 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         jwt_payload: JSONObject,
         claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
-    ) -> ValidateClaimsOkResult:
+    ) -> ClaimsValidationResult:
         invalid_claims = await validate_claims_in_payload(
             claim_validators,
             jwt_payload,
             user_context,
         )
 
-        return ValidateClaimsOkResult(invalid_claims)
+        return ClaimsValidationResult(invalid_claims)
 
     async def get_session(
         self,
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
-        override_global_claim_validators: Optional[
-            Callable[
-                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
-                MaybeAwaitable[List[SessionClaimValidator]],
-            ]
-        ],
         user_context: Dict[str, Any],
     ) -> Optional[SessionContainer]:
         log_debug_message("getSession: Started")
@@ -408,6 +402,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> bool:
+        """DEPRECATED: Use merge_into_access_token_payload instead"""
         return await session_functions.update_access_token_payload(
             self, session_handle, new_access_token_payload
         )
@@ -474,10 +469,10 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         session_handle: str,
         claim: SessionClaim[Any],
         user_context: Dict[str, Any],
-    ) -> Union[SessionDoesntExistError, GetClaimValueOkResult[Any]]:
+    ) -> Union[SessionDoesnotExistError, GetClaimValueOkResult[Any]]:
         session_info = await self.get_session_information(session_handle, user_context)
         if session_info is None:
-            return SessionDoesntExistError()
+            return SessionDoesnotExistError()
 
         return GetClaimValueOkResult(
             value=claim.get_value_from_payload(

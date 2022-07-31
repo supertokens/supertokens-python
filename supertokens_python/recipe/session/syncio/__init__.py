@@ -32,8 +32,8 @@ from ..interfaces import (
     SessionClaimValidator,
     SessionClaim,
     JSONObject,
-    ValidateClaimsOkResult,
-    SessionDoesntExistError,
+    ClaimsValidationResult,
+    SessionDoesnotExistError,
     GetClaimValueOkResult,
 )
 
@@ -177,6 +177,22 @@ def update_access_token_payload(
     )
 
 
+def merge_into_access_token_payload(
+    session_handle: str,
+    new_access_token_payload: Dict[str, Any],
+    user_context: Union[None, Dict[str, Any]] = None,
+) -> bool:
+    from supertokens_python.recipe.session.asyncio import (
+        merge_into_access_token_payload as async_merge_into_access_token_payload,
+    )
+
+    return sync(
+        async_merge_into_access_token_payload(
+            session_handle, new_access_token_payload, user_context
+        )
+    )
+
+
 def create_jwt(
     payload: Dict[str, Any],
     validity_seconds: Union[None, int] = None,
@@ -251,7 +267,7 @@ def get_claim_value(
     session_handle: str,
     claim: SessionClaim[_T],
     user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[SessionDoesntExistError, GetClaimValueOkResult[_T]]:
+) -> Union[SessionDoesnotExistError, GetClaimValueOkResult[_T]]:
     from supertokens_python.recipe.session.asyncio import (
         get_claim_value as async_get_claim_value,
     )
@@ -280,7 +296,7 @@ def validate_claims_for_session_handle(
         ]
     ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[SessionDoesntExistError, ValidateClaimsOkResult]:
+) -> Union[SessionDoesnotExistError, ClaimsValidationResult]:
     from supertokens_python.recipe.session.asyncio import (
         validate_claims_for_session_handle as async_validate_claims_for_session_handle,
     )

@@ -42,6 +42,7 @@ def init(
     error_handlers: Union[InputErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
     jwt: Union[JWTConfig, None] = None,
+    invalid_claim_status_code: Union[int, None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return SessionRecipe.init(
         cookie_domain,
@@ -52,4 +53,5 @@ def init(
         error_handlers,
         override,
         jwt,
+        invalid_claim_status_code,
     )

@@ -12,35 +12,33 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Callable, Dict, Optional, TypeVar, Union
+from typing import Any, Callable, Dict, Optional, TypeVar, Union, Generic
 
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import get_timestamp_ms
 
 from ..interfaces import JSONObject, JSONPrimitive, SessionClaim, SessionClaimValidator
 
-_T = TypeVar("_T")
+_T = TypeVar("_T", bound=JSONPrimitive)
 
 
 class HasValueSCV(SessionClaimValidator):
-    def __init__(
-        self, id_: str, claim: SessionClaim[JSONPrimitive], params: Dict[str, Any]
-    ):
+    def __init__(self, id_: str, claim: SessionClaim[_T], params: Dict[str, Any]):
         super().__init__(id_)
-        self.claim: SessionClaim[JSONPrimitive] = claim
+        self.claim: SessionClaim[_T] = claim
         self.params = params
 
     def should_refetch(
         self,
         payload: JSONObject,
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Dict[str, Any],
     ):
         return self.claim.get_value_from_payload(payload, user_context) is None
 
     async def validate(
         self,
         payload: JSONObject,
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Dict[str, Any],
     ):
         val = self.params["val"]
         claim_val = self.claim.get_value_from_payload(payload, user_context)
@@ -59,17 +57,15 @@ class HasValueSCV(SessionClaimValidator):
 
 
 class HasFreshValueSCV(SessionClaimValidator):
-    def __init__(
-        self, id_: str, claim: SessionClaim[JSONPrimitive], params: Dict[str, Any]
-    ):
+    def __init__(self, id_: str, claim: SessionClaim[_T], params: Dict[str, Any]):
         super().__init__(id_)
-        self.claim: SessionClaim[JSONPrimitive] = claim
+        self.claim: SessionClaim[_T] = claim
         self.params = params
 
     def should_refetch(
         self,
         payload: JSONObject,
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Dict[str, Any],
     ):
         max_age_in_sec: int = self.params["max_age_in_sec"]
 
@@ -81,7 +77,7 @@ class HasFreshValueSCV(SessionClaimValidator):
     async def validate(
         self,
         payload: JSONObject,
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Dict[str, Any],
     ):
         val: str = self.params["val"]
         max_age_in_sec: int = self.params["max_age_in_sec"]
@@ -97,10 +93,9 @@ class HasFreshValueSCV(SessionClaimValidator):
                 },
             }
         assert isinstance(self.claim, PrimitiveClaim)
-        age_in_sec = (
-            get_timestamp_ms()
-            - (self.claim.get_last_refetch_time(payload, user_context) or 0)
-        ) / 1000
+        last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
+        assert last_refetch_time is not None
+        age_in_sec = (get_timestamp_ms() - last_refetch_time) / 1000
         if age_in_sec > max_age_in_sec:
             return {
                 "isValid": False,
@@ -123,17 +118,15 @@ class HasFreshValueSCV(SessionClaimValidator):
         return {"isValid": True}
 
 
-class PrimitiveClaimValidators:
-    def __init__(self, claim: SessionClaim[JSONPrimitive]) -> None:
+class PrimitiveClaimValidators(Generic[_T]):
+    def __init__(self, claim: SessionClaim[_T]) -> None:
         self.claim = claim
 
-    def has_value(
-        self, val: JSONPrimitive, id_: Union[str, None] = None
-    ) -> SessionClaimValidator:
+    def has_value(self, val: _T, id_: Union[str, None] = None) -> SessionClaimValidator:
         return HasValueSCV((id_ or self.claim.key), self.claim, {"val": val})
 
     def has_fresh_value(
-        self, val: JSONPrimitive, max_age_in_sec: int, id_: Union[str, None] = None
+        self, val: _T, max_age_in_sec: int, id_: Union[str, None] = None
     ) -> SessionClaimValidator:
         return HasFreshValueSCV(
             (id_ or (self.claim.key + "-fresh-val")),
@@ -142,28 +135,24 @@ class PrimitiveClaimValidators:
         )
 
 
-class PrimitiveClaim(SessionClaim[JSONPrimitive]):
+class PrimitiveClaim(SessionClaim[_T]):
     def __init__(
         self,
         key: str,
-        fetch_value: Optional[
-            Callable[
-                [str, Optional[Dict[str, Any]]],
-                MaybeAwaitable[Optional[JSONPrimitive]],
-            ]
-        ] = None,
+        fetch_value: Callable[
+            [str, Optional[Dict[str, Any]]],
+            MaybeAwaitable[Optional[_T]],
+        ],
     ) -> None:
-        super().__init__(key)
-        if fetch_value is not None:
-            self.fetch_value = fetch_value  # type: ignore
+        super().__init__(key, fetch_value)
 
         claim = self
         self.validators = PrimitiveClaimValidators(claim)
 
     def add_to_payload_(
         self,
-        payload: Any,
-        value: JSONPrimitive,
+        payload: Dict[str, Any],
+        value: _T,
         user_context: Union[Dict[str, Any], None] = None,
     ) -> JSONObject:
         payload[self.key] = {"v": value, "t": get_timestamp_ms()}
@@ -174,26 +163,25 @@ class PrimitiveClaim(SessionClaim[JSONPrimitive]):
     def remove_from_payload_by_merge_(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> JSONObject:
-        _ = user_context
-
         payload[self.key] = None
         return payload
 
     def remove_from_payload(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> JSONObject:
-        _ = user_context
         del payload[self.key]
         return payload
 
     def get_value_from_payload(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-    ) -> Union[JSONPrimitive, None]:
+    ) -> Union[_T, None]:
         _ = user_context
+
         return payload.get(self.key, {}).get("v")
 
     def get_last_refetch_time(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
     ) -> Union[int, None]:
         _ = user_context
+
         return payload.get(self.key, {}).get("t")

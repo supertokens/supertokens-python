@@ -83,6 +83,7 @@ class SessionRecipe(RecipeModule):
         error_handlers: Union[InputErrorHandlers, None] = None,
         override: Union[InputOverrideConfig, None] = None,
         jwt: Union[JWTConfig, None] = None,
+        invalid_claim_status_code: Union[int, None] = None,
     ):
         super().__init__(recipe_id, app_info)
         self.openid_recipe: Union[None, OpenIdRecipe] = None
@@ -96,6 +97,7 @@ class SessionRecipe(RecipeModule):
             error_handlers,
             override,
             jwt,
+            invalid_claim_status_code,
         )
         log_debug_message("session init: anti_csrf: %s", self.config.anti_csrf)
         if self.config.cookie_domain is not None:
@@ -261,6 +263,7 @@ class SessionRecipe(RecipeModule):
         error_handlers: Union[InputErrorHandlers, None] = None,
         override: Union[InputOverrideConfig, None] = None,
         jwt: Union[JWTConfig, None] = None,
+        invalid_claim_status_code: Union[int, None] = None,
     ):
         def func(app_info: AppInfo):
             if SessionRecipe.__instance is None:
@@ -275,6 +278,7 @@ class SessionRecipe(RecipeModule):
                     error_handlers,
                     override,
                     jwt,
+                    invalid_claim_status_code,
                 )
                 return SessionRecipe.__instance
             raise_general_exception(

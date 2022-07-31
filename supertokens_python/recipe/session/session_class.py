@@ -63,10 +63,8 @@ class Session(SessionContainer):
     async def update_access_token_payload(
         self,
         new_access_token_payload: Union[Dict[str, Any], None],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Dict[str, Any],
     ) -> None:
-        if user_context is None:
-            user_context = {}
         response = await self.recipe_implementation.regenerate_access_token(
             self.access_token, new_access_token_payload, user_context
         )
@@ -133,9 +131,9 @@ class Session(SessionContainer):
         )
 
         new_access_token_payload = await update_claims_in_payload_if_needed(
+            self.get_user_id(user_context),
             claim_validators,
-            self.get_access_token_payload(),
-            self.get_user_id(),
+            self.get_access_token_payload(user_context),
             user_context,
         )
 
@@ -154,6 +152,8 @@ class Session(SessionContainer):
     async def fetch_and_set_claim(
         self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
     ) -> None:
+        if user_context is None:
+            user_context = {}
         update = await claim.build(self.get_user_id(), user_context)
         return await self.merge_into_access_token_payload(update, user_context)
 
@@ -163,6 +163,9 @@ class Session(SessionContainer):
         value: _T,
         user_context: Union[Dict[str, Any], None] = None,
     ) -> None:
+        if user_context is None:
+            user_context = {}
+
         update = claim.add_to_payload_({}, value, user_context)
         return await self.merge_into_access_token_payload(update, user_context)
 
@@ -170,7 +173,7 @@ class Session(SessionContainer):
         self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
     ) -> Union[Any, None]:
         return claim.get_value_from_payload(
-            self.get_access_token_payload(), user_context
+            self.get_access_token_payload(user_context), user_context
         )
 
     async def remove_claim(
@@ -182,10 +185,10 @@ class Session(SessionContainer):
         return await self.merge_into_access_token_payload(update, user_context)
 
     async def merge_into_access_token_payload(
-        self, access_token_payload_update: Dict[str, Any], user_context: Any
+        self, access_token_payload_update: Dict[str, Any], user_context: Dict[str, Any]
     ) -> None:
         update_payload = {
-            **self.get_access_token_payload(),
+            **self.get_access_token_payload(user_context),
             **access_token_payload_update,
         }
         for k in access_token_payload_update.keys():

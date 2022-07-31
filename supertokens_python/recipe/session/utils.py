@@ -463,7 +463,8 @@ def validate_and_normalise_user_input(
         app_info.framework,
         app_info.mode,
         jwt,
-        invalid_claim_status_code if (invalid_claim_status_code is not None) else 403,
+        invalid_claim_status_code if (invalid_claim_status_code is not None) else 403
+        # TODO: above line was marked as TODO in review, not sure why.
     )
 
 
@@ -501,9 +502,9 @@ async def get_required_claim_validators(
 
 
 async def update_claims_in_payload_if_needed(
+    user_id: str,
     claim_validators: List[SessionClaimValidator],
     new_access_token_payload: Dict[str, Any],
-    user_id: str,
     user_context: Dict[str, Any],
 ):
     for validator in claim_validators:
@@ -554,8 +555,10 @@ async def validate_claims_in_payload(
             json.dumps(claim_validation_res),
         )
         if not claim_validation_res.get("isValid"):
+            # TODO: should be "not claim_validation_res.is_valid" ^
             validation_errors.append(
                 ClaimValidationError(validator.id, claim_validation_res["reason"])
+                # TODO: claim_validation_res.reason ^
             )
 
     return validation_errors

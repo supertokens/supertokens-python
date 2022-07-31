@@ -51,7 +51,6 @@ class APIImplementation(APIInterface):
                 user_context=user_context,
                 anti_csrf_check=None,
                 session_required=True,
-                override_global_claim_validators=lambda _, __, ___: [],
             )
         except UnauthorisedError:
             return SignOutOkayResponse()
@@ -87,7 +86,6 @@ class APIImplementation(APIInterface):
             api_options.request,
             anti_csrf_check,
             session_required,
-            override_global_claim_validators,
             user_context,
         )
 
