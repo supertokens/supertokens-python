@@ -92,7 +92,7 @@ class AlwaysValidValidator(SessionClaimValidator):
     async def validate(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
     ) -> ClaimValidationResult:
-        return {"isValid": True}
+        return ClaimValidationResult(True)
 
 
 class AlwaysInvalidValidator(SessionClaimValidator):
@@ -102,7 +102,7 @@ class AlwaysInvalidValidator(SessionClaimValidator):
     async def validate(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
     ) -> ClaimValidationResult:
-        return {"isValid": False, "reason": "foo"}
+        return ClaimValidationResult(is_valid=False, reason={"message": "foo"})
 
 
 @fixture(scope="function")
@@ -169,8 +169,10 @@ async def fastapi_client():
             self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
         ) -> ClaimValidationResult:
             if self.is_valid:
-                return {"isValid": True}
-            return {"isValid": False, "reason": "test_reason"}
+                return ClaimValidationResult(is_valid=True)
+            return ClaimValidationResult(
+                is_valid=False, reason={"message": "test_reason"}
+            )
 
     refetched_claims_verify_session_is_valid_false = verify_session(
         override_global_claim_validators=lambda _, __, ___: [  # type: ignore
@@ -293,7 +295,9 @@ async def test_should_reject_with_custom_validator_returning_false(
     assert response.status_code == 403
     assert response.json() == {
         "message": "invalid claim",
-        "claimValidationErrors": [{"id": "always-invalid-validator", "reason": "foo"}],
+        "claimValidationErrors": [
+            {"id": "always-invalid-validator", "reason": {"message": "foo"}}
+        ],
     }
 
 
@@ -332,7 +336,9 @@ async def test_should_reject_if_assert_claims_returns_an_error(
         assert response.status_code == 403
         assert response.json() == {
             "message": "invalid claim",
-            "claimValidationErrors": [{"id": "test_id", "reason": "test_reason"}],
+            "claimValidationErrors": [
+                {"id": "test_id", "reason": {"message": "test_reason"}}
+            ],
         }
 
 
@@ -435,7 +441,9 @@ async def test_should_reject_with_custom_claim_returning_false(
     assert res.status_code == 403
     assert res.json() == {
         "message": "invalid claim",
-        "claimValidationErrors": [{"id": "test_id", "reason": "test_reason"}],
+        "claimValidationErrors": [
+            {"id": "test_id", "reason": {"message": "test_reason"}}
+        ],
     }
 
 

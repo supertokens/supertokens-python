@@ -17,7 +17,13 @@ from typing import Any, Callable, Dict, Optional, TypeVar, Union, Generic
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import get_timestamp_ms
 
-from ..interfaces import JSONObject, JSONPrimitive, SessionClaim, SessionClaimValidator
+from ..interfaces import (
+    JSONObject,
+    JSONPrimitive,
+    SessionClaim,
+    SessionClaimValidator,
+    ClaimValidationResult,
+)
 
 _T = TypeVar("_T", bound=JSONPrimitive)
 
@@ -44,16 +50,16 @@ class HasValueSCV(SessionClaimValidator):
         claim_val = self.claim.get_value_from_payload(payload, user_context)
         is_valid = claim_val == val
         if is_valid:
-            return {"isValid": True}
+            return ClaimValidationResult(is_valid=True)
 
-        return {
-            "isValid": False,
-            "reason": {
+        return ClaimValidationResult(
+            is_valid=False,
+            reason={
                 "message": "wrong value",
                 "expectedValue": val,
                 "actualValue": claim_val,
             },
-        }
+        )
 
 
 class HasFreshValueSCV(SessionClaimValidator):
@@ -84,38 +90,40 @@ class HasFreshValueSCV(SessionClaimValidator):
 
         claim_val = self.claim.get_value_from_payload(payload, user_context)
         if claim_val is None:
-            return {
-                "isValid": False,
-                "reason": {
+            return ClaimValidationResult(
+                is_valid=False,
+                reason={
                     "message": "value does not exist",
                     "expectedValue": val,
                     "actualValue": claim_val,
                 },
-            }
+            )
+
         assert isinstance(self.claim, PrimitiveClaim)
         last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
         assert last_refetch_time is not None
         age_in_sec = (get_timestamp_ms() - last_refetch_time) / 1000
         if age_in_sec > max_age_in_sec:
-            return {
-                "isValid": False,
-                "reason": {
+            return ClaimValidationResult(
+                is_valid=False,
+                reason={
                     "message": "expired",
                     "ageInSeconds": age_in_sec,
                     "maxAgeInSeconds": max_age_in_sec,
                 },
-            }
+            )
+
         if claim_val != val:
-            return {
-                "isValid": False,
-                "reason": {
+            return ClaimValidationResult(
+                is_valid=False,
+                reason={
                     "message": "wrong value",
                     "expectedValue": val,
                     "actualValue": claim_val,
                 },
-            }
+            )
 
-        return {"isValid": True}
+        return ClaimValidationResult(is_valid=True)
 
 
 class PrimitiveClaimValidators(Generic[_T]):

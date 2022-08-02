@@ -6,6 +6,7 @@ from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.recipe.session.interfaces import (
     JSONObject,
     SessionClaimValidator,
+    ClaimValidationResult,
 )
 from supertokens_python.recipe.session.session_class import Session
 from tests.utils import AsyncMock
@@ -53,7 +54,7 @@ async def test_should_call_validate_with_the_same_payload_object():
             self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
         ):
             self.validate_call_count += 1
-            return {"isValid": True}
+            return ClaimValidationResult(is_valid=True)
 
     dummy_claim = PrimitiveClaim("st-claim", lambda _, __: "Hello world")
 

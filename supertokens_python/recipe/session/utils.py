@@ -554,11 +554,12 @@ async def validate_claims_in_payload(
             validator.id,
             json.dumps(claim_validation_res),
         )
-        if not claim_validation_res.get("isValid"):
-            # TODO: should be "not claim_validation_res.is_valid" ^
+        if (
+            not claim_validation_res.is_valid
+            and claim_validation_res.reason is not None
+        ):
             validation_errors.append(
-                ClaimValidationError(validator.id, claim_validation_res["reason"])
-                # TODO: claim_validation_res.reason ^
+                ClaimValidationError(validator.id, claim_validation_res.reason)
             )
 
     return validation_errors

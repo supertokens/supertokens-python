@@ -582,7 +582,10 @@ class SessionClaim(ABC, Generic[_T]):
         return self.add_to_payload_({}, value, user_context)
 
 
-ClaimValidationResult = Dict[str, Any]
+class ClaimValidationResult:
+    def __init__(self, is_valid: bool, reason: Optional[Dict[str, Any]] = None):
+        self.is_valid = is_valid
+        self.reason = {} if is_valid else reason
 
 
 class SessionClaimValidator(ABC):
