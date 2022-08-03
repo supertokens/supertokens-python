@@ -327,7 +327,7 @@ async def test_should_reject_if_assert_claims_returns_an_error(
             [
                 ClaimValidationError(
                     "test_id",
-                    {"msg": "test_reason"},
+                    {"message": "test_reason"},
                 )
             ],
         )

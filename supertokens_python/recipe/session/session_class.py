@@ -12,14 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
-from typing import Any, Dict, Union, List, TypeVar
+from typing import Any, Dict, List, TypeVar, Union
 
 from supertokens_python.recipe.session.exceptions import (
-    raise_unauthorised_exception,
     raise_invalid_claims_exception,
+    raise_unauthorised_exception,
 )
 
-from .interfaces import SessionContainer, SessionClaimValidator, SessionClaim
+from .interfaces import SessionClaim, SessionClaimValidator, SessionContainer
 from .utils import update_claims_in_payload_if_needed, validate_claims_in_payload
 
 _T = TypeVar("_T")
@@ -154,6 +154,7 @@ class Session(SessionContainer):
     ) -> None:
         if user_context is None:
             user_context = {}
+
         update = await claim.build(self.get_user_id(), user_context)
         return await self.merge_into_access_token_payload(update, user_context)
 
@@ -172,6 +173,9 @@ class Session(SessionContainer):
     async def get_claim_value(
         self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
     ) -> Union[Any, None]:
+        if user_context is None:
+            user_context = {}
+
         return claim.get_value_from_payload(
             self.get_access_token_payload(user_context), user_context
         )
@@ -181,12 +185,18 @@ class Session(SessionContainer):
     ) -> None:
         if user_context is None:
             user_context = {}
+
         update = claim.remove_from_payload_by_merge_({}, user_context)
         return await self.merge_into_access_token_payload(update, user_context)
 
     async def merge_into_access_token_payload(
-        self, access_token_payload_update: Dict[str, Any], user_context: Dict[str, Any]
+        self,
+        access_token_payload_update: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
     ) -> None:
+        if user_context is None:
+            user_context = {}
+
         update_payload = {
             **self.get_access_token_payload(user_context),
             **access_token_payload_update,

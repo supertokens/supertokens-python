@@ -42,7 +42,6 @@ async def fastapi_client():
 async def test_should_create_the_right_access_token_payload_with_claims_and_JWT_enabled(
     fastapi_client: TestClient,
 ):
-    # TODO: FIXME
     init(**get_st_init_args(TrueClaim, jwt=JWTConfig(enable=True)))  # type:ignore
     start_st()
 
@@ -52,7 +51,6 @@ async def test_should_create_the_right_access_token_payload_with_claims_and_JWT_
     session_info = await get_session_information(session_handle)
     assert session_info is not None
     access_token_payload = session_info.access_token_payload
-    # TODO: .sub and .iss should be undefined as per node PR
     assert access_token_payload["jwt"] is not None
     assert access_token_payload["_jwtPName"] == "jwt"
 

@@ -26,7 +26,7 @@ async def test_should_not_change_if_claim_fetch_value_returns_none():
         wraps=session.merge_into_access_token_payload,
     ) as mock:
         await session.fetch_and_set_claim(NoneClaim)
-        mock.assert_called_once_with({}, None)
+        mock.assert_called_once_with({}, {})
 
 
 async def test_should_update_if_claim_fetch_value_returns_value(timestamp: int):
@@ -44,4 +44,4 @@ async def test_should_update_if_claim_fetch_value_returns_value(timestamp: int):
         wraps=session.merge_into_access_token_payload,
     ) as mock:
         await session.fetch_and_set_claim(TrueClaim)
-        mock.assert_called_once_with({"st-true": {"t": timestamp, "v": True}}, None)
+        mock.assert_called_once_with({"st-true": {"t": timestamp, "v": True}}, {})

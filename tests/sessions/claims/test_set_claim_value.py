@@ -37,7 +37,7 @@ async def test_should_merge_the_right_value(timestamp: int):
         wraps=session.merge_into_access_token_payload,
     ) as mock:
         await session.set_claim_value(TrueClaim, False)
-        mock.assert_called_once_with({"st-true": {"t": timestamp, "v": False}}, None)
+        mock.assert_called_once_with({"st-true": {"t": timestamp, "v": False}}, {})
 
 
 async def test_should_overwrite_claim_value(timestamp: int):
@@ -54,7 +54,7 @@ async def test_should_overwrite_claim_value(timestamp: int):
 
     # Payload should be updated now:
     payload = s.get_access_token_payload()
-    assert payload == {"st-true": {"t": timestamp, "v": "NEW_TRUE"}}
+    assert payload == {"st-true": {"t": timestamp, "v": False}}
 
 
 async def test_should_overwrite_claim_value_using_session_handle(timestamp: int):

@@ -552,7 +552,7 @@ async def validate_claims_in_payload(
         log_debug_message(
             "validate_claims_in_payload %s validate res %s",
             validator.id,
-            json.dumps(claim_validation_res),
+            json.dumps(claim_validation_res.__dict__),
         )
         if (
             not claim_validation_res.is_valid

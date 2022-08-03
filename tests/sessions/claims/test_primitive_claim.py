@@ -99,13 +99,11 @@ async def test_validators_should_not_validate_empty_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     res = await claim.validators.has_value(val).validate({}, {})
 
-    assert res == {
-        "isValid": False,
-        "reason": {
-            "expectedValue": val,
-            "actualValue": None,
-            "message": "wrong value",
-        },
+    assert res.is_valid is False
+    assert res.reason == {
+        "expectedValue": val,
+        "actualValue": None,
+        "message": "wrong value",
     }
 
 
@@ -114,13 +112,11 @@ async def test_should_not_validate_mismatching_payload():
     payload = await claim.build("user_id")
     res = await claim.validators.has_value(val2).validate(payload, {})
 
-    assert res == {
-        "isValid": False,
-        "reason": {
-            "expectedValue": val2,
-            "actualValue": val,
-            "message": "wrong value",
-        },
+    assert res.is_valid is False
+    assert res.reason == {
+        "expectedValue": val2,
+        "actualValue": val,
+        "message": "wrong value",
     }
 
 
@@ -129,7 +125,7 @@ async def test_validator_should_validate_matching_payload():
     payload = await claim.build("user_id")
     res = await claim.validators.has_value(val).validate(payload, {})
 
-    assert res == {"isValid": True}
+    assert res.is_valid is True
 
 
 async def test_should_validate_old_values_as_well(patch_get_timestamp_ms: MagicMock):
@@ -140,7 +136,7 @@ async def test_should_validate_old_values_as_well(patch_get_timestamp_ms: MagicM
     patch_get_timestamp_ms.return_value += 100  # type: ignore
 
     res = await claim.validators.has_value(val).validate(payload, {})
-    assert res == {"isValid": True}
+    assert res.is_valid is True
 
 
 async def test_should_refetch_if_value_not_set():
@@ -165,14 +161,12 @@ async def test_validator_should_not_refetch_if_value_is_set():
 async def test_should_not_validate_empty_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     res = await claim.validators.has_fresh_value(val, 600).validate({}, {})
-    assert res == {
-        "isValid": False,
-        "reason": {
-            "expectedValue": val,
-            "actualValue": None,
-            "message": "value does not exist",  # TODO: Validate that this is actually correct.
-            # because this makes sense yet the node PR isn't aligned with this.
-        },
+    assert res.is_valid is False
+    assert res.reason == {
+        "expectedValue": val,
+        "actualValue": None,
+        "message": "value does not exist",  # TODO: Validate that this is actually correct.
+        # because this makes sense yet the node PR isn't aligned with this.
     }
 
 
@@ -180,13 +174,11 @@ async def test_has_fresh_value_should_not_validate_mismatching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
     res = await claim.validators.has_fresh_value(val2, 600).validate(payload, {})
-    assert res == {
-        "isValid": False,
-        "reason": {
-            "expectedValue": val2,
-            "actualValue": val,
-            "message": "wrong value",
-        },
+    assert res.is_valid is False
+    assert res.reason == {
+        "expectedValue": val2,
+        "actualValue": val,
+        "message": "wrong value",
     }
 
 
@@ -194,7 +186,7 @@ async def test_should_validate_matching_payload():
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
     res = await claim.validators.has_fresh_value(val, 600).validate(payload, {})
-    assert res == {"isValid": True}
+    assert res.is_valid is True
 
 
 async def test_should_not_validate_old_values_as_well(
@@ -208,13 +200,11 @@ async def test_should_not_validate_old_values_as_well(
     patch_get_timestamp_ms.return_value += 100 * SECONDS  # type: ignore
 
     res = await claim.validators.has_fresh_value(val, 10).validate(payload, {})
-    assert res == {
-        "isValid": False,
-        "reason": {
-            "ageInSeconds": 100,
-            "maxAgeInSeconds": 10,
-            "message": "expired",
-        },
+    assert res.is_valid is False
+    assert res.reason == {
+        "ageInSeconds": 100,
+        "maxAgeInSeconds": 10,
+        "message": "expired",
     }
 
 
