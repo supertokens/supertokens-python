@@ -13,14 +13,17 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, List, Callable, Optional
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.session.interfaces import (
     APIInterface,
     SignOutOkayResponse,
+    SessionClaimValidator,
 )
+from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import normalise_http_method
+from ..utils import get_required_claim_validators
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import APIOptions
@@ -62,6 +65,12 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        override_global_claim_validators: Optional[
+            Callable[
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ],
         user_context: Dict[str, Any],
     ) -> Union[SessionContainer, None]:
         method = normalise_http_method(api_options.request.method())
@@ -73,6 +82,23 @@ class APIImplementation(APIInterface):
             return await api_options.recipe_implementation.refresh_session(
                 api_options.request, user_context
             )
-        return await api_options.recipe_implementation.get_session(
-            api_options.request, anti_csrf_check, session_required, user_context
+        session = await api_options.recipe_implementation.get_session(
+            api_options.request,
+            anti_csrf_check,
+            session_required,
+            user_context,
         )
+
+        if session is not None:
+            claim_validators = await get_required_claim_validators(
+                session,
+                override_global_claim_validators,
+                user_context,
+            )
+            await api_options.recipe_implementation.assert_claims(
+                session,
+                claim_validators,
+                user_context,
+            )
+
+        return session

@@ -48,7 +48,7 @@ from .utils import (
     get_rid_from_request,
     is_version_gte,
     normalise_http_method,
-    send_non_200_response,
+    send_non_200_response_with_message,
 )
 
 if TYPE_CHECKING:
@@ -474,7 +474,7 @@ class Supertokens:
 
         if isinstance(err, BadInputError):
             log_debug_message("errorHandler: Sending 400 status code response")
-            return send_non_200_response(str(err), 400, response)
+            return send_non_200_response_with_message(str(err), 400, response)
 
         for recipe in self.recipe_modules:
             log_debug_message(

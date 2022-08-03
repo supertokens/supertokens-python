@@ -93,5 +93,7 @@ def get_session_with_jwt(
             new_access_token_payload, user_context
         )
 
+    # TODO: Add missing override functions
+
     original_session.update_access_token_payload = update_access_token_payload
     return original_session

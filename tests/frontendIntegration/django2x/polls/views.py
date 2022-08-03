@@ -86,7 +86,9 @@ def custom_decorator_for_update_jwt():  # type: ignore
                     if value is not None and value.status_code != 200:
                         return value
                     session: SessionContainer = request.supertokens  # type: ignore
-                    session.sync_update_access_token_payload(json.loads(request.body))
+                    session.sync_update_access_token_payload(
+                        json.loads(request.body), {}
+                    )
                     Test.increment_get_session()
                     resp = JsonResponse(session.get_access_token_payload())
                     resp["Cache-Control"] = "no-cache, private"
