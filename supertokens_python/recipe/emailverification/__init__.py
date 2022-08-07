@@ -16,7 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 
 from . import exceptions as ex
-from . import utils
+from . import utils, email_verification_claim
 from .emaildelivery import services as emaildelivery_services
 from .recipe import EmailVerificationRecipe
 
@@ -24,6 +24,7 @@ InputOverrideConfig = utils.OverrideConfig
 ParentRecipeEmailVerificationConfig = utils.ParentRecipeEmailVerificationConfig
 exception = ex
 SMTPService = emaildelivery_services.SMTPService
+EmailVerificationClaim = email_verification_claim.EmailVerificationClaim
 
 
 if TYPE_CHECKING:

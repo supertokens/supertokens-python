@@ -18,7 +18,6 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryInterface,
     SMTPServiceInterface,
 )
-from supertokens_python.recipe.emailverification import types as ev_types
 
 
 class User:
@@ -93,11 +92,13 @@ class PasswordResetEmailTemplateVars:
 
 
 # Export:
-EmailTemplateVars = Union[
-    PasswordResetEmailTemplateVars, ev_types.VerificationEmailTemplateVars
-]
+EmailTemplateVars = PasswordResetEmailTemplateVars
+
+# Union[
+#  PasswordResetEmailTemplateVars, ev_types.VerificationEmailTemplateVars # TODO: REMOVE COMMENTED
+# ]
 # PasswordResetEmailTemplateVars (Already exported because it's defined in the same)
-VerificationEmailTemplateVars = ev_types.VerificationEmailTemplateVars
+# VerificationEmailTemplateVars = ev_types.VerificationEmailTemplateVars # TODO: REMOVE
 
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
 

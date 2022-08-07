@@ -178,11 +178,9 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                 ep_ingredients,
                 self.config.sign_up_feature,
                 self.config.reset_password_using_token_feature,
-                None,
                 EPOverrideConfig(
                     func_override_email_password, apis_override_email_password
                 ),
-                self.email_verification_recipe,
             )
 
         if third_party_recipe is not None:

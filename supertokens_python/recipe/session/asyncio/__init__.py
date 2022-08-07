@@ -13,6 +13,8 @@
 # under the License.
 from typing import Any, Dict, List, Union, TypeVar, Callable, Optional
 
+# TODO: Finalize how to import Optional
+
 from supertokens_python.recipe.openid.interfaces import (
     GetOpenIdDiscoveryConfigurationResult,
 )
@@ -37,6 +39,8 @@ from ...jwt.interfaces import (
     GetJWKSResult,
 )
 
+# TODO: https://github.com/supertokens/supertokens-python/pull/209#discussion_r932049999
+# There have been changes to this function as well. See this:
 _T = TypeVar("_T")
 
 

@@ -18,11 +18,9 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
+from ...supertokens import AppInfo
 
 from ...types import APIResponse, GeneralErrorResponse
-from ..emailverification.interfaces import (
-    RecipeInterface as EmailVerificationRecipeInterface,
-)
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -145,7 +143,8 @@ class APIOptions:
         recipe_id: str,
         config: EmailPasswordConfig,
         recipe_implementation: RecipeInterface,
-        email_verification_recipe_implementation: EmailVerificationRecipeInterface,
+        app_info: AppInfo,
+        # email_verification_recipe_implementation: EmailVerificationRecipeInterface,
         email_delivery: EmailDeliveryIngredient[EmailTemplateVars],
     ):
         self.request: BaseRequest = request
@@ -153,9 +152,10 @@ class APIOptions:
         self.recipe_id: str = recipe_id
         self.config: EmailPasswordConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
-        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = (
-            email_verification_recipe_implementation
-        )
+        self.app_info = app_info
+        # self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = (
+        #     email_verification_recipe_implementation
+        # )
         self.email_delivery = email_delivery
 
 

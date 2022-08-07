@@ -121,22 +121,16 @@ def validate_and_normalise_email_verification_config(
     override: InputOverrideConfig,
 ) -> ParentRecipeEmailVerificationConfig:
     create_and_send_custom_email = None
-    get_email_verification_url = None
     if config is None:
         config = InputEmailVerificationConfig()
     if config.create_and_send_custom_email is not None:
         create_and_send_custom_email = email_verification_create_and_send_custom_email(
             recipe, config.create_and_send_custom_email
         )
-    if config.get_email_verification_url is not None:
-        get_email_verification_url = email_verification_get_email_verification_url(
-            recipe, config.get_email_verification_url
-        )
 
     return ParentRecipeEmailVerificationConfig(
-        get_email_for_user_id=recipe.get_email_for_user_id,
+        mode="OPTIONAL",  # TODO: FIXME?
         create_and_send_custom_email=create_and_send_custom_email,
-        get_email_verification_url=get_email_verification_url,
         override=override.email_verification_feature,
     )
 

@@ -26,7 +26,7 @@ from .recipe import EmailPasswordRecipe
 exceptions = ex
 InputOverrideConfig = utils.InputOverrideConfig
 InputResetPasswordUsingTokenFeature = utils.InputResetPasswordUsingTokenFeature
-InputEmailVerificationConfig = utils.InputEmailVerificationConfig
+# InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputSignUpFeature = utils.InputSignUpFeature
 InputFormField = utils.InputFormField
 SMTPService = emaildelivery_services.SMTPService
@@ -42,14 +42,12 @@ def init(
     reset_password_using_token_feature: Union[
         utils.InputResetPasswordUsingTokenFeature, None
     ] = None,
-    email_verification_feature: Union[utils.InputEmailVerificationConfig, None] = None,
     override: Union[utils.InputOverrideConfig, None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return EmailPasswordRecipe.init(
         sign_up_feature,
         reset_password_using_token_feature,
-        email_verification_feature,
         override,
         email_delivery,
     )

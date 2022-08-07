@@ -40,7 +40,7 @@ class User:
 
 # Export:
 EmailTemplateVars = ep_types.EmailTemplateVars
-VerificationEmailTemplateVars = ep_types.VerificationEmailTemplateVars
+# VerificationEmailTemplateVars = ep_types.VerificationEmailTemplateVars
 PasswordResetEmailTemplateVars = ep_types.PasswordResetEmailTemplateVars
 
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]

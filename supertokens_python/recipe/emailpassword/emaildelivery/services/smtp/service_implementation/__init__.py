@@ -30,10 +30,6 @@ from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
 )
 
-from .email_verification_implementation import (
-    ServiceImplementation as DerivedEVServiceImplementation,
-)
-
 
 class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
     def __init__(self, transporter: Transporter) -> None:
@@ -44,14 +40,6 @@ class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
             email_verification_service_implementation.send_raw_email
         )
         self.ev_get_content = email_verification_service_implementation.get_content
-
-        derived_ev_service_implementation = DerivedEVServiceImplementation(self)
-        email_verification_service_implementation.send_raw_email = (
-            derived_ev_service_implementation.send_raw_email
-        )
-        email_verification_service_implementation.get_content = (
-            derived_ev_service_implementation.get_content
-        )
 
     async def send_raw_email(
         self, content: EmailContent, user_context: Dict[str, Any]

@@ -211,6 +211,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         user_context: Dict[str, Any],
     ) -> bool:
         # TODO: Deprecate this method.
+        # TODO: need to mark updateAccessTokenPayload as deprecated
         """DEPRECATED: Use merge_into_access_token_payload instead"""
 
     @abstractmethod
@@ -604,5 +605,8 @@ class SessionClaimValidator(ABC):
     def should_refetch(  # pylint: disable=no-self-use
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> MaybeAwaitable[bool]:
+        # TODO: https://github.com/supertokens/supertokens-python/pull/209#discussion_r932121943
+        # TODO: This should also be an abstractmethod
+        # TODO: This should also be async
         _, __ = payload, user_context
         return False

@@ -13,8 +13,8 @@
 # under the License.
 
 from __future__ import annotations
-
-from typing import TYPE_CHECKING, Any, Dict
+from typing_extensions import Literal
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
@@ -30,21 +30,8 @@ if TYPE_CHECKING:
 
     from supertokens_python.supertokens import AppInfo
 
-    from .interfaces import APIInterface, RecipeInterface
-    from .types import User, VerificationEmailTemplateVars
-
-
-def default_get_email_verification_url(
-    app_info: AppInfo,
-) -> Callable[[User, Dict[str, Any]], Awaitable[str]]:
-    async def func(_: User, __: Dict[str, Any]):
-        return (
-            app_info.website_domain.get_as_string_dangerous()
-            + app_info.website_base_path.get_as_string_dangerous()
-            + "/verify-email"
-        )
-
-    return func
+    from .interfaces import APIInterface, RecipeInterface, TypeGetEmailForUserIdFunction
+    from .types import User, VerificationEmailTemplateVars, EmailTemplateVars
 
 
 class OverrideConfig:
@@ -58,25 +45,22 @@ class OverrideConfig:
 
 
 class ParentRecipeEmailVerificationConfig:
+    # TODO: Now that this class is public, we might want to rename this?
     def __init__(
         self,
-        get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
-        override: Union[OverrideConfig, None] = None,
-        get_email_verification_url: Union[
-            Callable[[User, Dict[str, Any]], Awaitable[str]], None
-        ] = None,
+        mode: Literal["REQUIRED", "OPTIONAL"],
+        email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+        get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
         create_and_send_custom_email: Union[
             Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
         ] = None,
-        email_delivery: Union[
-            EmailDeliveryConfig[VerificationEmailTemplateVars], None
-        ] = None,
+        override: Union[OverrideConfig, None] = None,
     ):
-        self.override = override
-        self.get_email_verification_url = get_email_verification_url
-        self.get_email_for_user_id = get_email_for_user_id
+        self.mode = mode
         self.email_delivery = email_delivery
+        self.get_email_for_user_id = get_email_for_user_id
         self.create_and_send_custom_email = create_and_send_custom_email
+        self.override = override
 
         if create_and_send_custom_email:
             # Note: This will appear twice because `InputEmailVerificationConfig` will also produce same warning.
@@ -88,17 +72,17 @@ class ParentRecipeEmailVerificationConfig:
 class EmailVerificationConfig:
     def __init__(
         self,
-        override: OverrideConfig,
-        get_email_verification_url: Callable[[User, Dict[str, Any]], Awaitable[str]],
-        get_email_for_user_id: Callable[[str, Dict[str, Any]], Awaitable[str]],
+        mode: str,  # TODO: Literal["REQUIRED", "OPTIONAL"] had to be removed because of pyright. Possible to avoid?
         get_email_delivery_config: Callable[
             [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
         ],
+        get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction],
+        override: OverrideConfig,
     ):
-        self.get_email_for_user_id = get_email_for_user_id
-        self.get_email_verification_url = get_email_verification_url
+        self.mode: str = mode  # TODO: How to avoid ": str"
         self.override = override
         self.get_email_delivery_config = get_email_delivery_config
+        self.get_email_for_user_id = get_email_for_user_id
 
 
 def validate_and_normalise_user_input(
@@ -108,12 +92,6 @@ def validate_and_normalise_user_input(
         raise ValueError(
             "config must be an instance of ParentRecipeEmailVerificationConfig"
         )
-
-    get_email_verification_url = (
-        config.get_email_verification_url
-        if config.get_email_verification_url is not None
-        else default_get_email_verification_url(app_info)
-    )
 
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[
         VerificationEmailTemplateVars
@@ -144,8 +122,8 @@ def validate_and_normalise_user_input(
         override = OverrideConfig()
 
     return EmailVerificationConfig(
-        override,
-        get_email_verification_url,
-        config.get_email_for_user_id,
+        config.mode,
         get_email_delivery_config,
+        config.get_email_for_user_id,
+        override,
     )

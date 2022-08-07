@@ -14,10 +14,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, Union, Callable, Awaitable, Optional
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.types import APIResponse, GeneralErrorResponse
+from ..session.interfaces import SessionContainer
+from ...supertokens import AppInfo
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -98,6 +100,7 @@ class APIOptions:
         recipe_id: str,
         config: EmailVerificationConfig,
         recipe_implementation: RecipeInterface,
+        app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[VerificationEmailTemplateVars],
     ):
         self.request = request
@@ -105,6 +108,7 @@ class APIOptions:
         self.recipe_id = recipe_id
         self.config = config
         self.recipe_implementation = recipe_implementation
+        self.app_info = app_info
         self.email_delivery = email_delivery
 
 
@@ -161,7 +165,11 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def email_verify_post(
-        self, token: str, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        token: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+        session: Optional[SessionContainer] = None,
     ) -> Union[
         EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError, GeneralErrorResponse
     ]:
@@ -169,16 +177,44 @@ class APIInterface(ABC):
 
     @abstractmethod
     async def is_email_verified_get(
-        self, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+        session: Optional[SessionContainer] = None,
     ) -> Union[IsEmailVerifiedGetOkResult, GeneralErrorResponse]:
         pass
 
     @abstractmethod
     async def generate_email_verify_token_post(
-        self, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+        session: SessionContainer,  # TODO: Fix order of session arg to match the order is_email_verified_* (Applicable for all funcs in this file)
     ) -> Union[
         GenerateEmailVerifyTokenPostOkResult,
         GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
         GeneralErrorResponse,
     ]:
         pass
+
+
+class GetEmailForUserIdOkResult:
+    def __init__(self, email: str):
+        # TODO: Write this?
+        self.email = email
+
+
+class EmailDoesnotExistError(Exception):
+    pass
+
+
+class UnknownUserIdError(Exception):
+    pass
+
+
+TypeGetEmailForUserIdFunction = Callable[
+    [str, Dict[str, Any]],
+    Awaitable[
+        Union[GetEmailForUserIdOkResult, EmailDoesnotExistError, UnknownUserIdError]
+    ],
+]

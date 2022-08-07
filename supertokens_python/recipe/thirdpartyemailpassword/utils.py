@@ -48,14 +48,11 @@ from supertokens_python.recipe.emailverification.utils import (
 class InputEmailVerificationConfig:
     def __init__(
         self,
-        get_email_verification_url: Union[
-            Callable[[User, Any], Awaitable[str]], None
-        ] = None,
+        # TODO: Marker: get_email_verification_url removed
         create_and_send_custom_email: Union[
             Callable[[User, str, Any], Awaitable[None]], None
         ] = None,
     ):
-        self.get_email_verification_url = get_email_verification_url
         self.create_and_send_custom_email = create_and_send_custom_email
         if create_and_send_custom_email:
             deprecated_warn(
@@ -103,22 +100,16 @@ def validate_and_normalise_email_verification_config(
     override: InputOverrideConfig,
 ) -> ParentRecipeEmailVerificationConfig:
     create_and_send_custom_email = None
-    get_email_verification_url = None
     if config is None:
         config = InputEmailVerificationConfig()
     if config.create_and_send_custom_email is not None:
         create_and_send_custom_email = email_verification_create_and_send_custom_email(
             recipe, config.create_and_send_custom_email
         )
-    if config.get_email_verification_url is not None:
-        get_email_verification_url = email_verification_get_email_verification_url(
-            recipe, config.get_email_verification_url
-        )
 
     return ParentRecipeEmailVerificationConfig(
-        get_email_for_user_id=recipe.get_email_for_user_id,
+        mode="OPTIONAL",  # TODO: FIXME?
         create_and_send_custom_email=create_and_send_custom_email,
-        get_email_verification_url=get_email_verification_url,
         override=override.email_verification_feature,
     )
 
@@ -218,10 +209,8 @@ def validate_and_normalise_user_input(
 
         email_service = BackwardCompatibilityService(
             app_info=recipe.app_info,
-            recipe_interface_impl=recipe_interface_impl,
             ep_recipe_interface_impl=ep_recipe_interface_impl,
             reset_password_using_token_feature=reset_password_using_token_feature,
-            email_verification_feature=email_verification_feature,
         )
         if email_delivery is not None and email_delivery.override is not None:
             override = email_delivery.override

@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Union, Any, Dict, Callable
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -28,8 +28,16 @@ from supertokens_python.recipe.emailverification.types import (
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api.implementation import APIImplementation
-from .interfaces import APIOptions
+from .email_verification_claim import EmailVerificationClaim
+from .interfaces import (
+    APIOptions,
+    UnknownUserIdError,
+    TypeGetEmailForUserIdFunction,
+    GetEmailForUserIdOkResult,
+    EmailDoesnotExistError,
+)
 from .recipe_implementation import RecipeImplementation
+from ..session import SessionRecipe
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -87,6 +95,10 @@ class EmailVerificationRecipe(RecipeModule):
         else:
             self.email_delivery = email_delivery_ingredient
 
+        self.get_email_for_user_id_funcs_from_other_recipes: List[
+            TypeGetEmailForUserIdFunction
+        ] = []
+
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and isinstance(
             err, SuperTokensEmailVerificationError
@@ -122,28 +134,22 @@ class EmailVerificationRecipe(RecipeModule):
         method: str,
         response: BaseResponse,
     ) -> Union[BaseResponse, None]:
+        api_options = APIOptions(
+            request,
+            response,
+            self.recipe_id,
+            self.config,
+            self.recipe_implementation,
+            self.get_app_info(),
+            self.email_delivery,
+        )
         if request_id == USER_EMAIL_VERIFY_TOKEN:
             return await handle_generate_email_verify_token_api(
-                self.api_implementation,
-                APIOptions(
-                    request,
-                    response,
-                    self.recipe_id,
-                    self.config,
-                    self.recipe_implementation,
-                    self.email_delivery,
-                ),
+                self.api_implementation, api_options
             )
         return await handle_email_verify_api(
             self.api_implementation,
-            APIOptions(
-                request,
-                response,
-                self.recipe_id,
-                self.config,
-                self.recipe_implementation,
-                self.email_delivery,
-            ),
+            api_options,
         )
 
     async def handle_error(
@@ -171,6 +177,15 @@ class EmailVerificationRecipe(RecipeModule):
                     config,
                     ingredients=ingredients,
                 )
+                # TODO: Supertokens init callback:
+                SessionRecipe.get_instance().add_claim_from_other_recipe(
+                    EmailVerificationClaim
+                )
+                if config.mode == "REQUIRED":
+                    SessionRecipe.get_instance().add_claim_validator_from_other_recipe(
+                        EmailVerificationClaim.validators.is_verified()
+                    )
+
                 return EmailVerificationRecipe.__instance
             raise_general_exception(
                 "Emailverification recipe has already been initialised. Please check your code for bugs."
@@ -193,3 +208,21 @@ class EmailVerificationRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         EmailVerificationRecipe.__instance = None
+
+    async def get_email_for_user_id(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -> Union[GetEmailForUserIdOkResult, EmailDoesnotExistError, UnknownUserIdError]:
+        if self.config.get_email_for_user_id is not None:
+            res = await self.config.get_email_for_user_id(user_id, user_context)
+            if not isinstance(res, UnknownUserIdError):
+                return res
+
+        for f in self.get_email_for_user_id_funcs_from_other_recipes:
+            res = await f(user_id, user_context)
+            if not isinstance(res, UnknownUserIdError):
+                return res
+
+        return UnknownUserIdError()
+
+    def add_get_email_for_user_id_func(self, f: Callable[[str, Dict[str, Any]], Any]):
+        self.get_email_for_user_id_funcs_from_other_recipes.append(f)
