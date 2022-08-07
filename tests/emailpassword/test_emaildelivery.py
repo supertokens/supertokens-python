@@ -31,9 +31,8 @@ from supertokens_python.ingredients.emaildelivery.types import (
     SMTPServiceInterface,
     SMTPSettings,
 )
-from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe import emailpassword, session, emailverification
 from supertokens_python.recipe.emailpassword import (
-    InputEmailVerificationConfig,
     InputResetPasswordUsingTokenFeature,
 )
 from supertokens_python.recipe.emailpassword.emaildelivery.services import SMTPService
@@ -44,6 +43,9 @@ from supertokens_python.recipe.emailpassword.types import (
 from supertokens_python.recipe.emailpassword.types import User as EPUser
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
+)
+from supertokens_python.recipe.emailverification.utils import (
+    ParentRecipeEmailVerificationConfig,
 )
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.recipe_implementation import (
@@ -653,11 +655,13 @@ async def test_email_verification_backward_compatibility(
         ),
         framework="fastapi",
         recipe_list=[
-            emailpassword.init(
-                email_verification_feature=InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_create_and_send_custom_email
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="REQUIRED",
+                    create_and_send_custom_email=custom_create_and_send_custom_email,
                 )
             ),
+            emailpassword.init(),
             session.init(),
         ],
     )

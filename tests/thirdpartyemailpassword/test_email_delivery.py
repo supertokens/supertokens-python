@@ -31,8 +31,15 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailContent,
     SMTPServiceInterface,
 )
-from supertokens_python.recipe import session, thirdpartyemailpassword
+from supertokens_python.recipe import (
+    session,
+    thirdpartyemailpassword,
+    emailverification,
+)
 from supertokens_python.recipe.emailpassword.types import User as EPUser
+from supertokens_python.recipe.emailverification.utils import (
+    ParentRecipeEmailVerificationConfig,
+)
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.recipe_implementation import (
     RecipeImplementation as SessionRecipeImplementation,
@@ -50,8 +57,10 @@ from supertokens_python.recipe.thirdpartyemailpassword.emaildelivery.services im
 )
 from supertokens_python.recipe.thirdpartyemailpassword.types import (
     EmailTemplateVars,
-    VerificationEmailTemplateVars,
     PasswordResetEmailTemplateVars,
+)
+from supertokens_python.recipe.emailverification.types import (
+    VerificationEmailTemplateVars,
 )
 from supertokens_python.recipe.thirdpartyemailpassword.types import User as TPEPUser
 from tests.utils import (
@@ -639,11 +648,13 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
     email = ""
     email_verify_url = ""
 
-    def email_delivery_override(oi: EmailDeliveryInterface[EmailTemplateVars]):
+    def email_delivery_override(
+        oi: EmailDeliveryInterface[VerificationEmailTemplateVars],
+    ):
         oi_send_email = oi.send_email
 
         async def send_email(
-            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+            template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
         ):
             nonlocal email, email_verify_url
             email = template_vars.user.email
@@ -664,12 +675,16 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
         ),
         framework="fastapi",
         recipe_list=[
-            thirdpartyemailpassword.init(
-                email_delivery=EmailDeliveryConfig(
-                    service=None,
-                    override=email_delivery_override,
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="REQUIRED",
+                    email_delivery=EmailDeliveryConfig(
+                        service=None,
+                        override=email_delivery_override,
+                    ),
                 )
             ),
+            thirdpartyemailpassword.init(),
             session.init(),
         ],
     )

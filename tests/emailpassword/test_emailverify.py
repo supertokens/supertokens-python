@@ -23,8 +23,8 @@ from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.exceptions import BadInputError
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
-from supertokens_python.recipe import emailpassword, session
-from supertokens_python.recipe.emailpassword.asyncio import (
+from supertokens_python.recipe import emailpassword, session, emailverification
+from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
     is_email_verified,
     revoke_email_verification_token,
@@ -40,7 +40,10 @@ from supertokens_python.recipe.emailverification.interfaces import (
     VerifyEmailUsingTokenInvalidTokenError,
 )
 from supertokens_python.recipe.emailverification.types import User as EVUser
-from supertokens_python.recipe.emailverification.utils import OverrideConfig
+from supertokens_python.recipe.emailverification.utils import (
+    OverrideConfig,
+    ParentRecipeEmailVerificationConfig,
+)
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
     create_new_session,
@@ -317,11 +320,12 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="REQUIRED", create_and_send_custom_email=custom_f
                 )
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -372,11 +376,12 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="REQUIRED", create_and_send_custom_email=custom_f
                 )
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -442,11 +447,12 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="REQUIRED", create_and_send_custom_email=custom_f
                 )
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -512,11 +518,12 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="REQUIRED", create_and_send_custom_email=custom_f
                 )
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -602,16 +609,14 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
-                ),
-                override=emailpassword.InputOverrideConfig(
-                    email_verification_feature=OverrideConfig(
-                        apis=apis_override_email_password
-                    )
-                ),
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="REQUIRED",
+                    create_and_send_custom_email=custom_f,
+                    override=OverrideConfig(apis=apis_override_email_password),
+                )
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -684,11 +689,13 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="REQUIRED",
+                    create_and_send_custom_email=custom_f,
                 )
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -805,16 +812,14 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
-                ),
-                override=emailpassword.InputOverrideConfig(
-                    email_verification_feature=OverrideConfig(
-                        apis=apis_override_email_password
-                    )
-                ),
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="REQUIRED",
+                    create_and_send_custom_email=custom_f,
+                    override=OverrideConfig(apis=apis_override_email_password),
+                )
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -898,16 +903,16 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
-                ),
-                override=emailpassword.InputOverrideConfig(
-                    email_verification_feature=OverrideConfig(
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="REQUIRED",
+                    create_and_send_custom_email=custom_f,
+                    override=emailverification.InputOverrideConfig(
                         apis=apis_override_email_password
-                    )
+                    ),
                 ),
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
