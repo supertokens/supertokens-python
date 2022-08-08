@@ -25,6 +25,7 @@ from supertokens_python.recipe.emailpassword.types import (
     InputFormField,
     User,
 )
+from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.emailverification import (
     EmailVerificationRecipe,
     ParentRecipeEmailVerificationConfig,
@@ -115,6 +116,12 @@ async def save_code_text(
     save_code(
         param.pre_auth_session_id, param.url_with_link_code, param.user_input_code
     )
+
+
+async def ev_create_and_send_custom_email(
+    _: EVUser, url_with_token: str, __: Dict[str, Any]
+):
+    save_url_with_token(url_with_token)
 
 
 async def create_and_send_custom_email(
@@ -842,7 +849,7 @@ def custom_init(
         emailverification.init(
             ParentRecipeEmailVerificationConfig(
                 mode="REQUIRED",
-                create_and_send_custom_email=create_and_send_custom_email,
+                create_and_send_custom_email=ev_create_and_send_custom_email,  # TODO: Is it correct to create a seperate func for this?
                 override=EVInputOverrideConfig(apis=override_email_verification_apis),
             )
         ),

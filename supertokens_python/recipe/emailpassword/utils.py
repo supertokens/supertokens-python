@@ -353,7 +353,6 @@ class EmailPasswordConfig:
 
 
 def validate_and_normalise_user_input(
-    recipe: EmailPasswordRecipe,
     app_info: AppInfo,
     sign_up_feature: Union[InputSignUpFeature, None] = None,
     reset_password_using_token_feature: Union[

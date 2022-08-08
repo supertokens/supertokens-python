@@ -44,6 +44,7 @@ from supertokens_python.recipe.emailpassword.types import User as EPUser
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
 )
+from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.emailverification.utils import (
     ParentRecipeEmailVerificationConfig,
 )
@@ -639,7 +640,7 @@ async def test_email_verification_backward_compatibility(
     email_verify_url = ""
 
     async def custom_create_and_send_custom_email(
-        user: EPUser, email_verification_link: str, _: Dict[str, Any]
+        user: EVUser, email_verification_link: str, _: Dict[str, Any]
     ):
         nonlocal email, email_verify_url
         email = user.email

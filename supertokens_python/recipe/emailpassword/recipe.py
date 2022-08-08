@@ -85,7 +85,6 @@ class EmailPasswordRecipe(RecipeModule):
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            self,
             app_info,
             sign_up_feature,
             reset_password_using_token_feature,

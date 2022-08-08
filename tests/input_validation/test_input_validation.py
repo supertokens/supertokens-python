@@ -15,6 +15,9 @@ from supertokens_python.recipe import (
     thirdpartypasswordless,
     usermetadata,
 )
+from supertokens_python.recipe.emailverification.interfaces import (
+    GetEmailForUserIdOkResult,
+)
 from supertokens_python.recipe.passwordless.utils import ContactEmailOrPhoneConfig
 from supertokens_python.recipe.thirdparty.provider import Provider
 
@@ -80,9 +83,8 @@ async def test_init_validation_emailpassword():
             ),
             framework="fastapi",
             recipe_list=[
-                emailpassword.init(
-                    email_verification_feature="email verify"  # type: ignore
-                ),
+                emailverification.init("email verify"),  # type: ignore
+                emailpassword.init(),
             ],
         )
     assert (
@@ -107,8 +109,8 @@ async def test_init_validation_emailpassword():
     assert "override must be of type InputOverrideConfig or None" == str(ex.value)
 
 
-async def get_email_for_user_id(user_id: str, _: Dict[str, Any]) -> str:
-    return user_id
+async def get_email_for_user_id(_: str, __: Dict[str, Any]):
+    return GetEmailForUserIdOkResult("foo@example.com")
 
 
 @pytest.mark.asyncio
@@ -142,7 +144,9 @@ async def test_init_validation_emailverification():
             recipe_list=[
                 emailverification.init(
                     emailverification.ParentRecipeEmailVerificationConfig(
-                        get_email_for_user_id=get_email_for_user_id, override="override"  # type: ignore
+                        mode="OPTIONAL",
+                        get_email_for_user_id=get_email_for_user_id,
+                        override="override",  # type: ignore
                     )
                 )
             ],

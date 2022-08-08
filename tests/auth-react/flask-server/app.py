@@ -109,6 +109,7 @@ from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
 )
 from supertokens_python.types import GeneralErrorResponse
 from typing_extensions import Literal
+from supertokens_python.recipe.emailverification.types import User as EVUser
 
 load_dotenv()
 
@@ -158,6 +159,13 @@ async def save_code_text(
         }
     )
     code_store[param.pre_auth_session_id] = codes
+
+
+async def ev_create_and_send_custom_email(
+    _: EVUser, url_with_token: str, __: Dict[str, Any]
+) -> None:
+    global latest_url_with_token
+    latest_url_with_token = url_with_token
 
 
 async def create_and_send_custom_email(
@@ -283,7 +291,7 @@ def custom_init(
             token: str,
             api_options: EVAPIOptions,
             user_context: Dict[str, Any],
-            session: Optional[SessionContainer],
+            session: Optional[SessionContainer] = None,
         ):
             is_general_error = await check_for_general_error(
                 "body", api_options.request
@@ -885,7 +893,7 @@ def custom_init(
         emailverification.init(
             ParentRecipeEmailVerificationConfig(
                 mode="REQUIRED",
-                create_and_send_custom_email=create_and_send_custom_email,
+                create_and_send_custom_email=ev_create_and_send_custom_email,
                 override=EVInputOverrideConfig(apis=override_email_verification_apis),
             )
         ),

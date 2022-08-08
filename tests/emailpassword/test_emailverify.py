@@ -13,7 +13,7 @@
 # under the License.
 import asyncio
 import json
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
 from fastapi import FastAPI
 from fastapi.requests import Request
@@ -31,7 +31,6 @@ from supertokens_python.recipe.emailverification.asyncio import (
     unverify_email,
     verify_email_using_token,
 )
-from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface,
     APIOptions,
@@ -299,11 +298,11 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
 async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called(
     driver_config_client: TestClient,
 ):
-    user_info: Union[None, User] = None
+    user_info: Union[None, EVUser] = None
     email_token = None
 
     async def custom_f(
-        user: User, email_verification_url_token: str, _: Dict[str, Any]
+        user: EVUser, email_verification_url_token: str, _: Dict[str, Any]
     ):
         nonlocal user_info, email_token
         user_info = user
@@ -361,7 +360,9 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
 async def test_the_email_verify_api_with_valid_input(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -432,7 +433,9 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
 ):
     token = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -503,7 +506,9 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
 ):
     token = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -576,7 +581,9 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -584,11 +591,14 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         temp = param.email_verify_post
 
         async def email_verify_post(
-            token: str, api_options: APIOptions, user_context: Dict[str, Any]
+            token: str,
+            api_options: APIOptions,
+            user_context: Dict[str, Any],
+            session: Optional[SessionContainer] = None,
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options, user_context)
+            response = await temp(token, api_options, user_context, session)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -674,7 +684,9 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
 ):
     token = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -779,7 +791,9 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -787,11 +801,14 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
         temp = param.email_verify_post
 
         async def email_verify_post(
-            token: str, api_options: APIOptions, user_context: Dict[str, Any]
+            token: str,
+            api_options: APIOptions,
+            user_context: Dict[str, Any],
+            session: Optional[SessionContainer] = None,
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options, user_context)
+            response = await temp(token, api_options, user_context, session)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -870,7 +887,9 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -878,11 +897,14 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
         temp = param.email_verify_post
 
         async def email_verify_post(
-            token: str, api_options: APIOptions, user_context: Dict[str, Any]
+            token: str,
+            api_options: APIOptions,
+            user_context: Dict[str, Any],
+            session: Optional[SessionContainer] = None,
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options, user_context)
+            response = await temp(token, api_options, user_context, session)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -1007,7 +1029,13 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(mode="OPTIONAL")
+            ),
+            emailpassword.init(),
+        ],
     )
     start_st()
 

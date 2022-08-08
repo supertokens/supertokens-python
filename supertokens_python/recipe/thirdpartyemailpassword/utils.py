@@ -146,7 +146,7 @@ class ThirdPartyEmailPasswordConfig:
             InputResetPasswordUsingTokenFeature, None
         ],
         get_email_delivery_config: Callable[
-            [RecipeInterface, EPRecipeInterface],
+            [EPRecipeInterface],
             EmailDeliveryConfigWithService[EmailTemplateVars],
         ],
         override: OverrideConfig,
@@ -199,7 +199,6 @@ def validate_and_normalise_user_input(
         override = InputOverrideConfig()
 
     def get_email_delivery_config(
-        recipe_interface_impl: RecipeInterface,
         ep_recipe_interface_impl: EPRecipeInterface,
     ):
         if email_delivery and email_delivery.service:

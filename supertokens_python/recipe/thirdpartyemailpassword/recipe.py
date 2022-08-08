@@ -138,9 +138,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         email_delivery_ingredient = ingredients.email_delivery
         if email_delivery_ingredient is None:
             self.email_delivery = EmailDeliveryIngredient(
-                self.config.get_email_delivery_config(
-                    self.recipe_implementation, ep_recipe_implementation
-                )
+                self.config.get_email_delivery_config(ep_recipe_implementation)
             )
         else:
             self.email_delivery = email_delivery_ingredient

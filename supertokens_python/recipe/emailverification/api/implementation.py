@@ -105,7 +105,7 @@ class APIImplementation(APIInterface):
                 user_id,
             )
             return GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError()
-        elif isinstance(email_info, GetEmailForUserIdOkResult):
+        if isinstance(email_info, GetEmailForUserIdOkResult):
             response = (
                 await api_options.recipe_implementation.create_email_verification_token(
                     user_id,
@@ -143,7 +143,7 @@ class APIImplementation(APIInterface):
                 email_verification_email_delivery_input, user_context
             )
             return GenerateEmailVerifyTokenPostOkResult()
-        else:
-            raise Exception(
-                "Should never come here: UNKNOWN_USER_ID or invalid result from get_email_for_user_id"
-            )
+
+        raise Exception(
+            "Should never come here: UNKNOWN_USER_ID or invalid result from get_email_for_user_id"
+        )

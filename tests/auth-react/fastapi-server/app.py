@@ -118,6 +118,7 @@ from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
 )
 from supertokens_python.types import GeneralErrorResponse
 from typing_extensions import Literal
+from supertokens_python.recipe.emailverification.types import User as EVUser
 
 load_dotenv()
 
@@ -191,6 +192,13 @@ def get_website_domain():
 
 
 latest_url_with_token = None
+
+
+async def ev_create_and_send_custom_email(
+    _: EVUser, url_with_token: str, __: Dict[str, Any]
+) -> None:
+    global latest_url_with_token
+    latest_url_with_token = url_with_token
 
 
 async def create_and_send_custom_email(
@@ -898,7 +906,7 @@ def custom_init(
         emailverification.init(
             ParentRecipeEmailVerificationConfig(
                 mode="REQUIRED",
-                create_and_send_custom_email=create_and_send_custom_email,
+                create_and_send_custom_email=ev_create_and_send_custom_email,  # TODO: Is this correct?
                 override=EVInputOverrideConfig(apis=override_email_verification_apis),
             )
         ),
