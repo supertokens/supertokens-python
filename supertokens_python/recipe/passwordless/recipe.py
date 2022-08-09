@@ -55,6 +55,13 @@ from .utils import (
     PhoneOrEmailInput,
     validate_and_normalise_user_input,
 )
+from ..emailverification import EmailVerificationRecipe
+from ..emailverification.interfaces import (
+    GetEmailForUserIdOkResult,
+    EmailDoesnotExistError,
+    UnknownUserIdError,
+)
+from ...post_init_callbacks import PostSTInitCallbacks
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -137,6 +144,12 @@ class PasswordlessRecipe(RecipeModule):
             else sms_delivery_ingredient
         )
 
+        def callback():
+            ev_recipe = EmailVerificationRecipe.get_instance()
+            ev_recipe.add_get_email_for_user_id_func(self.get_email_for_user_id)
+
+        PostSTInitCallbacks.add_post_init_callback(callback)
+
     def get_apis_handled(self) -> List[APIHandled]:
         return [
             APIHandled(
@@ -187,6 +200,7 @@ class PasswordlessRecipe(RecipeModule):
             self.get_recipe_id(),
             self.config,
             self.recipe_implementation,
+            self.get_app_info(),
             self.email_delivery,
             self.sms_delivery,
         )
@@ -202,7 +216,7 @@ class PasswordlessRecipe(RecipeModule):
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
-    ) -> BaseResponse: # type: ignore
+    ) -> BaseResponse:  # type: ignore
         raise err
 
     def get_all_cors_headers(self) -> List[str]:
@@ -288,11 +302,14 @@ class PasswordlessRecipe(RecipeModule):
             user_input_code=user_input_code,
             user_context=user_context,
         )
-        magic_link = await self.config.get_link_domain_and_path(
-            PhoneOrEmailInput(phone_number, email), user_context
-        )
-        magic_link += (
-            "?rid="
+
+        app_info = self.get_app_info()
+
+        magic_link = (
+            app_info.website_domain.get_as_string_dangerous()
+            + app_info.website_base_path.get_as_string_dangerous()
+            + "/verify"
+            + "?rid="
             + self.get_recipe_id()
             + "&preAuthSessionId="
             + code_info.pre_auth_session_id
@@ -323,3 +340,13 @@ class PasswordlessRecipe(RecipeModule):
         if isinstance(consume_code_result, ConsumeCodeOkResult):
             return consume_code_result
         raise Exception("Failed to create user. Please retry")
+
+    async def get_email_for_user_id(self, user_id: str, user_context: Dict[str, Any]):
+        user_info = await self.recipe_implementation.get_user_by_id(
+            user_id, user_context
+        )
+        if user_info is not None:
+            if user_info.email is not None:
+                return GetEmailForUserIdOkResult(user_info.email)
+            return EmailDoesnotExistError()
+        return UnknownUserIdError()

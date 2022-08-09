@@ -41,6 +41,4 @@ def init(
     sign_in_and_up_feature: SignInAndUpFeature,
     override: Union[InputOverrideConfig, None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
-    return ThirdPartyRecipe.init(
-        sign_in_and_up_feature, override
-    )
+    return ThirdPartyRecipe.init(sign_in_and_up_feature, override)

@@ -43,7 +43,9 @@ class OverrideConfig:
         self.functions = functions
         self.apis = apis
 
+
 MODE_TYPE = Literal["REQUIRED", "OPTIONAL"]
+
 
 class ParentRecipeEmailVerificationConfig:
     # TODO: Now that this class will be used directly, we might want to rename this?

@@ -18,6 +18,7 @@ from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 
 from ..types import EmailTemplateVars, User
 
+
 async def get_user_by_id(
     user_id: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> Union[User, None]:

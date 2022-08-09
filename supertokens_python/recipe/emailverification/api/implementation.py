@@ -16,7 +16,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Union, Optional
 
 from supertokens_python.logger import log_debug_message
-from supertokens_python.recipe.emailverification import EmailVerificationRecipe, EmailVerificationClaim
+from supertokens_python.recipe.emailverification import (
+    EmailVerificationRecipe,
+    EmailVerificationClaim,
+)
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface,
     CreateEmailVerificationTokenEmailAlreadyVerifiedError,

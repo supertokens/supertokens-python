@@ -3,6 +3,7 @@ from typing import Callable, List
 
 class PostSTInitCallbacks:
     """Callbacks that are called after the SuperTokens instance is initialized."""
+
     callbacks: List[Callable[[], None]] = []
 
     @staticmethod

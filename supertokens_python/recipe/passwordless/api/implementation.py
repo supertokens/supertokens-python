@@ -43,8 +43,8 @@ from supertokens_python.recipe.passwordless.utils import (
 )
 from supertokens_python.recipe.session.asyncio import create_new_session
 from supertokens_python.types import GeneralErrorResponse
-
-from ..utils import PhoneOrEmailInput
+from ...emailverification import EmailVerificationRecipe
+from ...emailverification.interfaces import CreateEmailVerificationTokenOkResult
 
 
 class APIImplementation(APIInterface):
@@ -67,11 +67,11 @@ class APIImplementation(APIInterface):
         user_input_code = None
         flow_type = api_options.config.flow_type
         if flow_type in ("MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"):
-            magic_link = await api_options.config.get_link_domain_and_path(
-                PhoneOrEmailInput(phone_number=phone_number, email=email), user_context
-            )
-            magic_link += (
-                "?rid="
+            magic_link = (
+                api_options.app_info.website_domain.get_as_string_dangerous()
+                + api_options.app_info.website_base_path.get_as_string_dangerous()
+                + "/verify"
+                + "?rid="
                 + api_options.recipe_id
                 + "&preAuthSessionId="
                 + response.pre_auth_session_id
@@ -172,12 +172,11 @@ class APIImplementation(APIInterface):
                 user_input_code = None
                 flow_type = api_options.config.flow_type
                 if flow_type in ("MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"):
-                    magic_link = await api_options.config.get_link_domain_and_path(
-                        PhoneOrEmailInput(device_info.phone_number, device_info.email),
-                        user_context,
-                    )
-                    magic_link += (
-                        "?rid="
+                    magic_link = (
+                        api_options.app_info.website_domain.get_as_string_dangerous()
+                        + api_options.app_info.website_base_path.get_as_string_dangerous()
+                        + "/verify"
+                        + "?rid="
                         + api_options.recipe_id
                         + "&preAuthSessionId="
                         + response.pre_auth_session_id
@@ -272,9 +271,26 @@ class APIImplementation(APIInterface):
             return ConsumeCodePostRestartFlowError()
 
         user = response.user
+
+        if user.email is not None:
+            ev_instance = EmailVerificationRecipe.get_instance()
+            if ev_instance:
+                token_response = await ev_instance.recipe_implementation.create_email_verification_token(
+                    user.user_id,
+                    user.email,
+                    user_context,
+                )
+
+                if isinstance(token_response, CreateEmailVerificationTokenOkResult):
+                    await ev_instance.recipe_implementation.verify_email_using_token(
+                        token_response.token,
+                        user_context,
+                    )
+
         session = await create_new_session(
             api_options.request, user.user_id, {}, {}, user_context=user_context
         )
+
         return ConsumeCodePostOkResult(
             created_new_user=response.created_new_user,
             user=response.user,

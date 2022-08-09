@@ -164,10 +164,12 @@ class APIImplementation(APIInterface):
 
         if email_verified:
             ev_instance = EmailVerificationRecipe.get_instance()
-            token_response = await ev_instance.recipe_implementation.create_email_verification_token(
-                user_id=signinup_response.user.user_id,
-                email=signinup_response.user.email,
-                user_context=user_context,
+            token_response = (
+                await ev_instance.recipe_implementation.create_email_verification_token(
+                    user_id=signinup_response.user.user_id,
+                    email=signinup_response.user.email,
+                    user_context=user_context,
+                )
             )
 
             if isinstance(token_response, CreateEmailVerificationTokenOkResult):

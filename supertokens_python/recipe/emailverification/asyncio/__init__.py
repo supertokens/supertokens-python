@@ -15,7 +15,8 @@ from typing import Any, Dict, Union, Optional
 from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
     EmailDoesnotExistError,
-    CreateEmailVerificationTokenEmailAlreadyVerifiedError, UnverifyEmailOkResult,
+    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
+    UnverifyEmailOkResult,
 )
 from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe

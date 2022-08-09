@@ -31,6 +31,7 @@ from .types import (
     User,
 )
 from .utils import PasswordlessConfig
+from ...supertokens import AppInfo
 
 
 class CreateCodeOkResult:
@@ -275,6 +276,7 @@ class APIOptions:
         recipe_id: str,
         config: PasswordlessConfig,
         recipe_implementation: RecipeInterface,
+        app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars],
         sms_delivery: SMSDeliveryIngredient[PasswordlessLoginSMSTemplateVars],
     ):
@@ -283,6 +285,7 @@ class APIOptions:
         self.recipe_id = recipe_id
         self.config = config
         self.recipe_implementation = recipe_implementation
+        self.app_info = app_info
         self.email_delivery = email_delivery
         self.sms_delivery = sms_delivery
 
