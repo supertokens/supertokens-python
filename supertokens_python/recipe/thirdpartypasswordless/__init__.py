@@ -63,7 +63,6 @@ def init(
     get_custom_user_input_code: Union[
         Callable[[Dict[str, Any]], Awaitable[str]], None
     ] = None,
-    email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,
     override: Union[InputOverrideConfig, None] = None,
@@ -74,7 +73,6 @@ def init(
         flow_type,
         get_link_domain_and_path,
         get_custom_user_input_code,
-        email_verification_feature,
         email_delivery,
         sms_delivery,
         override,

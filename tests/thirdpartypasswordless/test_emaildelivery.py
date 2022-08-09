@@ -32,7 +32,15 @@ from supertokens_python.ingredients.emaildelivery.types import (
     SMTPSettingsFrom,
 )
 from supertokens_python.querier import Querier
-from supertokens_python.recipe import passwordless, session, thirdpartypasswordless
+from supertokens_python.recipe import (
+    passwordless,
+    session,
+    thirdpartypasswordless,
+    emailverification,
+)
+from supertokens_python.recipe.emailverification import (
+    ParentRecipeEmailVerificationConfig,
+)
 from supertokens_python.recipe.emailverification.interfaces import (
     CreateEmailVerificationTokenEmailAlreadyVerifiedError,
 )
@@ -45,8 +53,10 @@ from supertokens_python.recipe.session.recipe_implementation import (
     RecipeImplementation as SessionRecipeImplementation,
 )
 from supertokens_python.recipe.session.session_functions import create_new_session
-from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
+from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
+)
+from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
     passwordlessSigninup,
     thirdparty_sign_in_up,
 )
@@ -58,9 +68,9 @@ from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
 )
 from supertokens_python.recipe.thirdpartypasswordless.types import (
     EmailTemplateVars,
-    User,
     VerificationEmailTemplateVars,
 )
+from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.utils import is_version_gte
 from tests.utils import (
     clean_st,
@@ -179,7 +189,7 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     email_verify_url = ""
 
     async def create_and_send_custom_email(
-        input_: User, email_verification_link: str, _: Dict[str, Any]
+        input_: EVUser, email_verification_link: str, _: Dict[str, Any]
     ):
         nonlocal email, email_verify_url
         email = input_.email
@@ -195,13 +205,16 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
         ),
         framework="fastapi",
         recipe_list=[
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="OPTIONAL",
+                    create_and_send_custom_email=create_and_send_custom_email,
+                )
+            ),
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
                 providers=[],
-                email_verification_feature=thirdpartypasswordless.InputEmailVerificationConfig(
-                    create_and_send_custom_email=create_and_send_custom_email,
-                ),
             ),
             session.init(),
         ],
@@ -535,9 +548,7 @@ async def test_email_verify_for_pless_user_no_callback():
         return
 
     pless_response = await passwordlessSigninup("test@example.com", None, {})
-    create_token = await create_email_verification_token(
-        pless_response.user.user_id, {}
-    )
+    create_token = await create_email_verification_token(pless_response.user.user_id)
 
     assert isinstance(
         create_token, CreateEmailVerificationTokenEmailAlreadyVerifiedError

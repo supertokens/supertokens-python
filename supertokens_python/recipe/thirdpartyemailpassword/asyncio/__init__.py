@@ -20,6 +20,7 @@ from supertokens_python.recipe.thirdpartyemailpassword.recipe import (
 
 from ..types import EmailTemplateVars, User
 
+
 async def get_user_by_id(
     user_id: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> Union[None, User]:

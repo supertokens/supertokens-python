@@ -19,20 +19,11 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailContent,
     SMTPServiceInterface,
 )
-from supertokens_python.recipe.emailverification.emaildelivery.services.smtp.service_implementation import (
-    ServiceImplementation as EVServiceImplementation,
-)
-from supertokens_python.recipe.emailverification.types import (
-    VerificationEmailTemplateVars,
-)
 from supertokens_python.recipe.passwordless.emaildelivery.services.smtp.service_implementation import (
     ServiceImplementation as PlessServiceImplementation,
 )
 from supertokens_python.recipe.thirdpartypasswordless.types import EmailTemplateVars
 
-from .email_verification_implementation import (
-    ServiceImplementation as DerivedEVServiceImplementation,
-)
 from .passwordless_implementation import (
     ServiceImplementation as DerivedPlessServiceImplementation,
 )
@@ -41,19 +32,6 @@ from .passwordless_implementation import (
 class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
     def __init__(self, transporter: Transporter) -> None:
         super().__init__(transporter)
-
-        # Email Verification:
-        email_verification_service_impl = EVServiceImplementation(transporter)
-        self.ev_send_raw_email = email_verification_service_impl.send_raw_email
-        self.ev_get_content = email_verification_service_impl.get_content
-
-        derived_ev_service_implementation = DerivedEVServiceImplementation(self)
-        email_verification_service_impl.send_raw_email = (
-            derived_ev_service_implementation.send_raw_email
-        )
-        email_verification_service_impl.get_content = (
-            derived_ev_service_implementation.get_content
-        )
 
         # Passwordless:
         pless_service_impl = PlessServiceImplementation(transporter)
@@ -76,7 +54,4 @@ class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
     async def get_content(
         self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
     ) -> EmailContent:
-        if isinstance(template_vars, VerificationEmailTemplateVars):
-            return await self.ev_get_content(template_vars, user_context)
-
         return await self.pless_get_content(template_vars, user_context)

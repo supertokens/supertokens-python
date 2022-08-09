@@ -22,6 +22,7 @@ from ..interfaces import (
 )
 from ..types import EmailTemplateVars, User
 
+
 def get_user_by_id(
     user_id: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> Union[None, User]:

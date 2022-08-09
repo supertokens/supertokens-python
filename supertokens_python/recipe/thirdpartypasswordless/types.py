@@ -48,9 +48,11 @@ class User:
 _T = TypeVar("_T")
 
 # Export:
-EmailTemplateVars = Union[tp_types.EmailTemplateVars, pless_types.EmailTemplateVars]
+EmailTemplateVars = pless_types.EmailTemplateVars
 SMSTemplateVars = pless_types.SMSTemplateVars
-VerificationEmailTemplateVars = tp_types.VerificationEmailTemplateVars
+VerificationEmailTemplateVars = (
+    tp_types.VerificationEmailTemplateVars
+)  # TODO: Remove this.
 PasswordlessLoginEmailTemplateVars = pless_types.PasswordlessLoginEmailTemplateVars
 PasswordlessLoginSMSTemplateVars = pless_types.PasswordlessLoginSMSTemplateVars
 

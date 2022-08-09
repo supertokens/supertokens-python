@@ -469,10 +469,8 @@ async def test_init_validation_thirdpartyemailpassword():
             ),
             framework="fastapi",
             recipe_list=[
-                emailverification.init(
-                    "email verification"  # type: ignore
-                ),
-                thirdpartyemailpassword.init()
+                emailverification.init("email verification"),  # type: ignore
+                thirdpartyemailpassword.init(),
             ],
         )
     assert (
@@ -598,14 +596,16 @@ async def test_init_validation_thirdpartypasswordless():
             ),
             framework="fastapi",
             recipe_list=[
+                emailverification.init(
+                    "email verify",  # type: ignore
+                ),
                 thirdpartypasswordless.init(
                     contact_config=ContactEmailOrPhoneConfig(
                         create_and_send_custom_text_message=save_code_text,
                         create_and_send_custom_email=save_code_email,
                     ),
                     flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                    email_verification_feature="email verify",  # type: ignore
-                )
+                ),
             ],
         )
     assert (

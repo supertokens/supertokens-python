@@ -36,6 +36,7 @@ from .types import EmailTemplateVars, User
 if TYPE_CHECKING:
     from .recipe import ThirdPartyEmailPasswordRecipe
 
+
 def email_verification_create_and_send_custom_email(
     recipe: ThirdPartyEmailPasswordRecipe,
     create_and_send_custom_email: Callable[

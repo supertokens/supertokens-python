@@ -196,9 +196,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
-        apis_handled = (
-            self.email_password_recipe.get_apis_handled()
-        )
+        apis_handled = self.email_password_recipe.get_apis_handled()
         if self.third_party_recipe is not None:
             apis_handled = apis_handled + self.third_party_recipe.get_apis_handled()
         return apis_handled
@@ -243,9 +241,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         raise err
 
     def get_all_cors_headers(self) -> List[str]:
-        cors_headers = (
-            self.email_password_recipe.get_all_cors_headers()
-        )
+        cors_headers = self.email_password_recipe.get_all_cors_headers()
         if self.third_party_recipe is not None:
             cors_headers = cors_headers + self.third_party_recipe.get_all_cors_headers()
         return cors_headers

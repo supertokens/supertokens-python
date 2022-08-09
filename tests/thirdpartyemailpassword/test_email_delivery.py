@@ -607,10 +607,12 @@ async def test_email_verification_backward_compatibility(
         ),
         framework="fastapi",
         recipe_list=[
-            emailverification.init(ParentRecipeEmailVerificationConfig(
-                mode="OPTIONAL",
-                create_and_send_custom_email=custom_create_and_send_custom_email
-            )),
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="OPTIONAL",
+                    create_and_send_custom_email=custom_create_and_send_custom_email,
+                )
+            ),
             thirdpartyemailpassword.init(),
             session.init(),
         ],
