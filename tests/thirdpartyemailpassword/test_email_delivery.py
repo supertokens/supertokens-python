@@ -46,7 +46,6 @@ from supertokens_python.recipe.session.recipe_implementation import (
 )
 from supertokens_python.recipe.session.session_functions import create_new_session
 from supertokens_python.recipe.thirdpartyemailpassword import (
-    InputEmailVerificationConfig,
     InputResetPasswordUsingTokenFeature,
 )
 from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -62,7 +61,7 @@ from supertokens_python.recipe.thirdpartyemailpassword.types import (
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
 )
-from supertokens_python.recipe.thirdpartyemailpassword.types import User as TPEPUser
+from supertokens_python.recipe.emailverification.types import User as EVUser
 from tests.utils import (
     clean_st,
     email_verify_token_request,
@@ -592,7 +591,7 @@ async def test_email_verification_backward_compatibility(
     email_verify_url = ""
 
     async def custom_create_and_send_custom_email(
-        user: TPEPUser, email_verification_link: str, _: Dict[str, Any]
+        user: EVUser, email_verification_link: str, _: Dict[str, Any]
     ):
         nonlocal email, email_verify_url
         email = user.email
@@ -608,11 +607,11 @@ async def test_email_verification_backward_compatibility(
         ),
         framework="fastapi",
         recipe_list=[
-            thirdpartyemailpassword.init(
-                email_verification_feature=InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_create_and_send_custom_email
-                )
-            ),
+            emailverification.init(ParentRecipeEmailVerificationConfig(
+                mode="OPTIONAL",
+                create_and_send_custom_email=custom_create_and_send_custom_email
+            )),
+            thirdpartyemailpassword.init(),
             session.init(),
         ],
     )
@@ -913,7 +912,7 @@ async def test_email_verification_backward_compatibility_thirdparty_user(
     email_verify_url = ""
 
     async def custom_create_and_send_custom_email(
-        user: TPEPUser, email_verification_link: str, _: Dict[str, Any]
+        user: EVUser, email_verification_link: str, _: Dict[str, Any]
     ):
         nonlocal email, email_verify_url
         email = user.email
@@ -929,11 +928,13 @@ async def test_email_verification_backward_compatibility_thirdparty_user(
         ),
         framework="fastapi",
         recipe_list=[
-            thirdpartyemailpassword.init(
-                email_verification_feature=InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_create_and_send_custom_email
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="OPTIONAL",
+                    create_and_send_custom_email=custom_create_and_send_custom_email,
                 )
             ),
+            thirdpartyemailpassword.init(),
             session.init(),
         ],
     )

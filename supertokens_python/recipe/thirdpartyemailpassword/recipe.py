@@ -14,17 +14,13 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.emailpassword.types import EmailPasswordIngredients
-from supertokens_python.recipe.emailverification.types import (
-    EmailVerificationIngredients,
-    VerificationEmailTemplateVars,
-)
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import ThirdPartyIngredients
 from supertokens_python.recipe.thirdpartyemailpassword.types import (
@@ -51,7 +47,6 @@ from .recipeimplementation.implementation import RecipeImplementation
 from .recipeimplementation.third_party_recipe_implementation import (
     RecipeImplementation as ThirdPartyRecipeImplementation,
 )
-from .utils import InputEmailVerificationConfig
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -63,7 +58,6 @@ from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.utils import (
     InputOverrideConfig as EPOverrideConfig,
 )
-from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdparty.utils import (
     InputOverrideConfig as TPOverrideConfig,
@@ -93,10 +87,8 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         reset_password_using_token_feature: Union[
             InputResetPasswordUsingTokenFeature, None
         ] = None,
-        email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[Provider], None] = None,
-        email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
         email_password_recipe: Union[EmailPasswordRecipe, None] = None,
         third_party_recipe: Union[ThirdPartyRecipe, None] = None,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
@@ -106,7 +98,6 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             self,
             sign_up_feature,
             reset_password_using_token_feature,
-            email_verification_feature,
             override,
             providers,
             email_delivery,
@@ -139,21 +130,6 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             )
         else:
             self.email_delivery = email_delivery_ingredient
-
-        if email_verification_recipe is not None:
-            self.email_verification_recipe = email_verification_recipe
-        else:
-            ev_email_delivery_ingredient = cast(
-                EmailDeliveryIngredient[VerificationEmailTemplateVars],
-                self.email_delivery,
-            )
-            ev_ingredients = EmailVerificationIngredients(ev_email_delivery_ingredient)
-            self.email_verification_recipe = EmailVerificationRecipe(
-                recipe_id,
-                app_info,
-                self.config.email_verification_feature,
-                ev_ingredients,
-            )
 
         if email_password_recipe is not None:
             self.email_password_recipe = email_password_recipe
@@ -208,9 +184,6 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SupertokensThirdPartyEmailPasswordError)
-            or self.email_verification_recipe.is_error_from_this_recipe_based_on_instance(
-                err
-            )
             or self.email_password_recipe.is_error_from_this_recipe_based_on_instance(
                 err
             )
@@ -225,7 +198,6 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
     def get_apis_handled(self) -> List[APIHandled]:
         apis_handled = (
             self.email_password_recipe.get_apis_handled()
-            + self.email_verification_recipe.get_apis_handled()
         )
         if self.third_party_recipe is not None:
             apis_handled = apis_handled + self.third_party_recipe.get_apis_handled()
@@ -256,9 +228,7 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             return await self.third_party_recipe.handle_api_request(
                 request_id, request, path, method, response
             )
-        return await self.email_verification_recipe.handle_api_request(
-            request_id, request, path, method, response
-        )
+        return None
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
@@ -270,12 +240,11 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
             and self.third_party_recipe.is_error_from_this_recipe_based_on_instance(err)
         ):
             return await self.third_party_recipe.handle_error(request, err, response)
-        return await self.email_verification_recipe.handle_error(request, err, response)
+        raise err
 
     def get_all_cors_headers(self) -> List[str]:
         cors_headers = (
             self.email_password_recipe.get_all_cors_headers()
-            + self.email_verification_recipe.get_all_cors_headers()
         )
         if self.third_party_recipe is not None:
             cors_headers = cors_headers + self.third_party_recipe.get_all_cors_headers()
@@ -287,7 +256,6 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         reset_password_using_token_feature: Union[
             InputResetPasswordUsingTokenFeature, None
         ] = None,
-        email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
         override: Union[InputOverrideConfig, None] = None,
         providers: Union[List[Provider], None] = None,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
@@ -302,7 +270,6 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                         ingredients,
                         sign_up_feature,
                         reset_password_using_token_feature,
-                        email_verification_feature,
                         override,
                         providers,
                         email_delivery=email_delivery,

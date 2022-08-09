@@ -469,9 +469,10 @@ async def test_init_validation_thirdpartyemailpassword():
             ),
             framework="fastapi",
             recipe_list=[
-                thirdpartyemailpassword.init(
-                    email_verification_feature="email verification"  # type: ignore
-                )
+                emailverification.init(
+                    "email verification"  # type: ignore
+                ),
+                thirdpartyemailpassword.init()
             ],
         )
     assert (
