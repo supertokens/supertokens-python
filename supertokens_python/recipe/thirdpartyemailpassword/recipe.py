@@ -26,9 +26,6 @@ from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
 )
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import (
-    EmailTemplateVars as ThirdPartyEmailTemplateVars,
-)
 from supertokens_python.recipe.thirdparty.types import ThirdPartyIngredients
 from supertokens_python.recipe.thirdpartyemailpassword.types import (
     EmailTemplateVars,
@@ -196,22 +193,16 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
                 return get_third_party_interface_impl(self.api_implementation)
 
             self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
-            ingredient = cast(
-                EmailDeliveryIngredient[ThirdPartyEmailTemplateVars],
-                self.email_delivery,
-            )
-            tp_ingredients = ThirdPartyIngredients(ingredient)
+            tp_ingredients = ThirdPartyIngredients()
             if len(self.config.providers) != 0:
                 self.third_party_recipe = ThirdPartyRecipe(
                     recipe_id,
                     app_info,
                     SignInAndUpFeature(self.config.providers),
                     tp_ingredients,
-                    None,
                     TPOverrideConfig(
                         func_override_third_party, apis_override_third_party
                     ),
-                    self.email_verification_recipe,
                 )
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:

@@ -31,27 +31,27 @@ from supertokens_python.ingredients.emaildelivery.types import (
     SMTPSettings,
     SMTPSettingsFrom,
 )
-from supertokens_python.recipe import session, thirdparty
+from supertokens_python.recipe import session, thirdparty, emailverification
+from supertokens_python.recipe.emailverification.utils import ParentRecipeEmailVerificationConfig
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.recipe_implementation import (
     RecipeImplementation as SessionRecipeImplementation,
 )
 from supertokens_python.recipe.session.session_functions import create_new_session
 from supertokens_python.recipe.thirdparty.asyncio import sign_in_up
-from supertokens_python.recipe.thirdparty.emaildelivery.services.smtp import SMTPService
+from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import SMTPService
 from supertokens_python.recipe.thirdparty.interfaces import SignInUpOkResult
 from supertokens_python.recipe.thirdparty.provider import Provider
 from supertokens_python.recipe.thirdparty.types import (
     AccessTokenAPI,
     AuthorisationRedirectAPI,
     EmailTemplateVars,
-    User,
     UserInfo,
     UserInfoEmail,
     VerificationEmailTemplateVars,
 )
 from tests.utils import clean_st, email_verify_token_request, reset, setup_st, start_st
-
+from supertokens_python.recipe.emailverification.types import User as EVUser
 respx_mock = respx.MockRouter
 
 
@@ -257,7 +257,7 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     email_verify_url = ""
 
     async def create_and_send_custom_email(
-        input_: User, email_verification_link: str, _: Dict[str, Any]
+        input_: EVUser, email_verification_link: str, _: Dict[str, Any]
     ):
         nonlocal email, email_verify_url
         email = input_.email
@@ -273,13 +273,16 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
         ),
         framework="fastapi",
         recipe_list=[
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="OPTIONAL",
+                    create_and_send_custom_email=create_and_send_custom_email,
+                )
+            ),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                     providers=[CustomProvider("CUSTOM", True)]
-                ),
-                email_verification_feature=thirdparty.InputEmailVerificationConfig(
-                    create_and_send_custom_email=create_and_send_custom_email,
-                ),
+                )
             ),
             session.init(),
         ],
@@ -342,13 +345,18 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
         ),
         framework="fastapi",
         recipe_list=[
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="OPTIONAL",
+                    email_delivery=EmailDeliveryConfig(
+                        service=None,
+                        override=email_delivery_override,
+                    ),
+                )
+            ),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                     providers=[CustomProvider("CUSTOM", True)]
-                ),
-                email_delivery=EmailDeliveryConfig(
-                    service=None,
-                    override=email_delivery_override,
                 ),
             ),
             session.init(),
@@ -476,13 +484,18 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
         ),
         framework="fastapi",
         recipe_list=[
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(
+                    mode="OPTIONAL",
+                    email_delivery=EmailDeliveryConfig(
+                        service=email_delivery_service,
+                        override=email_delivery_override,
+                    )
+                )
+            ),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                     providers=[CustomProvider("CUSTOM", True)]
-                ),
-                email_delivery=EmailDeliveryConfig(
-                    service=email_delivery_service,
-                    override=email_delivery_override,
                 ),
             ),
             session.init(),

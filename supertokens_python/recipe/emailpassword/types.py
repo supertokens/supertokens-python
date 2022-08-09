@@ -94,11 +94,7 @@ class PasswordResetEmailTemplateVars:
 # Export:
 EmailTemplateVars = PasswordResetEmailTemplateVars
 
-# Union[
-#  PasswordResetEmailTemplateVars, ev_types.VerificationEmailTemplateVars # TODO: REMOVE COMMENTED
-# ]
 # PasswordResetEmailTemplateVars (Already exported because it's defined in the same)
-# VerificationEmailTemplateVars = ev_types.VerificationEmailTemplateVars # TODO: REMOVE
 
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
 

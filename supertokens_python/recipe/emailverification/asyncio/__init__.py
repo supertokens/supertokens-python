@@ -15,7 +15,7 @@ from typing import Any, Dict, Union, Optional
 from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
     EmailDoesnotExistError,
-    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
+    CreateEmailVerificationTokenEmailAlreadyVerifiedError, UnverifyEmailOkResult,
 )
 from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
@@ -117,7 +117,7 @@ async def unverify_email(
         elif isinstance(email_info, EmailDoesnotExistError):
             # Here we are returning OK since that's how it used to work, but a later call
             # to is_verified will still return true
-            return "OK"  # TODO: Make a class for this
+            return UnverifyEmailOkResult
         else:
             raise Exception("Unknown User ID provided without email")
 

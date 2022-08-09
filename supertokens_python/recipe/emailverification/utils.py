@@ -43,12 +43,13 @@ class OverrideConfig:
         self.functions = functions
         self.apis = apis
 
+MODE_TYPE = Literal["REQUIRED", "OPTIONAL"]
 
 class ParentRecipeEmailVerificationConfig:
-    # TODO: Now that this class is public, we might want to rename this?
+    # TODO: Now that this class will be used directly, we might want to rename this?
     def __init__(
         self,
-        mode: Literal["REQUIRED", "OPTIONAL"],
+        mode: MODE_TYPE,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
         create_and_send_custom_email: Union[
@@ -56,7 +57,7 @@ class ParentRecipeEmailVerificationConfig:
         ] = None,
         override: Union[OverrideConfig, None] = None,
     ):
-        self.mode = mode
+        self.mode: MODE_TYPE = mode
         self.email_delivery = email_delivery
         self.get_email_for_user_id = get_email_for_user_id
         self.create_and_send_custom_email = create_and_send_custom_email
@@ -72,14 +73,14 @@ class ParentRecipeEmailVerificationConfig:
 class EmailVerificationConfig:
     def __init__(
         self,
-        mode: str,  # TODO: Literal["REQUIRED", "OPTIONAL"] had to be removed because of pyright. Possible to avoid?
+        mode: MODE_TYPE,
         get_email_delivery_config: Callable[
             [], EmailDeliveryConfigWithService[VerificationEmailTemplateVars]
         ],
         get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction],
         override: OverrideConfig,
     ):
-        self.mode: str = mode  # TODO: How to avoid ": str"
+        self.mode = mode
         self.override = override
         self.get_email_delivery_config = get_email_delivery_config
         self.get_email_for_user_id = get_email_for_user_id

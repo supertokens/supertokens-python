@@ -28,9 +28,6 @@ from supertokens_python.recipe.emailverification.types import (
 )
 from supertokens_python.recipe.passwordless.types import PasswordlessIngredients
 from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import (
-    EmailTemplateVars as ThirdPartyEmailTemplateVars,
-)
 from supertokens_python.recipe.thirdparty.types import ThirdPartyIngredients
 from supertokens_python.recipe.thirdpartypasswordless.types import (
     EmailTemplateVars,
@@ -298,21 +295,15 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             self.third_party_recipe: Union[ThirdPartyRecipe, None] = None
 
             if len(self.config.providers) != 0:
-                tp_email_delivery = cast(
-                    EmailDeliveryIngredient[ThirdPartyEmailTemplateVars],
-                    self.email_delivery,
-                )
-                tp_ingredients = ThirdPartyIngredients(tp_email_delivery)
+                tp_ingredients = ThirdPartyIngredients()
                 self.third_party_recipe = ThirdPartyRecipe(
                     recipe_id,
                     app_info,
                     SignInAndUpFeature(self.config.providers),
                     tp_ingredients,
-                    None,
                     TPOverrideConfig(
                         func_override_third_party, apis_override_third_party
                     ),
-                    self.email_verification_recipe,
                 )
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
@@ -378,7 +369,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             and self.third_party_recipe.is_error_from_this_recipe_based_on_instance(err)
         ):
             return await self.third_party_recipe.handle_error(request, err, response)
-        return await self.email_verification_recipe.handle_error(request, err, response)
+        raise err
 
     def get_all_cors_headers(self) -> List[str]:
         cors_headers = (

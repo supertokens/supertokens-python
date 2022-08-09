@@ -202,7 +202,7 @@ class PasswordlessRecipe(RecipeModule):
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
-    ):
+    ) -> BaseResponse: # type: ignore
         raise err
 
     def get_all_cors_headers(self) -> List[str]:

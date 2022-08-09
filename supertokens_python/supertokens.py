@@ -33,6 +33,7 @@ from .constants import (
 from .exceptions import SuperTokensError
 from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
+from .post_init_callbacks import PostSTInitCallbacks
 from .querier import Querier
 from .recipe.session.cookie_and_header import (
     attach_access_token_to_cookie,
@@ -280,6 +281,7 @@ class Supertokens:
             Supertokens.__instance = Supertokens(
                 app_info, framework, supertokens_config, recipe_list, mode, telemetry
             )
+            PostSTInitCallbacks.run_post_init_callbacks()
 
     @staticmethod
     def reset():

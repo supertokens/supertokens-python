@@ -18,69 +18,6 @@ from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 
 from ..types import EmailTemplateVars, User
 
-
-async def create_email_verification_token(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    if user_context is None:
-        user_context = {}
-    email = await ThirdPartyRecipe.get_instance().get_email_for_user_id(
-        user_id, user_context
-    )
-    return await ThirdPartyRecipe.get_instance().email_verification_recipe.recipe_implementation.create_email_verification_token(
-        user_id, email, user_context
-    )
-
-
-async def verify_email_using_token(
-    token: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyRecipe.get_instance().email_verification_recipe.recipe_implementation.verify_email_using_token(
-        token, user_context
-    )
-
-
-async def is_email_verified(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    if user_context is None:
-        user_context = {}
-    email = await ThirdPartyRecipe.get_instance().get_email_for_user_id(
-        user_id, user_context
-    )
-    return await ThirdPartyRecipe.get_instance().email_verification_recipe.recipe_implementation.is_email_verified(
-        user_id, email, user_context
-    )
-
-
-async def unverify_email(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    if user_context is None:
-        user_context = {}
-    email = await ThirdPartyRecipe.get_instance().get_email_for_user_id(
-        user_id, user_context
-    )
-    return await ThirdPartyRecipe.get_instance().email_verification_recipe.recipe_implementation.unverify_email(
-        user_id, email, user_context
-    )
-
-
-async def revoke_email_verification_tokens(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    if user_context is None:
-        user_context = {}
-    email = await ThirdPartyRecipe.get_instance().get_email_for_user_id(
-        user_id, user_context
-    )
-    return await ThirdPartyRecipe.get_instance().email_verification_recipe.recipe_implementation.revoke_email_verification_tokens(
-        user_id, email, user_context
-    )
-
-
 async def get_user_by_id(
     user_id: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> Union[User, None]:

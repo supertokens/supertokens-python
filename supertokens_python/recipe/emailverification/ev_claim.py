@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.emailverification.interfaces import (
@@ -40,7 +40,7 @@ class IsVerifiedSCV(SessionClaimValidator):
         refetch_time_on_false_in_seconds: int,
     ):
         super().__init__("st-ev-is-verified")
-        self.claim: BooleanClaim = claim  # TODO: FIXME: One has to specify type of self.claim to avoid type erorr from pylint
+        self.claim: BooleanClaim = claim  # TODO: Should work without specifying type of self.claim (no pyright errors)
         self.has_value_validator = has_value_validator
         self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
 
@@ -75,18 +75,14 @@ class EmailVerificationClaimValidators(BooleanClaimValidators):
 
 class EmailVerificationClaimClass(BooleanClaim):
     def __init__(self):
-        # TODO: see if it works when we use async instead of MaybeAwaitable?
-        def fetch_value(
-            user_id: str, user_context: Optional[Dict[str, Any]]
-        ) -> MaybeAwaitable[bool]:
-            if user_context is None:
-                user_context = {}  # TODO: Verify if this is the right thing to do?
-
+        async def fetch_value(
+            user_id: str, user_context: Dict[str, Any]
+        ) -> bool:
             recipe = EmailVerificationRecipe.get_instance()
-            email_info = recipe.get_email_for_user_id(user_id, user_context)
+            email_info = await recipe.get_email_for_user_id(user_id, user_context)
 
             if isinstance(email_info, GetEmailForUserIdOkResult):
-                return recipe.recipe_implementation.is_email_verified(
+                return await recipe.recipe_implementation.is_email_verified(
                     user_id, email_info.email, user_context
                 )
             if isinstance(email_info, EmailDoesnotExistError):

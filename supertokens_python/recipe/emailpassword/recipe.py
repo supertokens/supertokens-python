@@ -34,6 +34,7 @@ from .api.implementation import APIImplementation
 from .exceptions import FieldError, SuperTokensEmailPasswordError
 from .interfaces import APIOptions
 from .recipe_implementation import RecipeImplementation
+from ...post_init_callbacks import PostSTInitCallbacks
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -113,12 +114,13 @@ class EmailPasswordRecipe(RecipeModule):
             else self.config.override.apis(api_implementation)
         )
 
-        # TODO: Postinit callbacks
-        email_veriifcation_recipe = EmailVerificationRecipe.get_instance()
-        if email_veriifcation_recipe is not None:
+        def callback():
+            email_veriifcation_recipe = EmailVerificationRecipe.get_instance()
             email_veriifcation_recipe.add_get_email_for_user_id_func(
                 self.get_email_for_user_id
             )
+
+        PostSTInitCallbacks.add_post_init_callback(callback)
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
@@ -188,7 +190,7 @@ class EmailPasswordRecipe(RecipeModule):
             )
         if request_id == USER_PASSWORD_RESET:
             return await handle_password_reset_api(self.api_implementation, api_options)
-        # TODO: FIXME Should be False as per Node PR but the spec here don't allow it.
+        # FIXME: Should be False as per Node PR but the spec here don't allow it.
         return None
 
     async def handle_error(

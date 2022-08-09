@@ -92,7 +92,6 @@ class APIImplementation(APIInterface):
 
         token = token_result.token
         password_reset_link = (
-            # TODO: Delete get_reset_password_url implementation
             api_options.app_info.website_domain.get_as_string_dangerous()
             + api_options.app_info.website_base_path.get_as_string_dangerous()
             + "?token="

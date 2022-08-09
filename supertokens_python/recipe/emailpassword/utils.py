@@ -38,7 +38,7 @@ from supertokens_python.utils import deprecated_warn, get_filtered_list
 from .constants import (
     FORM_FIELD_EMAIL_ID,
     FORM_FIELD_PASSWORD_ID,
-)  # TODO: RESET_PASSWORD
+)
 
 
 async def default_validator(_: str) -> Union[str, None]:

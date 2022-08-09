@@ -28,7 +28,7 @@ from supertokens_python.recipe.emailverification.types import (
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api.implementation import APIImplementation
-from .email_verification_claim import EmailVerificationClaim
+from .ev_claim import EmailVerificationClaim
 from .interfaces import (
     APIOptions,
     UnknownUserIdError,
@@ -38,6 +38,7 @@ from .interfaces import (
 )
 from .recipe_implementation import RecipeImplementation
 from ..session import SessionRecipe
+from ...post_init_callbacks import PostSTInitCallbacks
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -177,14 +178,17 @@ class EmailVerificationRecipe(RecipeModule):
                     config,
                     ingredients=ingredients,
                 )
-                # TODO: Supertokens init callback:
-                SessionRecipe.get_instance().add_claim_from_other_recipe(
-                    EmailVerificationClaim
-                )
-                if config.mode == "REQUIRED":
-                    SessionRecipe.get_instance().add_claim_validator_from_other_recipe(
-                        EmailVerificationClaim.validators.is_verified()
+
+                def callback():
+                    SessionRecipe.get_instance().add_claim_from_other_recipe(
+                        EmailVerificationClaim
                     )
+                    if str(config.mode) == "REQUIRED":
+                        SessionRecipe.get_instance().add_claim_validator_from_other_recipe(
+                            EmailVerificationClaim.validators.is_verified()
+                        )
+
+                PostSTInitCallbacks.add_post_init_callback(callback)
 
                 return EmailVerificationRecipe.__instance
             raise_general_exception(

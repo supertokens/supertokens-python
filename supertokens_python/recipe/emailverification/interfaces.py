@@ -189,7 +189,7 @@ class APIInterface(ABC):
         self,
         api_options: APIOptions,
         user_context: Dict[str, Any],
-        session: SessionContainer,  # TODO: Fix order of session arg to match the order is_email_verified_* (Applicable for all funcs in this file)
+        session: SessionContainer,
     ) -> Union[
         GenerateEmailVerifyTokenPostOkResult,
         GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
@@ -200,7 +200,6 @@ class APIInterface(ABC):
 
 class GetEmailForUserIdOkResult:
     def __init__(self, email: str):
-        # TODO: Write this?
         self.email = email
 
 
