@@ -16,7 +16,7 @@ from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
     EmailDoesnotExistError,
     CreateEmailVerificationTokenEmailAlreadyVerifiedError,
-    UnverifyEmailOkResult,
+    UnverifyEmailOkResult, CreateEmailVerificationTokenOkResult,
 )
 from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
@@ -26,7 +26,7 @@ async def create_email_verification_token(
     user_id: str,
     email: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
-):
+) -> Union[CreateEmailVerificationTokenOkResult, CreateEmailVerificationTokenEmailAlreadyVerifiedError]:
     if user_context is None:
         user_context = {}
     recipe = EmailVerificationRecipe.get_instance()
