@@ -32,9 +32,6 @@ from supertokens_python.ingredients.emaildelivery.types import (
     SMTPSettingsFrom,
 )
 from supertokens_python.recipe import session, thirdparty, emailverification
-from supertokens_python.recipe.emailverification.utils import (
-    ParentRecipeEmailVerificationConfig,
-)
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.recipe_implementation import (
     RecipeImplementation as SessionRecipeImplementation,
@@ -134,6 +131,7 @@ async def test_email_verify_default_backward_compatibility(
         ),
         framework="fastapi",
         recipe_list=[
+            emailverification.init(),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                     providers=[CustomProvider("CUSTOM", True)]
@@ -204,6 +202,7 @@ async def test_email_verify_default_backward_compatibility_supress_error(
         ),
         framework="fastapi",
         recipe_list=[
+            emailverification.init(),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                     providers=[CustomProvider("CUSTOM", True)]
@@ -280,10 +279,8 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
         framework="fastapi",
         recipe_list=[
             emailverification.init(
-                ParentRecipeEmailVerificationConfig(
-                    mode="OPTIONAL",
-                    create_and_send_custom_email=create_and_send_custom_email,
-                )
+                mode="OPTIONAL",
+                create_and_send_custom_email=create_and_send_custom_email,
             ),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
@@ -354,13 +351,11 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
         framework="fastapi",
         recipe_list=[
             emailverification.init(
-                ParentRecipeEmailVerificationConfig(
-                    mode="OPTIONAL",
-                    email_delivery=EmailDeliveryConfig(
-                        service=None,
-                        override=email_delivery_override,
-                    ),
-                )
+                mode="OPTIONAL",
+                email_delivery=EmailDeliveryConfig(
+                    service=None,
+                    override=email_delivery_override,
+                ),
             ),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
@@ -493,13 +488,11 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
         framework="fastapi",
         recipe_list=[
             emailverification.init(
-                ParentRecipeEmailVerificationConfig(
-                    mode="OPTIONAL",
-                    email_delivery=EmailDeliveryConfig(
-                        service=email_delivery_service,
-                        override=email_delivery_override,
-                    ),
-                )
+                mode="OPTIONAL",
+                email_delivery=EmailDeliveryConfig(
+                    service=email_delivery_service,
+                    override=email_delivery_override,
+                ),
             ),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(

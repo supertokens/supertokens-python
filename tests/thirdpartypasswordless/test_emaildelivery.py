@@ -38,9 +38,6 @@ from supertokens_python.recipe import (
     thirdpartypasswordless,
     emailverification,
 )
-from supertokens_python.recipe.emailverification import (
-    ParentRecipeEmailVerificationConfig,
-)
 from supertokens_python.recipe.emailverification.interfaces import (
     CreateEmailVerificationTokenEmailAlreadyVerifiedError,
 )
@@ -211,10 +208,8 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
         framework="fastapi",
         recipe_list=[
             emailverification.init(
-                ParentRecipeEmailVerificationConfig(
-                    mode="OPTIONAL",
-                    create_and_send_custom_email=create_and_send_custom_email,
-                )
+                mode="OPTIONAL",
+                create_and_send_custom_email=create_and_send_custom_email,
             ),
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),
@@ -287,13 +282,11 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
         framework="fastapi",
         recipe_list=[
             emailverification.init(
-                ParentRecipeEmailVerificationConfig(
-                    mode="OPTIONAL",
-                    email_delivery=EmailDeliveryConfig(
-                        service=None,
-                        override=email_delivery_override,
-                    ),
-                )
+                mode="OPTIONAL",
+                email_delivery=EmailDeliveryConfig(
+                    service=None,
+                    override=email_delivery_override,
+                ),
             ),
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),
@@ -428,13 +421,11 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
         framework="fastapi",
         recipe_list=[
             emailverification.init(
-                ParentRecipeEmailVerificationConfig(
-                    mode="OPTIONAL",
-                    email_delivery=EmailDeliveryConfig(
-                        service=email_delivery_service,
-                        override=email_delivery_override,
-                    ),
-                )
+                mode="OPTIONAL",
+                email_delivery=EmailDeliveryConfig(
+                    service=email_delivery_service,
+                    override=email_delivery_override,
+                ),
             ),
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),

@@ -48,9 +48,6 @@ from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
 )
 from supertokens_python.recipe.emailverification.types import User as EVUser
-from supertokens_python.recipe.emailverification.utils import (
-    ParentRecipeEmailVerificationConfig,
-)
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.recipe_implementation import (
     RecipeImplementation as SessionRecipeImplementation,
@@ -530,9 +527,7 @@ async def test_email_verification_default_backward_compatibility(
         ),
         framework="fastapi",
         recipe_list=[
-            emailverification.init(
-                ParentRecipeEmailVerificationConfig(mode="OPTIONAL")
-            ),
+            emailverification.init(),
             emailpassword.init(),
             session.init(),
         ],
@@ -597,9 +592,7 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
         ),
         framework="fastapi",
         recipe_list=[
-            emailverification.init(
-                ParentRecipeEmailVerificationConfig(mode="OPTIONAL")
-            ),
+            emailverification.init(),
             emailpassword.init(),
             session.init(),
         ],
@@ -672,10 +665,8 @@ async def test_email_verification_backward_compatibility(
         framework="fastapi",
         recipe_list=[
             emailverification.init(
-                ParentRecipeEmailVerificationConfig(
-                    mode="REQUIRED",
-                    create_and_send_custom_email=custom_create_and_send_custom_email,
-                )
+                mode="REQUIRED",
+                create_and_send_custom_email=custom_create_and_send_custom_email,
             ),
             emailpassword.init(),
             session.init(),
@@ -741,13 +732,11 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
         framework="fastapi",
         recipe_list=[
             emailverification.init(
-                ParentRecipeEmailVerificationConfig(
-                    mode="OPTIONAL",
-                    email_delivery=EmailDeliveryConfig(
-                        service=None,
-                        override=email_delivery_override,
-                    ),
-                )
+                mode="OPTIONAL",
+                email_delivery=EmailDeliveryConfig(
+                    service=None,
+                    override=email_delivery_override,
+                ),
             ),
             emailpassword.init(),
             session.init(),
@@ -874,13 +863,11 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
         framework="fastapi",
         recipe_list=[
             emailverification.init(
-                ParentRecipeEmailVerificationConfig(
-                    mode="OPTIONAL",
-                    email_delivery=EmailDeliveryConfig(
-                        service=email_delivery_service,
-                        override=email_delivery_override,
-                    ),
-                )
+                mode="OPTIONAL",
+                email_delivery=EmailDeliveryConfig(
+                    service=email_delivery_service,
+                    override=email_delivery_override,
+                ),
             ),
             emailpassword.init(),
             session.init(),

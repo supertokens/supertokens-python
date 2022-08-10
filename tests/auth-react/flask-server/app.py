@@ -57,9 +57,6 @@ from supertokens_python.recipe.emailverification.interfaces import (
 from supertokens_python.recipe.emailverification.interfaces import (
     APIOptions as EVAPIOptions,
 )
-from supertokens_python.recipe.emailverification.utils import (
-    ParentRecipeEmailVerificationConfig,
-)
 from supertokens_python.recipe.jwt import JWTRecipe
 from supertokens_python.recipe.passwordless import (
     ContactEmailOnlyConfig,
@@ -891,11 +888,9 @@ def custom_init(
     recipe_list = [
         session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
         emailverification.init(
-            ParentRecipeEmailVerificationConfig(
-                mode="REQUIRED",
-                create_and_send_custom_email=ev_create_and_send_custom_email,
-                override=EVInputOverrideConfig(apis=override_email_verification_apis),
-            )
+            mode="REQUIRED",
+            create_and_send_custom_email=ev_create_and_send_custom_email,
+            override=EVInputOverrideConfig(apis=override_email_verification_apis),
         ),
         emailpassword.init(
             sign_up_feature=emailpassword.InputSignUpFeature(form_fields),

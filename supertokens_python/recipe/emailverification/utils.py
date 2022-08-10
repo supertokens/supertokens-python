@@ -48,10 +48,10 @@ MODE_TYPE = Literal["REQUIRED", "OPTIONAL"]
 
 
 class ParentRecipeEmailVerificationConfig:
-    # TODO: Now that this class will be used directly, we might want to rename this?
+    # TODO: Rename this? ^
     def __init__(
         self,
-        mode: MODE_TYPE,
+        mode: MODE_TYPE = "OPTIONAL",
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
         create_and_send_custom_email: Union[

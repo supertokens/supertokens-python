@@ -143,11 +143,9 @@ async def test_init_validation_emailverification():
             framework="fastapi",
             recipe_list=[
                 emailverification.init(
-                    emailverification.ParentRecipeEmailVerificationConfig(
-                        mode="OPTIONAL",
-                        get_email_for_user_id=get_email_for_user_id,
-                        override="override",  # type: ignore
-                    )
+                    mode="OPTIONAL",
+                    get_email_for_user_id=get_email_for_user_id,
+                    override="override",  # type: ignore
                 )
             ],
         )
