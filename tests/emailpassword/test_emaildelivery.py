@@ -36,7 +36,9 @@ from supertokens_python.recipe.emailpassword import (
     InputResetPasswordUsingTokenFeature,
 )
 from supertokens_python.recipe.emailpassword.emaildelivery.services import SMTPService
-from supertokens_python.recipe.emailverification.emaildelivery.services import SMTPService as EVSMTPService
+from supertokens_python.recipe.emailverification.emaildelivery.services import (
+    SMTPService as EVSMTPService,
+)
 from supertokens_python.recipe.emailpassword.types import (
     EmailTemplateVars,
     PasswordResetEmailTemplateVars,
@@ -528,9 +530,11 @@ async def test_email_verification_default_backward_compatibility(
         ),
         framework="fastapi",
         recipe_list=[
-            emailverification.init(ParentRecipeEmailVerificationConfig(mode="OPTIONAL")),
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(mode="OPTIONAL")
+            ),
             emailpassword.init(),
-            session.init()
+            session.init(),
         ],
     )
     start_st()
@@ -593,9 +597,11 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
         ),
         framework="fastapi",
         recipe_list=[
-            emailverification.init(ParentRecipeEmailVerificationConfig(mode="OPTIONAL")),
+            emailverification.init(
+                ParentRecipeEmailVerificationConfig(mode="OPTIONAL")
+            ),
             emailpassword.init(),
-            session.init()
+            session.init(),
         ],
     )
     start_st()
@@ -707,7 +713,9 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
     email = ""
     email_verify_url = ""
 
-    def email_delivery_override(oi: EmailDeliveryInterface[VerificationEmailTemplateVars]):
+    def email_delivery_override(
+        oi: EmailDeliveryInterface[VerificationEmailTemplateVars],
+    ):
         oi_send_email = oi.send_email
 
         async def send_email(
@@ -738,7 +746,7 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
                     email_delivery=EmailDeliveryConfig(
                         service=None,
                         override=email_delivery_override,
-                    )
+                    ),
                 )
             ),
             emailpassword.init(),
@@ -871,7 +879,7 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
                     email_delivery=EmailDeliveryConfig(
                         service=email_delivery_service,
                         override=email_delivery_override,
-                    )
+                    ),
                 )
             ),
             emailpassword.init(),

@@ -23,7 +23,8 @@ from supertokens_python.recipe.emailverification.exceptions import (
 )
 from supertokens_python.recipe.emailverification.types import (
     EmailVerificationIngredients,
-    VerificationEmailTemplateVars, VerificationEmailTemplateVarsUser,
+    VerificationEmailTemplateVars,
+    VerificationEmailTemplateVarsUser,
 )
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from .ev_claim import EmailVerificationClaimValidators
@@ -33,9 +34,15 @@ from .interfaces import (
     UnknownUserIdError,
     TypeGetEmailForUserIdFunction,
     GetEmailForUserIdOkResult,
-    EmailDoesnotExistError, APIInterface, EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError,
-    VerifyEmailUsingTokenOkResult, IsEmailVerifiedGetOkResult, GenerateEmailVerifyTokenPostOkResult,
-    GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError, CreateEmailVerificationTokenEmailAlreadyVerifiedError,
+    EmailDoesnotExistError,
+    APIInterface,
+    EmailVerifyPostOkResult,
+    EmailVerifyPostInvalidTokenError,
+    VerifyEmailUsingTokenOkResult,
+    IsEmailVerifiedGetOkResult,
+    GenerateEmailVerifyTokenPostOkResult,
+    GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
+    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
 )
 from .recipe_implementation import RecipeImplementation
 from ..session import SessionRecipe
@@ -366,6 +373,9 @@ class APIImplementation(APIInterface):
                 email_verification_email_delivery_input, user_context
             )
             return GenerateEmailVerifyTokenPostOkResult()
+
+        if isinstance(email_info, UnknownUserIdError):
+            pass
 
         raise Exception(
             "Should never come here: UNKNOWN_USER_ID or invalid result from get_email_for_user_id"
