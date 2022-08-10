@@ -125,8 +125,7 @@ class EmailVerifyPostOkResult(APIResponse):
 
 
 class EmailVerifyPostInvalidTokenError(APIResponse):
-    def __init__(self):
-        self.status = "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
+    status = "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status}

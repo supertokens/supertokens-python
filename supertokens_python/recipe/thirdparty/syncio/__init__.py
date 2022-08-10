@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 
-from ..types import EmailTemplateVars, User
+from ..types import User
 
 
 def get_user_by_id(
@@ -62,11 +62,3 @@ def sign_in_up(
             third_party_id, third_party_user_id, email, email_verified, user_context
         )
     )
-
-
-def send_email(
-    input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
-):
-    from supertokens_python.recipe.thirdparty.asyncio import send_email
-
-    return sync(send_email(input_, user_context))

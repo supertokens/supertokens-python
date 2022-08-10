@@ -274,18 +274,19 @@ class APIImplementation(APIInterface):
 
         if user.email is not None:
             ev_instance = EmailVerificationRecipe.get_instance()
-            if ev_instance:
-                token_response = await ev_instance.recipe_implementation.create_email_verification_token(
+            token_response = (
+                await ev_instance.recipe_implementation.create_email_verification_token(
                     user.user_id,
                     user.email,
                     user_context,
                 )
+            )
 
-                if isinstance(token_response, CreateEmailVerificationTokenOkResult):
-                    await ev_instance.recipe_implementation.verify_email_using_token(
-                        token_response.token,
-                        user_context,
-                    )
+            if isinstance(token_response, CreateEmailVerificationTokenOkResult):
+                await ev_instance.recipe_implementation.verify_email_using_token(
+                    token_response.token,
+                    user_context,
+                )
 
         session = await create_new_session(
             api_options.request, user.user_id, {}, {}, user_context=user_context

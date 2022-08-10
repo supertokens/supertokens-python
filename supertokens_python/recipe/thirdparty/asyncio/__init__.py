@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Union
 
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 
-from ..types import EmailTemplateVars, User
+from ..types import User
 
 
 async def get_user_by_id(
@@ -64,14 +64,4 @@ async def sign_in_up(
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.sign_in_up(
         third_party_id, third_party_user_id, email, email_verified, user_context
-    )
-
-
-async def send_email(
-    input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
-):
-    if user_context is None:
-        user_context = {}
-    return await ThirdPartyRecipe.get_instance().email_delivery.ingredient_interface_impl.send_email(
-        input_, user_context
     )

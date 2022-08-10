@@ -26,7 +26,6 @@ from .recipe import EmailPasswordRecipe
 exceptions = ex
 InputOverrideConfig = utils.InputOverrideConfig
 InputResetPasswordUsingTokenFeature = utils.InputResetPasswordUsingTokenFeature
-# InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputSignUpFeature = utils.InputSignUpFeature
 InputFormField = utils.InputFormField
 SMTPService = emaildelivery_services.SMTPService

@@ -25,7 +25,6 @@ from ...ingredients.smsdelivery.types import (
     TwilioServiceInterface,
 )
 from ..passwordless import types as pless_types
-from ..thirdparty import types as tp_types
 from ..thirdparty.types import ThirdPartyInfo
 
 
@@ -50,9 +49,6 @@ _T = TypeVar("_T")
 # Export:
 EmailTemplateVars = pless_types.EmailTemplateVars
 SMSTemplateVars = pless_types.SMSTemplateVars
-VerificationEmailTemplateVars = (
-    tp_types.VerificationEmailTemplateVars
-)  # TODO: Remove this.
 PasswordlessLoginEmailTemplateVars = pless_types.PasswordlessLoginEmailTemplateVars
 PasswordlessLoginSMSTemplateVars = pless_types.PasswordlessLoginSMSTemplateVars
 

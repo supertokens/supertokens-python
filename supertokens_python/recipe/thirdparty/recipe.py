@@ -32,7 +32,6 @@ if TYPE_CHECKING:
     from .utils import SignInAndUpFeature, InputOverrideConfig
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 
 from .api import (
@@ -42,14 +41,13 @@ from .api import (
 )
 from .constants import APPLE_REDIRECT_HANDLER, AUTHORISATIONURL, SIGNINUP
 from .exceptions import SuperTokensThirdPartyError
-from .types import ThirdPartyIngredients, EmailTemplateVars
+from .types import ThirdPartyIngredients
 from .utils import validate_and_normalise_user_input
 
 
 class ThirdPartyRecipe(RecipeModule):
     recipe_id = "thirdparty"
     __instance = None
-    email_delivery: EmailDeliveryIngredient[EmailTemplateVars]
 
     def __init__(
         self,

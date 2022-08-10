@@ -28,7 +28,6 @@ from .recipe import ThirdPartyPasswordlessRecipe
 from .smsdelivery import services as smsdelivery_services
 from .types import EmailTemplateVars, SMSTemplateVars
 
-InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputOverrideConfig = utils.InputOverrideConfig
 exceptions = ex
 ContactConfig = passwordless.ContactConfig

@@ -34,7 +34,6 @@ from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.bac
     BackwardCompatibilityService,
 )
 from supertokens_python.recipe.thirdpartypasswordless.types import SMSTemplateVars
-from supertokens_python.utils import deprecated_warn
 from typing_extensions import Literal
 
 from ..emailverification.types import User as EmailVerificationUser
@@ -58,24 +57,6 @@ from supertokens_python.recipe.emailverification.utils import (
 from .smsdelivery.services.backward_compatibility import (
     BackwardCompatibilityService as SMSBackwardCompatibilityService,
 )
-
-
-class InputEmailVerificationConfig:
-    def __init__(
-        self,
-        get_email_verification_url: Union[
-            Callable[[User, Any], Awaitable[str]], None
-        ] = None,
-        create_and_send_custom_email: Union[
-            Callable[[User, str, Any], Awaitable[None]], None
-        ] = None,
-    ):
-        self.get_email_verification_url = get_email_verification_url
-        self.create_and_send_custom_email = create_and_send_custom_email
-        if create_and_send_custom_email:
-            deprecated_warn(
-                "create_and_send_custom_email is deprecated. Please use email delivery config instead"
-            )
 
 
 def email_verification_create_and_send_custom_email(

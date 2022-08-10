@@ -14,11 +14,6 @@
 from typing import Callable, Dict, List, Union
 
 from supertokens_python.framework.request import BaseRequest
-from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryInterface,
-    SMTPServiceInterface,
-)
-from supertokens_python.recipe.emailverification import types as ev_types
 
 
 class ThirdPartyInfo:
@@ -77,15 +72,6 @@ class UsersResponse:
     def __init__(self, users: List[User], next_pagination_token: Union[str, None]):
         self.users = users
         self.next_pagination_token = next_pagination_token
-
-
-# Export:
-EmailTemplateVars = ev_types.VerificationEmailTemplateVars
-VerificationEmailTemplateVars = ev_types.VerificationEmailTemplateVars
-
-SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
-
-EmailDeliveryOverrideInput = EmailDeliveryInterface[EmailTemplateVars]
 
 
 class ThirdPartyIngredients:
