@@ -14,11 +14,6 @@
 from __future__ import annotations
 from typing import Dict, Any
 
-from supertokens_python.recipe.emailverification import EmailVerificationRecipe
-from supertokens_python.recipe.emailverification.interfaces import (
-    GetEmailForUserIdOkResult,
-    EmailDoesnotExistError,
-)
 from supertokens_python.recipe.session.claim_base_classes.boolean_claim import (
     BooleanClaim,
     BooleanClaimValidators,
@@ -71,28 +66,3 @@ class EmailVerificationClaimValidators(BooleanClaimValidators):
         return IsVerifiedSCV(
             self.claim, has_value_res, refetch_time_on_false_in_seconds
         )
-
-
-class EmailVerificationClaimClass(BooleanClaim):
-    def __init__(self):
-        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> bool:
-            recipe = EmailVerificationRecipe.get_instance()
-            email_info = await recipe.get_email_for_user_id(user_id, user_context)
-
-            if isinstance(email_info, GetEmailForUserIdOkResult):
-                return await recipe.recipe_implementation.is_email_verified(
-                    user_id, email_info.email, user_context
-                )
-            if isinstance(email_info, EmailDoesnotExistError):
-                # we consider people without email addresses as validated
-                return True
-            raise Exception(
-                "Should never come here: UNKNOWN_USER_ID or invalid result from get_email_for_user"
-            )
-
-        super().__init__("st-ev", fetch_value)
-
-        self.validators = EmailVerificationClaimValidators(claim=self)
-
-
-EmailVerificationClaim = EmailVerificationClaimClass()

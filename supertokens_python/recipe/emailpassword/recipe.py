@@ -115,10 +115,11 @@ class EmailPasswordRecipe(RecipeModule):
         )
 
         def callback():
-            email_veriifcation_recipe = EmailVerificationRecipe.get_instance()
-            email_veriifcation_recipe.add_get_email_for_user_id_func(
-                self.get_email_for_user_id
-            )
+            ev_recipe = EmailVerificationRecipe.get_instance_optional()
+            if ev_recipe:
+                ev_recipe.add_get_email_for_user_id_func(
+                    self.get_email_for_user_id
+                )
 
         PostSTInitCallbacks.add_post_init_callback(callback)
 

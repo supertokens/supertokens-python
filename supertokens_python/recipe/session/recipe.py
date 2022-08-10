@@ -302,6 +302,9 @@ class SessionRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         SessionRecipe.__instance = None
+        # FIXME: Discovered its requirement while running tests. Confirm if this is correct:
+        SessionRecipe.claims_added_by_other_recipes = []
+        SessionRecipe.claim_validators_added_by_other_recipes = []
 
     @staticmethod
     def add_claim_from_other_recipe(claim: SessionClaim[Any]):

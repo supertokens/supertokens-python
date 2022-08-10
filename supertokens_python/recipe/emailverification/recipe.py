@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union, Any, Dict, Callable
+from typing import TYPE_CHECKING, List, Union, Any, Dict, Callable, Optional
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -23,21 +23,25 @@ from supertokens_python.recipe.emailverification.exceptions import (
 )
 from supertokens_python.recipe.emailverification.types import (
     EmailVerificationIngredients,
-    VerificationEmailTemplateVars,
+    VerificationEmailTemplateVars, VerificationEmailTemplateVarsUser,
 )
 from supertokens_python.recipe_module import APIHandled, RecipeModule
+from .ev_claim import EmailVerificationClaimValidators
 
-from .api.implementation import APIImplementation
-from .ev_claim import EmailVerificationClaim
 from .interfaces import (
     APIOptions,
     UnknownUserIdError,
     TypeGetEmailForUserIdFunction,
     GetEmailForUserIdOkResult,
-    EmailDoesnotExistError,
+    EmailDoesnotExistError, APIInterface, EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError,
+    VerifyEmailUsingTokenOkResult, IsEmailVerifiedGetOkResult, GenerateEmailVerifyTokenPostOkResult,
+    GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError, CreateEmailVerificationTokenEmailAlreadyVerifiedError,
 )
 from .recipe_implementation import RecipeImplementation
 from ..session import SessionRecipe
+from ..session.claim_base_classes.boolean_claim import BooleanClaim
+from ..session.interfaces import SessionContainer
+from ...logger import log_debug_message
 from ...post_init_callbacks import PostSTInitCallbacks
 
 if TYPE_CHECKING:
@@ -206,6 +210,10 @@ class EmailVerificationRecipe(RecipeModule):
         )
 
     @staticmethod
+    def get_instance_optional() -> Optional[EmailVerificationRecipe]:
+        return EmailVerificationRecipe.__instance
+
+    @staticmethod
     def reset():
         if ("SUPERTOKENS_ENV" not in environ) or (
             environ["SUPERTOKENS_ENV"] != "testing"
@@ -230,3 +238,135 @@ class EmailVerificationRecipe(RecipeModule):
 
     def add_get_email_for_user_id_func(self, f: Callable[[str, Dict[str, Any]], Any]):
         self.get_email_for_user_id_funcs_from_other_recipes.append(f)
+
+
+class EmailVerificationClaimClass(BooleanClaim):
+    def __init__(self):
+        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> bool:
+            recipe = EmailVerificationRecipe.get_instance()
+            email_info = await recipe.get_email_for_user_id(user_id, user_context)
+
+            if isinstance(email_info, GetEmailForUserIdOkResult):
+                return await recipe.recipe_implementation.is_email_verified(
+                    user_id, email_info.email, user_context
+                )
+            if isinstance(email_info, EmailDoesnotExistError):
+                # we consider people without email addresses as validated
+                return True
+            raise Exception(
+                "Should never come here: UNKNOWN_USER_ID or invalid result from get_email_for_user"
+            )
+
+        super().__init__("st-ev", fetch_value)
+
+        self.validators = EmailVerificationClaimValidators(claim=self)
+
+
+EmailVerificationClaim = EmailVerificationClaimClass()
+
+
+class APIImplementation(APIInterface):
+    async def email_verify_post(
+        self,
+        token: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+        session: Optional[SessionContainer] = None,
+    ) -> Union[EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError]:
+
+        response = await api_options.recipe_implementation.verify_email_using_token(
+            token, user_context
+        )
+        if isinstance(response, VerifyEmailUsingTokenOkResult):
+            if session is not None:
+                await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
+
+            return EmailVerifyPostOkResult(response.user)
+        return EmailVerifyPostInvalidTokenError()
+
+    async def is_email_verified_get(
+        self,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+        session: Optional[SessionContainer] = None,
+    ) -> IsEmailVerifiedGetOkResult:
+        if session is None:
+            raise Exception("Session is undefined. Should not come here.")
+        await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
+        is_verified = await session.get_claim_value(
+            EmailVerificationClaim, user_context
+        )
+        # TODO: Type of is_verified should be bool. It's any for now.
+
+        if is_verified is None:
+            raise Exception(
+                "Should never come here: EmailVerificationClaim failed to set value"
+            )
+
+        return IsEmailVerifiedGetOkResult(is_verified)
+
+    async def generate_email_verify_token_post(
+        self,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+        session: SessionContainer,
+    ) -> Union[
+        GenerateEmailVerifyTokenPostOkResult,
+        GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
+    ]:
+        if session is None:
+            raise Exception("Session is undefined. Should not come here.")
+
+        user_id = session.get_user_id(user_context)
+        email_info = await EmailVerificationRecipe.get_instance().get_email_for_user_id(
+            user_id, user_context
+        )
+
+        if isinstance(email_info, EmailDoesnotExistError):
+            log_debug_message(
+                "Email verification email not sent to user %s because it doesn't have an email address.",
+                user_id,
+            )
+            return GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError()
+        if isinstance(email_info, GetEmailForUserIdOkResult):
+            response = (
+                await api_options.recipe_implementation.create_email_verification_token(
+                    user_id,
+                    email_info.email,
+                    user_context,
+                )
+            )
+
+            if isinstance(
+                response, CreateEmailVerificationTokenEmailAlreadyVerifiedError
+            ):
+                log_debug_message(
+                    "Email verification email not sent to %s because it is already verified.",
+                    email_info.email,
+                )
+                return GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError()
+
+            email_verify_link = (
+                api_options.app_info.website_domain.get_as_string_dangerous()
+                + api_options.app_info.website_base_path.get_as_string_dangerous()
+                + "/verify-email/"
+                + "?token="
+                + response.token
+                + "&rid="
+                + api_options.recipe_id
+            )
+
+            log_debug_message("Sending email verification email to %s", email_info)
+            email_verification_email_delivery_input = VerificationEmailTemplateVars(
+                user=VerificationEmailTemplateVarsUser(user_id, email_info.email),
+                email_verify_link=email_verify_link,
+                user_context=user_context,
+            )
+            await api_options.email_delivery.ingredient_interface_impl.send_email(
+                email_verification_email_delivery_input, user_context
+            )
+            return GenerateEmailVerifyTokenPostOkResult()
+
+        raise Exception(
+            "Should never come here: UNKNOWN_USER_ID or invalid result from get_email_for_user_id"
+        )

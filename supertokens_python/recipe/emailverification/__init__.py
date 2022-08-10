@@ -15,17 +15,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
-from supertokens_python.recipe.emailverification import ev_claim
 from . import exceptions as ex
 from . import utils
 from .emaildelivery import services as emaildelivery_services
-from .recipe import EmailVerificationRecipe
+from . import recipe
 
 InputOverrideConfig = utils.OverrideConfig
 ParentRecipeEmailVerificationConfig = utils.ParentRecipeEmailVerificationConfig
 exception = ex
 SMTPService = emaildelivery_services.SMTPService
-EmailVerificationClaim = ev_claim.EmailVerificationClaim
+EmailVerificationClaim = recipe.EmailVerificationClaim
+EmailVerificationRecipe = recipe.EmailVerificationRecipe
 
 
 if TYPE_CHECKING:
