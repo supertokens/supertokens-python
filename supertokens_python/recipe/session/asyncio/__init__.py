@@ -49,12 +49,29 @@ async def create_new_session(
 ) -> SessionContainer:
     if user_context is None:
         user_context = {}
+    if session_data is None:
+        session_data = {}
+    if access_token_payload is None:
+        access_token_payload = {}
+
+    claims_added_by_other_recipes = SessionRecipe.get_claims_added_by_other_recipes()
+    final_access_token_payload = access_token_payload
+
+    for claim in claims_added_by_other_recipes:
+        update = await claim.build(user_id, user_context)
+        final_access_token_payload = {**final_access_token_payload, **update}
+
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
             SessionRecipe.get_instance().app_info.framework
         ].wrap_request(request)
+
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
-        request, user_id, access_token_payload, session_data, user_context=user_context
+        request,
+        user_id,
+        final_access_token_payload,
+        session_data,
+        user_context=user_context,
     )
 
 
