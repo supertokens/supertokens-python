@@ -7,6 +7,7 @@ from supertokens_python.recipe.session.interfaces import (
     JSONObject,
     SessionClaimValidator,
     ClaimValidationResult,
+    SessionClaim,
 )
 from supertokens_python.recipe.session.session_class import Session
 from tests.utils import AsyncMock
@@ -46,8 +47,8 @@ async def test_should_call_validate_with_the_same_payload_object():
     )
 
     class DummyClaimValidator(SessionClaimValidator):
-        def __init__(self):
-            super().__init__("claim_validator_id")
+        def __init__(self, claim: SessionClaim[Any]):
+            super().__init__("claim_validator_id", claim)
             self.validate_call_count = 0
 
         async def validate(
@@ -56,10 +57,12 @@ async def test_should_call_validate_with_the_same_payload_object():
             self.validate_call_count += 1
             return ClaimValidationResult(is_valid=True)
 
+        def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return True
+
     dummy_claim = PrimitiveClaim("st-claim", lambda _, __: "Hello world")
 
-    dummy_claim_validator = DummyClaimValidator()
-    dummy_claim_validator.claim = dummy_claim
+    dummy_claim_validator = DummyClaimValidator(dummy_claim)
 
     dummy_claim.validators.dummy_claim_validator = dummy_claim_validator  # type: ignore
 

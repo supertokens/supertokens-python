@@ -62,9 +62,12 @@ class Session(SessionContainer):
 
     async def update_access_token_payload(
         self,
-        new_access_token_payload: Union[Dict[str, Any], None],
-        user_context: Dict[str, Any],
+        new_access_token_payload: Dict[str, Any],
+        user_context: Union[Dict[str, Any], None] = None,
     ) -> None:
+        if user_context is None:
+            user_context = {}
+
         response = await self.recipe_implementation.regenerate_access_token(
             self.access_token, new_access_token_payload, user_context
         )

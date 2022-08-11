@@ -33,7 +33,7 @@ from ..interfaces import (
     SessionClaim,
     JSONObject,
     ClaimsValidationResult,
-    SessionDoesnotExistError,
+    SessionDoesNotExistError,
     GetClaimValueOkResult,
 )
 
@@ -267,7 +267,7 @@ def get_claim_value(
     session_handle: str,
     claim: SessionClaim[_T],
     user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[SessionDoesnotExistError, GetClaimValueOkResult[_T]]:
+) -> Union[SessionDoesNotExistError, GetClaimValueOkResult[_T]]:
     from supertokens_python.recipe.session.asyncio import (
         get_claim_value as async_get_claim_value,
     )
@@ -296,7 +296,7 @@ def validate_claims_for_session_handle(
         ]
     ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[SessionDoesnotExistError, ClaimsValidationResult]:
+) -> Union[SessionDoesNotExistError, ClaimsValidationResult]:
     from supertokens_python.recipe.session.asyncio import (
         validate_claims_for_session_handle as async_validate_claims_for_session_handle,
     )

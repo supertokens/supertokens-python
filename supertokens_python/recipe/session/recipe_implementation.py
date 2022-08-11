@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import json
 from typing import TYPE_CHECKING, Any, Dict, Optional
-
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -26,6 +25,7 @@ from supertokens_python.utils import (
     get_timestamp_ms,
     normalise_http_method,
     resolve,
+    deprecated_warn,
 )
 from . import session_functions
 from .cookie_and_header import (
@@ -45,7 +45,7 @@ from .interfaces import (
     SessionInformationResult,
     SessionObj,
     ClaimsValidationResult,
-    SessionDoesnotExistError,
+    SessionDoesNotExistError,
     JSONObject,
     GetClaimValueOkResult,
 )
@@ -193,7 +193,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         session_info: SessionInformationResult,
         claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
-    ) -> Union[ClaimsValidationResult, SessionDoesnotExistError]:
+    ) -> Union[ClaimsValidationResult, SessionDoesNotExistError]:
         original_session_claim_payload_json = json.dumps(
             session_info.access_token_payload
         )
@@ -212,7 +212,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 user_context,
             )
             if res is False:
-                return SessionDoesnotExistError()
+                return SessionDoesNotExistError()
 
         invalid_claims = await validate_claims_in_payload(
             claim_validators,
@@ -402,7 +402,10 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> bool:
-        """DEPRECATED: Use merge_into_access_token_payload instead"""
+        deprecated_warn(
+            "update_access_token_payload is deprecated. Use merge_into_access_token_payload instead"
+        )
+
         return await session_functions.update_access_token_payload(
             self, session_handle, new_access_token_payload
         )
@@ -469,10 +472,10 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         session_handle: str,
         claim: SessionClaim[Any],
         user_context: Dict[str, Any],
-    ) -> Union[SessionDoesnotExistError, GetClaimValueOkResult[Any]]:
+    ) -> Union[SessionDoesNotExistError, GetClaimValueOkResult[Any]]:
         session_info = await self.get_session_information(session_handle, user_context)
         if session_info is None:
-            return SessionDoesnotExistError()
+            return SessionDoesNotExistError()
 
         return GetClaimValueOkResult(
             value=claim.get_value_from_payload(

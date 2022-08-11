@@ -87,22 +87,28 @@ def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidato
 
 class AlwaysValidValidator(SessionClaimValidator):
     def __init__(self):
-        super().__init__("always-valid-validator")
+        super().__init__("always-valid-validator", TrueClaim)
 
     async def validate(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
     ) -> ClaimValidationResult:
         return ClaimValidationResult(True)
 
+    def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
+        return True
+
 
 class AlwaysInvalidValidator(SessionClaimValidator):
     def __init__(self):
-        super().__init__("always-invalid-validator")
+        super().__init__("always-invalid-validator", TrueClaim)
 
     async def validate(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
     ) -> ClaimValidationResult:
         return ClaimValidationResult(is_valid=False, reason={"message": "foo"})
+
+    def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]) -> bool:
+        return True
 
 
 @fixture(scope="function")
@@ -162,7 +168,7 @@ async def fastapi_client():
 
     class CustomValidator(SessionClaimValidator):
         def __init__(self, is_valid: bool):
-            super().__init__("test_id")
+            super().__init__("test_id", TrueClaim)
             self.is_valid = is_valid
 
         async def validate(
@@ -173,6 +179,9 @@ async def fastapi_client():
             return ClaimValidationResult(
                 is_valid=False, reason={"message": "test_reason"}
             )
+
+        def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return True
 
     refetched_claims_verify_session_is_valid_false = verify_session(
         override_global_claim_validators=lambda _, __, ___: [  # type: ignore

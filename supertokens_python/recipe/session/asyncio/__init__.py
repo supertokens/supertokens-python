@@ -22,7 +22,7 @@ from supertokens_python.recipe.session.interfaces import (
     SessionInformationResult,
     SessionClaim,
     SessionClaimValidator,
-    SessionDoesnotExistError,
+    SessionDoesNotExistError,
     ClaimsValidationResult,
     JSONObject,
     GetClaimValueOkResult,
@@ -71,7 +71,7 @@ async def validate_claims_for_session_handle(
         ]
     ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[SessionDoesnotExistError, ClaimsValidationResult]:
+) -> Union[SessionDoesNotExistError, ClaimsValidationResult]:
     if user_context is None:
         user_context = {}
 
@@ -81,7 +81,7 @@ async def validate_claims_for_session_handle(
     )
 
     if session_info is None:
-        return SessionDoesnotExistError()
+        return SessionDoesNotExistError()
 
     claim_validators_added_by_other_recipes = (
         SessionRecipe.get_claim_validators_added_by_other_recipes()
@@ -169,7 +169,7 @@ async def get_claim_value(
     session_handle: str,
     claim: SessionClaim[_T],
     user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[SessionDoesnotExistError, GetClaimValueOkResult[_T]]:
+) -> Union[SessionDoesNotExistError, GetClaimValueOkResult[_T]]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.get_claim_value(
@@ -333,7 +333,7 @@ async def merge_into_access_token_payload(
 ) -> bool:
     if user_context is None:
         user_context = {}
-    # TODO:
+
     return await SessionRecipe.get_instance().recipe_implementation.merge_into_access_token_payload(
         session_handle, new_access_token_payload, user_context
     )

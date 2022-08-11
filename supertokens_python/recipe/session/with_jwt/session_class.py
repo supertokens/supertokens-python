@@ -43,8 +43,6 @@ def get_session_with_jwt(
         new_access_token_payload: Dict[str, Any],
         user_context: Union[None, Dict[str, Any]] = None,
     ) -> None:
-        if new_access_token_payload is None:
-            new_access_token_payload = {}
         if user_context is None:
             user_context = {}
         access_token_payload = original_session.get_access_token_payload()
@@ -92,8 +90,6 @@ def get_session_with_jwt(
         return await original_update_access_token_payload(
             new_access_token_payload, user_context
         )
-
-    # TODO: Add missing override functions
 
     original_session.update_access_token_payload = update_access_token_payload
     return original_session
