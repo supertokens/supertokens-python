@@ -565,8 +565,6 @@ async def validate_claims_in_payload(
             json.dumps(claim_validation_res.__dict__),
         )
         if not claim_validation_res.is_valid:
-            assert claim_validation_res.reason is not None
-
             validation_errors.append(
                 ClaimValidationError(validator.id, claim_validation_res.reason)
             )

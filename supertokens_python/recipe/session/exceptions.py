@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Union, Any, List, Dict
+from typing import Union, Any, List, Dict, Optional
 
 from supertokens_python.exceptions import SuperTokensError
 
@@ -56,13 +56,18 @@ class TryRefreshTokenError(SuperTokensSessionError):
 class InvalidClaimsError(SuperTokensSessionError):
     def __init__(self, msg: str, payload: List[ClaimValidationError]):
         super().__init__(msg)
-        self.payload = [
-            p.__dict__ for p in payload
-        ]  # Must be JSON serializable as it will be used in response
+        self.payload: List[Dict[str, Any]] = []
+        for p in payload:
+            res = (
+                p.__dict__.copy()
+            )  # Must be JSON serializable as it will be used in response
+            if p.reason is None:
+                res.pop("reason")
+            self.payload.append(res)
 
 
 class ClaimValidationError:
-    def __init__(self, id_: str, reason: Dict[str, Any]):
+    def __init__(self, id_: str, reason: Optional[Dict[str, Any]]):
         self.id = id_
         self.reason = reason
 
