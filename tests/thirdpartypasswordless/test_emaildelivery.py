@@ -39,7 +39,7 @@ from supertokens_python.recipe import (
     emailverification,
 )
 from supertokens_python.recipe.emailverification.interfaces import (
-    CreateEmailVerificationTokenEmailAlreadyVerifiedError, CreateEmailVerificationTokenOkResult,
+    CreateEmailVerificationTokenOkResult,
 )
 from supertokens_python.recipe.passwordless import ContactEmailOnlyConfig
 from supertokens_python.recipe.passwordless.types import (
@@ -136,7 +136,9 @@ async def test_email_verify_default_backward_compatibility(
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                providers=[Github(client_id="", client_secret="")], # Note: providers must be set to init tp recipe
+                providers=[
+                    Github(client_id="", client_secret="")
+                ],  # Note: providers must be set to init tp recipe
             ),
             session.init(),
         ],
@@ -216,7 +218,9 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                providers=[Github(client_id="", client_secret="")], # Note: providers must be set to init tp recipe
+                providers=[
+                    Github(client_id="", client_secret="")
+                ],  # Note: providers must be set to init tp recipe
             ),
             session.init(),
         ],
@@ -293,7 +297,9 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                providers=[Github(client_id="", client_secret="")], # Note: providers must be set to init tp recipe
+                providers=[
+                    Github(client_id="", client_secret="")
+                ],  # Note: providers must be set to init tp recipe
             ),
             session.init(),
         ],
@@ -432,7 +438,9 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                providers=[Github(client_id="", client_secret="")], # Note: providers must be set to init tp recipe
+                providers=[
+                    Github(client_id="", client_secret="")
+                ],  # Note: providers must be set to init tp recipe
             ),
             session.init(),
         ],
@@ -561,9 +569,7 @@ async def test_email_verify_for_pless_user_no_callback():
     pless_response = await passwordlessSigninup("test@example.com", None, {})
     create_token = await create_email_verification_token(pless_response.user.user_id)
 
-    assert isinstance(
-        create_token, CreateEmailVerificationTokenOkResult
-    )
+    assert isinstance(create_token, CreateEmailVerificationTokenOkResult)
     # TODO: Replaced CreateEmailVerificationTokenEmailAlreadyVerifiedError. Confirm if this is correct.
 
     assert (

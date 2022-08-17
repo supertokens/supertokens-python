@@ -26,9 +26,6 @@ from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
 from supertokens_python.recipe.emailverification.emaildelivery.services.smtp.service_implementation import (
     ServiceImplementation as EVServiceImplementation,
 )
-from supertokens_python.recipe.emailverification.types import (
-    VerificationEmailTemplateVars,
-)
 
 
 class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
@@ -49,6 +46,4 @@ class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
     async def get_content(
         self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
     ) -> EmailContent:
-        if isinstance(template_vars, VerificationEmailTemplateVars):
-            return await self.ev_get_content(template_vars, user_context)
         return get_password_reset_email_content(template_vars)

@@ -207,26 +207,6 @@ class ResetPasswordUsingTokenFeature:
         self.form_fields_for_generate_token_form = form_fields_for_generate_token_form
 
 
-#
-# class InputEmailVerificationConfig:
-#     def __init__(
-#         self,
-#         get_email_verification_url: Union[
-#             Callable[[User, Dict[str, Any]], Awaitable[str]], None
-#         ] = None,
-#         create_and_send_custom_email: Union[
-#             Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-#         ] = None,
-#     ):
-#         self.get_email_verification_url = get_email_verification_url
-#         self.create_and_send_custom_email = create_and_send_custom_email
-#
-#         if create_and_send_custom_email:
-#             deprecated_warn(
-#                 "create_and_send_custom_email is deprecated. Please use email delivery config instead"
-#             )
-
-
 def validate_and_normalise_reset_password_using_token_config(
     sign_up_config: InputSignUpFeature,
 ) -> ResetPasswordUsingTokenFeature:
@@ -313,7 +293,6 @@ class EmailPasswordConfig:
         sign_up_feature: SignUpFeature,
         sign_in_feature: SignInFeature,
         reset_password_using_token_feature: ResetPasswordUsingTokenFeature,
-        # email_verification_feature: ParentRecipeEmailVerificationConfig,
         override: OverrideConfig,
         get_email_delivery_config: Callable[
             [RecipeInterface], EmailDeliveryConfigWithService[EmailTemplateVars]
@@ -322,7 +301,6 @@ class EmailPasswordConfig:
         self.sign_up_feature = sign_up_feature
         self.sign_in_feature = sign_in_feature
         self.reset_password_using_token_feature = reset_password_using_token_feature
-        # self.email_verification_feature = email_verification_feature
         self.override = override
         self.get_email_delivery_config = get_email_delivery_config
 
@@ -333,7 +311,6 @@ def validate_and_normalise_user_input(
     reset_password_using_token_feature: Union[
         InputResetPasswordUsingTokenFeature, None
     ] = None,
-    # email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
     override: Union[InputOverrideConfig, None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> EmailPasswordConfig:
@@ -345,11 +322,6 @@ def validate_and_normalise_user_input(
         raise ValueError(
             "reset_password_using_token_feature must be of type InputResetPasswordUsingTokenFeature or None"
         )
-
-    # if email_verification_feature is not None and not isinstance(email_verification_feature, InputEmailVerificationConfig):  # type: ignore
-    #     raise ValueError(
-    #         "email_verification_feature must be of type InputEmailVerificationConfig or None"
-    #     )
 
     if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
         raise ValueError("override must be of type InputOverrideConfig or None")
@@ -386,9 +358,6 @@ def validate_and_normalise_user_input(
         SignUpFeature(sign_up_feature.form_fields),
         SignInFeature(normalise_sign_in_form_fields(sign_up_feature.form_fields)),
         validate_and_normalise_reset_password_using_token_config(sign_up_feature),
-        # validate_and_normalise_email_verification_config(
-        #     recipe, email_verification_feature, override
-        # ),
         OverrideConfig(functions=override.functions, apis=override.apis),
         get_email_delivery_config=get_email_delivery_config,
     )

@@ -58,7 +58,7 @@ from .utils import (
 from ..emailverification import EmailVerificationRecipe
 from ..emailverification.interfaces import (
     GetEmailForUserIdOkResult,
-    EmailDoesnotExistError,
+    EmailDoesNotExistError,
     UnknownUserIdError,
 )
 from ...post_init_callbacks import PostSTInitCallbacks
@@ -349,5 +349,5 @@ class PasswordlessRecipe(RecipeModule):
         if user_info is not None:
             if user_info.email is not None:
                 return GetEmailForUserIdOkResult(user_info.email)
-            return EmailDoesnotExistError()
+            return EmailDoesNotExistError()
         return UnknownUserIdError()

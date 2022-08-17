@@ -94,7 +94,7 @@ class APIImplementation(APIInterface):
         password_reset_link = (
             api_options.app_info.website_domain.get_as_string_dangerous()
             + api_options.app_info.website_base_path.get_as_string_dangerous()
-            + "?token="
+            + "/reset-password?token="
             + token
             + "&rid="
             + api_options.recipe_id

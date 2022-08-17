@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, List, Union
 
 from supertokens_python.framework.response import BaseResponse
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
@@ -47,7 +47,6 @@ from .recipeimplementation.implementation import RecipeImplementation
 from .recipeimplementation.third_party_recipe_implementation import (
     RecipeImplementation as ThirdPartyRecipeImplementation,
 )
-from ..emailverification.interfaces import GetEmailForUserIdOkResult, UnknownUserIdError
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -296,12 +295,3 @@ class ThirdPartyEmailPasswordRecipe(RecipeModule):
         ):
             raise Exception(None, "calling testing function in non testing env")
         ThirdPartyEmailPasswordRecipe.__instance = None
-
-    async def get_email_for_user_id(self, user_id: str, user_context: Dict[str, Any]):
-        user_info = await self.recipe_implementation.get_user_by_id(
-            user_id, user_context
-        )
-        if user_info is not None:
-            return GetEmailForUserIdOkResult(user_info.email)
-
-        return UnknownUserIdError()

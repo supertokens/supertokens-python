@@ -273,7 +273,8 @@ class APIImplementation(APIInterface):
         user = response.user
 
         if user.email is not None:
-            ev_instance = EmailVerificationRecipe.get_instance()
+            ev_instance = EmailVerificationRecipe.get_instance_optional()
+            assert ev_instance is not None
             token_response = (
                 await ev_instance.recipe_implementation.create_email_verification_token(
                     user.user_id,

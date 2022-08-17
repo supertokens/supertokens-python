@@ -27,7 +27,7 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 from ..emailverification.interfaces import (
     UnknownUserIdError,
     GetEmailForUserIdOkResult,
-    EmailDoesnotExistError,
+    EmailDoesNotExistError,
 )
 
 from .api.implementation import APIImplementation
@@ -255,7 +255,7 @@ class EmailPasswordRecipe(RecipeModule):
 
     async def get_email_for_user_id(
         self, user_id: str, user_context: Dict[str, Any]
-    ) -> Union[UnknownUserIdError, GetEmailForUserIdOkResult, EmailDoesnotExistError]:
+    ) -> Union[UnknownUserIdError, GetEmailForUserIdOkResult, EmailDoesNotExistError]:
         user_info = await self.recipe_implementation.get_user_by_id(
             user_id, user_context
         )

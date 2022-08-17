@@ -36,7 +36,7 @@ from .interfaces import (
     UnknownUserIdError,
     TypeGetEmailForUserIdFunction,
     GetEmailForUserIdOkResult,
-    EmailDoesnotExistError,
+    EmailDoesNotExistError,
     APIInterface,
     EmailVerifyPostOkResult,
     EmailVerifyPostInvalidTokenError,
@@ -250,7 +250,7 @@ class EmailVerificationRecipe(RecipeModule):
 
     async def get_email_for_user_id(
         self, user_id: str, user_context: Dict[str, Any]
-    ) -> Union[GetEmailForUserIdOkResult, EmailDoesnotExistError, UnknownUserIdError]:
+    ) -> Union[GetEmailForUserIdOkResult, EmailDoesNotExistError, UnknownUserIdError]:
         if self.config.get_email_for_user_id is not None:
             res = await self.config.get_email_for_user_id(user_id, user_context)
             if not isinstance(res, UnknownUserIdError):
@@ -277,7 +277,7 @@ class EmailVerificationClaimClass(BooleanClaim):
                 return await recipe.recipe_implementation.is_email_verified(
                     user_id, email_info.email, user_context
                 )
-            if isinstance(email_info, EmailDoesnotExistError):
+            if isinstance(email_info, EmailDoesNotExistError):
                 # we consider people without email addresses as validated
                 return True
             raise Exception(
@@ -349,7 +349,7 @@ class APIImplementation(APIInterface):
             user_id, user_context
         )
 
-        if isinstance(email_info, EmailDoesnotExistError):
+        if isinstance(email_info, EmailDoesNotExistError):
             log_debug_message(
                 "Email verification email not sent to user %s because it doesn't have an email address.",
                 user_id,

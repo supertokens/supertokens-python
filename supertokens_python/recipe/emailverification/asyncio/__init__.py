@@ -14,9 +14,10 @@ from typing import Any, Dict, Union, Optional
 
 from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
-    EmailDoesnotExistError,
+    EmailDoesNotExistError,
     CreateEmailVerificationTokenEmailAlreadyVerifiedError,
-    UnverifyEmailOkResult, CreateEmailVerificationTokenOkResult,
+    UnverifyEmailOkResult,
+    CreateEmailVerificationTokenOkResult,
 )
 from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
@@ -26,7 +27,10 @@ async def create_email_verification_token(
     user_id: str,
     email: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[CreateEmailVerificationTokenOkResult, CreateEmailVerificationTokenEmailAlreadyVerifiedError]:
+) -> Union[
+    CreateEmailVerificationTokenOkResult,
+    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
+]:
     if user_context is None:
         user_context = {}
     recipe = EmailVerificationRecipe.get_instance()
@@ -34,7 +38,7 @@ async def create_email_verification_token(
         email_info = await recipe.get_email_for_user_id(user_id, user_context)
         if isinstance(email_info, GetEmailForUserIdOkResult):
             email = email_info.email
-        elif isinstance(email_info, EmailDoesnotExistError):
+        elif isinstance(email_info, EmailDoesNotExistError):
             return CreateEmailVerificationTokenEmailAlreadyVerifiedError()
         else:
             raise Exception("Unknown User ID provided without email")
@@ -67,7 +71,7 @@ async def is_email_verified(
         email_info = await recipe.get_email_for_user_id(user_id, user_context)
         if isinstance(email_info, GetEmailForUserIdOkResult):
             email = email_info.email
-        elif isinstance(email_info, EmailDoesnotExistError):
+        elif isinstance(email_info, EmailDoesNotExistError):
             return True
         else:
             raise Exception("Unknown User ID provided without email")
@@ -90,7 +94,7 @@ async def revoke_email_verification_token(
         email_info = await recipe.get_email_for_user_id(user_id, user_context)
         if isinstance(email_info, GetEmailForUserIdOkResult):
             email = email_info.email
-        elif isinstance(email_info, EmailDoesnotExistError):
+        elif isinstance(email_info, EmailDoesNotExistError):
             # Here we are returning OK since that's how it used to work, but a later call
             # to is_verified will still return true
             return CreateEmailVerificationTokenEmailAlreadyVerifiedError()
@@ -115,7 +119,7 @@ async def unverify_email(
         email_info = await recipe.get_email_for_user_id(user_id, user_context)
         if isinstance(email_info, GetEmailForUserIdOkResult):
             email = email_info.email
-        elif isinstance(email_info, EmailDoesnotExistError):
+        elif isinstance(email_info, EmailDoesNotExistError):
             # Here we are returning OK since that's how it used to work, but a later call
             # to is_verified will still return true
             return UnverifyEmailOkResult

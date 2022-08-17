@@ -202,7 +202,7 @@ class GetEmailForUserIdOkResult:
         self.email = email
 
 
-class EmailDoesnotExistError(Exception):
+class EmailDoesNotExistError(Exception):
     pass
 
 
@@ -213,6 +213,6 @@ class UnknownUserIdError(Exception):
 TypeGetEmailForUserIdFunction = Callable[
     [str, Dict[str, Any]],
     Awaitable[
-        Union[GetEmailForUserIdOkResult, EmailDoesnotExistError, UnknownUserIdError]
+        Union[GetEmailForUserIdOkResult, EmailDoesNotExistError, UnknownUserIdError]
     ],
 ]
