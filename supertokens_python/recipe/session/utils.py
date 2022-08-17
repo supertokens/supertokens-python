@@ -521,13 +521,9 @@ async def update_claims_in_payload_if_needed(
         log_debug_message(
             "update_claims_in_payload_if_needed checking %s", validator.id
         )
-        if (
-            hasattr(validator, "claim")
-            and (validator.claim is not None)
-            and (
-                await resolve(
-                    validator.should_refetch(new_access_token_payload, user_context)
-                )
+        if (validator.claim is not None) and (
+            await resolve(
+                validator.should_refetch(new_access_token_payload, user_context)
             )
         ):
             log_debug_message(
