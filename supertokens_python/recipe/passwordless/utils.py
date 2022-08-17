@@ -62,17 +62,6 @@ async def default_validate_phone_number(value: str):
         return "Phone number is invalid"
 
 
-def default_get_link_domain_and_path(app_info: AppInfo):
-    async def get_link_domain_and_path(_: PhoneOrEmailInput, __: Dict[str, Any]) -> str:
-        return (
-            app_info.website_domain.get_as_string_dangerous()
-            + app_info.website_base_path.get_as_string_dangerous()
-            + "/verify"
-        )
-
-    return get_link_domain_and_path
-
-
 async def default_validate_email(value: str):
     pattern = r"^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$"
     if fullmatch(pattern, value) is None:
@@ -211,9 +200,6 @@ class PasswordlessConfig:
         flow_type: Literal[
             "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
         ],
-        get_link_domain_and_path: Callable[
-            [PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]
-        ],
         get_email_delivery_config: Callable[
             [], EmailDeliveryConfigWithService[PasswordlessLoginEmailTemplateVars]
         ],
@@ -230,7 +216,6 @@ class PasswordlessConfig:
             "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
         ] = flow_type
         self.get_custom_user_input_code = get_custom_user_input_code
-        self.get_link_domain_and_path = get_link_domain_and_path
         self.get_email_delivery_config = get_email_delivery_config
         self.get_sms_delivery_config = get_sms_delivery_config
 
@@ -242,9 +227,6 @@ def validate_and_normalise_user_input(
         "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
     ],
     override: Union[OverrideConfig, None] = None,
-    get_link_domain_and_path: Union[
-        Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None
-    ] = None,
     get_custom_user_input_code: Union[
         Callable[[Dict[str, Any]], Awaitable[str]], None
     ] = None,
@@ -258,9 +240,6 @@ def validate_and_normalise_user_input(
 
     if override is None:
         override = OverrideConfig()
-
-    if get_link_domain_and_path is None:
-        get_link_domain_and_path = default_get_link_domain_and_path(app_info)
 
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[
         PasswordlessLoginEmailTemplateVars
@@ -330,7 +309,6 @@ def validate_and_normalise_user_input(
         contact_config=contact_config,
         override=OverrideConfig(functions=override.functions, apis=override.apis),
         flow_type=flow_type,
-        get_link_domain_and_path=get_link_domain_and_path,
         get_email_delivery_config=get_email_delivery_config,
         get_sms_delivery_config=get_sms_delivery_config,
         get_custom_user_input_code=get_custom_user_input_code,

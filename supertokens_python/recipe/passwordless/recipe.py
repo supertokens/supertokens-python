@@ -52,7 +52,6 @@ from .recipe_implementation import RecipeImplementation
 from .utils import (
     ContactConfig,
     OverrideConfig,
-    PhoneOrEmailInput,
     validate_and_normalise_user_input,
 )
 from ..emailverification import EmailVerificationRecipe
@@ -90,9 +89,6 @@ class PasswordlessRecipe(RecipeModule):
         ],
         ingredients: PasswordlessIngredients,
         override: Union[OverrideConfig, None] = None,
-        get_link_domain_and_path: Union[
-            Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None
-        ] = None,
         get_custom_user_input_code: Union[
             Callable[[Dict[str, Any]], Awaitable[str]], None
         ] = None,
@@ -109,7 +105,6 @@ class PasswordlessRecipe(RecipeModule):
             contact_config,
             flow_type,
             override,
-            get_link_domain_and_path,
             get_custom_user_input_code,
             email_delivery,
             sms_delivery,
@@ -235,9 +230,6 @@ class PasswordlessRecipe(RecipeModule):
             "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
         ],
         override: Union[OverrideConfig, None] = None,
-        get_link_domain_and_path: Union[
-            Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None
-        ] = None,
         get_custom_user_input_code: Union[
             Callable[[Dict[str, Any]], Awaitable[str]], None
         ] = None,
@@ -258,7 +250,6 @@ class PasswordlessRecipe(RecipeModule):
                     flow_type,
                     ingredients,
                     override,
-                    get_link_domain_and_path,
                     get_custom_user_input_code,
                     email_delivery,
                     sms_delivery,

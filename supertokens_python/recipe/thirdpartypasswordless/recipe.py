@@ -28,7 +28,7 @@ from supertokens_python.recipe.thirdpartypasswordless.types import (
 )
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
-from ..passwordless.utils import ContactConfig, PhoneOrEmailInput
+from ..passwordless.utils import ContactConfig
 from .api.implementation import APIImplementation
 from .api.passwordless_api_impementation import (
     get_interface_impl as get_passwordless_interface_impl,
@@ -88,9 +88,6 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
         ],
         ingredients: ThirdPartyPasswordlessIngredients,
-        get_link_domain_and_path: Union[
-            Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None
-        ] = None,
         get_custom_user_input_code: Union[
             Callable[[Dict[str, Any]], Awaitable[str]], None
         ] = None,
@@ -107,7 +104,6 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             contact_config=contact_config,
             flow_type=flow_type,
             get_custom_user_input_code=get_custom_user_input_code,
-            get_link_domain_and_path=get_link_domain_and_path,
             override=override,
             providers=providers,
             email_delivery=email_delivery,
@@ -175,7 +171,6 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                 PlessOverrideConfig(
                     func_override_passwordless, apis_override_passwordless
                 ),
-                self.config.get_link_domain_and_path,
                 self.config.get_custom_user_input_code,
             )
 
@@ -276,9 +271,6 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
         flow_type: Literal[
             "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
         ],
-        get_link_domain_and_path: Union[
-            Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None
-        ] = None,
         get_custom_user_input_code: Union[
             Callable[[Dict[str, Any]], Awaitable[str]], None
         ] = None,
@@ -296,7 +288,6 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
                     contact_config,
                     flow_type,
                     ingredients,
-                    get_link_domain_and_path,
                     get_custom_user_input_code,
                     override,
                     providers,

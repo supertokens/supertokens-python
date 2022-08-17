@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
+from typing import TYPE_CHECKING, Callable, List, Union
 
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryConfig,
@@ -28,47 +28,12 @@ from ..emailpassword.utils import (
     InputResetPasswordUsingTokenFeature,
     InputSignUpFeature,
 )
-from ..emailverification.types import User as EmailVerificationUser
 from .emaildelivery.services.backward_compatibility import BackwardCompatibilityService
 from .interfaces import APIInterface, RecipeInterface
-from .types import EmailTemplateVars, User
+from .types import EmailTemplateVars
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyEmailPasswordRecipe
-
-
-def email_verification_create_and_send_custom_email(
-    recipe: ThirdPartyEmailPasswordRecipe,
-    create_and_send_custom_email: Callable[
-        [User, str, Dict[str, Any]], Awaitable[None]
-    ],
-) -> Callable[[EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]]:
-    async def func(
-        user: EmailVerificationUser, link: str, user_context: Dict[str, Any]
-    ):
-        user_info = await recipe.recipe_implementation.get_user_by_id(
-            user.user_id, user_context
-        )
-        if user_info is None:
-            raise Exception("Unknown User ID provided")
-        return await create_and_send_custom_email(user_info, link, user_context)
-
-    return func
-
-
-def email_verification_get_email_verification_url(
-    recipe: ThirdPartyEmailPasswordRecipe,
-    get_email_verification_url: Callable[[User, Any], Awaitable[str]],
-) -> Callable[[EmailVerificationUser, Any], Awaitable[str]]:
-    async def func(user: EmailVerificationUser, user_context: Dict[str, Any]):
-        user_info = await recipe.recipe_implementation.get_user_by_id(
-            user.user_id, user_context
-        )
-        if user_info is None:
-            raise Exception("Unknown User ID provided")
-        return await get_email_verification_url(user_info, user_context)
-
-    return func
 
 
 class InputOverrideConfig:

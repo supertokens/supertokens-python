@@ -36,61 +36,20 @@ from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.bac
 from supertokens_python.recipe.thirdpartypasswordless.types import SMSTemplateVars
 from typing_extensions import Literal
 
-from ..emailverification.types import User as EmailVerificationUser
 from ..passwordless.utils import (
     ContactConfig,
     ContactEmailOnlyConfig,
     ContactEmailOrPhoneConfig,
-    PhoneOrEmailInput,
-    default_get_link_domain_and_path,
 )
 
 if TYPE_CHECKING:
     from .recipe import ThirdPartyPasswordlessRecipe
     from .interfaces import APIInterface, RecipeInterface
-    from .types import EmailTemplateVars, User
-
-from supertokens_python.recipe.emailverification.utils import (
-    OverrideConfig as EmailVerificationOverrideConfig,
-)
+    from .types import EmailTemplateVars
 
 from .smsdelivery.services.backward_compatibility import (
     BackwardCompatibilityService as SMSBackwardCompatibilityService,
 )
-
-
-def email_verification_create_and_send_custom_email(
-    recipe: ThirdPartyPasswordlessRecipe,
-    create_and_send_custom_email: Callable[
-        [User, str, Dict[str, Any]], Awaitable[None]
-    ],
-) -> Callable[[EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]]:
-    async def func(
-        user: EmailVerificationUser, link: str, user_context: Dict[str, Any]
-    ):
-        user_info = await recipe.recipe_implementation.get_user_by_id(
-            user.user_id, user_context
-        )
-        if user_info is None:
-            raise Exception("Unknown User ID provided")
-        return await create_and_send_custom_email(user_info, link, user_context)
-
-    return func
-
-
-def email_verification_get_email_verification_url(
-    recipe: ThirdPartyPasswordlessRecipe,
-    get_email_verification_url: Callable[[User, Any], Awaitable[str]],
-) -> Callable[[EmailVerificationUser, Any], Awaitable[str]]:
-    async def func(user: EmailVerificationUser, user_context: Dict[str, Any]):
-        user_info = await recipe.recipe_implementation.get_user_by_id(
-            user.user_id, user_context
-        )
-        if user_info is None:
-            raise Exception("Unknown User ID provided")
-        return await get_email_verification_url(user_info, user_context)
-
-    return func
 
 
 class InputOverrideConfig:
@@ -98,11 +57,9 @@ class InputOverrideConfig:
         self,
         functions: Union[Callable[[RecipeInterface], RecipeInterface], None] = None,
         apis: Union[Callable[[APIInterface], APIInterface], None] = None,
-        email_verification_feature: Union[EmailVerificationOverrideConfig, None] = None,
     ):
         self.functions = functions
         self.apis = apis
-        self.email_verification_feature = email_verification_feature
 
 
 class OverrideConfig:
@@ -124,9 +81,6 @@ class ThirdPartyPasswordlessConfig:
         flow_type: Literal[
             "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
         ],
-        get_link_domain_and_path: Callable[
-            [PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]
-        ],
         get_email_delivery_config: Callable[
             [], EmailDeliveryConfigWithService[EmailTemplateVars]
         ],
@@ -142,7 +96,6 @@ class ThirdPartyPasswordlessConfig:
         self.flow_type: Literal[
             "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
         ] = flow_type
-        self.get_link_domain_and_path = get_link_domain_and_path
         self.get_custom_user_input_code = get_custom_user_input_code
         self.get_email_delivery_config = get_email_delivery_config
         self.get_sms_delivery_config = get_sms_delivery_config
@@ -155,9 +108,6 @@ def validate_and_normalise_user_input(
     flow_type: Literal[
         "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
     ],
-    get_link_domain_and_path: Union[
-        Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None
-    ] = None,
     get_custom_user_input_code: Union[
         Callable[[Dict[str, Any]], Awaitable[str]], None
     ] = None,
@@ -188,9 +138,6 @@ def validate_and_normalise_user_input(
         providers = []
     if override is None:
         override = InputOverrideConfig()
-
-    if get_link_domain_and_path is None:
-        get_link_domain_and_path = default_get_link_domain_and_path(recipe.app_info)
 
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[
         EmailTemplateVars
@@ -248,7 +195,6 @@ def validate_and_normalise_user_input(
         providers=providers,
         contact_config=contact_config,
         flow_type=flow_type,
-        get_link_domain_and_path=get_link_domain_and_path,
         get_custom_user_input_code=get_custom_user_input_code,
         get_email_delivery_config=get_email_delivery_config,
         get_sms_delivery_config=get_sms_delivery_config,
