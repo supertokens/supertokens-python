@@ -25,7 +25,6 @@ from supertokens_python.utils import (
     get_timestamp_ms,
     normalise_http_method,
     resolve,
-    deprecated_warn,
 )
 from . import session_functions
 from .cookie_and_header import (
@@ -402,9 +401,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> bool:
-        deprecated_warn(
-            "update_access_token_payload is deprecated. Use merge_into_access_token_payload instead"
-        )
 
         return await session_functions.update_access_token_payload(
             self, session_handle, new_access_token_payload

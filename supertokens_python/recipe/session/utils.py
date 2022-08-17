@@ -491,7 +491,7 @@ async def get_required_claim_validators(
     from .recipe import SessionRecipe
 
     claim_validators_added_by_other_recipes = (
-        SessionRecipe.get_claim_validators_added_by_other_recipes()
+        SessionRecipe.get_instance().get_claim_validators_added_by_other_recipes()
     )
     global_claim_validators = await resolve(
         SessionRecipe.get_instance().recipe_implementation.get_global_claim_validators(

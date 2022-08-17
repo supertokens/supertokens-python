@@ -29,7 +29,7 @@ from supertokens_python.recipe.session.interfaces import (
 )
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.types import MaybeAwaitable
-from supertokens_python.utils import FRAMEWORKS, resolve
+from supertokens_python.utils import FRAMEWORKS, resolve, deprecated_warn
 from ..utils import get_required_claim_validators
 from ...jwt.interfaces import (
     CreateJwtOkResult,
@@ -54,7 +54,9 @@ async def create_new_session(
     if access_token_payload is None:
         access_token_payload = {}
 
-    claims_added_by_other_recipes = SessionRecipe.get_claims_added_by_other_recipes()
+    claims_added_by_other_recipes = (
+        SessionRecipe.get_instance().get_claims_added_by_other_recipes()
+    )
     final_access_token_payload = access_token_payload
 
     for claim in claims_added_by_other_recipes:
@@ -101,7 +103,7 @@ async def validate_claims_for_session_handle(
         return SessionDoesNotExistError()
 
     claim_validators_added_by_other_recipes = (
-        SessionRecipe.get_claim_validators_added_by_other_recipes()
+        SessionRecipe.get_instance().get_claim_validators_added_by_other_recipes()
     )
     global_claim_validators = await resolve(
         recipe_impl.get_global_claim_validators(
@@ -146,7 +148,7 @@ async def validate_claims_in_jwt_payload(
     recipe_impl = SessionRecipe.get_instance().recipe_implementation
 
     claim_validators_added_by_other_recipes = (
-        SessionRecipe.get_claim_validators_added_by_other_recipes()
+        SessionRecipe.get_instance().get_claim_validators_added_by_other_recipes()
     )
     global_claim_validators = await resolve(
         recipe_impl.get_global_claim_validators(
@@ -338,6 +340,11 @@ async def update_access_token_payload(
 ) -> bool:
     if user_context is None:
         user_context = {}
+
+    deprecated_warn(
+        "update_access_token_payload is deprecated. Use merge_into_access_token_payload instead"
+    )
+
     return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(
         session_handle, new_access_token_payload, user_context
     )

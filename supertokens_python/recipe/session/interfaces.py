@@ -450,7 +450,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     @abstractmethod
     async def remove_claim(
         self,
-        claim: SessionClaim[_T],  # pyright: ignore[reportInvalidTypeVarUse]
+        claim: SessionClaim[Any],
         user_context: Union[Dict[str, Any], None] = None,
     ) -> None:
         pass
@@ -602,7 +602,9 @@ class SessionClaimValidator(ABC):
     def __init__(
         self,
         id_: str,
-        claim: SessionClaim[_T],  # pyright: ignore[reportInvalidTypeVarUse]
+        claim: Optional[
+            SessionClaim[_T]  # pyright: ignore[reportInvalidTypeVarUse]
+        ] = None,
     ) -> None:
         self.id = id_
         self.claim = claim
@@ -613,9 +615,7 @@ class SessionClaimValidator(ABC):
     ) -> ClaimValidationResult:
         pass
 
-    @abstractmethod
     def should_refetch(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> MaybeAwaitable[bool]:
-        # TODO: Confirm that MaybeAwaitable actually makes the function async
-        pass
+        raise NotImplementedError()

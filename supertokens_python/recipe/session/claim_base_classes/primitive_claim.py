@@ -30,7 +30,8 @@ _T = TypeVar("_T", bound=JSONPrimitive)
 
 class HasValueSCV(SessionClaimValidator):
     def __init__(self, id_: str, claim: SessionClaim[_T], val: _T):
-        super().__init__(id_, claim)
+        super().__init__(id_)
+        self.claim: SessionClaim[_T] = claim  # Required to fix the type for pyright
         self.val = val
 
     def should_refetch(
@@ -63,7 +64,8 @@ class HasValueSCV(SessionClaimValidator):
 
 class HasFreshValueSCV(SessionClaimValidator):
     def __init__(self, id_: str, claim: SessionClaim[_T], val: _T, max_age_in_sec: int):
-        super().__init__(id_, claim)
+        super().__init__(id_)
+        self.claim: SessionClaim[_T] = claim
         self.val = val
         self.max_age_in_sec = max_age_in_sec
 

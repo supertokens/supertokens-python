@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any, Dict, Union
 
 from jwt import decode
 
-from supertokens_python.utils import get_timestamp_ms, deprecated_warn
+from supertokens_python.utils import get_timestamp_ms
 
 from .constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
 from .session_class import get_session_with_jwt
@@ -188,9 +188,6 @@ def get_recipe_implementation_with_jwt(
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> bool:
-        deprecated_warn(
-            "update_access_token_payload is deprecated. Use merge_into_access_token_payload instead"
-        )
 
         session_information = await original_implementation.get_session_information(
             session_handle, user_context
