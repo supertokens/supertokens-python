@@ -11,10 +11,20 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import List, Union
+from typing import List, Union, Optional
 
 from supertokens_python import Supertokens
 from supertokens_python.async_to_sync_wrapper import sync
+from supertokens_python.interfaces import (
+    CreateUserIdMappingOkResult,
+    UnknownSupertokensUserIDError,
+    UserIdMappingAlreadyExistsError,
+    UserIDTypes,
+    UnknownMappingError,
+    GetUserIdMappingOkResult,
+    DeleteUserIdMappingOkResult,
+    UpdateOrDeleteUserIdMappingInfoOkResult,
+)
 from supertokens_python.types import UsersResponse
 
 
@@ -48,3 +58,46 @@ def get_user_count(include_recipe_ids: Union[None, List[str]] = None) -> int:
 
 def delete_user(user_id: str) -> None:
     return sync(Supertokens.get_instance().delete_user(user_id))
+
+
+def create_user_id_mapping(
+    supertokens_user_id: str,
+    external_user_id: str,
+    external_user_id_info: Optional[str] = None,
+) -> Union[
+    CreateUserIdMappingOkResult,
+    UnknownSupertokensUserIDError,
+    UserIdMappingAlreadyExistsError,
+]:
+    return sync(
+        Supertokens.get_instance().create_user_id_mapping(
+            supertokens_user_id, external_user_id, external_user_id_info
+        )
+    )
+
+
+def get_user_id_mapping(
+    user_id: str,
+    user_id_type: Optional[UserIDTypes] = None,
+) -> Union[GetUserIdMappingOkResult, UnknownMappingError]:
+    return sync(Supertokens.get_instance().get_user_id_mapping(user_id, user_id_type))
+
+
+def delete_user_id_mapping(
+    user_id: str, user_id_type: Optional[UserIDTypes] = None
+) -> DeleteUserIdMappingOkResult:
+    return sync(
+        Supertokens.get_instance().delete_user_id_mapping(user_id, user_id_type)
+    )
+
+
+def update_or_delete_user_id_mapping_info(
+    user_id: str,
+    user_id_type: Optional[UserIDTypes] = None,
+    external_user_id_info: Optional[str] = None,
+) -> Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
+    return sync(
+        Supertokens.get_instance().update_or_delete_user_id_mapping_info(
+            user_id, user_id_type, external_user_id_info
+        )
+    )
