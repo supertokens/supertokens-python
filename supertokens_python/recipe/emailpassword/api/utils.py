@@ -54,35 +54,28 @@ async def validate_form_or_throw_error(
 async def validate_form_fields_or_throw_error(
     config_form_fields: List[NormalisedFormField], form_fields_raw: Any
 ) -> List[FormField]:
-    try:
-        if form_fields_raw is None:
-            raise_bad_input_exception("Missing input param: formFields")
+    if form_fields_raw is None:
+        raise_bad_input_exception("Missing input param: formFields")
 
-        if not isinstance(form_fields_raw, List):
-            raise_bad_input_exception("formFields must be an array")
+    if not isinstance(form_fields_raw, List):
+        raise_bad_input_exception("formFields must be an array")
 
-        form_fields: List[FormField] = []
+    form_fields: List[FormField] = []
 
-        form_fields_list_raw: List[Dict[str, Any]] = form_fields_raw
-        for current_form_field in form_fields_list_raw:
-            if (
-                "id" not in current_form_field
-                or not isinstance(current_form_field["id"], str)
-                or "value" not in current_form_field
-            ):
-                raise_bad_input_exception(
-                    "All elements of formFields must contain an 'id' and 'value' field"
-                )
-            value = current_form_field["value"]
-            if current_form_field["id"] == FORM_FIELD_EMAIL_ID:
-                if not isinstance(value, str):
-                    raise_bad_input_exception("email value must be a string")
-                value = value.strip()
-            form_fields.append(FormField(current_form_field["id"], value))
+    form_fields_list_raw: List[Dict[str, Any]] = form_fields_raw
+    for current_form_field in form_fields_list_raw:
+        if (
+            "id" not in current_form_field
+            or not isinstance(current_form_field["id"], str)
+            or "value" not in current_form_field
+        ):
+            raise_bad_input_exception(
+                "All elements of formFields must contain an 'id' and 'value' field"
+            )
+        value = current_form_field["value"]
+        if current_form_field["id"] == FORM_FIELD_EMAIL_ID and isinstance(value, str):
+            value = value.strip()
+        form_fields.append(FormField(current_form_field["id"], value))
 
-        await validate_form_or_throw_error(form_fields, config_form_fields)
-        return form_fields
-    except Exception:
-        raise_bad_input_exception(
-            "Something seems wrong with the input formFields. Please check the request body."
-        )
+    await validate_form_or_throw_error(form_fields, config_form_fields)
+    return form_fields
