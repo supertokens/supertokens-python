@@ -73,7 +73,7 @@ async def validate_form_fields_or_throw_error(
                 "All elements of formFields must contain an 'id' and 'value' field"
             )
         value = current_form_field["value"]
-        if current_form_field["id"] == FORM_FIELD_EMAIL_ID:
+        if current_form_field["id"] == FORM_FIELD_EMAIL_ID and isinstance(value, str):
             value = value.strip()
         form_fields.append(FormField(current_form_field["id"], value))
 
