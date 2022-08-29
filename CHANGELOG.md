@@ -6,8 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.10.3] - 2022-08-29
+
 ### Bug fix
-- Send 400 instead of 500 on invalid request body or when user passes non-string values as email ID for `/auth/signin`
+- Send FORM_FIELD error with 200 status code instead of 500 on invalid request body or when user passes non-string values as email ID for `/auth/signin`
 
 ### Changes
 - Add to test to ensure that overrides are applying correctly in methods called on SessionContainer instances
