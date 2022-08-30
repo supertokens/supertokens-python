@@ -53,3 +53,7 @@ jobs:
               run: cd ../supertokens-root && bash ./utils/setupTestEnvLocal
             - name: Run tests with coverage report
               run: make coverage
+            - uses: khaeru/codecov-gh@v1
+              with:
+                token: ${{ github.token }}
+                data-file: .coverage
