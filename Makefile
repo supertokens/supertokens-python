@@ -1,6 +1,7 @@
 help:
 	@echo "  \x1b[33;1mcheck-lint: \x1b[0mtest styling of code for the library using flak8"
 	@echo "        \x1b[33;1mtest: \x1b[0mruns pytest"
+	@echo "        \x1b[33;1mcoverage: \x1b[0mruns pytest with coverage report"
 	@echo "        \x1b[33;1mlint: \x1b[0mformat code using black"
 	@echo "\x1b[33;1mset-up-hooks: \x1b[0mset up various git hooks"
 	@echo " \x1b[33;1mdev-install: \x1b[0minstall all packages required for development"
@@ -18,6 +19,11 @@ set-up-hooks:
 
 test:
 	pytest ./tests/
+
+coverage:
+	coverage run -m pytest ./tests/
+	coverage report -m
+	coverage html
 
 dev-install:
 	pip install -r dev-requirements.txt

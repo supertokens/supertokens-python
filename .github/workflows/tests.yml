@@ -51,5 +51,9 @@ jobs:
               run: cd ../supertokens-root && ./loadModules
             - name: Setting up supertokens-root test environment
               run: cd ../supertokens-root && bash ./utils/setupTestEnvLocal
-            - name: Run tests
-              run: make test
+            - name: Run tests with coverage report
+              run: make coverage
+            - uses: khaeru/codecov-gh@v1
+              with:
+                token: ${{ github.token }}
+                data-file: .coverage
