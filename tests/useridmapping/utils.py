@@ -11,17 +11,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-SUPPORTED_CDI_VERSIONS = ["2.9", "2.10", "2.11", "2.12", "2.13", "2.14", "2.15"]
-VERSION = "0.10.3"
-TELEMETRY = "/telemetry"
-USER_COUNT = "/users/count"
-USER_DELETE = "/user/remove"
-USERS = "/users"
-TELEMETRY_SUPERTOKENS_API_URL = "https://api.supertokens.io/0/st/telemetry"
-TELEMETRY_SUPERTOKENS_API_VERSION = "2"
-ERROR_MESSAGE_KEY = "message"
-API_KEY_HEADER = "api-key"
-RID_KEY_HEADER = "rid"
-FDI_KEY_HEADER = "fdi-version"
-API_VERSION = "/apiversion"
-API_VERSION_HEADER = "cdi-version"
+
+from supertokens_python import SupertokensConfig, InputAppInfo
+from supertokens_python.recipe import emailpassword, session, usermetadata
+
+st_config = {
+    "supertokens_config": SupertokensConfig("http://localhost:3567"),
+    "app_info": InputAppInfo(
+        app_name="SuperTokens Demo",
+        api_domain="https://api.supertokens.io",
+        website_domain="supertokens.io",
+    ),
+    "framework": "fastapi",
+    "recipe_list": [emailpassword.init(), usermetadata.init(), session.init()],
+}
