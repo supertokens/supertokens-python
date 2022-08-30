@@ -403,6 +403,7 @@ class Supertokens:
         supertokens_user_id: str,
         external_user_id: str,
         external_user_id_info: Optional[str] = None,
+        force: Optional[bool] = False,
     ) -> Union[
         CreateUserIdMappingOkResult,
         UnknownSupertokensUserIDError,
@@ -419,6 +420,7 @@ class Supertokens:
                     "supertokensUserId": supertokens_user_id,
                     "externalUserId": external_user_id,
                     "externalUserIdInfo": external_user_id_info,
+                    "force": force,
                 },
             )
             if res["status"] == "OK":
@@ -466,7 +468,10 @@ class Supertokens:
         raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
 
     async def delete_user_id_mapping(  # pylint: disable=no-self-use
-        self, user_id: str, user_id_type: Optional[UserIDTypes] = None
+        self,
+        user_id: str,
+        user_id_type: Optional[UserIDTypes] = None,
+        force: Optional[bool] = False,
     ) -> DeleteUserIdMappingOkResult:
         querier = Querier.get_instance(None)
 
@@ -478,6 +483,7 @@ class Supertokens:
                 {
                     "userId": user_id,
                     "userIdType": user_id_type,
+                    "force": force,
                 },
             )
             if res["status"] == "OK":

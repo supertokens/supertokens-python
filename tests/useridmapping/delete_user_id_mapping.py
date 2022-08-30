@@ -13,6 +13,7 @@
 # under the License.
 from typing import cast
 
+import pytest
 from typing_extensions import Literal
 
 from pytest import mark, skip
@@ -24,6 +25,7 @@ from supertokens_python.interfaces import (
 )
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.emailpassword.interfaces import SignUpOkResult
+from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
 from supertokens_python.utils import is_version_gte
 from tests.utils import clean_st, reset, setup_st, start_st
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
@@ -88,6 +90,48 @@ async def test_delete_user_id_mapping(user_type: USER_TYPE):
     # Ensure that the mapping is deleted
     res = await get_user_id_mapping(user_id_to_delete, user_type)
     assert isinstance(res, UnknownMappingError)
+
+
+async def test_delete_user_id_mapping_without_and_with_force():
+    init(**st_config)  # type: ignore
+    start_st()
+
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.15"):
+        skip()
+
+    # Create a user:
+    sign_up_res = await sign_up("test@example.com", "testPass123")
+    assert isinstance(sign_up_res, SignUpOkResult)
+
+    supertokens_user_id = sign_up_res.user.user_id
+    external_user_id = "externalId"
+    external_user_info = "externalIdInfo"
+
+    res = await create_user_id_mapping(
+        supertokens_user_id, external_user_id, external_user_info
+    )
+    assert isinstance(res, CreateUserIdMappingOkResult)
+
+    # Add metadata to the user:
+    test_metadata = {"role": "admin"}
+    await update_user_metadata(supertokens_user_id, test_metadata)
+
+    # Without force:
+    with pytest.raises(Exception) as e:
+        await delete_user_id_mapping(external_user_id, "EXTERNAL")
+    assert str(e.value) == "UserId is already in use in UserMetadata recipe"
+
+    # With force:
+    res = await delete_user_id_mapping(external_user_id, "EXTERNAL", force=True)
+    assert isinstance(res, DeleteUserIdMappingOkResult)
+    assert res.did_mapping_exist is True
+
+    # Check that User ID Mapping doesn't exist:
+    get_user_id_mapping_res = await get_user_id_mapping(
+        supertokens_user_id, "SUPERTOKENS"
+    )
+    assert isinstance(get_user_id_mapping_res, UnknownMappingError)
 
 
 async def test_delete_unknown_user_id_mapping():

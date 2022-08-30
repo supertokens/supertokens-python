@@ -13,7 +13,7 @@
 # under the License.
 
 from supertokens_python import SupertokensConfig, InputAppInfo
-from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe import emailpassword, session, usermetadata
 
 st_config = {
     "supertokens_config": SupertokensConfig("http://localhost:3567"),
@@ -23,5 +23,5 @@ st_config = {
         website_domain="supertokens.io",
     ),
     "framework": "fastapi",
-    "recipe_list": [emailpassword.init(), session.init()],
+    "recipe_list": [emailpassword.init(), usermetadata.init(), session.init()],
 }

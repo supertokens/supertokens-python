@@ -41,7 +41,7 @@ class GetUserIdMappingOkResult:
         self,
         supertokens_user_id: str,
         external_user_id: str,
-        external_user_info: Optional[str] = None,  # TODO: Shouldn't this be a dict?
+        external_user_info: Optional[str] = None,
     ):
         self.supertokens_user_id = supertokens_user_id
         self.external_user_id = external_user_id

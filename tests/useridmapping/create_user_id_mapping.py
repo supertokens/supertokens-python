@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+import pytest
 from pytest import mark, skip
 from supertokens_python import init
 from supertokens_python.interfaces import (
@@ -27,6 +27,7 @@ from tests.useridmapping.utils import st_config
 from tests.utils import clean_st, reset, setup_st, start_st
 from supertokens_python.recipe.emailpassword.asyncio import sign_up
 from supertokens_python.asyncio import create_user_id_mapping, get_user_id_mapping
+from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
 
 
 def setup_function(_):
@@ -63,6 +64,47 @@ async def test_create_user_id_mapping():
         supertokens_user_id, external_user_id, external_user_info
     )
     assert isinstance(create_user_id_mapping_res, CreateUserIdMappingOkResult)
+
+    # Check that User ID Mapping exists:
+    get_user_id_mapping_res = await get_user_id_mapping(
+        supertokens_user_id, "SUPERTOKENS"
+    )
+    assert isinstance(get_user_id_mapping_res, GetUserIdMappingOkResult)
+    assert get_user_id_mapping_res.supertokens_user_id == supertokens_user_id
+    assert get_user_id_mapping_res.external_user_id == external_user_id
+    assert get_user_id_mapping_res.external_user_info == external_user_info
+
+
+async def test_create_user_id_mapping_without_and_with_force():
+    init(**st_config)  # type: ignore
+    start_st()
+
+    version = await Querier.get_instance().get_api_version()
+    if not is_version_gte(version, "2.15"):
+        skip()
+
+    # Create a user:
+    sign_up_res = await sign_up("test@example.com", "testPass123")
+    assert isinstance(sign_up_res, SignUpOkResult)
+
+    supertokens_user_id = sign_up_res.user.user_id
+    external_user_id = "externalId"
+    external_user_info = "externalIdInfo"
+
+    # Add metadata to the user:
+    test_metadata = {"role": "admin"}
+    await update_user_metadata(supertokens_user_id, test_metadata)
+
+    # Without force:
+    with pytest.raises(Exception) as e:
+        await create_user_id_mapping(supertokens_user_id, external_user_id)
+    assert str(e.value) == "UserId is already in use in UserMetadata recipe"
+
+    # With force:
+    res = await create_user_id_mapping(
+        supertokens_user_id, external_user_id, force=True
+    )
+    assert isinstance(res, CreateUserIdMappingOkResult)
 
     # Check that User ID Mapping exists:
     get_user_id_mapping_res = await get_user_id_mapping(
