@@ -89,7 +89,6 @@ async def test_create_user_id_mapping_without_and_with_force():
 
     supertokens_user_id = sign_up_res.user.user_id
     external_user_id = "externalId"
-    external_user_info = "externalIdInfo"
 
     # Add metadata to the user:
     test_metadata = {"role": "admin"}
@@ -98,12 +97,12 @@ async def test_create_user_id_mapping_without_and_with_force():
     # Without force:
     with pytest.raises(Exception) as e:
         await create_user_id_mapping(supertokens_user_id, external_user_id)
-    assert str(e.value) == "UserId is already in use in UserMetadata recipe"
+    assert str(e.value).endswith("UserId is already in use in UserMetadata recipe\n")
 
     # With force = False:
     with pytest.raises(Exception) as e:
         await create_user_id_mapping(supertokens_user_id, external_user_id, force=False)
-    assert str(e.value) == "UserId is already in use in UserMetadata recipe"
+    assert str(e.value).endswith("UserId is already in use in UserMetadata recipe\n")
 
     # With force = True:
     res = await create_user_id_mapping(
@@ -118,7 +117,7 @@ async def test_create_user_id_mapping_without_and_with_force():
     assert isinstance(get_user_id_mapping_res, GetUserIdMappingOkResult)
     assert get_user_id_mapping_res.supertokens_user_id == supertokens_user_id
     assert get_user_id_mapping_res.external_user_id == external_user_id
-    assert get_user_id_mapping_res.external_user_info == external_user_info
+    assert get_user_id_mapping_res.external_user_info is None
 
 
 async def create_user_id_mapping_with_unknown_supertokens_id():

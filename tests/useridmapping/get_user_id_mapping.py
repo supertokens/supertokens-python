@@ -50,7 +50,7 @@ pytestmark = mark.asyncio
 USER_TYPE = Literal["SUPERTOKENS", "EXTERNAL", "ANY"]
 
 
-@mark.parametrize("use_external_id_info", [(True,), (False,)])
+@mark.parametrize("use_external_id_info", [True, False])
 async def test_get_user_id_mapping(use_external_id_info: bool):
     init(**st_config)  # type: ignore
     start_st()
@@ -83,7 +83,7 @@ async def test_get_user_id_mapping(use_external_id_info: bool):
         assert isinstance(res, GetUserIdMappingOkResult)
         assert res.supertokens_user_id == supertokens_user_id
         assert res.external_user_id == external_user_id
-        assert res.external_user_id == external_id_info
+        assert res.external_user_info == external_id_info
 
     # Check the user_id_mapping exists without passing user_type:
     for t in ["SUPERTOKENS", "EXTERNAL"]:
@@ -95,7 +95,7 @@ async def test_get_user_id_mapping(use_external_id_info: bool):
         assert isinstance(res, GetUserIdMappingOkResult)
         assert res.supertokens_user_id == supertokens_user_id
         assert res.external_user_id == external_user_id
-        assert res.external_user_id == external_id_info
+        assert res.external_user_info == external_id_info
 
 
 async def test_get_unknown__user_id_mapping():

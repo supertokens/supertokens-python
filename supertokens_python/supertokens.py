@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, List, Set, Union, Optional
+from typing import TYPE_CHECKING, Any, Callable, List, Set, Union, Optional, Dict
 
 from typing_extensions import Literal
 
@@ -414,14 +414,16 @@ class Supertokens:
         cdi_version = await querier.get_api_version()
 
         if is_version_gte(cdi_version, "2.15"):
+            body: Dict[str, Any] = {
+                "superTokensUserId": supertokens_user_id,
+                "externalUserId": external_user_id,
+                "externalUserIdInfo": external_user_id_info,
+            }
+            if force:
+                body["force"] = force
+
             res = await querier.send_post_request(
-                NormalisedURLPath("/recipe/userid/map"),
-                {
-                    "supertokensUserId": supertokens_user_id,
-                    "externalUserId": external_user_id,
-                    "externalUserIdInfo": external_user_id_info,
-                    "force": force,
-                },
+                NormalisedURLPath("/recipe/userid/map"), body
             )
             if res["status"] == "OK":
                 return CreateUserIdMappingOkResult()
@@ -447,18 +449,20 @@ class Supertokens:
         cdi_version = await querier.get_api_version()
 
         if is_version_gte(cdi_version, "2.15"):
+            body = {
+                "userId": user_id,
+            }
+            if user_id_type:
+                body["userIdType"] = user_id_type
             res = await querier.send_get_request(
                 NormalisedURLPath("/recipe/userid/map"),
-                {
-                    "userId": user_id,
-                    "userIdType": user_id_type,
-                },
+                body,
             )
             if res["status"] == "OK":
                 return GetUserIdMappingOkResult(
                     supertokens_user_id=res["superTokensUserId"],
                     external_user_id=res["externalUserId"],
-                    external_user_info=res["externalUserIdInfo"],
+                    external_user_info=res.get("externalUserIdInfo"),
                 )
             if res["status"] == "UNKNOWN_MAPPING_ERROR":
                 return UnknownMappingError()
@@ -478,13 +482,14 @@ class Supertokens:
         cdi_version = await querier.get_api_version()
 
         if is_version_gte(cdi_version, "2.15"):
+            body: Dict[str, Any] = {
+                "userId": user_id,
+                "userIdType": user_id_type,
+            }
+            if force:
+                body["force"] = force
             res = await querier.send_post_request(
-                NormalisedURLPath("/recipe/userid/map/remove"),
-                {
-                    "userId": user_id,
-                    "userIdType": user_id_type,
-                    "force": force,
-                },
+                NormalisedURLPath("/recipe/userid/map/remove"), body
             )
             if res["status"] == "OK":
                 return DeleteUserIdMappingOkResult(

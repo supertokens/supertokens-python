@@ -53,7 +53,7 @@ pytestmark = mark.asyncio
 USER_TYPE = Literal["SUPERTOKENS", "EXTERNAL", "ANY"]
 
 
-@mark.parametrize("user_type", [("SUPERTOKENS",), ("EXTERNAL",), ("ANY",)])
+@mark.parametrize("user_type", ["SUPERTOKENS", "EXTERNAL", "ANY"])
 async def test_delete_user_id_mapping(user_type: USER_TYPE):
     init(**st_config)  # type: ignore
     start_st()
@@ -115,17 +115,17 @@ async def test_delete_user_id_mapping_without_and_with_force():
 
     # Add metadata to the user:
     test_metadata = {"role": "admin"}
-    await update_user_metadata(supertokens_user_id, test_metadata)
+    await update_user_metadata(external_user_id, test_metadata)
 
     # Without force:
     with pytest.raises(Exception) as e:
         await delete_user_id_mapping(external_user_id, "EXTERNAL")
-    assert str(e.value) == "UserId is already in use in UserMetadata recipe"
+    assert str(e.value).endswith("UserId is already in use in UserMetadata recipe\n")
 
     # With force = False:
     with pytest.raises(Exception) as e:
         await delete_user_id_mapping(external_user_id, "EXTERNAL", force=False)
-    assert str(e.value) == "UserId is already in use in UserMetadata recipe"
+    assert str(e.value).endswith("UserId is already in use in UserMetadata recipe\n")
 
     # With force = True:
     res = await delete_user_id_mapping(external_user_id, "EXTERNAL", force=True)
