@@ -107,14 +107,15 @@ async def test_email_validation_checks_in_generate_token_API(
     )
     start_st()
 
-    response_1 = driver_config_client.post(
-        url="/auth/user/password/reset/token",
-        json={"formFields": [{"id": "email", "value": "random"}]},
-    )
+    for invalid_email in ["random", 5]:
+        res = driver_config_client.post(
+            url="/auth/user/password/reset/token",
+            json={"formFields": [{"id": "email", "value": invalid_email}]},
+        )
 
-    assert response_1.status_code == 200
-    dict_response = json.loads(response_1.text)
-    assert dict_response["status"] == "FIELD_ERROR"
+        assert res.status_code == 200
+        dict_res = json.loads(res.text)
+        assert dict_res["status"] == "FIELD_ERROR"
 
 
 @mark.asyncio
