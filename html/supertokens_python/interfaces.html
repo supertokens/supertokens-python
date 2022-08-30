@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>supertokens_python.constants API documentation</title>
+<title>supertokens_python.interfaces API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>supertokens_python.constants</code></h1>
+<h1 class="title">Module <code>supertokens_python.interfaces</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -39,20 +39,54 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-SUPPORTED_CDI_VERSIONS = [&#34;2.9&#34;, &#34;2.10&#34;, &#34;2.11&#34;, &#34;2.12&#34;, &#34;2.13&#34;, &#34;2.14&#34;, &#34;2.15&#34;]
-VERSION = &#34;0.10.4&#34;
-TELEMETRY = &#34;/telemetry&#34;
-USER_COUNT = &#34;/users/count&#34;
-USER_DELETE = &#34;/user/remove&#34;
-USERS = &#34;/users&#34;
-TELEMETRY_SUPERTOKENS_API_URL = &#34;https://api.supertokens.io/0/st/telemetry&#34;
-TELEMETRY_SUPERTOKENS_API_VERSION = &#34;2&#34;
-ERROR_MESSAGE_KEY = &#34;message&#34;
-API_KEY_HEADER = &#34;api-key&#34;
-RID_KEY_HEADER = &#34;rid&#34;
-FDI_KEY_HEADER = &#34;fdi-version&#34;
-API_VERSION = &#34;/apiversion&#34;
-API_VERSION_HEADER = &#34;cdi-version&#34;</code></pre>
+
+from typing import Optional
+
+from typing_extensions import Literal
+
+
+class UnknownSupertokensUserIDError:
+    pass
+
+
+class CreateUserIdMappingOkResult:
+    pass
+
+
+class UserIdMappingAlreadyExistsError:
+    def __init__(
+        self, does_super_tokens_user_id_exist: bool, does_external_user_id_exist: str
+    ):
+        self.does_super_tokens_user_id_exist = does_super_tokens_user_id_exist
+        self.does_external_user_id_exist = does_external_user_id_exist
+
+
+UserIDTypes = Literal[&#34;SUPERTOKENS&#34;, &#34;EXTERNAL&#34;, &#34;ANY&#34;]
+
+
+class GetUserIdMappingOkResult:
+    def __init__(
+        self,
+        supertokens_user_id: str,
+        external_user_id: str,
+        external_user_info: Optional[str] = None,
+    ):
+        self.supertokens_user_id = supertokens_user_id
+        self.external_user_id = external_user_id
+        self.external_user_info = external_user_info
+
+
+class UnknownMappingError:
+    pass
+
+
+class DeleteUserIdMappingOkResult:
+    def __init__(self, did_mapping_exist: bool):
+        self.did_mapping_exist = did_mapping_exist
+
+
+class UpdateOrDeleteUserIdMappingInfoOkResult:
+    pass</code></pre>
 </details>
 </section>
 <section>
@@ -62,6 +96,116 @@ API_VERSION_HEADER = &#34;cdi-version&#34;</code></pre>
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.interfaces.CreateUserIdMappingOkResult"><code class="flex name class">
+<span>class <span class="ident">CreateUserIdMappingOkResult</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CreateUserIdMappingOkResult:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.interfaces.DeleteUserIdMappingOkResult"><code class="flex name class">
+<span>class <span class="ident">DeleteUserIdMappingOkResult</span></span>
+<span>(</span><span>did_mapping_exist: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DeleteUserIdMappingOkResult:
+    def __init__(self, did_mapping_exist: bool):
+        self.did_mapping_exist = did_mapping_exist</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.interfaces.GetUserIdMappingOkResult"><code class="flex name class">
+<span>class <span class="ident">GetUserIdMappingOkResult</span></span>
+<span>(</span><span>supertokens_user_id: str, external_user_id: str, external_user_info: Optional[str] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GetUserIdMappingOkResult:
+    def __init__(
+        self,
+        supertokens_user_id: str,
+        external_user_id: str,
+        external_user_info: Optional[str] = None,
+    ):
+        self.supertokens_user_id = supertokens_user_id
+        self.external_user_id = external_user_id
+        self.external_user_info = external_user_info</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.interfaces.UnknownMappingError"><code class="flex name class">
+<span>class <span class="ident">UnknownMappingError</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UnknownMappingError:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.interfaces.UnknownSupertokensUserIDError"><code class="flex name class">
+<span>class <span class="ident">UnknownSupertokensUserIDError</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UnknownSupertokensUserIDError:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult"><code class="flex name class">
+<span>class <span class="ident">UpdateOrDeleteUserIdMappingInfoOkResult</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UpdateOrDeleteUserIdMappingInfoOkResult:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.interfaces.UserIdMappingAlreadyExistsError"><code class="flex name class">
+<span>class <span class="ident">UserIdMappingAlreadyExistsError</span></span>
+<span>(</span><span>does_super_tokens_user_id_exist: bool, does_external_user_id_exist: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserIdMappingAlreadyExistsError:
+    def __init__(
+        self, does_super_tokens_user_id_exist: bool, does_external_user_id_exist: str
+    ):
+        self.does_super_tokens_user_id_exist = does_super_tokens_user_id_exist
+        self.does_external_user_id_exist = does_external_user_id_exist</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -73,6 +217,31 @@ API_VERSION_HEADER = &#34;cdi-version&#34;</code></pre>
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="supertokens_python" href="index.html">supertokens_python</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.interfaces.CreateUserIdMappingOkResult" href="#supertokens_python.interfaces.CreateUserIdMappingOkResult">CreateUserIdMappingOkResult</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.interfaces.DeleteUserIdMappingOkResult" href="#supertokens_python.interfaces.DeleteUserIdMappingOkResult">DeleteUserIdMappingOkResult</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.interfaces.GetUserIdMappingOkResult" href="#supertokens_python.interfaces.GetUserIdMappingOkResult">GetUserIdMappingOkResult</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.interfaces.UnknownMappingError" href="#supertokens_python.interfaces.UnknownMappingError">UnknownMappingError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.interfaces.UnknownSupertokensUserIDError" href="#supertokens_python.interfaces.UnknownSupertokensUserIDError">UnknownSupertokensUserIDError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult" href="#supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult">UpdateOrDeleteUserIdMappingInfoOkResult</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.interfaces.UserIdMappingAlreadyExistsError" href="#supertokens_python.interfaces.UserIdMappingAlreadyExistsError">UserIdMappingAlreadyExistsError</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>
