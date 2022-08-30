@@ -59,7 +59,7 @@ async def create_user_id_mapping(
     supertokens_user_id: str,
     external_user_id: str,
     external_user_id_info: Optional[str] = None,
-    force: Optional[bool] = False,
+    force: Optional[bool] = None,
 ) -> Union[
     CreateUserIdMappingOkResult,
     UnknownSupertokensUserIDError,
@@ -80,7 +80,7 @@ async def get_user_id_mapping(
 async def delete_user_id_mapping(
     user_id: str,
     user_id_type: Optional[UserIDTypes] = None,
-    force: Optional[bool] = False,
+    force: Optional[bool] = None,
 ) -> DeleteUserIdMappingOkResult:
     return await Supertokens.get_instance().delete_user_id_mapping(
         user_id, user_id_type, force

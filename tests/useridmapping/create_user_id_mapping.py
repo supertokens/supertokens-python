@@ -100,7 +100,12 @@ async def test_create_user_id_mapping_without_and_with_force():
         await create_user_id_mapping(supertokens_user_id, external_user_id)
     assert str(e.value) == "UserId is already in use in UserMetadata recipe"
 
-    # With force:
+    # With force = False:
+    with pytest.raises(Exception) as e:
+        await create_user_id_mapping(supertokens_user_id, external_user_id, force=False)
+    assert str(e.value) == "UserId is already in use in UserMetadata recipe"
+
+    # With force = True:
     res = await create_user_id_mapping(
         supertokens_user_id, external_user_id, force=True
     )

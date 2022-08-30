@@ -403,7 +403,7 @@ class Supertokens:
         supertokens_user_id: str,
         external_user_id: str,
         external_user_id_info: Optional[str] = None,
-        force: Optional[bool] = False,
+        force: Optional[bool] = None,
     ) -> Union[
         CreateUserIdMappingOkResult,
         UnknownSupertokensUserIDError,
@@ -471,7 +471,7 @@ class Supertokens:
         self,
         user_id: str,
         user_id_type: Optional[UserIDTypes] = None,
-        force: Optional[bool] = False,
+        force: Optional[bool] = None,
     ) -> DeleteUserIdMappingOkResult:
         querier = Querier.get_instance(None)
 

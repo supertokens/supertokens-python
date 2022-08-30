@@ -122,7 +122,12 @@ async def test_delete_user_id_mapping_without_and_with_force():
         await delete_user_id_mapping(external_user_id, "EXTERNAL")
     assert str(e.value) == "UserId is already in use in UserMetadata recipe"
 
-    # With force:
+    # With force = False:
+    with pytest.raises(Exception) as e:
+        await delete_user_id_mapping(external_user_id, "EXTERNAL", force=False)
+    assert str(e.value) == "UserId is already in use in UserMetadata recipe"
+
+    # With force = True:
     res = await delete_user_id_mapping(external_user_id, "EXTERNAL", force=True)
     assert isinstance(res, DeleteUserIdMappingOkResult)
     assert res.did_mapping_exist is True
