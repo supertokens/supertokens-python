@@ -70,11 +70,11 @@ async def default_password_validator(value: str) -> Union[str, None]:
     return None
 
 
-async def default_email_validator(value: str) -> Union[str, None]:
+async def default_email_validator(value: Any) -> Union[str, None]:
     # We check if the email syntax is correct
     # As per https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
     # Regex from https://stackoverflow.com/a/46181/3867175
-    if (
+    if (not isinstance(value, str)) or (
         fullmatch(
             r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,'
             r"3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$",
