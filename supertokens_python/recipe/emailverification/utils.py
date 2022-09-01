@@ -47,30 +47,6 @@ class OverrideConfig:
 MODE_TYPE = Literal["REQUIRED", "OPTIONAL"]
 
 
-class ParentRecipeEmailVerificationConfig:
-    def __init__(
-        self,
-        mode: MODE_TYPE,
-        email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
-        get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
-        create_and_send_custom_email: Union[
-            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
-        ] = None,
-        override: Union[OverrideConfig, None] = None,
-    ):
-        self.mode: MODE_TYPE = mode
-        self.email_delivery = email_delivery
-        self.get_email_for_user_id = get_email_for_user_id
-        self.create_and_send_custom_email = create_and_send_custom_email
-        self.override = override
-
-        if create_and_send_custom_email:
-            # Note: This will appear twice because `InputEmailVerificationConfig` will also produce same warning.
-            deprecated_warn(
-                "create_and_send_custom_email is deprecated. Please use email delivery config instead"
-            )
-
-
 class EmailVerificationConfig:
     def __init__(
         self,
@@ -88,14 +64,21 @@ class EmailVerificationConfig:
 
 
 def validate_and_normalise_user_input(
-    app_info: AppInfo, config: ParentRecipeEmailVerificationConfig
+    app_info: AppInfo,
+    mode: MODE_TYPE,
+    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+    get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
+    create_and_send_custom_email: Union[
+        Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
+    ] = None,
+    override: Union[OverrideConfig, None] = None,
 ) -> EmailVerificationConfig:
-    if not isinstance(config, ParentRecipeEmailVerificationConfig):  # type: ignore
-        raise ValueError(
-            "config must be an instance of ParentRecipeEmailVerificationConfig"
+    if create_and_send_custom_email:
+        deprecated_warn(
+            "create_and_send_custom_email is deprecated. Please use email delivery config instead"
         )
 
-    if config.mode not in ["REQUIRED", "OPTIONAL"]:
+    if mode not in ["REQUIRED", "OPTIONAL"]:
         raise ValueError(
             "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
         )
@@ -103,24 +86,17 @@ def validate_and_normalise_user_input(
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[
         VerificationEmailTemplateVars
     ]:
-        email_service = (
-            config.email_delivery.service if config.email_delivery is not None else None
-        )
+        email_service = email_delivery.service if email_delivery is not None else None
         if email_service is None:
             email_service = BackwardCompatibilityService(
-                app_info, config.create_and_send_custom_email
+                app_info, create_and_send_custom_email
             )
 
-        if (
-            config.email_delivery is not None
-            and config.email_delivery.override is not None
-        ):
-            override = config.email_delivery.override
+        if email_delivery is not None and email_delivery.override is not None:
+            override = email_delivery.override
         else:
             override = None
         return EmailDeliveryConfigWithService(email_service, override=override)
-
-    override = config.override
 
     if override is not None and not isinstance(override, OverrideConfig):  # type: ignore
         raise ValueError("override must be of type OverrideConfig or None")
@@ -129,8 +105,8 @@ def validate_and_normalise_user_input(
         override = OverrideConfig()
 
     return EmailVerificationConfig(
-        config.mode,
+        mode,
         get_email_delivery_config,
-        config.get_email_for_user_id,
+        get_email_for_user_id,
         override,
     )

@@ -24,7 +24,6 @@ from .types import EmailTemplateVars, User
 from ...ingredients.emaildelivery.types import EmailDeliveryConfig
 
 InputOverrideConfig = utils.OverrideConfig
-ParentRecipeEmailVerificationConfig = utils.ParentRecipeEmailVerificationConfig
 exception = ex
 SMTPService = emaildelivery_services.SMTPService
 EmailVerificationClaim = recipe.EmailVerificationClaim

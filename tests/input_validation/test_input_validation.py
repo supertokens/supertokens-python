@@ -127,8 +127,9 @@ async def test_init_validation_emailverification():
             framework="fastapi",
             recipe_list=[emailverification.init("config")],  # type: ignore
         )
-    assert "config must be an instance of ParentRecipeEmailVerificationConfig" == str(
-        ex.value
+    assert (
+        "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
+        == str(ex.value)
     )
 
     with pytest.raises(ValueError) as ex:

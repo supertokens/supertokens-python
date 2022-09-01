@@ -66,7 +66,6 @@ from .api import handle_email_verify_api, handle_generate_email_verify_token_api
 from .constants import USER_EMAIL_VERIFY, USER_EMAIL_VERIFY_TOKEN
 from .exceptions import SuperTokensEmailVerificationError
 from .utils import (
-    ParentRecipeEmailVerificationConfig,
     validate_and_normalise_user_input,
     MODE_TYPE,
     OverrideConfig,
@@ -82,11 +81,24 @@ class EmailVerificationRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
-        config: ParentRecipeEmailVerificationConfig,
         ingredients: EmailVerificationIngredients,
+        mode: MODE_TYPE,
+        email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+        get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
+        create_and_send_custom_email: Union[
+            Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
+        ] = None,
+        override: Union[OverrideConfig, None] = None,
     ) -> None:
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(app_info, config)
+        self.config = validate_and_normalise_user_input(
+            app_info,
+            mode,
+            email_delivery,
+            get_email_for_user_id,
+            create_and_send_custom_email,
+            override,
+        )
 
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(recipe_id), self.config
@@ -196,25 +208,22 @@ class EmailVerificationRecipe(RecipeModule):
         def func(app_info: AppInfo):
             if EmailVerificationRecipe.__instance is None:
                 ingredients = EmailVerificationIngredients(email_delivery=None)
-                config = ParentRecipeEmailVerificationConfig(
+                EmailVerificationRecipe.__instance = EmailVerificationRecipe(
+                    EmailVerificationRecipe.recipe_id,
+                    app_info,
+                    ingredients,
                     mode,
                     email_delivery,
                     get_email_for_user_id,
                     create_and_send_custom_email,
                     override,
                 )
-                EmailVerificationRecipe.__instance = EmailVerificationRecipe(
-                    EmailVerificationRecipe.recipe_id,
-                    app_info,
-                    config,
-                    ingredients=ingredients,
-                )
 
                 def callback():
                     SessionRecipe.get_instance().add_claim_from_other_recipe(
                         EmailVerificationClaim
                     )
-                    if str(config.mode) == "REQUIRED":
+                    if mode == "REQUIRED":
                         SessionRecipe.get_instance().add_claim_validator_from_other_recipe(
                             EmailVerificationClaim.validators.is_verified()
                         )
