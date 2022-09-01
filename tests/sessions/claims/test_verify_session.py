@@ -87,7 +87,8 @@ def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidato
 
 class AlwaysValidValidator(SessionClaimValidator):
     def __init__(self):
-        super().__init__("always-valid-validator", TrueClaim)
+        super().__init__("always-valid-validator")
+        self.claim = TrueClaim
 
     async def validate(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
@@ -100,7 +101,8 @@ class AlwaysValidValidator(SessionClaimValidator):
 
 class AlwaysInvalidValidator(SessionClaimValidator):
     def __init__(self, reason: Optional[Dict[str, Any]]):
-        super().__init__("always-invalid-validator", TrueClaim)
+        super().__init__("always-invalid-validator")
+        self.claim = TrueClaim
         self.reason = reason
 
     async def validate(
@@ -169,7 +171,8 @@ async def fastapi_client():
 
     class CustomValidator(SessionClaimValidator):
         def __init__(self, is_valid: bool):
-            super().__init__("test_id", TrueClaim)
+            super().__init__("test_id")
+            self.claim = TrueClaim
             self.is_valid = is_valid
 
         async def validate(

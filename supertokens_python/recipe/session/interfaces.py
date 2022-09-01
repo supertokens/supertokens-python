@@ -602,12 +602,9 @@ class SessionClaimValidator(ABC):
     def __init__(
         self,
         id_: str,
-        claim: Optional[
-            SessionClaim[_T]  # pyright: ignore[reportInvalidTypeVarUse]
-        ] = None,
     ) -> None:
         self.id = id_
-        self.claim = claim
+        self.claim: Optional[SessionClaim[Any]] = None
 
     @abstractmethod
     async def validate(

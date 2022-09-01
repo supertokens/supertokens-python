@@ -49,7 +49,8 @@ async def test_should_call_validate_with_the_same_payload_object():
 
     class DummyClaimValidator(SessionClaimValidator):
         def __init__(self, claim: SessionClaim[Any]):
-            super().__init__("claim_validator_id", claim)
+            super().__init__("claim_validator_id")
+            self.claim = claim
             self.validate_calls: Dict[str, int] = {}
 
         async def validate(

@@ -66,9 +66,6 @@ class SessionRecipe(RecipeModule):
     recipe_id = "session"
     __instance = None
 
-    claims_added_by_other_recipes: List[SessionClaim[Any]] = []
-    claim_validators_added_by_other_recipes: List[SessionClaimValidator] = []
-
     def __init__(
         self,
         recipe_id: str,
@@ -155,6 +152,9 @@ class SessionRecipe(RecipeModule):
             if self.config.override.apis is None
             else self.config.override.apis(api_implementation)
         )
+
+        self.claims_added_by_other_recipes: List[SessionClaim[Any]] = []
+        self.claim_validators_added_by_other_recipes: List[SessionClaimValidator] = []
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
