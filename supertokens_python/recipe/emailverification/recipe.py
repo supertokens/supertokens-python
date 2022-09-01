@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union, Any, Dict, Callable, Optional, Awaitable
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
@@ -22,37 +22,37 @@ from supertokens_python.recipe.emailverification.exceptions import (
     EmailVerificationInvalidTokenError,
 )
 from supertokens_python.recipe.emailverification.types import (
+    EmailTemplateVars,
     EmailVerificationIngredients,
+    User,
     VerificationEmailTemplateVars,
     VerificationEmailTemplateVarsUser,
-    EmailTemplateVars,
-    User,
 )
 from supertokens_python.recipe_module import APIHandled, RecipeModule
-from .ev_claim import EmailVerificationClaimValidators
 
-from .interfaces import (
-    APIOptions,
-    UnknownUserIdError,
-    TypeGetEmailForUserIdFunction,
-    GetEmailForUserIdOkResult,
-    EmailDoesNotExistError,
-    APIInterface,
-    EmailVerifyPostOkResult,
-    EmailVerifyPostInvalidTokenError,
-    VerifyEmailUsingTokenOkResult,
-    IsEmailVerifiedGetOkResult,
-    GenerateEmailVerifyTokenPostOkResult,
-    GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
-    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
-)
-from .recipe_implementation import RecipeImplementation
-from ..session import SessionRecipe
-from ..session.claim_base_classes.boolean_claim import BooleanClaim
-from ..session.interfaces import SessionContainer
 from ...ingredients.emaildelivery.types import EmailDeliveryConfig
 from ...logger import log_debug_message
 from ...post_init_callbacks import PostSTInitCallbacks
+from ..session import SessionRecipe
+from ..session.claim_base_classes.boolean_claim import BooleanClaim
+from ..session.interfaces import SessionContainer
+from .ev_claim import EmailVerificationClaimValidators
+from .interfaces import (
+    APIInterface,
+    APIOptions,
+    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
+    EmailDoesNotExistError,
+    EmailVerifyPostInvalidTokenError,
+    EmailVerifyPostOkResult,
+    GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
+    GenerateEmailVerifyTokenPostOkResult,
+    GetEmailForUserIdOkResult,
+    IsEmailVerifiedGetOkResult,
+    TypeGetEmailForUserIdFunction,
+    UnknownUserIdError,
+    VerifyEmailUsingTokenOkResult,
+)
+from .recipe_implementation import RecipeImplementation
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -65,11 +65,7 @@ from supertokens_python.querier import Querier
 from .api import handle_email_verify_api, handle_generate_email_verify_token_api
 from .constants import USER_EMAIL_VERIFY, USER_EMAIL_VERIFY_TOKEN
 from .exceptions import SuperTokensEmailVerificationError
-from .utils import (
-    validate_and_normalise_user_input,
-    MODE_TYPE,
-    OverrideConfig,
-)
+from .utils import MODE_TYPE, OverrideConfig, validate_and_normalise_user_input
 
 
 class EmailVerificationRecipe(RecipeModule):
@@ -332,7 +328,6 @@ class APIImplementation(APIInterface):
         is_verified = await session.get_claim_value(
             EmailVerificationClaim, user_context
         )
-        # TODO: Type of is_verified should be bool. It's any for now.
 
         if is_verified is None:
             raise Exception(

@@ -4,7 +4,10 @@ from supertokens_python import InputAppInfo, SupertokensConfig
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import JWTConfig
-from supertokens_python.recipe.session.claims import BooleanClaim, SessionClaim
+from supertokens_python.recipe.session.claims import (
+    BooleanClaim,
+    SessionClaim,
+)
 from supertokens_python.recipe.session.interfaces import RecipeInterface
 
 TrueClaim = BooleanClaim("st-true", fetch_value=lambda _, __: True)  # type: ignore
