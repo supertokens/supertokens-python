@@ -48,6 +48,7 @@ from supertokens_python.recipe.session.asyncio import (
     get_session,
     refresh_session,
 )
+from supertokens_python.recipe.session.constants import ANTI_CSRF_HEADER_KEY
 from supertokens_python.utils import is_version_gte
 from tests.utils import (
     TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
@@ -133,7 +134,11 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init("OPTIONAL"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 
@@ -170,7 +175,11 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init("OPTIONAL"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 
@@ -213,7 +222,11 @@ async def test_the_generate_token_api_with_valid_input_no_session_and_check_outp
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init("OPTIONAL"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 
@@ -238,7 +251,11 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init("OPTIONAL"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 
@@ -723,7 +740,9 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
     assert token is not None
 
     response_3 = driver_config_client.post(
-        url="/auth/user/email/verify", json={"method": "token", "token": token}
+        url="/auth/user/email/verify",
+        json={"method": "token", "token": token},
+        headers={ANTI_CSRF_HEADER_KEY: response_1.headers.get("anti-csrf")},
     )
 
     dict_response = json.loads(response_3.text)
@@ -760,7 +779,11 @@ async def test_the_email_verify_with_no_session_using_the_get_method(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init("OPTIONAL"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 
@@ -850,7 +873,9 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
     assert token is not None
 
     response_3 = driver_config_client.post(
-        url="/auth/user/email/verify", json={"method": "token", "token": token}
+        url="/auth/user/email/verify",
+        json={"method": "token", "token": token},
+        headers={ANTI_CSRF_HEADER_KEY: response_1.headers.get("anti-csrf")},
     )
 
     dict_response = json.loads(response_3.text)
@@ -946,7 +971,9 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     assert token is not None
 
     response_3 = driver_config_client.post(
-        url="/auth/user/email/verify", json={"method": "token", "token": token}
+        url="/auth/user/email/verify",
+        json={"method": "token", "token": token},
+        headers={ANTI_CSRF_HEADER_KEY: response_1.headers.get("anti-csrf")},
     )
 
     dict_response = json.loads(response_3.text)
@@ -974,7 +1001,11 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init("OPTIONAL"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 

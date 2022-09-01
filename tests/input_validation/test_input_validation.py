@@ -88,7 +88,7 @@ async def test_init_validation_emailpassword():
             ],
         )
     assert (
-        "email_verification_feature must be of type InputEmailVerificationConfig or None"
+        "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
         == str(ex.value)
     )
 
@@ -473,7 +473,7 @@ async def test_init_validation_thirdpartyemailpassword():
             ],
         )
     assert (
-        "email_verification_feature must be of type InputEmailVerificationConfig or None"
+        "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
         == str(ex.value)
     )
 
@@ -608,7 +608,7 @@ async def test_init_validation_thirdpartypasswordless():
             ],
         )
     assert (
-        "email_verification_feature must be an instance of InputEmailVerificationConfig or None"
+        "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
         == str(ex.value)
     )
 
