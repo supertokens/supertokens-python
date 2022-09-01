@@ -40,7 +40,7 @@ from .utils import MODE_TYPE, OverrideConfig
 
 
 def init(
-    mode: MODE_TYPE = "OPTIONAL",
+    mode: MODE_TYPE,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
     create_and_send_custom_email: Union[

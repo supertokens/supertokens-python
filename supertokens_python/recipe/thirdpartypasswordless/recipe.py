@@ -318,23 +318,3 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
         ):
             raise Exception(None, "calling testing function in non testing env")
         ThirdPartyPasswordlessRecipe.__instance = None
-
-    async def get_email_for_user_id(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -> str:
-        user_info = await self.recipe_implementation.get_user_by_id(
-            user_id, user_context
-        )
-        if user_info is None:
-            raise Exception("Unknown User ID provided")
-        if user_info.third_party_info is None:
-            if user_info.email is not None:
-                return user_info.email
-            # this is a passwordless user with only a phone number.
-            # returning an empty string here is not a problem since
-            # we override the email verification functions above to
-            # send that the email is already verified for passwordless users.
-            return ""
-        if user_info.email is None:
-            raise Exception("Should never come here")
-        return user_info.email

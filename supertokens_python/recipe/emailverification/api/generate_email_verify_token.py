@@ -35,6 +35,6 @@ async def handle_generate_email_verify_token_api(
     assert session is not None
 
     result = await api_implementation.generate_email_verify_token_post(
-        api_options, user_context, session
+        api_options, session, user_context
     )
     return send_200_response(result.to_json(), api_options.response)

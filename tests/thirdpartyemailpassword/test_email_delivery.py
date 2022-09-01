@@ -479,7 +479,7 @@ async def test_email_verification_default_backward_compatibility(
         ),
         framework="fastapi",
         recipe_list=[
-            emailverification.init(),
+            emailverification.init(mode="OPTIONAL"),
             thirdpartyemailpassword.init(),
             session.init(),
         ],
@@ -544,7 +544,7 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
         ),
         framework="fastapi",
         recipe_list=[
-            emailverification.init(),
+            emailverification.init(mode="OPTIONAL"),
             thirdpartyemailpassword.init(),
             session.init(),
         ],
@@ -877,7 +877,7 @@ async def test_reset_password_backward_compatibility_thirdparty_user(
         ),
         framework="fastapi",
         recipe_list=[
-            emailverification.init(),
+            emailverification.init(mode="OPTIONAL"),
             thirdpartyemailpassword.init(
                 providers=[
                     Github(client_id="", client_secret="")

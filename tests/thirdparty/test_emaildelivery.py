@@ -131,7 +131,7 @@ async def test_email_verify_default_backward_compatibility(
         ),
         framework="fastapi",
         recipe_list=[
-            emailverification.init(),
+            emailverification.init(mode="OPTIONAL"),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                     providers=[CustomProvider("CUSTOM", True)]
@@ -202,7 +202,7 @@ async def test_email_verify_default_backward_compatibility_supress_error(
         ),
         framework="fastapi",
         recipe_list=[
-            emailverification.init(),
+            emailverification.init(mode="OPTIONAL"),
             thirdparty.init(
                 sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
                     providers=[CustomProvider("CUSTOM", True)]

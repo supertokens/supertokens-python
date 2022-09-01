@@ -185,7 +185,7 @@ class EmailVerificationRecipe(RecipeModule):
 
     @staticmethod
     def init(
-        mode: MODE_TYPE = "OPTIONAL",
+        mode: MODE_TYPE,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
         create_and_send_custom_email: Union[
@@ -263,7 +263,7 @@ class EmailVerificationRecipe(RecipeModule):
 
         return UnknownUserIdError()
 
-    def add_get_email_for_user_id_func(self, f: Callable[[str, Dict[str, Any]], Any]):
+    def add_get_email_for_user_id_func(self, f: TypeGetEmailForUserIdFunction):
         self.get_email_for_user_id_funcs_from_other_recipes.append(f)
 
 
@@ -297,8 +297,8 @@ class APIImplementation(APIInterface):
         self,
         token: str,
         api_options: APIOptions,
+        session: Optional[SessionContainer],
         user_context: Dict[str, Any],
-        session: Optional[SessionContainer] = None,
     ) -> Union[EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError]:
 
         response = await api_options.recipe_implementation.verify_email_using_token(
@@ -314,8 +314,8 @@ class APIImplementation(APIInterface):
     async def is_email_verified_get(
         self,
         api_options: APIOptions,
+        session: Optional[SessionContainer],
         user_context: Dict[str, Any],
-        session: Optional[SessionContainer] = None,
     ) -> IsEmailVerifiedGetOkResult:
         if session is None:
             raise Exception("Session is undefined. Should not come here.")
@@ -335,8 +335,8 @@ class APIImplementation(APIInterface):
     async def generate_email_verify_token_post(
         self,
         api_options: APIOptions,
-        user_context: Dict[str, Any],
         session: SessionContainer,
+        user_context: Dict[str, Any],
     ) -> Union[
         GenerateEmailVerifyTokenPostOkResult,
         GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,

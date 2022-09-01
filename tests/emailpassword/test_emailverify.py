@@ -584,12 +584,12 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         async def email_verify_post(
             token: str,
             api_options: APIOptions,
+            session: Optional[SessionContainer],
             user_context: Dict[str, Any],
-            session: Optional[SessionContainer] = None,
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options, user_context, session)
+            response = await temp(token, api_options, session, user_context)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -790,12 +790,12 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
         async def email_verify_post(
             token: str,
             api_options: APIOptions,
+            session: Optional[SessionContainer],
             user_context: Dict[str, Any],
-            session: Optional[SessionContainer] = None,
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options, user_context, session)
+            response = await temp(token, api_options, session, user_context)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -884,12 +884,12 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
         async def email_verify_post(
             token: str,
             api_options: APIOptions,
+            session: Optional[SessionContainer],
             user_context: Dict[str, Any],
-            session: Optional[SessionContainer] = None,
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options, user_context, session)
+            response = await temp(token, api_options, session, user_context)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -1014,7 +1014,7 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailverification.init(),
+            emailverification.init(mode="OPTIONAL"),
             emailpassword.init(),
         ],
     )

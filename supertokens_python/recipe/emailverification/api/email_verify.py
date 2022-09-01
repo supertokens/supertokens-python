@@ -52,7 +52,7 @@ async def handle_email_verify_api(
         )
 
         result = await api_implementation.email_verify_post(
-            token, api_options, user_context, session
+            token, api_options, session, user_context
         )
     else:
         if api_implementation.disable_is_email_verified_get:
@@ -65,7 +65,7 @@ async def handle_email_verify_api(
         )
 
         result = await api_implementation.is_email_verified_get(
-            api_options, user_context, session
+            api_options, session, user_context
         )
 
     return send_200_response(result.to_json(), api_options.response)

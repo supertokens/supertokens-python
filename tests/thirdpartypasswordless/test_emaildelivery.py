@@ -132,7 +132,7 @@ async def test_email_verify_default_backward_compatibility(
         ),
         framework="fastapi",
         recipe_list=[
-            emailverification.init(),
+            emailverification.init(mode="OPTIONAL"),
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
@@ -547,7 +547,7 @@ async def test_email_verify_for_pless_user_no_callback():
         ),
         framework="fastapi",
         recipe_list=[
-            emailverification.init(),
+            emailverification.init(mode="OPTIONAL"),
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",

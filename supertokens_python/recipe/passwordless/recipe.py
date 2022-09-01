@@ -333,7 +333,9 @@ class PasswordlessRecipe(RecipeModule):
             return consume_code_result
         raise Exception("Failed to create user. Please retry")
 
-    async def get_email_for_user_id(self, user_id: str, user_context: Dict[str, Any]):
+    async def get_email_for_user_id(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -> Union[GetEmailForUserIdOkResult, EmailDoesNotExistError, UnknownUserIdError]:
         user_info = await self.recipe_implementation.get_user_by_id(
             user_id, user_context
         )

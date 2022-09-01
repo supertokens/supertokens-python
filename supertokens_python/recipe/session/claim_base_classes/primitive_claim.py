@@ -128,7 +128,6 @@ class HasFreshValueSCV(SessionClaimValidator):
 
 
 class PrimitiveClaimValidators(Generic[_T]):
-    # TODO: We should discuss how someone would override existing validators
     def __init__(self, claim: SessionClaim[_T]) -> None:
         self.claim = claim
 
@@ -174,9 +173,6 @@ class PrimitiveClaim(SessionClaim[_T]):
     def remove_from_payload_by_merge_(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> JSONObject:
-        # TODO: https://github.com/supertokens/supertokens-python/pull/209#discussion_r931922854
-        # Not sure if this will actually work in python -> cause there is no diff between "null" and
-        # "undefined" in python (both are None). So setting this to None is as good as deleting it from the map?
         payload[self.key] = None
         return payload
 

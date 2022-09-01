@@ -125,7 +125,8 @@ class EmailVerifyPostOkResult(APIResponse):
 
 
 class EmailVerifyPostInvalidTokenError(APIResponse):
-    status = "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
+    def __init__(self):
+        self.status = "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
 
     def to_json(self) -> Dict[str, Any]:
         return {"status": self.status}
@@ -167,8 +168,8 @@ class APIInterface(ABC):
         self,
         token: str,
         api_options: APIOptions,
+        session: Optional[SessionContainer],
         user_context: Dict[str, Any],
-        session: Optional[SessionContainer] = None,
     ) -> Union[
         EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError, GeneralErrorResponse
     ]:
@@ -178,8 +179,8 @@ class APIInterface(ABC):
     async def is_email_verified_get(
         self,
         api_options: APIOptions,
+        session: Optional[SessionContainer],
         user_context: Dict[str, Any],
-        session: Optional[SessionContainer] = None,
     ) -> Union[IsEmailVerifiedGetOkResult, GeneralErrorResponse]:
         pass
 
@@ -187,8 +188,8 @@ class APIInterface(ABC):
     async def generate_email_verify_token_post(
         self,
         api_options: APIOptions,
-        user_context: Dict[str, Any],
         session: SessionContainer,
+        user_context: Dict[str, Any],
     ) -> Union[
         GenerateEmailVerifyTokenPostOkResult,
         GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,

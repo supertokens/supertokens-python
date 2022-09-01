@@ -48,10 +48,9 @@ MODE_TYPE = Literal["REQUIRED", "OPTIONAL"]
 
 
 class ParentRecipeEmailVerificationConfig:
-    # TODO: Rename this? ^
     def __init__(
         self,
-        mode: MODE_TYPE = "OPTIONAL",
+        mode: MODE_TYPE,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
         create_and_send_custom_email: Union[
@@ -94,6 +93,11 @@ def validate_and_normalise_user_input(
     if not isinstance(config, ParentRecipeEmailVerificationConfig):  # type: ignore
         raise ValueError(
             "config must be an instance of ParentRecipeEmailVerificationConfig"
+        )
+
+    if config.mode not in ["REQUIRED", "OPTIONAL"]:
+        raise ValueError(
+            "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
         )
 
     def get_email_delivery_config() -> EmailDeliveryConfigWithService[
