@@ -66,9 +66,6 @@ class SessionRecipe(RecipeModule):
     recipe_id = "session"
     __instance = None
 
-    claims_added_by_other_recipes: List[SessionClaim[Any]] = []
-    claim_validators_added_by_other_recipes: List[SessionClaimValidator] = []
-
     def __init__(
         self,
         recipe_id: str,
@@ -155,6 +152,9 @@ class SessionRecipe(RecipeModule):
             if self.config.override.apis is None
             else self.config.override.apis(api_implementation)
         )
+
+        self.claims_added_by_other_recipes: List[SessionClaim[Any]] = []
+        self.claim_validators_added_by_other_recipes: List[SessionClaimValidator] = []
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
@@ -302,31 +302,28 @@ class SessionRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         SessionRecipe.__instance = None
-        # FIXME: Discovered its requirement while running tests. Confirm if this is correct:
-        SessionRecipe.claims_added_by_other_recipes = []
-        SessionRecipe.claim_validators_added_by_other_recipes = []
 
-    @staticmethod
-    def add_claim_from_other_recipe(claim: SessionClaim[Any]):
+    def add_claim_from_other_recipe(self, claim: SessionClaim[Any]):
         # We are throwing here (and not in addClaimValidatorFromOtherRecipe) because if multiple
         # claims are added with the same key they will overwrite each other. Validators will all run
         # and work as expected even if they are added multiple times.
-        if claim.key in [c.key for c in SessionRecipe.claims_added_by_other_recipes]:
+        if claim.key in [c.key for c in self.claims_added_by_other_recipes]:
             raise Exception("Claim added by multiple recipes")
 
-        SessionRecipe.claims_added_by_other_recipes.append(claim)
+        self.claims_added_by_other_recipes.append(claim)
 
-    @staticmethod
-    def get_claims_added_by_other_recipes() -> List[SessionClaim[Any]]:
-        return SessionRecipe.claims_added_by_other_recipes
+    def get_claims_added_by_other_recipes(self) -> List[SessionClaim[Any]]:
+        return self.claims_added_by_other_recipes
 
-    @staticmethod
-    def add_claim_validator_from_other_recipe(claim_validator: SessionClaimValidator):
-        SessionRecipe.claim_validators_added_by_other_recipes.append(claim_validator)
+    def add_claim_validator_from_other_recipe(
+        self, claim_validator: SessionClaimValidator
+    ):
+        self.claim_validators_added_by_other_recipes.append(claim_validator)
 
-    @staticmethod
-    def get_claim_validators_added_by_other_recipes() -> List[SessionClaimValidator]:
-        return SessionRecipe.claim_validators_added_by_other_recipes
+    def get_claim_validators_added_by_other_recipes(
+        self,
+    ) -> List[SessionClaimValidator]:
+        return self.claim_validators_added_by_other_recipes
 
     async def verify_session(
         self,

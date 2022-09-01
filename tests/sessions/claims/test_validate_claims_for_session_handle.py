@@ -11,7 +11,7 @@ from supertokens_python.recipe.session.asyncio import (
 )
 from supertokens_python.recipe.session.interfaces import (
     ClaimsValidationResult,
-    SessionDoesnotExistError,
+    SessionDoesNotExistError,
 )
 from tests.sessions.claims.utils import (
     get_st_init_args,
@@ -57,4 +57,4 @@ async def test_should_work_for_not_existing_handle():
     res = await validate_claims_for_session_handle(
         "non_existing_handle", lambda _, __, ___: []
     )
-    assert isinstance(res, SessionDoesnotExistError)
+    assert isinstance(res, SessionDoesNotExistError)

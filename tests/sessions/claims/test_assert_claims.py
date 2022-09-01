@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, TypeVar, Union
 from unittest.mock import patch
 
@@ -7,6 +8,7 @@ from supertokens_python.recipe.session.interfaces import (
     JSONObject,
     SessionClaimValidator,
     ClaimValidationResult,
+    SessionClaim,
 )
 from supertokens_python.recipe.session.session_class import Session
 from tests.utils import AsyncMock
@@ -46,20 +48,26 @@ async def test_should_call_validate_with_the_same_payload_object():
     )
 
     class DummyClaimValidator(SessionClaimValidator):
-        def __init__(self):
+        def __init__(self, claim: SessionClaim[Any]):
             super().__init__("claim_validator_id")
-            self.validate_call_count = 0
+            self.claim = claim
+            self.validate_calls: Dict[str, int] = {}
 
         async def validate(
             self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
         ):
-            self.validate_call_count += 1
+            payload_json = json.dumps(payload)
+            self.validate_calls[payload_json] = (
+                self.validate_calls.get(payload_json, 0) + 1
+            )
             return ClaimValidationResult(is_valid=True)
+
+        def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return False
 
     dummy_claim = PrimitiveClaim("st-claim", lambda _, __: "Hello world")
 
-    dummy_claim_validator = DummyClaimValidator()
-    dummy_claim_validator.claim = dummy_claim
+    dummy_claim_validator = DummyClaimValidator(dummy_claim)
 
     dummy_claim.validators.dummy_claim_validator = dummy_claim_validator  # type: ignore
 
@@ -69,6 +77,6 @@ async def test_should_call_validate_with_the_same_payload_object():
         wraps=session.update_access_token_payload,
     ) as mock:
         await session.assert_claims([dummy_claim.validators.dummy_claim_validator])  # type: ignore
-        mock.assert_not_called()
 
-        assert dummy_claim_validator.validate_call_count == 1
+        assert dummy_claim_validator.validate_calls == {json.dumps(payload): 1}
+        mock.assert_not_called()

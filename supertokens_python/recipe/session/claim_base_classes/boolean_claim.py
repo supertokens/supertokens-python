@@ -41,5 +41,4 @@ class BooleanClaim(PrimitiveClaim[bool]):
         ],
     ):
         super().__init__(key, fetch_value)
-        claim = self
-        self.validators = BooleanClaimValidators(claim)
+        self.validators = BooleanClaimValidators(claim=self)

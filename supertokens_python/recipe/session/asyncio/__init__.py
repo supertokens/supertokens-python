@@ -24,14 +24,14 @@ from supertokens_python.recipe.session.interfaces import (
     SessionInformationResult,
     SessionClaim,
     SessionClaimValidator,
-    SessionDoesnotExistError,
+    SessionDoesNotExistError,
     ClaimsValidationResult,
     JSONObject,
     GetClaimValueOkResult,
 )
 from supertokens_python.recipe.session.recipe import SessionRecipe
 from supertokens_python.types import MaybeAwaitable
-from supertokens_python.utils import FRAMEWORKS, resolve
+from supertokens_python.utils import FRAMEWORKS, resolve, deprecated_warn
 from ..utils import get_required_claim_validators
 from ...jwt.interfaces import (
     CreateJwtOkResult,
@@ -53,12 +53,31 @@ async def create_new_session(
 ) -> SessionContainer:
     if user_context is None:
         user_context = {}
+    if session_data is None:
+        session_data = {}
+    if access_token_payload is None:
+        access_token_payload = {}
+
+    claims_added_by_other_recipes = (
+        SessionRecipe.get_instance().get_claims_added_by_other_recipes()
+    )
+    final_access_token_payload = access_token_payload
+
+    for claim in claims_added_by_other_recipes:
+        update = await claim.build(user_id, user_context)
+        final_access_token_payload = {**final_access_token_payload, **update}
+
     if not hasattr(request, "wrapper_used") or not request.wrapper_used:
         request = FRAMEWORKS[
             SessionRecipe.get_instance().app_info.framework
         ].wrap_request(request)
+
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
-        request, user_id, access_token_payload, session_data, user_context=user_context
+        request,
+        user_id,
+        final_access_token_payload,
+        session_data,
+        user_context=user_context,
     )
 
 
@@ -75,7 +94,7 @@ async def validate_claims_for_session_handle(
         ]
     ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[SessionDoesnotExistError, ClaimsValidationResult]:
+) -> Union[SessionDoesNotExistError, ClaimsValidationResult]:
     if user_context is None:
         user_context = {}
 
@@ -85,10 +104,10 @@ async def validate_claims_for_session_handle(
     )
 
     if session_info is None:
-        return SessionDoesnotExistError()
+        return SessionDoesNotExistError()
 
     claim_validators_added_by_other_recipes = (
-        SessionRecipe.get_claim_validators_added_by_other_recipes()
+        SessionRecipe.get_instance().get_claim_validators_added_by_other_recipes()
     )
     global_claim_validators = await resolve(
         recipe_impl.get_global_claim_validators(
@@ -133,7 +152,7 @@ async def validate_claims_in_jwt_payload(
     recipe_impl = SessionRecipe.get_instance().recipe_implementation
 
     claim_validators_added_by_other_recipes = (
-        SessionRecipe.get_claim_validators_added_by_other_recipes()
+        SessionRecipe.get_instance().get_claim_validators_added_by_other_recipes()
     )
     global_claim_validators = await resolve(
         recipe_impl.get_global_claim_validators(
@@ -173,7 +192,7 @@ async def get_claim_value(
     session_handle: str,
     claim: SessionClaim[_T],
     user_context: Union[None, Dict[str, Any]] = None,
-) -> Union[SessionDoesnotExistError, GetClaimValueOkResult[_T]]:
+) -> Union[SessionDoesNotExistError, GetClaimValueOkResult[_T]]:
     if user_context is None:
         user_context = {}
     return await SessionRecipe.get_instance().recipe_implementation.get_claim_value(
@@ -325,6 +344,11 @@ async def update_access_token_payload(
 ) -> bool:
     if user_context is None:
         user_context = {}
+
+    deprecated_warn(
+        "update_access_token_payload is deprecated. Use merge_into_access_token_payload instead"
+    )
+
     return await SessionRecipe.get_instance().recipe_implementation.update_access_token_payload(
         session_handle, new_access_token_payload, user_context
     )
@@ -337,7 +361,7 @@ async def merge_into_access_token_payload(
 ) -> bool:
     if user_context is None:
         user_context = {}
-    # TODO:
+
     return await SessionRecipe.get_instance().recipe_implementation.merge_into_access_token_payload(
         session_handle, new_access_token_payload, user_context
     )

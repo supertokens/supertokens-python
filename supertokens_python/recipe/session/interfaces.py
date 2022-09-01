@@ -82,7 +82,7 @@ JSONPrimitive = Union[str, int, bool, None, Dict[str, Any]]
 FetchValueReturnType = Union[_T, None]
 
 
-class SessionDoesnotExistError:
+class SessionDoesNotExistError:
     pass
 
 
@@ -145,7 +145,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         session_info: SessionInformationResult,
         claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
-    ) -> Union[ClaimsValidationResult, SessionDoesnotExistError]:
+    ) -> Union[ClaimsValidationResult, SessionDoesNotExistError]:
         pass
 
     @abstractmethod
@@ -210,8 +210,6 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> bool:
-        # TODO: Deprecate this method.
-        # TODO: need to mark updateAccessTokenPayload as deprecated
         """DEPRECATED: Use merge_into_access_token_payload instead"""
 
     @abstractmethod
@@ -256,7 +254,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         session_handle: str,
         claim: SessionClaim[Any],
         user_context: Dict[str, Any],
-    ) -> Union[SessionDoesnotExistError, GetClaimValueOkResult[Any]]:
+    ) -> Union[SessionDoesNotExistError, GetClaimValueOkResult[Any]]:
         pass
 
     @abstractmethod
@@ -451,7 +449,9 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
 
     @abstractmethod
     async def remove_claim(
-        self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
+        self,
+        claim: SessionClaim[Any],
+        user_context: Union[Dict[str, Any], None] = None,
     ) -> None:
         pass
 
@@ -472,6 +472,15 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         self, user_context: Union[Dict[str, Any], None] = None
     ) -> int:
         return sync(self.get_time_created(user_context))
+
+    def sync_merge_into_access_token_payload(
+        self, access_token_payload_update: Dict[str, Any], user_context: Dict[str, Any]
+    ) -> None:
+        return sync(
+            self.merge_into_access_token_payload(
+                access_token_payload_update, user_context
+            )
+        )
 
     def sync_update_access_token_payload(
         self,
@@ -590,11 +599,12 @@ class ClaimValidationResult:
 
 
 class SessionClaimValidator(ABC):
-    def __init__(self, id_: str):
+    def __init__(
+        self,
+        id_: str,
+    ) -> None:
         self.id = id_
-        self.claim: Optional[
-            SessionClaim[Any]
-        ] = None  # Child class must set this if required.
+        self.claim: Optional[SessionClaim[Any]] = None
 
     @abstractmethod
     async def validate(
@@ -602,11 +612,7 @@ class SessionClaimValidator(ABC):
     ) -> ClaimValidationResult:
         pass
 
-    def should_refetch(  # pylint: disable=no-self-use
+    def should_refetch(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> MaybeAwaitable[bool]:
-        # TODO: https://github.com/supertokens/supertokens-python/pull/209#discussion_r932121943
-        # TODO: This should also be an abstractmethod
-        # TODO: This should also be async
-        _, __ = payload, user_context
-        return False
+        raise NotImplementedError()

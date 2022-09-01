@@ -29,10 +29,10 @@ _T = TypeVar("_T", bound=JSONPrimitive)
 
 
 class HasValueSCV(SessionClaimValidator):
-    def __init__(self, id_: str, claim: SessionClaim[_T], params: Dict[str, Any]):
+    def __init__(self, id_: str, claim: SessionClaim[_T], val: _T):
         super().__init__(id_)
-        self.claim: SessionClaim[_T] = claim
-        self.params = params
+        self.claim: SessionClaim[_T] = claim  # Required to fix the type for pyright
+        self.val = val
 
     def should_refetch(
         self,
@@ -46,9 +46,9 @@ class HasValueSCV(SessionClaimValidator):
         payload: JSONObject,
         user_context: Dict[str, Any],
     ):
-        val = self.params["val"]
+        val = self.val
         claim_val = self.claim.get_value_from_payload(payload, user_context)
-        is_valid = claim_val == val
+        is_valid = claim_val == val  # type: ignore
         if is_valid:
             return ClaimValidationResult(is_valid=True)
 
@@ -63,17 +63,18 @@ class HasValueSCV(SessionClaimValidator):
 
 
 class HasFreshValueSCV(SessionClaimValidator):
-    def __init__(self, id_: str, claim: SessionClaim[_T], params: Dict[str, Any]):
+    def __init__(self, id_: str, claim: SessionClaim[_T], val: _T, max_age_in_sec: int):
         super().__init__(id_)
         self.claim: SessionClaim[_T] = claim
-        self.params = params
+        self.val = val
+        self.max_age_in_sec = max_age_in_sec
 
     def should_refetch(
         self,
         payload: JSONObject,
         user_context: Dict[str, Any],
     ):
-        max_age_in_sec: int = self.params["max_age_in_sec"]
+        max_age_in_sec: int = self.max_age_in_sec
 
         # (claim value is None) OR (value has expired)
         return (self.claim.get_value_from_payload(payload, user_context) is None) or (
@@ -85,8 +86,8 @@ class HasFreshValueSCV(SessionClaimValidator):
         payload: JSONObject,
         user_context: Dict[str, Any],
     ):
-        val: str = self.params["val"]
-        max_age_in_sec: int = self.params["max_age_in_sec"]
+        val = self.val
+        max_age_in_sec = self.max_age_in_sec
 
         claim_val = self.claim.get_value_from_payload(payload, user_context)
         if claim_val is None:
@@ -113,7 +114,7 @@ class HasFreshValueSCV(SessionClaimValidator):
                 },
             )
 
-        if claim_val != val:
+        if claim_val != val:  # type: ignore
             return ClaimValidationResult(
                 is_valid=False,
                 reason={
@@ -132,7 +133,7 @@ class PrimitiveClaimValidators(Generic[_T]):
         self.claim = claim
 
     def has_value(self, val: _T, id_: Union[str, None] = None) -> SessionClaimValidator:
-        return HasValueSCV((id_ or self.claim.key), self.claim, {"val": val})
+        return HasValueSCV((id_ or self.claim.key), self.claim, val=val)
 
     def has_fresh_value(
         self, val: _T, max_age_in_sec: int, id_: Union[str, None] = None
@@ -140,7 +141,8 @@ class PrimitiveClaimValidators(Generic[_T]):
         return HasFreshValueSCV(
             (id_ or (self.claim.key + "-fresh-val")),
             self.claim,
-            {"val": val, "max_age_in_sec": max_age_in_sec},
+            val=val,
+            max_age_in_sec=max_age_in_sec,
         )
 
 

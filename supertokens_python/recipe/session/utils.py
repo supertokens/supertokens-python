@@ -418,6 +418,17 @@ def validate_and_normalise_user_input(
     session_expired_status_code = (
         session_expired_status_code if session_expired_status_code is not None else 401
     )
+
+    invalid_claim_status_code = (
+        invalid_claim_status_code if invalid_claim_status_code is not None else 403
+    )
+
+    if session_expired_status_code == invalid_claim_status_code:
+        raise Exception(
+            "session_expired_status_code and invalid_claim_status_code cannot be the same "
+            f"({invalid_claim_status_code})"
+        )
+
     if anti_csrf is None:
         anti_csrf = "VIA_CUSTOM_HEADER" if cookie_same_site == "none" else "NONE"
 
@@ -463,8 +474,7 @@ def validate_and_normalise_user_input(
         app_info.framework,
         app_info.mode,
         jwt,
-        invalid_claim_status_code if (invalid_claim_status_code is not None) else 403
-        # TODO: above line was marked as TODO in review, not sure why.
+        invalid_claim_status_code,
     )
 
 
@@ -481,7 +491,7 @@ async def get_required_claim_validators(
     from .recipe import SessionRecipe
 
     claim_validators_added_by_other_recipes = (
-        SessionRecipe.get_claim_validators_added_by_other_recipes()
+        SessionRecipe.get_instance().get_claim_validators_added_by_other_recipes()
     )
     global_claim_validators = await resolve(
         SessionRecipe.get_instance().recipe_implementation.get_global_claim_validators(
@@ -511,13 +521,9 @@ async def update_claims_in_payload_if_needed(
         log_debug_message(
             "update_claims_in_payload_if_needed checking %s", validator.id
         )
-        if (
-            hasattr(validator, "claim")
-            and (validator.claim is not None)
-            and (
-                await resolve(
-                    validator.should_refetch(new_access_token_payload, user_context)
-                )
+        if (validator.claim is not None) and (
+            await resolve(
+                validator.should_refetch(new_access_token_payload, user_context)
             )
         ):
             log_debug_message(
@@ -554,10 +560,7 @@ async def validate_claims_in_payload(
             validator.id,
             json.dumps(claim_validation_res.__dict__),
         )
-        if (
-            not claim_validation_res.is_valid
-            and claim_validation_res.reason is not None
-        ):
+        if not claim_validation_res.is_valid:
             validation_errors.append(
                 ClaimValidationError(validator.id, claim_validation_res.reason)
             )

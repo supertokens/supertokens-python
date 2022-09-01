@@ -1,4 +1,4 @@
-from typing import List, Any, Dict, Union
+from typing import List, Any, Dict, Union, Optional
 from unittest.mock import patch
 
 from fastapi import FastAPI, Depends
@@ -88,21 +88,30 @@ def st_init_generator_with_claim_validator(claim_validator: SessionClaimValidato
 class AlwaysValidValidator(SessionClaimValidator):
     def __init__(self):
         super().__init__("always-valid-validator")
+        self.claim = TrueClaim
 
     async def validate(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
     ) -> ClaimValidationResult:
         return ClaimValidationResult(True)
 
+    def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
+        return True
+
 
 class AlwaysInvalidValidator(SessionClaimValidator):
-    def __init__(self):
+    def __init__(self, reason: Optional[Dict[str, Any]]):
         super().__init__("always-invalid-validator")
+        self.claim = TrueClaim
+        self.reason = reason
 
     async def validate(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
     ) -> ClaimValidationResult:
-        return ClaimValidationResult(is_valid=False, reason={"message": "foo"})
+        return ClaimValidationResult(is_valid=False, reason=self.reason)
+
+    def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]) -> bool:
+        return True
 
 
 @fixture(scope="function")
@@ -163,6 +172,7 @@ async def fastapi_client():
     class CustomValidator(SessionClaimValidator):
         def __init__(self, is_valid: bool):
             super().__init__("test_id")
+            self.claim = TrueClaim
             self.is_valid = is_valid
 
         async def validate(
@@ -173,6 +183,9 @@ async def fastapi_client():
             return ClaimValidationResult(
                 is_valid=False, reason={"message": "test_reason"}
             )
+
+        def should_refetch(self, payload: JSONObject, user_context: Dict[str, Any]):
+            return True
 
     refetched_claims_verify_session_is_valid_false = verify_session(
         override_global_claim_validators=lambda _, __, ___: [  # type: ignore
@@ -281,10 +294,28 @@ async def test_should_allow_with_custom_validator_returning_true(
     assert "-" in res.json()["handle"]
 
 
-async def test_should_reject_with_custom_validator_returning_false(
+async def test_should_reject_with_custom_validator_returning_false_without_reason(
     fastapi_client: TestClient,
 ):
-    custom_validator = AlwaysInvalidValidator()
+    custom_validator = AlwaysInvalidValidator(reason=None)
+
+    st_init_args = st_init_generator_with_claim_validator(custom_validator)
+    init(**st_init_args)  # type: ignore
+    start_st()
+
+    create_session(fastapi_client)
+    response = fastapi_client.get("/default-claims")
+    assert response.status_code == 403
+    assert response.json() == {
+        "message": "invalid claim",
+        "claimValidationErrors": [{"id": "always-invalid-validator"}],
+    }
+
+
+async def test_should_reject_with_custom_validator_returning_false_with_reason(
+    fastapi_client: TestClient,
+):
+    custom_validator = AlwaysInvalidValidator(reason={"message": "foo"})
 
     st_init_args = st_init_generator_with_claim_validator(custom_validator)
     init(**st_init_args)  # type: ignore
@@ -299,9 +330,6 @@ async def test_should_reject_with_custom_validator_returning_false(
             {"id": "always-invalid-validator", "reason": {"message": "foo"}}
         ],
     }
-
-
-# should reject with validator returning false with reason (Leaving this. It's exactly same as prev.)
 
 
 async def test_should_reject_if_assert_claims_returns_an_error(
@@ -431,7 +459,9 @@ async def test_should_reject_with_custom_claim_returning_false(
 ):
     # This gets overriden by override_global_claim_validators passed to verify_session()
     # in "/refetched-claim-isvalid-false" api
-    cv = AlwaysInvalidValidator()
+    cv = AlwaysInvalidValidator(
+        reason={"message": "does not matter because of override"}
+    )
     st_init_args = st_init_generator_with_claim_validator(cv)
     init(**st_init_args)  # type: ignore
     start_st()

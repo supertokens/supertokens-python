@@ -137,7 +137,6 @@ def get_recipe_implementation_with_jwt(
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> bool:
-        """DEPRECATED: Use merge_into_access_token_payload instead"""
         access_token_payload = session_information.access_token_payload
 
         if ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY not in access_token_payload:
@@ -191,12 +190,13 @@ def get_recipe_implementation_with_jwt(
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> bool:
-        # TODO: Node SDK allows non dict values of new_access_token_payload. But what should we do here?
 
         session_information = await original_implementation.get_session_information(
             session_handle, user_context
         )
-        assert session_information is not None  # TODO: Is this a valid assumption?
+        if session_information is None:
+            return False
+
         return await jwt_aware_update_access_token_payload(
             session_information, new_access_token_payload, user_context
         )
@@ -209,7 +209,8 @@ def get_recipe_implementation_with_jwt(
         session_information = await original_implementation.get_session_information(
             session_handle, user_context
         )
-        assert session_information is not None  # TODO: Is this a valid assumption?
+        if session_information is None:
+            return False
 
         new_access_token_payload = {
             **session_information.access_token_payload,
