@@ -122,9 +122,23 @@ async def validate_claims_for_session_handle(
     else:
         claim_validators = global_claim_validators
 
-    return await recipe_impl.validate_claims_for_session_handle(
-        session_info, claim_validators, user_context
+    claim_validation_res = await recipe_impl.validate_claims(
+        session_info.user_id,
+        session_info.access_token_payload,
+        claim_validators,
+        user_context,
     )
+
+    if claim_validation_res.access_token_payload_update is not None:
+        updated = await recipe_impl.merge_into_access_token_payload(
+            session_handle,
+            claim_validation_res.access_token_payload_update,
+            user_context,
+        )
+        if not updated:
+            return SessionDoesNotExistError()
+
+    return ClaimsValidationResult(claim_validation_res.invalid_claims)
 
 
 async def validate_claims_in_jwt_payload(
@@ -245,6 +259,7 @@ async def get_session(
         request,
         anti_csrf_check,
         session_required,
+        lambda _, __, ___: [],
         user_context,
     )
 
@@ -252,7 +267,7 @@ async def get_session(
         claim_validators = await get_required_claim_validators(
             session, override_global_claim_validators, user_context
         )
-        await session_recipe_impl.assert_claims(session, claim_validators, user_context)
+        await session.assert_claims(claim_validators, user_context)
 
     return session
 

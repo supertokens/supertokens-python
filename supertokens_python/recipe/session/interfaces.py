@@ -92,8 +92,13 @@ class GetClaimValueOkResult(Generic[_T]):
 
 
 class ClaimsValidationResult:
-    def __init__(self, invalid_claims: List[ClaimValidationError]):
+    def __init__(
+        self,
+        invalid_claims: List[ClaimValidationError],
+        access_token_payload_update: Optional[Dict[str, Any]] = None,
+    ):
         self.invalid_claims = invalid_claims
+        self.access_token_payload_update = access_token_payload_update
 
 
 class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
@@ -126,26 +131,24 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        override_global_claim_validators: Optional[
+            Callable[
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ],
         user_context: Dict[str, Any],
     ) -> Union[SessionContainer, None]:
         pass
 
     @abstractmethod
-    async def assert_claims(
+    async def validate_claims(
         self,
-        session: SessionContainer,
+        user_id: str,
+        access_token_payload: Dict[str, Any],
         claim_validators: List[SessionClaimValidator],
         user_context: Dict[str, Any],
-    ) -> None:
-        pass
-
-    @abstractmethod
-    async def validate_claims_for_session_handle(
-        self,
-        session_info: SessionInformationResult,
-        claim_validators: List[SessionClaimValidator],
-        user_context: Dict[str, Any],
-    ) -> Union[ClaimsValidationResult, SessionDoesNotExistError]:
+    ) -> ClaimsValidationResult:
         pass
 
     @abstractmethod
@@ -312,12 +315,15 @@ class APIInterface(ABC):
     @abstractmethod
     async def refresh_post(
         self, api_options: APIOptions, user_context: Dict[str, Any]
-    ) -> None:
+    ) -> SessionContainer:
         pass
 
     @abstractmethod
     async def signout_post(
-        self, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        api_options: APIOptions,
+        session: Optional[SessionContainer],
+        user_context: Dict[str, Any],
     ) -> Union[SignOutOkayResponse, GeneralErrorResponse]:
         pass
 

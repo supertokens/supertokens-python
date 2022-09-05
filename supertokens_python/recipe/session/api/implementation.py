@@ -31,33 +31,23 @@ if TYPE_CHECKING:
 
 from typing import Any, Dict
 
-from supertokens_python.recipe.session.exceptions import UnauthorisedError
-
 
 class APIImplementation(APIInterface):
     async def refresh_post(
         self, api_options: APIOptions, user_context: Dict[str, Any]
-    ) -> None:
-        await api_options.recipe_implementation.refresh_session(
+    ) -> SessionContainer:
+        return await api_options.recipe_implementation.refresh_session(
             api_options.request, user_context
         )
 
     async def signout_post(
-        self, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        api_options: APIOptions,
+        session: SessionContainer,
+        user_context: Dict[str, Any],
     ) -> SignOutOkayResponse:
-        try:
-            session = await api_options.recipe_implementation.get_session(
-                request=api_options.request,
-                user_context=user_context,
-                anti_csrf_check=None,
-                session_required=True,
-            )
-        except UnauthorisedError:
-            return SignOutOkayResponse()
-
-        if session is None:
-            raise Exception("Session is undefined. Should not come here.")
-        await session.revoke_session(user_context)
+        if session is not None:
+            await session.revoke_session(user_context)
         return SignOutOkayResponse()
 
     async def verify_session(
@@ -86,6 +76,7 @@ class APIImplementation(APIInterface):
             api_options.request,
             anti_csrf_check,
             session_required,
+            override_global_claim_validators,
             user_context,
         )
 
@@ -95,10 +86,6 @@ class APIImplementation(APIInterface):
                 override_global_claim_validators,
                 user_context,
             )
-            await api_options.recipe_implementation.assert_claims(
-                session,
-                claim_validators,
-                user_context,
-            )
+            await session.assert_claims(claim_validators, user_context)
 
         return session

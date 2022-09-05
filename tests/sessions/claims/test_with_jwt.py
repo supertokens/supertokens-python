@@ -75,7 +75,7 @@ async def test_should_create_the_right_access_token_payload_with_claims_and_JWT_
         session_info.user_id,
         decoded_jwt,
         lambda _, __, ___: [
-            TrueClaim.validators.has_fresh_value(True, 100),
+            TrueClaim.validators.has_value(True, 100),
             failing_validator,
         ],
     )

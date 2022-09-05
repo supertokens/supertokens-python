@@ -53,7 +53,9 @@ class IsVerifiedSCV(SessionClaimValidator):
         return (value is None) or (
             value is False
             and last_refetch_time
-            < (get_timestamp_ms() - self.refetch_time_on_false_in_ms)
+            < (
+                get_timestamp_ms() - self.refetch_time_on_false_in_ms
+            )  # TODO: Default 5 min?
         )
 
 
@@ -61,7 +63,7 @@ class EmailVerificationClaimValidators(BooleanClaimValidators):
     def is_verified(
         self, refetch_time_on_false_in_seconds: int = 10
     ) -> SessionClaimValidator:
-        has_value_res = self.has_value(True, "st-ev-is-verified")
+        has_value_res = self.has_value(True, id_="st-ev-is-verified")
         assert isinstance(self.claim, BooleanClaim)
         return IsVerifiedSCV(
             self.claim, has_value_res, refetch_time_on_false_in_seconds

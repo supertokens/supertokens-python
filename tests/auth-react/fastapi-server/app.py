@@ -635,13 +635,17 @@ def custom_init(
     def override_session_apis(original_implementation: SessionAPIInterface):
         original_signout_post = original_implementation.signout_post
 
-        async def signout_post(api_options: SAPIOptions, user_context: Dict[str, Any]):
+        async def signout_post(
+            api_options: SAPIOptions,
+            session: SessionContainer,
+            user_context: Dict[str, Any],
+        ):
             is_general_error = await check_for_general_error(
                 "body", api_options.request
             )
             if is_general_error:
                 return GeneralErrorResponse("general error from signout API")
-            return await original_signout_post(api_options, user_context)
+            return await original_signout_post(api_options, session, user_context)
 
         original_implementation.signout_post = signout_post
         return original_implementation

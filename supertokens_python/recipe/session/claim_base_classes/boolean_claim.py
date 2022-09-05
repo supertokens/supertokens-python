@@ -22,12 +22,12 @@ _T = TypeVar("_T", bound=bool)
 class BooleanClaimValidators(PrimitiveClaimValidators[bool]):
     def is_true(self, max_age: Optional[int]):
         if max_age is not None:
-            return self.has_fresh_value(True, max_age)
+            return self.has_value(True, max_age)
         return self.has_value(True)
 
     def is_false(self, max_age: Optional[int]):
         if max_age is not None:
-            return self.has_fresh_value(False, max_age)
+            return self.has_value(False, max_age)
         return self.has_value(False)
 
 
