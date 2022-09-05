@@ -49,7 +49,6 @@ def thirdparty_sign_in_up(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    email_verified: bool,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -57,9 +56,7 @@ def thirdparty_sign_in_up(
     )
 
     return sync(
-        thirdparty_sign_in_up(
-            third_party_id, third_party_user_id, email, email_verified, user_context
-        )
+        thirdparty_sign_in_up(third_party_id, third_party_user_id, email, user_context)
     )
 
 

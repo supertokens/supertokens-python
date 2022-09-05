@@ -159,7 +159,7 @@ class APIImplementation(APIInterface):
             return SignInUpPostNoEmailGivenByProviderResponse()
 
         signinup_response = await api_options.recipe_implementation.sign_in_up(
-            provider.id, user_info.user_id, email, email_verified, user_context
+            provider.id, user_info.user_id, email, user_context
         )
 
         if email_verified:

@@ -196,13 +196,12 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
-        email_verified: bool,
         user_context: Dict[str, Any],
     ) -> ThirdPartySignInUpOkResult:
         if self.tp_sign_in_up is None:
             raise Exception("No thirdparty provider configured")
         result = await self.tp_sign_in_up(
-            third_party_id, third_party_user_id, email, email_verified, user_context
+            third_party_id, third_party_user_id, email, user_context
         )
         return ThirdPartySignInUpOkResult(
             User(

@@ -27,7 +27,7 @@ from typing import (
 )
 
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.types import APIResponse, GeneralErrorResponse, MaybeAwaitable
+from supertokens_python.types import APIResponse, MaybeAwaitable
 from .exceptions import ClaimValidationError
 from .utils import SessionConfig
 from ...utils import resolve
@@ -78,6 +78,9 @@ _T = TypeVar("_T")
 JSONObject = Dict[str, Any]
 
 JSONPrimitive = Union[str, int, bool, None, Dict[str, Any]]
+JSONPrimitiveList = Union[
+    List[str], List[int], List[bool], List[None], List[Dict[str, Any]]
+]
 
 FetchValueReturnType = Union[_T, None]
 
@@ -324,7 +327,7 @@ class APIInterface(ABC):
         api_options: APIOptions,
         session: Optional[SessionContainer],
         user_context: Dict[str, Any],
-    ) -> Union[SignOutOkayResponse, GeneralErrorResponse]:
+    ) -> SignOutOkayResponse:
         pass
 
     @abstractmethod

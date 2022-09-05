@@ -13,12 +13,13 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, Union, Optional, List, Callable
 
 # TODO: Missing changes for session_class inside with_jwt? supertokens/supertokens-node#278 (files)
 
 from jwt import decode
 
+from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import get_timestamp_ms
 
 from .constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
@@ -31,6 +32,7 @@ if TYPE_CHECKING:
         RecipeInterface,
         SessionContainer,
         SessionInformationResult,
+        SessionClaimValidator,
     )
     from supertokens_python.framework.types import BaseRequest
 
@@ -91,12 +93,19 @@ def get_recipe_implementation_with_jwt(
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        override_global_claim_validators: Optional[
+            Callable[
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ],
         user_context: Dict[str, Any],
     ) -> Union[SessionContainer, None]:
         session_container = await og_get_session(
             request,
             anti_csrf_check,
             session_required,
+            override_global_claim_validators,
             user_context,
         )
         if session_container is None:

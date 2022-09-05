@@ -607,7 +607,7 @@ def custom_init(
 
         async def signout_post(
             api_options: SAPIOptions,
-            session: SessionContainer,
+            session: Optional[SessionContainer],
             user_context: Dict[str, Any],
         ):
             is_general_error = await check_for_general_error(

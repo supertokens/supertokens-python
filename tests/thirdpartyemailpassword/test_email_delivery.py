@@ -892,7 +892,7 @@ async def test_reset_password_backward_compatibility_thirdparty_user(
     start_st()
 
     resp = await thirdparty_sign_in_up(
-        "supertokens", "test-user-id", "test@example.com", False
+        "supertokens", "test-user-id", "test@example.com"
     )
     user_id: str = resp.user.user_id  # type: ignore
 
@@ -956,7 +956,7 @@ async def test_email_verification_backward_compatibility_thirdparty_user(
     start_st()
 
     resp = await thirdparty_sign_in_up(
-        "supertokens", "test-user-id", "test@example.com", False
+        "supertokens", "test-user-id", "test@example.com"
     )
     user_id: str = resp.user.user_id  # type: ignore
 

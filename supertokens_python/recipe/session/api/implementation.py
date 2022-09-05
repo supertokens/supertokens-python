@@ -43,7 +43,7 @@ class APIImplementation(APIInterface):
     async def signout_post(
         self,
         api_options: APIOptions,
-        session: SessionContainer,
+        session: Optional[SessionContainer],
         user_context: Dict[str, Any],
     ) -> SignOutOkayResponse:
         if session is not None:

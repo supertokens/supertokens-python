@@ -65,7 +65,6 @@ class RecipeInterface(ABC):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
-        email_verified: bool,
         user_context: Dict[str, Any],
     ) -> SignInUpOkResult:
         pass

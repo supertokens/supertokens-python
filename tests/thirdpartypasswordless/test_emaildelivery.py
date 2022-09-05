@@ -146,7 +146,7 @@ async def test_email_verify_default_backward_compatibility(
     start_st()
 
     resp = await thirdparty_sign_in_up(
-        "supertokens", "test-user-id", "test@example.com", False
+        "supertokens", "test-user-id", "test@example.com"
     )
 
     s = SessionRecipe.get_instance()
@@ -228,7 +228,7 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     start_st()
 
     resp = await thirdparty_sign_in_up(
-        "supertokens", "test-user-id", "test@example.com", False
+        "supertokens", "test-user-id", "test@example.com"
     )
 
     s = SessionRecipe.get_instance()
@@ -307,7 +307,7 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
     start_st()
 
     resp = await thirdparty_sign_in_up(
-        "supertokens", "test-user-id", "test@example.com", False
+        "supertokens", "test-user-id", "test@example.com"
     )
 
     s = SessionRecipe.get_instance()
@@ -448,7 +448,7 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     start_st()
 
     resp = await thirdparty_sign_in_up(
-        "supertokens", "test-user-id", "test@example.com", False
+        "supertokens", "test-user-id", "test@example.com"
     )
 
     s = SessionRecipe.get_instance()

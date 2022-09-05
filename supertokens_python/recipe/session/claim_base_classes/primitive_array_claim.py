@@ -23,11 +23,12 @@ from ..interfaces import (
     SessionClaim,
     SessionClaimValidator,
     ClaimValidationResult,
+    JSONPrimitiveList,
 )
 
 
 Primitive = TypeVar("Primitive", bound=JSONPrimitive)
-PrimitiveList = TypeVar("PrimitiveList", bound=List[JSONPrimitive])
+PrimitiveList = TypeVar("PrimitiveList", bound=JSONPrimitiveList)
 
 _T = TypeVar("_T")
 
@@ -218,7 +219,7 @@ class PrimitiveArrayClaimValidators(Generic[PrimitiveList]):
         )
 
 
-class PrimitiveArrayClaim(SessionClaim[PrimitiveList]):
+class PrimitiveArrayClaim(SessionClaim[PrimitiveList], Generic[PrimitiveList]):
     def __init__(
         self,
         key: str,

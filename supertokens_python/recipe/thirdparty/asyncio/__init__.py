@@ -57,11 +57,10 @@ async def sign_in_up(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    email_verified: bool,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     if user_context is None:
         user_context = {}
     return await ThirdPartyRecipe.get_instance().recipe_implementation.sign_in_up(
-        third_party_id, third_party_user_id, email, email_verified, user_context
+        third_party_id, third_party_user_id, email, user_context
     )
