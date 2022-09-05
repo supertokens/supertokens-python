@@ -15,6 +15,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Union
 
+# TODO: Missing changes for session_class inside with_jwt? supertokens/supertokens-node#278 (files)
+
 from jwt import decode
 
 from supertokens_python.utils import get_timestamp_ms

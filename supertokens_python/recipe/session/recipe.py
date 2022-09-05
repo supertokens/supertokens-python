@@ -26,6 +26,7 @@ from .exceptions import (
     TokenTheftError,
     UnauthorisedError,
     InvalidClaimsError,
+    TryRefreshTokenError,
 )
 from ...types import MaybeAwaitable
 
@@ -239,10 +240,14 @@ class SessionRecipe(RecipeModule):
             return await self.config.error_handlers.on_invalid_claim(
                 self, request, err.payload, response
             )
-        log_debug_message("errorHandler: returning TRY_REFRESH_TOKEN")
-        return await self.config.error_handlers.on_try_refresh_token(
-            request, str(err), response
-        )
+        if isinstance(err, TryRefreshTokenError):
+            log_debug_message("errorHandler: returning TRY_REFRESH_TOKEN")
+            return await self.config.error_handlers.on_try_refresh_token(
+                request, str(err), response
+            )
+
+        # TODO: Is raising err okay?
+        raise err
 
     def get_all_cors_headers(self) -> List[str]:
         cors_headers = get_cors_allowed_headers()

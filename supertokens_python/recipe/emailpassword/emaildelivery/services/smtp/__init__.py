@@ -24,17 +24,8 @@ from supertokens_python.recipe.emailpassword.types import (
     EmailTemplateVars,
     SMTPOverrideInput,
 )
-from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import (
-    SMTPService as EmailVerificationSMTPService,
-)
-from supertokens_python.recipe.emailverification.types import (
-    VerificationEmailTemplateVars,
-)
 
 from .service_implementation import ServiceImplementation
-from .service_implementation.email_verification_implementation import (
-    ServiceImplementation as EmailVerificationServiceImpl,
-)
 
 
 class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
@@ -50,21 +41,9 @@ class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
         oi = ServiceImplementation(transporter)
         self.service_implementation = oi if override is None else override(oi)
 
-        self.email_verification_smtp_service = EmailVerificationSMTPService(
-            smtp_settings=smtp_settings,
-            override=lambda _: EmailVerificationServiceImpl(
-                self.service_implementation
-            ),
-        )
-
     async def send_email(
         self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
     ) -> None:
-        if isinstance(template_vars, VerificationEmailTemplateVars):
-            return await self.email_verification_smtp_service.send_email(
-                template_vars, user_context
-            )
-
         content = await self.service_implementation.get_content(
             template_vars, user_context
         )

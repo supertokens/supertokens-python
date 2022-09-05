@@ -25,7 +25,6 @@ from . import utils
 from .emaildelivery import services as emaildelivery_services
 from .recipe import ThirdPartyEmailPasswordRecipe
 
-InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputOverrideConfig = utils.InputOverrideConfig
 exceptions = ex
 InputResetPasswordUsingTokenFeature = emailpassword.InputResetPasswordUsingTokenFeature
@@ -49,7 +48,6 @@ def init(
     reset_password_using_token_feature: Union[
         InputResetPasswordUsingTokenFeature, None
     ] = None,
-    email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
     override: Union[InputOverrideConfig, None] = None,
     providers: Union[List[Provider], None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
@@ -57,7 +55,6 @@ def init(
     return ThirdPartyEmailPasswordRecipe.init(
         sign_up_feature,
         reset_password_using_token_feature,
-        email_verification_feature,
         override,
         providers,
         email_delivery,

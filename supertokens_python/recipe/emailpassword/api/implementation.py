@@ -92,10 +92,9 @@ class APIImplementation(APIInterface):
 
         token = token_result.token
         password_reset_link = (
-            await api_options.config.reset_password_using_token_feature.get_reset_password_url(
-                user, user_context
-            )
-            + "?token="
+            api_options.app_info.website_domain.get_as_string_dangerous()
+            + api_options.app_info.website_base_path.get_as_string_dangerous()
+            + "/reset-password?token="
             + token
             + "&rid="
             + api_options.recipe_id

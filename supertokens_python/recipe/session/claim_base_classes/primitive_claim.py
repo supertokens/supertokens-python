@@ -150,7 +150,7 @@ class PrimitiveClaim(SessionClaim[_T]):
         self,
         key: str,
         fetch_value: Callable[
-            [str, Optional[Dict[str, Any]]],
+            [str, Dict[str, Any]],
             MaybeAwaitable[Optional[_T]],
         ],
     ) -> None:

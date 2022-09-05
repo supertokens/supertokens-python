@@ -16,18 +16,15 @@ from __future__ import annotations
 from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
-from supertokens_python.recipe.emailverification.types import (
-    EmailVerificationIngredients,
-)
-from supertokens_python.recipe.thirdparty.types import ThirdPartyIngredients
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api.implementation import APIImplementation
 from .interfaces import APIInterface, APIOptions, RecipeInterface
 from .recipe_implementation import RecipeImplementation
+from ..emailverification.interfaces import GetEmailForUserIdOkResult, UnknownUserIdError
+from ...post_init_callbacks import PostSTInitCallbacks
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -36,7 +33,6 @@ if TYPE_CHECKING:
     from .utils import SignInAndUpFeature, InputOverrideConfig
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 
 from .api import (
@@ -46,33 +42,26 @@ from .api import (
 )
 from .constants import APPLE_REDIRECT_HANDLER, AUTHORISATIONURL, SIGNINUP
 from .exceptions import SuperTokensThirdPartyError
-from .types import ThirdPartyIngredients, EmailTemplateVars
-from .utils import InputEmailVerificationConfig, validate_and_normalise_user_input
+from .types import ThirdPartyIngredients
+from .utils import validate_and_normalise_user_input
 
 
 class ThirdPartyRecipe(RecipeModule):
     recipe_id = "thirdparty"
     __instance = None
-    email_delivery: EmailDeliveryIngredient[EmailTemplateVars]
 
     def __init__(
         self,
         recipe_id: str,
         app_info: AppInfo,
         sign_in_and_up_feature: SignInAndUpFeature,
-        ingredients: ThirdPartyIngredients,
-        email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
+        _ingredients: ThirdPartyIngredients,
         override: Union[InputOverrideConfig, None] = None,
-        email_verification_recipe: Union[EmailVerificationRecipe, None] = None,
-        email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     ):
         super().__init__(recipe_id, app_info)
         self.config = validate_and_normalise_user_input(
-            self,
             sign_in_and_up_feature,
-            email_verification_feature,
             override,
-            email_delivery,
         )
         self.providers = self.config.sign_in_and_up_feature.providers
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
@@ -88,34 +77,16 @@ class ThirdPartyRecipe(RecipeModule):
             else self.config.override.apis(api_implementation)
         )
 
-        email_delivery_ingredient = ingredients.email_delivery
-        if email_delivery_ingredient is None:
-            self.email_delivery = EmailDeliveryIngredient(
-                self.config.get_email_delivery_config(recipe_implementation)
-            )
-        else:
-            self.email_delivery = email_delivery_ingredient
+        def callback():
+            ev_recipe = EmailVerificationRecipe.get_instance_optional()
+            if ev_recipe:
+                ev_recipe.add_get_email_for_user_id_func(self.get_email_for_user_id)
 
-        if email_verification_recipe is not None:
-            self.email_verification_recipe = email_verification_recipe
-        else:
-            ev_email_delivery_ingredient = self.email_delivery
-            email_verification_ingredients = EmailVerificationIngredients(
-                email_delivery=ev_email_delivery_ingredient
-            )
-            self.email_verification_recipe = EmailVerificationRecipe(
-                recipe_id,
-                app_info,
-                self.config.email_verification_feature,
-                ingredients=email_verification_ingredients,
-            )
+        PostSTInitCallbacks.add_post_init_callback(callback)
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
             isinstance(err, SuperTokensThirdPartyError)
-            or self.email_verification_recipe.is_error_from_this_recipe_based_on_instance(
-                err
-            )
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
@@ -138,7 +109,7 @@ class ThirdPartyRecipe(RecipeModule):
                 APPLE_REDIRECT_HANDLER,
                 self.api_implementation.disable_apple_redirect_handler_post,
             ),
-        ] + self.email_verification_recipe.get_apis_handled()
+        ]
 
     async def handle_api_request(
         self,
@@ -156,7 +127,6 @@ class ThirdPartyRecipe(RecipeModule):
             self.recipe_implementation,
             self.providers,
             self.app_info,
-            self.email_verification_recipe.recipe_implementation,
         )
 
         if request_id == SIGNINUP:
@@ -168,38 +138,31 @@ class ThirdPartyRecipe(RecipeModule):
         if request_id == APPLE_REDIRECT_HANDLER:
             return await handle_apple_redirect_api(self.api_implementation, api_options)
 
-        return await self.email_verification_recipe.handle_api_request(
-            request_id, request, path, method, response
-        )
+        return None  # TODO: Node PR returns False, but here signature is different. Verify if this is correct.
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
-    ) -> BaseResponse:
+    ) -> BaseResponse:  # type: ignore
         if isinstance(err, SuperTokensThirdPartyError):
             raise err
-        return await self.email_verification_recipe.handle_error(request, err, response)
 
     def get_all_cors_headers(self) -> List[str]:
-        return self.email_verification_recipe.get_all_cors_headers()
+        return []
 
     @staticmethod
     def init(
         sign_in_and_up_feature: SignInAndUpFeature,
-        email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
         override: Union[InputOverrideConfig, None] = None,
-        email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     ):
         def func(app_info: AppInfo):
             if ThirdPartyRecipe.__instance is None:
-                ingredients = ThirdPartyIngredients(None)
+                ingredients = ThirdPartyIngredients()
                 ThirdPartyRecipe.__instance = ThirdPartyRecipe(
                     ThirdPartyRecipe.recipe_id,
                     app_info,
                     sign_in_and_up_feature,
                     ingredients,
-                    email_verification_feature,
                     override,
-                    email_delivery=email_delivery,
                 )
                 return ThirdPartyRecipe.__instance
             raise_general_exception(
@@ -226,12 +189,11 @@ class ThirdPartyRecipe(RecipeModule):
 
     # instance functions below...............
 
-    async def get_email_for_user_id(
-        self, user_id: str, user_context: Dict[str, Any]
-    ) -> str:
+    async def get_email_for_user_id(self, user_id: str, user_context: Dict[str, Any]):
         user_info = await self.recipe_implementation.get_user_by_id(
             user_id, user_context
         )
-        if user_info is None:
-            raise Exception("Unknown User ID provided")
-        return user_info.email
+        if user_info is not None:
+            return GetEmailForUserIdOkResult(user_info.email)
+
+        return UnknownUserIdError()

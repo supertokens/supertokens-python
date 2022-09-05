@@ -55,9 +55,6 @@ def init(
         "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
     ],
     override: Union[InputOverrideConfig, None] = None,
-    get_link_domain_and_path: Union[
-        Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None
-    ] = None,
     get_custom_user_input_code: Union[
         Callable[[Dict[str, Any]], Awaitable[str]], None
     ] = None,
@@ -68,7 +65,6 @@ def init(
         contact_config,
         flow_type,
         override,
-        get_link_domain_and_path,
         get_custom_user_input_code,
         email_delivery,
         sms_delivery,

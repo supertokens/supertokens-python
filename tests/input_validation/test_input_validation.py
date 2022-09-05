@@ -15,6 +15,9 @@ from supertokens_python.recipe import (
     thirdpartypasswordless,
     usermetadata,
 )
+from supertokens_python.recipe.emailverification.interfaces import (
+    GetEmailForUserIdOkResult,
+)
 from supertokens_python.recipe.passwordless.utils import ContactEmailOrPhoneConfig
 from supertokens_python.recipe.thirdparty.provider import Provider
 
@@ -80,13 +83,12 @@ async def test_init_validation_emailpassword():
             ),
             framework="fastapi",
             recipe_list=[
-                emailpassword.init(
-                    email_verification_feature="email verify"  # type: ignore
-                ),
+                emailverification.init("email verify"),  # type: ignore
+                emailpassword.init(),
             ],
         )
     assert (
-        "email_verification_feature must be of type InputEmailVerificationConfig or None"
+        "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
         == str(ex.value)
     )
 
@@ -107,8 +109,8 @@ async def test_init_validation_emailpassword():
     assert "override must be of type InputOverrideConfig or None" == str(ex.value)
 
 
-async def get_email_for_user_id(user_id: str, _: Dict[str, Any]) -> str:
-    return user_id
+async def get_email_for_user_id(_: str, __: Dict[str, Any]):
+    return GetEmailForUserIdOkResult("foo@example.com")
 
 
 @pytest.mark.asyncio
@@ -125,8 +127,9 @@ async def test_init_validation_emailverification():
             framework="fastapi",
             recipe_list=[emailverification.init("config")],  # type: ignore
         )
-    assert "config must be an instance of ParentRecipeEmailVerificationConfig" == str(
-        ex.value
+    assert (
+        "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
+        == str(ex.value)
     )
 
     with pytest.raises(ValueError) as ex:
@@ -141,9 +144,9 @@ async def test_init_validation_emailverification():
             framework="fastapi",
             recipe_list=[
                 emailverification.init(
-                    emailverification.ParentRecipeEmailVerificationConfig(
-                        get_email_for_user_id=get_email_for_user_id, override="override"  # type: ignore
-                    )
+                    mode="OPTIONAL",
+                    get_email_for_user_id=get_email_for_user_id,
+                    override="override",  # type: ignore
                 )
             ],
         )
@@ -465,13 +468,12 @@ async def test_init_validation_thirdpartyemailpassword():
             ),
             framework="fastapi",
             recipe_list=[
-                thirdpartyemailpassword.init(
-                    email_verification_feature="email verification"  # type: ignore
-                )
+                emailverification.init("email verification"),  # type: ignore
+                thirdpartyemailpassword.init(),
             ],
         )
     assert (
-        "email_verification_feature must be of type InputEmailVerificationConfig or None"
+        "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
         == str(ex.value)
     )
 
@@ -593,18 +595,20 @@ async def test_init_validation_thirdpartypasswordless():
             ),
             framework="fastapi",
             recipe_list=[
+                emailverification.init(
+                    "email verify",  # type: ignore
+                ),
                 thirdpartypasswordless.init(
                     contact_config=ContactEmailOrPhoneConfig(
                         create_and_send_custom_text_message=save_code_text,
                         create_and_send_custom_email=save_code_email,
                     ),
                     flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                    email_verification_feature="email verify",  # type: ignore
-                )
+                ),
             ],
         )
     assert (
-        "email_verification_feature must be an instance of InputEmailVerificationConfig or None"
+        "Email Verification recipe mode must be one of 'REQUIRED' or 'OPTIONAL'"
         == str(ex.value)
     )
 

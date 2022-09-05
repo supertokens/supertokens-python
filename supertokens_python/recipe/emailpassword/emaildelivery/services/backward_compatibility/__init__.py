@@ -25,20 +25,12 @@ from supertokens_python.recipe.emailpassword.interfaces import (
 )
 from supertokens_python.recipe.emailpassword.types import (
     User,
-    VerificationEmailTemplateVars,
-)
-from supertokens_python.recipe.emailverification.emaildelivery.services.backward_compatibility import (
-    BackwardCompatibilityService as EmailVerificationBackwardCompatibilityService,
-)
-from supertokens_python.recipe.emailverification.types import (
-    User as EmailVerificationUser,
 )
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.utils import handle_httpx_client_exceptions
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.utils import (
-        InputEmailVerificationConfig,
         InputResetPasswordUsingTokenFeature,
     )
 
@@ -68,7 +60,6 @@ def default_create_and_send_custom_email(
 
 class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
     app_info: AppInfo
-    ev_backward_compatibility_service: EmailVerificationBackwardCompatibilityService
 
     def __init__(
         self,
@@ -77,7 +68,6 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
         reset_password_using_token_feature: Union[
             InputResetPasswordUsingTokenFeature, None
         ] = None,
-        email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
     ) -> None:
         self.recipe_interface_impl = recipe_interface_impl
 
@@ -97,55 +87,18 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
             reset_password_feature_send_email_func
         )
 
-        create_and_send_custom_email: Union[
-            Callable[[EmailVerificationUser, str, Dict[str, Any]], Awaitable[None]],
-            None,
-        ] = None
-        if email_verification_feature:
-            if email_verification_feature.create_and_send_custom_email is not None:
-                ev_create_and_send_custom_email = (
-                    email_verification_feature.create_and_send_custom_email
-                )
-
-                async def create_and_send_custom_email_wrapper(
-                    user: EmailVerificationUser, link: str, user_context: Dict[str, Any]
-                ):
-                    user_info = await recipe_interface_impl.get_user_by_id(
-                        user.user_id, user_context
-                    )
-                    if user_info is None:
-                        raise Exception("Unknown User ID provided")
-
-                    return await ev_create_and_send_custom_email(
-                        user_info, link, user_context
-                    )
-
-                create_and_send_custom_email = create_and_send_custom_email_wrapper
-
-        self.ev_backward_compatibility_service = (
-            EmailVerificationBackwardCompatibilityService(
-                app_info, create_and_send_custom_email=create_and_send_custom_email
-            )
-        )
-
     async def send_email(
         self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
     ) -> None:
-        if isinstance(template_vars, VerificationEmailTemplateVars):
-            await self.ev_backward_compatibility_service.send_email(
-                template_vars, user_context
-            )
-        else:
-            user = await self.recipe_interface_impl.get_user_by_id(
-                user_id=template_vars.user.id, user_context=user_context
-            )
+        user = await self.recipe_interface_impl.get_user_by_id(
+            user_id=template_vars.user.id, user_context=user_context
+        )
+        if user is None:
+            raise Exception("Should never come here")
 
-            if user is None:
-                raise Exception("Should never come here")
-
-            try:
-                await self.reset_password_feature_send_email_func(
-                    user, template_vars.password_reset_link, user_context
-                )
-            except Exception:
-                pass
+        try:
+            await self.reset_password_feature_send_email_func(
+                user, template_vars.password_reset_link, user_context
+            )
+        except Exception:
+            pass

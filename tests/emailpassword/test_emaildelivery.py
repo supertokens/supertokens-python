@@ -31,12 +31,14 @@ from supertokens_python.ingredients.emaildelivery.types import (
     SMTPServiceInterface,
     SMTPSettings,
 )
-from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe import emailpassword, session, emailverification
 from supertokens_python.recipe.emailpassword import (
-    InputEmailVerificationConfig,
     InputResetPasswordUsingTokenFeature,
 )
 from supertokens_python.recipe.emailpassword.emaildelivery.services import SMTPService
+from supertokens_python.recipe.emailverification.emaildelivery.services import (
+    SMTPService as EVSMTPService,
+)
 from supertokens_python.recipe.emailpassword.types import (
     EmailTemplateVars,
     PasswordResetEmailTemplateVars,
@@ -45,6 +47,7 @@ from supertokens_python.recipe.emailpassword.types import User as EPUser
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
 )
+from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.recipe_implementation import (
     RecipeImplementation as SessionRecipeImplementation,
@@ -523,7 +526,11 @@ async def test_email_verification_default_backward_compatibility(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init()],
+        recipe_list=[
+            emailverification.init(mode="OPTIONAL"),
+            emailpassword.init(),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -584,7 +591,11 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init()],
+        recipe_list=[
+            emailverification.init(mode="OPTIONAL"),
+            emailpassword.init(),
+            session.init(),
+        ],
     )
     start_st()
 
@@ -637,7 +648,7 @@ async def test_email_verification_backward_compatibility(
     email_verify_url = ""
 
     async def custom_create_and_send_custom_email(
-        user: EPUser, email_verification_link: str, _: Dict[str, Any]
+        user: EVUser, email_verification_link: str, _: Dict[str, Any]
     ):
         nonlocal email, email_verify_url
         email = user.email
@@ -653,11 +664,11 @@ async def test_email_verification_backward_compatibility(
         ),
         framework="fastapi",
         recipe_list=[
-            emailpassword.init(
-                email_verification_feature=InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_create_and_send_custom_email
-                )
+            emailverification.init(
+                mode="REQUIRED",
+                create_and_send_custom_email=custom_create_and_send_custom_email,
             ),
+            emailpassword.init(),
             session.init(),
         ],
     )
@@ -693,11 +704,13 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
     email = ""
     email_verify_url = ""
 
-    def email_delivery_override(oi: EmailDeliveryInterface[EmailTemplateVars]):
+    def email_delivery_override(
+        oi: EmailDeliveryInterface[VerificationEmailTemplateVars],
+    ):
         oi_send_email = oi.send_email
 
         async def send_email(
-            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+            template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
         ):
             nonlocal email, email_verify_url
             email = template_vars.user.email
@@ -718,12 +731,14 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
         ),
         framework="fastapi",
         recipe_list=[
-            emailpassword.init(
+            emailverification.init(
+                mode="OPTIONAL",
                 email_delivery=EmailDeliveryConfig(
                     service=None,
                     override=email_delivery_override,
-                )
+                ),
             ),
+            emailpassword.init(),
             session.init(),
         ],
     )
@@ -777,7 +792,7 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
         False,
     )
 
-    def smtp_service_override(oi: SMTPServiceInterface[EmailTemplateVars]):
+    def smtp_service_override(oi: SMTPServiceInterface[VerificationEmailTemplateVars]):
         async def send_raw_email_override(
             content: EmailContent, _user_context: Dict[str, Any]
         ):
@@ -791,7 +806,7 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
         async def get_content_override(
-            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
+            template_vars: VerificationEmailTemplateVars, _user_context: Dict[str, Any]
         ) -> EmailContent:
             nonlocal get_content_called, email_verify_url
             get_content_called = True
@@ -811,7 +826,7 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
 
         return oi
 
-    email_delivery_service = SMTPService(
+    email_delivery_service = EVSMTPService(
         smtp_settings=SMTPSettings(
             host="",
             from_=SMTPSettingsFrom("", ""),
@@ -823,12 +838,12 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
     )
 
     def email_delivery_override(
-        oi: EmailDeliveryInterface[EmailTemplateVars],
-    ) -> EmailDeliveryInterface[EmailTemplateVars]:
+        oi: EmailDeliveryInterface[VerificationEmailTemplateVars],
+    ) -> EmailDeliveryInterface[VerificationEmailTemplateVars]:
         oi_send_email = oi.send_email
 
         async def send_email_override(
-            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+            template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
         ):
             nonlocal outer_override_called
             outer_override_called = True
@@ -847,12 +862,14 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
         ),
         framework="fastapi",
         recipe_list=[
-            emailpassword.init(
+            emailverification.init(
+                mode="OPTIONAL",
                 email_delivery=EmailDeliveryConfig(
                     service=email_delivery_service,
                     override=email_delivery_override,
-                )
+                ),
             ),
+            emailpassword.init(),
             session.init(),
         ],
     )

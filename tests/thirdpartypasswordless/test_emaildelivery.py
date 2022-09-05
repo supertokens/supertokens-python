@@ -32,9 +32,14 @@ from supertokens_python.ingredients.emaildelivery.types import (
     SMTPSettingsFrom,
 )
 from supertokens_python.querier import Querier
-from supertokens_python.recipe import passwordless, session, thirdpartypasswordless
+from supertokens_python.recipe import (
+    passwordless,
+    session,
+    thirdpartypasswordless,
+    emailverification,
+)
 from supertokens_python.recipe.emailverification.interfaces import (
-    CreateEmailVerificationTokenEmailAlreadyVerifiedError,
+    CreateEmailVerificationTokenOkResult,
 )
 from supertokens_python.recipe.passwordless import ContactEmailOnlyConfig
 from supertokens_python.recipe.passwordless.types import (
@@ -45,20 +50,28 @@ from supertokens_python.recipe.session.recipe_implementation import (
     RecipeImplementation as SessionRecipeImplementation,
 )
 from supertokens_python.recipe.session.session_functions import create_new_session
-from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
+from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
+)
+from supertokens_python.recipe.thirdparty.providers import Github
+from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
     passwordlessSigninup,
     thirdparty_sign_in_up,
 )
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp import (
     SMTPService,
 )
+from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import (
+    SMTPService as EVSMTPService,
+)
 from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
     ThirdPartySignInUpOkResult,
 )
 from supertokens_python.recipe.thirdpartypasswordless.types import (
     EmailTemplateVars,
-    User,
+)
+from supertokens_python.recipe.emailverification.types import (
+    User as EVUser,
     VerificationEmailTemplateVars,
 )
 from supertokens_python.utils import is_version_gte
@@ -119,10 +132,13 @@ async def test_email_verify_default_backward_compatibility(
         ),
         framework="fastapi",
         recipe_list=[
+            emailverification.init(mode="OPTIONAL"),
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                providers=[],
+                providers=[
+                    Github(client_id="", client_secret="")
+                ],  # Note: providers must be set to init tp recipe
             ),
             session.init(),
         ],
@@ -179,7 +195,7 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     email_verify_url = ""
 
     async def create_and_send_custom_email(
-        input_: User, email_verification_link: str, _: Dict[str, Any]
+        input_: EVUser, email_verification_link: str, _: Dict[str, Any]
     ):
         nonlocal email, email_verify_url
         email = input_.email
@@ -195,13 +211,16 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
         ),
         framework="fastapi",
         recipe_list=[
+            emailverification.init(
+                mode="OPTIONAL",
+                create_and_send_custom_email=create_and_send_custom_email,
+            ),
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                providers=[],
-                email_verification_feature=thirdpartypasswordless.InputEmailVerificationConfig(
-                    create_and_send_custom_email=create_and_send_custom_email,
-                ),
+                providers=[
+                    Github(client_id="", client_secret="")
+                ],  # Note: providers must be set to init tp recipe
             ),
             session.init(),
         ],
@@ -241,11 +260,13 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
     email = ""
     email_verify_url = ""
 
-    def email_delivery_override(oi: EmailDeliveryInterface[EmailTemplateVars]):
+    def email_delivery_override(
+        oi: EmailDeliveryInterface[VerificationEmailTemplateVars],
+    ):
         oi_send_email = oi.send_email
 
         async def send_email(
-            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+            template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
         ):
             nonlocal email, email_verify_url
             assert isinstance(template_vars, VerificationEmailTemplateVars)
@@ -266,14 +287,19 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
         ),
         framework="fastapi",
         recipe_list=[
-            thirdpartypasswordless.init(
-                contact_config=ContactEmailOnlyConfig(),
-                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                providers=[],
+            emailverification.init(
+                mode="OPTIONAL",
                 email_delivery=EmailDeliveryConfig(
                     service=None,
                     override=email_delivery_override,
                 ),
+            ),
+            thirdpartypasswordless.init(
+                contact_config=ContactEmailOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                providers=[
+                    Github(client_id="", client_secret="")
+                ],  # Note: providers must be set to init tp recipe
             ),
             session.init(),
         ],
@@ -332,7 +358,7 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
         False,
     )
 
-    def smtp_service_override(oi: SMTPServiceInterface[EmailTemplateVars]):
+    def smtp_service_override(oi: SMTPServiceInterface[VerificationEmailTemplateVars]):
         async def send_raw_email_override(
             content: EmailContent, _user_context: Dict[str, Any]
         ):
@@ -346,7 +372,7 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
             # Note that we aren't calling oi.send_raw_email. So Transporter won't be used.
 
         async def get_content_override(
-            template_vars: EmailTemplateVars, _user_context: Dict[str, Any]
+            template_vars: VerificationEmailTemplateVars, _user_context: Dict[str, Any]
         ) -> EmailContent:
             nonlocal get_content_called, email_verify_url
             get_content_called = True
@@ -366,7 +392,7 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
 
         return oi
 
-    email_delivery_service = SMTPService(
+    email_delivery_service = EVSMTPService(
         smtp_settings=SMTPSettings(
             host="",
             from_=SMTPSettingsFrom("", ""),
@@ -378,12 +404,12 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     )
 
     def email_delivery_override(
-        oi: EmailDeliveryInterface[EmailTemplateVars],
-    ) -> EmailDeliveryInterface[EmailTemplateVars]:
+        oi: EmailDeliveryInterface[VerificationEmailTemplateVars],
+    ) -> EmailDeliveryInterface[VerificationEmailTemplateVars]:
         oi_send_email = oi.send_email
 
         async def send_email_override(
-            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+            template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
         ):
             nonlocal outer_override_called
             outer_override_called = True
@@ -402,14 +428,19 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
         ),
         framework="fastapi",
         recipe_list=[
-            thirdpartypasswordless.init(
-                contact_config=ContactEmailOnlyConfig(),
-                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
-                providers=[],
+            emailverification.init(
+                mode="OPTIONAL",
                 email_delivery=EmailDeliveryConfig(
                     service=email_delivery_service,
                     override=email_delivery_override,
                 ),
+            ),
+            thirdpartypasswordless.init(
+                contact_config=ContactEmailOnlyConfig(),
+                flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+                providers=[
+                    Github(client_id="", client_secret="")
+                ],  # Note: providers must be set to init tp recipe
             ),
             session.init(),
         ],
@@ -516,6 +547,7 @@ async def test_email_verify_for_pless_user_no_callback():
         ),
         framework="fastapi",
         recipe_list=[
+            emailverification.init(mode="OPTIONAL"),
             thirdpartypasswordless.init(
                 contact_config=ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
@@ -535,13 +567,10 @@ async def test_email_verify_for_pless_user_no_callback():
         return
 
     pless_response = await passwordlessSigninup("test@example.com", None, {})
-    create_token = await create_email_verification_token(
-        pless_response.user.user_id, {}
-    )
+    create_token = await create_email_verification_token(pless_response.user.user_id)
 
-    assert isinstance(
-        create_token, CreateEmailVerificationTokenEmailAlreadyVerifiedError
-    )
+    assert isinstance(create_token, CreateEmailVerificationTokenOkResult)
+    # TODO: Replaced CreateEmailVerificationTokenEmailAlreadyVerifiedError. Confirm if this is correct.
 
     assert (
         all([outer_override_called, get_content_called, send_raw_email_called]) is False

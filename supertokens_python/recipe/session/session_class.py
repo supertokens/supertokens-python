@@ -174,8 +174,8 @@ class Session(SessionContainer):
         return await self.merge_into_access_token_payload(update, user_context)
 
     async def get_claim_value(
-        self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
-    ) -> Union[Any, None]:
+        self, claim: SessionClaim[_T], user_context: Union[Dict[str, Any], None] = None
+    ) -> Union[_T, None]:
         if user_context is None:
             user_context = {}
 

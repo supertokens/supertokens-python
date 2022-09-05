@@ -13,7 +13,7 @@
 # under the License.
 import asyncio
 import json
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
 from fastapi import FastAPI
 from fastapi.requests import Request
@@ -23,15 +23,14 @@ from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.exceptions import BadInputError
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
-from supertokens_python.recipe import emailpassword, session
-from supertokens_python.recipe.emailpassword.asyncio import (
+from supertokens_python.recipe import emailpassword, session, emailverification
+from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
     is_email_verified,
     revoke_email_verification_token,
     unverify_email,
     verify_email_using_token,
 )
-from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface,
     APIOptions,
@@ -40,13 +39,16 @@ from supertokens_python.recipe.emailverification.interfaces import (
     VerifyEmailUsingTokenInvalidTokenError,
 )
 from supertokens_python.recipe.emailverification.types import User as EVUser
-from supertokens_python.recipe.emailverification.utils import OverrideConfig
+from supertokens_python.recipe.emailverification.utils import (
+    OverrideConfig,
+)
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
     create_new_session,
     get_session,
     refresh_session,
 )
+from supertokens_python.recipe.session.constants import ANTI_CSRF_HEADER_KEY
 from supertokens_python.utils import is_version_gte
 from tests.utils import (
     TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
@@ -132,7 +134,11 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init("OPTIONAL"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 
@@ -169,7 +175,11 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init("OPTIONAL"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 
@@ -212,7 +222,11 @@ async def test_the_generate_token_api_with_valid_input_no_session_and_check_outp
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init("OPTIONAL"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 
@@ -237,7 +251,11 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init("OPTIONAL"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 
@@ -296,11 +314,11 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
 async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called(
     driver_config_client: TestClient,
 ):
-    user_info: Union[None, User] = None
+    user_info: Union[None, EVUser] = None
     email_token = None
 
     async def custom_f(
-        user: User, email_verification_url_token: str, _: Dict[str, Any]
+        user: EVUser, email_verification_url_token: str, _: Dict[str, Any]
     ):
         nonlocal user_info, email_token
         user_info = user
@@ -317,11 +335,10 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
-                )
+            emailverification.init(
+                mode="REQUIRED", create_and_send_custom_email=custom_f
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -357,7 +374,9 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
 async def test_the_email_verify_api_with_valid_input(driver_config_client: TestClient):
     token = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -372,11 +391,10 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
-                )
+            emailverification.init(
+                mode="REQUIRED", create_and_send_custom_email=custom_f
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -427,7 +445,9 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
 ):
     token = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -442,11 +462,10 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
-                )
+            emailverification.init(
+                mode="REQUIRED", create_and_send_custom_email=custom_f
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -497,7 +516,9 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
 ):
     token = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -512,11 +533,10 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
-                )
+            emailverification.init(
+                mode="REQUIRED", create_and_send_custom_email=custom_f
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -569,7 +589,9 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -577,11 +599,14 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         temp = param.email_verify_post
 
         async def email_verify_post(
-            token: str, api_options: APIOptions, user_context: Dict[str, Any]
+            token: str,
+            api_options: APIOptions,
+            session: Optional[SessionContainer],
+            user_context: Dict[str, Any],
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options, user_context)
+            response = await temp(token, api_options, session, user_context)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -602,16 +627,12 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
-                ),
-                override=emailpassword.InputOverrideConfig(
-                    email_verification_feature=OverrideConfig(
-                        apis=apis_override_email_password
-                    )
-                ),
+            emailverification.init(
+                mode="REQUIRED",
+                create_and_send_custom_email=custom_f,
+                override=OverrideConfig(apis=apis_override_email_password),
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -669,7 +690,9 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
 ):
     token = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -684,11 +707,11 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
-                )
+            emailverification.init(
+                mode="REQUIRED",
+                create_and_send_custom_email=custom_f,
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -717,7 +740,9 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
     assert token is not None
 
     response_3 = driver_config_client.post(
-        url="/auth/user/email/verify", json={"method": "token", "token": token}
+        url="/auth/user/email/verify",
+        json={"method": "token", "token": token},
+        headers={ANTI_CSRF_HEADER_KEY: response_1.headers.get("anti-csrf")},
     )
 
     dict_response = json.loads(response_3.text)
@@ -754,7 +779,11 @@ async def test_the_email_verify_with_no_session_using_the_get_method(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init("OPTIONAL"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 
@@ -772,7 +801,9 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -780,11 +811,14 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
         temp = param.email_verify_post
 
         async def email_verify_post(
-            token: str, api_options: APIOptions, user_context: Dict[str, Any]
+            token: str,
+            api_options: APIOptions,
+            session: Optional[SessionContainer],
+            user_context: Dict[str, Any],
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options, user_context)
+            response = await temp(token, api_options, session, user_context)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -805,16 +839,12 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
-                ),
-                override=emailpassword.InputOverrideConfig(
-                    email_verification_feature=OverrideConfig(
-                        apis=apis_override_email_password
-                    )
-                ),
+            emailverification.init(
+                mode="REQUIRED",
+                create_and_send_custom_email=custom_f,
+                override=OverrideConfig(apis=apis_override_email_password),
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -843,7 +873,9 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
     assert token is not None
 
     response_3 = driver_config_client.post(
-        url="/auth/user/email/verify", json={"method": "token", "token": token}
+        url="/auth/user/email/verify",
+        json={"method": "token", "token": token},
+        headers={ANTI_CSRF_HEADER_KEY: response_1.headers.get("anti-csrf")},
     )
 
     dict_response = json.loads(response_3.text)
@@ -865,7 +897,9 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     token = None
     user_info_from_callback: Union[None, EVUser] = None
 
-    async def custom_f(_: User, email_verification_url_token: str, __: Dict[str, Any]):
+    async def custom_f(
+        _: EVUser, email_verification_url_token: str, __: Dict[str, Any]
+    ):
         nonlocal token
         token = email_verification_url_token.split("?token=")[1].split("&rid=")[0]
 
@@ -873,11 +907,14 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
         temp = param.email_verify_post
 
         async def email_verify_post(
-            token: str, api_options: APIOptions, user_context: Dict[str, Any]
+            token: str,
+            api_options: APIOptions,
+            session: Optional[SessionContainer],
+            user_context: Dict[str, Any],
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options, user_context)
+            response = await temp(token, api_options, session, user_context)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -898,16 +935,14 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
         framework="fastapi",
         recipe_list=[
             session.init(anti_csrf="VIA_TOKEN"),
-            emailpassword.init(
-                email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                    create_and_send_custom_email=custom_f
-                ),
-                override=emailpassword.InputOverrideConfig(
-                    email_verification_feature=OverrideConfig(
-                        apis=apis_override_email_password
-                    )
+            emailverification.init(
+                mode="REQUIRED",
+                create_and_send_custom_email=custom_f,
+                override=emailverification.InputOverrideConfig(
+                    apis=apis_override_email_password
                 ),
             ),
+            emailpassword.init(),
         ],
     )
     start_st()
@@ -936,7 +971,9 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     assert token is not None
 
     response_3 = driver_config_client.post(
-        url="/auth/user/email/verify", json={"method": "token", "token": token}
+        url="/auth/user/email/verify",
+        json={"method": "token", "token": token},
+        headers={ANTI_CSRF_HEADER_KEY: response_1.headers.get("anti-csrf")},
     )
 
     dict_response = json.loads(response_3.text)
@@ -964,7 +1001,11 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init("OPTIONAL"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 
@@ -1002,7 +1043,11 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init(anti_csrf="VIA_TOKEN"), emailpassword.init()],
+        recipe_list=[
+            session.init(anti_csrf="VIA_TOKEN"),
+            emailverification.init(mode="OPTIONAL"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 

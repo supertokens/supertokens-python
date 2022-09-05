@@ -18,6 +18,7 @@ from urllib.parse import urlencode
 
 from httpx import AsyncClient
 from supertokens_python.exceptions import raise_general_exception
+from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.emailverification.interfaces import (
     CreateEmailVerificationTokenOkResult,
 )
@@ -162,16 +163,18 @@ class APIImplementation(APIInterface):
         )
 
         if email_verified:
-            token_response = await api_options.email_verification_recipe_implementation.create_email_verification_token(
-                user_id=signinup_response.user.user_id,
-                email=signinup_response.user.email,
-                user_context=user_context,
-            )
-
-            if isinstance(token_response, CreateEmailVerificationTokenOkResult):
-                await api_options.email_verification_recipe_implementation.verify_email_using_token(
-                    token=token_response.token, user_context=user_context
+            ev_instance = EmailVerificationRecipe.get_instance_optional()
+            if ev_instance is not None:
+                token_response = await ev_instance.recipe_implementation.create_email_verification_token(
+                    user_id=signinup_response.user.user_id,
+                    email=signinup_response.user.email,
+                    user_context=user_context,
                 )
+
+                if isinstance(token_response, CreateEmailVerificationTokenOkResult):
+                    await ev_instance.recipe_implementation.verify_email_using_token(
+                        token=token_response.token, user_context=user_context
+                    )
 
         user = signinup_response.user
         session = await create_new_session(
