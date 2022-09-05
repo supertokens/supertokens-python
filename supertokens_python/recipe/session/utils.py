@@ -511,40 +511,6 @@ async def get_required_claim_validators(
     return global_claim_validators
 
 
-async def update_claims_in_payload_if_needed(
-    user_id: str,
-    claim_validators: List[SessionClaimValidator],
-    new_access_token_payload: Dict[str, Any],
-    user_context: Dict[str, Any],
-):
-    for validator in claim_validators:
-        log_debug_message(
-            "update_claims_in_payload_if_needed checking %s", validator.id
-        )
-        if (validator.claim is not None) and (
-            await resolve(
-                validator.should_refetch(new_access_token_payload, user_context)
-            )
-        ):
-            log_debug_message(
-                "update_claims_in_payload_if_needed refetching %s", validator.id
-            )
-            value = await resolve(validator.claim.fetch_value(user_id, user_context))
-            log_debug_message(
-                "update_claims_in_payload_if_needed %s refetch res %s",
-                validator.id,
-                json.dumps(value),
-            )
-            if value is not None:
-                new_access_token_payload = validator.claim.add_to_payload_(
-                    new_access_token_payload,
-                    value,
-                    user_context,
-                )
-
-    return new_access_token_payload
-
-
 async def validate_claims_in_payload(
     claim_validators: List[SessionClaimValidator],
     new_access_token_payload: Dict[str, Any],

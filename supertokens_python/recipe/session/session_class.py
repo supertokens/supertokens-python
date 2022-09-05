@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import json
 from typing import Any, Dict, List, TypeVar, Union
 
 from supertokens_python.recipe.session.exceptions import (
@@ -20,7 +19,6 @@ from supertokens_python.recipe.session.exceptions import (
 )
 
 from .interfaces import SessionClaim, SessionClaimValidator, SessionContainer
-from .utils import update_claims_in_payload_if_needed, validate_claims_in_payload
 
 _T = TypeVar("_T")
 
@@ -129,26 +127,19 @@ class Session(SessionContainer):
         if user_context is None:
             user_context = {}
 
-        original_session_claim_payload_json = json.dumps(
-            self.get_access_token_payload()
-        )
-
-        new_access_token_payload = await update_claims_in_payload_if_needed(
+        validate_claim_res = await self.recipe_implementation.validate_claims(
             self.get_user_id(user_context),
-            claim_validators,
             self.get_access_token_payload(user_context),
+            claim_validators,
             user_context,
         )
 
-        if json.dumps(new_access_token_payload) != original_session_claim_payload_json:
+        if validate_claim_res.access_token_payload_update is not None:
             await self.merge_into_access_token_payload(
-                new_access_token_payload, user_context
+                validate_claim_res.access_token_payload_update, user_context
             )
 
-        validation_errors = await validate_claims_in_payload(
-            claim_validators, new_access_token_payload, user_context
-        )
-
+        validation_errors = validate_claim_res.invalid_claims
         if len(validation_errors) > 0:
             raise_invalid_claims_exception("INVALID_CLAIMS", validation_errors)
 
