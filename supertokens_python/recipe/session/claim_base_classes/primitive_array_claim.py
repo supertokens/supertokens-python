@@ -104,8 +104,6 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
             val if isinstance(val, list) else [val]
         )  # pyright: reportGeneralTypeIssues=false
 
-        #
-
         claim_val_set = set(claim_val)
         if is_include:
             for v in vals:
