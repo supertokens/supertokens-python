@@ -39,14 +39,14 @@ class HasValueSCV(SessionClaimValidator):
         super().__init__(id_)
         self.claim: SessionClaim[_T] = claim  # Required to fix the type for pyright
         self.val = val
-        self.max_age_in_sec = max_age_in_sec  # TODO: Default 5 min
+        self.max_age_in_sec = max_age_in_sec or 300
 
     def should_refetch(
         self,
         payload: JSONObject,
         user_context: Dict[str, Any],
-    ):
-        max_age_in_sec: int = self.max_age_in_sec
+    ) -> bool:
+        max_age_in_sec = self.max_age_in_sec
 
         # (claim value is None) OR (value has expired)
         return (self.claim.get_value_from_payload(payload, user_context) is None) or (

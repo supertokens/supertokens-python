@@ -100,7 +100,11 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
 
         # Doing this to ensure same code in the upcoming steps irrespective of
         # whether self.val is Primitive or PrimitiveList
-        vals: List[JSONPrimitive] = val if isinstance(val, list) else [val]
+        vals: List[JSONPrimitive] = (
+            val if isinstance(val, list) else [val]
+        )  # pyright: reportGeneralTypeIssues=false
+
+        #
 
         claim_val_set = set(claim_val)
         if is_include:
@@ -176,7 +180,7 @@ class PrimitiveArrayClaimValidators(Generic[PrimitiveList]):
 
     def includes(  # pyright: ignore[reportInvalidTypeVarUse]
         self,
-        val: Primitive,
+        val: Primitive,  # pyright: ignore[reportInvalidTypeVarUse]
         id_: Union[str, None] = None,
         max_age_in_seconds: Optional[int] = None,
     ) -> SessionClaimValidator:
@@ -187,7 +191,7 @@ class PrimitiveArrayClaimValidators(Generic[PrimitiveList]):
 
     def excludes(  # pyright: ignore[reportInvalidTypeVarUse]
         self,
-        val: Primitive,
+        val: Primitive,  # pyright: ignore[reportInvalidTypeVarUse]
         id_: Union[str, None] = None,
         max_age_in_seconds: Optional[int] = None,
     ) -> SessionClaimValidator:

@@ -33,11 +33,13 @@ class IsVerifiedSCV(SessionClaimValidator):
         claim: BooleanClaim,
         has_value_validator: SessionClaimValidator,
         refetch_time_on_false_in_seconds: int,
+        max_age_in_seconds: int,
     ):
         super().__init__("st-ev-is-verified")
         self.claim: BooleanClaim = claim  # TODO: Should work without specifying type of self.claim (no pyright errors)
         self.has_value_validator = has_value_validator
         self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
+        self.max_age_in_ms = max_age_in_seconds * 1000
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
@@ -50,21 +52,31 @@ class IsVerifiedSCV(SessionClaimValidator):
         value = self.claim.get_value_from_payload(payload, user_context)
         last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
         assert last_refetch_time is not None
-        return (value is None) or (
-            value is False
-            and last_refetch_time
-            < (
-                get_timestamp_ms() - self.refetch_time_on_false_in_ms
-            )  # TODO: Default 5 min?
+
+        return (
+            (value is None)
+            or (last_refetch_time < get_timestamp_ms() - self.max_age_in_ms)
+            or (
+                value is False
+                and last_refetch_time
+                < (
+                    get_timestamp_ms() - self.refetch_time_on_false_in_ms
+                )  # TODO: Default 5 min?
+            )
         )
 
 
 class EmailVerificationClaimValidators(BooleanClaimValidators):
     def is_verified(
-        self, refetch_time_on_false_in_seconds: int = 10
+        self,
+        refetch_time_on_false_in_seconds: int = 10,
+        max_age_in_seconds: int = 300,
     ) -> SessionClaimValidator:
         has_value_res = self.has_value(True, id_="st-ev-is-verified")
         assert isinstance(self.claim, BooleanClaim)
         return IsVerifiedSCV(
-            self.claim, has_value_res, refetch_time_on_false_in_seconds
+            self.claim,
+            has_value_res,
+            refetch_time_on_false_in_seconds,
+            max_age_in_seconds,
         )

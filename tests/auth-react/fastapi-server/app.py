@@ -644,7 +644,7 @@ def custom_init(
                 "body", api_options.request
             )
             if is_general_error:
-                return GeneralErrorResponse("general error from signout API")
+                raise Exception("general error from signout API")
             return await original_signout_post(api_options, session, user_context)
 
         original_implementation.signout_post = signout_post
