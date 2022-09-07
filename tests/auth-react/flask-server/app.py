@@ -286,8 +286,8 @@ def custom_init(
 
         async def email_verify_post(
             token: str,
-            api_options: EVAPIOptions,
             session: Optional[SessionContainer],
+            api_options: EVAPIOptions,
             user_context: Dict[str, Any],
         ):
             is_general_error = await check_for_general_error(
@@ -297,14 +297,14 @@ def custom_init(
                 return GeneralErrorResponse("general error from API email verify")
             return await original_email_verify_post(
                 token,
-                api_options,
                 session,
+                api_options,
                 user_context,
             )
 
         async def generate_email_verify_token_post(
-            api_options: EVAPIOptions,
             session: SessionContainer,
+            api_options: EVAPIOptions,
             user_context: Dict[str, Any],
         ):
             is_general_error = await check_for_general_error(
@@ -315,7 +315,7 @@ def custom_init(
                     "general error from API email verification code"
                 )
             return await original_generate_email_verify_token_post(
-                api_options, session, user_context
+                session, api_options, user_context
             )
 
         original_implementation_email_verification.email_verify_post = email_verify_post

@@ -105,7 +105,7 @@ class PrimitiveClaimValidators(Generic[_T]):
         self, claim: SessionClaim[_T], default_max_age_in_sec: Optional[int] = None
     ) -> None:
         self.claim = claim
-        self.default_max_age_in_sec = default_max_age_in_sec or 300
+        self.default_max_age_in_sec: int = default_max_age_in_sec or 300
 
     def has_value(
         self,

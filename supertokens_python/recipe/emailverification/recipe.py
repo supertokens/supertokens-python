@@ -36,7 +36,7 @@ from ...post_init_callbacks import PostSTInitCallbacks
 from ..session import SessionRecipe
 from ..session.claim_base_classes.boolean_claim import BooleanClaim
 from ..session.interfaces import SessionContainer
-from .ev_claim import EmailVerificationClaimValidators
+from .ev_claim_validators import EmailVerificationClaimValidators
 from .interfaces import (
     APIInterface,
     APIOptions,
@@ -291,7 +291,9 @@ class EmailVerificationClaimClass(BooleanClaim):
 
         super().__init__("st-ev", fetch_value)
 
-        self.validators = EmailVerificationClaimValidators(claim=self)
+        self.validators = EmailVerificationClaimValidators(
+            claim=self, default_max_age_in_sec=300
+        )
 
 
 EmailVerificationClaim = EmailVerificationClaimClass()
@@ -301,8 +303,8 @@ class APIImplementation(APIInterface):
     async def email_verify_post(
         self,
         token: str,
-        api_options: APIOptions,
         session: Optional[SessionContainer],
+        api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError]:
 
@@ -318,8 +320,8 @@ class APIImplementation(APIInterface):
 
     async def is_email_verified_get(
         self,
+        session: SessionContainer,
         api_options: APIOptions,
-        session: Optional[SessionContainer],
         user_context: Dict[str, Any],
     ) -> IsEmailVerifiedGetOkResult:
         if session is None:
@@ -338,16 +340,13 @@ class APIImplementation(APIInterface):
 
     async def generate_email_verify_token_post(
         self,
-        api_options: APIOptions,
         session: SessionContainer,
+        api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
         GenerateEmailVerifyTokenPostOkResult,
         GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
     ]:
-        if session is None:
-            raise Exception("Session is undefined. Should not come here.")
-
         user_id = session.get_user_id(user_context)
         email_info = await EmailVerificationRecipe.get_instance().get_email_for_user_id(
             user_id, user_context
@@ -380,7 +379,7 @@ class APIImplementation(APIInterface):
             email_verify_link = (
                 api_options.app_info.website_domain.get_as_string_dangerous()
                 + api_options.app_info.website_base_path.get_as_string_dangerous()
-                + "/verify-email/"
+                + "/verify-email"
                 + "?token="
                 + response.token
                 + "&rid="

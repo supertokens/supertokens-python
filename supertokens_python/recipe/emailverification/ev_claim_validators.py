@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from supertokens_python.recipe.session.claim_base_classes.boolean_claim import (
     BooleanClaim,
@@ -50,19 +50,16 @@ class IsVerifiedSCV(SessionClaimValidator):
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> MaybeAwaitable[bool]:
         value = self.claim.get_value_from_payload(payload, user_context)
+        if value is None:
+            return True
+
         last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
         assert last_refetch_time is not None
 
-        return (
-            (value is None)
-            or (last_refetch_time < get_timestamp_ms() - self.max_age_in_ms)
-            or (
-                value is False
-                and last_refetch_time
-                < (
-                    get_timestamp_ms() - self.refetch_time_on_false_in_ms
-                )  # TODO: Default 5 min?
-            )
+        return (last_refetch_time < get_timestamp_ms() - self.max_age_in_ms) or (
+            value is False
+            and last_refetch_time
+            < (get_timestamp_ms() - self.refetch_time_on_false_in_ms)
         )
 
 
@@ -70,8 +67,10 @@ class EmailVerificationClaimValidators(BooleanClaimValidators):
     def is_verified(
         self,
         refetch_time_on_false_in_seconds: int = 10,
-        max_age_in_seconds: int = 300,
+        max_age_in_seconds: Optional[int] = None,  # FIXME:
     ) -> SessionClaimValidator:
+        max_age_in_seconds = max_age_in_seconds or self.default_max_age_in_sec
+
         has_value_res = self.has_value(True, id_="st-ev-is-verified")
         assert isinstance(self.claim, BooleanClaim)
         return IsVerifiedSCV(

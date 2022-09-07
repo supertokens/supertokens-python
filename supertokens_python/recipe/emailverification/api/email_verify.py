@@ -52,7 +52,7 @@ async def handle_email_verify_api(
         )
 
         result = await api_implementation.email_verify_post(
-            token, api_options, session, user_context
+            token, session, api_options, user_context
         )
     else:
         if api_implementation.disable_is_email_verified_get:
@@ -63,9 +63,9 @@ async def handle_email_verify_api(
             override_global_claim_validators=lambda _, __, ___: [],
             user_context=user_context,
         )
-
+        assert session is not None
         result = await api_implementation.is_email_verified_get(
-            api_options, session, user_context
+            session, api_options, user_context
         )
 
     return send_200_response(result.to_json(), api_options.response)

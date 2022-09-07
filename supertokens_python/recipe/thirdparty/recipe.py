@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from .utils import SignInAndUpFeature, InputOverrideConfig
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.recipe.emailverification import EmailVerificationRecipe
+from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 
 from .api import (
     handle_apple_redirect_api,
