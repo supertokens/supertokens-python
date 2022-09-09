@@ -42,7 +42,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         max_age_in_sec: int,  # TODO: Default 5 min
     ):
         super().__init__(id_)
-        self.claim: SessionClaim[PrimitiveList] = claim
+        self.claim: SessionClaim[PrimitiveList] = claim  # TODO:PrimitiveArrayClaim
         self.val = val
         self.max_age_in_sec = max_age_in_sec
 
@@ -56,7 +56,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         return (claim.get_value_from_payload(payload, user_context) is None) or (
             self.max_age_in_sec is not None
             and (
-                payload[claim.key].get("t", 0)
+                payload[claim.key]["t"]
                 < get_timestamp_ms() - self.max_age_in_sec * 1000
             )
         )
@@ -112,7 +112,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
                         is_valid=False,
                         reason={
                             "message": "wrong value",
-                            expected_key: vals,  # FIXME: Returns a list when val is Primitive whereas
+                            expected_key: val,
                             # other SDKs return the item itself
                             "actualValue": claim_val,
                         },
@@ -124,7 +124,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
                         is_valid=False,
                         reason={
                             "message": "wrong value",
-                            expected_key: vals,  # FIXME: Returns a list when val is Primitive whereas
+                            expected_key: val,
                             # other SDKs return the item itself
                             "actualValue": claim_val,
                         },
@@ -179,8 +179,8 @@ class PrimitiveArrayClaimValidators(Generic[PrimitiveList]):
     def includes(  # pyright: ignore[reportInvalidTypeVarUse]
         self,
         val: Primitive,  # pyright: ignore[reportInvalidTypeVarUse]
-        id_: Union[str, None] = None,
         max_age_in_seconds: Optional[int] = None,
+        id_: Union[str, None] = None,
     ) -> SessionClaimValidator:
         max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
         return IncludesSCV(
@@ -190,8 +190,8 @@ class PrimitiveArrayClaimValidators(Generic[PrimitiveList]):
     def excludes(  # pyright: ignore[reportInvalidTypeVarUse]
         self,
         val: Primitive,  # pyright: ignore[reportInvalidTypeVarUse]
-        id_: Union[str, None] = None,
         max_age_in_seconds: Optional[int] = None,
+        id_: Union[str, None] = None,
     ) -> SessionClaimValidator:
         max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
         return ExcludesSCV(
@@ -201,8 +201,8 @@ class PrimitiveArrayClaimValidators(Generic[PrimitiveList]):
     def includes_all(
         self,
         val: PrimitiveList,
-        id_: Union[str, None] = None,
         max_age_in_seconds: Optional[int] = None,
+        id_: Union[str, None] = None,
     ) -> SessionClaimValidator:
         max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
         return IncludesAllSCV(
@@ -212,8 +212,8 @@ class PrimitiveArrayClaimValidators(Generic[PrimitiveList]):
     def excludes_all(
         self,
         val: PrimitiveList,
-        id_: Union[str, None] = None,
         max_age_in_seconds: Optional[int] = None,
+        id_: Union[str, None] = None,
     ) -> SessionClaimValidator:
         max_age_in_sec = max_age_in_seconds or self.default_max_age_in_sec
         return ExcludesAllSCV(

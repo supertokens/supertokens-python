@@ -189,7 +189,7 @@ class EmailPasswordRecipe(RecipeModule):
             )
         if request_id == USER_PASSWORD_RESET:
             return await handle_password_reset_api(self.api_implementation, api_options)
-        # FIXME: Should be False as per Node PR but the spec here don't allow it.
+
         return None
 
     async def handle_error(

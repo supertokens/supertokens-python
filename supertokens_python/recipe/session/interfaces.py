@@ -82,8 +82,6 @@ JSONPrimitiveList = Union[
     List[str], List[int], List[bool], List[None], List[Dict[str, Any]]
 ]
 
-FetchValueReturnType = Union[_T, None]
-
 
 class SessionDoesNotExistError:
     pass
@@ -134,12 +132,6 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
-        override_global_claim_validators: Optional[
-            Callable[
-                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
-                MaybeAwaitable[List[SessionClaimValidator]],
-            ]
-        ],
         user_context: Dict[str, Any],
     ) -> Union[SessionContainer, None]:
         pass
@@ -222,7 +214,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     async def merge_into_access_token_payload(
         self,
         session_handle: str,
-        access_token_payload_update: Dict[str, Any],
+        access_token_payload_update: JSONObject,
         user_context: Dict[str, Any],
     ) -> bool:
         pass
@@ -324,8 +316,8 @@ class APIInterface(ABC):
     @abstractmethod
     async def signout_post(
         self,
-        api_options: APIOptions,
         session: Optional[SessionContainer],
+        api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> SignOutOkayResponse:
         pass
@@ -395,7 +387,9 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
 
     @abstractmethod
     async def merge_into_access_token_payload(
-        self, access_token_payload_update: Dict[str, Any], user_context: Dict[str, Any]
+        self,
+        access_token_payload_update: JSONObject,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         pass
 
@@ -431,13 +425,13 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     async def assert_claims(
         self,
         claim_validators: List[SessionClaimValidator],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         pass
 
     @abstractmethod
     async def fetch_and_set_claim(
-        self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
+        self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
     ) -> None:
         pass
 
@@ -446,13 +440,13 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         self,
         claim: SessionClaim[_T],
         value: _T,
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         pass
 
     @abstractmethod
     async def get_claim_value(
-        self, claim: SessionClaim[_T], user_context: Union[Dict[str, Any], None] = None
+        self, claim: SessionClaim[_T], user_context: Optional[Dict[str, Any]] = None
     ) -> Union[_T, None]:
         pass
 
@@ -460,7 +454,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     async def remove_claim(
         self,
         claim: SessionClaim[Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         pass
 
@@ -483,7 +477,9 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         return sync(self.get_time_created(user_context))
 
     def sync_merge_into_access_token_payload(
-        self, access_token_payload_update: Dict[str, Any], user_context: Dict[str, Any]
+        self,
+        access_token_payload_update: Dict[str, Any],
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         return sync(
             self.merge_into_access_token_payload(
@@ -511,27 +507,30 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def sync_assert_claims(
         self,
         claim_validators: List[SessionClaimValidator],
-        user_context: Dict[str, Any],
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         return sync(self.assert_claims(claim_validators, user_context))
 
     def sync_fetch_and_set_claim(
-        self, claim: SessionClaim[Any], user_context: Dict[str, Any]
+        self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
     ) -> None:
         return sync(self.fetch_and_set_claim(claim, user_context))
 
     def sync_set_claim_value(
-        self, claim: SessionClaim[_T], value: _T, user_context: Dict[str, Any]
+        self,
+        claim: SessionClaim[_T],
+        value: _T,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         return sync(self.set_claim_value(claim, value, user_context))
 
     def sync_get_claim_value(
-        self, claim: SessionClaim[_T], user_context: Dict[str, Any]
+        self, claim: SessionClaim[_T], user_context: Optional[Dict[str, Any]] = None
     ) -> Union[_T, None]:
         return sync(self.get_claim_value(claim, user_context))
 
     def sync_remove_claim(
-        self, claim: SessionClaim[Any], user_context: Dict[str, Any]
+        self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
     ) -> None:
         return sync(self.remove_claim(claim, user_context))
 

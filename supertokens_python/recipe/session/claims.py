@@ -13,8 +13,9 @@
 # under the License.
 
 from . import interfaces
-from .claim_base_classes import boolean_claim, primitive_claim
+from .claim_base_classes import boolean_claim, primitive_claim, primitive_array_claim
 
 SessionClaim = interfaces.SessionClaim
 BooleanClaim = boolean_claim.BooleanClaim
 PrimitiveClaim = primitive_claim.PrimitiveClaim
+PrimitiveArrayClaim = primitive_array_claim.PrimitiveArrayClaim

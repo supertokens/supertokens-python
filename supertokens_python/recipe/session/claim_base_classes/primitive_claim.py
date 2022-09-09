@@ -25,21 +25,21 @@ from ..interfaces import (
     ClaimValidationResult,
 )
 
-_T = TypeVar("_T", bound=JSONPrimitive)
+Primitive = TypeVar("Primitive", bound=JSONPrimitive)
 
 
 class HasValueSCV(SessionClaimValidator):
     def __init__(
         self,
         id_: str,
-        claim: SessionClaim[_T],
-        val: _T,
-        max_age_in_sec: Optional[int] = None,
+        claim: SessionClaim[Primitive],
+        val: Primitive,
+        max_age_in_sec: int,
     ):
         super().__init__(id_)
-        self.claim: SessionClaim[_T] = claim  # Required to fix the type for pyright
+        self.claim: SessionClaim[Primitive] = claim  # to fix the type for pyright
         self.val = val
-        self.max_age_in_sec = max_age_in_sec or 300
+        self.max_age_in_sec = max_age_in_sec
 
     def should_refetch(
         self,
@@ -61,7 +61,9 @@ class HasValueSCV(SessionClaimValidator):
         val = self.val
         max_age_in_sec = self.max_age_in_sec
 
-        claim_val = self.claim.get_value_from_payload(payload, user_context)
+        claim_val: JSONPrimitive = self.claim.get_value_from_payload(
+            payload, user_context
+        )
         if claim_val is None:
             return ClaimValidationResult(
                 is_valid=False,
@@ -87,7 +89,7 @@ class HasValueSCV(SessionClaimValidator):
                     },
                 )
 
-        if claim_val != val:  # type: ignore
+        if claim_val != val:
             return ClaimValidationResult(
                 is_valid=False,
                 reason={
@@ -100,16 +102,18 @@ class HasValueSCV(SessionClaimValidator):
         return ClaimValidationResult(is_valid=True)
 
 
-class PrimitiveClaimValidators(Generic[_T]):
+class PrimitiveClaimValidators(Generic[Primitive]):
     def __init__(
-        self, claim: SessionClaim[_T], default_max_age_in_sec: Optional[int] = None
+        self,
+        claim: SessionClaim[Primitive],
+        default_max_age_in_sec: int,
     ) -> None:
         self.claim = claim
-        self.default_max_age_in_sec: int = default_max_age_in_sec or 300
+        self.default_max_age_in_sec = default_max_age_in_sec
 
     def has_value(
         self,
-        val: _T,
+        val: Primitive,
         max_age_in_sec: Optional[int] = None,
         id_: Optional[str] = None,
     ) -> SessionClaimValidator:
@@ -119,25 +123,25 @@ class PrimitiveClaimValidators(Generic[_T]):
         )
 
 
-class PrimitiveClaim(SessionClaim[_T]):
+class PrimitiveClaim(SessionClaim[Primitive]):
     def __init__(
         self,
         key: str,
         fetch_value: Callable[
             [str, Dict[str, Any]],
-            MaybeAwaitable[Optional[_T]],
+            MaybeAwaitable[Optional[Primitive]],
         ],
         default_max_age_in_sec: Optional[int] = None,
     ) -> None:
         super().__init__(key, fetch_value)
 
         claim = self
-        self.validators = PrimitiveClaimValidators(claim, default_max_age_in_sec)
+        self.validators = PrimitiveClaimValidators(claim, default_max_age_in_sec or 300)
 
     def add_to_payload_(
         self,
         payload: Dict[str, Any],
-        value: _T,
+        value: Primitive,
         user_context: Union[Dict[str, Any], None] = None,
     ) -> JSONObject:
         payload[self.key] = {"v": value, "t": get_timestamp_ms()}
@@ -159,7 +163,7 @@ class PrimitiveClaim(SessionClaim[_T]):
 
     def get_value_from_payload(
         self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
-    ) -> Union[_T, None]:
+    ) -> Union[Primitive, None]:
         _ = user_context
 
         return payload.get(self.key, {}).get("v")

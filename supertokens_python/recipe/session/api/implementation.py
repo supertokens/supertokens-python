@@ -42,8 +42,8 @@ class APIImplementation(APIInterface):
 
     async def signout_post(
         self,
-        api_options: APIOptions,
         session: Optional[SessionContainer],
+        api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> SignOutOkayResponse:
         if session is not None:
@@ -76,7 +76,6 @@ class APIImplementation(APIInterface):
             api_options.request,
             anti_csrf_check,
             session_required,
-            override_global_claim_validators,
             user_context,
         )
 

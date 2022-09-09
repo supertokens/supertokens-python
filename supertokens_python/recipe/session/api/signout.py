@@ -33,11 +33,10 @@ async def handle_signout_api(api_implementation: APIInterface, api_options: APIO
         request=api_options.request,
         anti_csrf_check=None,  # TODO: What should I pass here?
         session_required=False,
-        override_global_claim_validators=lambda _, __, ___: [],
         user_context=user_context,
     )
 
-    response = await api_implementation.signout_post(api_options, session, user_context)
+    response = await api_implementation.signout_post(session, api_options, user_context)
     if api_options.response is None:
         raise Exception("Should never come here")
     return send_200_response(response.to_json(), api_options.response)

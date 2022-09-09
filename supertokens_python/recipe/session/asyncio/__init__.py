@@ -259,7 +259,6 @@ async def get_session(
         request,
         anti_csrf_check,
         session_required,
-        lambda _, __, ___: [],
         user_context,
     )
 

@@ -584,8 +584,8 @@ def custom_init(
         original_signout_post = original_implementation.signout_post
 
         async def signout_post(
-            api_options: SAPIOptions,
             session: Optional[SessionContainer],
+            api_options: SAPIOptions,
             user_context: Dict[str, Any],
         ):
             is_general_error = await check_for_general_error(
@@ -593,7 +593,7 @@ def custom_init(
             )
             if is_general_error:
                 raise Exception("general error from signout API")
-            return await original_signout_post(api_options, session, user_context)
+            return await original_signout_post(session, api_options, user_context)
 
         original_implementation.signout_post = signout_post
         return original_implementation
