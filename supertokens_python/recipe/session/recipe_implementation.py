@@ -433,8 +433,11 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         self,
         session_handle: str,
         claim: SessionClaim[Any],
-        user_context: Dict[str, Any],
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> bool:
+        if user_context is None:
+            user_context = {}
+
         session_info = await self.get_session_information(session_handle, user_context)
         if session_info is None:
             return False
@@ -451,8 +454,11 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         session_handle: str,
         claim: SessionClaim[Any],
         value: Any,
-        user_context: Dict[str, Any],
+        user_context: Optional[Dict[str, Any]] = None,
     ):
+        if user_context is None:
+            user_context = {}
+
         access_token_payload_update = claim.add_to_payload_({}, value, user_context)
         return await self.merge_into_access_token_payload(
             session_handle, access_token_payload_update, user_context
@@ -462,8 +468,11 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         self,
         session_handle: str,
         claim: SessionClaim[Any],
-        user_context: Dict[str, Any],
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> Union[SessionDoesNotExistError, GetClaimValueOkResult[Any]]:
+        if user_context is None:
+            user_context = {}
+
         session_info = await self.get_session_information(session_handle, user_context)
         if session_info is None:
             return SessionDoesNotExistError()
@@ -486,8 +495,11 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         self,
         session_handle: str,
         claim: SessionClaim[Any],
-        user_context: Dict[str, Any],
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> bool:
+        if user_context is None:
+            user_context = {}
+
         access_token_payload = claim.remove_from_payload_by_merge_({}, user_context)
         return await self.merge_into_access_token_payload(
             session_handle, access_token_payload, user_context

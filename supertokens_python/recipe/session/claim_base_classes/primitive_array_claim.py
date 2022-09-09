@@ -39,7 +39,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         id_: str,
         claim: SessionClaim[PrimitiveList],
         val: _T,
-        max_age_in_sec: int,  # TODO: Default 5 min
+        max_age_in_sec: int,
     ):
         super().__init__(id_)
         self.claim: SessionClaim[PrimitiveList] = claim  # TODO:PrimitiveArrayClaim
@@ -250,13 +250,13 @@ class PrimitiveArrayClaim(SessionClaim[PrimitiveList], Generic[PrimitiveList]):
         return payload
 
     def remove_from_payload_by_merge_(
-        self, payload: JSONObject, user_context: Dict[str, Any]
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
     ) -> JSONObject:
         payload[self.key] = None
         return payload
 
     def remove_from_payload(
-        self, payload: JSONObject, user_context: Dict[str, Any]
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
     ) -> JSONObject:
         del payload[self.key]
         return payload

@@ -150,13 +150,13 @@ class PrimitiveClaim(SessionClaim[Primitive]):
         return payload
 
     def remove_from_payload_by_merge_(
-        self, payload: JSONObject, user_context: Dict[str, Any]
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
     ) -> JSONObject:
         payload[self.key] = None
         return payload
 
     def remove_from_payload(
-        self, payload: JSONObject, user_context: Dict[str, Any]
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
     ) -> JSONObject:
         del payload[self.key]
         return payload
