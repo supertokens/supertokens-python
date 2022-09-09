@@ -454,7 +454,7 @@ class EmailVerificationClaimValidators(BooleanClaimValidators):
     def is_verified(
         self,
         refetch_time_on_false_in_seconds: int = 10,
-        max_age_in_seconds: Optional[int] = None,  # FIXME:
+        max_age_in_seconds: Optional[int] = None,
         id_: Optional[str] = None,
     ) -> SessionClaimValidator:
         max_age_in_seconds = max_age_in_seconds or self.default_max_age_in_sec
