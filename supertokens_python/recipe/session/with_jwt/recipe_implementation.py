@@ -13,9 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Union
-
-# TODO: Missing changes for session_class inside with_jwt? supertokens/supertokens-node#278 (files)
+from typing import TYPE_CHECKING, Any, Dict, Union, Optional
 
 from jwt import decode
 
@@ -187,9 +185,11 @@ def get_recipe_implementation_with_jwt(
 
     async def update_access_token_payload(
         session_handle: str,
-        new_access_token_payload: Dict[str, Any],
+        new_access_token_payload: Optional[Dict[str, Any]],
         user_context: Dict[str, Any],
     ) -> bool:
+        if new_access_token_payload is None:
+            new_access_token_payload = {}
 
         session_information = await original_implementation.get_session_information(
             session_handle, user_context
