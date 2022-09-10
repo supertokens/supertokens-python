@@ -39,7 +39,7 @@ def add_role_to_user(
 
 
 def remove_user_role(
-    user_id: str, role: str, user_context: Dict[str, Any]
+    user_id: str, role: str, user_context: Union[Dict[str, Any], None] = None
 ) -> Union[RemoveUserRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import remove_user_role
 
@@ -47,7 +47,7 @@ def remove_user_role(
 
 
 def get_roles_for_user(
-    user_id: str, user_context: Dict[str, Any]
+    user_id: str, user_context: Union[Dict[str, Any], None] = None
 ) -> GetRolesForUserOkResult:
     from supertokens_python.recipe.userroles.asyncio import get_roles_for_user
 
@@ -55,7 +55,7 @@ def get_roles_for_user(
 
 
 def get_users_that_have_role(
-    role: str, user_context: Dict[str, Any]
+    role: str, user_context: Union[Dict[str, Any], None] = None
 ) -> Union[GetUsersThatHaveRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import get_users_that_have_role
 
@@ -63,7 +63,7 @@ def get_users_that_have_role(
 
 
 def create_new_role_or_add_permissions(
-    role: str, permissions: List[str], user_context: Dict[str, Any]
+    role: str, permissions: List[str], user_context: Union[Dict[str, Any], None] = None
 ) -> CreateNewRoleOrAddPermissionsOkResult:
     from supertokens_python.recipe.userroles.asyncio import (
         create_new_role_or_add_permissions,
@@ -73,7 +73,7 @@ def create_new_role_or_add_permissions(
 
 
 def get_permissions_for_role(
-    role: str, user_context: Dict[str, Any]
+    role: str, user_context: Union[Dict[str, Any], None] = None
 ) -> Union[GetPermissionsForRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import get_permissions_for_role
 
@@ -81,7 +81,7 @@ def get_permissions_for_role(
 
 
 def remove_permissions_from_role(
-    role: str, permissions: List[str], user_context: Dict[str, Any]
+    role: str, permissions: List[str], user_context: Union[Dict[str, Any], None] = None
 ) -> Union[RemovePermissionsFromRoleOkResult, UnknownRoleError]:
     from supertokens_python.recipe.userroles.asyncio import remove_permissions_from_role
 
@@ -89,7 +89,7 @@ def remove_permissions_from_role(
 
 
 def get_roles_that_have_permission(
-    permission: str, user_context: Dict[str, Any]
+    permission: str, user_context: Union[Dict[str, Any], None] = None
 ) -> GetRolesThatHavePermissionOkResult:
     from supertokens_python.recipe.userroles.asyncio import (
         get_roles_that_have_permission,
@@ -98,13 +98,17 @@ def get_roles_that_have_permission(
     return sync(get_roles_that_have_permission(permission, user_context))
 
 
-def delete_role(role: str, user_context: Dict[str, Any]) -> DeleteRoleOkResult:
+def delete_role(
+    role: str, user_context: Union[Dict[str, Any], None] = None
+) -> DeleteRoleOkResult:
     from supertokens_python.recipe.userroles.asyncio import delete_role
 
     return sync(delete_role(role, user_context))
 
 
-def get_all_roles(user_context: Dict[str, Any]) -> GetAllRolesOkResult:
+def get_all_roles(
+    user_context: Union[Dict[str, Any], None] = None
+) -> GetAllRolesOkResult:
     from supertokens_python.recipe.userroles.asyncio import get_all_roles
 
     return sync(get_all_roles(user_context))
