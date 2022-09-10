@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>supertokens_python.recipe.emailpassword.api.utils API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -101,7 +101,7 @@ async def validate_form_fields_or_throw_error(
                 &#34;All elements of formFields must contain an &#39;id&#39; and &#39;value&#39; field&#34;
             )
         value = current_form_field[&#34;value&#34;]
-        if current_form_field[&#34;id&#34;] == FORM_FIELD_EMAIL_ID:
+        if current_form_field[&#34;id&#34;] == FORM_FIELD_EMAIL_ID and isinstance(value, str):
             value = value.strip()
         form_fields.append(FormField(current_form_field[&#34;id&#34;], value))
 
@@ -147,7 +147,7 @@ async def validate_form_fields_or_throw_error(
                 &#34;All elements of formFields must contain an &#39;id&#39; and &#39;value&#39; field&#34;
             )
         value = current_form_field[&#34;value&#34;]
-        if current_form_field[&#34;id&#34;] == FORM_FIELD_EMAIL_ID:
+        if current_form_field[&#34;id&#34;] == FORM_FIELD_EMAIL_ID and isinstance(value, str):
             value = value.strip()
         form_fields.append(FormField(current_form_field[&#34;id&#34;], value))
 

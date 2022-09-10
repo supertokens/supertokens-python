@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, List, Set, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Set, Union, Optional, Dict
 
 from typing_extensions import Literal
 
@@ -31,6 +31,16 @@ from .constants import (
     USERS,
 )
 from .exceptions import SuperTokensError
+from .interfaces import (
+    CreateUserIdMappingOkResult,
+    UnknownSupertokensUserIDError,
+    UserIdMappingAlreadyExistsError,
+    UnknownMappingError,
+    GetUserIdMappingOkResult,
+    UserIDTypes,
+    DeleteUserIdMappingOkResult,
+    UpdateOrDeleteUserIdMappingInfoOkResult,
+)
 from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
 from .post_init_callbacks import PostSTInitCallbacks
@@ -389,6 +399,136 @@ class Supertokens:
             )
 
         return UsersResponse(users, next_pagination_token)
+
+    async def create_user_id_mapping(  # pylint: disable=no-self-use
+        self,
+        supertokens_user_id: str,
+        external_user_id: str,
+        external_user_id_info: Optional[str] = None,
+        force: Optional[bool] = None,
+    ) -> Union[
+        CreateUserIdMappingOkResult,
+        UnknownSupertokensUserIDError,
+        UserIdMappingAlreadyExistsError,
+    ]:
+        querier = Querier.get_instance(None)
+
+        cdi_version = await querier.get_api_version()
+
+        if is_version_gte(cdi_version, "2.15"):
+            body: Dict[str, Any] = {
+                "superTokensUserId": supertokens_user_id,
+                "externalUserId": external_user_id,
+                "externalUserIdInfo": external_user_id_info,
+            }
+            if force:
+                body["force"] = force
+
+            res = await querier.send_post_request(
+                NormalisedURLPath("/recipe/userid/map"), body
+            )
+            if res["status"] == "OK":
+                return CreateUserIdMappingOkResult()
+            if res["status"] == "UNKNOWN_SUPERTOKENS_USER_ID_ERROR":
+                return UnknownSupertokensUserIDError()
+            if res["status"] == "USER_ID_MAPPING_ALREADY_EXISTS_ERROR":
+                return UserIdMappingAlreadyExistsError(
+                    does_super_tokens_user_id_exist=res["doesSuperTokensUserIdExist"],
+                    does_external_user_id_exist=res["does_external_user_id_exist"],
+                )
+
+            raise_general_exception("Unknown response")
+
+        raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
+
+    async def get_user_id_mapping(  # pylint: disable=no-self-use
+        self,
+        user_id: str,
+        user_id_type: Optional[UserIDTypes] = None,
+    ) -> Union[GetUserIdMappingOkResult, UnknownMappingError]:
+        querier = Querier.get_instance(None)
+
+        cdi_version = await querier.get_api_version()
+
+        if is_version_gte(cdi_version, "2.15"):
+            body = {
+                "userId": user_id,
+            }
+            if user_id_type:
+                body["userIdType"] = user_id_type
+            res = await querier.send_get_request(
+                NormalisedURLPath("/recipe/userid/map"),
+                body,
+            )
+            if res["status"] == "OK":
+                return GetUserIdMappingOkResult(
+                    supertokens_user_id=res["superTokensUserId"],
+                    external_user_id=res["externalUserId"],
+                    external_user_info=res.get("externalUserIdInfo"),
+                )
+            if res["status"] == "UNKNOWN_MAPPING_ERROR":
+                return UnknownMappingError()
+
+            raise_general_exception("Unknown response")
+
+        raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
+
+    async def delete_user_id_mapping(  # pylint: disable=no-self-use
+        self,
+        user_id: str,
+        user_id_type: Optional[UserIDTypes] = None,
+        force: Optional[bool] = None,
+    ) -> DeleteUserIdMappingOkResult:
+        querier = Querier.get_instance(None)
+
+        cdi_version = await querier.get_api_version()
+
+        if is_version_gte(cdi_version, "2.15"):
+            body: Dict[str, Any] = {
+                "userId": user_id,
+                "userIdType": user_id_type,
+            }
+            if force:
+                body["force"] = force
+            res = await querier.send_post_request(
+                NormalisedURLPath("/recipe/userid/map/remove"), body
+            )
+            if res["status"] == "OK":
+                return DeleteUserIdMappingOkResult(
+                    did_mapping_exist=res["didMappingExist"]
+                )
+
+            raise_general_exception("Unknown response")
+
+        raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
+
+    async def update_or_delete_user_id_mapping_info(  # pylint: disable=no-self-use
+        self,
+        user_id: str,
+        user_id_type: Optional[UserIDTypes] = None,
+        external_user_id_info: Optional[str] = None,
+    ) -> Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
+        querier = Querier.get_instance(None)
+
+        cdi_version = await querier.get_api_version()
+
+        if is_version_gte(cdi_version, "2.15"):
+            res = await querier.send_post_request(
+                NormalisedURLPath("/recipe/userid/external-user-id-info"),
+                {
+                    "userId": user_id,
+                    "userIdType": user_id_type,
+                    "externalUserIdInfo": external_user_id_info,
+                },
+            )
+            if res["status"] == "OK":
+                return UpdateOrDeleteUserIdMappingInfoOkResult()
+            if res["status"] == "UNKNOWN_MAPPING_ERROR":
+                return UnknownMappingError()
+
+            raise_general_exception("Unknown response")
+
+        raise_general_exception("Please upgrade the SuperTokens core to >= 3.15.0")
 
     async def middleware(  # pylint: disable=no-self-use
         self, request: BaseRequest, response: BaseResponse

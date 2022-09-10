@@ -377,7 +377,11 @@
     <meta name="description" content="A list of documented Python modules." />
   % else:
     <title>${module.name} API documentation</title>
-    <meta name="description" content="${module.docstring | glimpse, trim, h}" />
+    % if module.docstring:
+      <meta name="description" content="${module.docstring | glimpse, trim, h}" />
+    % else:
+      <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
+    % endif
   % endif
 
   <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>

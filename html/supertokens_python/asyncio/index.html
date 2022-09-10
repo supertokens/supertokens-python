@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>supertokens_python.asyncio API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -39,9 +39,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import List, Union
+from typing import List, Union, Optional
 
 from supertokens_python import Supertokens
+from supertokens_python.interfaces import (
+    CreateUserIdMappingOkResult,
+    UnknownSupertokensUserIDError,
+    UserIdMappingAlreadyExistsError,
+    UserIDTypes,
+    UnknownMappingError,
+    GetUserIdMappingOkResult,
+    DeleteUserIdMappingOkResult,
+    UpdateOrDeleteUserIdMappingInfoOkResult,
+)
 from supertokens_python.types import UsersResponse
 
 
@@ -70,7 +80,49 @@ async def get_user_count(include_recipe_ids: Union[None, List[str]] = None) -&gt
 
 
 async def delete_user(user_id: str) -&gt; None:
-    return await Supertokens.get_instance().delete_user(user_id)</code></pre>
+    return await Supertokens.get_instance().delete_user(user_id)
+
+
+async def create_user_id_mapping(
+    supertokens_user_id: str,
+    external_user_id: str,
+    external_user_id_info: Optional[str] = None,
+    force: Optional[bool] = None,
+) -&gt; Union[
+    CreateUserIdMappingOkResult,
+    UnknownSupertokensUserIDError,
+    UserIdMappingAlreadyExistsError,
+]:
+    return await Supertokens.get_instance().create_user_id_mapping(
+        supertokens_user_id, external_user_id, external_user_id_info, force
+    )
+
+
+async def get_user_id_mapping(
+    user_id: str,
+    user_id_type: Optional[UserIDTypes] = None,
+) -&gt; Union[GetUserIdMappingOkResult, UnknownMappingError]:
+    return await Supertokens.get_instance().get_user_id_mapping(user_id, user_id_type)
+
+
+async def delete_user_id_mapping(
+    user_id: str,
+    user_id_type: Optional[UserIDTypes] = None,
+    force: Optional[bool] = None,
+) -&gt; DeleteUserIdMappingOkResult:
+    return await Supertokens.get_instance().delete_user_id_mapping(
+        user_id, user_id_type, force
+    )
+
+
+async def update_or_delete_user_id_mapping_info(
+    user_id: str,
+    user_id_type: Optional[UserIDTypes] = None,
+    external_user_id_info: Optional[str] = None,
+) -&gt; Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
+    return await Supertokens.get_instance().update_or_delete_user_id_mapping_info(
+        user_id, user_id_type, external_user_id_info
+    )</code></pre>
 </details>
 </section>
 <section>
@@ -80,6 +132,30 @@ async def delete_user(user_id: str) -&gt; None:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="supertokens_python.asyncio.create_user_id_mapping"><code class="name flex">
+<span>async def <span class="ident">create_user_id_mapping</span></span>(<span>supertokens_user_id: str, external_user_id: str, external_user_id_info: Optional[str] = None, force: Optional[bool] = None) ‑> Union[<a title="supertokens_python.interfaces.CreateUserIdMappingOkResult" href="../interfaces.html#supertokens_python.interfaces.CreateUserIdMappingOkResult">CreateUserIdMappingOkResult</a>, <a title="supertokens_python.interfaces.UnknownSupertokensUserIDError" href="../interfaces.html#supertokens_python.interfaces.UnknownSupertokensUserIDError">UnknownSupertokensUserIDError</a>, <a title="supertokens_python.interfaces.UserIdMappingAlreadyExistsError" href="../interfaces.html#supertokens_python.interfaces.UserIdMappingAlreadyExistsError">UserIdMappingAlreadyExistsError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def create_user_id_mapping(
+    supertokens_user_id: str,
+    external_user_id: str,
+    external_user_id_info: Optional[str] = None,
+    force: Optional[bool] = None,
+) -&gt; Union[
+    CreateUserIdMappingOkResult,
+    UnknownSupertokensUserIDError,
+    UserIdMappingAlreadyExistsError,
+]:
+    return await Supertokens.get_instance().create_user_id_mapping(
+        supertokens_user_id, external_user_id, external_user_id_info, force
+    )</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.asyncio.delete_user"><code class="name flex">
 <span>async def <span class="ident">delete_user</span></span>(<span>user_id: str) ‑> None</span>
 </code></dt>
@@ -93,6 +169,25 @@ async def delete_user(user_id: str) -&gt; None:
     return await Supertokens.get_instance().delete_user(user_id)</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.asyncio.delete_user_id_mapping"><code class="name flex">
+<span>async def <span class="ident">delete_user_id_mapping</span></span>(<span>user_id: str, user_id_type: Optional[Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, force: Optional[bool] = None) ‑> <a title="supertokens_python.interfaces.DeleteUserIdMappingOkResult" href="../interfaces.html#supertokens_python.interfaces.DeleteUserIdMappingOkResult">DeleteUserIdMappingOkResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def delete_user_id_mapping(
+    user_id: str,
+    user_id_type: Optional[UserIDTypes] = None,
+    force: Optional[bool] = None,
+) -&gt; DeleteUserIdMappingOkResult:
+    return await Supertokens.get_instance().delete_user_id_mapping(
+        user_id, user_id_type, force
+    )</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.asyncio.get_user_count"><code class="name flex">
 <span>async def <span class="ident">get_user_count</span></span>(<span>include_recipe_ids: Optional[None] = None) ‑> int</span>
 </code></dt>
@@ -104,6 +199,22 @@ async def delete_user(user_id: str) -&gt; None:
 </summary>
 <pre><code class="python">async def get_user_count(include_recipe_ids: Union[None, List[str]] = None) -&gt; int:
     return await Supertokens.get_instance().get_user_count(include_recipe_ids)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.asyncio.get_user_id_mapping"><code class="name flex">
+<span>async def <span class="ident">get_user_id_mapping</span></span>(<span>user_id: str, user_id_type: Optional[Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None) ‑> Union[<a title="supertokens_python.interfaces.GetUserIdMappingOkResult" href="../interfaces.html#supertokens_python.interfaces.GetUserIdMappingOkResult">GetUserIdMappingOkResult</a>, <a title="supertokens_python.interfaces.UnknownMappingError" href="../interfaces.html#supertokens_python.interfaces.UnknownMappingError">UnknownMappingError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def get_user_id_mapping(
+    user_id: str,
+    user_id_type: Optional[UserIDTypes] = None,
+) -&gt; Union[GetUserIdMappingOkResult, UnknownMappingError]:
+    return await Supertokens.get_instance().get_user_id_mapping(user_id, user_id_type)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.asyncio.get_users_newest_first"><code class="name flex">
@@ -144,6 +255,25 @@ async def delete_user(user_id: str) -&gt; None:
     )</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.asyncio.update_or_delete_user_id_mapping_info"><code class="name flex">
+<span>async def <span class="ident">update_or_delete_user_id_mapping_info</span></span>(<span>user_id: str, user_id_type: Optional[Literal['SUPERTOKENS', 'EXTERNAL', 'ANY']] = None, external_user_id_info: Optional[str] = None) ‑> Union[<a title="supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult" href="../interfaces.html#supertokens_python.interfaces.UpdateOrDeleteUserIdMappingInfoOkResult">UpdateOrDeleteUserIdMappingInfoOkResult</a>, <a title="supertokens_python.interfaces.UnknownMappingError" href="../interfaces.html#supertokens_python.interfaces.UnknownMappingError">UnknownMappingError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def update_or_delete_user_id_mapping_info(
+    user_id: str,
+    user_id_type: Optional[UserIDTypes] = None,
+    external_user_id_info: Optional[str] = None,
+) -&gt; Union[UpdateOrDeleteUserIdMappingInfoOkResult, UnknownMappingError]:
+    return await Supertokens.get_instance().update_or_delete_user_id_mapping_info(
+        user_id, user_id_type, external_user_id_info
+    )</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -162,10 +292,14 @@ async def delete_user(user_id: str) -&gt; None:
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="supertokens_python.asyncio.create_user_id_mapping" href="#supertokens_python.asyncio.create_user_id_mapping">create_user_id_mapping</a></code></li>
 <li><code><a title="supertokens_python.asyncio.delete_user" href="#supertokens_python.asyncio.delete_user">delete_user</a></code></li>
+<li><code><a title="supertokens_python.asyncio.delete_user_id_mapping" href="#supertokens_python.asyncio.delete_user_id_mapping">delete_user_id_mapping</a></code></li>
 <li><code><a title="supertokens_python.asyncio.get_user_count" href="#supertokens_python.asyncio.get_user_count">get_user_count</a></code></li>
+<li><code><a title="supertokens_python.asyncio.get_user_id_mapping" href="#supertokens_python.asyncio.get_user_id_mapping">get_user_id_mapping</a></code></li>
 <li><code><a title="supertokens_python.asyncio.get_users_newest_first" href="#supertokens_python.asyncio.get_users_newest_first">get_users_newest_first</a></code></li>
 <li><code><a title="supertokens_python.asyncio.get_users_oldest_first" href="#supertokens_python.asyncio.get_users_oldest_first">get_users_oldest_first</a></code></li>
+<li><code><a title="supertokens_python.asyncio.update_or_delete_user_id_mapping_info" href="#supertokens_python.asyncio.update_or_delete_user_id_mapping_info">update_or_delete_user_id_mapping_info</a></code></li>
 </ul>
 </li>
 </ul>

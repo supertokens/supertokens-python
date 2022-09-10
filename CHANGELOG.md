@@ -6,12 +6,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.10.4] - 2022-08-30
+## Features:
+- Add support for User ID Mapping using `create_user_id_mapping`, `get_user_id_mapping`, `delete_user_id_mapping`, `update_or_delete_user_id_mapping` functions
+
+## [0.10.3] - 2022-08-29
+
+### Bug fix
+- Send FORM_FIELD error with 200 status code instead of 500 on invalid request body or when user passes non-string values as email ID for `/auth/signin`
+
+### Changes
+- Add to test to ensure that overrides are applying correctly in methods called on SessionContainer instances
+
+## [0.10.2] - 2022-07-14
+### Bug fix
+- Make `user_context` optional in userroles recipe syncio functions. 
+
 ## [0.10.1] - 2022-07-11
 
 ### Documentation:
 - Added `pdoc` template files to project inside `docs-templates` directory
 - Updated `build-docs` in Makefile to use `docs-templates` as the template directory while generating docs using `pdoc`
-- Updated `html.mako` template to have a single `h1` tag
+- Updated `html.mako` template to have a single `h1` tag and have a default meta description tag
 
 ### Changes
 - Relax version requirements for `httpx`, `cryptography`, and `asgiref` to fix https://github.com/supertokens/supertokens-python/issues/207
