@@ -56,14 +56,7 @@ class TryRefreshTokenError(SuperTokensSessionError):
 class InvalidClaimsError(SuperTokensSessionError):
     def __init__(self, msg: str, payload: List[ClaimValidationError]):
         super().__init__(msg)
-        self.payload: List[Dict[str, Any]] = []
-        for p in payload:
-            res = (
-                p.__dict__.copy()
-            )  # Must be JSON serializable as it will be used in response
-            if p.reason is None:
-                res.pop("reason")
-            self.payload.append(res)
+        self.payload = payload
 
 
 class ClaimValidationError:
