@@ -3,6 +3,9 @@ from typing import Any, Dict, TypeVar, Union
 from unittest.mock import patch
 
 from pytest import mark
+from supertokens_python.recipe import session
+
+from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.recipe.session.interfaces import (
     JSONObject,
@@ -11,7 +14,12 @@ from supertokens_python.recipe.session.interfaces import (
     SessionClaim,
 )
 from supertokens_python.recipe.session.session_class import Session
-from tests.utils import AsyncMock
+from supertokens_python import init
+from .utils import st_init_common_args
+from tests.utils import setup_function, teardown_function, start_st
+
+_ = setup_function  # type:ignore
+_ = teardown_function  # type:ignore
 
 _T = TypeVar("_T")
 
@@ -19,9 +27,14 @@ pytestmark = mark.asyncio
 
 
 async def test_should_not_throw_for_empty_array():
-    recipe_implementation_mock = AsyncMock()
-    session = Session(
-        recipe_implementation_mock,
+    st_args = {**st_init_common_args, "recipe_list": [session.init()]}
+    init(**st_args)  # type:ignore
+    start_st()
+
+    s = SessionRecipe.get_instance()
+
+    user_session = Session(
+        s.recipe_implementation,
         "test_access_token",
         "test_session_handle",
         "test_user_id",
@@ -30,17 +43,22 @@ async def test_should_not_throw_for_empty_array():
     with patch.object(
         Session,
         "update_access_token_payload",
-        wraps=session.update_access_token_payload,
+        wraps=user_session.update_access_token_payload,
     ) as mock:
-        await session.assert_claims([])
+        await user_session.assert_claims([])
         mock.assert_not_called()
 
 
 async def test_should_call_validate_with_the_same_payload_object():
-    recipe_implementation_mock = AsyncMock()
+    st_args = {**st_init_common_args, "recipe_list": [session.init()]}
+    init(**st_args)  # type:ignore
+    start_st()
+
+    s = SessionRecipe.get_instance()
+
     payload = {"custom-key": "custom-value"}
-    session = Session(
-        recipe_implementation_mock,
+    user_session = Session(
+        s.recipe_implementation,
         "test_access_token",
         "test_session_handle",
         "test_user_id",
@@ -74,9 +92,9 @@ async def test_should_call_validate_with_the_same_payload_object():
     with patch.object(
         Session,
         "update_access_token_payload",
-        wraps=session.update_access_token_payload,
+        wraps=user_session.update_access_token_payload,
     ) as mock:
-        await session.assert_claims([dummy_claim.validators.dummy_claim_validator])  # type: ignore
+        await user_session.assert_claims([dummy_claim.validators.dummy_claim_validator])  # type: ignore
 
         assert dummy_claim_validator.validate_calls == {json.dumps(payload): 1}
         mock.assert_not_called()

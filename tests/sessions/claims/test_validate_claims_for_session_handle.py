@@ -43,7 +43,7 @@ async def test_should_return_the_right_validation_errors():
     assert isinstance(res, ClaimsValidationResult) and len(res.invalid_claims) == 1
     assert res.invalid_claims[0].id == failing_validator.id
     assert res.invalid_claims[0].reason == {
-        "message": "wrong value",
+        "message": "value does not exist",
         "actualValue": None,
         "expectedValue": True,
     }
