@@ -281,6 +281,25 @@ class EmailVerificationRecipe(RecipeModule):
         self.get_email_for_user_id_funcs_from_other_recipes.append(f)
 
 
+class EmailVerificationClaimValidators(BooleanClaimValidators):
+    def is_verified(
+        self,
+        refetch_time_on_false_in_seconds: int = 10,
+        max_age_in_seconds: Optional[int] = None,
+        id_: Optional[str] = None,
+    ) -> SessionClaimValidator:
+        max_age_in_seconds = max_age_in_seconds or self.default_max_age_in_sec
+
+        assert isinstance(self.claim, EmailVerificationClaimClass)
+        return IsVerifiedSCV(
+            (id_ or self.claim.key),
+            self.claim,
+            self,
+            refetch_time_on_false_in_seconds,
+            max_age_in_seconds,
+        )
+
+
 class EmailVerificationClaimClass(BooleanClaim):
     def __init__(self):
         async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> bool:
@@ -447,23 +466,4 @@ class IsVerifiedSCV(SessionClaimValidator):
             value is False
             and last_refetch_time
             < (get_timestamp_ms() - self.refetch_time_on_false_in_ms)
-        )
-
-
-class EmailVerificationClaimValidators(BooleanClaimValidators):
-    def is_verified(
-        self,
-        refetch_time_on_false_in_seconds: int = 10,
-        max_age_in_seconds: Optional[int] = None,
-        id_: Optional[str] = None,
-    ) -> SessionClaimValidator:
-        max_age_in_seconds = max_age_in_seconds or self.default_max_age_in_sec
-
-        assert isinstance(self.claim, EmailVerificationClaimClass)
-        return IsVerifiedSCV(
-            (id_ or self.claim.key),
-            self.claim,
-            self,
-            refetch_time_on_false_in_seconds,
-            max_age_in_seconds,
         )
