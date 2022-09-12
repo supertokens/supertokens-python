@@ -13,10 +13,14 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Callable, Union, Optional
 
 from . import utils
 from .recipe import UserRolesRecipe
+from . import recipe
+
+PermissionClaim = recipe.PermissionClaim
+UserRoleClaim = recipe.UserRoleClaim
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
@@ -25,6 +29,12 @@ if TYPE_CHECKING:
 
 
 def init(
-    override: Union[utils.InputOverrideConfig, None] = None
+    skip_adding_roles_to_access_token: Optional[bool] = None,
+    skip_adding_permissions_to_access_token: Optional[bool] = None,
+    override: Union[utils.InputOverrideConfig, None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
-    return UserRolesRecipe.init(override)
+    return UserRolesRecipe.init(
+        skip_adding_roles_to_access_token,
+        skip_adding_permissions_to_access_token,
+        override,
+    )

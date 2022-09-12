@@ -11,24 +11,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Callable, Optional, Dict, Any, TypeVar
+from typing import Callable, Optional, Dict, Any
 
 from supertokens_python.types import MaybeAwaitable
 from .primitive_claim import PrimitiveClaim, PrimitiveClaimValidators
 
-_T = TypeVar("_T", bound=bool)
-
 
 class BooleanClaimValidators(PrimitiveClaimValidators[bool]):
-    def is_true(self, max_age: Optional[int]):
-        if max_age is not None:
-            return self.has_value(True, max_age)
-        return self.has_value(True)
+    def is_true(self, max_age: Optional[int], id_: Optional[str] = None):
+        return self.has_value(True, max_age, id_)
 
-    def is_false(self, max_age: Optional[int]):
-        if max_age is not None:
-            return self.has_value(False, max_age)
-        return self.has_value(False)
+    def is_false(self, max_age: Optional[int], id_: Optional[str] = None):
+        return self.has_value(False, max_age, id_)
 
 
 class BooleanClaim(PrimitiveClaim[bool]):
@@ -37,8 +31,8 @@ class BooleanClaim(PrimitiveClaim[bool]):
         key: str,
         fetch_value: Callable[
             [str, Dict[str, Any]],
-            MaybeAwaitable[Optional[_T]],
+            MaybeAwaitable[Optional[bool]],
         ],
     ):
         super().__init__(key, fetch_value)
-        self.validators = BooleanClaimValidators(claim=self)
+        self.validators = BooleanClaimValidators(claim=self, default_max_age_in_sec=300)

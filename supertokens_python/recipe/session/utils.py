@@ -137,7 +137,7 @@ class ErrorHandlers:
             Union[BaseResponse, Awaitable[BaseResponse]],
         ],
         on_invalid_claim: Callable[
-            [BaseRequest, List[Dict[str, Any]], BaseResponse],
+            [BaseRequest, List[ClaimValidationError], BaseResponse],
             Union[BaseResponse, Awaitable[BaseResponse]],
         ],
     ):
@@ -185,7 +185,7 @@ class ErrorHandlers:
         self,
         recipe: SessionRecipe,
         request: BaseRequest,
-        claim_validation_errors: List[Dict[str, Any]],
+        claim_validation_errors: List[ClaimValidationError],
         response: BaseResponse,
     ):
         _ = recipe
@@ -214,7 +214,7 @@ class InputErrorHandlers(ErrorHandlers):
         ] = None,
         on_invalid_claim: Union[
             Callable[
-                [BaseRequest, List[Dict[str, Any]], BaseResponse],
+                [BaseRequest, List[ClaimValidationError], BaseResponse],
                 Union[BaseResponse, Awaitable[BaseResponse]],
             ],
             None,
@@ -275,13 +275,23 @@ async def default_token_theft_detected_callback(
 
 async def default_invalid_claim_callback(
     _: BaseRequest,
-    claim_validation_errors: List[Dict[str, Any]],
+    claim_validation_errors: List[ClaimValidationError],
     response: BaseResponse,
 ) -> BaseResponse:
     from .recipe import SessionRecipe
 
+    payload: List[Dict[str, Any]] = []
+
+    for p in claim_validation_errors:
+        res = (
+            p.__dict__.copy()
+        )  # Must be JSON serializable as it will be used in response
+        if p.reason is None:
+            res.pop("reason")
+        payload.append(res)
+
     return send_non_200_response(
-        {"message": "invalid claim", "claimValidationErrors": claim_validation_errors},
+        {"message": "invalid claim", "claimValidationErrors": payload},
         SessionRecipe.get_instance().config.invalid_claim_status_code,
         response,
     )

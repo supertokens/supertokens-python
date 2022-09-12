@@ -82,8 +82,6 @@ JSONPrimitiveList = Union[
     List[str], List[int], List[bool], List[None], List[Dict[str, Any]]
 ]
 
-FetchValueReturnType = Union[_T, None]
-
 
 class SessionDoesNotExistError:
     pass
@@ -134,12 +132,6 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
-        override_global_claim_validators: Optional[
-            Callable[
-                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
-                MaybeAwaitable[List[SessionClaimValidator]],
-            ]
-        ],
         user_context: Dict[str, Any],
     ) -> Union[SessionContainer, None]:
         pass
@@ -222,7 +214,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     async def merge_into_access_token_payload(
         self,
         session_handle: str,
-        access_token_payload_update: Dict[str, Any],
+        access_token_payload_update: JSONObject,
         user_context: Dict[str, Any],
     ) -> bool:
         pass
@@ -324,8 +316,8 @@ class APIInterface(ABC):
     @abstractmethod
     async def signout_post(
         self,
-        api_options: APIOptions,
         session: Optional[SessionContainer],
+        api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> SignOutOkayResponse:
         pass
@@ -368,12 +360,14 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         self.remove_cookies = False
 
     @abstractmethod
-    async def revoke_session(self, user_context: Union[Any, None] = None) -> None:
+    async def revoke_session(
+        self, user_context: Optional[Dict[str, Any]] = None
+    ) -> None:
         pass
 
     @abstractmethod
     async def get_session_data(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         pass
 
@@ -381,7 +375,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     async def update_session_data(
         self,
         new_session_data: Dict[str, Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         pass
 
@@ -389,55 +383,57 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     async def update_access_token_payload(
         self,
         new_access_token_payload: Dict[str, Any],
-        user_context: Dict[str, Any],
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         """DEPRECATED: Use merge_into_access_token_payload instead"""
 
     @abstractmethod
     async def merge_into_access_token_payload(
-        self, access_token_payload_update: Dict[str, Any], user_context: Dict[str, Any]
+        self,
+        access_token_payload_update: JSONObject,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         pass
 
     @abstractmethod
-    def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -> str:
+    def get_user_id(self, user_context: Optional[Dict[str, Any]] = None) -> str:
         pass
 
     @abstractmethod
     def get_access_token_payload(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         pass
 
     @abstractmethod
-    def get_handle(self, user_context: Union[Dict[str, Any], None] = None) -> str:
+    def get_handle(self, user_context: Optional[Dict[str, Any]] = None) -> str:
         pass
 
     @abstractmethod
-    def get_access_token(self, user_context: Union[Dict[str, Any], None] = None) -> str:
+    def get_access_token(self, user_context: Optional[Dict[str, Any]] = None) -> str:
         pass
 
     @abstractmethod
     async def get_time_created(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -> int:
         pass
 
     @abstractmethod
-    async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -> int:
+    async def get_expiry(self, user_context: Optional[Dict[str, Any]] = None) -> int:
         pass
 
     @abstractmethod
     async def assert_claims(
         self,
         claim_validators: List[SessionClaimValidator],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         pass
 
     @abstractmethod
     async def fetch_and_set_claim(
-        self, claim: SessionClaim[Any], user_context: Union[Dict[str, Any], None] = None
+        self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
     ) -> None:
         pass
 
@@ -446,13 +442,13 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         self,
         claim: SessionClaim[_T],
         value: _T,
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         pass
 
     @abstractmethod
     async def get_claim_value(
-        self, claim: SessionClaim[_T], user_context: Union[Dict[str, Any], None] = None
+        self, claim: SessionClaim[_T], user_context: Optional[Dict[str, Any]] = None
     ) -> Union[_T, None]:
         pass
 
@@ -460,15 +456,15 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     async def remove_claim(
         self,
         claim: SessionClaim[Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         pass
 
-    def sync_get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -> int:
+    def sync_get_expiry(self, user_context: Optional[Dict[str, Any]] = None) -> int:
         return sync(self.get_expiry(user_context))
 
     def sync_revoke_session(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -> None:
         return sync(self.revoke_session(user_context=user_context))
 
@@ -478,12 +474,14 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         return sync(self.get_session_data(user_context))
 
     def sync_get_time_created(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -> int:
         return sync(self.get_time_created(user_context))
 
     def sync_merge_into_access_token_payload(
-        self, access_token_payload_update: Dict[str, Any], user_context: Dict[str, Any]
+        self,
+        access_token_payload_update: Dict[str, Any],
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         return sync(
             self.merge_into_access_token_payload(
@@ -494,7 +492,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def sync_update_access_token_payload(
         self,
         new_access_token_payload: Dict[str, Any],
-        user_context: Dict[str, Any],
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         return sync(
             self.update_access_token_payload(new_access_token_payload, user_context)
@@ -503,7 +501,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def sync_update_session_data(
         self,
         new_session_data: Dict[str, Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         return sync(self.update_session_data(new_session_data, user_context))
 
@@ -511,27 +509,30 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def sync_assert_claims(
         self,
         claim_validators: List[SessionClaimValidator],
-        user_context: Dict[str, Any],
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         return sync(self.assert_claims(claim_validators, user_context))
 
     def sync_fetch_and_set_claim(
-        self, claim: SessionClaim[Any], user_context: Dict[str, Any]
+        self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
     ) -> None:
         return sync(self.fetch_and_set_claim(claim, user_context))
 
     def sync_set_claim_value(
-        self, claim: SessionClaim[_T], value: _T, user_context: Dict[str, Any]
+        self,
+        claim: SessionClaim[_T],
+        value: _T,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -> None:
         return sync(self.set_claim_value(claim, value, user_context))
 
     def sync_get_claim_value(
-        self, claim: SessionClaim[_T], user_context: Dict[str, Any]
+        self, claim: SessionClaim[_T], user_context: Optional[Dict[str, Any]] = None
     ) -> Union[_T, None]:
         return sync(self.get_claim_value(claim, user_context))
 
     def sync_remove_claim(
-        self, claim: SessionClaim[Any], user_context: Dict[str, Any]
+        self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
     ) -> None:
         return sync(self.remove_claim(claim, user_context))
 
@@ -571,13 +572,13 @@ class SessionClaim(ABC, Generic[_T]):
 
     @abstractmethod
     def remove_from_payload_by_merge_(
-        self, payload: JSONObject, user_context: Dict[str, Any]
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
     ) -> JSONObject:
         """Removes the claim from the payload by setting it to None, so merge_into_access_token_payload can clear it"""
 
     @abstractmethod
     def remove_from_payload(
-        self, payload: JSONObject, user_context: Dict[str, Any]
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
     ) -> JSONObject:
         """Removes the claim from the payload, by cloning and updating the entire object."""
 
@@ -588,7 +589,7 @@ class SessionClaim(ABC, Generic[_T]):
         """Gets the value of the claim stored in the payload"""
 
     async def build(
-        self, user_id: str, user_context: Union[Dict[str, Any], None] = None
+        self, user_id: str, user_context: Optional[Dict[str, Any]] = None
     ) -> JSONObject:
         if user_context is None:
             user_context = {}

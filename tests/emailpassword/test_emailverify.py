@@ -27,7 +27,7 @@ from supertokens_python.recipe import emailpassword, session, emailverification
 from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
     is_email_verified,
-    revoke_email_verification_token,
+    revoke_email_verification_tokens,
     unverify_email,
     verify_email_using_token,
 )
@@ -600,13 +600,13 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
 
         async def email_verify_post(
             token: str,
-            api_options: APIOptions,
             session: Optional[SessionContainer],
+            api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options, session, user_context)
+            response = await temp(token, session, api_options, user_context)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -812,13 +812,13 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
 
         async def email_verify_post(
             token: str,
-            api_options: APIOptions,
             session: Optional[SessionContainer],
+            api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options, session, user_context)
+            response = await temp(token, session, api_options, user_context)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -908,13 +908,13 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
 
         async def email_verify_post(
             token: str,
-            api_options: APIOptions,
             session: Optional[SessionContainer],
+            api_options: APIOptions,
             user_context: Dict[str, Any],
         ):
             nonlocal user_info_from_callback
 
-            response = await temp(token, api_options, session, user_context)
+            response = await temp(token, session, api_options, user_context)
 
             if isinstance(response, EmailVerifyPostOkResult):
                 user_info_from_callback = response.user
@@ -1021,7 +1021,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
     user_id = dict_response["user"]["id"]
 
     verify_token = await create_email_verification_token(user_id)
-    await revoke_email_verification_token(user_id)
+    await revoke_email_verification_tokens(user_id)
 
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
         response = await verify_email_using_token(verify_token.token)

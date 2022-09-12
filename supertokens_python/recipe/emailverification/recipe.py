@@ -34,9 +34,16 @@ from ...ingredients.emaildelivery.types import EmailDeliveryConfig
 from ...logger import log_debug_message
 from ...post_init_callbacks import PostSTInitCallbacks
 from ..session import SessionRecipe
-from ..session.claim_base_classes.boolean_claim import BooleanClaim
-from ..session.interfaces import SessionContainer
-from .ev_claim import EmailVerificationClaimValidators
+from ..session.claim_base_classes.boolean_claim import (
+    BooleanClaim,
+    BooleanClaimValidators,
+)
+from ..session.interfaces import (
+    SessionContainer,
+    SessionClaimValidator,
+    JSONObject,
+    ClaimValidationResult,
+)
 from .interfaces import (
     APIInterface,
     APIOptions,
@@ -53,6 +60,8 @@ from .interfaces import (
     VerifyEmailUsingTokenOkResult,
 )
 from .recipe_implementation import RecipeImplementation
+from ...types import MaybeAwaitable
+from ...utils import get_timestamp_ms
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -272,6 +281,25 @@ class EmailVerificationRecipe(RecipeModule):
         self.get_email_for_user_id_funcs_from_other_recipes.append(f)
 
 
+class EmailVerificationClaimValidators(BooleanClaimValidators):
+    def is_verified(
+        self,
+        refetch_time_on_false_in_seconds: int = 10,
+        max_age_in_seconds: Optional[int] = None,
+        id_: Optional[str] = None,
+    ) -> SessionClaimValidator:
+        max_age_in_seconds = max_age_in_seconds or self.default_max_age_in_sec
+
+        assert isinstance(self.claim, EmailVerificationClaimClass)
+        return IsVerifiedSCV(
+            (id_ or self.claim.key),
+            self.claim,
+            self,
+            refetch_time_on_false_in_seconds,
+            max_age_in_seconds,
+        )
+
+
 class EmailVerificationClaimClass(BooleanClaim):
     def __init__(self):
         async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> bool:
@@ -291,7 +319,9 @@ class EmailVerificationClaimClass(BooleanClaim):
 
         super().__init__("st-ev", fetch_value)
 
-        self.validators = EmailVerificationClaimValidators(claim=self)
+        self.validators = EmailVerificationClaimValidators(
+            claim=self, default_max_age_in_sec=300
+        )
 
 
 EmailVerificationClaim = EmailVerificationClaimClass()
@@ -301,8 +331,8 @@ class APIImplementation(APIInterface):
     async def email_verify_post(
         self,
         token: str,
-        api_options: APIOptions,
         session: Optional[SessionContainer],
+        api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError]:
 
@@ -318,8 +348,8 @@ class APIImplementation(APIInterface):
 
     async def is_email_verified_get(
         self,
+        session: SessionContainer,
         api_options: APIOptions,
-        session: Optional[SessionContainer],
         user_context: Dict[str, Any],
     ) -> IsEmailVerifiedGetOkResult:
         if session is None:
@@ -338,16 +368,13 @@ class APIImplementation(APIInterface):
 
     async def generate_email_verify_token_post(
         self,
-        api_options: APIOptions,
         session: SessionContainer,
+        api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
         GenerateEmailVerifyTokenPostOkResult,
         GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError,
     ]:
-        if session is None:
-            raise Exception("Session is undefined. Should not come here.")
-
         user_id = session.get_user_id(user_context)
         email_info = await EmailVerificationRecipe.get_instance().get_email_for_user_id(
             user_id, user_context
@@ -380,7 +407,7 @@ class APIImplementation(APIInterface):
             email_verify_link = (
                 api_options.app_info.website_domain.get_as_string_dangerous()
                 + api_options.app_info.website_base_path.get_as_string_dangerous()
-                + "/verify-email/"
+                + "/verify-email"
                 + "?token="
                 + response.token
                 + "&rid="
@@ -400,4 +427,43 @@ class APIImplementation(APIInterface):
 
         raise Exception(
             "Should never come here: UNKNOWN_USER_ID or invalid result from get_email_for_user_id"
+        )
+
+
+class IsVerifiedSCV(SessionClaimValidator):
+    def __init__(
+        self,
+        id_: str,
+        claim: EmailVerificationClaimClass,
+        ev_claim_validators: EmailVerificationClaimValidators,
+        refetch_time_on_false_in_seconds: int,
+        max_age_in_seconds: int,
+    ):
+        super().__init__(id_)
+        self.claim: EmailVerificationClaimClass = claim
+        self.ev_claim_validators = ev_claim_validators
+        self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
+        self.max_age_in_ms = max_age_in_seconds * 1000
+
+    async def validate(
+        self, payload: JSONObject, user_context: Dict[str, Any]
+    ) -> ClaimValidationResult:
+        return await self.ev_claim_validators.has_value(True).validate(
+            payload, user_context
+        )
+
+    def should_refetch(
+        self, payload: JSONObject, user_context: Dict[str, Any]
+    ) -> MaybeAwaitable[bool]:
+        value = self.claim.get_value_from_payload(payload, user_context)
+        if value is None:
+            return True
+
+        last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
+        assert last_refetch_time is not None
+
+        return (last_refetch_time < get_timestamp_ms() - self.max_age_in_ms) or (
+            value is False
+            and last_refetch_time
+            < (get_timestamp_ms() - self.refetch_time_on_false_in_ms)
         )

@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Callable, Union, Optional
 
 from supertokens_python.recipe.userroles.interfaces import APIInterface, RecipeInterface
 from supertokens_python.supertokens import AppInfo
@@ -34,13 +34,24 @@ class InputOverrideConfig:
 
 
 class UserRolesConfig:
-    def __init__(self, override: InputOverrideConfig) -> None:
+    def __init__(
+        self,
+        skip_adding_roles_to_access_token: bool,
+        skip_adding_permissions_to_access_token: bool,
+        override: InputOverrideConfig,
+    ) -> None:
+        self.skip_adding_roles_to_access_token = skip_adding_roles_to_access_token
+        self.skip_adding_permissions_to_access_token = (
+            skip_adding_permissions_to_access_token
+        )
         self.override = override
 
 
 def validate_and_normalise_user_input(
     _recipe: UserRolesRecipe,
     _app_info: AppInfo,
+    skip_adding_roles_to_access_token: Optional[bool] = None,
+    skip_adding_permissions_to_access_token: Optional[bool] = None,
     override: Union[InputOverrideConfig, None] = None,
 ) -> UserRolesConfig:
     if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
@@ -49,4 +60,13 @@ def validate_and_normalise_user_input(
     if override is None:
         override = InputOverrideConfig()
 
-    return UserRolesConfig(override=override)
+    if skip_adding_roles_to_access_token is None:
+        skip_adding_roles_to_access_token = False
+    if skip_adding_permissions_to_access_token is None:
+        skip_adding_permissions_to_access_token = False
+
+    return UserRolesConfig(
+        skip_adding_roles_to_access_token=skip_adding_roles_to_access_token,
+        skip_adding_permissions_to_access_token=skip_adding_permissions_to_access_token,
+        override=override,
+    )

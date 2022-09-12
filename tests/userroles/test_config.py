@@ -15,7 +15,7 @@
 from pytest import mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.querier import Querier
-from supertokens_python.recipe import userroles
+from supertokens_python.recipe import userroles, session
 from supertokens_python.utils import is_version_gte
 from tests.utils import clean_st, reset, setup_st, start_st
 
@@ -41,7 +41,7 @@ async def test_recipe_works_without_config():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init()],
+        recipe_list=[userroles.init(), session.init()],
     )
     start_st()
 

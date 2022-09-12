@@ -13,13 +13,10 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Union, Optional, List, Callable
-
-# TODO: Missing changes for session_class inside with_jwt? supertokens/supertokens-node#278 (files)
+from typing import TYPE_CHECKING, Any, Dict, Union, Optional
 
 from jwt import decode
 
-from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import get_timestamp_ms
 
 from .constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
@@ -32,7 +29,6 @@ if TYPE_CHECKING:
         RecipeInterface,
         SessionContainer,
         SessionInformationResult,
-        SessionClaimValidator,
     )
     from supertokens_python.framework.types import BaseRequest
 
@@ -93,19 +89,12 @@ def get_recipe_implementation_with_jwt(
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
-        override_global_claim_validators: Optional[
-            Callable[
-                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
-                MaybeAwaitable[List[SessionClaimValidator]],
-            ]
-        ],
         user_context: Dict[str, Any],
     ) -> Union[SessionContainer, None]:
         session_container = await og_get_session(
             request,
             anti_csrf_check,
             session_required,
-            override_global_claim_validators,
             user_context,
         )
         if session_container is None:
@@ -196,9 +185,11 @@ def get_recipe_implementation_with_jwt(
 
     async def update_access_token_payload(
         session_handle: str,
-        new_access_token_payload: Dict[str, Any],
+        new_access_token_payload: Optional[Dict[str, Any]],
         user_context: Dict[str, Any],
     ) -> bool:
+        if new_access_token_payload is None:
+            new_access_token_payload = {}
 
         session_information = await original_implementation.get_session_information(
             session_handle, user_context

@@ -18,6 +18,7 @@ from supertokens_python.recipe.emailverification.interfaces import (
     CreateEmailVerificationTokenEmailAlreadyVerifiedError,
     UnverifyEmailOkResult,
     CreateEmailVerificationTokenOkResult,
+    RevokeEmailVerificationTokensOkResult,
 )
 from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
@@ -81,11 +82,11 @@ async def is_email_verified(
     )
 
 
-async def revoke_email_verification_token(
+async def revoke_email_verification_tokens(
     user_id: str,
     email: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
-):
+) -> RevokeEmailVerificationTokensOkResult:
     if user_context is None:
         user_context = {}
 
@@ -95,9 +96,7 @@ async def revoke_email_verification_token(
         if isinstance(email_info, GetEmailForUserIdOkResult):
             email = email_info.email
         elif isinstance(email_info, EmailDoesNotExistError):
-            # Here we are returning OK since that's how it used to work, but a later call
-            # to is_verified will still return true
-            return CreateEmailVerificationTokenEmailAlreadyVerifiedError()
+            return RevokeEmailVerificationTokensOkResult()
         else:
             raise Exception("Unknown User ID provided without email")
 
@@ -127,16 +126,6 @@ async def unverify_email(
             raise Exception("Unknown User ID provided without email")
 
     return await EmailVerificationRecipe.get_instance().recipe_implementation.unverify_email(
-        user_id, email, user_context
-    )
-
-
-async def revoke_email_verification_tokens(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    if user_context is None:
-        user_context = {}
-    return await EmailVerificationRecipe.get_instance().recipe_implementation.revoke_email_verification_tokens(
         user_id, email, user_context
     )
 

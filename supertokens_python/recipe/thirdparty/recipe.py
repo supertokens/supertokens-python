@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from .utils import SignInAndUpFeature, InputOverrideConfig
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.recipe.emailverification import EmailVerificationRecipe
+from supertokens_python.recipe.emailverification.recipe import EmailVerificationRecipe
 
 from .api import (
     handle_apple_redirect_api,
@@ -138,7 +138,7 @@ class ThirdPartyRecipe(RecipeModule):
         if request_id == APPLE_REDIRECT_HANDLER:
             return await handle_apple_redirect_api(self.api_implementation, api_options)
 
-        return None  # TODO: Node PR returns False, but here signature is different. Verify if this is correct.
+        return None
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse

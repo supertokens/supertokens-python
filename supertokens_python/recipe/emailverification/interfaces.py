@@ -167,8 +167,8 @@ class APIInterface(ABC):
     async def email_verify_post(
         self,
         token: str,
-        api_options: APIOptions,
         session: Optional[SessionContainer],
+        api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
         EmailVerifyPostOkResult, EmailVerifyPostInvalidTokenError, GeneralErrorResponse
@@ -178,8 +178,8 @@ class APIInterface(ABC):
     @abstractmethod
     async def is_email_verified_get(
         self,
+        session: SessionContainer,
         api_options: APIOptions,
-        session: Optional[SessionContainer],
         user_context: Dict[str, Any],
     ) -> Union[IsEmailVerifiedGetOkResult, GeneralErrorResponse]:
         pass
@@ -187,8 +187,8 @@ class APIInterface(ABC):
     @abstractmethod
     async def generate_email_verify_token_post(
         self,
-        api_options: APIOptions,
         session: SessionContainer,
+        api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
         GenerateEmailVerifyTokenPostOkResult,
