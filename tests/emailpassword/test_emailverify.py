@@ -27,7 +27,7 @@ from supertokens_python.recipe import emailpassword, session, emailverification
 from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
     is_email_verified,
-    revoke_email_verification_token,
+    revoke_email_verification_tokens,
     unverify_email,
     verify_email_using_token,
 )
@@ -1021,7 +1021,7 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
     user_id = dict_response["user"]["id"]
 
     verify_token = await create_email_verification_token(user_id)
-    await revoke_email_verification_token(user_id)
+    await revoke_email_verification_tokens(user_id)
 
     if isinstance(verify_token, CreateEmailVerificationTokenOkResult):
         response = await verify_email_using_token(verify_token.token)

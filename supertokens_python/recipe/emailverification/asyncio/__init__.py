@@ -82,7 +82,7 @@ async def is_email_verified(
     )
 
 
-async def revoke_email_verification_token(
+async def revoke_email_verification_tokens(
     user_id: str,
     email: Optional[str] = None,
     user_context: Optional[Dict[str, Any]] = None,
@@ -126,16 +126,6 @@ async def unverify_email(
             raise Exception("Unknown User ID provided without email")
 
     return await EmailVerificationRecipe.get_instance().recipe_implementation.unverify_email(
-        user_id, email, user_context
-    )
-
-
-async def revoke_email_verification_tokens(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    if user_context is None:
-        user_context = {}
-    return await EmailVerificationRecipe.get_instance().recipe_implementation.revoke_email_verification_tokens(
         user_id, email, user_context
     )
 

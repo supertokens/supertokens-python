@@ -232,7 +232,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         self,
         session_handle: str,
         claim: SessionClaim[Any],
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any],
     ) -> bool:
         pass
 
@@ -242,7 +242,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         session_handle: str,
         claim: SessionClaim[_T],
         value: _T,
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any],
     ) -> bool:
         pass
 
@@ -251,7 +251,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         self,
         session_handle: str,
         claim: SessionClaim[Any],
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any],
     ) -> Union[SessionDoesNotExistError, GetClaimValueOkResult[Any]]:
         pass
 
@@ -260,7 +260,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
         self,
         session_handle: str,
         claim: SessionClaim[Any],
-        user_context: Optional[Dict[str, Any]] = None,
+        user_context: Dict[str, Any],
     ) -> bool:
         pass
 

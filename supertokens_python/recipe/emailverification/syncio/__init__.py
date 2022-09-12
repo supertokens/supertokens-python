@@ -56,14 +56,16 @@ def revoke_email_verification_token(
     user_context: Optional[Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import (
-        revoke_email_verification_token,
+        revoke_email_verification_tokens,
     )
 
-    return sync(revoke_email_verification_token(user_id, email, user_context))
+    return sync(revoke_email_verification_tokens(user_id, email, user_context))
 
 
 def unverify_email(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    email: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import is_email_verified
 
