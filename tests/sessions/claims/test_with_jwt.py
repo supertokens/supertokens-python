@@ -86,5 +86,5 @@ async def test_should_create_the_right_access_token_payload_with_claims_and_JWT_
     assert res.invalid_claims[0].reason == {
         "actualValue": None,
         "expectedValue": True,
-        "message": "wrong value",
+        "message": "value does not exist",
     }
