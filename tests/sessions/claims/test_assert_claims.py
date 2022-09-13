@@ -15,8 +15,7 @@ from supertokens_python.recipe.session.interfaces import (
 )
 from supertokens_python.recipe.session.session_class import Session
 from supertokens_python import init
-from .utils import st_init_common_args
-from tests.utils import setup_function, teardown_function, start_st
+from tests.utils import setup_function, teardown_function, start_st, st_init_common_args
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore

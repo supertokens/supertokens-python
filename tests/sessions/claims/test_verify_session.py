@@ -24,8 +24,14 @@ from supertokens_python.recipe.session.interfaces import (
     ClaimsValidationResult,
 )
 from supertokens_python.recipe.session.session_class import Session
-from tests.sessions.claims.utils import st_init_common_args, TrueClaim, NoneClaim
-from tests.utils import setup_function, teardown_function, start_st, AsyncMock
+from tests.sessions.claims.utils import TrueClaim, NoneClaim
+from tests.utils import (
+    setup_function,
+    teardown_function,
+    start_st,
+    AsyncMock,
+    st_init_common_args,
+)
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore
