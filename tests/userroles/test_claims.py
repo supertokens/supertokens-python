@@ -174,10 +174,12 @@ async def test_should_validate_permissions():
     err: ClaimValidationError
     (err,) = e.value.payload  # type: ignore
     assert err.id == PermissionClaim.key
+    assert err.reason is not None
+    actual_value = err.reason.pop("actualValue")
+    assert sorted(actual_value) == sorted(permissions)
     assert err.reason == {
         "message": "wrong value",
         "expectedToInclude": invalid_permission,
-        "actualValue": permissions[::-1],
     }
 
 
