@@ -46,18 +46,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Migration
 Before:
 ```python
+from supertokens_python import init, SupertokensConfig, InputAppInfo
+from supertokens_python.recipe import emailpassword
+from supertokens_python.recipe.emailverification.utils import OverrideConfig
 
 init(
-    supertokens_config=SupertokensConfig(...),
-    app_info=InputAppInfo(...),
+    supertokens_config=SupertokensConfig("..."),
+    app_info=InputAppInfo("..."),
     framework="...",
     recipe_list=[
         emailpassword.init(
-            emailverification_feature="...", # these options should be moved into the EmailVerification config
-            override={
-                # these overrides should be moved into the EmailVerification overrides
-                "email_verification_feature": "..."
-            }
+            # these options should be moved into the EmailVerification config:
+            email_verification_feature=emailpassword.InputEmailVerificationConfig("..."),
+            override=emailpassword.InputOverrideConfig(
+                email_verification_feature=OverrideConfig(
+                    # these overrides should be moved into the EmailVerification overrides
+                    "..."
+                )
+            ),
         ),
     ],
 )
@@ -66,18 +72,20 @@ init(
 After the update:
 
 ```python
+from supertokens_python import init, SupertokensConfig, InputAppInfo
+from supertokens_python.recipe import emailpassword, emailverification
 
 init(
-    supertokens_config=SupertokensConfig(...),
-    app_info=InputAppInfo(...),
+    supertokens_config=SupertokensConfig("..."),
+    app_info=InputAppInfo("..."),
     framework="...",
     recipe_list=[
         emailverification.init(
-            emailverification_feature="...", # these options should be moved into the EmailVerification config
-            override={
-                # these overrides should be moved into the EmailVerification overrides
-                "email_verification_feature": "..."
-            }
+            "...", # EmailVerification config
+            override=emailverification.OverrideConfig(
+                # overrides
+                "..."
+            ),
         ),
         emailpassword.init(),
     ],
