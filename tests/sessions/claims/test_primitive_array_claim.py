@@ -133,7 +133,7 @@ async def test_validators_should_not_validate_empty_payload():
 
     assert res.is_valid is False
     assert res.reason == {
-        "expectedToInclude": val,
+        "expectedToInclude": included_item,
         "actualValue": None,
         "message": "value does not exist",
     }
