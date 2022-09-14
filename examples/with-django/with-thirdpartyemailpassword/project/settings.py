@@ -22,7 +22,11 @@ from supertokens_python import (
     get_all_cors_headers,
     init,
 )
-from supertokens_python.recipe import session, thirdpartyemailpassword
+from supertokens_python.recipe import (
+    session,
+    thirdpartyemailpassword,
+    emailverification,
+)
 from supertokens_python.recipe.thirdpartyemailpassword import (
     Apple,
     Discord,
@@ -62,6 +66,7 @@ init(
     mode="wsgi",
     recipe_list=[
         session.init(),
+        emailverification.init("REQUIRED"),
         thirdpartyemailpassword.init(
             providers=[
                 Google(
