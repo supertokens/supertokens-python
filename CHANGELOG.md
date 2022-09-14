@@ -6,6 +6,165 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changes
+
+- Made the `email` parameter option in `unverify_email`, `revoke_email_verification_tokens`, `is_email_verified`, `verify_email_using_token`, `create_email_verification_token` of the `EmailVerification` recipe.
+
+### Added
+
+- Added support for session claims with related interfaces and classes.
+- Added `on_invalid_claim` optional error handler to send InvalidClaim error responses.
+- Added `INVALID_CLAIMS` (`InvalidClaimError`) to `SessionErrors`.
+- Added `invalid_claim_status_code` optional config to set the status code of InvalidClaim errors.
+- Added `override_global_claim_validators` as param of `get_session` and `verify_session`.
+- Added `merge_into_access_token_payload` to the Session recipe and session objects which should be preferred to the now deprecated `update_access_token_payload`.
+- Added `EmailVerificationClaim`, `UserRoleClaim` and `PermissionClaim`. These claims are now added to the access token payload by default by their respective recipes.
+- Added `assert_claims`, `validate_claims_for_session_handle`, `validate_claims_in_jwt_payload` to the Session recipe to support validation of the newly added claims.
+- Added `fetch_and_set_claim`, `get_claim_value`, `set_claim_value` and `remove_claim` to the Session recipe to manage claims.
+- Added `assert_claims`, `fetch_and_set_claim`, `get_claim_value`, `set_claim_value` and `remove_claim` to session objects to manage claims.
+- Added session to the input of `generate_email_verify_token_post`, `verify_email_post`, `is_email_verified_get`.
+- Adds default userContext for verifySession calls that contains the request object.
+
+### Breaking Changes
+-   Changed `sign_in_up` third party recipe function to accept just the email as `str` (removed `email_verified: bool`).
+-   The frontend SDK should be updated to a version supporting session claims!
+    -   supertokens-auth-react: >= 0.25.0
+    -   supertokens-web-js: >= 0.2.0
+-   `EmailVerification` recipe is now not initialized as part of auth recipes, it should be added to the `recipe_list` directly instead using `emailverification.init()`.
+-   Email verification related overrides (`email_verification_feature` attr of `override`) moved from auth recipes into the `EmailVerification` recipe config.
+-   Email verification related configs (`email_verification_feature` attr) moved from auth recipes into the `EmailVerification` config object root.
+-   ThirdParty recipe no longer takes `email_delivery` config. use `emailverification` recipe's `email_delivery` instead.
+-   Moved email verification related configs from the `email_delivery` config of auth recipes into a separate `EmailVerification` email delivery config.
+-   Updated return type of `get_email_for_user_id` in the `EmailVerification` recipe config. It should now return an object with status.
+-   Removed `get_reset_password_url`, `get_email_verification_url`, `get_link_domain_and_path`. Changing these urls can be done in the email delivery configs instead.
+-   Removed `unverify_email`, `revoke_email_verification_tokens`, `is_email_verified`, `verify_email_using_token` and `create_email_verification_token` from auth recipes. These should be called on the `EmailVerification` recipe instead.
+-   Changed function signature for email verification APIs to accept a session as an input.
+-   Changed Session API interface functions:
+    - `refresh_post` now returns a Session container object.
+    - `sign_out_post` now takes in an optional session object as a parameter.
+
+### Migration
+Before:
+```python
+from supertokens_python import init, SupertokensConfig, InputAppInfo
+from supertokens_python.recipe import emailpassword
+from supertokens_python.recipe.emailverification.utils import OverrideConfig
+
+init(
+    supertokens_config=SupertokensConfig("..."),
+    app_info=InputAppInfo("..."),
+    framework="...",
+    recipe_list=[
+        emailpassword.init(
+            # these options should be moved into the EmailVerification config:
+            email_verification_feature=emailpassword.InputEmailVerificationConfig("..."),
+            override=emailpassword.InputOverrideConfig(
+                email_verification_feature=OverrideConfig(
+                    # these overrides should be moved into the EmailVerification overrides
+                    "..."
+                )
+            ),
+        ),
+    ],
+)
+```
+
+After the update:
+
+```python
+from supertokens_python import init, SupertokensConfig, InputAppInfo
+from supertokens_python.recipe import emailpassword, emailverification
+
+init(
+    supertokens_config=SupertokensConfig("..."),
+    app_info=InputAppInfo("..."),
+    framework="...",
+    recipe_list=[
+        emailverification.init(
+            "...", # EmailVerification config
+            override=emailverification.OverrideConfig(
+                # overrides
+                "..."
+            ),
+        ),
+        emailpassword.init(),
+    ],
+)
+```
+
+#### Passwordless users and email verification
+
+If you turn on email verification your email-based passwordless users may be redirected to an email verification screen in their existing session.
+Logging out and logging in again will solve this problem or they could click the link in the email to verify themselves.
+
+You can avoid this by running a script that will:
+
+1. list all users of passwordless
+2. create an emailverification token for each of them if they have email addresses
+3. user the token to verify their address
+
+Something similar to this script:
+
+```python
+from supertokens_python import init, SupertokensConfig, InputAppInfo
+from supertokens_python.recipe import passwordless, emailverification, session
+from supertokens_python.recipe.passwordless import ContactEmailOrPhoneConfig
+
+
+from supertokens_python.syncio import get_users_newest_first
+from supertokens_python.recipe.emailverification.syncio import create_email_verification_token, verify_email_using_token
+from supertokens_python.recipe.emailverification.interfaces import CreateEmailVerificationTokenOkResult
+
+init(
+    supertokens_config=SupertokensConfig("http://localhost:3567"),
+    app_info=InputAppInfo(
+        app_name="SuperTokens Demo",
+        api_domain="https://api.supertokens.io",
+        website_domain="supertokens.io",
+    ),
+    framework="fastapi",
+    recipe_list=[
+        emailverification.init("REQUIRED"),
+        passwordless.init(
+            contact_config=ContactEmailOrPhoneConfig(),
+            flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
+        ),
+        session.init(),
+    ],
+)
+
+def verify_email_for_passwordless_users():
+    pagination_token = None
+    done = False
+    
+    while not done:
+        res = get_users_newest_first(
+            limit=100,
+            pagination_token=pagination_token,
+            include_recipe_ids=["passwordless"]
+        )
+
+        for user in res.users:
+            if user.email is not None:
+                token_res = create_email_verification_token(user.user_id, user.email)
+                if isinstance(token_res, CreateEmailVerificationTokenOkResult):
+                    verify_email_using_token(token_res.token)
+        
+        done = res.next_pagination_token is None
+        if not done:
+            pagination_token = res.next_pagination_token
+
+verify_email_for_passwordless_users()
+```
+
+#### User roles
+
+The `UserRoles` recipe now adds role and permission information into the access token payload by default. If you are already doing this manually, this will result in duplicate data in the access token.
+
+-   You can disable this behaviour by setting `skip_adding_roles_to_access_token` and `skip_adding_permissions_to_access_token` to true in the recipe init.
+-   Check how to use the new claims in the updated guide: https://supertokens.com/docs/userroles/protecting-routes
+
+
 ## [0.10.4] - 2022-08-30
 ## Features:
 - Add support for User ID Mapping using `create_user_id_mapping`, `get_user_id_mapping`, `delete_user_id_mapping`, `update_or_delete_user_id_mapping` functions

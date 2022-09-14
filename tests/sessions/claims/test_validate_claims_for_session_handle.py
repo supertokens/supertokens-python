@@ -17,9 +17,8 @@ from tests.sessions.claims.utils import (
     get_st_init_args,
     NoneClaim,
     TrueClaim,
-    st_init_common_args,
 )
-from tests.utils import setup_function, teardown_function, start_st
+from tests.utils import setup_function, teardown_function, start_st, st_init_common_args
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore
@@ -43,7 +42,7 @@ async def test_should_return_the_right_validation_errors():
     assert isinstance(res, ClaimsValidationResult) and len(res.invalid_claims) == 1
     assert res.invalid_claims[0].id == failing_validator.id
     assert res.invalid_claims[0].reason == {
-        "message": "wrong value",
+        "message": "value does not exist",
         "actualValue": None,
         "expectedValue": True,
     }

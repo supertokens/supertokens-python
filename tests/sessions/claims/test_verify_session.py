@@ -21,10 +21,17 @@ from supertokens_python.recipe.session.interfaces import (
     JSONObject,
     ClaimValidationResult,
     SessionContainer,
+    ClaimsValidationResult,
 )
 from supertokens_python.recipe.session.session_class import Session
-from tests.sessions.claims.utils import st_init_common_args, TrueClaim, NoneClaim
-from tests.utils import setup_function, teardown_function, start_st, AsyncMock
+from tests.sessions.claims.utils import TrueClaim, NoneClaim
+from tests.utils import (
+    setup_function,
+    teardown_function,
+    start_st,
+    AsyncMock,
+    st_init_common_args,
+)
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore
@@ -270,9 +277,9 @@ async def test_should_reject_with_claim_required_but_not_added(
             {
                 "id": "st-none",
                 "reason": {
-                    "message": "wrong value",
+                    "message": "value does not exist",
                     "expectedValue": True,
-                    "actualValue": None,  # TODO: Do we want to return actualValue or not?
+                    "actualValue": None,
                 },
             }
         ],
@@ -370,15 +377,21 @@ async def test_should_reject_if_assert_claims_returns_an_error(
         }
 
 
-async def test_should_allow_if_assert_claims_returns_none(fastapi_client: TestClient):
+async def test_should_allow_if_assert_claims_returns_no_error(
+    fastapi_client: TestClient,
+):
     validator = AlwaysValidValidator()
     st_init_args = st_init_generator_with_overriden_global_validators([validator])
     init(**st_init_args)  # type: ignore
     start_st()
 
-    recipe_implementation_mock = AsyncMock()
+    recipe_impl_mock = AsyncMock()
+    recipe_impl_mock.validate_claims.return_value = ClaimsValidationResult(  # type: ignore
+        invalid_claims=[]
+    )
+
     s = Session(
-        recipe_implementation_mock,
+        recipe_impl_mock,
         "test_access_token",
         "test_session_handle",
         "test_user_id",
@@ -386,11 +399,14 @@ async def test_should_allow_if_assert_claims_returns_none(fastapi_client: TestCl
     )
 
     with patch.object(Session, "assert_claims", wraps=s.assert_claims) as mock:
-        mock.return_value = None
         create_session(fastapi_client)
         response = fastapi_client.get("/default-claims")
         assert response.status_code == 200
         assert "-" in response.json()["handle"]
+        mock.assert_called_once_with([validator], {})
+        recipe_impl_mock.validate_claims.assert_called_once_with(  # type: ignore
+            "test_user_id", {}, [validator], {}
+        )
 
 
 # With override_global_claim_validators:

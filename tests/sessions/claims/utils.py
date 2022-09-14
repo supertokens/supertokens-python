@@ -1,6 +1,5 @@
 from typing import Dict, Any, Union, Optional
 
-from supertokens_python import InputAppInfo, SupertokensConfig
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session import JWTConfig
@@ -9,6 +8,7 @@ from supertokens_python.recipe.session.claims import (
     SessionClaim,
 )
 from supertokens_python.recipe.session.interfaces import RecipeInterface
+from tests.utils import st_init_common_args
 
 TrueClaim = BooleanClaim("st-true", fetch_value=lambda _, __: True)  # type: ignore
 NoneClaim = BooleanClaim("st-none", fetch_value=lambda _, __: None)  # type: ignore
@@ -47,19 +47,6 @@ def session_functions_override_with_claim(
         return oi
 
     return session_function_override
-
-
-st_init_common_args = {
-    "supertokens_config": SupertokensConfig("http://localhost:3567"),
-    "app_info": InputAppInfo(
-        app_name="ST",
-        api_domain="http://api.supertokens.io",
-        website_domain="http://supertokens.io",
-        api_base_path="/auth",
-    ),
-    "framework": "fastapi",
-    "mode": "asgi",
-}
 
 
 def get_st_init_args(

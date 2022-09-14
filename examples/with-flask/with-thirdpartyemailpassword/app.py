@@ -10,7 +10,11 @@ from supertokens_python import (
     init,
 )
 from supertokens_python.framework.flask import Middleware
-from supertokens_python.recipe import session, thirdpartyemailpassword
+from supertokens_python.recipe import (
+    session,
+    thirdpartyemailpassword,
+    emailverification,
+)
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.thirdpartyemailpassword import (
     Apple,
@@ -45,6 +49,7 @@ init(
     framework="flask",
     recipe_list=[
         session.init(),
+        emailverification.init("REQUIRED"),
         thirdpartyemailpassword.init(
             providers=[
                 Google(

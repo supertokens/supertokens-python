@@ -14,8 +14,8 @@ from supertokens_python.recipe.session.interfaces import (
     GetClaimValueOkResult,
     SessionDoesNotExistError,
 )
-from tests.utils import setup_function, teardown_function, start_st
-from .utils import TrueClaim, get_st_init_args, st_init_common_args
+from tests.utils import setup_function, teardown_function, start_st, st_init_common_args
+from .utils import TrueClaim, get_st_init_args
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore

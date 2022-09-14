@@ -4,9 +4,14 @@ from supertokens_python import init
 from supertokens_python.framework import BaseRequest
 from supertokens_python.recipe import session
 from supertokens_python.recipe.session.asyncio import create_new_session
-from tests.utils import setup_function, teardown_function, start_st, min_api_version
-from .utils import (
+from tests.utils import (
+    setup_function,
+    teardown_function,
+    start_st,
+    min_api_version,
     st_init_common_args,
+)
+from .utils import (
     NoneClaim,
     get_st_init_args,
     session_functions_override_with_claim,
