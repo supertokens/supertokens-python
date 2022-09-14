@@ -123,11 +123,10 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
-        email_verified: bool,
         user_context: Dict[str, Any],
     ) -&gt; SignInUpOkResult:
         return await self.recipe_implementation.thirdparty_sign_in_up(
-            third_party_id, third_party_user_id, email, email_verified, user_context
+            third_party_id, third_party_user_id, email, user_context
         )</code></pre>
 </details>
 </section>
@@ -222,11 +221,10 @@ inheritance.</p></div>
         third_party_id: str,
         third_party_user_id: str,
         email: str,
-        email_verified: bool,
         user_context: Dict[str, Any],
     ) -&gt; SignInUpOkResult:
         return await self.recipe_implementation.thirdparty_sign_in_up(
-            third_party_id, third_party_user_id, email, email_verified, user_context
+            third_party_id, third_party_user_id, email, user_context
         )</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -328,7 +326,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.recipeimplementation.third_party_recipe_implementation.RecipeImplementation.sign_in_up"><code class="name flex">
-<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a></span>
+<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="../../thirdparty/interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -341,11 +339,10 @@ inheritance.</p></div>
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    email_verified: bool,
     user_context: Dict[str, Any],
 ) -&gt; SignInUpOkResult:
     return await self.recipe_implementation.thirdparty_sign_in_up(
-        third_party_id, third_party_user_id, email, email_verified, user_context
+        third_party_id, third_party_user_id, email, user_context
     )</code></pre>
 </details>
 </dd>

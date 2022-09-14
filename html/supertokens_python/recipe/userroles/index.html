@@ -41,10 +41,14 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Callable, Union, Optional
 
 from . import utils
 from .recipe import UserRolesRecipe
+from . import recipe
+
+PermissionClaim = recipe.PermissionClaim
+UserRoleClaim = recipe.UserRoleClaim
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
@@ -53,9 +57,15 @@ if TYPE_CHECKING:
 
 
 def init(
-    override: Union[utils.InputOverrideConfig, None] = None
+    skip_adding_roles_to_access_token: Optional[bool] = None,
+    skip_adding_permissions_to_access_token: Optional[bool] = None,
+    override: Union[utils.InputOverrideConfig, None] = None,
 ) -&gt; Callable[[AppInfo], RecipeModule]:
-    return UserRolesRecipe.init(override)</code></pre>
+    return UserRolesRecipe.init(
+        skip_adding_roles_to_access_token,
+        skip_adding_permissions_to_access_token,
+        override,
+    )</code></pre>
 </details>
 </section>
 <section>
@@ -97,7 +107,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.userroles.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>override: Union[<a title="supertokens_python.recipe.userroles.utils.InputOverrideConfig" href="utils.html#supertokens_python.recipe.userroles.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
+<span>def <span class="ident">init</span></span>(<span>skip_adding_roles_to_access_token: Optional[bool] = None, skip_adding_permissions_to_access_token: Optional[bool] = None, override: Union[<a title="supertokens_python.recipe.userroles.utils.InputOverrideConfig" href="utils.html#supertokens_python.recipe.userroles.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -106,9 +116,15 @@ def init(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def init(
-    override: Union[utils.InputOverrideConfig, None] = None
+    skip_adding_roles_to_access_token: Optional[bool] = None,
+    skip_adding_permissions_to_access_token: Optional[bool] = None,
+    override: Union[utils.InputOverrideConfig, None] = None,
 ) -&gt; Callable[[AppInfo], RecipeModule]:
-    return UserRolesRecipe.init(override)</code></pre>
+    return UserRolesRecipe.init(
+        skip_adding_roles_to_access_token,
+        skip_adding_permissions_to_access_token,
+        override,
+    )</code></pre>
 </details>
 </dd>
 </dl>

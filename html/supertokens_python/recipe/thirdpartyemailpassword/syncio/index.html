@@ -51,40 +51,6 @@ from ..interfaces import (
 from ..types import EmailTemplateVars, User
 
 
-def create_email_verification_token(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-        create_email_verification_token,
-    )
-
-    return sync(create_email_verification_token(user_id, user_context))
-
-
-def verify_email_using_token(
-    token: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-        verify_email_using_token,
-    )
-
-    return sync(verify_email_using_token(token, user_context))
-
-
-def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-        is_email_verified,
-    )
-
-    return sync(is_email_verified(user_id, user_context))
-
-
-def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import unverify_email
-
-    return sync(unverify_email(user_id, user_context))
-
-
 def get_user_by_id(
     user_id: str, user_context: Union[None, Dict[str, Any]] = None
 ) -&gt; Union[None, User]:
@@ -111,7 +77,6 @@ def thirdparty_sign_in_up(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    email_verified: bool,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -119,9 +84,7 @@ def thirdparty_sign_in_up(
     )
 
     return sync(
-        thirdparty_sign_in_up(
-            third_party_id, third_party_user_id, email, email_verified, user_context
-        )
+        thirdparty_sign_in_up(third_party_id, third_party_user_id, email, user_context)
     )
 
 
@@ -188,16 +151,6 @@ def get_users_by_email(
     return sync(get_users_by_email(email, user_context))
 
 
-def revoke_email_verification_tokens(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-        revoke_email_verification_tokens,
-    )
-
-    return sync(revoke_email_verification_tokens(user_id, user_context))
-
-
 def send_email(
     input_: EmailTemplateVars, user_context: Union[None, Dict[str, Any]] = None
 ):
@@ -213,25 +166,6 @@ def send_email(
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.syncio.create_email_verification_token"><code class="name flex">
-<span>def <span class="ident">create_email_verification_token</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def create_email_verification_token(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-        create_email_verification_token,
-    )
-
-    return sync(create_email_verification_token(user_id, user_context))</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.syncio.create_reset_password_token"><code class="name flex">
 <span>def <span class="ident">create_reset_password_token</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
@@ -348,23 +282,6 @@ def send_email(
     return sync(get_users_by_email(email, user_context))</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.syncio.is_email_verified"><code class="name flex">
-<span>def <span class="ident">is_email_verified</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-        is_email_verified,
-    )
-
-    return sync(is_email_verified(user_id, user_context))</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.syncio.reset_password_using_token"><code class="name flex">
 <span>def <span class="ident">reset_password_using_token</span></span>(<span>token: str, new_password: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
@@ -384,27 +301,8 @@ def send_email(
     return sync(reset_password_using_token(token, new_password, user_context))</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.syncio.revoke_email_verification_tokens"><code class="name flex">
-<span>def <span class="ident">revoke_email_verification_tokens</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def revoke_email_verification_tokens(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-        revoke_email_verification_tokens,
-    )
-
-    return sync(revoke_email_verification_tokens(user_id, user_context))</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.syncio.send_email"><code class="name flex">
-<span>def <span class="ident">send_email</span></span>(<span>input_: Union[<a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="../../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a>, <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>], user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">send_email</span></span>(<span>input_: <a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="../../emailpassword/types.html#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a>, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -421,7 +319,7 @@ def send_email(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.syncio.thirdparty_sign_in_up"><code class="name flex">
-<span>def <span class="ident">thirdparty_sign_in_up</span></span>(<span>third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">thirdparty_sign_in_up</span></span>(<span>third_party_id: str, third_party_user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -433,7 +331,6 @@ def send_email(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    email_verified: bool,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -441,25 +338,8 @@ def send_email(
     )
 
     return sync(
-        thirdparty_sign_in_up(
-            third_party_id, third_party_user_id, email, email_verified, user_context
-        )
+        thirdparty_sign_in_up(third_party_id, third_party_user_id, email, user_context)
     )</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.syncio.unverify_email"><code class="name flex">
-<span>def <span class="ident">unverify_email</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import unverify_email
-
-    return sync(unverify_email(user_id, user_context))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.syncio.update_email_or_password"><code class="name flex">
@@ -484,25 +364,6 @@ def send_email(
     return sync(update_email_or_password(user_id, email, password, user_context))</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartyemailpassword.syncio.verify_email_using_token"><code class="name flex">
-<span>def <span class="ident">verify_email_using_token</span></span>(<span>token: str, user_context: Optional[Dict[str, Any]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def verify_email_using_token(
-    token: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-        verify_email_using_token,
-    )
-
-    return sync(verify_email_using_token(token, user_context))</code></pre>
-</details>
-</dd>
 </dl>
 </section>
 <section>
@@ -521,21 +382,16 @@ def send_email(
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.create_email_verification_token" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.create_email_verification_token">create_email_verification_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.create_reset_password_token" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.create_reset_password_token">create_reset_password_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.emailpassword_sign_in" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.emailpassword_sign_in">emailpassword_sign_in</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.emailpassword_sign_up" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.emailpassword_sign_up">emailpassword_sign_up</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.get_user_by_id" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.get_user_by_id">get_user_by_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.get_user_by_third_party_info" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.get_user_by_third_party_info">get_user_by_third_party_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.get_users_by_email" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.get_users_by_email">get_users_by_email</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.is_email_verified" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.is_email_verified">is_email_verified</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.reset_password_using_token" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.reset_password_using_token">reset_password_using_token</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.revoke_email_verification_tokens" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.revoke_email_verification_tokens">revoke_email_verification_tokens</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.send_email" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.send_email">send_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.thirdparty_sign_in_up" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.thirdparty_sign_in_up">thirdparty_sign_in_up</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.unverify_email" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.unverify_email">unverify_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.update_email_or_password" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.update_email_or_password">update_email_or_password</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartyemailpassword.syncio.verify_email_using_token" href="#supertokens_python.recipe.thirdpartyemailpassword.syncio.verify_email_using_token">verify_email_using_token</a></code></li>
 </ul>
 </li>
 </ul>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>supertokens_python.recipe.thirdparty.emaildelivery API documentation</title>
+<title>supertokens_python.recipe.session.claims API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>supertokens_python.recipe.thirdparty.emaildelivery</code></h1>
+<h1 class="title">Module <code>supertokens_python.recipe.session.claims</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -38,17 +38,18 @@
 # distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
-# under the License.</code></pre>
+# under the License.
+
+from . import interfaces
+from .claim_base_classes import boolean_claim, primitive_claim, primitive_array_claim
+
+SessionClaim = interfaces.SessionClaim
+BooleanClaim = boolean_claim.BooleanClaim
+PrimitiveClaim = primitive_claim.PrimitiveClaim
+PrimitiveArrayClaim = primitive_array_claim.PrimitiveArrayClaim</code></pre>
 </details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
-<dl>
-<dt><code class="name"><a title="supertokens_python.recipe.thirdparty.emaildelivery.services" href="services/index.html">supertokens_python.recipe.thirdparty.emaildelivery.services</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 </section>
 <section>
 </section>
@@ -65,12 +66,7 @@
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="supertokens_python.recipe.thirdparty" href="../index.html">supertokens_python.recipe.thirdparty</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
-<ul>
-<li><code><a title="supertokens_python.recipe.thirdparty.emaildelivery.services" href="services/index.html">supertokens_python.recipe.thirdparty.emaildelivery.services</a></code></li>
+<li><code><a title="supertokens_python.recipe.session" href="index.html">supertokens_python.recipe.session</a></code></li>
 </ul>
 </li>
 </ul>

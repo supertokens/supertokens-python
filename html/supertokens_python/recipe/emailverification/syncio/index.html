@@ -40,14 +40,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 
 
 def create_email_verification_token(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    email: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import (
         create_email_verification_token,
@@ -67,15 +69,9 @@ def verify_email_using_token(
 
 
 def is_email_verified(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from supertokens_python.recipe.emailverification.asyncio import is_email_verified
-
-    return sync(is_email_verified(user_id, email, user_context))
-
-
-def unverify_email(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    email: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import is_email_verified
 
@@ -83,13 +79,25 @@ def unverify_email(
 
 
 def revoke_email_verification_tokens(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    email: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import (
         revoke_email_verification_tokens,
     )
 
     return sync(revoke_email_verification_tokens(user_id, email, user_context))
+
+
+def unverify_email(
+    user_id: str,
+    email: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+):
+    from supertokens_python.recipe.emailverification.asyncio import is_email_verified
+
+    return sync(is_email_verified(user_id, email, user_context))
 
 
 def send_email(
@@ -108,7 +116,7 @@ def send_email(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.syncio.create_email_verification_token"><code class="name flex">
-<span>def <span class="ident">create_email_verification_token</span></span>(<span>user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">create_email_verification_token</span></span>(<span>user_id: str, email: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -117,7 +125,9 @@ def send_email(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def create_email_verification_token(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    email: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import (
         create_email_verification_token,
@@ -127,7 +137,7 @@ def send_email(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.syncio.is_email_verified"><code class="name flex">
-<span>def <span class="ident">is_email_verified</span></span>(<span>user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">is_email_verified</span></span>(<span>user_id: str, email: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -136,7 +146,9 @@ def send_email(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def is_email_verified(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    email: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import is_email_verified
 
@@ -144,7 +156,7 @@ def send_email(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.syncio.revoke_email_verification_tokens"><code class="name flex">
-<span>def <span class="ident">revoke_email_verification_tokens</span></span>(<span>user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">revoke_email_verification_tokens</span></span>(<span>user_id: str, email: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -153,7 +165,9 @@ def send_email(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def revoke_email_verification_tokens(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    email: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import (
         revoke_email_verification_tokens,
@@ -180,7 +194,7 @@ def send_email(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.syncio.unverify_email"><code class="name flex">
-<span>def <span class="ident">unverify_email</span></span>(<span>user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">unverify_email</span></span>(<span>user_id: str, email: Optional[str] = None, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -189,7 +203,9 @@ def send_email(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def unverify_email(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    email: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import is_email_verified
 

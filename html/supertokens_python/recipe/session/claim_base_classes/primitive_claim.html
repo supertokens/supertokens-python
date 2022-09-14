@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>supertokens_python.recipe.session.claim_base_classes.primitive_claim API documentation</title>
+<meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>supertokens_python.recipe.session.claim_base_classes.primitive_claim</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# &#34;License&#34;) as published by the Apache Software Foundation.
+#
+# You may not use this file except in compliance with the License. You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+from typing import Any, Callable, Dict, Optional, TypeVar, Union, Generic
+
+from supertokens_python.types import MaybeAwaitable
+from supertokens_python.utils import get_timestamp_ms
+
+from ..interfaces import (
+    JSONObject,
+    JSONPrimitive,
+    SessionClaim,
+    SessionClaimValidator,
+    ClaimValidationResult,
+)
+
+Primitive = TypeVar(&#34;Primitive&#34;, bound=JSONPrimitive)
+
+
+class HasValueSCV(SessionClaimValidator):
+    def __init__(
+        self,
+        id_: str,
+        claim: SessionClaim[Primitive],
+        val: Primitive,
+        max_age_in_sec: int,
+    ):
+        super().__init__(id_)
+        self.claim: SessionClaim[Primitive] = claim  # to fix the type for pyright
+        self.val = val
+        self.max_age_in_sec = max_age_in_sec
+
+    def should_refetch(
+        self,
+        payload: JSONObject,
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        max_age_in_sec = self.max_age_in_sec
+
+        # (claim value is None) OR (value has expired)
+        return (self.claim.get_value_from_payload(payload, user_context) is None) or (
+            payload[self.claim.key][&#34;t&#34;] &lt; (get_timestamp_ms() - max_age_in_sec * 1000)
+        )
+
+    async def validate(
+        self,
+        payload: JSONObject,
+        user_context: Dict[str, Any],
+    ):
+        val = self.val
+        max_age_in_sec = self.max_age_in_sec
+
+        claim_val: JSONPrimitive = self.claim.get_value_from_payload(
+            payload, user_context
+        )
+        if claim_val is None:
+            return ClaimValidationResult(
+                is_valid=False,
+                reason={
+                    &#34;message&#34;: &#34;value does not exist&#34;,
+                    &#34;expectedValue&#34;: val,
+                    &#34;actualValue&#34;: claim_val,
+                },
+            )
+
+        if max_age_in_sec is not None:
+            assert isinstance(self.claim, PrimitiveClaim)
+            last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
+            assert last_refetch_time is not None
+            age_in_sec = (get_timestamp_ms() - last_refetch_time) / 1000
+            if age_in_sec &gt; max_age_in_sec:
+                return ClaimValidationResult(
+                    is_valid=False,
+                    reason={
+                        &#34;message&#34;: &#34;expired&#34;,
+                        &#34;ageInSeconds&#34;: age_in_sec,
+                        &#34;maxAgeInSeconds&#34;: max_age_in_sec,
+                    },
+                )
+
+        if claim_val != val:
+            return ClaimValidationResult(
+                is_valid=False,
+                reason={
+                    &#34;message&#34;: &#34;wrong value&#34;,
+                    &#34;expectedValue&#34;: val,
+                    &#34;actualValue&#34;: claim_val,
+                },
+            )
+
+        return ClaimValidationResult(is_valid=True)
+
+
+class PrimitiveClaimValidators(Generic[Primitive]):
+    def __init__(
+        self,
+        claim: SessionClaim[Primitive],
+        default_max_age_in_sec: int,
+    ) -&gt; None:
+        self.claim = claim
+        self.default_max_age_in_sec = default_max_age_in_sec
+
+    def has_value(
+        self,
+        val: Primitive,
+        max_age_in_sec: Optional[int] = None,
+        id_: Optional[str] = None,
+    ) -&gt; SessionClaimValidator:
+        max_age_in_sec = max_age_in_sec or self.default_max_age_in_sec
+        return HasValueSCV(
+            (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
+        )
+
+
+class PrimitiveClaim(SessionClaim[Primitive]):
+    def __init__(
+        self,
+        key: str,
+        fetch_value: Callable[
+            [str, Dict[str, Any]],
+            MaybeAwaitable[Optional[Primitive]],
+        ],
+        default_max_age_in_sec: Optional[int] = None,
+    ) -&gt; None:
+        super().__init__(key, fetch_value)
+
+        claim = self
+        self.validators = PrimitiveClaimValidators(claim, default_max_age_in_sec or 300)
+
+    def add_to_payload_(
+        self,
+        payload: Dict[str, Any],
+        value: Primitive,
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; JSONObject:
+        payload[self.key] = {&#34;v&#34;: value, &#34;t&#34;: get_timestamp_ms()}
+        _ = user_context
+
+        return payload
+
+    def remove_from_payload_by_merge_(
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; JSONObject:
+        payload[self.key] = None
+        return payload
+
+    def remove_from_payload(
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; JSONObject:
+        del payload[self.key]
+        return payload
+
+    def get_value_from_payload(
+        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Union[Primitive, None]:
+        _ = user_context
+
+        return payload.get(self.key, {}).get(&#34;v&#34;)
+
+    def get_last_refetch_time(
+        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Union[int, None]:
+        _ = user_context
+
+        return payload.get(self.key, {}).get(&#34;t&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV"><code class="flex name class">
+<span>class <span class="ident">HasValueSCV</span></span>
+<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], val: ~Primitive, max_age_in_sec: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HasValueSCV(SessionClaimValidator):
+    def __init__(
+        self,
+        id_: str,
+        claim: SessionClaim[Primitive],
+        val: Primitive,
+        max_age_in_sec: int,
+    ):
+        super().__init__(id_)
+        self.claim: SessionClaim[Primitive] = claim  # to fix the type for pyright
+        self.val = val
+        self.max_age_in_sec = max_age_in_sec
+
+    def should_refetch(
+        self,
+        payload: JSONObject,
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        max_age_in_sec = self.max_age_in_sec
+
+        # (claim value is None) OR (value has expired)
+        return (self.claim.get_value_from_payload(payload, user_context) is None) or (
+            payload[self.claim.key][&#34;t&#34;] &lt; (get_timestamp_ms() - max_age_in_sec * 1000)
+        )
+
+    async def validate(
+        self,
+        payload: JSONObject,
+        user_context: Dict[str, Any],
+    ):
+        val = self.val
+        max_age_in_sec = self.max_age_in_sec
+
+        claim_val: JSONPrimitive = self.claim.get_value_from_payload(
+            payload, user_context
+        )
+        if claim_val is None:
+            return ClaimValidationResult(
+                is_valid=False,
+                reason={
+                    &#34;message&#34;: &#34;value does not exist&#34;,
+                    &#34;expectedValue&#34;: val,
+                    &#34;actualValue&#34;: claim_val,
+                },
+            )
+
+        if max_age_in_sec is not None:
+            assert isinstance(self.claim, PrimitiveClaim)
+            last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
+            assert last_refetch_time is not None
+            age_in_sec = (get_timestamp_ms() - last_refetch_time) / 1000
+            if age_in_sec &gt; max_age_in_sec:
+                return ClaimValidationResult(
+                    is_valid=False,
+                    reason={
+                        &#34;message&#34;: &#34;expired&#34;,
+                        &#34;ageInSeconds&#34;: age_in_sec,
+                        &#34;maxAgeInSeconds&#34;: max_age_in_sec,
+                    },
+                )
+
+        if claim_val != val:
+            return ClaimValidationResult(
+                is_valid=False,
+                reason={
+                    &#34;message&#34;: &#34;wrong value&#34;,
+                    &#34;expectedValue&#34;: val,
+                    &#34;actualValue&#34;: claim_val,
+                },
+            )
+
+        return ClaimValidationResult(is_valid=True)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV.should_refetch"><code class="name flex">
+<span>def <span class="ident">should_refetch</span></span>(<span>self, payload: Dict[str, Any], user_context: Dict[str, Any]) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def should_refetch(
+    self,
+    payload: JSONObject,
+    user_context: Dict[str, Any],
+) -&gt; bool:
+    max_age_in_sec = self.max_age_in_sec
+
+    # (claim value is None) OR (value has expired)
+    return (self.claim.get_value_from_payload(payload, user_context) is None) or (
+        payload[self.claim.key][&#34;t&#34;] &lt; (get_timestamp_ms() - max_age_in_sec * 1000)
+    )</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV.validate"><code class="name flex">
+<span>async def <span class="ident">validate</span></span>(<span>self, payload: Dict[str, Any], user_context: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def validate(
+    self,
+    payload: JSONObject,
+    user_context: Dict[str, Any],
+):
+    val = self.val
+    max_age_in_sec = self.max_age_in_sec
+
+    claim_val: JSONPrimitive = self.claim.get_value_from_payload(
+        payload, user_context
+    )
+    if claim_val is None:
+        return ClaimValidationResult(
+            is_valid=False,
+            reason={
+                &#34;message&#34;: &#34;value does not exist&#34;,
+                &#34;expectedValue&#34;: val,
+                &#34;actualValue&#34;: claim_val,
+            },
+        )
+
+    if max_age_in_sec is not None:
+        assert isinstance(self.claim, PrimitiveClaim)
+        last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
+        assert last_refetch_time is not None
+        age_in_sec = (get_timestamp_ms() - last_refetch_time) / 1000
+        if age_in_sec &gt; max_age_in_sec:
+            return ClaimValidationResult(
+                is_valid=False,
+                reason={
+                    &#34;message&#34;: &#34;expired&#34;,
+                    &#34;ageInSeconds&#34;: age_in_sec,
+                    &#34;maxAgeInSeconds&#34;: max_age_in_sec,
+                },
+            )
+
+    if claim_val != val:
+        return ClaimValidationResult(
+            is_valid=False,
+            reason={
+                &#34;message&#34;: &#34;wrong value&#34;,
+                &#34;expectedValue&#34;: val,
+                &#34;actualValue&#34;: claim_val,
+            },
+        )
+
+    return ClaimValidationResult(is_valid=True)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaim"><code class="flex name class">
+<span>class <span class="ident">PrimitiveClaim</span></span>
+<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], Union[Awaitable[Optional[~Primitive]], ~Primitive, ForwardRef(None)]], default_max_age_in_sec: Optional[None] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>key</code></strong></dt>
+<dd>The key to use when storing the claim in the payload.</dd>
+<dt><strong><code>fetch_value</code></strong></dt>
+<dd>a method that fetches the current value of this claim for the user.
+A None return value signifies that we don't want to update the claim payload and or the claim value is
+not present in the database. For example, this can happen with a second factor auth claim, where we
+don't want to add the claim to the session automatically</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PrimitiveClaim(SessionClaim[Primitive]):
+    def __init__(
+        self,
+        key: str,
+        fetch_value: Callable[
+            [str, Dict[str, Any]],
+            MaybeAwaitable[Optional[Primitive]],
+        ],
+        default_max_age_in_sec: Optional[int] = None,
+    ) -&gt; None:
+        super().__init__(key, fetch_value)
+
+        claim = self
+        self.validators = PrimitiveClaimValidators(claim, default_max_age_in_sec or 300)
+
+    def add_to_payload_(
+        self,
+        payload: Dict[str, Any],
+        value: Primitive,
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; JSONObject:
+        payload[self.key] = {&#34;v&#34;: value, &#34;t&#34;: get_timestamp_ms()}
+        _ = user_context
+
+        return payload
+
+    def remove_from_payload_by_merge_(
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; JSONObject:
+        payload[self.key] = None
+        return payload
+
+    def remove_from_payload(
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; JSONObject:
+        del payload[self.key]
+        return payload
+
+    def get_value_from_payload(
+        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Union[Primitive, None]:
+        _ = user_context
+
+        return payload.get(self.key, {}).get(&#34;v&#34;)
+
+    def get_last_refetch_time(
+        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Union[int, None]:
+        _ = user_context
+
+        return payload.get(self.key, {}).get(&#34;t&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a></li>
+<li>abc.ABC</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.session.claim_base_classes.boolean_claim.BooleanClaim" href="boolean_claim.html#supertokens_python.recipe.session.claim_base_classes.boolean_claim.BooleanClaim">BooleanClaim</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaim.get_last_refetch_time"><code class="name flex">
+<span>def <span class="ident">get_last_refetch_time</span></span>(<span>self, payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> Optional[None]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_last_refetch_time(
+    self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Union[int, None]:
+    _ = user_context
+
+    return payload.get(self.key, {}).get(&#34;t&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionClaim.add_to_payload_" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim.add_to_payload_">add_to_payload_</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionClaim.get_value_from_payload" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim.get_value_from_payload">get_value_from_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload">remove_from_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload_by_merge_" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload_by_merge_">remove_from_payload_by_merge_</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaimValidators"><code class="flex name class">
+<span>class <span class="ident">PrimitiveClaimValidators</span></span>
+<span>(</span><span>claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], default_max_age_in_sec: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Abstract base class for generic types.</p>
+<p>A generic type is typically declared by inheriting from
+this class parameterized with one or more type variables.
+For example, a generic mapping type might be defined as::</p>
+<p>class Mapping(Generic[KT, VT]):
+def <strong>getitem</strong>(self, key: KT) -&gt; VT:
+&hellip;
+# Etc.</p>
+<p>This class can then be used as follows::</p>
+<p>def lookup_name(mapping: Mapping[KT, VT], key: KT, default: VT) -&gt; VT:
+try:
+return mapping[key]
+except KeyError:
+return default</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PrimitiveClaimValidators(Generic[Primitive]):
+    def __init__(
+        self,
+        claim: SessionClaim[Primitive],
+        default_max_age_in_sec: int,
+    ) -&gt; None:
+        self.claim = claim
+        self.default_max_age_in_sec = default_max_age_in_sec
+
+    def has_value(
+        self,
+        val: Primitive,
+        max_age_in_sec: Optional[int] = None,
+        id_: Optional[str] = None,
+    ) -&gt; SessionClaimValidator:
+        max_age_in_sec = max_age_in_sec or self.default_max_age_in_sec
+        return HasValueSCV(
+            (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.session.claim_base_classes.boolean_claim.BooleanClaimValidators" href="boolean_claim.html#supertokens_python.recipe.session.claim_base_classes.boolean_claim.BooleanClaimValidators">BooleanClaimValidators</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaimValidators.has_value"><code class="name flex">
+<span>def <span class="ident">has_value</span></span>(<span>self, val: ~Primitive, max_age_in_sec: Optional[None] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def has_value(
+    self,
+    val: Primitive,
+    max_age_in_sec: Optional[int] = None,
+    id_: Optional[str] = None,
+) -&gt; SessionClaimValidator:
+    max_age_in_sec = max_age_in_sec or self.default_max_age_in_sec
+    return HasValueSCV(
+        (id_ or self.claim.key), self.claim, val=val, max_age_in_sec=max_age_in_sec
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h2>Index</h2>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes" href="index.html">supertokens_python.recipe.session.claim_base_classes</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV" href="#supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV">HasValueSCV</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV.should_refetch" href="#supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV.should_refetch">should_refetch</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV.validate" href="#supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV.validate">validate</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaim" href="#supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaim">PrimitiveClaim</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaim.get_last_refetch_time" href="#supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaim.get_last_refetch_time">get_last_refetch_time</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaimValidators" href="#supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaimValidators">PrimitiveClaimValidators</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaimValidators.has_value" href="#supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaimValidators.has_value">has_value</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

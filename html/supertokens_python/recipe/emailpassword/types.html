@@ -46,7 +46,6 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryInterface,
     SMTPServiceInterface,
 )
-from supertokens_python.recipe.emailverification import types as ev_types
 
 
 class User:
@@ -121,11 +120,9 @@ class PasswordResetEmailTemplateVars:
 
 
 # Export:
-EmailTemplateVars = Union[
-    PasswordResetEmailTemplateVars, ev_types.VerificationEmailTemplateVars
-]
+EmailTemplateVars = PasswordResetEmailTemplateVars
+
 # PasswordResetEmailTemplateVars (Already exported because it&#39;s defined in the same)
-VerificationEmailTemplateVars = ev_types.VerificationEmailTemplateVars
 
 SMTPOverrideInput = SMTPServiceInterface[EmailTemplateVars]
 
@@ -151,7 +148,7 @@ class EmailPasswordIngredients:
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.types.EmailPasswordIngredients"><code class="flex name class">
 <span>class <span class="ident">EmailPasswordIngredients</span></span>
-<span>(</span><span>email_delivery: Optional[<a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[typing.Union[<a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a>, <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>]]] = None)</span>
+<span>(</span><span>email_delivery: Optional[<a title="supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient" href="../../ingredients/emaildelivery/index.html#supertokens_python.ingredients.emaildelivery.EmailDeliveryIngredient">EmailDeliveryIngredient</a>[<a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a>]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -266,6 +263,26 @@ class EmailPasswordIngredients:
         self.password_reset_link = password_reset_link</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars"><code class="flex name class">
+<span>class <span class="ident">EmailTemplateVars</span></span>
+<span>(</span><span>user: <a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVarsUser" href="#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVarsUser">PasswordResetEmailTemplateVarsUser</a>, password_reset_link: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PasswordResetEmailTemplateVars:
+    def __init__(
+        self,
+        user: PasswordResetEmailTemplateVarsUser,
+        password_reset_link: str,
+    ) -&gt; None:
+        self.user = user
+        self.password_reset_link = password_reset_link</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVarsUser"><code class="flex name class">
 <span>class <span class="ident">PasswordResetEmailTemplateVarsUser</span></span>
 <span>(</span><span>user_id: str, email: str)</span>
@@ -345,6 +362,9 @@ class EmailPasswordIngredients:
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.emailpassword.types.NormalisedFormField" href="#supertokens_python.recipe.emailpassword.types.NormalisedFormField">NormalisedFormField</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a></code></h4>

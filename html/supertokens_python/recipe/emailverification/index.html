@@ -41,17 +41,21 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, Union, Optional, Any, Awaitable, Dict
 
 from . import exceptions as ex
 from . import utils
 from .emaildelivery import services as emaildelivery_services
+from . import recipe
+from .interfaces import TypeGetEmailForUserIdFunction
 from .recipe import EmailVerificationRecipe
+from .types import EmailTemplateVars, User
+from ...ingredients.emaildelivery.types import EmailDeliveryConfig
 
 InputOverrideConfig = utils.OverrideConfig
-ParentRecipeEmailVerificationConfig = utils.ParentRecipeEmailVerificationConfig
 exception = ex
 SMTPService = emaildelivery_services.SMTPService
+EmailVerificationClaim = recipe.EmailVerificationClaim
 
 
 if TYPE_CHECKING:
@@ -59,11 +63,25 @@ if TYPE_CHECKING:
 
     from ...recipe_module import RecipeModule
 
+from .utils import MODE_TYPE, OverrideConfig
+
 
 def init(
-    config: ParentRecipeEmailVerificationConfig,
+    mode: MODE_TYPE,
+    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+    get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
+    create_and_send_custom_email: Union[
+        Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
+    ] = None,
+    override: Union[OverrideConfig, None] = None,
 ) -&gt; Callable[[AppInfo], RecipeModule]:
-    return EmailVerificationRecipe.init(config)</code></pre>
+    return EmailVerificationRecipe.init(
+        mode,
+        email_delivery,
+        get_email_for_user_id,
+        create_and_send_custom_email,
+        override,
+    )</code></pre>
 </details>
 </section>
 <section>
@@ -82,6 +100,10 @@ def init(
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="supertokens_python.recipe.emailverification.emaildelivery" href="emaildelivery/index.html">supertokens_python.recipe.emailverification.emaildelivery</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="supertokens_python.recipe.emailverification.ev_claim_validators" href="ev_claim_validators.html">supertokens_python.recipe.emailverification.ev_claim_validators</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -121,7 +143,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.emailverification.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>config: ParentRecipeEmailVerificationConfig) ‑> Callable[[AppInfo], RecipeModule]</span>
+<span>def <span class="ident">init</span></span>(<span>mode: MODE_TYPE, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None, create_and_send_custom_email: Union[Callable[[User, str, Dict[str, Any]], Awaitable[None]], None] = None, override: Union[OverrideConfig, None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -130,9 +152,21 @@ def init(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def init(
-    config: ParentRecipeEmailVerificationConfig,
+    mode: MODE_TYPE,
+    email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
+    get_email_for_user_id: Optional[TypeGetEmailForUserIdFunction] = None,
+    create_and_send_custom_email: Union[
+        Callable[[User, str, Dict[str, Any]], Awaitable[None]], None
+    ] = None,
+    override: Union[OverrideConfig, None] = None,
 ) -&gt; Callable[[AppInfo], RecipeModule]:
-    return EmailVerificationRecipe.init(config)</code></pre>
+    return EmailVerificationRecipe.init(
+        mode,
+        email_delivery,
+        get_email_for_user_id,
+        create_and_send_custom_email,
+        override,
+    )</code></pre>
 </details>
 </dd>
 </dl>
@@ -157,6 +191,7 @@ def init(
 <li><code><a title="supertokens_python.recipe.emailverification.asyncio" href="asyncio/index.html">supertokens_python.recipe.emailverification.asyncio</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailverification.constants" href="constants.html">supertokens_python.recipe.emailverification.constants</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailverification.emaildelivery" href="emaildelivery/index.html">supertokens_python.recipe.emailverification.emaildelivery</a></code></li>
+<li><code><a title="supertokens_python.recipe.emailverification.ev_claim_validators" href="ev_claim_validators.html">supertokens_python.recipe.emailverification.ev_claim_validators</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailverification.exceptions" href="exceptions.html">supertokens_python.recipe.emailverification.exceptions</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailverification.interfaces" href="interfaces.html">supertokens_python.recipe.emailverification.interfaces</a></code></li>
 <li><code><a title="supertokens_python.recipe.emailverification.recipe" href="recipe.html">supertokens_python.recipe.emailverification.recipe</a></code></li>

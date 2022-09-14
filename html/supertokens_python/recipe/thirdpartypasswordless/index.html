@@ -56,7 +56,6 @@ from .recipe import ThirdPartyPasswordlessRecipe
 from .smsdelivery import services as smsdelivery_services
 from .types import EmailTemplateVars, SMSTemplateVars
 
-InputEmailVerificationConfig = utils.InputEmailVerificationConfig
 InputOverrideConfig = utils.InputOverrideConfig
 exceptions = ex
 ContactConfig = passwordless.ContactConfig
@@ -85,13 +84,9 @@ def init(
     flow_type: Literal[
         &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
     ],
-    get_link_domain_and_path: Union[
-        Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None
-    ] = None,
     get_custom_user_input_code: Union[
         Callable[[Dict[str, Any]], Awaitable[str]], None
     ] = None,
-    email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,
     override: Union[InputOverrideConfig, None] = None,
@@ -100,9 +95,7 @@ def init(
     return ThirdPartyPasswordlessRecipe.init(
         contact_config,
         flow_type,
-        get_link_domain_and_path,
         get_custom_user_input_code,
-        email_verification_feature,
         email_delivery,
         sms_delivery,
         override,
@@ -165,7 +158,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", get_link_domain_and_path: Union[Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None] = None, get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None, email_verification_feature: Union[InputEmailVerificationConfig, None] = None, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None, override: Union[InputOverrideConfig, None] = None, providers: Union[List[Provider], None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
+<span>def <span class="ident">init</span></span>(<span>contact_config: ContactConfig, flow_type: "Literal['USER_INPUT_CODE', 'MAGIC_LINK', 'USER_INPUT_CODE_AND_MAGIC_LINK']", get_custom_user_input_code: Union[Callable[[Dict[str, Any]], Awaitable[str]], None] = None, email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None, sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None, override: Union[InputOverrideConfig, None] = None, providers: Union[List[Provider], None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -178,13 +171,9 @@ def init(
     flow_type: Literal[
         &#34;USER_INPUT_CODE&#34;, &#34;MAGIC_LINK&#34;, &#34;USER_INPUT_CODE_AND_MAGIC_LINK&#34;
     ],
-    get_link_domain_and_path: Union[
-        Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None
-    ] = None,
     get_custom_user_input_code: Union[
         Callable[[Dict[str, Any]], Awaitable[str]], None
     ] = None,
-    email_verification_feature: Union[InputEmailVerificationConfig, None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,
     override: Union[InputOverrideConfig, None] = None,
@@ -193,9 +182,7 @@ def init(
     return ThirdPartyPasswordlessRecipe.init(
         contact_config,
         flow_type,
-        get_link_domain_and_path,
         get_custom_user_input_code,
-        email_verification_feature,
         email_delivery,
         sms_delivery,
         override,

@@ -40,7 +40,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, TypeVar, Awaitable
+
+_T = TypeVar(&#34;_T&#34;)
 
 
 class ThirdPartyInfo:
@@ -85,7 +87,10 @@ class GeneralErrorResponse(APIResponse):
         self.message = message
 
     def to_json(self) -&gt; Dict[str, Any]:
-        return {&#34;status&#34;: self.status, &#34;message&#34;: self.message}</code></pre>
+        return {&#34;status&#34;: self.status, &#34;message&#34;: self.message}
+
+
+MaybeAwaitable = Union[Awaitable[_T], _T]</code></pre>
 </details>
 </section>
 <section>
@@ -119,12 +124,7 @@ inheritance.</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a></li>
-<li><a title="supertokens_python.recipe.emailpassword.interfaces.EmailVerifyPostInvalidTokenError" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailVerifyPostInvalidTokenError">EmailVerifyPostInvalidTokenError</a></li>
-<li><a title="supertokens_python.recipe.emailpassword.interfaces.EmailVerifyPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailVerifyPostOkResult">EmailVerifyPostOkResult</a></li>
-<li><a title="supertokens_python.recipe.emailpassword.interfaces.GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError">GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError</a></li>
-<li><a title="supertokens_python.recipe.emailpassword.interfaces.GenerateEmailVerifyTokenPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.GenerateEmailVerifyTokenPostOkResult">GenerateEmailVerifyTokenPostOkResult</a></li>
 <li><a title="supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult">GeneratePasswordResetTokenPostOkResult</a></li>
-<li><a title="supertokens_python.recipe.emailpassword.interfaces.IsEmailVerifiedGetOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.IsEmailVerifiedGetOkResult">IsEmailVerifiedGetOkResult</a></li>
 <li><a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse">PasswordResetPostInvalidTokenResponse</a></li>
 <li><a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostOkResult">PasswordResetPostOkResult</a></li>
 <li><a title="supertokens_python.recipe.emailpassword.interfaces.SignInPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.SignInPostOkResult">SignInPostOkResult</a></li>

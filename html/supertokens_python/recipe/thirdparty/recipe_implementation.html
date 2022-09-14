@@ -129,13 +129,12 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
-        email_verified: bool,
         user_context: Dict[str, Any],
     ) -&gt; SignInUpOkResult:
         data = {
             &#34;thirdPartyId&#34;: third_party_id,
             &#34;thirdPartyUserId&#34;: third_party_user_id,
-            &#34;email&#34;: {&#34;id&#34;: email, &#34;isVerified&#34;: email_verified},
+            &#34;email&#34;: {&#34;id&#34;: email},
         }
         response = await self.querier.send_post_request(
             NormalisedURLPath(&#34;/recipe/signinup&#34;), data
@@ -251,13 +250,12 @@ inheritance.</p></div>
         third_party_id: str,
         third_party_user_id: str,
         email: str,
-        email_verified: bool,
         user_context: Dict[str, Any],
     ) -&gt; SignInUpOkResult:
         data = {
             &#34;thirdPartyId&#34;: third_party_id,
             &#34;thirdPartyUserId&#34;: third_party_user_id,
-            &#34;email&#34;: {&#34;id&#34;: email, &#34;isVerified&#34;: email_verified},
+            &#34;email&#34;: {&#34;id&#34;: email},
         }
         response = await self.querier.send_post_request(
             NormalisedURLPath(&#34;/recipe/signinup&#34;), data
@@ -380,7 +378,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.recipe_implementation.RecipeImplementation.sign_in_up"><code class="name flex">
-<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a></span>
+<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="interfaces.html#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -393,13 +391,12 @@ inheritance.</p></div>
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    email_verified: bool,
     user_context: Dict[str, Any],
 ) -&gt; SignInUpOkResult:
     data = {
         &#34;thirdPartyId&#34;: third_party_id,
         &#34;thirdPartyUserId&#34;: third_party_user_id,
-        &#34;email&#34;: {&#34;id&#34;: email, &#34;isVerified&#34;: email_verified},
+        &#34;email&#34;: {&#34;id&#34;: email},
     }
     response = await self.querier.send_post_request(
         NormalisedURLPath(&#34;/recipe/signinup&#34;), data

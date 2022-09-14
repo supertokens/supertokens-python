@@ -59,6 +59,7 @@ from .types import (
     User,
 )
 from .utils import PasswordlessConfig
+from ...supertokens import AppInfo
 
 
 class CreateCodeOkResult:
@@ -303,6 +304,7 @@ class APIOptions:
         recipe_id: str,
         config: PasswordlessConfig,
         recipe_implementation: RecipeInterface,
+        app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars],
         sms_delivery: SMSDeliveryIngredient[PasswordlessLoginSMSTemplateVars],
     ):
@@ -311,6 +313,7 @@ class APIOptions:
         self.recipe_id = recipe_id
         self.config = config
         self.recipe_implementation = recipe_implementation
+        self.app_info = app_info
         self.email_delivery = email_delivery
         self.sms_delivery = sms_delivery
 
@@ -686,7 +689,7 @@ async def resend_code_post(
 </dd>
 <dt id="supertokens_python.recipe.passwordless.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: PasswordlessConfig, recipe_implementation: <a title="supertokens_python.recipe.passwordless.interfaces.RecipeInterface" href="#supertokens_python.recipe.passwordless.interfaces.RecipeInterface">RecipeInterface</a>, email_delivery: EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars], sms_delivery: SMSDeliveryIngredient[PasswordlessLoginSMSTemplateVars])</span>
+<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: PasswordlessConfig, recipe_implementation: <a title="supertokens_python.recipe.passwordless.interfaces.RecipeInterface" href="#supertokens_python.recipe.passwordless.interfaces.RecipeInterface">RecipeInterface</a>, app_info: AppInfo, email_delivery: EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars], sms_delivery: SMSDeliveryIngredient[PasswordlessLoginSMSTemplateVars])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -702,6 +705,7 @@ async def resend_code_post(
         recipe_id: str,
         config: PasswordlessConfig,
         recipe_implementation: RecipeInterface,
+        app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[PasswordlessLoginEmailTemplateVars],
         sms_delivery: SMSDeliveryIngredient[PasswordlessLoginSMSTemplateVars],
     ):
@@ -710,6 +714,7 @@ async def resend_code_post(
         self.recipe_id = recipe_id
         self.config = config
         self.recipe_implementation = recipe_implementation
+        self.app_info = app_info
         self.email_delivery = email_delivery
         self.sms_delivery = sms_delivery</code></pre>
 </details>

@@ -42,12 +42,23 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Generic,
+    List,
+    TypeVar,
+    Union,
+    Callable,
+    Optional,
+)
 
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.types import APIResponse, GeneralErrorResponse
-
+from supertokens_python.types import APIResponse, MaybeAwaitable
+from .exceptions import ClaimValidationError
 from .utils import SessionConfig
+from ...utils import resolve
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -91,7 +102,35 @@ class SessionInformationResult:
         self.time_created: int = time_created
 
 
-class RecipeInterface(ABC):
+_T = TypeVar(&#34;_T&#34;)
+JSONObject = Dict[str, Any]
+
+JSONPrimitive = Union[str, int, bool, None, Dict[str, Any]]
+JSONPrimitiveList = Union[
+    List[str], List[int], List[bool], List[None], List[Dict[str, Any]]
+]
+
+
+class SessionDoesNotExistError:
+    pass
+
+
+class GetClaimValueOkResult(Generic[_T]):
+    def __init__(self, value: Optional[_T]):
+        self.value = value
+
+
+class ClaimsValidationResult:
+    def __init__(
+        self,
+        invalid_claims: List[ClaimValidationError],
+        access_token_payload_update: Optional[Dict[str, Any]] = None,
+    ):
+        self.invalid_claims = invalid_claims
+        self.access_token_payload_update = access_token_payload_update
+
+
+class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     def __init__(self):
         pass
 
@@ -107,6 +146,15 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
+    def get_global_claim_validators(
+        self,
+        user_id: str,
+        claim_validators_added_by_other_recipes: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -&gt; MaybeAwaitable[List[SessionClaimValidator]]:
+        pass
+
+    @abstractmethod
     async def get_session(
         self,
         request: BaseRequest,
@@ -114,6 +162,26 @@ class RecipeInterface(ABC):
         session_required: bool,
         user_context: Dict[str, Any],
     ) -&gt; Union[SessionContainer, None]:
+        pass
+
+    @abstractmethod
+    async def validate_claims(
+        self,
+        user_id: str,
+        access_token_payload: Dict[str, Any],
+        claim_validators: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -&gt; ClaimsValidationResult:
+        pass
+
+    @abstractmethod
+    async def validate_claims_in_jwt_payload(
+        self,
+        user_id: str,
+        jwt_payload: JSONObject,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -&gt; ClaimsValidationResult:
         pass
 
     @abstractmethod
@@ -168,6 +236,15 @@ class RecipeInterface(ABC):
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -&gt; bool:
+        &#34;&#34;&#34;DEPRECATED: Use merge_into_access_token_payload instead&#34;&#34;&#34;
+
+    @abstractmethod
+    async def merge_into_access_token_payload(
+        self,
+        session_handle: str,
+        access_token_payload_update: JSONObject,
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
         pass
 
     @abstractmethod
@@ -176,6 +253,43 @@ class RecipeInterface(ABC):
 
     @abstractmethod
     async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt; int:
+        pass
+
+    @abstractmethod
+    async def fetch_and_set_claim(
+        self,
+        session_handle: str,
+        claim: SessionClaim[Any],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        pass
+
+    @abstractmethod
+    async def set_claim_value(
+        self,
+        session_handle: str,
+        claim: SessionClaim[_T],
+        value: _T,
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        pass
+
+    @abstractmethod
+    async def get_claim_value(
+        self,
+        session_handle: str,
+        claim: SessionClaim[Any],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[SessionDoesNotExistError, GetClaimValueOkResult[Any]]:
+        pass
+
+    @abstractmethod
+    async def remove_claim(
+        self,
+        session_handle: str,
+        claim: SessionClaim[Any],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
         pass
 
     @abstractmethod
@@ -224,13 +338,16 @@ class APIInterface(ABC):
     @abstractmethod
     async def refresh_post(
         self, api_options: APIOptions, user_context: Dict[str, Any]
-    ) -&gt; None:
+    ) -&gt; SessionContainer:
         pass
 
     @abstractmethod
     async def signout_post(
-        self, api_options: APIOptions, user_context: Dict[str, Any]
-    ) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
+        self,
+        session: Optional[SessionContainer],
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; SignOutOkayResponse:
         pass
 
     @abstractmethod
@@ -239,12 +356,18 @@ class APIInterface(ABC):
         api_options: APIOptions,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        override_global_claim_validators: Optional[
+            Callable[
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ],
         user_context: Dict[str, Any],
     ) -&gt; Union[SessionContainer, None]:
         pass
 
 
-class SessionContainer(ABC):
+class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def __init__(
         self,
         recipe_implementation: RecipeInterface,
@@ -265,12 +388,14 @@ class SessionContainer(ABC):
         self.remove_cookies = False
 
     @abstractmethod
-    async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None:
+    async def revoke_session(
+        self, user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; None:
         pass
 
     @abstractmethod
     async def get_session_data(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -&gt; Dict[str, Any]:
         pass
 
@@ -278,7 +403,7 @@ class SessionContainer(ABC):
     async def update_session_data(
         self,
         new_session_data: Dict[str, Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -&gt; None:
         pass
 
@@ -286,43 +411,88 @@ class SessionContainer(ABC):
     async def update_access_token_payload(
         self,
         new_access_token_payload: Dict[str, Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        &#34;&#34;&#34;DEPRECATED: Use merge_into_access_token_payload instead&#34;&#34;&#34;
+
+    @abstractmethod
+    async def merge_into_access_token_payload(
+        self,
+        access_token_payload_update: JSONObject,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -&gt; None:
         pass
 
     @abstractmethod
-    def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
+    def get_user_id(self, user_context: Optional[Dict[str, Any]] = None) -&gt; str:
         pass
 
     @abstractmethod
     def get_access_token_payload(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -&gt; Dict[str, Any]:
         pass
 
     @abstractmethod
-    def get_handle(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
+    def get_handle(self, user_context: Optional[Dict[str, Any]] = None) -&gt; str:
         pass
 
     @abstractmethod
-    def get_access_token(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
+    def get_access_token(self, user_context: Optional[Dict[str, Any]] = None) -&gt; str:
         pass
 
     @abstractmethod
     async def get_time_created(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -&gt; int:
         pass
 
     @abstractmethod
-    async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+    async def get_expiry(self, user_context: Optional[Dict[str, Any]] = None) -&gt; int:
         pass
 
-    def sync_get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+    @abstractmethod
+    async def assert_claims(
+        self,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        pass
+
+    @abstractmethod
+    async def fetch_and_set_claim(
+        self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; None:
+        pass
+
+    @abstractmethod
+    async def set_claim_value(
+        self,
+        claim: SessionClaim[_T],
+        value: _T,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        pass
+
+    @abstractmethod
+    async def get_claim_value(
+        self, claim: SessionClaim[_T], user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; Union[_T, None]:
+        pass
+
+    @abstractmethod
+    async def remove_claim(
+        self,
+        claim: SessionClaim[Any],
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        pass
+
+    def sync_get_expiry(self, user_context: Optional[Dict[str, Any]] = None) -&gt; int:
         return sync(self.get_expiry(user_context))
 
     def sync_revoke_session(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -&gt; None:
         return sync(self.revoke_session(user_context=user_context))
 
@@ -332,14 +502,25 @@ class SessionContainer(ABC):
         return sync(self.get_session_data(user_context))
 
     def sync_get_time_created(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -&gt; int:
         return sync(self.get_time_created(user_context))
+
+    def sync_merge_into_access_token_payload(
+        self,
+        access_token_payload_update: Dict[str, Any],
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        return sync(
+            self.merge_into_access_token_payload(
+                access_token_payload_update, user_context
+            )
+        )
 
     def sync_update_access_token_payload(
         self,
         new_access_token_payload: Dict[str, Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -&gt; None:
         return sync(
             self.update_access_token_payload(new_access_token_payload, user_context)
@@ -348,13 +529,131 @@ class SessionContainer(ABC):
     def sync_update_session_data(
         self,
         new_session_data: Dict[str, Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -&gt; None:
         return sync(self.update_session_data(new_session_data, user_context))
 
+    # Session claims sync functions:
+    def sync_assert_claims(
+        self,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        return sync(self.assert_claims(claim_validators, user_context))
+
+    def sync_fetch_and_set_claim(
+        self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; None:
+        return sync(self.fetch_and_set_claim(claim, user_context))
+
+    def sync_set_claim_value(
+        self,
+        claim: SessionClaim[_T],
+        value: _T,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        return sync(self.set_claim_value(claim, value, user_context))
+
+    def sync_get_claim_value(
+        self, claim: SessionClaim[_T], user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; Union[_T, None]:
+        return sync(self.get_claim_value(claim, user_context))
+
+    def sync_remove_claim(
+        self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; None:
+        return sync(self.remove_claim(claim, user_context))
+
     # This is there so that we can do session[&#34;...&#34;] to access some of the members of this class
     def __getitem__(self, item: str):
-        return getattr(self, item)</code></pre>
+        return getattr(self, item)
+
+
+class SessionClaim(ABC, Generic[_T]):
+    def __init__(
+        self,
+        key: str,
+        fetch_value: Callable[
+            [str, Dict[str, Any]],
+            MaybeAwaitable[Optional[_T]],
+        ],
+    ) -&gt; None:
+        &#34;&#34;&#34;
+        Args:
+            key: The key to use when storing the claim in the payload.
+            fetch_value: a method that fetches the current value of this claim for the user.
+                A None return value signifies that we don&#39;t want to update the claim payload and or the claim value is
+                not present in the database. For example, this can happen with a second factor auth claim, where we
+                don&#39;t want to add the claim to the session automatically
+        &#34;&#34;&#34;
+        self.key = key
+        self.fetch_value = fetch_value
+
+    @abstractmethod
+    def add_to_payload_(
+        self,
+        payload: JSONObject,
+        value: _T,
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; JSONObject:
+        &#34;&#34;&#34;Saves the provided value into the payload, by cloning and updating the entire object&#34;&#34;&#34;
+
+    @abstractmethod
+    def remove_from_payload_by_merge_(
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; JSONObject:
+        &#34;&#34;&#34;Removes the claim from the payload by setting it to None, so merge_into_access_token_payload can clear it&#34;&#34;&#34;
+
+    @abstractmethod
+    def remove_from_payload(
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; JSONObject:
+        &#34;&#34;&#34;Removes the claim from the payload, by cloning and updating the entire object.&#34;&#34;&#34;
+
+    @abstractmethod
+    def get_value_from_payload(
+        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Union[_T, None]:
+        &#34;&#34;&#34;Gets the value of the claim stored in the payload&#34;&#34;&#34;
+
+    async def build(
+        self, user_id: str, user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; JSONObject:
+        if user_context is None:
+            user_context = {}
+
+        value = await resolve(self.fetch_value(user_id, user_context))
+
+        if value is None:
+            return {}
+
+        return self.add_to_payload_({}, value, user_context)
+
+
+class ClaimValidationResult:
+    def __init__(self, is_valid: bool, reason: Optional[Dict[str, Any]] = None):
+        self.is_valid = is_valid
+        self.reason = {} if is_valid else reason
+
+
+class SessionClaimValidator(ABC):
+    def __init__(
+        self,
+        id_: str,
+    ) -&gt; None:
+        self.id = id_
+        self.claim: Optional[SessionClaim[Any]] = None
+
+    @abstractmethod
+    async def validate(
+        self, payload: JSONObject, user_context: Dict[str, Any]
+    ) -&gt; ClaimValidationResult:
+        pass
+
+    def should_refetch(
+        self, payload: JSONObject, user_context: Dict[str, Any]
+    ) -&gt; MaybeAwaitable[bool]:
+        raise NotImplementedError()</code></pre>
 </details>
 </section>
 <section>
@@ -388,13 +687,16 @@ inheritance.</p></div>
     @abstractmethod
     async def refresh_post(
         self, api_options: APIOptions, user_context: Dict[str, Any]
-    ) -&gt; None:
+    ) -&gt; SessionContainer:
         pass
 
     @abstractmethod
     async def signout_post(
-        self, api_options: APIOptions, user_context: Dict[str, Any]
-    ) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
+        self,
+        session: Optional[SessionContainer],
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
+    ) -&gt; SignOutOkayResponse:
         pass
 
     @abstractmethod
@@ -403,6 +705,12 @@ inheritance.</p></div>
         api_options: APIOptions,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        override_global_claim_validators: Optional[
+            Callable[
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ],
         user_context: Dict[str, Any],
     ) -&gt; Union[SessionContainer, None]:
         pass</code></pre>
@@ -418,7 +726,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.interfaces.APIInterface.refresh_post"><code class="name flex">
-<span>async def <span class="ident">refresh_post</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.session.interfaces.APIOptions" href="#supertokens_python.recipe.session.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">refresh_post</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.session.interfaces.APIOptions" href="#supertokens_python.recipe.session.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -429,12 +737,12 @@ inheritance.</p></div>
 <pre><code class="python">@abstractmethod
 async def refresh_post(
     self, api_options: APIOptions, user_context: Dict[str, Any]
-) -&gt; None:
+) -&gt; SessionContainer:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.APIInterface.signout_post"><code class="name flex">
-<span>async def <span class="ident">signout_post</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.session.interfaces.APIOptions" href="#supertokens_python.recipe.session.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.session.interfaces.SignOutOkayResponse" href="#supertokens_python.recipe.session.interfaces.SignOutOkayResponse">SignOutOkayResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
+<span>async def <span class="ident">signout_post</span></span>(<span>self, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], api_options: <a title="supertokens_python.recipe.session.interfaces.APIOptions" href="#supertokens_python.recipe.session.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SignOutOkayResponse" href="#supertokens_python.recipe.session.interfaces.SignOutOkayResponse">SignOutOkayResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -444,13 +752,16 @@ async def refresh_post(
 </summary>
 <pre><code class="python">@abstractmethod
 async def signout_post(
-    self, api_options: APIOptions, user_context: Dict[str, Any]
-) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
+    self,
+    session: Optional[SessionContainer],
+    api_options: APIOptions,
+    user_context: Dict[str, Any],
+) -&gt; SignOutOkayResponse:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.APIInterface.verify_session"><code class="name flex">
-<span>async def <span class="ident">verify_session</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.session.interfaces.APIOptions" href="#supertokens_python.recipe.session.interfaces.APIOptions">APIOptions</a>, anti_csrf_check: Union[bool, None], session_required: bool, user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
+<span>async def <span class="ident">verify_session</span></span>(<span>self, api_options: <a title="supertokens_python.recipe.session.interfaces.APIOptions" href="#supertokens_python.recipe.session.interfaces.APIOptions">APIOptions</a>, anti_csrf_check: Union[bool, None], session_required: bool, override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, Dict[str, Any]], MaybeAwaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]], user_context: Dict[str, Any]) ‑> Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -464,6 +775,12 @@ async def verify_session(
     api_options: APIOptions,
     anti_csrf_check: Union[bool, None],
     session_required: bool,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ],
     user_context: Dict[str, Any],
 ) -&gt; Union[SessionContainer, None]:
     pass</code></pre>
@@ -514,6 +831,74 @@ async def verify_session(
         self.created_time = created_time</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.interfaces.ClaimValidationResult"><code class="flex name class">
+<span>class <span class="ident">ClaimValidationResult</span></span>
+<span>(</span><span>is_valid: bool, reason: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ClaimValidationResult:
+    def __init__(self, is_valid: bool, reason: Optional[Dict[str, Any]] = None):
+        self.is_valid = is_valid
+        self.reason = {} if is_valid else reason</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.ClaimsValidationResult"><code class="flex name class">
+<span>class <span class="ident">ClaimsValidationResult</span></span>
+<span>(</span><span>invalid_claims: List[ClaimValidationError], access_token_payload_update: Optional[Dict[str, Any]] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ClaimsValidationResult:
+    def __init__(
+        self,
+        invalid_claims: List[ClaimValidationError],
+        access_token_payload_update: Optional[Dict[str, Any]] = None,
+    ):
+        self.invalid_claims = invalid_claims
+        self.access_token_payload_update = access_token_payload_update</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.GetClaimValueOkResult"><code class="flex name class">
+<span>class <span class="ident">GetClaimValueOkResult</span></span>
+<span>(</span><span>value: Optional[_T])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Abstract base class for generic types.</p>
+<p>A generic type is typically declared by inheriting from
+this class parameterized with one or more type variables.
+For example, a generic mapping type might be defined as::</p>
+<p>class Mapping(Generic[KT, VT]):
+def <strong>getitem</strong>(self, key: KT) -&gt; VT:
+&hellip;
+# Etc.</p>
+<p>This class can then be used as follows::</p>
+<p>def lookup_name(mapping: Mapping[KT, VT], key: KT, default: VT) -&gt; VT:
+try:
+return mapping[key]
+except KeyError:
+return default</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GetClaimValueOkResult(Generic[_T]):
+    def __init__(self, value: Optional[_T]):
+        self.value = value</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Generic</li>
+</ul>
+</dd>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface"><code class="flex name class">
 <span>class <span class="ident">RecipeInterface</span></span>
 </code></dt>
@@ -524,7 +909,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RecipeInterface(ABC):
+<pre><code class="python">class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     def __init__(self):
         pass
 
@@ -540,6 +925,15 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
+    def get_global_claim_validators(
+        self,
+        user_id: str,
+        claim_validators_added_by_other_recipes: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -&gt; MaybeAwaitable[List[SessionClaimValidator]]:
+        pass
+
+    @abstractmethod
     async def get_session(
         self,
         request: BaseRequest,
@@ -547,6 +941,26 @@ inheritance.</p></div>
         session_required: bool,
         user_context: Dict[str, Any],
     ) -&gt; Union[SessionContainer, None]:
+        pass
+
+    @abstractmethod
+    async def validate_claims(
+        self,
+        user_id: str,
+        access_token_payload: Dict[str, Any],
+        claim_validators: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -&gt; ClaimsValidationResult:
+        pass
+
+    @abstractmethod
+    async def validate_claims_in_jwt_payload(
+        self,
+        user_id: str,
+        jwt_payload: JSONObject,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -&gt; ClaimsValidationResult:
         pass
 
     @abstractmethod
@@ -601,6 +1015,15 @@ inheritance.</p></div>
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -&gt; bool:
+        &#34;&#34;&#34;DEPRECATED: Use merge_into_access_token_payload instead&#34;&#34;&#34;
+
+    @abstractmethod
+    async def merge_into_access_token_payload(
+        self,
+        session_handle: str,
+        access_token_payload_update: JSONObject,
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
         pass
 
     @abstractmethod
@@ -609,6 +1032,43 @@ inheritance.</p></div>
 
     @abstractmethod
     async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt; int:
+        pass
+
+    @abstractmethod
+    async def fetch_and_set_claim(
+        self,
+        session_handle: str,
+        claim: SessionClaim[Any],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        pass
+
+    @abstractmethod
+    async def set_claim_value(
+        self,
+        session_handle: str,
+        claim: SessionClaim[_T],
+        value: _T,
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
+        pass
+
+    @abstractmethod
+    async def get_claim_value(
+        self,
+        session_handle: str,
+        claim: SessionClaim[Any],
+        user_context: Dict[str, Any],
+    ) -&gt; Union[SessionDoesNotExistError, GetClaimValueOkResult[Any]]:
+        pass
+
+    @abstractmethod
+    async def remove_claim(
+        self,
+        session_handle: str,
+        claim: SessionClaim[Any],
+        user_context: Dict[str, Any],
+    ) -&gt; bool:
         pass
 
     @abstractmethod
@@ -651,6 +1111,25 @@ async def create_new_session(
     pass</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.fetch_and_set_claim"><code class="name flex">
+<span>async def <span class="ident">fetch_and_set_claim</span></span>(<span>self, session_handle: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[Any], user_context: Dict[str, Any]) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def fetch_and_set_claim(
+    self,
+    session_handle: str,
+    claim: SessionClaim[Any],
+    user_context: Dict[str, Any],
+) -&gt; bool:
+    pass</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.get_access_token_lifetime_ms"><code class="name flex">
 <span>async def <span class="ident">get_access_token_lifetime_ms</span></span>(<span>self, user_context: Dict[str, Any]) ‑> int</span>
 </code></dt>
@@ -678,6 +1157,44 @@ async def get_access_token_lifetime_ms(self, user_context: Dict[str, Any]) -&gt;
 async def get_all_session_handles_for_user(
     self, user_id: str, user_context: Dict[str, Any]
 ) -&gt; List[str]:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.get_claim_value"><code class="name flex">
+<span>async def <span class="ident">get_claim_value</span></span>(<span>self, session_handle: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[Any], user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.session.interfaces.SessionDoesNotExistError" href="#supertokens_python.recipe.session.interfaces.SessionDoesNotExistError">SessionDoesNotExistError</a>, <a title="supertokens_python.recipe.session.interfaces.GetClaimValueOkResult" href="#supertokens_python.recipe.session.interfaces.GetClaimValueOkResult">GetClaimValueOkResult</a>[Any]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def get_claim_value(
+    self,
+    session_handle: str,
+    claim: SessionClaim[Any],
+    user_context: Dict[str, Any],
+) -&gt; Union[SessionDoesNotExistError, GetClaimValueOkResult[Any]]:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.get_global_claim_validators"><code class="name flex">
+<span>def <span class="ident">get_global_claim_validators</span></span>(<span>self, user_id: str, claim_validators_added_by_other_recipes: List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], user_context: Dict[str, Any]) ‑> Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def get_global_claim_validators(
+    self,
+    user_id: str,
+    claim_validators_added_by_other_recipes: List[SessionClaimValidator],
+    user_context: Dict[str, Any],
+) -&gt; MaybeAwaitable[List[SessionClaimValidator]]:
     pass</code></pre>
 </details>
 </dd>
@@ -731,6 +1248,25 @@ async def get_session_information(
     pass</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.merge_into_access_token_payload"><code class="name flex">
+<span>async def <span class="ident">merge_into_access_token_payload</span></span>(<span>self, session_handle: str, access_token_payload_update: JSONObject, user_context: Dict[str, Any]) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def merge_into_access_token_payload(
+    self,
+    session_handle: str,
+    access_token_payload_update: JSONObject,
+    user_context: Dict[str, Any],
+) -&gt; bool:
+    pass</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.refresh_session"><code class="name flex">
 <span>async def <span class="ident">refresh_session</span></span>(<span>self, request: BaseRequest, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></span>
 </code></dt>
@@ -763,6 +1299,25 @@ async def regenerate_access_token(
     new_access_token_payload: Union[Dict[str, Any], None],
     user_context: Dict[str, Any],
 ) -&gt; Union[RegenerateAccessTokenOkResult, None]:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.remove_claim"><code class="name flex">
+<span>async def <span class="ident">remove_claim</span></span>(<span>self, session_handle: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[Any], user_context: Dict[str, Any]) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def remove_claim(
+    self,
+    session_handle: str,
+    claim: SessionClaim[Any],
+    user_context: Dict[str, Any],
+) -&gt; bool:
     pass</code></pre>
 </details>
 </dd>
@@ -814,11 +1369,31 @@ async def revoke_session(
     pass</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.set_claim_value"><code class="name flex">
+<span>async def <span class="ident">set_claim_value</span></span>(<span>self, session_handle: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[_T], value: _T, user_context: Dict[str, Any]) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def set_claim_value(
+    self,
+    session_handle: str,
+    claim: SessionClaim[_T],
+    value: _T,
+    user_context: Dict[str, Any],
+) -&gt; bool:
+    pass</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.update_access_token_payload"><code class="name flex">
 <span>async def <span class="ident">update_access_token_payload</span></span>(<span>self, session_handle: str, new_access_token_payload: Dict[str, Any], user_context: Dict[str, Any]) ‑> bool</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>DEPRECATED: Use merge_into_access_token_payload instead</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -830,7 +1405,7 @@ async def update_access_token_payload(
     new_access_token_payload: Dict[str, Any],
     user_context: Dict[str, Any],
 ) -&gt; bool:
-    pass</code></pre>
+    &#34;&#34;&#34;DEPRECATED: Use merge_into_access_token_payload instead&#34;&#34;&#34;</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.update_session_data"><code class="name flex">
@@ -852,6 +1427,46 @@ async def update_session_data(
     pass</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.validate_claims"><code class="name flex">
+<span>async def <span class="ident">validate_claims</span></span>(<span>self, user_id: str, access_token_payload: Dict[str, Any], claim_validators: List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.ClaimsValidationResult" href="#supertokens_python.recipe.session.interfaces.ClaimsValidationResult">ClaimsValidationResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def validate_claims(
+    self,
+    user_id: str,
+    access_token_payload: Dict[str, Any],
+    claim_validators: List[SessionClaimValidator],
+    user_context: Dict[str, Any],
+) -&gt; ClaimsValidationResult:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.RecipeInterface.validate_claims_in_jwt_payload"><code class="name flex">
+<span>async def <span class="ident">validate_claims_in_jwt_payload</span></span>(<span>self, user_id: str, jwt_payload: JSONObject, claim_validators: List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.ClaimsValidationResult" href="#supertokens_python.recipe.session.interfaces.ClaimsValidationResult">ClaimsValidationResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def validate_claims_in_jwt_payload(
+    self,
+    user_id: str,
+    jwt_payload: JSONObject,
+    claim_validators: List[SessionClaimValidator],
+    user_context: Dict[str, Any],
+) -&gt; ClaimsValidationResult:
+    pass</code></pre>
+</details>
+</dd>
 </dl>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult"><code class="flex name class">
@@ -870,6 +1485,266 @@ async def update_session_data(
         self.access_token = access_token</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionClaim"><code class="flex name class">
+<span>class <span class="ident">SessionClaim</span></span>
+<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], MaybeAwaitable[Optional[_T]]])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>key</code></strong></dt>
+<dd>The key to use when storing the claim in the payload.</dd>
+<dt><strong><code>fetch_value</code></strong></dt>
+<dd>a method that fetches the current value of this claim for the user.
+A None return value signifies that we don't want to update the claim payload and or the claim value is
+not present in the database. For example, this can happen with a second factor auth claim, where we
+don't want to add the claim to the session automatically</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SessionClaim(ABC, Generic[_T]):
+    def __init__(
+        self,
+        key: str,
+        fetch_value: Callable[
+            [str, Dict[str, Any]],
+            MaybeAwaitable[Optional[_T]],
+        ],
+    ) -&gt; None:
+        &#34;&#34;&#34;
+        Args:
+            key: The key to use when storing the claim in the payload.
+            fetch_value: a method that fetches the current value of this claim for the user.
+                A None return value signifies that we don&#39;t want to update the claim payload and or the claim value is
+                not present in the database. For example, this can happen with a second factor auth claim, where we
+                don&#39;t want to add the claim to the session automatically
+        &#34;&#34;&#34;
+        self.key = key
+        self.fetch_value = fetch_value
+
+    @abstractmethod
+    def add_to_payload_(
+        self,
+        payload: JSONObject,
+        value: _T,
+        user_context: Union[Dict[str, Any], None] = None,
+    ) -&gt; JSONObject:
+        &#34;&#34;&#34;Saves the provided value into the payload, by cloning and updating the entire object&#34;&#34;&#34;
+
+    @abstractmethod
+    def remove_from_payload_by_merge_(
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; JSONObject:
+        &#34;&#34;&#34;Removes the claim from the payload by setting it to None, so merge_into_access_token_payload can clear it&#34;&#34;&#34;
+
+    @abstractmethod
+    def remove_from_payload(
+        self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; JSONObject:
+        &#34;&#34;&#34;Removes the claim from the payload, by cloning and updating the entire object.&#34;&#34;&#34;
+
+    @abstractmethod
+    def get_value_from_payload(
+        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+    ) -&gt; Union[_T, None]:
+        &#34;&#34;&#34;Gets the value of the claim stored in the payload&#34;&#34;&#34;
+
+    async def build(
+        self, user_id: str, user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; JSONObject:
+        if user_context is None:
+            user_context = {}
+
+        value = await resolve(self.fetch_value(user_id, user_context))
+
+        if value is None:
+            return {}
+
+        return self.add_to_payload_({}, value, user_context)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim" href="claim_base_classes/primitive_array_claim.html#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim">PrimitiveArrayClaim</a></li>
+<li><a title="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaim" href="claim_base_classes/primitive_claim.html#supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaim">PrimitiveClaim</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.interfaces.SessionClaim.add_to_payload_"><code class="name flex">
+<span>def <span class="ident">add_to_payload_</span></span>(<span>self, payload: JSONObject, value: _T, user_context: Union[Dict[str, Any], None] = None) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Saves the provided value into the payload, by cloning and updating the entire object</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def add_to_payload_(
+    self,
+    payload: JSONObject,
+    value: _T,
+    user_context: Union[Dict[str, Any], None] = None,
+) -&gt; JSONObject:
+    &#34;&#34;&#34;Saves the provided value into the payload, by cloning and updating the entire object&#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionClaim.build"><code class="name flex">
+<span>async def <span class="ident">build</span></span>(<span>self, user_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def build(
+    self, user_id: str, user_context: Optional[Dict[str, Any]] = None
+) -&gt; JSONObject:
+    if user_context is None:
+        user_context = {}
+
+    value = await resolve(self.fetch_value(user_id, user_context))
+
+    if value is None:
+        return {}
+
+    return self.add_to_payload_({}, value, user_context)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionClaim.get_value_from_payload"><code class="name flex">
+<span>def <span class="ident">get_value_from_payload</span></span>(<span>self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None) ‑> Optional[~_T]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Gets the value of the claim stored in the payload</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def get_value_from_payload(
+    self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+) -&gt; Union[_T, None]:
+    &#34;&#34;&#34;Gets the value of the claim stored in the payload&#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload"><code class="name flex">
+<span>def <span class="ident">remove_from_payload</span></span>(<span>self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Removes the claim from the payload, by cloning and updating the entire object.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def remove_from_payload(
+    self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
+) -&gt; JSONObject:
+    &#34;&#34;&#34;Removes the claim from the payload, by cloning and updating the entire object.&#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload_by_merge_"><code class="name flex">
+<span>def <span class="ident">remove_from_payload_by_merge_</span></span>(<span>self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Removes the claim from the payload by setting it to None, so merge_into_access_token_payload can clear it</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def remove_from_payload_by_merge_(
+    self, payload: JSONObject, user_context: Optional[Dict[str, Any]] = None
+) -&gt; JSONObject:
+    &#34;&#34;&#34;Removes the claim from the payload by setting it to None, so merge_into_access_token_payload can clear it&#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionClaimValidator"><code class="flex name class">
+<span>class <span class="ident">SessionClaimValidator</span></span>
+<span>(</span><span>id_: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SessionClaimValidator(ABC):
+    def __init__(
+        self,
+        id_: str,
+    ) -&gt; None:
+        self.id = id_
+        self.claim: Optional[SessionClaim[Any]] = None
+
+    @abstractmethod
+    async def validate(
+        self, payload: JSONObject, user_context: Dict[str, Any]
+    ) -&gt; ClaimValidationResult:
+        pass
+
+    def should_refetch(
+        self, payload: JSONObject, user_context: Dict[str, Any]
+    ) -&gt; MaybeAwaitable[bool]:
+        raise NotImplementedError()</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.emailverification.recipe.IsVerifiedSCV" href="../emailverification/recipe.html#supertokens_python.recipe.emailverification.recipe.IsVerifiedSCV">IsVerifiedSCV</a></li>
+<li><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.SCVMixin" href="claim_base_classes/primitive_array_claim.html#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.SCVMixin">SCVMixin</a></li>
+<li><a title="supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV" href="claim_base_classes/primitive_claim.html#supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV">HasValueSCV</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.interfaces.SessionClaimValidator.should_refetch"><code class="name flex">
+<span>def <span class="ident">should_refetch</span></span>(<span>self, payload: JSONObject, user_context: Dict[str, Any]) ‑> Union[Awaitable[bool], bool]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def should_refetch(
+    self, payload: JSONObject, user_context: Dict[str, Any]
+) -&gt; MaybeAwaitable[bool]:
+    raise NotImplementedError()</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionClaimValidator.validate"><code class="name flex">
+<span>async def <span class="ident">validate</span></span>(<span>self, payload: JSONObject, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.ClaimValidationResult" href="#supertokens_python.recipe.session.interfaces.ClaimValidationResult">ClaimValidationResult</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def validate(
+    self, payload: JSONObject, user_context: Dict[str, Any]
+) -&gt; ClaimValidationResult:
+    pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer"><code class="flex name class">
 <span>class <span class="ident">SessionContainer</span></span>
 <span>(</span><span>recipe_implementation: <a title="supertokens_python.recipe.session.interfaces.RecipeInterface" href="#supertokens_python.recipe.session.interfaces.RecipeInterface">RecipeInterface</a>, access_token: str, session_handle: str, user_id: str, access_token_payload: Dict[str, Any])</span>
@@ -881,7 +1756,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SessionContainer(ABC):
+<pre><code class="python">class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def __init__(
         self,
         recipe_implementation: RecipeInterface,
@@ -902,12 +1777,14 @@ inheritance.</p></div>
         self.remove_cookies = False
 
     @abstractmethod
-    async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None:
+    async def revoke_session(
+        self, user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; None:
         pass
 
     @abstractmethod
     async def get_session_data(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -&gt; Dict[str, Any]:
         pass
 
@@ -915,7 +1792,7 @@ inheritance.</p></div>
     async def update_session_data(
         self,
         new_session_data: Dict[str, Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -&gt; None:
         pass
 
@@ -923,43 +1800,88 @@ inheritance.</p></div>
     async def update_access_token_payload(
         self,
         new_access_token_payload: Dict[str, Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        &#34;&#34;&#34;DEPRECATED: Use merge_into_access_token_payload instead&#34;&#34;&#34;
+
+    @abstractmethod
+    async def merge_into_access_token_payload(
+        self,
+        access_token_payload_update: JSONObject,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -&gt; None:
         pass
 
     @abstractmethod
-    def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
+    def get_user_id(self, user_context: Optional[Dict[str, Any]] = None) -&gt; str:
         pass
 
     @abstractmethod
     def get_access_token_payload(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -&gt; Dict[str, Any]:
         pass
 
     @abstractmethod
-    def get_handle(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
+    def get_handle(self, user_context: Optional[Dict[str, Any]] = None) -&gt; str:
         pass
 
     @abstractmethod
-    def get_access_token(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
+    def get_access_token(self, user_context: Optional[Dict[str, Any]] = None) -&gt; str:
         pass
 
     @abstractmethod
     async def get_time_created(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -&gt; int:
         pass
 
     @abstractmethod
-    async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+    async def get_expiry(self, user_context: Optional[Dict[str, Any]] = None) -&gt; int:
         pass
 
-    def sync_get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+    @abstractmethod
+    async def assert_claims(
+        self,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        pass
+
+    @abstractmethod
+    async def fetch_and_set_claim(
+        self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; None:
+        pass
+
+    @abstractmethod
+    async def set_claim_value(
+        self,
+        claim: SessionClaim[_T],
+        value: _T,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        pass
+
+    @abstractmethod
+    async def get_claim_value(
+        self, claim: SessionClaim[_T], user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; Union[_T, None]:
+        pass
+
+    @abstractmethod
+    async def remove_claim(
+        self,
+        claim: SessionClaim[Any],
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        pass
+
+    def sync_get_expiry(self, user_context: Optional[Dict[str, Any]] = None) -&gt; int:
         return sync(self.get_expiry(user_context))
 
     def sync_revoke_session(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -&gt; None:
         return sync(self.revoke_session(user_context=user_context))
 
@@ -969,14 +1891,25 @@ inheritance.</p></div>
         return sync(self.get_session_data(user_context))
 
     def sync_get_time_created(
-        self, user_context: Union[Dict[str, Any], None] = None
+        self, user_context: Optional[Dict[str, Any]] = None
     ) -&gt; int:
         return sync(self.get_time_created(user_context))
+
+    def sync_merge_into_access_token_payload(
+        self,
+        access_token_payload_update: Dict[str, Any],
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        return sync(
+            self.merge_into_access_token_payload(
+                access_token_payload_update, user_context
+            )
+        )
 
     def sync_update_access_token_payload(
         self,
         new_access_token_payload: Dict[str, Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -&gt; None:
         return sync(
             self.update_access_token_payload(new_access_token_payload, user_context)
@@ -985,9 +1918,40 @@ inheritance.</p></div>
     def sync_update_session_data(
         self,
         new_session_data: Dict[str, Any],
-        user_context: Union[Dict[str, Any], None] = None,
+        user_context: Optional[Dict[str, Any]] = None,
     ) -&gt; None:
         return sync(self.update_session_data(new_session_data, user_context))
+
+    # Session claims sync functions:
+    def sync_assert_claims(
+        self,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        return sync(self.assert_claims(claim_validators, user_context))
+
+    def sync_fetch_and_set_claim(
+        self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; None:
+        return sync(self.fetch_and_set_claim(claim, user_context))
+
+    def sync_set_claim_value(
+        self,
+        claim: SessionClaim[_T],
+        value: _T,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -&gt; None:
+        return sync(self.set_claim_value(claim, value, user_context))
+
+    def sync_get_claim_value(
+        self, claim: SessionClaim[_T], user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; Union[_T, None]:
+        return sync(self.get_claim_value(claim, user_context))
+
+    def sync_remove_claim(
+        self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
+    ) -&gt; None:
+        return sync(self.remove_claim(claim, user_context))
 
     # This is there so that we can do session[&#34;...&#34;] to access some of the members of this class
     def __getitem__(self, item: str):
@@ -1003,8 +1967,8 @@ inheritance.</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.get_access_token"><code class="name flex">
-<span>def <span class="ident">get_access_token</span></span>(<span>self, user_context: Union[Dict[str, Any], None] = None) ‑> str</span>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.assert_claims"><code class="name flex">
+<span>async def <span class="ident">assert_claims</span></span>(<span>self, claim_validators: List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1013,12 +1977,46 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def get_access_token(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
+async def assert_claims(
+    self,
+    claim_validators: List[SessionClaimValidator],
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; None:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.fetch_and_set_claim"><code class="name flex">
+<span>async def <span class="ident">fetch_and_set_claim</span></span>(<span>self, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def fetch_and_set_claim(
+    self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
+) -&gt; None:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.get_access_token"><code class="name flex">
+<span>def <span class="ident">get_access_token</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def get_access_token(self, user_context: Optional[Dict[str, Any]] = None) -&gt; str:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.get_access_token_payload"><code class="name flex">
-<span>def <span class="ident">get_access_token_payload</span></span>(<span>self, user_context: Union[Dict[str, Any], None] = None) ‑> Dict[str, Any]</span>
+<span>def <span class="ident">get_access_token_payload</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1028,13 +2026,13 @@ def get_access_token(self, user_context: Union[Dict[str, Any], None] = None) -&g
 </summary>
 <pre><code class="python">@abstractmethod
 def get_access_token_payload(
-    self, user_context: Union[Dict[str, Any], None] = None
+    self, user_context: Optional[Dict[str, Any]] = None
 ) -&gt; Dict[str, Any]:
     pass</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.get_expiry"><code class="name flex">
-<span>async def <span class="ident">get_expiry</span></span>(<span>self, user_context: Union[Dict[str, Any], None] = None) ‑> int</span>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.get_claim_value"><code class="name flex">
+<span>async def <span class="ident">get_claim_value</span></span>(<span>self, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[_T], user_context: Optional[Dict[str, Any]] = None) ‑> Optional[~_T]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1043,12 +2041,28 @@ def get_access_token_payload(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+async def get_claim_value(
+    self, claim: SessionClaim[_T], user_context: Optional[Dict[str, Any]] = None
+) -&gt; Union[_T, None]:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.get_expiry"><code class="name flex">
+<span>async def <span class="ident">get_expiry</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> int</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def get_expiry(self, user_context: Optional[Dict[str, Any]] = None) -&gt; int:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.get_handle"><code class="name flex">
-<span>def <span class="ident">get_handle</span></span>(<span>self, user_context: Union[Dict[str, Any], None] = None) ‑> str</span>
+<span>def <span class="ident">get_handle</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1057,12 +2071,12 @@ async def get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -&g
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def get_handle(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
+def get_handle(self, user_context: Optional[Dict[str, Any]] = None) -&gt; str:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.get_session_data"><code class="name flex">
-<span>async def <span class="ident">get_session_data</span></span>(<span>self, user_context: Union[Dict[str, Any], None] = None) ‑> Dict[str, Any]</span>
+<span>async def <span class="ident">get_session_data</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> Dict[str, Any]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1072,13 +2086,13 @@ def get_handle(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str
 </summary>
 <pre><code class="python">@abstractmethod
 async def get_session_data(
-    self, user_context: Union[Dict[str, Any], None] = None
+    self, user_context: Optional[Dict[str, Any]] = None
 ) -&gt; Dict[str, Any]:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.get_time_created"><code class="name flex">
-<span>async def <span class="ident">get_time_created</span></span>(<span>self, user_context: Union[Dict[str, Any], None] = None) ‑> int</span>
+<span>async def <span class="ident">get_time_created</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> int</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1088,13 +2102,13 @@ async def get_session_data(
 </summary>
 <pre><code class="python">@abstractmethod
 async def get_time_created(
-    self, user_context: Union[Dict[str, Any], None] = None
+    self, user_context: Optional[Dict[str, Any]] = None
 ) -&gt; int:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.get_user_id"><code class="name flex">
-<span>def <span class="ident">get_user_id</span></span>(<span>self, user_context: Union[Dict[str, Any], None] = None) ‑> str</span>
+<span>def <span class="ident">get_user_id</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1103,12 +2117,48 @@ async def get_time_created(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
+def get_user_id(self, user_context: Optional[Dict[str, Any]] = None) -&gt; str:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.merge_into_access_token_payload"><code class="name flex">
+<span>async def <span class="ident">merge_into_access_token_payload</span></span>(<span>self, access_token_payload_update: JSONObject, user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def merge_into_access_token_payload(
+    self,
+    access_token_payload_update: JSONObject,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; None:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.remove_claim"><code class="name flex">
+<span>async def <span class="ident">remove_claim</span></span>(<span>self, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+async def remove_claim(
+    self,
+    claim: SessionClaim[Any],
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; None:
     pass</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.revoke_session"><code class="name flex">
-<span>async def <span class="ident">revoke_session</span></span>(<span>self, user_context: Union[Any, None] = None) ‑> None</span>
+<span>async def <span class="ident">revoke_session</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1117,12 +2167,14 @@ def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; st
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None:
+async def revoke_session(
+    self, user_context: Optional[Dict[str, Any]] = None
+) -&gt; None:
     pass</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_get_expiry"><code class="name flex">
-<span>def <span class="ident">sync_get_expiry</span></span>(<span>self, user_context: Union[Dict[str, Any], None] = None) ‑> int</span>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.set_claim_value"><code class="name flex">
+<span>async def <span class="ident">set_claim_value</span></span>(<span>self, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[_T], value: _T, user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1130,7 +2182,73 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def sync_get_expiry(self, user_context: Union[Dict[str, Any], None] = None) -&gt; int:
+<pre><code class="python">@abstractmethod
+async def set_claim_value(
+    self,
+    claim: SessionClaim[_T],
+    value: _T,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; None:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_assert_claims"><code class="name flex">
+<span>def <span class="ident">sync_assert_claims</span></span>(<span>self, claim_validators: List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sync_assert_claims(
+    self,
+    claim_validators: List[SessionClaimValidator],
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; None:
+    return sync(self.assert_claims(claim_validators, user_context))</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_fetch_and_set_claim"><code class="name flex">
+<span>def <span class="ident">sync_fetch_and_set_claim</span></span>(<span>self, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sync_fetch_and_set_claim(
+    self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
+) -&gt; None:
+    return sync(self.fetch_and_set_claim(claim, user_context))</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_get_claim_value"><code class="name flex">
+<span>def <span class="ident">sync_get_claim_value</span></span>(<span>self, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[_T], user_context: Optional[Dict[str, Any]] = None) ‑> Optional[~_T]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sync_get_claim_value(
+    self, claim: SessionClaim[_T], user_context: Optional[Dict[str, Any]] = None
+) -&gt; Union[_T, None]:
+    return sync(self.get_claim_value(claim, user_context))</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_get_expiry"><code class="name flex">
+<span>def <span class="ident">sync_get_expiry</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> int</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sync_get_expiry(self, user_context: Optional[Dict[str, Any]] = None) -&gt; int:
     return sync(self.get_expiry(user_context))</code></pre>
 </details>
 </dd>
@@ -1150,7 +2268,7 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_get_time_created"><code class="name flex">
-<span>def <span class="ident">sync_get_time_created</span></span>(<span>self, user_context: Union[Dict[str, Any], None] = None) ‑> int</span>
+<span>def <span class="ident">sync_get_time_created</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> int</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1159,13 +2277,49 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sync_get_time_created(
-    self, user_context: Union[Dict[str, Any], None] = None
+    self, user_context: Optional[Dict[str, Any]] = None
 ) -&gt; int:
     return sync(self.get_time_created(user_context))</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_merge_into_access_token_payload"><code class="name flex">
+<span>def <span class="ident">sync_merge_into_access_token_payload</span></span>(<span>self, access_token_payload_update: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sync_merge_into_access_token_payload(
+    self,
+    access_token_payload_update: Dict[str, Any],
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; None:
+    return sync(
+        self.merge_into_access_token_payload(
+            access_token_payload_update, user_context
+        )
+    )</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_remove_claim"><code class="name flex">
+<span>def <span class="ident">sync_remove_claim</span></span>(<span>self, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sync_remove_claim(
+    self, claim: SessionClaim[Any], user_context: Optional[Dict[str, Any]] = None
+) -&gt; None:
+    return sync(self.remove_claim(claim, user_context))</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_revoke_session"><code class="name flex">
-<span>def <span class="ident">sync_revoke_session</span></span>(<span>self, user_context: Union[Dict[str, Any], None] = None) ‑> None</span>
+<span>def <span class="ident">sync_revoke_session</span></span>(<span>self, user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1174,13 +2328,31 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sync_revoke_session(
-    self, user_context: Union[Dict[str, Any], None] = None
+    self, user_context: Optional[Dict[str, Any]] = None
 ) -&gt; None:
     return sync(self.revoke_session(user_context=user_context))</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_set_claim_value"><code class="name flex">
+<span>def <span class="ident">sync_set_claim_value</span></span>(<span>self, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[_T], value: _T, user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sync_set_claim_value(
+    self,
+    claim: SessionClaim[_T],
+    value: _T,
+    user_context: Optional[Dict[str, Any]] = None,
+) -&gt; None:
+    return sync(self.set_claim_value(claim, value, user_context))</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_update_access_token_payload"><code class="name flex">
-<span>def <span class="ident">sync_update_access_token_payload</span></span>(<span>self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) ‑> None</span>
+<span>def <span class="ident">sync_update_access_token_payload</span></span>(<span>self, new_access_token_payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1191,7 +2363,7 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 <pre><code class="python">def sync_update_access_token_payload(
     self,
     new_access_token_payload: Dict[str, Any],
-    user_context: Union[Dict[str, Any], None] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -&gt; None:
     return sync(
         self.update_access_token_payload(new_access_token_payload, user_context)
@@ -1199,7 +2371,7 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.sync_update_session_data"><code class="name flex">
-<span>def <span class="ident">sync_update_session_data</span></span>(<span>self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) ‑> None</span>
+<span>def <span class="ident">sync_update_session_data</span></span>(<span>self, new_session_data: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1210,16 +2382,16 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 <pre><code class="python">def sync_update_session_data(
     self,
     new_session_data: Dict[str, Any],
-    user_context: Union[Dict[str, Any], None] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -&gt; None:
     return sync(self.update_session_data(new_session_data, user_context))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.update_access_token_payload"><code class="name flex">
-<span>async def <span class="ident">update_access_token_payload</span></span>(<span>self, new_access_token_payload: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) ‑> None</span>
+<span>async def <span class="ident">update_access_token_payload</span></span>(<span>self, new_access_token_payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>DEPRECATED: Use merge_into_access_token_payload instead</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1228,13 +2400,13 @@ async def revoke_session(self, user_context: Union[Any, None] = None) -&gt; None
 async def update_access_token_payload(
     self,
     new_access_token_payload: Dict[str, Any],
-    user_context: Union[Dict[str, Any], None] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -&gt; None:
-    pass</code></pre>
+    &#34;&#34;&#34;DEPRECATED: Use merge_into_access_token_payload instead&#34;&#34;&#34;</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionContainer.update_session_data"><code class="name flex">
-<span>async def <span class="ident">update_session_data</span></span>(<span>self, new_session_data: Dict[str, Any], user_context: Union[Dict[str, Any], None] = None) ‑> None</span>
+<span>async def <span class="ident">update_session_data</span></span>(<span>self, new_session_data: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1246,12 +2418,25 @@ async def update_access_token_payload(
 async def update_session_data(
     self,
     new_session_data: Dict[str, Any],
-    user_context: Union[Dict[str, Any], None] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -&gt; None:
     pass</code></pre>
 </details>
 </dd>
 </dl>
+</dd>
+<dt id="supertokens_python.recipe.session.interfaces.SessionDoesNotExistError"><code class="flex name class">
+<span>class <span class="ident">SessionDoesNotExistError</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SessionDoesNotExistError:
+    pass</code></pre>
+</details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.SessionInformationResult"><code class="flex name class">
 <span>class <span class="ident">SessionInformationResult</span></span>
@@ -1368,46 +2553,95 @@ inheritance.</p></div>
 <h4><code><a title="supertokens_python.recipe.session.interfaces.AccessTokenObj" href="#supertokens_python.recipe.session.interfaces.AccessTokenObj">AccessTokenObj</a></code></h4>
 </li>
 <li>
+<h4><code><a title="supertokens_python.recipe.session.interfaces.ClaimValidationResult" href="#supertokens_python.recipe.session.interfaces.ClaimValidationResult">ClaimValidationResult</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.session.interfaces.ClaimsValidationResult" href="#supertokens_python.recipe.session.interfaces.ClaimsValidationResult">ClaimsValidationResult</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.session.interfaces.GetClaimValueOkResult" href="#supertokens_python.recipe.session.interfaces.GetClaimValueOkResult">GetClaimValueOkResult</a></code></h4>
+</li>
+<li>
 <h4><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface" href="#supertokens_python.recipe.session.interfaces.RecipeInterface">RecipeInterface</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.create_new_session" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.create_new_session">create_new_session</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.fetch_and_set_claim" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.fetch_and_set_claim">fetch_and_set_claim</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.get_access_token_lifetime_ms" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.get_access_token_lifetime_ms">get_access_token_lifetime_ms</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.get_all_session_handles_for_user" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.get_all_session_handles_for_user">get_all_session_handles_for_user</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.get_claim_value" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.get_claim_value">get_claim_value</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.get_global_claim_validators" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.get_global_claim_validators">get_global_claim_validators</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.get_refresh_token_lifetime_ms" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.get_refresh_token_lifetime_ms">get_refresh_token_lifetime_ms</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.get_session" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.get_session">get_session</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.get_session_information" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.get_session_information">get_session_information</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.merge_into_access_token_payload" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.merge_into_access_token_payload">merge_into_access_token_payload</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.refresh_session" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.refresh_session">refresh_session</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.regenerate_access_token" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.regenerate_access_token">regenerate_access_token</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.remove_claim" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.remove_claim">remove_claim</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.revoke_all_sessions_for_user" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.revoke_all_sessions_for_user">revoke_all_sessions_for_user</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.revoke_multiple_sessions" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.revoke_multiple_sessions">revoke_multiple_sessions</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.revoke_session" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.revoke_session">revoke_session</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.set_claim_value" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.set_claim_value">set_claim_value</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.update_access_token_payload" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.update_access_token_payload">update_access_token_payload</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.update_session_data" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.update_session_data">update_session_data</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.validate_claims" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.validate_claims">validate_claims</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.RecipeInterface.validate_claims_in_jwt_payload" href="#supertokens_python.recipe.session.interfaces.RecipeInterface.validate_claims_in_jwt_payload">validate_claims_in_jwt_payload</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult" href="#supertokens_python.recipe.session.interfaces.RegenerateAccessTokenOkResult">RegenerateAccessTokenOkResult</a></code></h4>
 </li>
 <li>
+<h4><code><a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionClaim.add_to_payload_" href="#supertokens_python.recipe.session.interfaces.SessionClaim.add_to_payload_">add_to_payload_</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionClaim.build" href="#supertokens_python.recipe.session.interfaces.SessionClaim.build">build</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionClaim.get_value_from_payload" href="#supertokens_python.recipe.session.interfaces.SessionClaim.get_value_from_payload">get_value_from_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload" href="#supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload">remove_from_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload_by_merge_" href="#supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload_by_merge_">remove_from_payload_by_merge_</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator.should_refetch" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator.should_refetch">should_refetch</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator.validate" href="#supertokens_python.recipe.session.interfaces.SessionClaimValidator.validate">validate</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a></code></h4>
 <ul class="">
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.assert_claims" href="#supertokens_python.recipe.session.interfaces.SessionContainer.assert_claims">assert_claims</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.fetch_and_set_claim" href="#supertokens_python.recipe.session.interfaces.SessionContainer.fetch_and_set_claim">fetch_and_set_claim</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.get_access_token" href="#supertokens_python.recipe.session.interfaces.SessionContainer.get_access_token">get_access_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.get_access_token_payload" href="#supertokens_python.recipe.session.interfaces.SessionContainer.get_access_token_payload">get_access_token_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.get_claim_value" href="#supertokens_python.recipe.session.interfaces.SessionContainer.get_claim_value">get_claim_value</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.get_expiry" href="#supertokens_python.recipe.session.interfaces.SessionContainer.get_expiry">get_expiry</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.get_handle" href="#supertokens_python.recipe.session.interfaces.SessionContainer.get_handle">get_handle</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.get_session_data" href="#supertokens_python.recipe.session.interfaces.SessionContainer.get_session_data">get_session_data</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.get_time_created" href="#supertokens_python.recipe.session.interfaces.SessionContainer.get_time_created">get_time_created</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.get_user_id" href="#supertokens_python.recipe.session.interfaces.SessionContainer.get_user_id">get_user_id</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.merge_into_access_token_payload" href="#supertokens_python.recipe.session.interfaces.SessionContainer.merge_into_access_token_payload">merge_into_access_token_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.remove_claim" href="#supertokens_python.recipe.session.interfaces.SessionContainer.remove_claim">remove_claim</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.revoke_session" href="#supertokens_python.recipe.session.interfaces.SessionContainer.revoke_session">revoke_session</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.set_claim_value" href="#supertokens_python.recipe.session.interfaces.SessionContainer.set_claim_value">set_claim_value</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.sync_assert_claims" href="#supertokens_python.recipe.session.interfaces.SessionContainer.sync_assert_claims">sync_assert_claims</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.sync_fetch_and_set_claim" href="#supertokens_python.recipe.session.interfaces.SessionContainer.sync_fetch_and_set_claim">sync_fetch_and_set_claim</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.sync_get_claim_value" href="#supertokens_python.recipe.session.interfaces.SessionContainer.sync_get_claim_value">sync_get_claim_value</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.sync_get_expiry" href="#supertokens_python.recipe.session.interfaces.SessionContainer.sync_get_expiry">sync_get_expiry</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.sync_get_session_data" href="#supertokens_python.recipe.session.interfaces.SessionContainer.sync_get_session_data">sync_get_session_data</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.sync_get_time_created" href="#supertokens_python.recipe.session.interfaces.SessionContainer.sync_get_time_created">sync_get_time_created</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.sync_merge_into_access_token_payload" href="#supertokens_python.recipe.session.interfaces.SessionContainer.sync_merge_into_access_token_payload">sync_merge_into_access_token_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.sync_remove_claim" href="#supertokens_python.recipe.session.interfaces.SessionContainer.sync_remove_claim">sync_remove_claim</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.sync_revoke_session" href="#supertokens_python.recipe.session.interfaces.SessionContainer.sync_revoke_session">sync_revoke_session</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.sync_set_claim_value" href="#supertokens_python.recipe.session.interfaces.SessionContainer.sync_set_claim_value">sync_set_claim_value</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.sync_update_access_token_payload" href="#supertokens_python.recipe.session.interfaces.SessionContainer.sync_update_access_token_payload">sync_update_access_token_payload</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.sync_update_session_data" href="#supertokens_python.recipe.session.interfaces.SessionContainer.sync_update_session_data">sync_update_session_data</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.update_access_token_payload" href="#supertokens_python.recipe.session.interfaces.SessionContainer.update_access_token_payload">update_access_token_payload</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.interfaces.SessionContainer.update_session_data" href="#supertokens_python.recipe.session.interfaces.SessionContainer.update_session_data">update_session_data</a></code></li>
 </ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.session.interfaces.SessionDoesNotExistError" href="#supertokens_python.recipe.session.interfaces.SessionDoesNotExistError">SessionDoesNotExistError</a></code></h4>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.interfaces.SessionInformationResult" href="#supertokens_python.recipe.session.interfaces.SessionInformationResult">SessionInformationResult</a></code></h4>

@@ -43,7 +43,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, Union
+from typing import List, Union, Optional, Dict, Any, Set
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
@@ -57,7 +57,11 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.supertokens import AppInfo
 
 from .exceptions import SuperTokensUserRolesError
+from .interfaces import GetPermissionsForRoleOkResult
 from .utils import InputOverrideConfig
+from ..session import SessionRecipe
+from ..session.claim_base_classes.primitive_array_claim import PrimitiveArrayClaim
+from ...post_init_callbacks import PostSTInitCallbacks
 
 
 class UserRolesRecipe(RecipeModule):
@@ -68,16 +72,34 @@ class UserRolesRecipe(RecipeModule):
         self,
         recipe_id: str,
         app_info: AppInfo,
+        skip_adding_roles_to_access_token: Optional[bool] = None,
+        skip_adding_permissions_to_access_token: Optional[bool] = None,
         override: Union[InputOverrideConfig, None] = None,
     ):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(self, app_info, override)
+        self.config = validate_and_normalise_user_input(
+            self,
+            app_info,
+            skip_adding_roles_to_access_token,
+            skip_adding_permissions_to_access_token,
+            override,
+        )
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
         self.recipe_implementation = (
             recipe_implementation
             if self.config.override.functions is None
             else self.config.override.functions(recipe_implementation)
         )
+
+        def callback():
+            if self.config.skip_adding_roles_to_access_token is False:
+                SessionRecipe.get_instance().add_claim_from_other_recipe(UserRoleClaim)
+            if self.config.skip_adding_permissions_to_access_token is False:
+                SessionRecipe.get_instance().add_claim_from_other_recipe(
+                    PermissionClaim
+                )
+
+        PostSTInitCallbacks.add_post_init_callback(callback)
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
         return isinstance(err, SuperTokensError) and (
@@ -106,11 +128,19 @@ class UserRolesRecipe(RecipeModule):
         return []
 
     @staticmethod
-    def init(override: Union[InputOverrideConfig, None] = None):
+    def init(
+        skip_adding_roles_to_access_token: Optional[bool] = None,
+        skip_adding_permissions_to_access_token: Optional[bool] = None,
+        override: Union[InputOverrideConfig, None] = None,
+    ):
         def func(app_info: AppInfo):
             if UserRolesRecipe.__instance is None:
                 UserRolesRecipe.__instance = UserRolesRecipe(
-                    UserRolesRecipe.recipe_id, app_info, override
+                    UserRolesRecipe.recipe_id,
+                    app_info,
+                    skip_adding_roles_to_access_token,
+                    skip_adding_permissions_to_access_token,
+                    override,
                 )
                 return UserRolesRecipe.__instance
             raise Exception(
@@ -134,7 +164,56 @@ class UserRolesRecipe(RecipeModule):
             return UserRolesRecipe.__instance
         raise_general_exception(
             &#34;Initialisation not done. Did you forget to call the SuperTokens.init or UserRoles.init function?&#34;
-        )</code></pre>
+        )
+
+
+class PermissionClaimClass(PrimitiveArrayClaim[List[str]]):
+    def __init__(self) -&gt; None:
+        key = &#34;st-perm&#34;
+
+        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+            recipe = UserRolesRecipe.get_instance()
+
+            user_roles = await recipe.recipe_implementation.get_roles_for_user(
+                user_id, user_context
+            )
+
+            user_permissions: Set[str] = set()
+
+            for role in user_roles.roles:
+                role_permissions = (
+                    await recipe.recipe_implementation.get_permissions_for_role(
+                        role, user_context
+                    )
+                )
+
+                if isinstance(role_permissions, GetPermissionsForRoleOkResult):
+                    for permission in role_permissions.permissions:
+                        user_permissions.add(permission)
+
+            return list(user_permissions)
+
+        super().__init__(key, fetch_value)
+
+
+PermissionClaim = PermissionClaimClass()
+
+
+class UserRoleClaimClass(PrimitiveArrayClaim[List[str]]):
+    def __init__(self) -&gt; None:
+        key = &#34;st-role&#34;
+
+        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+            recipe = UserRolesRecipe.get_instance()
+            res = await recipe.recipe_implementation.get_roles_for_user(
+                user_id, user_context
+            )
+            return res.roles
+
+        super().__init__(key, fetch_value)
+
+
+UserRoleClaim = UserRoleClaimClass()</code></pre>
 </details>
 </section>
 <section>
@@ -146,9 +225,128 @@ class UserRolesRecipe(RecipeModule):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="supertokens_python.recipe.userroles.recipe.PermissionClaimClass"><code class="flex name class">
+<span>class <span class="ident">PermissionClaimClass</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>key</code></strong></dt>
+<dd>The key to use when storing the claim in the payload.</dd>
+<dt><strong><code>fetch_value</code></strong></dt>
+<dd>a method that fetches the current value of this claim for the user.
+A None return value signifies that we don't want to update the claim payload and or the claim value is
+not present in the database. For example, this can happen with a second factor auth claim, where we
+don't want to add the claim to the session automatically</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PermissionClaimClass(PrimitiveArrayClaim[List[str]]):
+    def __init__(self) -&gt; None:
+        key = &#34;st-perm&#34;
+
+        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+            recipe = UserRolesRecipe.get_instance()
+
+            user_roles = await recipe.recipe_implementation.get_roles_for_user(
+                user_id, user_context
+            )
+
+            user_permissions: Set[str] = set()
+
+            for role in user_roles.roles:
+                role_permissions = (
+                    await recipe.recipe_implementation.get_permissions_for_role(
+                        role, user_context
+                    )
+                )
+
+                if isinstance(role_permissions, GetPermissionsForRoleOkResult):
+                    for permission in role_permissions.permissions:
+                        user_permissions.add(permission)
+
+            return list(user_permissions)
+
+        super().__init__(key, fetch_value)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim" href="../session/claim_base_classes/primitive_array_claim.html#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim">PrimitiveArrayClaim</a></li>
+<li><a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a></li>
+<li>abc.ABC</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim" href="../session/claim_base_classes/primitive_array_claim.html#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim">PrimitiveArrayClaim</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim.add_to_payload_" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim.add_to_payload_">add_to_payload_</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim.get_value_from_payload" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim.get_value_from_payload">get_value_from_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim.remove_from_payload" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload">remove_from_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim.remove_from_payload_by_merge_" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload_by_merge_">remove_from_payload_by_merge_</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="supertokens_python.recipe.userroles.recipe.UserRoleClaimClass"><code class="flex name class">
+<span>class <span class="ident">UserRoleClaimClass</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>key</code></strong></dt>
+<dd>The key to use when storing the claim in the payload.</dd>
+<dt><strong><code>fetch_value</code></strong></dt>
+<dd>a method that fetches the current value of this claim for the user.
+A None return value signifies that we don't want to update the claim payload and or the claim value is
+not present in the database. For example, this can happen with a second factor auth claim, where we
+don't want to add the claim to the session automatically</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserRoleClaimClass(PrimitiveArrayClaim[List[str]]):
+    def __init__(self) -&gt; None:
+        key = &#34;st-role&#34;
+
+        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -&gt; List[str]:
+            recipe = UserRolesRecipe.get_instance()
+            res = await recipe.recipe_implementation.get_roles_for_user(
+                user_id, user_context
+            )
+            return res.roles
+
+        super().__init__(key, fetch_value)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim" href="../session/claim_base_classes/primitive_array_claim.html#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim">PrimitiveArrayClaim</a></li>
+<li><a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a></li>
+<li>abc.ABC</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim" href="../session/claim_base_classes/primitive_array_claim.html#supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim">PrimitiveArrayClaim</a></b></code>:
+<ul class="hlist">
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim.add_to_payload_" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim.add_to_payload_">add_to_payload_</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim.get_value_from_payload" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim.get_value_from_payload">get_value_from_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim.remove_from_payload" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload">remove_from_payload</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim.remove_from_payload_by_merge_" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim.remove_from_payload_by_merge_">remove_from_payload_by_merge_</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
 <dt id="supertokens_python.recipe.userroles.recipe.UserRolesRecipe"><code class="flex name class">
 <span>class <span class="ident">UserRolesRecipe</span></span>
-<span>(</span><span>recipe_id: str, app_info: AppInfo, override: Union[InputOverrideConfig, None] = None)</span>
+<span>(</span><span>recipe_id: str, app_info: AppInfo, skip_adding_roles_to_access_token: Optional[bool] = None, skip_adding_permissions_to_access_token: Optional[bool] = None, override: Union[InputOverrideConfig, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -165,16 +363,34 @@ inheritance.</p></div>
         self,
         recipe_id: str,
         app_info: AppInfo,
+        skip_adding_roles_to_access_token: Optional[bool] = None,
+        skip_adding_permissions_to_access_token: Optional[bool] = None,
         override: Union[InputOverrideConfig, None] = None,
     ):
         super().__init__(recipe_id, app_info)
-        self.config = validate_and_normalise_user_input(self, app_info, override)
+        self.config = validate_and_normalise_user_input(
+            self,
+            app_info,
+            skip_adding_roles_to_access_token,
+            skip_adding_permissions_to_access_token,
+            override,
+        )
         recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
         self.recipe_implementation = (
             recipe_implementation
             if self.config.override.functions is None
             else self.config.override.functions(recipe_implementation)
         )
+
+        def callback():
+            if self.config.skip_adding_roles_to_access_token is False:
+                SessionRecipe.get_instance().add_claim_from_other_recipe(UserRoleClaim)
+            if self.config.skip_adding_permissions_to_access_token is False:
+                SessionRecipe.get_instance().add_claim_from_other_recipe(
+                    PermissionClaim
+                )
+
+        PostSTInitCallbacks.add_post_init_callback(callback)
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -&gt; bool:
         return isinstance(err, SuperTokensError) and (
@@ -203,11 +419,19 @@ inheritance.</p></div>
         return []
 
     @staticmethod
-    def init(override: Union[InputOverrideConfig, None] = None):
+    def init(
+        skip_adding_roles_to_access_token: Optional[bool] = None,
+        skip_adding_permissions_to_access_token: Optional[bool] = None,
+        override: Union[InputOverrideConfig, None] = None,
+    ):
         def func(app_info: AppInfo):
             if UserRolesRecipe.__instance is None:
                 UserRolesRecipe.__instance = UserRolesRecipe(
-                    UserRolesRecipe.recipe_id, app_info, override
+                    UserRolesRecipe.recipe_id,
+                    app_info,
+                    skip_adding_roles_to_access_token,
+                    skip_adding_permissions_to_access_token,
+                    override,
                 )
                 return UserRolesRecipe.__instance
             raise Exception(
@@ -266,7 +490,7 @@ def get_instance() -&gt; UserRolesRecipe:
 </details>
 </dd>
 <dt id="supertokens_python.recipe.userroles.recipe.UserRolesRecipe.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>override: Union[InputOverrideConfig, None] = None)</span>
+<span>def <span class="ident">init</span></span>(<span>skip_adding_roles_to_access_token: Optional[bool] = None, skip_adding_permissions_to_access_token: Optional[bool] = None, override: Union[InputOverrideConfig, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -275,11 +499,19 @@ def get_instance() -&gt; UserRolesRecipe:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def init(override: Union[InputOverrideConfig, None] = None):
+def init(
+    skip_adding_roles_to_access_token: Optional[bool] = None,
+    skip_adding_permissions_to_access_token: Optional[bool] = None,
+    override: Union[InputOverrideConfig, None] = None,
+):
     def func(app_info: AppInfo):
         if UserRolesRecipe.__instance is None:
             UserRolesRecipe.__instance = UserRolesRecipe(
-                UserRolesRecipe.recipe_id, app_info, override
+                UserRolesRecipe.recipe_id,
+                app_info,
+                skip_adding_roles_to_access_token,
+                skip_adding_permissions_to_access_token,
+                override,
             )
             return UserRolesRecipe.__instance
         raise Exception(
@@ -405,6 +637,12 @@ def reset():
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.userroles.recipe.PermissionClaimClass" href="#supertokens_python.recipe.userroles.recipe.PermissionClaimClass">PermissionClaimClass</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.userroles.recipe.UserRoleClaimClass" href="#supertokens_python.recipe.userroles.recipe.UserRoleClaimClass">UserRoleClaimClass</a></code></h4>
+</li>
 <li>
 <h4><code><a title="supertokens_python.recipe.userroles.recipe.UserRolesRecipe" href="#supertokens_python.recipe.userroles.recipe.UserRolesRecipe">UserRolesRecipe</a></code></h4>
 <ul class="">

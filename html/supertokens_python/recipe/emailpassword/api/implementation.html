@@ -120,10 +120,9 @@ class APIImplementation(APIInterface):
 
         token = token_result.token
         password_reset_link = (
-            await api_options.config.reset_password_using_token_feature.get_reset_password_url(
-                user, user_context
-            )
-            + &#34;?token=&#34;
+            api_options.app_info.website_domain.get_as_string_dangerous()
+            + api_options.app_info.website_base_path.get_as_string_dangerous()
+            + &#34;/reset-password?token=&#34;
             + token
             + &#34;&amp;rid=&#34;
             + api_options.recipe_id
@@ -299,10 +298,9 @@ class APIImplementation(APIInterface):
 
         token = token_result.token
         password_reset_link = (
-            await api_options.config.reset_password_using_token_feature.get_reset_password_url(
-                user, user_context
-            )
-            + &#34;?token=&#34;
+            api_options.app_info.website_domain.get_as_string_dangerous()
+            + api_options.app_info.website_base_path.get_as_string_dangerous()
+            + &#34;/reset-password?token=&#34;
             + token
             + &#34;&amp;rid=&#34;
             + api_options.recipe_id
@@ -483,10 +481,9 @@ class APIImplementation(APIInterface):
 
     token = token_result.token
     password_reset_link = (
-        await api_options.config.reset_password_using_token_feature.get_reset_password_url(
-            user, user_context
-        )
-        + &#34;?token=&#34;
+        api_options.app_info.website_domain.get_as_string_dangerous()
+        + api_options.app_info.website_base_path.get_as_string_dangerous()
+        + &#34;/reset-password?token=&#34;
         + token
         + &#34;&amp;rid=&#34;
         + api_options.recipe_id

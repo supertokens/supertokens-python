@@ -47,12 +47,6 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryInterface,
     SMTPSettings,
 )
-from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import (
-    SMTPService as EmailVerificationSMTPService,
-)
-from supertokens_python.recipe.emailverification.types import (
-    VerificationEmailTemplateVars,
-)
 from supertokens_python.recipe.passwordless.emaildelivery.services.smtp import (
     SMTPService as PlessSMTPService,
 )
@@ -62,9 +56,6 @@ from supertokens_python.recipe.thirdpartypasswordless.types import (
 )
 
 from .service_implementation import ServiceImplementation
-from .service_implementation.email_verification_implementation import (
-    ServiceImplementation as EmailVerificationServiceImpl,
-)
 from .service_implementation.passwordless_implementation import (
     ServiceImplementation as PlessServiceImpl,
 )
@@ -81,11 +72,6 @@ class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
         oi = ServiceImplementation(self.transporter)
         service_implementation = oi if override is None else override(oi)
 
-        self.ev_smtp_service = EmailVerificationSMTPService(
-            smtp_settings=smtp_settings,
-            override=lambda _: EmailVerificationServiceImpl(service_implementation),
-        )
-
         self.pless_smtp_service = PlessSMTPService(
             smtp_settings=smtp_settings,
             override=lambda _: PlessServiceImpl(service_implementation),
@@ -94,9 +80,6 @@ class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
     async def send_email(
         self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
     ) -&gt; None:
-        if isinstance(template_vars, VerificationEmailTemplateVars):
-            return await self.ev_smtp_service.send_email(template_vars, user_context)
-
         return await self.pless_smtp_service.send_email(template_vars, user_context)</code></pre>
 </details>
 </section>
@@ -118,7 +101,7 @@ class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
 <dl>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp.SMTPService"><code class="flex name class">
 <span>class <span class="ident">SMTPService</span></span>
-<span>(</span><span>smtp_settings: <a title="supertokens_python.ingredients.emaildelivery.types.SMTPSettings" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPSettings">SMTPSettings</a>, override: Optional[Callable[[<a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[Union[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>, <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>]]], <a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[Union[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>, <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>]]]] = None)</span>
+<span>(</span><span>smtp_settings: <a title="supertokens_python.ingredients.emaildelivery.types.SMTPSettings" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPSettings">SMTPSettings</a>, override: Optional[Callable[[<a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[<a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>]], <a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[<a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>]]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -138,11 +121,6 @@ inheritance.</p></div>
         oi = ServiceImplementation(self.transporter)
         service_implementation = oi if override is None else override(oi)
 
-        self.ev_smtp_service = EmailVerificationSMTPService(
-            smtp_settings=smtp_settings,
-            override=lambda _: EmailVerificationServiceImpl(service_implementation),
-        )
-
         self.pless_smtp_service = PlessSMTPService(
             smtp_settings=smtp_settings,
             override=lambda _: PlessServiceImpl(service_implementation),
@@ -151,9 +129,6 @@ inheritance.</p></div>
     async def send_email(
         self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
     ) -&gt; None:
-        if isinstance(template_vars, VerificationEmailTemplateVars):
-            return await self.ev_smtp_service.send_email(template_vars, user_context)
-
         return await self.pless_smtp_service.send_email(template_vars, user_context)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -165,7 +140,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.smtp.SMTPService.send_email"><code class="name flex">
-<span>async def <span class="ident">send_email</span></span>(<span>self, template_vars: Union[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>, <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>], user_context: Dict[str, Any]) ‑> None</span>
+<span>async def <span class="ident">send_email</span></span>(<span>self, template_vars: <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>, user_context: Dict[str, Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -176,9 +151,6 @@ inheritance.</p></div>
 <pre><code class="python">async def send_email(
     self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
 ) -&gt; None:
-    if isinstance(template_vars, VerificationEmailTemplateVars):
-        return await self.ev_smtp_service.send_email(template_vars, user_context)
-
     return await self.pless_smtp_service.send_email(template_vars, user_context)</code></pre>
 </details>
 </dd>

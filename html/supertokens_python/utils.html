@@ -49,7 +49,17 @@ from base64 import b64decode, b64encode
 from math import floor
 from re import fullmatch
 from time import time
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    Coroutine,
+    Dict,
+    List,
+    TypeVar,
+    Union,
+)
 
 from httpx import HTTPStatusError, Response
 
@@ -63,6 +73,7 @@ from supertokens_python.logger import log_debug_message
 
 from .constants import ERROR_MESSAGE_KEY, RID_KEY_HEADER
 from .exceptions import raise_general_exception
+from .types import MaybeAwaitable
 
 _T = TypeVar(&#34;_T&#34;)
 
@@ -144,7 +155,7 @@ def is_5xx_error(status_code: int) -&gt; bool:
 
 
 def send_non_200_response(
-    message: str, status_code: int, response: BaseResponse
+    body: Dict[str, Any], status_code: int, response: BaseResponse
 ) -&gt; BaseResponse:
     if status_code &lt; 300:
         raise_general_exception(&#34;Calling sendNon200Response with status code &lt; 300&#34;)
@@ -152,8 +163,14 @@ def send_non_200_response(
         &#34;Sending response to client with status code: %s&#34;, str(status_code)
     )
     response.set_status_code(status_code)
-    response.set_json_content(content={ERROR_MESSAGE_KEY: message})
+    response.set_json_content(content=body)
     return response
+
+
+def send_non_200_response_with_message(
+    message: str, status_code: int, response: BaseResponse
+):
+    return send_non_200_response({ERROR_MESSAGE_KEY: message}, status_code, response)
 
 
 def send_200_response(
@@ -260,7 +277,14 @@ def humanize_time(ms: int) -&gt; str:
 
 
 def default_user_context(request: BaseRequest) -&gt; Dict[str, Any]:
-    return {&#34;_default&#34;: {&#34;request&#34;: request}}</code></pre>
+    return {&#34;_default&#34;: {&#34;request&#34;: request}}
+
+
+async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
+    &#34;&#34;&#34;Returns value or value of awaitable object passed&#34;&#34;&#34;
+    if isinstance(obj, Awaitable):
+        return await obj  # type: ignore
+    return obj  # type: ignore</code></pre>
 </details>
 </section>
 <section>
@@ -562,6 +586,22 @@ def default_user_context(request: BaseRequest) -&gt; Dict[str, Any]:
     return method.lower()</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.utils.resolve"><code class="name flex">
+<span>async def <span class="ident">resolve</span></span>(<span>obj: MaybeAwaitable[_T]) ‑> ~_T</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns value or value of awaitable object passed</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
+    &#34;&#34;&#34;Returns value or value of awaitable object passed&#34;&#34;&#34;
+    if isinstance(obj, Awaitable):
+        return await obj  # type: ignore
+    return obj  # type: ignore</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.utils.send_200_response"><code class="name flex">
 <span>def <span class="ident">send_200_response</span></span>(<span>data_json: Dict[str, Any], response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
@@ -581,7 +621,7 @@ def default_user_context(request: BaseRequest) -&gt; Dict[str, Any]:
 </details>
 </dd>
 <dt id="supertokens_python.utils.send_non_200_response"><code class="name flex">
-<span>def <span class="ident">send_non_200_response</span></span>(<span>message: str, status_code: int, response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
+<span>def <span class="ident">send_non_200_response</span></span>(<span>body: Dict[str, Any], status_code: int, response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -590,7 +630,7 @@ def default_user_context(request: BaseRequest) -&gt; Dict[str, Any]:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def send_non_200_response(
-    message: str, status_code: int, response: BaseResponse
+    body: Dict[str, Any], status_code: int, response: BaseResponse
 ) -&gt; BaseResponse:
     if status_code &lt; 300:
         raise_general_exception(&#34;Calling sendNon200Response with status code &lt; 300&#34;)
@@ -598,8 +638,23 @@ def default_user_context(request: BaseRequest) -&gt; Dict[str, Any]:
         &#34;Sending response to client with status code: %s&#34;, str(status_code)
     )
     response.set_status_code(status_code)
-    response.set_json_content(content={ERROR_MESSAGE_KEY: message})
+    response.set_json_content(content=body)
     return response</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.utils.send_non_200_response_with_message"><code class="name flex">
+<span>def <span class="ident">send_non_200_response_with_message</span></span>(<span>message: str, status_code: int, response: BaseResponse)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def send_non_200_response_with_message(
+    message: str, status_code: int, response: BaseResponse
+):
+    return send_non_200_response({ERROR_MESSAGE_KEY: message}, status_code, response)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.utf_base64decode"><code class="name flex">
@@ -663,8 +718,10 @@ def default_user_context(request: BaseRequest) -&gt; Dict[str, Any]:
 <li><code><a title="supertokens_python.utils.is_an_ip_address" href="#supertokens_python.utils.is_an_ip_address">is_an_ip_address</a></code></li>
 <li><code><a title="supertokens_python.utils.is_version_gte" href="#supertokens_python.utils.is_version_gte">is_version_gte</a></code></li>
 <li><code><a title="supertokens_python.utils.normalise_http_method" href="#supertokens_python.utils.normalise_http_method">normalise_http_method</a></code></li>
+<li><code><a title="supertokens_python.utils.resolve" href="#supertokens_python.utils.resolve">resolve</a></code></li>
 <li><code><a title="supertokens_python.utils.send_200_response" href="#supertokens_python.utils.send_200_response">send_200_response</a></code></li>
 <li><code><a title="supertokens_python.utils.send_non_200_response" href="#supertokens_python.utils.send_non_200_response">send_non_200_response</a></code></li>
+<li><code><a title="supertokens_python.utils.send_non_200_response_with_message" href="#supertokens_python.utils.send_non_200_response_with_message">send_non_200_response_with_message</a></code></li>
 <li><code><a title="supertokens_python.utils.utf_base64decode" href="#supertokens_python.utils.utf_base64decode">utf_base64decode</a></code></li>
 <li><code><a title="supertokens_python.utils.utf_base64encode" href="#supertokens_python.utils.utf_base64encode">utf_base64encode</a></code></li>
 </ul>

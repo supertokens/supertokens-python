@@ -45,9 +45,6 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from ...types import APIResponse, GeneralErrorResponse
-from ..emailverification.interfaces import (
-    RecipeInterface as EmailVerificationRecipeInterface,
-)
 from .provider import Provider
 
 if TYPE_CHECKING:
@@ -96,7 +93,6 @@ class RecipeInterface(ABC):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
-        email_verified: bool,
         user_context: Dict[str, Any],
     ) -&gt; SignInUpOkResult:
         pass
@@ -112,7 +108,6 @@ class APIOptions:
         recipe_implementation: RecipeInterface,
         providers: List[Provider],
         app_info: AppInfo,
-        email_verification_recipe_implementation: EmailVerificationRecipeInterface,
     ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
@@ -121,9 +116,6 @@ class APIOptions:
         self.providers: List[Provider] = providers
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info: AppInfo = app_info
-        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = (
-            email_verification_recipe_implementation
-        )
 
 
 class SignInUpPostOkResult(APIResponse):
@@ -344,7 +336,7 @@ async def sign_in_up_post(
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.APIOptions"><code class="flex name class">
 <span>class <span class="ident">APIOptions</span></span>
-<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: ThirdPartyConfig, recipe_implementation: <a title="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface" href="#supertokens_python.recipe.thirdparty.interfaces.RecipeInterface">RecipeInterface</a>, providers: List[Provider], app_info: AppInfo, email_verification_recipe_implementation: EmailVerificationRecipeInterface)</span>
+<span>(</span><span>request: BaseRequest, response: BaseResponse, recipe_id: str, config: ThirdPartyConfig, recipe_implementation: <a title="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface" href="#supertokens_python.recipe.thirdparty.interfaces.RecipeInterface">RecipeInterface</a>, providers: List[Provider], app_info: AppInfo)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -362,7 +354,6 @@ async def sign_in_up_post(
         recipe_implementation: RecipeInterface,
         providers: List[Provider],
         app_info: AppInfo,
-        email_verification_recipe_implementation: EmailVerificationRecipeInterface,
     ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
@@ -370,10 +361,7 @@ async def sign_in_up_post(
         self.config: ThirdPartyConfig = config
         self.providers: List[Provider] = providers
         self.recipe_implementation: RecipeInterface = recipe_implementation
-        self.app_info: AppInfo = app_info
-        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = (
-            email_verification_recipe_implementation
-        )</code></pre>
+        self.app_info: AppInfo = app_info</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.AuthorisationUrlGetOkResult"><code class="flex name class">
@@ -466,7 +454,6 @@ inheritance.</p></div>
         third_party_id: str,
         third_party_user_id: str,
         email: str,
-        email_verified: bool,
         user_context: Dict[str, Any],
     ) -&gt; SignInUpOkResult:
         pass</code></pre>
@@ -535,7 +522,7 @@ async def get_users_by_email(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdparty.interfaces.RecipeInterface.sign_in_up"><code class="name flex">
-<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a></span>
+<span>async def <span class="ident">sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult" href="#supertokens_python.recipe.thirdparty.interfaces.SignInUpOkResult">SignInUpOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -549,7 +536,6 @@ async def sign_in_up(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    email_verified: bool,
     user_context: Dict[str, Any],
 ) -&gt; SignInUpOkResult:
     pass</code></pre>

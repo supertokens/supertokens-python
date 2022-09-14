@@ -52,42 +52,6 @@ from .. import asyncio, interfaces
 from ..types import EmailTemplateVars, SMSTemplateVars, User
 
 
-def create_email_verification_token(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from ..asyncio import create_email_verification_token
-
-    return sync(create_email_verification_token(user_id, user_context))
-
-
-def verify_email_using_token(
-    token: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from ..asyncio import verify_email_using_token
-
-    return sync(verify_email_using_token(token, user_context))
-
-
-def revoke_email_verification_tokens(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from ..asyncio import revoke_email_verification_tokens
-
-    return sync(revoke_email_verification_tokens(user_id, user_context))
-
-
-def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    from ..asyncio import is_email_verified
-
-    return sync(is_email_verified(user_id, user_context))
-
-
-def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    from ..asyncio import unverify_email
-
-    return sync(unverify_email(user_id, user_context))
-
-
 def get_user_by_id(
     user_id: str, user_context: Union[None, Dict[str, Any]] = None
 ) -&gt; Union[None, User]:
@@ -112,15 +76,12 @@ def thirdparty_sign_in_up(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    email_verified: bool,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from ..asyncio import thirdparty_sign_in_up
 
     return sync(
-        thirdparty_sign_in_up(
-            third_party_id, third_party_user_id, email, email_verified, user_context
-        )
+        thirdparty_sign_in_up(third_party_id, third_party_user_id, email, user_context)
     )
 
 
@@ -388,23 +349,6 @@ def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] 
     )</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartypasswordless.syncio.create_email_verification_token"><code class="name flex">
-<span>def <span class="ident">create_email_verification_token</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def create_email_verification_token(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from ..asyncio import create_email_verification_token
-
-    return sync(create_email_verification_token(user_id, user_context))</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.syncio.create_magic_link"><code class="name flex">
 <span>def <span class="ident">create_magic_link</span></span>(<span>email: Optional[str], phone_number: Optional[str], user_context: Optional[Dict[str, Any]] = None) ‑> str</span>
 </code></dt>
@@ -563,21 +507,6 @@ def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] 
     return sync(get_users_by_email(email, user_context))</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartypasswordless.syncio.is_email_verified"><code class="name flex">
-<span>def <span class="ident">is_email_verified</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    from ..asyncio import is_email_verified
-
-    return sync(is_email_verified(user_id, user_context))</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.syncio.list_codes_by_device_id"><code class="name flex">
 <span>def <span class="ident">list_codes_by_device_id</span></span>(<span>device_id: str, user_context: Optional[Dict[str, Any]] = None) ‑> Optional[<a title="supertokens_python.recipe.passwordless.types.DeviceType" href="../../passwordless/types.html#supertokens_python.recipe.passwordless.types.DeviceType">DeviceType</a>]</span>
 </code></dt>
@@ -705,25 +634,8 @@ def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] 
     return sync(asyncio.revoke_code(code_id=code_id, user_context=user_context))</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartypasswordless.syncio.revoke_email_verification_tokens"><code class="name flex">
-<span>def <span class="ident">revoke_email_verification_tokens</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def revoke_email_verification_tokens(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from ..asyncio import revoke_email_verification_tokens
-
-    return sync(revoke_email_verification_tokens(user_id, user_context))</code></pre>
-</details>
-</dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.syncio.send_email"><code class="name flex">
-<span>def <span class="ident">send_email</span></span>(<span>input_: Union[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>, <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>], user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">send_email</span></span>(<span>input_: <a title="supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters" href="../../passwordless/types.html#supertokens_python.recipe.passwordless.types.CreateAndSendCustomEmailParameters">CreateAndSendCustomEmailParameters</a>, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -751,7 +663,7 @@ def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] 
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.syncio.thirdparty_sign_in_up"><code class="name flex">
-<span>def <span class="ident">thirdparty_sign_in_up</span></span>(<span>third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Optional[Dict[str, Any]] = None)</span>
+<span>def <span class="ident">thirdparty_sign_in_up</span></span>(<span>third_party_id: str, third_party_user_id: str, email: str, user_context: Optional[Dict[str, Any]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -763,31 +675,13 @@ def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] 
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    email_verified: bool,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from ..asyncio import thirdparty_sign_in_up
 
     return sync(
-        thirdparty_sign_in_up(
-            third_party_id, third_party_user_id, email, email_verified, user_context
-        )
+        thirdparty_sign_in_up(third_party_id, third_party_user_id, email, user_context)
     )</code></pre>
-</details>
-</dd>
-<dt id="supertokens_python.recipe.thirdpartypasswordless.syncio.unverify_email"><code class="name flex">
-<span>def <span class="ident">unverify_email</span></span>(<span>user_id: str, user_context: Optional[Dict[str, Any]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    from ..asyncio import unverify_email
-
-    return sync(unverify_email(user_id, user_context))</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartypasswordless.syncio.update_passwordless_user"><code class="name flex">
@@ -820,23 +714,6 @@ def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] 
     )</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.thirdpartypasswordless.syncio.verify_email_using_token"><code class="name flex">
-<span>def <span class="ident">verify_email_using_token</span></span>(<span>token: str, user_context: Optional[Dict[str, Any]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def verify_email_using_token(
-    token: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from ..asyncio import verify_email_using_token
-
-    return sync(verify_email_using_token(token, user_context))</code></pre>
-</details>
-</dd>
 </dl>
 </section>
 <section>
@@ -857,7 +734,6 @@ def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] 
 <ul class="">
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.consume_code" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.consume_code">consume_code</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.create_code" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.create_code">create_code</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.create_email_verification_token" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.create_email_verification_token">create_email_verification_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.create_magic_link" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.create_magic_link">create_magic_link</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.create_new_code_for_device" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.create_new_code_for_device">create_new_code_for_device</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.delete_email_for_passwordless_user" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.delete_email_for_passwordless_user">delete_email_for_passwordless_user</a></code></li>
@@ -866,7 +742,6 @@ def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] 
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.get_user_by_phone_number" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.get_user_by_phone_number">get_user_by_phone_number</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.get_user_by_third_party_info" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.get_user_by_third_party_info">get_user_by_third_party_info</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.get_users_by_email" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.get_users_by_email">get_users_by_email</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.is_email_verified" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.is_email_verified">is_email_verified</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.list_codes_by_device_id" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.list_codes_by_device_id">list_codes_by_device_id</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.list_codes_by_email" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.list_codes_by_email">list_codes_by_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.list_codes_by_phone_number" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.list_codes_by_phone_number">list_codes_by_phone_number</a></code></li>
@@ -874,13 +749,10 @@ def send_sms(input_: SMSTemplateVars, user_context: Union[None, Dict[str, Any]] 
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.passwordlessSigninup" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.passwordlessSigninup">passwordlessSigninup</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.revoke_all_codes" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.revoke_all_codes">revoke_all_codes</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.revoke_code" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.revoke_code">revoke_code</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.revoke_email_verification_tokens" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.revoke_email_verification_tokens">revoke_email_verification_tokens</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.send_email" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.send_email">send_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.send_sms" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.send_sms">send_sms</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.thirdparty_sign_in_up" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.thirdparty_sign_in_up">thirdparty_sign_in_up</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.unverify_email" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.unverify_email">unverify_email</a></code></li>
 <li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.update_passwordless_user" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.update_passwordless_user">update_passwordless_user</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdpartypasswordless.syncio.verify_email_using_token" href="#supertokens_python.recipe.thirdpartypasswordless.syncio.verify_email_using_token">verify_email_using_token</a></code></li>
 </ul>
 </li>
 </ul>

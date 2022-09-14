@@ -42,7 +42,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Callable, Union, Optional
 
 from supertokens_python.recipe.userroles.interfaces import APIInterface, RecipeInterface
 from supertokens_python.supertokens import AppInfo
@@ -62,13 +62,24 @@ class InputOverrideConfig:
 
 
 class UserRolesConfig:
-    def __init__(self, override: InputOverrideConfig) -&gt; None:
+    def __init__(
+        self,
+        skip_adding_roles_to_access_token: bool,
+        skip_adding_permissions_to_access_token: bool,
+        override: InputOverrideConfig,
+    ) -&gt; None:
+        self.skip_adding_roles_to_access_token = skip_adding_roles_to_access_token
+        self.skip_adding_permissions_to_access_token = (
+            skip_adding_permissions_to_access_token
+        )
         self.override = override
 
 
 def validate_and_normalise_user_input(
     _recipe: UserRolesRecipe,
     _app_info: AppInfo,
+    skip_adding_roles_to_access_token: Optional[bool] = None,
+    skip_adding_permissions_to_access_token: Optional[bool] = None,
     override: Union[InputOverrideConfig, None] = None,
 ) -&gt; UserRolesConfig:
     if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
@@ -77,7 +88,16 @@ def validate_and_normalise_user_input(
     if override is None:
         override = InputOverrideConfig()
 
-    return UserRolesConfig(override=override)</code></pre>
+    if skip_adding_roles_to_access_token is None:
+        skip_adding_roles_to_access_token = False
+    if skip_adding_permissions_to_access_token is None:
+        skip_adding_permissions_to_access_token = False
+
+    return UserRolesConfig(
+        skip_adding_roles_to_access_token=skip_adding_roles_to_access_token,
+        skip_adding_permissions_to_access_token=skip_adding_permissions_to_access_token,
+        override=override,
+    )</code></pre>
 </details>
 </section>
 <section>
@@ -88,7 +108,7 @@ def validate_and_normalise_user_input(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.userroles.utils.validate_and_normalise_user_input"><code class="name flex">
-<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>_recipe: UserRolesRecipe, _app_info: AppInfo, override: Union[<a title="supertokens_python.recipe.userroles.utils.InputOverrideConfig" href="#supertokens_python.recipe.userroles.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None) ‑> <a title="supertokens_python.recipe.userroles.utils.UserRolesConfig" href="#supertokens_python.recipe.userroles.utils.UserRolesConfig">UserRolesConfig</a></span>
+<span>def <span class="ident">validate_and_normalise_user_input</span></span>(<span>_recipe: UserRolesRecipe, _app_info: AppInfo, skip_adding_roles_to_access_token: Optional[bool] = None, skip_adding_permissions_to_access_token: Optional[bool] = None, override: Union[<a title="supertokens_python.recipe.userroles.utils.InputOverrideConfig" href="#supertokens_python.recipe.userroles.utils.InputOverrideConfig">InputOverrideConfig</a>, None] = None) ‑> <a title="supertokens_python.recipe.userroles.utils.UserRolesConfig" href="#supertokens_python.recipe.userroles.utils.UserRolesConfig">UserRolesConfig</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -99,6 +119,8 @@ def validate_and_normalise_user_input(
 <pre><code class="python">def validate_and_normalise_user_input(
     _recipe: UserRolesRecipe,
     _app_info: AppInfo,
+    skip_adding_roles_to_access_token: Optional[bool] = None,
+    skip_adding_permissions_to_access_token: Optional[bool] = None,
     override: Union[InputOverrideConfig, None] = None,
 ) -&gt; UserRolesConfig:
     if override is not None and not isinstance(override, InputOverrideConfig):  # type: ignore
@@ -107,7 +129,16 @@ def validate_and_normalise_user_input(
     if override is None:
         override = InputOverrideConfig()
 
-    return UserRolesConfig(override=override)</code></pre>
+    if skip_adding_roles_to_access_token is None:
+        skip_adding_roles_to_access_token = False
+    if skip_adding_permissions_to_access_token is None:
+        skip_adding_permissions_to_access_token = False
+
+    return UserRolesConfig(
+        skip_adding_roles_to_access_token=skip_adding_roles_to_access_token,
+        skip_adding_permissions_to_access_token=skip_adding_permissions_to_access_token,
+        override=override,
+    )</code></pre>
 </details>
 </dd>
 </dl>
@@ -137,7 +168,7 @@ def validate_and_normalise_user_input(
 </dd>
 <dt id="supertokens_python.recipe.userroles.utils.UserRolesConfig"><code class="flex name class">
 <span>class <span class="ident">UserRolesConfig</span></span>
-<span>(</span><span>override: <a title="supertokens_python.recipe.userroles.utils.InputOverrideConfig" href="#supertokens_python.recipe.userroles.utils.InputOverrideConfig">InputOverrideConfig</a>)</span>
+<span>(</span><span>skip_adding_roles_to_access_token: bool, skip_adding_permissions_to_access_token: bool, override: <a title="supertokens_python.recipe.userroles.utils.InputOverrideConfig" href="#supertokens_python.recipe.userroles.utils.InputOverrideConfig">InputOverrideConfig</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -146,7 +177,16 @@ def validate_and_normalise_user_input(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class UserRolesConfig:
-    def __init__(self, override: InputOverrideConfig) -&gt; None:
+    def __init__(
+        self,
+        skip_adding_roles_to_access_token: bool,
+        skip_adding_permissions_to_access_token: bool,
+        override: InputOverrideConfig,
+    ) -&gt; None:
+        self.skip_adding_roles_to_access_token = skip_adding_roles_to_access_token
+        self.skip_adding_permissions_to_access_token = (
+            skip_adding_permissions_to_access_token
+        )
         self.override = override</code></pre>
 </details>
 </dd>

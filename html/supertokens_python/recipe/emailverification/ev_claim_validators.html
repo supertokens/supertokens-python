@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>supertokens_python.recipe.thirdparty.emaildelivery.services.smtp API documentation</title>
+<title>supertokens_python.recipe.emailverification.ev_claim_validators API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>supertokens_python.recipe.thirdparty.emaildelivery.services.smtp</code></h1>
+<h1 class="title">Module <code>supertokens_python.recipe.emailverification.ev_claim_validators</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -39,36 +39,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from typing import Any, Dict, Callable, Union
-
-from supertokens_python.ingredients.emaildelivery.types import (
-    EmailDeliveryInterface,
-    SMTPSettings,
-)
-from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import (
-    SMTPService as EmailVerificationSMTPService,
-)
-from supertokens_python.recipe.thirdparty.types import (
-    EmailTemplateVars,
-    SMTPOverrideInput,
-)
-
-
-class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
-    ev_smtp_service: EmailVerificationSMTPService
-
-    def __init__(
-        self,
-        smtp_settings: SMTPSettings,
-        override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None,
-    ) -&gt; None:
-        self.ev_smtp_service = EmailVerificationSMTPService(smtp_settings, override)
-
-    async def send_email(
-        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
-    ) -&gt; None:
-        await self.ev_smtp_service.send_email(template_vars, user_context)</code></pre>
+from __future__ import annotations</code></pre>
 </details>
 </section>
 <section>
@@ -78,67 +49,6 @@ class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-classes">Classes</h2>
-<dl>
-<dt id="supertokens_python.recipe.thirdparty.emaildelivery.services.smtp.SMTPService"><code class="flex name class">
-<span>class <span class="ident">SMTPService</span></span>
-<span>(</span><span>smtp_settings: <a title="supertokens_python.ingredients.emaildelivery.types.SMTPSettings" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPSettings">SMTPSettings</a>, override: Optional[Callable[[<a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>]], <a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[<a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>]]] = None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
-    ev_smtp_service: EmailVerificationSMTPService
-
-    def __init__(
-        self,
-        smtp_settings: SMTPSettings,
-        override: Union[Callable[[SMTPOverrideInput], SMTPOverrideInput], None] = None,
-    ) -&gt; None:
-        self.ev_smtp_service = EmailVerificationSMTPService(smtp_settings, override)
-
-    async def send_email(
-        self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
-    ) -&gt; None:
-        await self.ev_smtp_service.send_email(template_vars, user_context)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.ingredients.emaildelivery.types.EmailDeliveryInterface" href="../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.EmailDeliveryInterface">EmailDeliveryInterface</a></li>
-<li>abc.ABC</li>
-<li>typing.Generic</li>
-</ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="supertokens_python.recipe.thirdparty.emaildelivery.services.smtp.SMTPService.ev_smtp_service"><code class="name">var <span class="ident">ev_smtp_service</span> : <a title="supertokens_python.recipe.emailverification.emaildelivery.services.smtp.SMTPService" href="../../../../emailverification/emaildelivery/services/smtp/index.html#supertokens_python.recipe.emailverification.emaildelivery.services.smtp.SMTPService">SMTPService</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="supertokens_python.recipe.thirdparty.emaildelivery.services.smtp.SMTPService.send_email"><code class="name flex">
-<span>async def <span class="ident">send_email</span></span>(<span>self, template_vars: <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>, user_context: Dict[str, Any]) ‑> None</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">async def send_email(
-    self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
-) -&gt; None:
-    await self.ev_smtp_service.send_email(template_vars, user_context)</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -149,18 +59,7 @@ inheritance.</p></div>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="supertokens_python.recipe.thirdparty.emaildelivery.services" href="../index.html">supertokens_python.recipe.thirdparty.emaildelivery.services</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-classes">Classes</a></h3>
-<ul>
-<li>
-<h4><code><a title="supertokens_python.recipe.thirdparty.emaildelivery.services.smtp.SMTPService" href="#supertokens_python.recipe.thirdparty.emaildelivery.services.smtp.SMTPService">SMTPService</a></code></h4>
-<ul class="">
-<li><code><a title="supertokens_python.recipe.thirdparty.emaildelivery.services.smtp.SMTPService.ev_smtp_service" href="#supertokens_python.recipe.thirdparty.emaildelivery.services.smtp.SMTPService.ev_smtp_service">ev_smtp_service</a></code></li>
-<li><code><a title="supertokens_python.recipe.thirdparty.emaildelivery.services.smtp.SMTPService.send_email" href="#supertokens_python.recipe.thirdparty.emaildelivery.services.smtp.SMTPService.send_email">send_email</a></code></li>
-</ul>
-</li>
+<li><code><a title="supertokens_python.recipe.emailverification" href="index.html">supertokens_python.recipe.emailverification</a></code></li>
 </ul>
 </li>
 </ul>

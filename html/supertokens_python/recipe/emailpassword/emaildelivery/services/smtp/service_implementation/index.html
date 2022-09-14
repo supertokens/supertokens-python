@@ -42,7 +42,6 @@
 
 from typing import Any, Dict
 
-from supertokens_python.ingredients.emaildelivery.services.smtp import Transporter
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailContent,
     SMTPServiceInterface,
@@ -51,36 +50,9 @@ from supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.passwor
     get_password_reset_email_content,
 )
 from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
-from supertokens_python.recipe.emailverification.emaildelivery.services.smtp.service_implementation import (
-    ServiceImplementation as EVServiceImplementation,
-)
-from supertokens_python.recipe.emailverification.types import (
-    VerificationEmailTemplateVars,
-)
-
-from .email_verification_implementation import (
-    ServiceImplementation as DerivedEVServiceImplementation,
-)
 
 
 class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
-    def __init__(self, transporter: Transporter) -&gt; None:
-        super().__init__(transporter)
-
-        email_verification_service_implementation = EVServiceImplementation(transporter)
-        self.ev_send_raw_email = (
-            email_verification_service_implementation.send_raw_email
-        )
-        self.ev_get_content = email_verification_service_implementation.get_content
-
-        derived_ev_service_implementation = DerivedEVServiceImplementation(self)
-        email_verification_service_implementation.send_raw_email = (
-            derived_ev_service_implementation.send_raw_email
-        )
-        email_verification_service_implementation.get_content = (
-            derived_ev_service_implementation.get_content
-        )
-
     async def send_raw_email(
         self, content: EmailContent, user_context: Dict[str, Any]
     ) -&gt; None:
@@ -89,19 +61,10 @@ class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
     async def get_content(
         self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
     ) -&gt; EmailContent:
-        if isinstance(template_vars, VerificationEmailTemplateVars):
-            return await self.ev_get_content(template_vars, user_context)
         return get_password_reset_email_content(template_vars)</code></pre>
 </details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
-<dl>
-<dt><code class="name"><a title="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation" href="email_verification_implementation.html">supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 </section>
 <section>
 </section>
@@ -112,7 +75,7 @@ class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.ServiceImplementation"><code class="flex name class">
 <span>class <span class="ident">ServiceImplementation</span></span>
-<span>(</span><span>transporter: <a title="supertokens_python.ingredients.emaildelivery.services.smtp.Transporter" href="../../../../../../ingredients/emaildelivery/services/smtp.html#supertokens_python.ingredients.emaildelivery.services.smtp.Transporter">Transporter</a>)</span>
+<span>(</span><span>transporter: Transporter)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -122,23 +85,6 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ServiceImplementation(SMTPServiceInterface[EmailTemplateVars]):
-    def __init__(self, transporter: Transporter) -&gt; None:
-        super().__init__(transporter)
-
-        email_verification_service_implementation = EVServiceImplementation(transporter)
-        self.ev_send_raw_email = (
-            email_verification_service_implementation.send_raw_email
-        )
-        self.ev_get_content = email_verification_service_implementation.get_content
-
-        derived_ev_service_implementation = DerivedEVServiceImplementation(self)
-        email_verification_service_implementation.send_raw_email = (
-            derived_ev_service_implementation.send_raw_email
-        )
-        email_verification_service_implementation.get_content = (
-            derived_ev_service_implementation.get_content
-        )
-
     async def send_raw_email(
         self, content: EmailContent, user_context: Dict[str, Any]
     ) -&gt; None:
@@ -147,8 +93,6 @@ inheritance.</p></div>
     async def get_content(
         self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
     ) -&gt; EmailContent:
-        if isinstance(template_vars, VerificationEmailTemplateVars):
-            return await self.ev_get_content(template_vars, user_context)
         return get_password_reset_email_content(template_vars)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -160,7 +104,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.ServiceImplementation.get_content"><code class="name flex">
-<span>async def <span class="ident">get_content</span></span>(<span>self, template_vars: Union[<a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="../../../../types.html#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a>, <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../../../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>], user_context: Dict[str, Any]) ‑> <a title="supertokens_python.ingredients.emaildelivery.types.EmailContent" href="../../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.EmailContent">EmailContent</a></span>
+<span>async def <span class="ident">get_content</span></span>(<span>self, template_vars: <a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="../../../../types.html#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.ingredients.emaildelivery.types.EmailContent" href="../../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.EmailContent">EmailContent</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -171,8 +115,6 @@ inheritance.</p></div>
 <pre><code class="python">async def get_content(
     self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
 ) -&gt; EmailContent:
-    if isinstance(template_vars, VerificationEmailTemplateVars):
-        return await self.ev_get_content(template_vars, user_context)
     return get_password_reset_email_content(template_vars)</code></pre>
 </details>
 </dd>
@@ -205,11 +147,6 @@ inheritance.</p></div>
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp" href="../index.html">supertokens_python.recipe.emailpassword.emaildelivery.services.smtp</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
-<ul>
-<li><code><a title="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation" href="email_verification_implementation.html">supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>

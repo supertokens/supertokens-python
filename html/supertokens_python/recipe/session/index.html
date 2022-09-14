@@ -70,6 +70,7 @@ def init(
     error_handlers: Union[InputErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
     jwt: Union[JWTConfig, None] = None,
+    invalid_claim_status_code: Union[int, None] = None,
 ) -&gt; Callable[[AppInfo], RecipeModule]:
     return SessionRecipe.init(
         cookie_domain,
@@ -80,6 +81,7 @@ def init(
         error_handlers,
         override,
         jwt,
+        invalid_claim_status_code,
     )</code></pre>
 </details>
 </section>
@@ -95,6 +97,14 @@ def init(
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="supertokens_python.recipe.session.asyncio" href="asyncio/index.html">supertokens_python.recipe.session.asyncio</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="supertokens_python.recipe.session.claim_base_classes" href="claim_base_classes/index.html">supertokens_python.recipe.session.claim_base_classes</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="supertokens_python.recipe.session.claims" href="claims.html">supertokens_python.recipe.session.claims</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -158,7 +168,7 @@ def init(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.init"><code class="name flex">
-<span>def <span class="ident">init</span></span>(<span>cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal['lax', 'none', 'strict'], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal['VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE'], None]" = None, error_handlers: Union[InputErrorHandlers, None] = None, override: Union[InputOverrideConfig, None] = None, jwt: Union[JWTConfig, None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
+<span>def <span class="ident">init</span></span>(<span>cookie_domain: Union[str, None] = None, cookie_secure: Union[bool, None] = None, cookie_same_site: "Union[Literal['lax', 'none', 'strict'], None]" = None, session_expired_status_code: Union[int, None] = None, anti_csrf: "Union[Literal['VIA_TOKEN', 'VIA_CUSTOM_HEADER', 'NONE'], None]" = None, error_handlers: Union[InputErrorHandlers, None] = None, override: Union[InputOverrideConfig, None] = None, jwt: Union[JWTConfig, None] = None, invalid_claim_status_code: Union[int, None] = None) ‑> Callable[[AppInfo], RecipeModule]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -175,6 +185,7 @@ def init(
     error_handlers: Union[InputErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
     jwt: Union[JWTConfig, None] = None,
+    invalid_claim_status_code: Union[int, None] = None,
 ) -&gt; Callable[[AppInfo], RecipeModule]:
     return SessionRecipe.init(
         cookie_domain,
@@ -185,6 +196,7 @@ def init(
         error_handlers,
         override,
         jwt,
+        invalid_claim_status_code,
     )</code></pre>
 </details>
 </dd>
@@ -209,6 +221,8 @@ def init(
 <li><code><a title="supertokens_python.recipe.session.access_token" href="access_token.html">supertokens_python.recipe.session.access_token</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.api" href="api/index.html">supertokens_python.recipe.session.api</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.asyncio" href="asyncio/index.html">supertokens_python.recipe.session.asyncio</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.claim_base_classes" href="claim_base_classes/index.html">supertokens_python.recipe.session.claim_base_classes</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.claims" href="claims.html">supertokens_python.recipe.session.claims</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.constants" href="constants.html">supertokens_python.recipe.session.constants</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.cookie_and_header" href="cookie_and_header.html">supertokens_python.recipe.session.cookie_and_header</a></code></li>
 <li><code><a title="supertokens_python.recipe.session.exceptions" href="exceptions.html">supertokens_python.recipe.session.exceptions</a></code></li>

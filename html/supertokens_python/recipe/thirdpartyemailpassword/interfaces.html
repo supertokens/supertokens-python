@@ -125,7 +125,6 @@ class RecipeInterface(ABC):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
-        email_verified: bool,
         user_context: Dict[str, Any],
     ) -&gt; ThirdPartySignInUpOkResult:
         pass
@@ -856,7 +855,6 @@ inheritance.</p></div>
         third_party_id: str,
         third_party_user_id: str,
         email: str,
-        email_verified: bool,
         user_context: Dict[str, Any],
     ) -&gt; ThirdPartySignInUpOkResult:
         pass
@@ -1029,7 +1027,7 @@ async def reset_password_using_token(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.thirdpartyemailpassword.interfaces.RecipeInterface.thirdparty_sign_in_up"><code class="name flex">
-<span>async def <span class="ident">thirdparty_sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, email_verified: bool, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.ThirdPartySignInUpOkResult" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.ThirdPartySignInUpOkResult">ThirdPartySignInUpOkResult</a></span>
+<span>async def <span class="ident">thirdparty_sign_in_up</span></span>(<span>self, third_party_id: str, third_party_user_id: str, email: str, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.thirdpartyemailpassword.interfaces.ThirdPartySignInUpOkResult" href="#supertokens_python.recipe.thirdpartyemailpassword.interfaces.ThirdPartySignInUpOkResult">ThirdPartySignInUpOkResult</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1043,7 +1041,6 @@ async def thirdparty_sign_in_up(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    email_verified: bool,
     user_context: Dict[str, Any],
 ) -&gt; ThirdPartySignInUpOkResult:
     pass</code></pre>

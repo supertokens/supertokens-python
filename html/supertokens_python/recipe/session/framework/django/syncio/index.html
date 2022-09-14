@@ -40,14 +40,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from functools import wraps
-from typing import Any, Callable, Dict, TypeVar, Union, cast
+from typing import Any, Callable, Dict, TypeVar, Union, cast, List, Optional
 
 from supertokens_python import Supertokens
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.framework.django.django_request import DjangoRequest
 from supertokens_python.framework.django.django_response import DjangoResponse
-from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session import SessionRecipe, SessionContainer
+from supertokens_python.recipe.session.interfaces import SessionClaimValidator
+from supertokens_python.types import MaybeAwaitable
 
 _T = TypeVar(&#34;_T&#34;, bound=Callable[..., Any])
 
@@ -55,6 +57,12 @@ _T = TypeVar(&#34;_T&#34;, bound=Callable[..., Any])
 def verify_session(
     anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; Callable[[_T], _T]:
     if user_context is None:
@@ -72,7 +80,11 @@ def verify_session(
                 recipe = SessionRecipe.get_instance()
                 session = sync(
                     recipe.verify_session(
-                        baseRequest, anti_csrf_check, session_required, user_context
+                        baseRequest,
+                        anti_csrf_check,
+                        session_required,
+                        override_global_claim_validators,
+                        user_context,
                     )
                 )
                 if session is None:
@@ -106,7 +118,7 @@ def verify_session(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.session.framework.django.syncio.verify_session"><code class="name flex">
-<span>def <span class="ident">verify_session</span></span>(<span>anti_csrf_check: Optional[bool] = None, session_required: bool = True, user_context: Optional[Dict[str, Any]] = None) ‑> Callable[[~_T], ~_T]</span>
+<span>def <span class="ident">verify_session</span></span>(<span>anti_csrf_check: Optional[bool] = None, session_required: bool = True, override_global_claim_validators: Optional[Callable[[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>], <a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="../../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>, Dict[str, Any]], Union[Awaitable[List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]], List[<a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../../../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a>]]]] = None, user_context: Optional[Dict[str, Any]] = None) ‑> Callable[[~_T], ~_T]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -117,6 +129,12 @@ def verify_session(
 <pre><code class="python">def verify_session(
     anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -&gt; Callable[[_T], _T]:
     if user_context is None:
@@ -134,7 +152,11 @@ def verify_session(
                 recipe = SessionRecipe.get_instance()
                 session = sync(
                     recipe.verify_session(
-                        baseRequest, anti_csrf_check, session_required, user_context
+                        baseRequest,
+                        anti_csrf_check,
+                        session_required,
+                        override_global_claim_validators,
+                        user_context,
                     )
                 )
                 if session is None:

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation API documentation</title>
+<title>supertokens_python.post_init_callbacks API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation</code></h1>
+<h1 class="title">Module <code>supertokens_python.post_init_callbacks</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -40,41 +40,24 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict
-
-from supertokens_python.ingredients.emaildelivery.types import (
-    EmailContent,
-    SMTPServiceInterface,
-)
-from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
-from supertokens_python.recipe.emailverification.types import (
-    VerificationEmailTemplateVars,
-)
+from typing import Callable, List
 
 
-class ServiceImplementation(SMTPServiceInterface[VerificationEmailTemplateVars]):
-    def __init__(
-        self,
-        email_password_service_implementation: SMTPServiceInterface[EmailTemplateVars],
-    ) -&gt; None:
-        super().__init__(email_password_service_implementation.transporter)
-        self.email_password_service_implementation = (
-            email_password_service_implementation
-        )
+class PostSTInitCallbacks:
+    &#34;&#34;&#34;Callbacks that are called after the SuperTokens instance is initialized.&#34;&#34;&#34;
 
-    async def send_raw_email(
-        self, content: EmailContent, user_context: Dict[str, Any]
-    ) -&gt; None:
-        return await self.email_password_service_implementation.send_raw_email(
-            content, user_context
-        )
+    callbacks: List[Callable[[], None]] = []
 
-    async def get_content(
-        self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
-    ) -&gt; EmailContent:
-        return await self.email_password_service_implementation.get_content(
-            template_vars, user_context
-        )</code></pre>
+    @staticmethod
+    def add_post_init_callback(cb: Callable[[], None]) -&gt; None:
+        PostSTInitCallbacks.callbacks.append(cb)
+
+    @staticmethod
+    def run_post_init_callbacks() -&gt; None:
+        for cb in PostSTInitCallbacks.callbacks:
+            cb()
+
+        PostSTInitCallbacks.callbacks = []</code></pre>
 </details>
 </section>
 <section>
@@ -86,51 +69,42 @@ class ServiceImplementation(SMTPServiceInterface[VerificationEmailTemplateVars])
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation.ServiceImplementation"><code class="flex name class">
-<span>class <span class="ident">ServiceImplementation</span></span>
-<span>(</span><span>email_password_service_implementation: <a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a>[typing.Union[<a title="supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars" href="../../../../types.html#supertokens_python.recipe.emailpassword.types.PasswordResetEmailTemplateVars">PasswordResetEmailTemplateVars</a>, <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../../../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>]])</span>
+<dt id="supertokens_python.post_init_callbacks.PostSTInitCallbacks"><code class="flex name class">
+<span>class <span class="ident">PostSTInitCallbacks</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"><p>Callbacks that are called after the SuperTokens instance is initialized.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ServiceImplementation(SMTPServiceInterface[VerificationEmailTemplateVars]):
-    def __init__(
-        self,
-        email_password_service_implementation: SMTPServiceInterface[EmailTemplateVars],
-    ) -&gt; None:
-        super().__init__(email_password_service_implementation.transporter)
-        self.email_password_service_implementation = (
-            email_password_service_implementation
-        )
+<pre><code class="python">class PostSTInitCallbacks:
+    &#34;&#34;&#34;Callbacks that are called after the SuperTokens instance is initialized.&#34;&#34;&#34;
 
-    async def send_raw_email(
-        self, content: EmailContent, user_context: Dict[str, Any]
-    ) -&gt; None:
-        return await self.email_password_service_implementation.send_raw_email(
-            content, user_context
-        )
+    callbacks: List[Callable[[], None]] = []
 
-    async def get_content(
-        self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
-    ) -&gt; EmailContent:
-        return await self.email_password_service_implementation.get_content(
-            template_vars, user_context
-        )</code></pre>
+    @staticmethod
+    def add_post_init_callback(cb: Callable[[], None]) -&gt; None:
+        PostSTInitCallbacks.callbacks.append(cb)
+
+    @staticmethod
+    def run_post_init_callbacks() -&gt; None:
+        for cb in PostSTInitCallbacks.callbacks:
+            cb()
+
+        PostSTInitCallbacks.callbacks = []</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface" href="../../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.SMTPServiceInterface">SMTPServiceInterface</a></li>
-<li>abc.ABC</li>
-<li>typing.Generic</li>
-</ul>
-<h3>Methods</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation.ServiceImplementation.get_content"><code class="name flex">
-<span>async def <span class="ident">get_content</span></span>(<span>self, template_vars: <a title="supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars" href="../../../../../emailverification/types.html#supertokens_python.recipe.emailverification.types.VerificationEmailTemplateVars">VerificationEmailTemplateVars</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.ingredients.emaildelivery.types.EmailContent" href="../../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.EmailContent">EmailContent</a></span>
+<dt id="supertokens_python.post_init_callbacks.PostSTInitCallbacks.callbacks"><code class="name">var <span class="ident">callbacks</span> : List[Callable[[], None]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="supertokens_python.post_init_callbacks.PostSTInitCallbacks.add_post_init_callback"><code class="name flex">
+<span>def <span class="ident">add_post_init_callback</span></span>(<span>cb: Callable[[], None]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -138,16 +112,13 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def get_content(
-    self, template_vars: VerificationEmailTemplateVars, user_context: Dict[str, Any]
-) -&gt; EmailContent:
-    return await self.email_password_service_implementation.get_content(
-        template_vars, user_context
-    )</code></pre>
+<pre><code class="python">@staticmethod
+def add_post_init_callback(cb: Callable[[], None]) -&gt; None:
+    PostSTInitCallbacks.callbacks.append(cb)</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation.ServiceImplementation.send_raw_email"><code class="name flex">
-<span>async def <span class="ident">send_raw_email</span></span>(<span>self, content: <a title="supertokens_python.ingredients.emaildelivery.types.EmailContent" href="../../../../../../ingredients/emaildelivery/types.html#supertokens_python.ingredients.emaildelivery.types.EmailContent">EmailContent</a>, user_context: Dict[str, Any]) ‑> None</span>
+<dt id="supertokens_python.post_init_callbacks.PostSTInitCallbacks.run_post_init_callbacks"><code class="name flex">
+<span>def <span class="ident">run_post_init_callbacks</span></span>(<span>) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -155,12 +126,12 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def send_raw_email(
-    self, content: EmailContent, user_context: Dict[str, Any]
-) -&gt; None:
-    return await self.email_password_service_implementation.send_raw_email(
-        content, user_context
-    )</code></pre>
+<pre><code class="python">@staticmethod
+def run_post_init_callbacks() -&gt; None:
+    for cb in PostSTInitCallbacks.callbacks:
+        cb()
+
+    PostSTInitCallbacks.callbacks = []</code></pre>
 </details>
 </dd>
 </dl>
@@ -176,16 +147,17 @@ inheritance.</p></div>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation" href="index.html">supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation</a></code></li>
+<li><code><a title="supertokens_python" href="index.html">supertokens_python</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation.ServiceImplementation" href="#supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation.ServiceImplementation">ServiceImplementation</a></code></h4>
+<h4><code><a title="supertokens_python.post_init_callbacks.PostSTInitCallbacks" href="#supertokens_python.post_init_callbacks.PostSTInitCallbacks">PostSTInitCallbacks</a></code></h4>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation.ServiceImplementation.get_content" href="#supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation.ServiceImplementation.get_content">get_content</a></code></li>
-<li><code><a title="supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation.ServiceImplementation.send_raw_email" href="#supertokens_python.recipe.emailpassword.emaildelivery.services.smtp.service_implementation.email_verification_implementation.ServiceImplementation.send_raw_email">send_raw_email</a></code></li>
+<li><code><a title="supertokens_python.post_init_callbacks.PostSTInitCallbacks.add_post_init_callback" href="#supertokens_python.post_init_callbacks.PostSTInitCallbacks.add_post_init_callback">add_post_init_callback</a></code></li>
+<li><code><a title="supertokens_python.post_init_callbacks.PostSTInitCallbacks.callbacks" href="#supertokens_python.post_init_callbacks.PostSTInitCallbacks.callbacks">callbacks</a></code></li>
+<li><code><a title="supertokens_python.post_init_callbacks.PostSTInitCallbacks.run_post_init_callbacks" href="#supertokens_python.post_init_callbacks.PostSTInitCallbacks.run_post_init_callbacks">run_post_init_callbacks</a></code></li>
 </ul>
 </li>
 </ul>
