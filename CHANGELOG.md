@@ -6,9 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.11.0] - 2022-09-14
+
 ### Changes
 
-- Made the `email` parameter option in `unverify_email`, `revoke_email_verification_tokens`, `is_email_verified`, `verify_email_using_token`, `create_email_verification_token` of the `EmailVerification` recipe.
+- Made the `email` parameter optional in `unverify_email`, `revoke_email_verification_tokens`, `is_email_verified`, `verify_email_using_token`, `create_email_verification_token` of the `EmailVerification` recipe.
 
 ### Added
 

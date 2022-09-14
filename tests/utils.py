@@ -21,11 +21,11 @@ from subprocess import DEVNULL, run
 from time import sleep
 from typing import Any, Dict, List, cast
 
-from fastapi.testclient import TestClient
 from requests.models import Response
 from yaml import FullLoader, dump, load
 
-from supertokens_python import Supertokens, SupertokensConfig, InputAppInfo
+from fastapi.testclient import TestClient
+from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig
 from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
@@ -448,7 +448,9 @@ def min_api_version(min_version: str) -> Any:
 import sys
 
 if sys.version_info >= (3, 8):
-    from unittest.mock import AsyncMock  # pylint: disable=unused-import
+    from unittest.mock import AsyncMock
+
+    _ = AsyncMock
 else:
     from unittest.mock import MagicMock
 
