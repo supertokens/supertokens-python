@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from unittest.mock import MagicMock
+from typing import List
 
 import pytest
 from pytest import mark
@@ -92,7 +93,8 @@ async def test_add_claims_to_session_with_values():
 
     s = await create_new_session(req, user_id)
     assert s.sync_get_claim_value(UserRoleClaim) == [role]
-    assert (await s.get_claim_value(PermissionClaim)) == ["a", "b"]
+    value: List[str] = await s.get_claim_value(PermissionClaim)  # type: ignore
+    assert sorted(value) == sorted(["a", "b"])
 
 
 @min_api_version("2.14")
