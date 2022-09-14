@@ -19,12 +19,6 @@ from supertokens_python.ingredients.emaildelivery.types import (
     EmailDeliveryInterface,
     SMTPSettings,
 )
-from supertokens_python.recipe.emailverification.emaildelivery.services.smtp import (
-    SMTPService as EmailVerificationSMTPService,
-)
-from supertokens_python.recipe.emailverification.types import (
-    VerificationEmailTemplateVars,
-)
 from supertokens_python.recipe.passwordless.emaildelivery.services.smtp import (
     SMTPService as PlessSMTPService,
 )
@@ -34,9 +28,6 @@ from supertokens_python.recipe.thirdpartypasswordless.types import (
 )
 
 from .service_implementation import ServiceImplementation
-from .service_implementation.email_verification_implementation import (
-    ServiceImplementation as EmailVerificationServiceImpl,
-)
 from .service_implementation.passwordless_implementation import (
     ServiceImplementation as PlessServiceImpl,
 )
@@ -53,11 +44,6 @@ class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
         oi = ServiceImplementation(self.transporter)
         service_implementation = oi if override is None else override(oi)
 
-        self.ev_smtp_service = EmailVerificationSMTPService(
-            smtp_settings=smtp_settings,
-            override=lambda _: EmailVerificationServiceImpl(service_implementation),
-        )
-
         self.pless_smtp_service = PlessSMTPService(
             smtp_settings=smtp_settings,
             override=lambda _: PlessServiceImpl(service_implementation),
@@ -66,7 +52,4 @@ class SMTPService(EmailDeliveryInterface[EmailTemplateVars]):
     async def send_email(
         self, template_vars: EmailTemplateVars, user_context: Dict[str, Any]
     ) -> None:
-        if isinstance(template_vars, VerificationEmailTemplateVars):
-            return await self.ev_smtp_service.send_email(template_vars, user_context)
-
         return await self.pless_smtp_service.send_email(template_vars, user_context)

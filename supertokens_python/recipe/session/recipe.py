@@ -14,14 +14,20 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union, Callable, Optional
 
 from supertokens_python.framework.response import BaseResponse
 from typing_extensions import Literal
 
 from .api import handle_refresh_api, handle_signout_api
 from .cookie_and_header import get_cors_allowed_headers
-from .exceptions import SuperTokensSessionError, TokenTheftError, UnauthorisedError
+from .exceptions import (
+    SuperTokensSessionError,
+    TokenTheftError,
+    UnauthorisedError,
+    InvalidClaimsError,
+)
+from ...types import MaybeAwaitable
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
@@ -39,7 +45,14 @@ from supertokens_python.recipe_module import APIHandled, RecipeModule
 
 from .api.implementation import APIImplementation
 from .constants import SESSION_REFRESH, SIGNOUT
-from .interfaces import APIInterface, APIOptions, RecipeInterface
+from .interfaces import (
+    APIInterface,
+    APIOptions,
+    RecipeInterface,
+    SessionClaim,
+    SessionClaimValidator,
+    SessionContainer,
+)
 from .recipe_implementation import RecipeImplementation
 from .utils import (
     InputErrorHandlers,
@@ -67,6 +80,7 @@ class SessionRecipe(RecipeModule):
         error_handlers: Union[InputErrorHandlers, None] = None,
         override: Union[InputOverrideConfig, None] = None,
         jwt: Union[JWTConfig, None] = None,
+        invalid_claim_status_code: Union[int, None] = None,
     ):
         super().__init__(recipe_id, app_info)
         self.openid_recipe: Union[None, OpenIdRecipe] = None
@@ -80,6 +94,7 @@ class SessionRecipe(RecipeModule):
             error_handlers,
             override,
             jwt,
+            invalid_claim_status_code,
         )
         log_debug_message("session init: anti_csrf: %s", self.config.anti_csrf)
         if self.config.cookie_domain is not None:
@@ -137,6 +152,9 @@ class SessionRecipe(RecipeModule):
             if self.config.override.apis is None
             else self.config.override.apis(api_implementation)
         )
+
+        self.claims_added_by_other_recipes: List[SessionClaim[Any]] = []
+        self.claim_validators_added_by_other_recipes: List[SessionClaimValidator] = []
 
     def is_error_from_this_recipe_based_on_instance(self, err: Exception) -> bool:
         return isinstance(err, SuperTokensError) and (
@@ -216,6 +234,12 @@ class SessionRecipe(RecipeModule):
             return await self.config.error_handlers.on_token_theft_detected(
                 self, request, err.session_handle, err.user_id, response
             )
+        if isinstance(err, InvalidClaimsError):
+            log_debug_message("errorHandler: returning INVALID_CLAIMS")
+            return await self.config.error_handlers.on_invalid_claim(
+                self, request, err.payload, response
+            )
+
         log_debug_message("errorHandler: returning TRY_REFRESH_TOKEN")
         return await self.config.error_handlers.on_try_refresh_token(
             request, str(err), response
@@ -240,6 +264,7 @@ class SessionRecipe(RecipeModule):
         error_handlers: Union[InputErrorHandlers, None] = None,
         override: Union[InputOverrideConfig, None] = None,
         jwt: Union[JWTConfig, None] = None,
+        invalid_claim_status_code: Union[int, None] = None,
     ):
         def func(app_info: AppInfo):
             if SessionRecipe.__instance is None:
@@ -254,6 +279,7 @@ class SessionRecipe(RecipeModule):
                     error_handlers,
                     override,
                     jwt,
+                    invalid_claim_status_code,
                 )
                 return SessionRecipe.__instance
             raise_general_exception(
@@ -278,11 +304,39 @@ class SessionRecipe(RecipeModule):
             raise_general_exception("calling testing function in non testing env")
         SessionRecipe.__instance = None
 
+    def add_claim_from_other_recipe(self, claim: SessionClaim[Any]):
+        # We are throwing here (and not in addClaimValidatorFromOtherRecipe) because if multiple
+        # claims are added with the same key they will overwrite each other. Validators will all run
+        # and work as expected even if they are added multiple times.
+        if claim.key in [c.key for c in self.claims_added_by_other_recipes]:
+            raise Exception("Claim added by multiple recipes")
+
+        self.claims_added_by_other_recipes.append(claim)
+
+    def get_claims_added_by_other_recipes(self) -> List[SessionClaim[Any]]:
+        return self.claims_added_by_other_recipes
+
+    def add_claim_validator_from_other_recipe(
+        self, claim_validator: SessionClaimValidator
+    ):
+        self.claim_validators_added_by_other_recipes.append(claim_validator)
+
+    def get_claim_validators_added_by_other_recipes(
+        self,
+    ) -> List[SessionClaimValidator]:
+        return self.claim_validators_added_by_other_recipes
+
     async def verify_session(
         self,
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        override_global_claim_validators: Optional[
+            Callable[
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ],
         user_context: Dict[str, Any],
     ):
         return await self.api_implementation.verify_session(
@@ -291,5 +345,6 @@ class SessionRecipe(RecipeModule):
             ),
             anti_csrf_check,
             session_required,
+            override_global_claim_validators,
             user_context,
         )

@@ -12,14 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.emailverification.types import EmailTemplateVars
 
 
 def create_email_verification_token(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    email: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import (
         create_email_verification_token,
@@ -39,15 +41,9 @@ def verify_email_using_token(
 
 
 def is_email_verified(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from supertokens_python.recipe.emailverification.asyncio import is_email_verified
-
-    return sync(is_email_verified(user_id, email, user_context))
-
-
-def unverify_email(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    email: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import is_email_verified
 
@@ -55,13 +51,25 @@ def unverify_email(
 
 
 def revoke_email_verification_tokens(
-    user_id: str, email: str, user_context: Union[None, Dict[str, Any]] = None
+    user_id: str,
+    email: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.emailverification.asyncio import (
         revoke_email_verification_tokens,
     )
 
     return sync(revoke_email_verification_tokens(user_id, email, user_context))
+
+
+def unverify_email(
+    user_id: str,
+    email: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+):
+    from supertokens_python.recipe.emailverification.asyncio import is_email_verified
+
+    return sync(is_email_verified(user_id, email, user_context))
 
 
 def send_email(

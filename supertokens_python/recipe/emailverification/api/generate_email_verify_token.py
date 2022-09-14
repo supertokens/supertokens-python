@@ -18,6 +18,7 @@ from supertokens_python.recipe.emailverification.interfaces import (
     APIOptions,
 )
 from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.recipe.session.asyncio import get_session
 
 
 async def handle_generate_email_verify_token_api(
@@ -26,8 +27,14 @@ async def handle_generate_email_verify_token_api(
     if api_implementation.disable_generate_email_verify_token_post:
         return None
     user_context = default_user_context(api_options.request)
+    session = await get_session(
+        api_options.request,
+        override_global_claim_validators=lambda _, __, ___: [],
+        user_context=user_context,
+    )
+    assert session is not None
 
     result = await api_implementation.generate_email_verify_token_post(
-        api_options, user_context
+        session, api_options, user_context
     )
     return send_200_response(result.to_json(), api_options.response)

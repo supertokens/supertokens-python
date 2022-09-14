@@ -15,7 +15,7 @@
 from pytest import mark, skip
 from supertokens_python.querier import Querier
 from supertokens_python import InputAppInfo, SupertokensConfig, init
-from supertokens_python.recipe import userroles
+from supertokens_python.recipe import userroles, session
 from supertokens_python.utils import is_version_gte
 from tests.utils import clean_st, reset, setup_st, start_st
 from supertokens_python.recipe.userroles import asyncio
@@ -43,7 +43,7 @@ async def test_get_roles_for_that_have_permission():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init()],
+        recipe_list=[userroles.init(), session.init()],
     )
     start_st()
 
@@ -77,7 +77,7 @@ async def test_get_roles_for_unknown_permission():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init()],
+        recipe_list=[userroles.init(), session.init()],
     )
     start_st()
 

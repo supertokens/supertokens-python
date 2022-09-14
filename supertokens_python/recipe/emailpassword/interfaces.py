@@ -18,11 +18,9 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailpassword.types import EmailTemplateVars
+from ...supertokens import AppInfo
 
 from ...types import APIResponse, GeneralErrorResponse
-from ..emailverification.interfaces import (
-    RecipeInterface as EmailVerificationRecipeInterface,
-)
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -145,7 +143,7 @@ class APIOptions:
         recipe_id: str,
         config: EmailPasswordConfig,
         recipe_implementation: RecipeInterface,
-        email_verification_recipe_implementation: EmailVerificationRecipeInterface,
+        app_info: AppInfo,
         email_delivery: EmailDeliveryIngredient[EmailTemplateVars],
     ):
         self.request: BaseRequest = request
@@ -153,54 +151,8 @@ class APIOptions:
         self.recipe_id: str = recipe_id
         self.config: EmailPasswordConfig = config
         self.recipe_implementation: RecipeInterface = recipe_implementation
-        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = (
-            email_verification_recipe_implementation
-        )
+        self.app_info = app_info
         self.email_delivery = email_delivery
-
-
-class EmailVerifyPostOkResult(APIResponse):
-    status: str = "OK"
-
-    def __init__(self, user: User):
-        self.user = user
-
-    def to_json(self) -> Dict[str, Any]:
-        return {
-            "status": self.status,
-            "user": {"id": self.user.user_id, "email": self.user.email},
-        }
-
-
-class EmailVerifyPostInvalidTokenError(APIResponse):
-    status: str = "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
-
-
-class IsEmailVerifiedGetOkResult(APIResponse):
-    status: str = "OK"
-
-    def __init__(self, is_verified: bool):
-        self.is_verified = is_verified
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status, "isVerified": self.is_verified}
-
-
-class GenerateEmailVerifyTokenPostOkResult(APIResponse):
-    status: str = "OK"
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
-
-
-class GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError(APIResponse):
-    status: str = "EMAIL_ALREADY_VERIFIED_ERROR"
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
 
 
 class EmailExistsGetOkResult(APIResponse):

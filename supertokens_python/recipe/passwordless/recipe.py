@@ -52,9 +52,15 @@ from .recipe_implementation import RecipeImplementation
 from .utils import (
     ContactConfig,
     OverrideConfig,
-    PhoneOrEmailInput,
     validate_and_normalise_user_input,
 )
+from ..emailverification import EmailVerificationRecipe
+from ..emailverification.interfaces import (
+    GetEmailForUserIdOkResult,
+    EmailDoesNotExistError,
+    UnknownUserIdError,
+)
+from ...post_init_callbacks import PostSTInitCallbacks
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -83,9 +89,6 @@ class PasswordlessRecipe(RecipeModule):
         ],
         ingredients: PasswordlessIngredients,
         override: Union[OverrideConfig, None] = None,
-        get_link_domain_and_path: Union[
-            Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None
-        ] = None,
         get_custom_user_input_code: Union[
             Callable[[Dict[str, Any]], Awaitable[str]], None
         ] = None,
@@ -102,7 +105,6 @@ class PasswordlessRecipe(RecipeModule):
             contact_config,
             flow_type,
             override,
-            get_link_domain_and_path,
             get_custom_user_input_code,
             email_delivery,
             sms_delivery,
@@ -136,6 +138,13 @@ class PasswordlessRecipe(RecipeModule):
             if sms_delivery_ingredient is None
             else sms_delivery_ingredient
         )
+
+        def callback():
+            ev_recipe = EmailVerificationRecipe.get_instance_optional()
+            if ev_recipe:
+                ev_recipe.add_get_email_for_user_id_func(self.get_email_for_user_id)
+
+        PostSTInitCallbacks.add_post_init_callback(callback)
 
     def get_apis_handled(self) -> List[APIHandled]:
         return [
@@ -187,6 +196,7 @@ class PasswordlessRecipe(RecipeModule):
             self.get_recipe_id(),
             self.config,
             self.recipe_implementation,
+            self.get_app_info(),
             self.email_delivery,
             self.sms_delivery,
         )
@@ -202,7 +212,7 @@ class PasswordlessRecipe(RecipeModule):
 
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
-    ):
+    ) -> BaseResponse:  # type: ignore
         raise err
 
     def get_all_cors_headers(self) -> List[str]:
@@ -220,9 +230,6 @@ class PasswordlessRecipe(RecipeModule):
             "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
         ],
         override: Union[OverrideConfig, None] = None,
-        get_link_domain_and_path: Union[
-            Callable[[PhoneOrEmailInput, Dict[str, Any]], Awaitable[str]], None
-        ] = None,
         get_custom_user_input_code: Union[
             Callable[[Dict[str, Any]], Awaitable[str]], None
         ] = None,
@@ -243,7 +250,6 @@ class PasswordlessRecipe(RecipeModule):
                     flow_type,
                     ingredients,
                     override,
-                    get_link_domain_and_path,
                     get_custom_user_input_code,
                     email_delivery,
                     sms_delivery,
@@ -288,11 +294,14 @@ class PasswordlessRecipe(RecipeModule):
             user_input_code=user_input_code,
             user_context=user_context,
         )
-        magic_link = await self.config.get_link_domain_and_path(
-            PhoneOrEmailInput(phone_number, email), user_context
-        )
-        magic_link += (
-            "?rid="
+
+        app_info = self.get_app_info()
+
+        magic_link = (
+            app_info.website_domain.get_as_string_dangerous()
+            + app_info.website_base_path.get_as_string_dangerous()
+            + "/verify"
+            + "?rid="
             + self.get_recipe_id()
             + "&preAuthSessionId="
             + code_info.pre_auth_session_id
@@ -323,3 +332,15 @@ class PasswordlessRecipe(RecipeModule):
         if isinstance(consume_code_result, ConsumeCodeOkResult):
             return consume_code_result
         raise Exception("Failed to create user. Please retry")
+
+    async def get_email_for_user_id(
+        self, user_id: str, user_context: Dict[str, Any]
+    ) -> Union[GetEmailForUserIdOkResult, EmailDoesNotExistError, UnknownUserIdError]:
+        user_info = await self.recipe_implementation.get_user_by_id(
+            user_id, user_context
+        )
+        if user_info is not None:
+            if user_info.email is not None:
+                return GetEmailForUserIdOkResult(user_info.email)
+            return EmailDoesNotExistError()
+        return UnknownUserIdError()

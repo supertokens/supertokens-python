@@ -13,14 +13,17 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, List, Callable, Optional
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.session.interfaces import (
     APIInterface,
     SignOutOkayResponse,
+    SessionClaimValidator,
 )
+from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import normalise_http_method
+from ..utils import get_required_claim_validators
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.session.interfaces import APIOptions
@@ -28,33 +31,23 @@ if TYPE_CHECKING:
 
 from typing import Any, Dict
 
-from supertokens_python.recipe.session.exceptions import UnauthorisedError
-
 
 class APIImplementation(APIInterface):
     async def refresh_post(
         self, api_options: APIOptions, user_context: Dict[str, Any]
-    ) -> None:
-        await api_options.recipe_implementation.refresh_session(
+    ) -> SessionContainer:
+        return await api_options.recipe_implementation.refresh_session(
             api_options.request, user_context
         )
 
     async def signout_post(
-        self, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        session: Optional[SessionContainer],
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
     ) -> SignOutOkayResponse:
-        try:
-            session = await api_options.recipe_implementation.get_session(
-                request=api_options.request,
-                user_context=user_context,
-                anti_csrf_check=None,
-                session_required=True,
-            )
-        except UnauthorisedError:
-            return SignOutOkayResponse()
-
-        if session is None:
-            raise Exception("Session is undefined. Should not come here.")
-        await session.revoke_session(user_context)
+        if session is not None:
+            await session.revoke_session(user_context)
         return SignOutOkayResponse()
 
     async def verify_session(
@@ -62,6 +55,12 @@ class APIImplementation(APIInterface):
         api_options: APIOptions,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
+        override_global_claim_validators: Optional[
+            Callable[
+                [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+                MaybeAwaitable[List[SessionClaimValidator]],
+            ]
+        ],
         user_context: Dict[str, Any],
     ) -> Union[SessionContainer, None]:
         method = normalise_http_method(api_options.request.method())
@@ -73,6 +72,19 @@ class APIImplementation(APIInterface):
             return await api_options.recipe_implementation.refresh_session(
                 api_options.request, user_context
             )
-        return await api_options.recipe_implementation.get_session(
-            api_options.request, anti_csrf_check, session_required, user_context
+        session = await api_options.recipe_implementation.get_session(
+            api_options.request,
+            anti_csrf_check,
+            session_required,
+            user_context,
         )
+
+        if session is not None:
+            claim_validators = await get_required_claim_validators(
+                session,
+                override_global_claim_validators,
+                user_context,
+            )
+            await session.assert_claims(claim_validators, user_context)
+
+        return session

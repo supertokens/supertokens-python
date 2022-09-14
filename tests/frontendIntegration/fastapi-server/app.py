@@ -282,7 +282,7 @@ async def update_jwt(sess: SessionContainer = Depends(verify_session())):
 async def update_jwt_post(
     request: Request, _session: SessionContainer = Depends(verify_session())
 ):
-    await _session.update_access_token_payload(await request.json())
+    await _session.update_access_token_payload(await request.json(), {})
     Test.increment_get_session()
     return JSONResponse(
         content=_session.get_access_token_payload(),

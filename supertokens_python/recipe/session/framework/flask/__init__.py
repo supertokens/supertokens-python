@@ -12,11 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from functools import wraps
-from typing import Any, Callable, Dict, TypeVar, Union, cast
+from typing import Any, Callable, Dict, TypeVar, Union, cast, List, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework.flask.flask_request import FlaskRequest
-from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session import SessionRecipe, SessionContainer
+from supertokens_python.recipe.session.interfaces import SessionClaimValidator
+from supertokens_python.types import MaybeAwaitable
 
 _T = TypeVar("_T", bound=Callable[..., Any])
 
@@ -24,6 +26,12 @@ _T = TypeVar("_T", bound=Callable[..., Any])
 def verify_session(
     anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Callable[[_T], _T]:
     if user_context is None:
@@ -38,7 +46,11 @@ def verify_session(
             recipe = SessionRecipe.get_instance()
             session = sync(
                 recipe.verify_session(
-                    baseRequest, anti_csrf_check, session_required, user_context
+                    baseRequest,
+                    anti_csrf_check,
+                    session_required,
+                    override_global_claim_validators,
+                    user_context,
                 )
             )
             if session is None:

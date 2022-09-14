@@ -17,9 +17,6 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from ...types import APIResponse, GeneralErrorResponse
-from ..emailverification.interfaces import (
-    RecipeInterface as EmailVerificationRecipeInterface,
-)
 from .provider import Provider
 
 if TYPE_CHECKING:
@@ -68,7 +65,6 @@ class RecipeInterface(ABC):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
-        email_verified: bool,
         user_context: Dict[str, Any],
     ) -> SignInUpOkResult:
         pass
@@ -84,7 +80,6 @@ class APIOptions:
         recipe_implementation: RecipeInterface,
         providers: List[Provider],
         app_info: AppInfo,
-        email_verification_recipe_implementation: EmailVerificationRecipeInterface,
     ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
@@ -93,9 +88,6 @@ class APIOptions:
         self.providers: List[Provider] = providers
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info: AppInfo = app_info
-        self.email_verification_recipe_implementation: EmailVerificationRecipeInterface = (
-            email_verification_recipe_implementation
-        )
 
 
 class SignInUpPostOkResult(APIResponse):

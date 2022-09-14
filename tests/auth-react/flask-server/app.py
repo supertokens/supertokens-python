@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, make_response, request
@@ -33,6 +33,7 @@ from supertokens_python.recipe import (
     thirdparty,
     thirdpartyemailpassword,
     thirdpartypasswordless,
+    emailverification,
 )
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
@@ -73,6 +74,7 @@ from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
+    SessionContainer,
 )
 from supertokens_python.recipe.session.interfaces import APIOptions as SAPIOptions
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
@@ -104,6 +106,7 @@ from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
 )
 from supertokens_python.types import GeneralErrorResponse
 from typing_extensions import Literal
+from supertokens_python.recipe.emailverification.types import User as EVUser
 
 load_dotenv()
 
@@ -153,6 +156,13 @@ async def save_code_text(
         }
     )
     code_store[param.pre_auth_session_id] = codes
+
+
+async def ev_create_and_send_custom_email(
+    _: EVUser, url_with_token: str, __: Dict[str, Any]
+) -> None:
+    global latest_url_with_token
+    latest_url_with_token = url_with_token
 
 
 async def create_and_send_custom_email(
@@ -275,17 +285,27 @@ def custom_init(
         )
 
         async def email_verify_post(
-            token: str, api_options: EVAPIOptions, user_context: Dict[str, Any]
+            token: str,
+            session: Optional[SessionContainer],
+            api_options: EVAPIOptions,
+            user_context: Dict[str, Any],
         ):
             is_general_error = await check_for_general_error(
                 "body", api_options.request
             )
             if is_general_error:
                 return GeneralErrorResponse("general error from API email verify")
-            return await original_email_verify_post(token, api_options, user_context)
+            return await original_email_verify_post(
+                token,
+                session,
+                api_options,
+                user_context,
+            )
 
         async def generate_email_verify_token_post(
-            api_options: EVAPIOptions, user_context: Dict[str, Any]
+            session: SessionContainer,
+            api_options: EVAPIOptions,
+            user_context: Dict[str, Any],
         ):
             is_general_error = await check_for_general_error(
                 "body", api_options.request
@@ -295,7 +315,7 @@ def custom_init(
                     "general error from API email verification code"
                 )
             return await original_generate_email_verify_token_post(
-                api_options, user_context
+                session, api_options, user_context
             )
 
         original_implementation_email_verification.email_verify_post = email_verify_post
@@ -585,13 +605,17 @@ def custom_init(
     def override_session_apis(original_implementation: SessionAPIInterface):
         original_signout_post = original_implementation.signout_post
 
-        async def signout_post(api_options: SAPIOptions, user_context: Dict[str, Any]):
+        async def signout_post(
+            session: Optional[SessionContainer],
+            api_options: SAPIOptions,
+            user_context: Dict[str, Any],
+        ):
             is_general_error = await check_for_general_error(
                 "body", api_options.request
             )
             if is_general_error:
-                return GeneralErrorResponse("general error from signout API")
-            return await original_signout_post(api_options, user_context)
+                raise Exception("general error from signout API")
+            return await original_signout_post(session, api_options, user_context)
 
         original_implementation.signout_post = signout_post
         return original_implementation
@@ -870,18 +894,17 @@ def custom_init(
 
     recipe_list = [
         session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
+        emailverification.init(
+            mode="REQUIRED",
+            create_and_send_custom_email=ev_create_and_send_custom_email,
+            override=EVInputOverrideConfig(apis=override_email_verification_apis),
+        ),
         emailpassword.init(
             sign_up_feature=emailpassword.InputSignUpFeature(form_fields),
             reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
                 create_and_send_custom_email=create_and_send_custom_email
             ),
-            email_verification_feature=emailpassword.InputEmailVerificationConfig(
-                create_and_send_custom_email=create_and_send_custom_email
-            ),
             override=emailpassword.InputOverrideConfig(
-                email_verification_feature=EVInputOverrideConfig(
-                    apis=override_email_verification_apis
-                ),
                 apis=override_email_password_apis,
             ),
         ),

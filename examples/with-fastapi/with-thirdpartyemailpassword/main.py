@@ -13,7 +13,11 @@ from supertokens_python import (
     init,
 )
 from supertokens_python.framework.fastapi import get_middleware
-from supertokens_python.recipe import session, thirdpartyemailpassword
+from supertokens_python.recipe import (
+    session,
+    thirdpartyemailpassword,
+    emailverification,
+)
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.thirdpartyemailpassword import (
@@ -52,6 +56,7 @@ init(
     framework="fastapi",
     recipe_list=[
         session.init(),
+        emailverification.init("REQUIRED"),
         thirdpartyemailpassword.init(
             providers=[
                 Google(

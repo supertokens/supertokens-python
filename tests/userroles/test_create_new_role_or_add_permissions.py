@@ -15,7 +15,7 @@
 from pytest import mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.querier import Querier
-from supertokens_python.recipe import userroles
+from supertokens_python.recipe import userroles, session
 from supertokens_python.recipe.userroles import asyncio, interfaces
 from supertokens_python.utils import is_version_gte
 from tests.utils import clean_st, reset, setup_st, start_st
@@ -42,7 +42,7 @@ async def test_create_new_role():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init()],
+        recipe_list=[userroles.init(), session.init()],
     )
     start_st()
 
@@ -69,7 +69,7 @@ async def test_create_new_role_twice():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init()],
+        recipe_list=[userroles.init(), session.init()],
     )
     start_st()
 
@@ -101,7 +101,7 @@ async def test_create_new_role_with_permissions():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init()],
+        recipe_list=[userroles.init(), session.init()],
     )
     start_st()
 
@@ -134,7 +134,7 @@ async def test_add_permissions_to_new_role_():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init()],
+        recipe_list=[userroles.init(), session.init()],
     )
     start_st()
 
@@ -172,7 +172,7 @@ async def test_add_duplicate_permission():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init()],
+        recipe_list=[userroles.init(), session.init()],
     )
     start_st()
 

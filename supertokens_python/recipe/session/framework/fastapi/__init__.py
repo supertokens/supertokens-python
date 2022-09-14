@@ -11,17 +11,24 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Any, Callable, Coroutine, Dict, Union
+from typing import Any, Callable, Coroutine, Dict, Union, List, Optional
 
 from supertokens_python.framework.fastapi.fastapi_request import FastApiRequest
 from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.types import MaybeAwaitable
 
-from ...interfaces import SessionContainer
+from ...interfaces import SessionContainer, SessionClaimValidator
 
 
 def verify_session(
     anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
+    override_global_claim_validators: Optional[
+        Callable[
+            [List[SessionClaimValidator], SessionContainer, Dict[str, Any]],
+            MaybeAwaitable[List[SessionClaimValidator]],
+        ]
+    ] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ) -> Callable[..., Coroutine[Any, Any, Union[SessionContainer, None]]]:
     if user_context is None:
@@ -32,7 +39,11 @@ def verify_session(
         baseRequest = FastApiRequest(request)
         recipe = SessionRecipe.get_instance()
         session = await recipe.verify_session(
-            baseRequest, anti_csrf_check, session_required, user_context
+            baseRequest,
+            anti_csrf_check,
+            session_required,
+            override_global_claim_validators,
+            user_context,
         )
         if session is None:
             if session_required:

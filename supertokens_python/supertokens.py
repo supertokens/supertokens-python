@@ -43,6 +43,7 @@ from .interfaces import (
 )
 from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
+from .post_init_callbacks import PostSTInitCallbacks
 from .querier import Querier
 from .recipe.session.cookie_and_header import (
     attach_access_token_to_cookie,
@@ -58,7 +59,7 @@ from .utils import (
     get_rid_from_request,
     is_version_gte,
     normalise_http_method,
-    send_non_200_response,
+    send_non_200_response_with_message,
 )
 
 if TYPE_CHECKING:
@@ -290,6 +291,7 @@ class Supertokens:
             Supertokens.__instance = Supertokens(
                 app_info, framework, supertokens_config, recipe_list, mode, telemetry
             )
+            PostSTInitCallbacks.run_post_init_callbacks()
 
     @staticmethod
     def reset():
@@ -614,7 +616,7 @@ class Supertokens:
 
         if isinstance(err, BadInputError):
             log_debug_message("errorHandler: Sending 400 status code response")
-            return send_non_200_response(str(err), 400, response)
+            return send_non_200_response_with_message(str(err), 400, response)
 
         for recipe in self.recipe_modules:
             log_debug_message(

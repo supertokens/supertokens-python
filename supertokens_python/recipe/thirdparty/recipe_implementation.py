@@ -101,13 +101,12 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
-        email_verified: bool,
         user_context: Dict[str, Any],
     ) -> SignInUpOkResult:
         data = {
             "thirdPartyId": third_party_id,
             "thirdPartyUserId": third_party_user_id,
-            "email": {"id": email, "isVerified": email_verified},
+            "email": {"id": email},
         }
         response = await self.querier.send_post_request(
             NormalisedURLPath("/recipe/signinup"), data

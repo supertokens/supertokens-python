@@ -13,8 +13,8 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
-
+import json
+from typing import TYPE_CHECKING, Any, Dict, Optional
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
@@ -24,8 +24,8 @@ from supertokens_python.utils import (
     frontend_has_interceptor,
     get_timestamp_ms,
     normalise_http_method,
+    resolve,
 )
-
 from . import session_functions
 from .cookie_and_header import (
     get_access_token_from_cookie,
@@ -39,17 +39,27 @@ from .interfaces import (
     AccessTokenObj,
     RecipeInterface,
     RegenerateAccessTokenOkResult,
+    SessionClaim,
+    SessionClaimValidator,
     SessionInformationResult,
     SessionObj,
+    ClaimsValidationResult,
+    SessionDoesNotExistError,
+    JSONObject,
+    GetClaimValueOkResult,
 )
 from .session_class import Session
+from ...types import MaybeAwaitable
+from .utils import (
+    SessionConfig,
+    validate_claims_in_payload,
+)
 
 if TYPE_CHECKING:
     from typing import List, Union
 
     from supertokens_python.querier import Querier
 
-    from .utils import SessionConfig
 
 from .interfaces import SessionContainer
 
@@ -74,7 +84,7 @@ class HandshakeInfo:
         ]
 
 
-class RecipeImplementation(RecipeInterface):
+class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods
     def __init__(self, querier: Querier, config: SessionConfig):
         super().__init__()
         self.querier = querier
@@ -163,13 +173,71 @@ class RecipeImplementation(RecipeInterface):
         request.set_session(new_session)
         return new_session
 
+    async def validate_claims(
+        self,
+        user_id: str,
+        access_token_payload: Dict[str, Any],
+        claim_validators: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -> ClaimsValidationResult:
+        access_token_payload_update = None
+        original_access_token_payload = json.dumps(access_token_payload)
+
+        for validator in claim_validators:
+            log_debug_message(
+                "update_claims_in_payload_if_needed checking should_refetch for %s",
+                validator.id,
+            )
+            if validator.claim is not None and validator.should_refetch(
+                access_token_payload, user_context
+            ):
+                log_debug_message(
+                    "update_claims_in_payload_if_needed refetching for %s", validator.id
+                )
+                value = await resolve(
+                    validator.claim.fetch_value(user_id, user_context)
+                )
+                log_debug_message(
+                    "update_claims_in_payload_if_needed %s refetch result %s",
+                    validator.id,
+                    json.dumps(value),
+                )
+                if value is not None:
+                    access_token_payload = validator.claim.add_to_payload_(
+                        access_token_payload, value, user_context
+                    )
+
+        if json.dumps(access_token_payload) != original_access_token_payload:
+            access_token_payload_update = access_token_payload
+
+        invalid_claims = await validate_claims_in_payload(
+            claim_validators, access_token_payload, user_context
+        )
+
+        return ClaimsValidationResult(invalid_claims, access_token_payload_update)
+
+    async def validate_claims_in_jwt_payload(
+        self,
+        user_id: str,
+        jwt_payload: JSONObject,
+        claim_validators: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -> ClaimsValidationResult:
+        invalid_claims = await validate_claims_in_payload(
+            claim_validators,
+            jwt_payload,
+            user_context,
+        )
+
+        return ClaimsValidationResult(invalid_claims)
+
     async def get_session(
         self,
         request: BaseRequest,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
         user_context: Dict[str, Any],
-    ) -> Union[SessionContainer, None]:
+    ) -> Optional[SessionContainer]:
         log_debug_message("getSession: Started")
 
         log_debug_message(
@@ -328,6 +396,7 @@ class RecipeImplementation(RecipeInterface):
         new_access_token_payload: Dict[str, Any],
         user_context: Dict[str, Any],
     ) -> bool:
+
         return await session_functions.update_access_token_payload(
             self, session_handle, new_access_token_payload
         )
@@ -337,6 +406,92 @@ class RecipeImplementation(RecipeInterface):
 
     async def get_refresh_token_lifetime_ms(self, user_context: Dict[str, Any]) -> int:
         return (await self.get_handshake_info()).refresh_token_validity
+
+    async def merge_into_access_token_payload(
+        self,
+        session_handle: str,
+        access_token_payload_update: Dict[str, Any],
+        user_context: Dict[str, Any],
+    ) -> bool:
+        session_info = await self.get_session_information(session_handle, user_context)
+        if session_info is None:
+            return False
+
+        new_access_token_payload = {
+            **session_info.access_token_payload,
+            **access_token_payload_update,
+        }
+        for k in access_token_payload_update.keys():
+            if new_access_token_payload[k] is None:
+                del new_access_token_payload[k]
+
+        return await self.update_access_token_payload(
+            session_handle, new_access_token_payload, user_context
+        )
+
+    async def fetch_and_set_claim(
+        self,
+        session_handle: str,
+        claim: SessionClaim[Any],
+        user_context: Dict[str, Any],
+    ) -> bool:
+        session_info = await self.get_session_information(session_handle, user_context)
+        if session_info is None:
+            return False
+
+        access_token_payload_update = await claim.build(
+            session_info.user_id, user_context
+        )
+        return await self.merge_into_access_token_payload(
+            session_handle, access_token_payload_update, user_context
+        )
+
+    async def set_claim_value(
+        self,
+        session_handle: str,
+        claim: SessionClaim[Any],
+        value: Any,
+        user_context: Dict[str, Any],
+    ):
+        access_token_payload_update = claim.add_to_payload_({}, value, user_context)
+        return await self.merge_into_access_token_payload(
+            session_handle, access_token_payload_update, user_context
+        )
+
+    async def get_claim_value(
+        self,
+        session_handle: str,
+        claim: SessionClaim[Any],
+        user_context: Dict[str, Any],
+    ) -> Union[SessionDoesNotExistError, GetClaimValueOkResult[Any]]:
+        session_info = await self.get_session_information(session_handle, user_context)
+        if session_info is None:
+            return SessionDoesNotExistError()
+
+        return GetClaimValueOkResult(
+            value=claim.get_value_from_payload(
+                session_info.access_token_payload, user_context
+            )
+        )
+
+    def get_global_claim_validators(
+        self,
+        user_id: str,
+        claim_validators_added_by_other_recipes: List[SessionClaimValidator],
+        user_context: Dict[str, Any],
+    ) -> MaybeAwaitable[List[SessionClaimValidator]]:
+        return claim_validators_added_by_other_recipes
+
+    async def remove_claim(
+        self,
+        session_handle: str,
+        claim: SessionClaim[Any],
+        user_context: Dict[str, Any],
+    ) -> bool:
+        access_token_payload = claim.remove_from_payload_by_merge_({}, user_context)
+        return await self.merge_into_access_token_payload(
+            session_handle, access_token_payload, user_context
+        )
 
     async def regenerate_access_token(
         self,

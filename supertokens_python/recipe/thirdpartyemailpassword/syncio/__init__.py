@@ -23,40 +23,6 @@ from ..interfaces import (
 from ..types import EmailTemplateVars, User
 
 
-def create_email_verification_token(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-        create_email_verification_token,
-    )
-
-    return sync(create_email_verification_token(user_id, user_context))
-
-
-def verify_email_using_token(
-    token: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-        verify_email_using_token,
-    )
-
-    return sync(verify_email_using_token(token, user_context))
-
-
-def is_email_verified(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-        is_email_verified,
-    )
-
-    return sync(is_email_verified(user_id, user_context))
-
-
-def unverify_email(user_id: str, user_context: Union[None, Dict[str, Any]] = None):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import unverify_email
-
-    return sync(unverify_email(user_id, user_context))
-
-
 def get_user_by_id(
     user_id: str, user_context: Union[None, Dict[str, Any]] = None
 ) -> Union[None, User]:
@@ -83,7 +49,6 @@ def thirdparty_sign_in_up(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
-    email_verified: bool,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
@@ -91,9 +56,7 @@ def thirdparty_sign_in_up(
     )
 
     return sync(
-        thirdparty_sign_in_up(
-            third_party_id, third_party_user_id, email, email_verified, user_context
-        )
+        thirdparty_sign_in_up(third_party_id, third_party_user_id, email, user_context)
     )
 
 
@@ -158,16 +121,6 @@ def get_users_by_email(
     )
 
     return sync(get_users_by_email(email, user_context))
-
-
-def revoke_email_verification_tokens(
-    user_id: str, user_context: Union[None, Dict[str, Any]] = None
-):
-    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-        revoke_email_verification_tokens,
-    )
-
-    return sync(revoke_email_verification_tokens(user_id, user_context))
 
 
 def send_email(

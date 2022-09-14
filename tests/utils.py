@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import asyncio
 from datetime import datetime, timezone
 from http.cookies import SimpleCookie
 from os import environ, kill, remove, scandir
@@ -18,13 +19,13 @@ from shutil import rmtree
 from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 from fastapi.testclient import TestClient
 from requests.models import Response
 from yaml import FullLoader, dump, load
 
-from supertokens_python import Supertokens
+from supertokens_python import Supertokens, SupertokensConfig, InputAppInfo
 from supertokens_python.process_state import ProcessState
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
@@ -40,6 +41,7 @@ from supertokens_python.recipe.thirdpartypasswordless import (
 )
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.userroles import UserRolesRecipe
+from supertokens_python.utils import is_version_gte
 
 INSTALLATION_PATH = environ["SUPERTOKENS_PATH"]
 SUPERTOKENS_PROCESS_DIR = INSTALLATION_PATH + "/.started"
@@ -359,3 +361,121 @@ def email_verify_token_request(
     finally:
         if use_server:
             environ["SUPERTOKENS_ENV"] = "testing"
+
+
+def setup_function(_):
+    reset()
+    clean_st()
+    setup_st()
+
+
+def teardown_function(_):
+    reset()
+    clean_st()
+
+
+core_version: str = ""
+
+
+def get_core_api_version() -> str:
+    """
+    Fetches the core api version only once
+    """
+    global core_version
+    if core_version:
+        return core_version
+
+    from supertokens_python import init
+    from supertokens_python.querier import Querier
+    from supertokens_python.recipe import session
+
+    loop = asyncio.get_event_loop()
+
+    async def get_api_version():
+        return await Querier.get_instance().get_api_version()
+
+    try:
+        # If ST has been already initialized:
+        core_version = cast(loop.run_until_complete(asyncio.gather(get_api_version())), str)  # type: ignore
+        return core_version
+    except Exception:
+        pass
+
+    setup_function(None)
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            session.init(),
+        ],
+    )
+    start_st()
+
+    api_version = asyncio.gather(get_api_version())
+    core_version = loop.run_until_complete(api_version)[0]  # type: ignore # pylint: disable=unused-variable
+    return core_version
+
+
+from pytest import mark
+
+
+def min_api_version(min_version: str) -> Any:
+    """
+    Skips the test if the local ST core doesn't satisfy
+    version requirements for the tests.
+
+    Fetches the core version only once throughout the testing session.
+    """
+
+    def wrapper(f: Any) -> Any:
+        core_api_version = get_core_api_version()
+        if is_version_gte(core_api_version, min_version):
+            return mark.asyncio(f)
+
+        return mark.skip(f"Requires core api version >= {min_version}")(f)
+
+    return wrapper
+
+
+# Import AsyncMock
+import sys
+
+if sys.version_info >= (3, 8):
+    from unittest.mock import AsyncMock  # pylint: disable=unused-import
+else:
+    from unittest.mock import MagicMock
+
+    class AsyncMock(MagicMock):
+        async def __call__(  # pylint: disable=invalid-overridden-method, useless-super-delegation
+            self,  # type: ignore
+            *args,  # type: ignore
+            **kwargs,  # type: ignore
+        ):
+            return super().__call__(*args, **kwargs)
+
+
+st_init_common_args = {
+    "supertokens_config": SupertokensConfig("http://localhost:3567"),
+    "app_info": InputAppInfo(
+        app_name="ST",
+        api_domain="http://api.supertokens.io",
+        website_domain="http://supertokens.io",
+        api_base_path="/auth",
+    ),
+    "framework": "fastapi",
+    "mode": "asgi",
+}
+
+
+def get_st_init_args(recipe_list: List[Any]) -> Dict[str, Any]:
+    return {
+        **st_init_common_args,
+        "recipe_list": recipe_list,
+    }
