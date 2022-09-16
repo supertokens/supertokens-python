@@ -13,7 +13,7 @@
 # under the License.
 import os
 import typing
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import uvicorn  # type: ignore
 from dotenv import load_dotenv
@@ -36,12 +36,13 @@ from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe import (
     emailpassword,
+    emailverification,
     passwordless,
     session,
     thirdparty,
     thirdpartyemailpassword,
     thirdpartypasswordless,
-    emailverification,
+    userroles,
 )
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
@@ -55,16 +56,21 @@ from supertokens_python.recipe.emailpassword.types import (
     InputFormField,
     User,
 )
-from supertokens_python.recipe.emailverification import EmailVerificationRecipe
+from supertokens_python.recipe.emailverification import (
+    EmailVerificationClaim,
+    EmailVerificationRecipe,
+)
 from supertokens_python.recipe.emailverification import (
     InputOverrideConfig as EVInputOverrideConfig,
 )
+from supertokens_python.recipe.emailverification.asyncio import unverify_email
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface as EmailVerificationAPIInterface,
 )
 from supertokens_python.recipe.emailverification.interfaces import (
     APIOptions as EVAPIOptions,
 )
+from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.jwt import JWTRecipe
 from supertokens_python.recipe.passwordless import (
     ContactEmailOnlyConfig,
@@ -84,6 +90,7 @@ from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
 )
 from supertokens_python.recipe.session.interfaces import APIOptions as SAPIOptions
+from supertokens_python.recipe.session.interfaces import SessionClaimValidator
 from supertokens_python.recipe.thirdparty import (
     Facebook,
     Github,
@@ -113,9 +120,17 @@ from supertokens_python.recipe.thirdpartypasswordless import (
 from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
     APIInterface as ThirdpartyPasswordlessAPIInterface,
 )
+from supertokens_python.recipe.userroles import (
+    PermissionClaim,
+    UserRoleClaim,
+    UserRolesRecipe,
+)
+from supertokens_python.recipe.userroles.asyncio import (
+    add_role_to_user,
+    create_new_role_or_add_permissions,
+)
 from supertokens_python.types import GeneralErrorResponse
 from typing_extensions import Literal
-from supertokens_python.recipe.emailverification.types import User as EVUser
 
 load_dotenv()
 
@@ -275,12 +290,14 @@ def custom_init(
         None, Literal["USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"]
     ] = None,
 ):
+    UserRolesRecipe.reset()
     PasswordlessRecipe.reset()
     ThirdPartyPasswordlessRecipe.reset()
     JWTRecipe.reset()
     EmailVerificationRecipe.reset()
     SessionRecipe.reset()
     ThirdPartyRecipe.reset()
+    EmailVerificationRecipe.reset()
     EmailPasswordRecipe.reset()
     ThirdPartyEmailPasswordRecipe.reset()
     Supertokens.reset()
@@ -903,10 +920,11 @@ def custom_init(
         )
 
     recipe_list = [
+        userroles.init(),
         session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
         emailverification.init(
             mode="REQUIRED",
-            create_and_send_custom_email=ev_create_and_send_custom_email,  # TODO: Is this correct?
+            create_and_send_custom_email=ev_create_and_send_custom_email,
             override=EVInputOverrideConfig(apis=override_email_verification_apis),
         ),
         emailpassword.init(
@@ -988,7 +1006,7 @@ def test_get_device(request: Request):
 
 @app.get("/test/featureFlags")
 def test_feature_flags(request: Request):
-    available = ["passwordless", "thirdpartypasswordless", "generalerror"]
+    available = ["passwordless", "thirdpartypasswordless", "generalerror", "userroles"]
     return JSONResponse({"available": available})
 
 
@@ -1013,6 +1031,58 @@ async def get_session_info(session_: SessionContainer = Depends(verify_session()
 async def get_token():
     global latest_url_with_token
     return JSONResponse({"latestURLWithToken": latest_url_with_token})
+
+
+@app.get("/unverifyEmail")
+async def unverify_email_api(session_: SessionContainer = Depends(verify_session())):
+    await unverify_email(session_.get_user_id())
+    await session_.fetch_and_set_claim(EmailVerificationClaim)
+    return JSONResponse({"status": "OK"})
+
+
+@app.post("/setRole")
+async def set_role_api(
+    request: Request, session_: SessionContainer = Depends(verify_session())
+):
+    body = await request.json()
+    await create_new_role_or_add_permissions(body["role"], body["permissions"])
+    await add_role_to_user(session_.get_user_id(), body["role"])
+    await session_.fetch_and_set_claim(UserRoleClaim)
+    await session_.fetch_and_set_claim(PermissionClaim)
+    return JSONResponse({"status": "OK"})
+
+
+async def override_global_claim_validators(
+    gv: List[SessionClaimValidator],
+    _session: SessionContainer,
+    user_context: Dict[str, Any],
+):
+    validators = gv.copy()
+    req = user_context["_default"]["request"]
+    body = await req.json()
+
+    if body.get("role"):
+        info = body["role"]
+        validator = getattr(UserRoleClaim.validators, info["validator"])
+        validators.append(validator(*info["args"]))
+
+    if body.get("permission"):
+        info = body["permission"]
+        validator = getattr(PermissionClaim.validators, info["validator"])
+        validators.append(validator(*info["args"]))
+
+    return validators
+
+
+@app.post("/checkRole")
+async def check_role_api(
+    _: SessionContainer = Depends(
+        verify_session(
+            override_global_claim_validators=override_global_claim_validators
+        )
+    ),
+):
+    return JSONResponse({"status": "OK"})
 
 
 @app.exception_handler(405)  # type: ignore
