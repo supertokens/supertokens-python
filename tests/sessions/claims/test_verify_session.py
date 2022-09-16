@@ -403,9 +403,12 @@ async def test_should_allow_if_assert_claims_returns_no_error(
         response = fastapi_client.get("/default-claims")
         assert response.status_code == 200
         assert "-" in response.json()["handle"]
-        mock.assert_called_once_with([validator], {})
+        mock.assert_called_once()
+        (validators, ctx), _ = mock.call_args_list[0]
+        assert validators == [validator]
+        assert ctx["_default"]["request"]
         recipe_impl_mock.validate_claims.assert_called_once_with(  # type: ignore
-            "test_user_id", {}, [validator], {}
+            "test_user_id", {}, [validator], ctx
         )
 
 
