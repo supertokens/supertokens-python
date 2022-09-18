@@ -854,7 +854,7 @@ def custom_init(
         session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
         emailverification.init(
             mode="REQUIRED",
-            create_and_send_custom_email=ev_create_and_send_custom_email,  # TODO: Is it correct to create a seperate func for this?
+            create_and_send_custom_email=ev_create_and_send_custom_email,
             override=EVInputOverrideConfig(apis=override_email_verification_apis),
         ),
         emailpassword.init(
