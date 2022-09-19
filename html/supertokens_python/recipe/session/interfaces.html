@@ -45,20 +45,21 @@ from abc import ABC, abstractmethod
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     Dict,
     Generic,
     List,
+    Optional,
     TypeVar,
     Union,
-    Callable,
-    Optional,
 )
 
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.types import APIResponse, MaybeAwaitable
+from supertokens_python.types import APIResponse, GeneralErrorResponse, MaybeAwaitable
+
+from ...utils import resolve
 from .exceptions import ClaimValidationError
 from .utils import SessionConfig
-from ...utils import resolve
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -347,7 +348,7 @@ class APIInterface(ABC):
         session: Optional[SessionContainer],
         api_options: APIOptions,
         user_context: Dict[str, Any],
-    ) -&gt; SignOutOkayResponse:
+    ) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -696,7 +697,7 @@ inheritance.</p></div>
         session: Optional[SessionContainer],
         api_options: APIOptions,
         user_context: Dict[str, Any],
-    ) -&gt; SignOutOkayResponse:
+    ) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
@@ -742,7 +743,7 @@ async def refresh_post(
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.interfaces.APIInterface.signout_post"><code class="name flex">
-<span>async def <span class="ident">signout_post</span></span>(<span>self, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], api_options: <a title="supertokens_python.recipe.session.interfaces.APIOptions" href="#supertokens_python.recipe.session.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> <a title="supertokens_python.recipe.session.interfaces.SignOutOkayResponse" href="#supertokens_python.recipe.session.interfaces.SignOutOkayResponse">SignOutOkayResponse</a></span>
+<span>async def <span class="ident">signout_post</span></span>(<span>self, session: Optional[<a title="supertokens_python.recipe.session.interfaces.SessionContainer" href="#supertokens_python.recipe.session.interfaces.SessionContainer">SessionContainer</a>], api_options: <a title="supertokens_python.recipe.session.interfaces.APIOptions" href="#supertokens_python.recipe.session.interfaces.APIOptions">APIOptions</a>, user_context: Dict[str, Any]) ‑> Union[<a title="supertokens_python.recipe.session.interfaces.SignOutOkayResponse" href="#supertokens_python.recipe.session.interfaces.SignOutOkayResponse">SignOutOkayResponse</a>, <a title="supertokens_python.types.GeneralErrorResponse" href="../../types.html#supertokens_python.types.GeneralErrorResponse">GeneralErrorResponse</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -756,7 +757,7 @@ async def signout_post(
     session: Optional[SessionContainer],
     api_options: APIOptions,
     user_context: Dict[str, Any],
-) -&gt; SignOutOkayResponse:
+) -&gt; Union[SignOutOkayResponse, GeneralErrorResponse]:
     pass</code></pre>
 </details>
 </dd>
