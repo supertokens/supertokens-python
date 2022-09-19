@@ -17,7 +17,6 @@ from typing import Any, Dict, List, Optional, Union
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, make_response, request
 from flask_cors import CORS
-
 from supertokens_python import (
     InputAppInfo,
     Supertokens,
@@ -50,19 +49,19 @@ from supertokens_python.recipe.emailpassword.types import (
     User,
 )
 from supertokens_python.recipe.emailverification import (
-    EmailVerificationRecipe,
     EmailVerificationClaim,
+    EmailVerificationRecipe,
 )
 from supertokens_python.recipe.emailverification import (
     InputOverrideConfig as EVInputOverrideConfig,
 )
-from supertokens_python.recipe.emailverification.asyncio import unverify_email
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface as EmailVerificationAPIInterface,
 )
 from supertokens_python.recipe.emailverification.interfaces import (
     APIOptions as EVAPIOptions,
 )
+from supertokens_python.recipe.emailverification.syncio import unverify_email
 from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.jwt import JWTRecipe
 from supertokens_python.recipe.passwordless import (
@@ -81,10 +80,12 @@ from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
-    SessionContainer,
-    SessionClaimValidator,
 )
 from supertokens_python.recipe.session.interfaces import APIOptions as SAPIOptions
+from supertokens_python.recipe.session.interfaces import (
+    SessionClaimValidator,
+    SessionContainer,
+)
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdparty.interfaces import (
     APIInterface as ThirdpartyAPIInterface,
@@ -113,13 +114,13 @@ from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
     APIInterface as ThirdpartyPasswordlessAPIInterface,
 )
 from supertokens_python.recipe.userroles import (
-    UserRoleClaim,
     PermissionClaim,
+    UserRoleClaim,
     UserRolesRecipe,
 )
-from supertokens_python.recipe.userroles.asyncio import (
-    create_new_role_or_add_permissions,
+from supertokens_python.recipe.userroles.syncio import (
     add_role_to_user,
+    create_new_role_or_add_permissions,
 )
 from supertokens_python.types import GeneralErrorResponse
 from typing_extensions import Literal
@@ -1011,7 +1012,7 @@ def before_each():
 
 
 @app.route("/test/setFlow", methods=["POST"])  # type: ignore
-async def test_set_flow():
+def test_set_flow():
     body: Union[Any, None] = request.get_json()
     if body is None:
         raise Exception("Should never come here")
@@ -1039,22 +1040,22 @@ def test_feature_flags():
 
 @app.get("/unverifyEmail")  # type: ignore
 @verify_session()
-async def unverify_email_api():
+def unverify_email_api():
     session_: SessionContainer = g.supertokens  # type: ignore
-    await unverify_email(session_.get_user_id())
-    await session_.fetch_and_set_claim(EmailVerificationClaim)
+    unverify_email(session_.get_user_id())
+    session_.sync_fetch_and_set_claim(EmailVerificationClaim)
     return jsonify({"status": "OK"})
 
 
 @app.route("/setRole", methods=["POST"])  # type: ignore
 @verify_session()
-async def verify_email_api():
+def verify_email_api():
     session_: SessionContainer = g.supertokens  # type: ignore
     body: Dict[str, Any] = request.get_json()  # type: ignore
-    await create_new_role_or_add_permissions(body["role"], body["permissions"])
-    await add_role_to_user(session_.get_user_id(), body["role"])
-    await session_.fetch_and_set_claim(UserRoleClaim)
-    await session_.fetch_and_set_claim(PermissionClaim)
+    create_new_role_or_add_permissions(body["role"], body["permissions"])
+    add_role_to_user(session_.get_user_id(), body["role"])
+    session_.sync_fetch_and_set_claim(UserRoleClaim)
+    session_.sync_fetch_and_set_claim(PermissionClaim)
     return jsonify({"status": "OK"})
 
 
@@ -1082,7 +1083,7 @@ async def override_global_claim_validators(
 
 @app.route("/checkRole", methods=["POST"])  # type: ignore
 @verify_session(override_global_claim_validators=override_global_claim_validators)
-async def check_role_api():
+def check_role_api():
     return jsonify({"status": "OK"})
 
 
