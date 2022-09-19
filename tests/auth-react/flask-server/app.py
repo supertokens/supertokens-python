@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, make_response, request
@@ -29,12 +29,12 @@ from supertokens_python.framework.flask.flask_middleware import Middleware
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe import (
     emailpassword,
+    emailverification,
     passwordless,
     session,
     thirdparty,
     thirdpartyemailpassword,
     thirdpartypasswordless,
-    emailverification,
 )
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
@@ -62,6 +62,7 @@ from supertokens_python.recipe.emailverification.interfaces import (
 from supertokens_python.recipe.emailverification.interfaces import (
     APIOptions as EVAPIOptions,
 )
+from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.jwt import JWTRecipe
 from supertokens_python.recipe.passwordless import (
     ContactEmailOnlyConfig,
@@ -117,7 +118,6 @@ from supertokens_python.recipe.userroles.asyncio import (
 )
 from supertokens_python.types import GeneralErrorResponse
 from typing_extensions import Literal
-from supertokens_python.recipe.emailverification.types import User as EVUser
 
 load_dotenv()
 
@@ -625,7 +625,7 @@ def custom_init(
                 "body", api_options.request
             )
             if is_general_error:
-                raise Exception("general error from signout API")
+                return GeneralErrorResponse("general error from signout API")
             return await original_signout_post(session, api_options, user_context)
 
         original_implementation.signout_post = signout_post
@@ -906,7 +906,7 @@ def custom_init(
     recipe_list = [
         session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
         emailverification.init(
-            mode="REQUIRED",
+            mode="OPTIONAL",
             create_and_send_custom_email=ev_create_and_send_custom_email,
             override=EVInputOverrideConfig(apis=override_email_verification_apis),
         ),

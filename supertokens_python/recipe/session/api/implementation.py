@@ -13,16 +13,17 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union, List, Callable, Optional
+from typing import TYPE_CHECKING, Callable, List, Optional, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe.session.interfaces import (
     APIInterface,
-    SignOutOkayResponse,
     SessionClaimValidator,
+    SignOutOkayResponse,
 )
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import normalise_http_method
+
 from ..utils import get_required_claim_validators
 
 if TYPE_CHECKING:

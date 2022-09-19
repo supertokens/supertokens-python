@@ -6,12 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-### Added
-- Support for FDI 1.15
-
-### Breaking changes
-- Removes support for FDI <= 1.14
-
 ## [0.11.0] - 2022-09-14
 
 ### Changes
@@ -20,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support for FDI 1.15
 - Added support for session claims with related interfaces and classes.
 - Added `on_invalid_claim` optional error handler to send InvalidClaim error responses.
 - Added `INVALID_CLAIMS` (`InvalidClaimError`) to `SessionErrors`.
@@ -34,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adds default userContext for verifySession calls that contains the request object.
 
 ### Breaking Changes
+- Removes support for FDI <= 1.14
 -   Changed `sign_in_up` third party recipe function to accept just the email as `str` (removed `email_verified: bool`).
 -   The frontend SDK should be updated to a version supporting session claims!
     -   supertokens-auth-react: >= 0.25.0

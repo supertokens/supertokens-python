@@ -1,17 +1,17 @@
 import os
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from dotenv import load_dotenv
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.recipe import (
     emailpassword,
+    emailverification,
     passwordless,
     session,
     thirdparty,
     thirdpartyemailpassword,
     thirdpartypasswordless,
-    emailverification,
 )
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
@@ -25,10 +25,7 @@ from supertokens_python.recipe.emailpassword.types import (
     InputFormField,
     User,
 )
-from supertokens_python.recipe.emailverification.types import User as EVUser
-from supertokens_python.recipe.emailverification import (
-    EmailVerificationRecipe,
-)
+from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.emailverification import (
     InputOverrideConfig as EVInputOverrideConfig,
 )
@@ -38,6 +35,7 @@ from supertokens_python.recipe.emailverification.interfaces import (
 from supertokens_python.recipe.emailverification.interfaces import (
     APIOptions as EVAPIOptions,
 )
+from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.jwt import JWTRecipe
 from supertokens_python.recipe.passwordless import (
     ContactEmailOnlyConfig,
@@ -51,7 +49,7 @@ from supertokens_python.recipe.passwordless.interfaces import (
     APIInterface as PasswordlessAPIInterface,
 )
 from supertokens_python.recipe.passwordless.interfaces import APIOptions as PAPIOptions
-from supertokens_python.recipe.session import SessionRecipe, SessionContainer
+from supertokens_python.recipe.session import SessionContainer, SessionRecipe
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
 )
@@ -86,7 +84,7 @@ from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
 from supertokens_python.types import GeneralErrorResponse
 from typing_extensions import Literal
 
-from .store import save_url_with_token, save_code
+from .store import save_code, save_url_with_token
 
 load_dotenv()
 
@@ -592,7 +590,7 @@ def custom_init(
                 "body", api_options.request
             )
             if is_general_error:
-                raise Exception("general error from signout API")
+                return GeneralErrorResponse("general error from signout API")
             return await original_signout_post(session, api_options, user_context)
 
         original_implementation.signout_post = signout_post
@@ -853,7 +851,7 @@ def custom_init(
     recipe_list = [
         session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
         emailverification.init(
-            mode="REQUIRED",
+            mode="OPTIONAL",
             create_and_send_custom_email=ev_create_and_send_custom_email,
             override=EVInputOverrideConfig(apis=override_email_verification_apis),
         ),
