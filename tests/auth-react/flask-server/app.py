@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional, Union
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, make_response, request
 from flask_cors import CORS
+
 from supertokens_python import (
     InputAppInfo,
     Supertokens,
@@ -34,6 +35,7 @@ from supertokens_python.recipe import (
     thirdparty,
     thirdpartyemailpassword,
     thirdpartypasswordless,
+    userroles,
 )
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
@@ -47,10 +49,14 @@ from supertokens_python.recipe.emailpassword.types import (
     InputFormField,
     User,
 )
-from supertokens_python.recipe.emailverification import EmailVerificationRecipe
+from supertokens_python.recipe.emailverification import (
+    EmailVerificationRecipe,
+    EmailVerificationClaim,
+)
 from supertokens_python.recipe.emailverification import (
     InputOverrideConfig as EVInputOverrideConfig,
 )
+from supertokens_python.recipe.emailverification.asyncio import unverify_email
 from supertokens_python.recipe.emailverification.interfaces import (
     APIInterface as EmailVerificationAPIInterface,
 )
@@ -75,9 +81,10 @@ from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.framework.flask import verify_session
 from supertokens_python.recipe.session.interfaces import (
     APIInterface as SessionAPIInterface,
+    SessionContainer,
+    SessionClaimValidator,
 )
 from supertokens_python.recipe.session.interfaces import APIOptions as SAPIOptions
-from supertokens_python.recipe.session.interfaces import SessionContainer
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdparty.interfaces import (
     APIInterface as ThirdpartyAPIInterface,
@@ -104,6 +111,15 @@ from supertokens_python.recipe.thirdpartypasswordless import (
 )
 from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
     APIInterface as ThirdpartyPasswordlessAPIInterface,
+)
+from supertokens_python.recipe.userroles import (
+    UserRoleClaim,
+    PermissionClaim,
+    UserRolesRecipe,
+)
+from supertokens_python.recipe.userroles.asyncio import (
+    create_new_role_or_add_permissions,
+    add_role_to_user,
 )
 from supertokens_python.types import GeneralErrorResponse
 from typing_extensions import Literal
@@ -264,6 +280,7 @@ def custom_init(
         None, Literal["USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"]
     ] = None,
 ):
+    UserRolesRecipe.reset()
     PasswordlessRecipe.reset()
     ThirdPartyPasswordlessRecipe.reset()
     JWTRecipe.reset()
@@ -271,6 +288,7 @@ def custom_init(
     SessionRecipe.reset()
     ThirdPartyRecipe.reset()
     EmailPasswordRecipe.reset()
+    EmailVerificationRecipe.reset()
     ThirdPartyEmailPasswordRecipe.reset()
     Supertokens.reset()
 
@@ -893,6 +911,7 @@ def custom_init(
         )
 
     recipe_list = [
+        userroles.init(),
         session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
         emailverification.init(
             mode="OPTIONAL",
@@ -1014,8 +1033,57 @@ def test_get_device():
 
 @app.get("/test/featureFlags")  # type: ignore
 def test_feature_flags():
-    available = ["passwordless", "thirdpartypasswordless", "generalerror"]
+    available = ["passwordless", "thirdpartypasswordless", "generalerror", "userroles"]
     return jsonify({"available": available})
+
+
+@app.get("/unverifyEmail")  # type: ignore
+@verify_session()
+async def unverify_email_api():
+    session_: SessionContainer = g.supertokens  # type: ignore
+    await unverify_email(session_.get_user_id())
+    await session_.fetch_and_set_claim(EmailVerificationClaim)
+    return jsonify({"status": "OK"})
+
+
+@app.route("/setRole", methods=["POST"])  # type: ignore
+@verify_session()
+async def verify_email_api():
+    session_: SessionContainer = g.supertokens  # type: ignore
+    body: Dict[str, Any] = request.get_json()  # type: ignore
+    await create_new_role_or_add_permissions(body["role"], body["permissions"])
+    await add_role_to_user(session_.get_user_id(), body["role"])
+    await session_.fetch_and_set_claim(UserRoleClaim)
+    await session_.fetch_and_set_claim(PermissionClaim)
+    return jsonify({"status": "OK"})
+
+
+async def override_global_claim_validators(
+    gv: List[SessionClaimValidator],
+    _session: SessionContainer,
+    user_context: Dict[str, Any],
+):
+    validators = gv.copy()
+    req = user_context["_default"]["request"]
+    body = await req.json()
+
+    if body.get("role"):
+        info = body["role"]
+        validator = getattr(UserRoleClaim.validators, info["validator"])
+        validators.append(validator(*info["args"]))
+
+    if body.get("permission"):
+        info = body["permission"]
+        validator = getattr(PermissionClaim.validators, info["validator"])
+        validators.append(validator(*info["args"]))
+
+    return validators
+
+
+@app.route("/checkRole", methods=["POST"])  # type: ignore
+@verify_session(override_global_claim_validators=override_global_claim_validators)
+async def check_role_api():
+    return jsonify({"status": "OK"})
 
 
 @app.route("/", defaults={"path": ""})  # type: ignore

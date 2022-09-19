@@ -12,6 +12,7 @@ from supertokens_python.recipe import (
     thirdparty,
     thirdpartyemailpassword,
     thirdpartypasswordless,
+    userroles,
 )
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
@@ -81,6 +82,7 @@ from supertokens_python.recipe.thirdpartypasswordless import (
 from supertokens_python.recipe.thirdpartypasswordless.interfaces import (
     APIInterface as ThirdpartyPasswordlessAPIInterface,
 )
+from supertokens_python.recipe.userroles import UserRolesRecipe
 from supertokens_python.types import GeneralErrorResponse
 from typing_extensions import Literal
 
@@ -240,6 +242,7 @@ def custom_init(
         None, Literal["USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"]
     ] = None,
 ):
+    UserRolesRecipe.reset()
     PasswordlessRecipe.reset()
     ThirdPartyPasswordlessRecipe.reset()
     JWTRecipe.reset()
@@ -247,6 +250,7 @@ def custom_init(
     SessionRecipe.reset()
     ThirdPartyRecipe.reset()
     EmailPasswordRecipe.reset()
+    EmailVerificationRecipe.reset()
     ThirdPartyEmailPasswordRecipe.reset()
     Supertokens.reset()
 
@@ -849,10 +853,11 @@ def custom_init(
         )
 
     recipe_list = [
+        userroles.init(),
         session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
         emailverification.init(
             mode="OPTIONAL",
-            create_and_send_custom_email=ev_create_and_send_custom_email,  # TODO: Is it correct to create a seperate func for this?
+            create_and_send_custom_email=ev_create_and_send_custom_email,
             override=EVInputOverrideConfig(apis=override_email_verification_apis),
         ),
         emailpassword.init(

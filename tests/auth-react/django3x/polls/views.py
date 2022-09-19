@@ -13,19 +13,52 @@
 # under the License.
 import json
 import os
+from typing import List, Dict, Any
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from mysite.store import get_codes, get_url_with_token
 from mysite.utils import custom_init
+
+from supertokens_python.recipe.emailverification import EmailVerificationClaim
 from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.session.interfaces import SessionClaimValidator
+from supertokens_python.recipe.userroles import UserRoleClaim, PermissionClaim
 
 mode = os.environ.get("APP_MODE", "asgi")
+
+
+async def override_global_claim_validators(
+    gv: List[SessionClaimValidator],
+    _session: SessionContainer,
+    user_context: Dict[str, Any],
+):
+    validators = gv.copy()
+    req = user_context["_default"]["request"]
+    body = await req.json()
+
+    if body.get("role"):
+        info = body["role"]
+        validator = getattr(UserRoleClaim.validators, info["validator"])
+        validators.append(validator(*info["args"]))
+
+    if body.get("permission"):
+        info = body["permission"]
+        validator = getattr(PermissionClaim.validators, info["validator"])
+        validators.append(validator(*info["args"]))
+
+    return validators
+
 
 if mode == "asgi":
     from supertokens_python.recipe.session.framework.django.asyncio import (
         verify_session,
     )
+    from supertokens_python.recipe.userroles.asyncio import (
+        create_new_role_or_add_permissions,
+        add_role_to_user,
+    )
+    from supertokens_python.recipe.emailverification.asyncio import unverify_email
 
     @verify_session()
     async def session_info(request: HttpRequest):  # type: ignore
@@ -39,8 +72,36 @@ if mode == "asgi":
             }
         )
 
+    @verify_session()
+    async def set_role_api(request: HttpRequest):
+        session_: SessionContainer = request.supertokens  # type: ignore
+        body = json.loads(request.body)
+        await create_new_role_or_add_permissions(body["role"], body["permissions"])
+        await add_role_to_user(session_.get_user_id(), body["role"])
+        await session_.fetch_and_set_claim(UserRoleClaim)
+        await session_.fetch_and_set_claim(PermissionClaim)
+        return JsonResponse({"status": "OK"})
+
+    @verify_session()
+    async def unverify_email_api(request: HttpRequest):
+        session_: SessionContainer = request.supertokens  # type: ignore
+        await unverify_email(session_.get_user_id())
+        await session_.fetch_and_set_claim(EmailVerificationClaim)
+        return JsonResponse({"status": "OK"})
+
+    @verify_session(override_global_claim_validators=override_global_claim_validators)
+    async def check_role_api():  # type: ignore
+        return JsonResponse({"status": "OK"})
+
 else:
     from supertokens_python.recipe.session.framework.django.syncio import verify_session
+    from supertokens_python.recipe.userroles.syncio import (
+        create_new_role_or_add_permissions as sync_create_new_role_or_add_permissions,
+        add_role_to_user as sync_add_role_to_user,
+    )
+    from supertokens_python.recipe.emailverification.syncio import (
+        unverify_email as sync_unverify_email,
+    )
 
     @verify_session()
     def session_info(request: HttpRequest):
@@ -53,6 +114,27 @@ else:
                 "sessionData": session_.sync_get_session_data(),
             }
         )
+
+    @verify_session()
+    def sync_set_role_api(request: HttpRequest):
+        session_: SessionContainer = request.supertokens  # type: ignore
+        body = json.loads(request.body)
+        sync_create_new_role_or_add_permissions(body["role"], body["permissions"])
+        sync_add_role_to_user(session_.get_user_id(), body["role"])
+        session_.sync_fetch_and_set_claim(UserRoleClaim)
+        session_.sync_fetch_and_set_claim(PermissionClaim)
+        return JsonResponse({"status": "OK"})
+
+    @verify_session()
+    def sync_unverify_email_api(request: HttpRequest):
+        session_: SessionContainer = request.supertokens  # type: ignore
+        sync_unverify_email(session_.get_user_id())
+        session_.sync_fetch_and_set_claim(EmailVerificationClaim)
+        return JsonResponse({"status": "OK"})
+
+    @verify_session(override_global_claim_validators=override_global_claim_validators)
+    def sync_check_role_api():
+        return JsonResponse({"status": "OK"})
 
 
 def ping(request: HttpRequest):
@@ -87,5 +169,12 @@ def before_each(request: HttpRequest):
 
 def test_feature_flags(request: HttpRequest):
     return JsonResponse(
-        {"available": ["passwordless", "thirdpartypasswordless", "generalerror"]}
+        {
+            "available": [
+                "passwordless",
+                "thirdpartypasswordless",
+                "generalerror",
+                "userroles",
+            ]
+        }
     )
