@@ -661,7 +661,7 @@ def custom_init(
                 "body", api_options.request
             )
             if is_general_error:
-                raise Exception("general error from signout API")
+                return GeneralErrorResponse("general error from signout API")
             return await original_signout_post(session, api_options, user_context)
 
         original_implementation.signout_post = signout_post
@@ -923,7 +923,7 @@ def custom_init(
         userroles.init(),
         session.init(override=session.InputOverrideConfig(apis=override_session_apis)),
         emailverification.init(
-            mode="REQUIRED",
+            mode="OPTIONAL",
             create_and_send_custom_email=ev_create_and_send_custom_email,
             override=EVInputOverrideConfig(apis=override_email_verification_apis),
         ),
