@@ -17,20 +17,21 @@ from abc import ABC, abstractmethod
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     Dict,
     Generic,
     List,
+    Optional,
     TypeVar,
     Union,
-    Callable,
-    Optional,
 )
 
 from supertokens_python.async_to_sync_wrapper import sync
-from supertokens_python.types import APIResponse, MaybeAwaitable
+from supertokens_python.types import APIResponse, GeneralErrorResponse, MaybeAwaitable
+
+from ...utils import resolve
 from .exceptions import ClaimValidationError
 from .utils import SessionConfig
-from ...utils import resolve
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -319,7 +320,7 @@ class APIInterface(ABC):
         session: Optional[SessionContainer],
         api_options: APIOptions,
         user_context: Dict[str, Any],
-    ) -> SignOutOkayResponse:
+    ) -> Union[SignOutOkayResponse, GeneralErrorResponse]:
         pass
 
     @abstractmethod
