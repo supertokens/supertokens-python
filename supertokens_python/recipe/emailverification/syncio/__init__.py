@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, Union, Optional
+from typing import Any, Dict, Optional, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.recipe.emailverification.types import EmailTemplateVars
@@ -67,9 +67,9 @@ def unverify_email(
     email: Optional[str] = None,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
-    from supertokens_python.recipe.emailverification.asyncio import is_email_verified
+    from supertokens_python.recipe.emailverification.asyncio import unverify_email
 
-    return sync(is_email_verified(user_id, email, user_context))
+    return sync(unverify_email(user_id, email, user_context))
 
 
 def send_email(
