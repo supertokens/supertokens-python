@@ -30,7 +30,7 @@ from supertokens_python.recipe.thirdpartyemailpassword import (
 
 load_dotenv()
 
-app = FastAPI(debug=True, root_path="/api")
+app = FastAPI(debug=True)
 app.add_middleware(get_middleware())
 
 
@@ -56,7 +56,7 @@ init(
     framework="fastapi",
     recipe_list=[
         session.init(),
-        emailverification.init("OPTIONAL"),
+        emailverification.init("REQUIRED"),
         thirdpartyemailpassword.init(
             providers=[
                 Google(
