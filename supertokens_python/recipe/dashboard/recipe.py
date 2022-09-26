@@ -48,6 +48,8 @@ from .constants import (
 from .utils import (
     InputOverrideConfig,
     validate_and_normalise_user_input,
+    get_api_if_matched,
+    is_api_path,
 )
 
 
@@ -87,6 +89,13 @@ class DashboardRecipe(RecipeModule):
         )
 
     def get_apis_handled(self) -> List[APIHandled]:
+        # Normally this array is used by the SDK to decide whether the recipe
+        # handles a specific API path and method and then returns the ID.
+
+        # However, for the dashboard recipe this logic is fully custom and handled inside the
+        # `return_api_id_if_can_handle_request` method of this class. Since this array is never
+        # used for this recipe, we simply return an empty array.
+
         return []
 
     async def handle_api_request(
@@ -171,3 +180,18 @@ class DashboardRecipe(RecipeModule):
         ):
             raise_general_exception("calling testing function in non testing env")
         DashboardRecipe.__instance = None
+
+    def return_api_id_if_can_handle_request(
+        self, path: NormalisedURLPath, method: str
+    ) -> Union[str, None]:
+        dashboard_bundle_path = self.app_info.api_base_path.append(
+            NormalisedURLPath(DASHBOARD_API)
+        )
+
+        if is_api_path(path, self.app_info):
+            return get_api_if_matched(path, method)
+
+        if path.startswith(dashboard_bundle_path):
+            return DASHBOARD_API
+
+        return None

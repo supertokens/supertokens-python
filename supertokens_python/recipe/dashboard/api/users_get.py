@@ -64,7 +64,7 @@ async def handle_users_get_api(
         return send_200_response(
             {
                 "status": "OK",
-                "users": [u.__dict__ for u in users_response.users],  # Is this okay?
+                "users": [u.toJSON() for u in users_response.users],  # Is this okay?
                 "nextPaginationToken": users_response.next_pagination_token,
             },
             api_options.response,

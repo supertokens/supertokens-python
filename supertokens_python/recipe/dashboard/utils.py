@@ -15,6 +15,15 @@ from __future__ import annotations
 
 from typing import Callable, Union, Optional, TYPE_CHECKING
 
+from .constants import (
+    DASHBOARD_API,
+    VALIDATE_KEY_API,
+    USERS_LIST_GET_API,
+    USERS_COUNT_API,
+)
+from ...normalised_url_path import NormalisedURLPath
+from ...supertokens import AppInfo
+
 if TYPE_CHECKING:
     from .interfaces import APIInterface, RecipeInterface
 
@@ -67,3 +76,35 @@ def validate_and_normalise_user_input(
             apis=override.apis,
         ),
     )
+
+
+def is_api_path(path: NormalisedURLPath, app_info: AppInfo) -> bool:
+    dashboard_recipe_base_path = app_info.api_base_path.append(
+        NormalisedURLPath(DASHBOARD_API)
+    )
+
+    if not path.startswith(dashboard_recipe_base_path):
+        return False
+
+    path_without_dashboard_path = path.get_as_string_dangerous().split(DASHBOARD_API)[1]
+
+    if len(path_without_dashboard_path) > 0 and path_without_dashboard_path[0] == "/":
+        path_without_dashboard_path = path_without_dashboard_path[1:]
+
+    if path_without_dashboard_path.split("/")[0] == "api":
+        return True
+
+    return False
+
+
+def get_api_if_matched(path: NormalisedURLPath, method: str) -> Optional[str]:
+    path_str = path.get_as_string_dangerous()
+
+    if path_str.endswith(VALIDATE_KEY_API) and method == "post":
+        return VALIDATE_KEY_API
+    if path_str.endswith(USERS_LIST_GET_API) and method == "get":
+        return USERS_LIST_GET_API
+    if path_str.endswith(USERS_COUNT_API) and method == "get":
+        return USERS_COUNT_API
+
+    return None

@@ -1,8 +1,12 @@
 from typing import Any, Dict
 
-from pytest import mark
+from fastapi import FastAPI
+from pytest import mark, fixture
+from starlette.testclient import TestClient
 
+from supertokens_python.constants import DASHBOARD_VERSION
 from supertokens_python.framework import BaseRequest
+from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe.dashboard import InputOverrideConfig
 from supertokens_python.recipe.dashboard.interfaces import (
     RecipeInterface as DashboardRI,
@@ -21,7 +25,15 @@ _ = teardown_function  # type: ignore
 pytestmark = mark.asyncio
 
 
-async def test_dashboard_recipe():
+
+@fixture(scope="function")
+async def app():
+    app = FastAPI()
+    app.add_middleware(get_middleware())
+
+    return TestClient(app)
+
+async def test_dashboard_recipe(app: TestClient):
     def override_dashboard_functions(oi: DashboardRI) -> DashboardRI:
         async def get_dashboard_bundle_location(_user_context: Dict[str, Any]) -> str:
             return ""
@@ -58,4 +70,10 @@ async def test_dashboard_recipe():
     )
     init(**st_args)
     start_st()
-    print("Verify that the dashboard recipe works!")
+
+    expected_url = f"https://cdn.jsdelivr.net/gh/supertokens/dashboard@v{DASHBOARD_VERSION}/build/"
+
+    res = app.get(url="/auth/dashboard")
+    assert res.status_code == 200
+    assert expected_url in str(res.content)
+

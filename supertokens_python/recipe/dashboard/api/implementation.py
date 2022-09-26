@@ -14,11 +14,13 @@
 from __future__ import annotations
 
 from string import Template
+from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Dict
 
 from supertokens_python.normalised_url_domain import NormalisedURLDomain
 from supertokens_python import Supertokens
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from ..constants import DASHBOARD_API
 from ..interfaces import (
     APIInterface,
 )
@@ -49,16 +51,19 @@ class APIImplementation(APIInterface):
 
             connection_uri = super_tokens_instance.supertokens_config.connection_uri
 
+            dashboard_path = options.app_info.api_base_path.append(
+                NormalisedURLPath(DASHBOARD_API)
+            ).get_as_string_dangerous()
+
             return Template(
-                """
+                dedent(
+                    """
                 <html>
                     <head>
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <script>
                             window.staticBasePath = "${bundleDomain}/static"
-                            window.dashboardAppPath = "${input.options.appInfo.apiBasePath
-                                .appendPath(new NormalisedURLPath(DASHBOARD_API))
-                                .getAsStringDangerous()}"
+                            window.dashboardAppPath = "${dashboardPath}"
                             window.connectionURI = "${connectionURI}"
                         </script>
                         <script defer src="${bundleDomain}/static/js/bundle.js"></script></head>
@@ -71,6 +76,11 @@ class APIImplementation(APIInterface):
                     </body>
                 </html>
                 """
-            ).substitute(bundleDomain=bundle_domain, connectionURI=connection_uri)
+                )
+            ).substitute(
+                bundleDomain=bundle_domain,
+                dashboardPath=dashboard_path,
+                connectionURI=connection_uri,
+            )
 
         self.dashboard_get = dashboard_get
