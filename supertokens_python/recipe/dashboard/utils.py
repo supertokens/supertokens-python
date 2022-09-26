@@ -13,9 +13,10 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Callable, Union, Optional
+from typing import Callable, Union, Optional, TYPE_CHECKING
 
-from .interfaces import APIInterface, RecipeInterface
+if TYPE_CHECKING:
+    from .interfaces import APIInterface, RecipeInterface
 
 
 class InputOverrideConfig:

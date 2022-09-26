@@ -35,6 +35,8 @@ from supertokens_python.utils import send_200_response
 async def handle_users_get_api(
     api_implementation: APIInterface, api_options: APIOptions
 ) -> Optional[BaseResponse]:
+    _ = api_implementation
+
     limit = api_options.request.get_query_param("limit")
     if limit is None:
         raise_bad_input_exception("Missing required parameter 'limit'")

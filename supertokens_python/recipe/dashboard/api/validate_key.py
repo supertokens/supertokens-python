@@ -29,6 +29,8 @@ from supertokens_python.utils import default_user_context, send_200_response
 async def handle_validate_key_api(
     api_implementation: APIInterface, api_options: APIOptions
 ):
+    _ = api_implementation
+
     should_allow_accesss = await api_options.recipe_implementation.should_allow_access(
         api_options.request,
         api_options.config,
