@@ -16,7 +16,11 @@ from __future__ import annotations
 from os import environ
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
-from supertokens_python.exceptions import SuperTokensError, raise_general_exception
+from supertokens_python.exceptions import (
+    SuperTokensError,
+    raise_general_exception,
+    GeneralError,
+)
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailverification.exceptions import (
     EmailVerificationInvalidTokenError,
@@ -314,7 +318,7 @@ class EmailVerificationClaimClass(BooleanClaim):
             if isinstance(email_info, EmailDoesNotExistError):
                 # we consider people without email addresses as validated
                 return True
-            raise_unauthorised_exception("UNKNOWN_USER_ID")  # todo: empty in node SDK
+            raise GeneralError("UNKNOWN_USER_ID")
 
         super().__init__("st-ev", fetch_value)
 
@@ -345,9 +349,11 @@ class APIImplementation(APIInterface):
                         EmailVerificationClaim, user_context
                     )
                 except Exception as e:
-                    # This should never happen since we have just set thestatus above
-                    if isinstance(e, UnknownUserIdError):
+                    # This should never happen since we have just set the status above
+                    if str(e) == "UNKNOWN_USER_ID":
                         raise_unauthorised_exception("Unknown User ID provided")
+                    else:
+                        raise e
 
             return EmailVerifyPostOkResult(response.user)
         return EmailVerifyPostInvalidTokenError()
@@ -363,15 +369,19 @@ class APIImplementation(APIInterface):
         try:
             await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
         except Exception as e:
-            if isinstance(e, UnknownUserIdError):
+            if str(e) == "UNKNOWN_USER_ID":
                 raise_unauthorised_exception("Unknown User ID provided")
+            else:
+                raise e
 
         is_verified = await session.get_claim_value(
             EmailVerificationClaim, user_context
         )
 
         if is_verified is None:
-            raise_unauthorised_exception("Unknown User ID provided")
+            raise Exception(
+                "Should never come here: EmailVerificationClaim failed to set value"
+            )
 
         return IsEmailVerifiedGetOkResult(is_verified)
 
@@ -434,9 +444,7 @@ class APIImplementation(APIInterface):
             )
             return GenerateEmailVerifyTokenPostOkResult()
 
-        raise Exception(
-            "Should never come here: UNKNOWN_USER_ID or invalid result from get_email_for_user_id"
-        )
+        raise_unauthorised_exception("Unknown User ID provided")
 
 
 class IsVerifiedSCV(SessionClaimValidator):
