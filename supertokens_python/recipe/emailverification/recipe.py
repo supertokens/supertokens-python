@@ -348,7 +348,7 @@ class APIImplementation(APIInterface):
                     await session.fetch_and_set_claim(
                         EmailVerificationClaim, user_context
                     )
-                except Exception as e:
+                except GeneralError as e:
                     # This should never happen since we have just set the status above
                     if str(e) == "UNKNOWN_USER_ID":
                         raise_unauthorised_exception("Unknown User ID provided")
@@ -368,7 +368,7 @@ class APIImplementation(APIInterface):
             raise Exception("Session is undefined. Should not come here.")
         try:
             await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
-        except Exception as e:
+        except GeneralError as e:
             if str(e) == "UNKNOWN_USER_ID":
                 raise_unauthorised_exception("Unknown User ID provided")
             else:
