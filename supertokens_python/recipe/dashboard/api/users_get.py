@@ -81,9 +81,15 @@ async def handle_users_get_api(
             {
                 "recipeId": user.recipe_id,
                 "user": {
-                    **user.__dict__,
+                    "id": user.user_id,
+                    "email": user.email,
+                    "timeJoined": user.time_joined,
+                    "thirdParty": {}
+                    if user.third_party_info is None
+                    else user.third_party_info.__dict__,
+                    "phoneNumber": user.phone_number,
                     "firstName": first_name,
-                    "lastName": last_name,  # TODO: This will pass None, do we want that? Or should we remove the key?
+                    "lastName": last_name, # None becomes null which is acceptable for the dashboard.
                 },
             }
         )
@@ -106,15 +112,6 @@ async def handle_users_get_api(
         await asyncio.gather(*promises_to_call)
 
         promise_arr_start_position += batch_size
-
-    # import asyncio
-    # from aiodecorators import Semaphore
-    #
-    # @Semaphore(10)
-    # async def get_user_metadata(user_id: str) -> Dict[str, Any]:
-    #     return await UserMetadataRecipe.get_instance().get_user_metadata(user_id)
-    #
-    # await asyncio.gather(*[get_user_metadata(user.user_id) for user in users_response.users])
 
     return send_200_response(
         {
