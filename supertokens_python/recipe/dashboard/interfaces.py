@@ -14,11 +14,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Callable, Awaitable, Optional
+from typing import TYPE_CHECKING, Any, Dict, Callable, Awaitable, Optional, List
 
 from ...supertokens import AppInfo
 
 from .utils import DashboardConfig
+from ...types import User, APIResponse
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -66,3 +67,34 @@ class APIInterface:
         self.dashboard_get: Optional[
             Callable[[APIOptions, Dict[str, Any]], Awaitable[str]]
         ] = None
+
+
+class DashboardUsersGetResponse(APIResponse):
+    status: str = "OK"
+
+    def __init__(self, users: List[User], next_pagination_token: Optional[str]):
+        self.users = users
+        self.next_pagination_token = next_pagination_token
+
+    def to_json(self) -> Dict[str, Any]:
+        users_json = [
+            {
+                "recipeId": u.recipe_id,
+                "user": {
+                    "id": u.user_id,
+                    "email": u.email,
+                    "timeJoined": u.time_joined,
+                    "thirdParty": {}
+                    if u.third_party_info is None
+                    else u.third_party_info.__dict__,
+                    "phoneNumber": u.phone_number,
+                },
+            }
+            for u in self.users
+        ]
+
+        return {
+            "status": self.status,
+            "users": users_json,
+            "nextPaginationToken": self.next_pagination_token,
+        }

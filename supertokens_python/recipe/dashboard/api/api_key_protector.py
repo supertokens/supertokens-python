@@ -16,7 +16,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, Optional, Awaitable
 
 from supertokens_python.framework import BaseResponse
-from supertokens_python.recipe.session.exceptions import raise_unauthorised_exception
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
@@ -24,7 +23,10 @@ if TYPE_CHECKING:
         APIInterface,
     )
 
-from supertokens_python.utils import default_user_context
+from supertokens_python.utils import (
+    default_user_context,
+    send_non_200_response_with_message,
+)
 
 
 async def api_key_protector(
@@ -40,8 +42,8 @@ async def api_key_protector(
     )
 
     if should_allow_access is False:
-        raise_unauthorised_exception(
-            "Unauthorized access"
-        )  # TODO: Node SDK doesn't pass anything here.
+        return send_non_200_response_with_message(
+            "Unauthorized access", 401, api_options.response
+        )
 
     return await api_function(api_implementation, api_options)

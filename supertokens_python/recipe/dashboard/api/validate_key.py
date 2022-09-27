@@ -15,15 +15,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from supertokens_python.recipe.session.exceptions import raise_unauthorised_exception
-
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
         APIOptions,
         APIInterface,
     )
 
-from supertokens_python.utils import default_user_context, send_200_response
+from supertokens_python.utils import (
+    default_user_context,
+    send_200_response,
+    send_non_200_response_with_message,
+)
 
 
 async def handle_validate_key_api(
@@ -37,8 +39,8 @@ async def handle_validate_key_api(
         default_user_context(api_options.request),
     )
     if should_allow_accesss is False:
-        raise_unauthorised_exception(
-            "Unauthorized access"
-        )  # TODO: Node SDK doesn't pass anything here.
-    else:
-        return send_200_response({"status": "OK"}, api_options.response)
+        return send_non_200_response_with_message(
+            "Unauthorized access", 401, api_options.response
+        )
+
+    return send_200_response({"status": "OK"}, api_options.response)

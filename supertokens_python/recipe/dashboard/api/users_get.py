@@ -19,11 +19,12 @@ from typing import TYPE_CHECKING, Any, List, Dict, Awaitable, Optional
 from supertokens_python.framework import BaseResponse
 from supertokens_python.supertokens import Supertokens
 from supertokens_python.types import User
+from ..interfaces import DashboardUsersGetResponse
 from ...usermetadata import UserMetadataRecipe
 from ...usermetadata.asyncio import get_user_metadata
 
 if TYPE_CHECKING:
-    from supertokens_python.recipe.emailpassword.interfaces import (
+    from supertokens_python.recipe.dashboard.interfaces import (
         APIOptions,
         APIInterface,
     )
@@ -53,7 +54,7 @@ async def handle_users_get_api(
         limit=int(limit),
         time_joined_order=time_joined_order,  # type: ignore
         pagination_token=pagination_token,
-        include_recipe_ids=None,  # TODO: Is this okay?
+        include_recipe_ids=None,
     )
 
     # user metadata bulk fetch with batches:
@@ -62,11 +63,9 @@ async def handle_users_get_api(
         UserMetadataRecipe.get_instance()
     except GeneralError:
         return send_200_response(
-            {
-                "status": "OK",
-                "users": [u.toJSON() for u in users_response.users],  # Is this okay?
-                "nextPaginationToken": users_response.next_pagination_token,
-            },
+            DashboardUsersGetResponse(
+                users_response.users, users_response.next_pagination_token
+            ).to_json(),
             api_options.response,
         )
 
@@ -75,8 +74,8 @@ async def handle_users_get_api(
 
     async def get_user_metadata_and_update_user(user: User) -> None:
         user_metadata = await get_user_metadata(user.user_id)
-        first_name = user_metadata.metadata["first_name"]
-        last_name = user_metadata.metadata["last_name"]
+        first_name = user_metadata.metadata.get("first_name")
+        last_name = user_metadata.metadata.get("last_name")
 
         updated_users_arr.append(
             {
@@ -84,7 +83,7 @@ async def handle_users_get_api(
                 "user": {
                     **user.__dict__,
                     "firstName": first_name,
-                    "lastName": last_name,
+                    "lastName": last_name,  # TODO: This will pass None, do we want that? Or should we remove the key?
                 },
             }
         )

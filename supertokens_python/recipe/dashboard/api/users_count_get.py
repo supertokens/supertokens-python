@@ -30,8 +30,6 @@ from supertokens_python.utils import send_200_response
 async def handle_users_count_get_api(
     _: APIInterface, api_options: APIOptions
 ) -> Optional[BaseResponse]:
-    count = await Supertokens.get_instance().get_user_count(
-        include_recipe_ids=None
-    )  # Is None okay?
+    count = await Supertokens.get_instance().get_user_count(include_recipe_ids=None)
 
     return send_200_response({"status": "OK", "count": count}, api_options.response)

@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import Any, Dict
 
 from supertokens_python.framework import BaseRequest
 from .interfaces import (
@@ -22,15 +22,8 @@ from .interfaces import (
 from supertokens_python.constants import DASHBOARD_VERSION
 from .utils import DashboardConfig
 
-if TYPE_CHECKING:
-    from supertokens_python.querier import Querier
-
 
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, querier: Querier):
-        super().__init__()
-        self.querier = querier
-
     async def get_dashboard_bundle_location(self, user_context: Dict[str, Any]) -> str:
         return f"https://cdn.jsdelivr.net/gh/supertokens/dashboard@v{DASHBOARD_VERSION}/build/"
 
@@ -42,7 +35,7 @@ class RecipeImplementation(RecipeInterface):
     ) -> bool:
         api_key_header_value = request.get_header("authorization")
 
-        # We receieve the api key as `Bearer API_KEY`, this retrieves just the key
+        # We receive the api key as `Bearer API_KEY`, this retrieves just the key
         api_key = api_key_header_value.split(" ")[1] if api_key_header_value else None
 
         if api_key is None:

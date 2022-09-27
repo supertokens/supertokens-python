@@ -37,7 +37,6 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
-from supertokens_python.querier import Querier
 
 from .constants import (
     DASHBOARD_API,
@@ -69,7 +68,7 @@ class DashboardRecipe(RecipeModule):
             api_key,
             override,
         )
-        recipe_implementation = RecipeImplementation(Querier.get_instance(recipe_id))
+        recipe_implementation = RecipeImplementation()
         self.recipe_implementation = (
             recipe_implementation
             if self.config.override.functions is None
@@ -125,9 +124,9 @@ class DashboardRecipe(RecipeModule):
             Callable[[APIInterface, APIOptions], Awaitable[Optional[BaseResponse]]]
         ] = None
         if request_id == USERS_LIST_GET_API:
-            api_function = handle_users_get_api  # type: ignore
+            api_function = handle_users_get_api
         if request_id == USERS_COUNT_API:
-            api_function = handle_users_count_get_api  # type: ignore
+            api_function = handle_users_count_get_api
 
         if api_function is not None:
             return await api_key_protector(
