@@ -19,7 +19,6 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional
 from supertokens_python.exceptions import (
     SuperTokensError,
     raise_general_exception,
-    GeneralError,
 )
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailverification.exceptions import (
