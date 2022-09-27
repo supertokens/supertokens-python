@@ -46,7 +46,9 @@ class User:
             "userId": self.user_id,
             "email": self.email,
             "timeJoined": self.time_joined,
-            "thirdPartyInfo": None if self.third_party_info is None else self.third_party_info.__dict__,
+            "thirdPartyInfo": None
+            if self.third_party_info is None
+            else self.third_party_info.__dict__,
             "phoneNumber": self.phone_number,
         }
 

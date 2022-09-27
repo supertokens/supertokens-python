@@ -25,13 +25,13 @@ _ = teardown_function  # type: ignore
 pytestmark = mark.asyncio
 
 
-
 @fixture(scope="function")
 async def app():
     app = FastAPI()
     app.add_middleware(get_middleware())
 
     return TestClient(app)
+
 
 async def test_dashboard_recipe(app: TestClient):
     def override_dashboard_functions(oi: DashboardRI) -> DashboardRI:
@@ -71,9 +71,10 @@ async def test_dashboard_recipe(app: TestClient):
     init(**st_args)
     start_st()
 
-    expected_url = f"https://cdn.jsdelivr.net/gh/supertokens/dashboard@v{DASHBOARD_VERSION}/build/"
+    expected_url = (
+        f"https://cdn.jsdelivr.net/gh/supertokens/dashboard@v{DASHBOARD_VERSION}/build/"
+    )
 
     res = app.get(url="/auth/dashboard")
     assert res.status_code == 200
     assert expected_url in str(res.content)
-
