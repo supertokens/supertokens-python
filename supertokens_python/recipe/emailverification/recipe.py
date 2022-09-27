@@ -318,7 +318,7 @@ class EmailVerificationClaimClass(BooleanClaim):
             if isinstance(email_info, EmailDoesNotExistError):
                 # we consider people without email addresses as validated
                 return True
-            raise GeneralError("UNKNOWN_USER_ID")
+            raise Exception("UNKNOWN_USER_ID")
 
         super().__init__("st-ev", fetch_value)
 
@@ -348,7 +348,7 @@ class APIImplementation(APIInterface):
                     await session.fetch_and_set_claim(
                         EmailVerificationClaim, user_context
                     )
-                except GeneralError as e:
+                except Exception as e:
                     # This should never happen since we have just set the status above
                     if str(e) == "UNKNOWN_USER_ID":
                         raise_unauthorised_exception("Unknown User ID provided")
@@ -368,7 +368,7 @@ class APIImplementation(APIInterface):
             raise Exception("Session is undefined. Should not come here.")
         try:
             await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
-        except GeneralError as e:
+        except Exception as e:
             if str(e) == "UNKNOWN_USER_ID":
                 raise_unauthorised_exception("Unknown User ID provided")
             else:
