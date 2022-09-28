@@ -594,7 +594,6 @@ class SessionClaim(ABC, Generic[_T]):
     ) -> JSONObject:
         if user_context is None:
             user_context = {}
-
         value = await resolve(self.fetch_value(user_id, user_context))
 
         if value is None:

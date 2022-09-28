@@ -46,7 +46,7 @@ def middleware(get_response: Any):
                     request.supertokens, SessionContainer  # type: ignore
                 ):
                     manage_cookies_post_response(
-                        request.supertokens, result  # type: ignore
+                        request.supertokens, result, False  # type: ignore
                     )
                 if isinstance(result, DjangoResponse):
                     return result.response
@@ -80,7 +80,7 @@ def middleware(get_response: Any):
                 request.supertokens, SessionContainer  # type: ignore
             ):
                 manage_cookies_post_response(
-                    request.supertokens, result  # type: ignore
+                    request.supertokens, result, False  # type: ignore
                 )
             return result.response
 
