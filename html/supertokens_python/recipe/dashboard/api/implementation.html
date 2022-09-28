@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>supertokens_python.constants API documentation</title>
+<title>supertokens_python.recipe.dashboard.api.implementation API documentation</title>
 <meta name="description" content="Documentation for supertokens_python - SuperTokens Python SDK" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>supertokens_python.constants</code></h1>
+<h1 class="title">Module <code>supertokens_python.recipe.dashboard.api.implementation</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -39,21 +39,79 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-SUPPORTED_CDI_VERSIONS = [&#34;2.9&#34;, &#34;2.10&#34;, &#34;2.11&#34;, &#34;2.12&#34;, &#34;2.13&#34;, &#34;2.14&#34;, &#34;2.15&#34;]
-VERSION = &#34;0.11.1&#34;
-TELEMETRY = &#34;/telemetry&#34;
-USER_COUNT = &#34;/users/count&#34;
-USER_DELETE = &#34;/user/remove&#34;
-USERS = &#34;/users&#34;
-TELEMETRY_SUPERTOKENS_API_URL = &#34;https://api.supertokens.io/0/st/telemetry&#34;
-TELEMETRY_SUPERTOKENS_API_VERSION = &#34;2&#34;
-ERROR_MESSAGE_KEY = &#34;message&#34;
-API_KEY_HEADER = &#34;api-key&#34;
-RID_KEY_HEADER = &#34;rid&#34;
-FDI_KEY_HEADER = &#34;fdi-version&#34;
-API_VERSION = &#34;/apiversion&#34;
-API_VERSION_HEADER = &#34;cdi-version&#34;
-DASHBOARD_VERSION = &#34;0.1&#34;</code></pre>
+from __future__ import annotations
+
+from string import Template
+from textwrap import dedent
+from typing import TYPE_CHECKING, Any, Dict
+
+from supertokens_python.normalised_url_domain import NormalisedURLDomain
+from supertokens_python import Supertokens
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from ..constants import DASHBOARD_API
+from ..interfaces import (
+    APIInterface,
+)
+
+if TYPE_CHECKING:
+    from ..interfaces import APIOptions
+
+
+class APIImplementation(APIInterface):
+    def __init__(self):
+        super().__init__()
+
+        async def dashboard_get(
+            options: APIOptions, user_context: Dict[str, Any]
+        ) -&gt; str:
+            bundle_base_path_string = (
+                await options.recipe_implementation.get_dashboard_bundle_location(
+                    user_context
+                )
+            )
+            bundle_domain = (
+                NormalisedURLDomain(bundle_base_path_string).get_as_string_dangerous()
+                + NormalisedURLPath(bundle_base_path_string).get_as_string_dangerous()
+            )
+
+            connection_uri = &#34;&#34;
+            super_tokens_instance = Supertokens.get_instance()
+
+            connection_uri = super_tokens_instance.supertokens_config.connection_uri
+
+            dashboard_path = options.app_info.api_base_path.append(
+                NormalisedURLPath(DASHBOARD_API)
+            ).get_as_string_dangerous()
+
+            return Template(
+                dedent(
+                    &#34;&#34;&#34;
+                &lt;html&gt;
+                    &lt;head&gt;
+                        &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+                        &lt;script&gt;
+                            window.staticBasePath = &#34;${bundleDomain}/static&#34;
+                            window.dashboardAppPath = &#34;${dashboardPath}&#34;
+                            window.connectionURI = &#34;${connectionURI}&#34;
+                        &lt;/script&gt;
+                        &lt;script defer src=&#34;${bundleDomain}/static/js/bundle.js&#34;&gt;&lt;/script&gt;&lt;/head&gt;
+                        &lt;link href=&#34;${bundleDomain}/static/css/main.css&#34; rel=&#34;stylesheet&#34; type=&#34;text/css&#34;&gt;
+                        &lt;link rel=&#34;icon&#34; type=&#34;image/x-icon&#34; href=&#34;${bundleDomain}/static/media/favicon.ico&#34;&gt;
+                    &lt;/head&gt;
+                    &lt;body&gt;
+                        &lt;noscript&gt;You need to enable JavaScript to run this app.&lt;/noscript&gt;
+                        &lt;div id=&#34;root&#34;&gt;&lt;/div&gt;
+                    &lt;/body&gt;
+                &lt;/html&gt;
+                &#34;&#34;&#34;
+                )
+            ).substitute(
+                bundleDomain=bundle_domain,
+                dashboardPath=dashboard_path,
+                connectionURI=connection_uri,
+            )
+
+        self.dashboard_get = dashboard_get</code></pre>
 </details>
 </section>
 <section>
@@ -63,6 +121,79 @@ DASHBOARD_VERSION = &#34;0.1&#34;</code></pre>
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.api.implementation.APIImplementation"><code class="flex name class">
+<span>class <span class="ident">APIImplementation</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class APIImplementation(APIInterface):
+    def __init__(self):
+        super().__init__()
+
+        async def dashboard_get(
+            options: APIOptions, user_context: Dict[str, Any]
+        ) -&gt; str:
+            bundle_base_path_string = (
+                await options.recipe_implementation.get_dashboard_bundle_location(
+                    user_context
+                )
+            )
+            bundle_domain = (
+                NormalisedURLDomain(bundle_base_path_string).get_as_string_dangerous()
+                + NormalisedURLPath(bundle_base_path_string).get_as_string_dangerous()
+            )
+
+            connection_uri = &#34;&#34;
+            super_tokens_instance = Supertokens.get_instance()
+
+            connection_uri = super_tokens_instance.supertokens_config.connection_uri
+
+            dashboard_path = options.app_info.api_base_path.append(
+                NormalisedURLPath(DASHBOARD_API)
+            ).get_as_string_dangerous()
+
+            return Template(
+                dedent(
+                    &#34;&#34;&#34;
+                &lt;html&gt;
+                    &lt;head&gt;
+                        &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+                        &lt;script&gt;
+                            window.staticBasePath = &#34;${bundleDomain}/static&#34;
+                            window.dashboardAppPath = &#34;${dashboardPath}&#34;
+                            window.connectionURI = &#34;${connectionURI}&#34;
+                        &lt;/script&gt;
+                        &lt;script defer src=&#34;${bundleDomain}/static/js/bundle.js&#34;&gt;&lt;/script&gt;&lt;/head&gt;
+                        &lt;link href=&#34;${bundleDomain}/static/css/main.css&#34; rel=&#34;stylesheet&#34; type=&#34;text/css&#34;&gt;
+                        &lt;link rel=&#34;icon&#34; type=&#34;image/x-icon&#34; href=&#34;${bundleDomain}/static/media/favicon.ico&#34;&gt;
+                    &lt;/head&gt;
+                    &lt;body&gt;
+                        &lt;noscript&gt;You need to enable JavaScript to run this app.&lt;/noscript&gt;
+                        &lt;div id=&#34;root&#34;&gt;&lt;/div&gt;
+                    &lt;/body&gt;
+                &lt;/html&gt;
+                &#34;&#34;&#34;
+                )
+            ).substitute(
+                bundleDomain=bundle_domain,
+                dashboardPath=dashboard_path,
+                connectionURI=connection_uri,
+            )
+
+        self.dashboard_get = dashboard_get</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a></li>
+</ul>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -73,7 +204,14 @@ DASHBOARD_VERSION = &#34;0.1&#34;</code></pre>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="supertokens_python" href="index.html">supertokens_python</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api" href="index.html">supertokens_python.recipe.dashboard.api</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.api.implementation.APIImplementation" href="#supertokens_python.recipe.dashboard.api.implementation.APIImplementation">APIImplementation</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>
