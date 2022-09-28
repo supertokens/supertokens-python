@@ -227,7 +227,11 @@ __all__ = [
         promises_to_call = [
             metadata_fetch_awaitables[i]
             for i in range(
-                promise_arr_start_position, promise_arr_start_position + batch_size
+                promise_arr_start_position,
+                min(
+                    promise_arr_start_position + batch_size,
+                    len(metadata_fetch_awaitables),
+                ),
             )
         ]
         await asyncio.gather(*promises_to_call)
