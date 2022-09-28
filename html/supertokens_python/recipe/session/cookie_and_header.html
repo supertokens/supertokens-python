@@ -42,10 +42,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from urllib.parse import quote, unquote
 
 from typing_extensions import Literal
-
-from urllib.parse import quote, unquote
 
 from .constants import (
     ACCESS_CONTROL_EXPOSE_HEADERS,
@@ -217,23 +216,18 @@ def get_id_refresh_token_from_cookie(request: BaseRequest):
 
 
 def clear_cookies(recipe: SessionRecipe, response: BaseResponse):
-    if response is not None:
-        set_cookie(
-            recipe, response, ACCESS_TOKEN_COOKIE_KEY, &#34;&#34;, 0, &#34;access_token_path&#34;
-        )
-        set_cookie(
-            recipe, response, ID_REFRESH_TOKEN_COOKIE_KEY, &#34;&#34;, 0, &#34;access_token_path&#34;
-        )
-        set_cookie(
-            recipe, response, REFRESH_TOKEN_COOKIE_KEY, &#34;&#34;, 0, &#34;refresh_token_path&#34;
-        )
-        set_header(response, ID_REFRESH_TOKEN_HEADER_SET_KEY, &#34;remove&#34;, False)
-        set_header(
-            response,
-            ACCESS_CONTROL_EXPOSE_HEADERS,
-            ID_REFRESH_TOKEN_HEADER_SET_KEY,
-            True,
-        )</code></pre>
+    set_cookie(recipe, response, ACCESS_TOKEN_COOKIE_KEY, &#34;&#34;, 0, &#34;access_token_path&#34;)
+    set_cookie(
+        recipe, response, ID_REFRESH_TOKEN_COOKIE_KEY, &#34;&#34;, 0, &#34;access_token_path&#34;
+    )
+    set_cookie(recipe, response, REFRESH_TOKEN_COOKIE_KEY, &#34;&#34;, 0, &#34;refresh_token_path&#34;)
+    set_header(response, ID_REFRESH_TOKEN_HEADER_SET_KEY, &#34;remove&#34;, False)
+    set_header(
+        response,
+        ACCESS_CONTROL_EXPOSE_HEADERS,
+        ID_REFRESH_TOKEN_HEADER_SET_KEY,
+        True,
+    )</code></pre>
 </details>
 </section>
 <section>
@@ -339,23 +333,18 @@ def clear_cookies(recipe: SessionRecipe, response: BaseResponse):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def clear_cookies(recipe: SessionRecipe, response: BaseResponse):
-    if response is not None:
-        set_cookie(
-            recipe, response, ACCESS_TOKEN_COOKIE_KEY, &#34;&#34;, 0, &#34;access_token_path&#34;
-        )
-        set_cookie(
-            recipe, response, ID_REFRESH_TOKEN_COOKIE_KEY, &#34;&#34;, 0, &#34;access_token_path&#34;
-        )
-        set_cookie(
-            recipe, response, REFRESH_TOKEN_COOKIE_KEY, &#34;&#34;, 0, &#34;refresh_token_path&#34;
-        )
-        set_header(response, ID_REFRESH_TOKEN_HEADER_SET_KEY, &#34;remove&#34;, False)
-        set_header(
-            response,
-            ACCESS_CONTROL_EXPOSE_HEADERS,
-            ID_REFRESH_TOKEN_HEADER_SET_KEY,
-            True,
-        )</code></pre>
+    set_cookie(recipe, response, ACCESS_TOKEN_COOKIE_KEY, &#34;&#34;, 0, &#34;access_token_path&#34;)
+    set_cookie(
+        recipe, response, ID_REFRESH_TOKEN_COOKIE_KEY, &#34;&#34;, 0, &#34;access_token_path&#34;
+    )
+    set_cookie(recipe, response, REFRESH_TOKEN_COOKIE_KEY, &#34;&#34;, 0, &#34;refresh_token_path&#34;)
+    set_header(response, ID_REFRESH_TOKEN_HEADER_SET_KEY, &#34;remove&#34;, False)
+    set_header(
+        response,
+        ACCESS_CONTROL_EXPOSE_HEADERS,
+        ID_REFRESH_TOKEN_HEADER_SET_KEY,
+        True,
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.cookie_and_header.get_access_token_from_cookie"><code class="name flex">

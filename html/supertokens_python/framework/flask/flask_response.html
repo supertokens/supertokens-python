@@ -123,6 +123,7 @@ class FlaskResponse(BaseResponse):
     def set_status_code(self, status_code: int):
         if not self.status_set:
             self.response.status_code = status_code
+            self.status_code = status_code
             self.status_set = True
 
     def get_headers(self):
@@ -241,6 +242,7 @@ inheritance.</p></div>
     def set_status_code(self, status_code: int):
         if not self.status_set:
             self.response.status_code = status_code
+            self.status_code = status_code
             self.status_set = True
 
     def get_headers(self):
@@ -444,6 +446,7 @@ when testing to get the test client response data as JSON.</p>
 <pre><code class="python">def set_status_code(self, status_code: int):
     if not self.status_set:
         self.response.status_code = status_code
+        self.status_code = status_code
         self.status_set = True</code></pre>
 </details>
 </dd>

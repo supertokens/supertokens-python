@@ -622,7 +622,6 @@ class SessionClaim(ABC, Generic[_T]):
     ) -&gt; JSONObject:
         if user_context is None:
             user_context = {}
-
         value = await resolve(self.fetch_value(user_id, user_context))
 
         if value is None:
@@ -1559,7 +1558,6 @@ don't want to add the claim to the session automatically</dd>
     ) -&gt; JSONObject:
         if user_context is None:
             user_context = {}
-
         value = await resolve(self.fetch_value(user_id, user_context))
 
         if value is None:
@@ -1612,7 +1610,6 @@ def add_to_payload_(
 ) -&gt; JSONObject:
     if user_context is None:
         user_context = {}
-
     value = await resolve(self.fetch_value(user_id, user_context))
 
     if value is None:
