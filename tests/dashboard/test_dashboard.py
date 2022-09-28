@@ -1,35 +1,40 @@
 from typing import Any, Dict, List
 
 from fastapi import FastAPI
-from pytest import mark, fixture
+from pytest import fixture, mark
 from starlette.testclient import TestClient
-
+from supertokens_python import init
 from supertokens_python.constants import DASHBOARD_VERSION
 from supertokens_python.framework import BaseRequest
 from supertokens_python.framework.fastapi import get_middleware
+from supertokens_python.recipe import dashboard, emailpassword, session, usermetadata
 from supertokens_python.recipe.dashboard import InputOverrideConfig
 from supertokens_python.recipe.dashboard.interfaces import (
     RecipeInterface as DashboardRI,
-    APIInterface,
-    APIOptions,
 )
 from supertokens_python.recipe.dashboard.utils import DashboardConfig
 from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
 from tests.utils import (
-    start_st,
-    setup_function,
-    teardown_function,
+    clean_st,
     get_st_init_args,
     min_api_version,
+    reset,
+    setup_st,
     sign_up_request,
-    is_subset,
+    start_st,
 )
 
-from supertokens_python import init
-from supertokens_python.recipe import session, dashboard, usermetadata, emailpassword
 
-_ = setup_function  # type: ignore
-_ = teardown_function  # type: ignore
+def setup_function(_):
+    reset()
+    clean_st()
+    setup_st()
+
+
+def teardown_function(_):
+    reset()
+    clean_st()
+
 
 pytestmark = mark.asyncio
 
@@ -44,36 +49,22 @@ async def app():
 
 async def test_dashboard_recipe(app: TestClient):
     def override_dashboard_functions(oi: DashboardRI) -> DashboardRI:
-        async def get_dashboard_bundle_location(_user_context: Dict[str, Any]) -> str:
-            return ""
-
         async def should_allow_access(
             _request: BaseRequest,
             _config: DashboardConfig,
             _user_context: Dict[str, Any],
         ) -> bool:
-            return False
+            return True
 
-        oi.get_dashboard_bundle_location = get_dashboard_bundle_location
         oi.should_allow_access = should_allow_access
-        return oi
-
-    def override_dashboard_apis(oi: APIInterface) -> APIInterface:
-        async def dashboard_get(_: APIOptions, __: Dict[str, Any]) -> str:
-            return ""
-
-        oi.dashboard_get = dashboard_get
         return oi
 
     st_args = get_st_init_args(
         [
             session.init(),
             dashboard.init(
-                api_key="",
-                override=InputOverrideConfig(
-                    functions=override_dashboard_functions,
-                    apis=override_dashboard_apis,
-                ),
+                api_key="someKey",
+                override=InputOverrideConfig(functions=override_dashboard_functions),
             ),
         ]
     )
@@ -86,7 +77,7 @@ async def test_dashboard_recipe(app: TestClient):
 
     res = app.get(url="/auth/dashboard")
     assert res.status_code == 200
-    assert expected_url in str(res.content)
+    assert expected_url in str(res.text)
 
 
 @min_api_version("2.13")
@@ -108,7 +99,7 @@ async def test_dashboard_users_get(app: TestClient):
             emailpassword.init(),
             usermetadata.init(),
             dashboard.init(
-                api_key="",
+                api_key="someKey",
                 override=InputOverrideConfig(
                     functions=override_dashboard_functions,
                 ),
@@ -122,35 +113,17 @@ async def test_dashboard_users_get(app: TestClient):
 
     # Create two emailpassword users:
     for i in range(2):
-        res = sign_up_request(app, f"user{i}@example.com", "password")
+        res = sign_up_request(app, f"user{i}@example.com", "password123")
         user_id: str = res.json()["user"]["id"]
         user_ids.append(user_id)
         assert res.status_code == 200
 
-    await update_user_metadata(user_ids[0], {"firstName": "User1", "lastName": "Foo"})
-    await update_user_metadata(user_ids[1], {"firstName": "User2"})
+    await update_user_metadata(user_ids[0], {"first_name": "User1", "last_name": "Foo"})
+    await update_user_metadata(user_ids[1], {"first_name": "User2"})
 
-    res = app.get(url="/auth/dashboard/users")
+    res = app.get(url="/auth/dashboard/api/users?limit=5")
     body = res.json()
     assert res.status_code == 200
-    subset_dict = {
-        "users": [
-            {
-                "recipeId": "emailpassword",
-                "user": {
-                    "id": user_ids[0],
-                    "firstName": "User1",
-                    "lastName": "Foo",
-                },
-            },
-            {
-                "recipeId": "emailpassword",
-                "user": {
-                    "id": user_ids[1],
-                    "firstName": "User2",
-                },
-            },
-        ]
-    }
-
-    assert is_subset(body, subset_dict)
+    assert body["users"][0]["user"]["firstName"] == "User2"
+    assert body["users"][1]["user"]["lastName"] == "Foo"
+    assert body["users"][1]["user"]["firstName"] == "User1"

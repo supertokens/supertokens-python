@@ -14,13 +14,14 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, List, Dict, Awaitable, Optional
+from typing import TYPE_CHECKING, Any, Awaitable, Dict, List, Optional
 
 from supertokens_python.framework import BaseResponse
 from supertokens_python.supertokens import Supertokens
-from ..interfaces import DashboardUsersGetResponse
+
 from ...usermetadata import UserMetadataRecipe
 from ...usermetadata.asyncio import get_user_metadata
+from ..interfaces import DashboardUsersGetResponse
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
         APIInterface,
     )
 
-from supertokens_python.exceptions import raise_bad_input_exception, GeneralError
+from supertokens_python.exceptions import GeneralError, raise_bad_input_exception
 from supertokens_python.utils import send_200_response
 
 
@@ -98,7 +99,11 @@ async def handle_users_get_api(
         promises_to_call = [
             metadata_fetch_awaitables[i]
             for i in range(
-                promise_arr_start_position, promise_arr_start_position + batch_size
+                promise_arr_start_position,
+                min(
+                    promise_arr_start_position + batch_size,
+                    len(metadata_fetch_awaitables),
+                ),
             )
         ]
         await asyncio.gather(*promises_to_call)
