@@ -14,11 +14,10 @@
 
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING, Callable
+from typing import Optional, Callable
 
-if TYPE_CHECKING:
-    from supertokens_python import AppInfo, RecipeModule
-    from supertokens_python.recipe.dashboard.utils import InputOverrideConfig
+from supertokens_python import AppInfo, RecipeModule
+from supertokens_python.recipe.dashboard.utils import InputOverrideConfig
 
 from .recipe import DashboardRecipe
 

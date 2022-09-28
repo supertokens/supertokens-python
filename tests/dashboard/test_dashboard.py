@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from fastapi import FastAPI
 from pytest import mark, fixture
@@ -14,10 +14,19 @@ from supertokens_python.recipe.dashboard.interfaces import (
     APIOptions,
 )
 from supertokens_python.recipe.dashboard.utils import DashboardConfig
-from tests.utils import start_st, setup_function, teardown_function, get_st_init_args
+from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
+from tests.utils import (
+    start_st,
+    setup_function,
+    teardown_function,
+    get_st_init_args,
+    min_api_version,
+    sign_up_request,
+    is_subset,
+)
 
 from supertokens_python import init
-from supertokens_python.recipe import session, dashboard
+from supertokens_python.recipe import session, dashboard, usermetadata, emailpassword
 
 _ = setup_function  # type: ignore
 _ = teardown_function  # type: ignore
@@ -78,3 +87,72 @@ async def test_dashboard_recipe(app: TestClient):
     res = app.get(url="/auth/dashboard")
     assert res.status_code == 200
     assert expected_url in str(res.content)
+
+
+@min_api_version("2.13")
+async def test_dashboard_users_get(
+    app: TestClient
+):
+    def override_dashboard_functions(oi: DashboardRI) -> DashboardRI:
+        async def should_allow_access(
+            _request: BaseRequest,
+            _config: DashboardConfig,
+            _user_context: Dict[str, Any],
+        ) -> bool:
+            return True
+
+        oi.should_allow_access = should_allow_access
+        return oi
+
+    st_args = get_st_init_args(
+        [
+            session.init(),
+            emailpassword.init(),
+            usermetadata.init(),
+            dashboard.init(
+                api_key="",
+                override=InputOverrideConfig(
+                    functions=override_dashboard_functions,
+                ),
+            ),
+        ]
+    )
+    init(**st_args)
+    start_st()
+
+    user_ids: List[str] = []
+
+    # Create two emailpassword users:
+    for i in range(2):
+        res = sign_up_request(app, f"user{i}@example.com", "password")
+        user_id: str = res.json()["user"]["id"]
+        user_ids.append(user_id)
+        assert res.status_code == 200
+
+    await update_user_metadata(user_ids[0], {"firstName": "User1", "lastName": "Foo"})
+    await update_user_metadata(user_ids[1], {"firstName": "User2"})
+
+    res = app.get(url="/auth/dashboard/users")
+    body = res.json()
+    assert res.status_code == 200
+    subset_dict = {
+        "users": [
+            {
+                "recipeId": "emailpassword",
+                "user": {
+                    "id": user_ids[0],
+                    "firstName": "User1",
+                    "lastName": "Foo",
+                },
+            },
+            {
+                "recipeId": "emailpassword",
+                "user": {
+                    "id": user_ids[1],
+                    "firstName": "User2",
+                },
+            },
+        ]
+    }
+
+    assert is_subset(body, subset_dict)

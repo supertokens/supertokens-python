@@ -36,5 +36,4 @@ async def handle_dashboard_api(
     html_str = await api_implementation.dashboard_get(api_options, user_context)
 
     api_options.response.set_html_content(html_str)
-    api_options.response.set_status_code(200)
     return api_options.response

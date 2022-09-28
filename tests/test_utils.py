@@ -1,5 +1,8 @@
+from typing import Union, List, Any, Dict
+
 import pytest
 from supertokens_python.utils import humanize_time, is_version_gte
+from tests.utils import is_subset
 
 
 @pytest.mark.parametrize(
@@ -84,3 +87,23 @@ HOUR = 60 * MINUTE
 )
 def test_humanize_time(ms: int, out: str):
     assert humanize_time(ms) == out
+
+
+@pytest.mark.parametrize(
+    "d1,d2,result",
+    [
+        ({"a": {"b": [1, 2]}, "c": 1}, {"c": 1}, True),
+        ({"a": {"b": [1, 2]}}, {"a": {"b": [1]}}, True),
+        ({"a": {"b": [{"c": 2}, 2]}}, {"a": {"b": [{"c": 2}]}}, True),
+        ({"a": {"b": [1, 2]}}, {"a": {"b": [3]}}, False),
+    ],
+)
+def test_is_subset(
+    d1: Union[Dict[str, Any], List[Any]],
+    d2: Union[Dict[str, Any], List[Any]],
+    result: bool,
+):
+    if result is True:
+        assert is_subset(d1, d2)
+    else:
+        assert not is_subset(d1, d2)

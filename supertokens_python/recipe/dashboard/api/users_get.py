@@ -18,7 +18,6 @@ from typing import TYPE_CHECKING, Any, List, Dict, Awaitable, Optional
 
 from supertokens_python.framework import BaseResponse
 from supertokens_python.supertokens import Supertokens
-from supertokens_python.types import User
 from ..interfaces import DashboardUsersGetResponse
 from ...usermetadata import UserMetadataRecipe
 from ...usermetadata.asyncio import get_user_metadata
@@ -69,34 +68,27 @@ async def handle_users_get_api(
             api_options.response,
         )
 
-    updated_users_arr: List[Dict[str, Any]] = []
+    updated_users_arr: List[Dict[str, Any]] = DashboardUsersGetResponse(
+        users_response.users, users_response.next_pagination_token
+    ).to_json()["users"]
     metadata_fetch_awaitables: List[Awaitable[Any]] = []
 
-    async def get_user_metadata_and_update_user(user: User) -> None:
+    async def get_user_metadata_and_update_user(user_idx: int) -> None:
+        user = users_response.users[user_idx]
         user_metadata = await get_user_metadata(user.user_id)
         first_name = user_metadata.metadata.get("first_name")
         last_name = user_metadata.metadata.get("last_name")
 
-        updated_users_arr.append(
+        updated_users_arr[user_idx]["user"].update(
             {
-                "recipeId": user.recipe_id,
-                "user": {
-                    "id": user.user_id,
-                    "email": user.email,
-                    "timeJoined": user.time_joined,
-                    "thirdParty": {}
-                    if user.third_party_info is None
-                    else user.third_party_info.__dict__,
-                    "phoneNumber": user.phone_number,
-                    "firstName": first_name,
-                    "lastName": last_name, # None becomes null which is acceptable for the dashboard.
-                },
+                "firstName": first_name,
+                "lastName": last_name,  # None becomes null which is acceptable for the dashboard.
             }
         )
 
     # Batch calls to get user metadata:
-    for user in users_response.users:
-        metadata_fetch_awaitables.append(get_user_metadata_and_update_user(user))
+    for i, _ in enumerate(users_response.users):
+        metadata_fetch_awaitables.append(get_user_metadata_and_update_user(i))
 
     promise_arr_start_position = 0
     batch_size = 5
