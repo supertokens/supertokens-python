@@ -203,6 +203,7 @@ class Supertokens:
             app_info.website_base_path,
             mode,
         )
+        self.supertokens_config = supertokens_config
         self._telemetry_status: str = "NONE"
         log_debug_message(
             "Started SuperTokens with debug logging (supertokens.init called)"

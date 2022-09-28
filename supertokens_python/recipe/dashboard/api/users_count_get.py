@@ -11,18 +11,25 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-SUPPORTED_CDI_VERSIONS = ["2.9", "2.10", "2.11", "2.12", "2.13", "2.14", "2.15"]
-VERSION = "0.11.1"
-TELEMETRY = "/telemetry"
-USER_COUNT = "/users/count"
-USER_DELETE = "/user/remove"
-USERS = "/users"
-TELEMETRY_SUPERTOKENS_API_URL = "https://api.supertokens.io/0/st/telemetry"
-TELEMETRY_SUPERTOKENS_API_VERSION = "2"
-ERROR_MESSAGE_KEY = "message"
-API_KEY_HEADER = "api-key"
-RID_KEY_HEADER = "rid"
-FDI_KEY_HEADER = "fdi-version"
-API_VERSION = "/apiversion"
-API_VERSION_HEADER = "cdi-version"
-DASHBOARD_VERSION = "0.1"
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
+
+from supertokens_python.framework import BaseResponse
+from supertokens_python.supertokens import Supertokens
+
+if TYPE_CHECKING:
+    from supertokens_python.recipe.dashboard.interfaces import (
+        APIOptions,
+        APIInterface,
+    )
+
+from supertokens_python.utils import send_200_response
+
+
+async def handle_users_count_get_api(
+    _: APIInterface, api_options: APIOptions
+) -> Optional[BaseResponse]:
+    count = await Supertokens.get_instance().get_user_count(include_recipe_ids=None)
+
+    return send_200_response({"status": "OK", "count": count}, api_options.response)

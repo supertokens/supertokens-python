@@ -481,3 +481,30 @@ def get_st_init_args(recipe_list: List[Any]) -> Dict[str, Any]:
         **st_init_common_args,
         "recipe_list": recipe_list,
     }
+
+
+def is_subset(dict1: Any, dict2: Any) -> bool:
+    """Check if dict2 is subset of dict1 in a nested manner
+
+    Iteratively compares list items with recursion if key's value is a list
+    """
+    if isinstance(dict1, list):
+        if isinstance(dict2, list):
+            for item in dict2:  # pyright: reportUnknownVariableType=false
+                if item not in dict1:
+                    return False
+            return True
+        return False
+    if isinstance(dict1, dict):
+        if isinstance(dict2, dict):
+            for key, value in dict2.items():
+                if key not in dict1:
+                    return False
+                if not is_subset(
+                    dict1[key], value
+                ):  # pyright: reportUnknownArgumentType=false
+                    return False
+            return True
+        return False
+
+    return dict1 == dict2
