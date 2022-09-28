@@ -147,11 +147,9 @@ class AppInfo:
         return json.dumps(self, default=defaultImpl, sort_keys=True, indent=4)
 
 
-def manage_cookies_post_response(
-    session: SessionContainer, response: BaseResponse, remove_cookies: bool
-):
+def manage_cookies_post_response(session: SessionContainer, response: BaseResponse):
     recipe = SessionRecipe.get_instance()
-    if session["remove_cookies"] or remove_cookies:
+    if session["remove_cookies"]:
         clear_cookies(recipe, response)
     else:
         access_token = session["new_access_token_info"]

@@ -65,20 +65,7 @@ class Middleware:
 
             response_ = FlaskResponse(response)
             if hasattr(g, "supertokens") and g.supertokens is not None:
-                remove_cookies = False
-                # We do this type of checking instead of just relying on
-                # the session container because a user or our APIs might
-                # throw an unauthorised error manually without calling
-                # session.revoke_session. In that case, we do not want
-                # to miss out on clearing the session since session["remove_cookies"]
-                # will not be set to true.
-
-                # An example of where this happens is in the email verification GET
-                # API in case when calling fetch_and_set_claim and the user does not
-                # exist.
-                # if response.headers.get("id-refresh-token") == "remove":
-                #     remove_cookies = True
-                manage_cookies_post_response(g.supertokens, response_, remove_cookies)
+                manage_cookies_post_response(g.supertokens, response_)
 
             return response_.response
 
