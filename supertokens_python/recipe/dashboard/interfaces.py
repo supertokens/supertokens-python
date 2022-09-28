@@ -84,7 +84,7 @@ class DashboardUsersGetResponse(APIResponse):
                     "id": u.user_id,
                     "email": u.email,
                     "timeJoined": u.time_joined,
-                    "thirdParty": {}
+                    "thirdParty": None
                     if u.third_party_info is None
                     else u.third_party_info.__dict__,
                     "phoneNumber": u.phone_number,

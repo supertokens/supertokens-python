@@ -90,9 +90,7 @@ async def test_dashboard_recipe(app: TestClient):
 
 
 @min_api_version("2.13")
-async def test_dashboard_users_get(
-    app: TestClient
-):
+async def test_dashboard_users_get(app: TestClient):
     def override_dashboard_functions(oi: DashboardRI) -> DashboardRI:
         async def should_allow_access(
             _request: BaseRequest,
