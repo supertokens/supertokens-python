@@ -20,6 +20,7 @@ from fastapi.requests import Request
 from fastapi.testclient import TestClient
 from pytest import fixture, mark, skip
 from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.asyncio import delete_user
 from supertokens_python.exceptions import BadInputError
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
@@ -50,28 +51,22 @@ from supertokens_python.recipe.session.asyncio import (
 )
 from supertokens_python.recipe.session.constants import ANTI_CSRF_HEADER_KEY
 from supertokens_python.utils import is_version_gte
+from tests.utils import get_st_init_args, min_api_version
 from tests.utils import (
     TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
-    clean_st,
     email_verify_token_request,
     extract_all_cookies,
-    reset,
     set_key_value_in_config,
-    setup_st,
     sign_up_request,
     start_st,
+    setup_function,
+    teardown_function,
 )
 
+_ = setup_function  # type: ignore
+_ = teardown_function  # type: ignore
 
-def setup_function(_):
-    reset()
-    clean_st()
-    setup_st()
-
-
-def teardown_function(_):
-    reset()
-    clean_st()
+pytestmark = mark.asyncio
 
 
 @fixture(scope="function")
@@ -121,7 +116,6 @@ async def driver_config_client():
     return TestClient(app)
 
 
-@mark.asyncio
 async def test_the_generate_token_api_with_valid_input_email_not_verified(
     driver_config_client: TestClient,
 ):
@@ -162,7 +156,6 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(
     assert dict_response["status"] == "OK"
 
 
-@mark.asyncio
 async def test_the_generate_token_api_with_valid_input_email_verified_and_test_error(
     driver_config_client: TestClient,
 ):
@@ -209,7 +202,6 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
     raise Exception("Test failed")
 
 
-@mark.asyncio
 async def test_the_generate_token_api_with_valid_input_no_session_and_check_output(
     driver_config_client: TestClient,
 ):
@@ -236,7 +228,6 @@ async def test_the_generate_token_api_with_valid_input_no_session_and_check_outp
     assert dict_response["message"] == "unauthorised"
 
 
-@mark.asyncio
 async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_try_refresh_token_is_returned(
     driver_config_client: TestClient,
 ):
@@ -310,7 +301,6 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
     assert dict_response["status"] == "OK"
 
 
-@mark.asyncio
 async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called(
     driver_config_client: TestClient,
 ):
@@ -370,7 +360,6 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
     assert email_token is not None
 
 
-@mark.asyncio
 async def test_the_email_verify_api_with_valid_input(driver_config_client: TestClient):
     token = None
 
@@ -439,7 +428,6 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
     assert dict_response["status"] == "OK"
 
 
-@mark.asyncio
 async def test_the_email_verify_api_with_invalid_token_and_check_error(
     driver_config_client: TestClient,
 ):
@@ -510,7 +498,6 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
     assert dict_response["status"] == "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR"
 
 
-@mark.asyncio
 async def test_the_email_verify_api_with_token_of_not_type_string(
     driver_config_client: TestClient,
 ):
@@ -582,7 +569,6 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
     assert dict_response["message"] == "The email verification token must be a string"
 
 
-@mark.asyncio
 async def test_that_the_handle_post_email_verification_callback_is_called_on_successful_verification_if_given(
     driver_config_client: TestClient,
 ):
@@ -684,7 +670,6 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     assert user_info_from_callback.email == "test@gmail.com"  # type: ignore
 
 
-@mark.asyncio
 async def test_the_email_verify_with_valid_input_using_the_get_method(
     driver_config_client: TestClient,
 ):
@@ -766,7 +751,6 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
     assert dict_response["status"] == "OK"
 
 
-@mark.asyncio
 async def test_the_email_verify_with_no_session_using_the_get_method(
     driver_config_client: TestClient,
 ):
@@ -794,7 +778,6 @@ async def test_the_email_verify_with_no_session_using_the_get_method(
     assert dict_response["message"] == "unauthorised"
 
 
-@mark.asyncio
 async def test_the_email_verify_api_with_valid_input_overriding_apis(
     driver_config_client: TestClient,
 ):
@@ -890,7 +873,6 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
     assert user_info_from_callback.email == "test@gmail.com"  # type: ignore
 
 
-@mark.asyncio
 async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_error(
     driver_config_client: TestClient,
 ):
@@ -988,7 +970,6 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     assert user_info_from_callback.email == "test@gmail.com"  # type: ignore
 
 
-@mark.asyncio
 async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
     driver_config_client: TestClient,
 ):
@@ -1030,7 +1011,6 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
     raise Exception("Test failed")
 
 
-@mark.asyncio
 async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_email(
     driver_config_client: TestClient,
 ):
@@ -1074,3 +1054,42 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
         assert is_verified is False
         return
     raise Exception("Test failed")
+
+
+@min_api_version("2.11")
+async def test_email_verify_with_deleted_user(driver_config_client: TestClient):
+    async def custom_f(_: EVUser, __: str, ___: Optional[Dict[str, Any]]):
+        return None
+
+    st_args = get_st_init_args(
+        [
+            emailpassword.init(),
+            emailverification.init("OPTIONAL", create_and_send_custom_email=custom_f),
+            session.init(),
+        ]
+    )
+    init(**st_args)
+    start_st()
+
+    res = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    dict_response = json.loads(res.text)
+
+    assert res.status_code == 200
+    assert dict_response["status"] == "OK"
+
+    user_id = dict_response["user"]["id"]
+    cookies = extract_all_cookies(res)
+
+    await delete_user(user_id)
+
+    response = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        cookies["sIdRefreshToken"]["value"],
+        res.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
+    dict_response = json.loads(response.text)
+
+    assert response.status_code == 401
+    assert dict_response == {"message": "unauthorised"}
