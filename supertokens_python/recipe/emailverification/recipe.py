@@ -16,7 +16,10 @@ from __future__ import annotations
 from os import environ
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
-from supertokens_python.exceptions import SuperTokensError, raise_general_exception
+from supertokens_python.exceptions import (
+    SuperTokensError,
+    raise_general_exception,
+)
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailverification.exceptions import (
     EmailVerificationInvalidTokenError,
@@ -29,6 +32,7 @@ from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVarsUser,
 )
 from supertokens_python.recipe_module import APIHandled, RecipeModule
+from ..session.exceptions import raise_unauthorised_exception
 
 from ...ingredients.emaildelivery.types import EmailDeliveryConfig
 from ...logger import log_debug_message
@@ -313,9 +317,7 @@ class EmailVerificationClaimClass(BooleanClaim):
             if isinstance(email_info, EmailDoesNotExistError):
                 # we consider people without email addresses as validated
                 return True
-            raise Exception(
-                "Should never come here: UNKNOWN_USER_ID or invalid result from get_email_for_user"
-            )
+            raise Exception("UNKNOWN_USER_ID")
 
         super().__init__("st-ev", fetch_value)
 
@@ -341,7 +343,16 @@ class APIImplementation(APIInterface):
         )
         if isinstance(response, VerifyEmailUsingTokenOkResult):
             if session is not None:
-                await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
+                try:
+                    await session.fetch_and_set_claim(
+                        EmailVerificationClaim, user_context
+                    )
+                except Exception as e:
+                    # This should never happen since we have just set the status above
+                    if str(e) == "UNKNOWN_USER_ID":
+                        raise_unauthorised_exception("Unknown User ID provided")
+                    else:
+                        raise e
 
             return EmailVerifyPostOkResult(response.user)
         return EmailVerifyPostInvalidTokenError()
@@ -354,7 +365,14 @@ class APIImplementation(APIInterface):
     ) -> IsEmailVerifiedGetOkResult:
         if session is None:
             raise Exception("Session is undefined. Should not come here.")
-        await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
+        try:
+            await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
+        except Exception as e:
+            if str(e) == "UNKNOWN_USER_ID":
+                raise_unauthorised_exception("Unknown User ID provided")
+            else:
+                raise e
+
         is_verified = await session.get_claim_value(
             EmailVerificationClaim, user_context
         )
@@ -425,9 +443,7 @@ class APIImplementation(APIInterface):
             )
             return GenerateEmailVerifyTokenPostOkResult()
 
-        raise Exception(
-            "Should never come here: UNKNOWN_USER_ID or invalid result from get_email_for_user_id"
-        )
+        raise_unauthorised_exception("Unknown User ID provided")
 
 
 class IsVerifiedSCV(SessionClaimValidator):
