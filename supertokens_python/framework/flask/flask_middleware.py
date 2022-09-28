@@ -76,8 +76,8 @@ class Middleware:
                 # An example of where this happens is in the email verification GET
                 # API in case when calling fetch_and_set_claim and the user does not
                 # exist.
-                if response.headers.get("id-refresh-token") == "remove":
-                    remove_cookies = True
+                # if response.headers.get("id-refresh-token") == "remove":
+                #     remove_cookies = True
                 manage_cookies_post_response(g.supertokens, response_, remove_cookies)
 
             return response_.response

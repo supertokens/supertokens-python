@@ -16,10 +16,7 @@ from __future__ import annotations
 from os import environ
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
-from supertokens_python.exceptions import (
-    SuperTokensError,
-    raise_general_exception,
-)
+from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryIngredient
 from supertokens_python.recipe.emailverification.exceptions import (
     EmailVerificationInvalidTokenError,
@@ -32,21 +29,23 @@ from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVarsUser,
 )
 from supertokens_python.recipe_module import APIHandled, RecipeModule
-from ..session.exceptions import raise_unauthorised_exception
 
 from ...ingredients.emaildelivery.types import EmailDeliveryConfig
 from ...logger import log_debug_message
 from ...post_init_callbacks import PostSTInitCallbacks
+from ...types import MaybeAwaitable
+from ...utils import get_timestamp_ms
 from ..session import SessionRecipe
 from ..session.claim_base_classes.boolean_claim import (
     BooleanClaim,
     BooleanClaimValidators,
 )
+from ..session.exceptions import raise_unauthorised_exception
 from ..session.interfaces import (
-    SessionContainer,
-    SessionClaimValidator,
-    JSONObject,
     ClaimValidationResult,
+    JSONObject,
+    SessionClaimValidator,
+    SessionContainer,
 )
 from .interfaces import (
     APIInterface,
@@ -64,8 +63,6 @@ from .interfaces import (
     VerifyEmailUsingTokenOkResult,
 )
 from .recipe_implementation import RecipeImplementation
-from ...types import MaybeAwaitable
-from ...utils import get_timestamp_ms
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
@@ -350,7 +347,7 @@ class APIImplementation(APIInterface):
                 except Exception as e:
                     # This should never happen since we have just set the status above
                     if str(e) == "UNKNOWN_USER_ID":
-                        raise_unauthorised_exception("Unknown User ID provided")
+                        raise_unauthorised_exception("Unknown User ID provided", False)
                     else:
                         raise e
 
@@ -369,7 +366,7 @@ class APIImplementation(APIInterface):
             await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
         except Exception as e:
             if str(e) == "UNKNOWN_USER_ID":
-                raise_unauthorised_exception("Unknown User ID provided")
+                raise_unauthorised_exception("Unknown User ID provided", False)
             else:
                 raise e
 
@@ -443,7 +440,7 @@ class APIImplementation(APIInterface):
             )
             return GenerateEmailVerifyTokenPostOkResult()
 
-        raise_unauthorised_exception("Unknown User ID provided")
+        raise_unauthorised_exception("Unknown User ID provided", False)
 
 
 class IsVerifiedSCV(SessionClaimValidator):
