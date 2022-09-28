@@ -19,7 +19,7 @@ from shutil import rmtree
 from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
-from typing import Any, Dict, List, cast, Union
+from typing import Any, Dict, List, cast
 
 from requests.models import Response
 from yaml import FullLoader, dump, load
@@ -490,7 +490,7 @@ def is_subset(dict1: Any, dict2: Any) -> bool:
     """
     if isinstance(dict1, list):
         if isinstance(dict2, list):
-            for item in dict2:
+            for item in dict2:  # pyright: reportUnknownVariableType=false
                 if item not in dict1:
                     return False
             return True
@@ -500,7 +500,9 @@ def is_subset(dict1: Any, dict2: Any) -> bool:
             for key, value in dict2.items():
                 if key not in dict1:
                     return False
-                if not is_subset(dict1[key], value):
+                if not is_subset(
+                    dict1[key], value
+                ):  # pyright: reportUnknownArgumentType=false
                     return False
             return True
         return False
