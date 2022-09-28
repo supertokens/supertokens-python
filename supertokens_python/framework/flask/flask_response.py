@@ -95,6 +95,7 @@ class FlaskResponse(BaseResponse):
     def set_status_code(self, status_code: int):
         if not self.status_set:
             self.response.status_code = status_code
+            self.status_code = status_code
             self.status_set = True
 
     def get_headers(self):

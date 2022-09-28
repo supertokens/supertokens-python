@@ -14,10 +14,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from urllib.parse import quote, unquote
 
 from typing_extensions import Literal
-
-from urllib.parse import quote, unquote
 
 from .constants import (
     ACCESS_CONTROL_EXPOSE_HEADERS,
@@ -189,20 +188,15 @@ def get_id_refresh_token_from_cookie(request: BaseRequest):
 
 
 def clear_cookies(recipe: SessionRecipe, response: BaseResponse):
-    if response is not None:
-        set_cookie(
-            recipe, response, ACCESS_TOKEN_COOKIE_KEY, "", 0, "access_token_path"
-        )
-        set_cookie(
-            recipe, response, ID_REFRESH_TOKEN_COOKIE_KEY, "", 0, "access_token_path"
-        )
-        set_cookie(
-            recipe, response, REFRESH_TOKEN_COOKIE_KEY, "", 0, "refresh_token_path"
-        )
-        set_header(response, ID_REFRESH_TOKEN_HEADER_SET_KEY, "remove", False)
-        set_header(
-            response,
-            ACCESS_CONTROL_EXPOSE_HEADERS,
-            ID_REFRESH_TOKEN_HEADER_SET_KEY,
-            True,
-        )
+    set_cookie(recipe, response, ACCESS_TOKEN_COOKIE_KEY, "", 0, "access_token_path")
+    set_cookie(
+        recipe, response, ID_REFRESH_TOKEN_COOKIE_KEY, "", 0, "access_token_path"
+    )
+    set_cookie(recipe, response, REFRESH_TOKEN_COOKIE_KEY, "", 0, "refresh_token_path")
+    set_header(response, ID_REFRESH_TOKEN_HEADER_SET_KEY, "remove", False)
+    set_header(
+        response,
+        ACCESS_CONTROL_EXPOSE_HEADERS,
+        ID_REFRESH_TOKEN_HEADER_SET_KEY,
+        True,
+    )

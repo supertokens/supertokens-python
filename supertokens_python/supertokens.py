@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, List, Set, Union, Optional, Dict
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union
 
 from typing_extensions import Literal
 
@@ -33,13 +33,13 @@ from .constants import (
 from .exceptions import SuperTokensError
 from .interfaces import (
     CreateUserIdMappingOkResult,
-    UnknownSupertokensUserIDError,
-    UserIdMappingAlreadyExistsError,
-    UnknownMappingError,
-    GetUserIdMappingOkResult,
-    UserIDTypes,
     DeleteUserIdMappingOkResult,
+    GetUserIdMappingOkResult,
+    UnknownMappingError,
+    UnknownSupertokensUserIDError,
     UpdateOrDeleteUserIdMappingInfoOkResult,
+    UserIdMappingAlreadyExistsError,
+    UserIDTypes,
 )
 from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath

@@ -93,4 +93,4 @@ class Middleware:
             )
             if isinstance(result, FlaskResponse):
                 return result.response
-            raise Exception("Shoulld never come here")
+            raise Exception("Should never come here")
