@@ -94,12 +94,14 @@ class SMTPSettings:
         from_: SMTPSettingsFrom,
         password: Union[str, None] = None,
         secure: Union[bool, None] = None,
+        username: Union[str, None] = None,
     ) -&gt; None:
         self.host = host
         self.from_ = from_
         self.password = password
         self.port = port
         self.secure = secure
+        self.username = username
 
 
 class EmailContent:
@@ -339,7 +341,7 @@ async def send_raw_email(
 </dd>
 <dt id="supertokens_python.ingredients.emaildelivery.types.SMTPSettings"><code class="flex name class">
 <span>class <span class="ident">SMTPSettings</span></span>
-<span>(</span><span>host: str, port: int, from_: <a title="supertokens_python.ingredients.emaildelivery.types.SMTPSettingsFrom" href="#supertokens_python.ingredients.emaildelivery.types.SMTPSettingsFrom">SMTPSettingsFrom</a>, password: Union[str, None] = None, secure: Union[bool, None] = None)</span>
+<span>(</span><span>host: str, port: int, from_: <a title="supertokens_python.ingredients.emaildelivery.types.SMTPSettingsFrom" href="#supertokens_python.ingredients.emaildelivery.types.SMTPSettingsFrom">SMTPSettingsFrom</a>, password: Union[str, None] = None, secure: Union[bool, None] = None, username: Union[str, None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -355,12 +357,14 @@ async def send_raw_email(
         from_: SMTPSettingsFrom,
         password: Union[str, None] = None,
         secure: Union[bool, None] = None,
+        username: Union[str, None] = None,
     ) -&gt; None:
         self.host = host
         self.from_ = from_
         self.password = password
         self.port = port
-        self.secure = secure</code></pre>
+        self.secure = secure
+        self.username = username</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.ingredients.emaildelivery.types.SMTPSettingsFrom"><code class="flex name class">
