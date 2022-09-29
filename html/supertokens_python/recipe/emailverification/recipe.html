@@ -375,7 +375,7 @@ class APIImplementation(APIInterface):
                 except Exception as e:
                     # This should never happen since we have just set the status above
                     if str(e) == &#34;UNKNOWN_USER_ID&#34;:
-                        raise_unauthorised_exception(&#34;Unknown User ID provided&#34;, False)
+                        raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
                     else:
                         raise e
 
@@ -394,7 +394,7 @@ class APIImplementation(APIInterface):
             await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
         except Exception as e:
             if str(e) == &#34;UNKNOWN_USER_ID&#34;:
-                raise_unauthorised_exception(&#34;Unknown User ID provided&#34;, False)
+                raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
             else:
                 raise e
 
@@ -468,7 +468,7 @@ class APIImplementation(APIInterface):
             )
             return GenerateEmailVerifyTokenPostOkResult()
 
-        raise_unauthorised_exception(&#34;Unknown User ID provided&#34;, False)
+        raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
 
 
 class IsVerifiedSCV(SessionClaimValidator):
@@ -550,7 +550,7 @@ inheritance.</p></div>
                 except Exception as e:
                     # This should never happen since we have just set the status above
                     if str(e) == &#34;UNKNOWN_USER_ID&#34;:
-                        raise_unauthorised_exception(&#34;Unknown User ID provided&#34;, False)
+                        raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
                     else:
                         raise e
 
@@ -569,7 +569,7 @@ inheritance.</p></div>
             await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
         except Exception as e:
             if str(e) == &#34;UNKNOWN_USER_ID&#34;:
-                raise_unauthorised_exception(&#34;Unknown User ID provided&#34;, False)
+                raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
             else:
                 raise e
 
@@ -643,7 +643,7 @@ inheritance.</p></div>
             )
             return GenerateEmailVerifyTokenPostOkResult()
 
-        raise_unauthorised_exception(&#34;Unknown User ID provided&#34;, False)</code></pre>
+        raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -681,7 +681,7 @@ inheritance.</p></div>
             except Exception as e:
                 # This should never happen since we have just set the status above
                 if str(e) == &#34;UNKNOWN_USER_ID&#34;:
-                    raise_unauthorised_exception(&#34;Unknown User ID provided&#34;, False)
+                    raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
                 else:
                     raise e
 
@@ -757,7 +757,7 @@ inheritance.</p></div>
         )
         return GenerateEmailVerifyTokenPostOkResult()
 
-    raise_unauthorised_exception(&#34;Unknown User ID provided&#34;, False)</code></pre>
+    raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.APIImplementation.is_email_verified_get"><code class="name flex">
@@ -781,7 +781,7 @@ inheritance.</p></div>
         await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
     except Exception as e:
         if str(e) == &#34;UNKNOWN_USER_ID&#34;:
-            raise_unauthorised_exception(&#34;Unknown User ID provided&#34;, False)
+            raise_unauthorised_exception(&#34;Unknown User ID provided&#34;)
         else:
             raise e
 
