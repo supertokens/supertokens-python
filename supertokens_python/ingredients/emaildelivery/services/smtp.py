@@ -59,7 +59,8 @@ class Transporter:
 
             if self.smtp_settings.password:
                 await mail.login(
-                    self.smtp_settings.from_.email, self.smtp_settings.password
+                    self.smtp_settings.username or self.smtp_settings.from_.email,
+                    self.smtp_settings.password,
                 )
 
             return mail

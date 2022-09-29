@@ -66,12 +66,14 @@ class SMTPSettings:
         from_: SMTPSettingsFrom,
         password: Union[str, None] = None,
         secure: Union[bool, None] = None,
+        username: Union[str, None] = None,
     ) -> None:
         self.host = host
         self.from_ = from_
         self.password = password
         self.port = port
         self.secure = secure
+        self.username = username
 
 
 class EmailContent:
