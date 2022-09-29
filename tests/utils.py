@@ -27,6 +27,7 @@ from yaml import FullLoader, dump, load
 from fastapi.testclient import TestClient
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig
 from supertokens_python.process_state import ProcessState
+from supertokens_python.recipe.dashboard import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
@@ -203,6 +204,7 @@ def reset():
     UserMetadataRecipe.reset()
     UserRolesRecipe.reset()
     ThirdPartyPasswordlessRecipe.reset()
+    DashboardRecipe.reset()
     PasswordlessRecipe.reset()
 
 
