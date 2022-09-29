@@ -7,14 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-- Added a `username` field to the `SMTPSettings` model for passing custom SMTP server username.
-
 ## [0.11.1] - 2022-09-28
 ### Changes:
 - Email verification endpoints will now clear the session if called by a deleted/unknown user
 
 ### Additions:
 - Adds dashboard recipe
+- Added a `username` field to the `SMTPSettings` model for passing custom SMTP server username.
 
 ## [0.11.0] - 2022-09-14
 
