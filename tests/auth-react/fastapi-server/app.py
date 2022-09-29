@@ -44,6 +44,7 @@ from supertokens_python.recipe import (
     thirdpartypasswordless,
     userroles,
 )
+from supertokens_python.recipe.dashboard import DashboardRecipe
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.interfaces import (
     APIInterface as EmailPasswordAPIInterface,
@@ -300,6 +301,7 @@ def custom_init(
     EmailVerificationRecipe.reset()
     EmailPasswordRecipe.reset()
     ThirdPartyEmailPasswordRecipe.reset()
+    DashboardRecipe.reset()
     Supertokens.reset()
 
     providers_list: List[Provider] = [
