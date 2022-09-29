@@ -14,11 +14,8 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Union, List, Dict, Optional
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 from urllib.parse import urlparse
-
-from tldextract import extract  # type: ignore
-from typing_extensions import Literal
 
 from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.framework import BaseResponse
@@ -28,10 +25,14 @@ from supertokens_python.recipe.openid import (
 )
 from supertokens_python.utils import (
     is_an_ip_address,
+    resolve,
     send_non_200_response,
     send_non_200_response_with_message,
-    resolve,
 )
+from tldextract import extract  # type: ignore
+from typing_extensions import Literal
+
+from ...types import MaybeAwaitable
 from .constants import SESSION_REFRESH
 from .cookie_and_header import clear_cookies
 from .exceptions import ClaimValidationError
@@ -39,7 +40,6 @@ from .with_jwt.constants import (
     ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY,
     JWT_RESERVED_KEY_USE_ERROR_MESSAGE,
 )
-from ...types import MaybeAwaitable
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest
@@ -154,12 +154,11 @@ class ErrorHandlers:
         user_id: str,
         response: BaseResponse,
     ) -> BaseResponse:
-        result = await resolve(
+        log_debug_message("Clearing cookies because of TOKEN_THEFT_DETECTED response")
+        clear_cookies(recipe, response)
+        return await resolve(
             self.__on_token_theft_detected(request, session_handle, user_id, response)
         )
-        log_debug_message("Clearing cookies because of TOKEN_THEFT_DETECTED response")
-        clear_cookies(recipe, result)
-        return result
 
     async def on_try_refresh_token(
         self, request: BaseRequest, message: str, response: BaseResponse
@@ -175,11 +174,10 @@ class ErrorHandlers:
         message: str,
         response: BaseResponse,
     ):
-        result = await resolve(self.__on_unauthorised(request, message, response))
         if do_clear_cookies:
             log_debug_message("Clearing cookies because of UNAUTHORISED response")
-            clear_cookies(recipe, result)
-        return result
+            clear_cookies(recipe, response)
+        return await resolve(self.__on_unauthorised(request, message, response))
 
     async def on_invalid_claim(
         self,
