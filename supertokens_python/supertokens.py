@@ -542,7 +542,7 @@ class Supertokens:
 
         if not path.startswith(Supertokens.get_instance().app_info.api_base_path):
             log_debug_message(
-                "middleware: Not handling because request path did not start with config path. Request path: %s",
+                "middleware: Not handling because request path did not start with api base path. Request path: %s",
                 path.get_as_string_dangerous(),
             )
             return None

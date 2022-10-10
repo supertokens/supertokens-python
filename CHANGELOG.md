@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- Fix Repetition of root_path in supertokens mididdlware for fastapi [#230](https://github.com/supertokens/supertokens-python/issues/230)
+
 ## [0.11.1] - 2022-09-28
 ### Changes:
 - Email verification endpoints will now clear the session if called by a deleted/unknown user
