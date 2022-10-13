@@ -62,6 +62,8 @@ class FastApiRequest(BaseRequest):
     def get_path(self) -> str:
         root_path = self.request.scope.get("root_path")
         url = self.request.url.path
+        # FastAPI seems buggy and it adds an extra root_path (if it matches):
+        # So we trim the extra root_path (from the left) from the url
         return url[url.startswith(root_path) and len(root_path) :]
 
     async def form_data(self):
