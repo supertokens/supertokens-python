@@ -39,7 +39,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         id_: str,
         claim: SessionClaim[PrimitiveList],
         val: _T,
-        max_age_in_sec: int,
+        max_age_in_sec: Optional[int] = None,
     ):
         super().__init__(id_)
         self.claim: SessionClaim[PrimitiveList] = claim  # TODO:PrimitiveArrayClaim
@@ -171,7 +171,9 @@ class ExcludesAllSCV(SCVMixin[PrimitiveList]):
 
 class PrimitiveArrayClaimValidators(Generic[PrimitiveList]):
     def __init__(
-        self, claim: SessionClaim[PrimitiveList], default_max_age_in_sec: int
+        self,
+        claim: SessionClaim[PrimitiveList],
+        default_max_age_in_sec: Optional[int] = None,
     ) -> None:
         self.claim = claim
         self.default_max_age_in_sec = default_max_age_in_sec
@@ -234,9 +236,7 @@ class PrimitiveArrayClaim(SessionClaim[PrimitiveList], Generic[PrimitiveList]):
         super().__init__(key, fetch_value)
 
         claim = self
-        self.validators = PrimitiveArrayClaimValidators(
-            claim, default_max_age_in_sec or 300
-        )  # 5 min
+        self.validators = PrimitiveArrayClaimValidators(claim, default_max_age_in_sec)
 
     def add_to_payload_(
         self,

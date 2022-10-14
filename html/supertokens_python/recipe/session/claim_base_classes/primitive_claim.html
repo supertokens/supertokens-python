@@ -40,17 +40,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Callable, Dict, Optional, TypeVar, Union, Generic
+from typing import Any, Callable, Dict, Generic, Optional, TypeVar, Union
 
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import get_timestamp_ms
 
 from ..interfaces import (
+    ClaimValidationResult,
     JSONObject,
     JSONPrimitive,
     SessionClaim,
     SessionClaimValidator,
-    ClaimValidationResult,
 )
 
 Primitive = TypeVar(&#34;Primitive&#34;, bound=JSONPrimitive)
@@ -62,7 +62,7 @@ class HasValueSCV(SessionClaimValidator):
         id_: str,
         claim: SessionClaim[Primitive],
         val: Primitive,
-        max_age_in_sec: int,
+        max_age_in_sec: Optional[int] = None,
     ):
         super().__init__(id_)
         self.claim: SessionClaim[Primitive] = claim  # to fix the type for pyright
@@ -78,7 +78,11 @@ class HasValueSCV(SessionClaimValidator):
 
         # (claim value is None) OR (value has expired)
         return (self.claim.get_value_from_payload(payload, user_context) is None) or (
-            payload[self.claim.key][&#34;t&#34;] &lt; (get_timestamp_ms() - max_age_in_sec * 1000)
+            (max_age_in_sec is not None)
+            and (
+                payload[self.claim.key][&#34;t&#34;]
+                &lt; (get_timestamp_ms() - max_age_in_sec * 1000)
+            )
         )
 
     async def validate(
@@ -134,7 +138,7 @@ class PrimitiveClaimValidators(Generic[Primitive]):
     def __init__(
         self,
         claim: SessionClaim[Primitive],
-        default_max_age_in_sec: int,
+        default_max_age_in_sec: Optional[int],
     ) -&gt; None:
         self.claim = claim
         self.default_max_age_in_sec = default_max_age_in_sec
@@ -164,7 +168,7 @@ class PrimitiveClaim(SessionClaim[Primitive]):
         super().__init__(key, fetch_value)
 
         claim = self
-        self.validators = PrimitiveClaimValidators(claim, default_max_age_in_sec or 300)
+        self.validators = PrimitiveClaimValidators(claim, default_max_age_in_sec)
 
     def add_to_payload_(
         self,
@@ -215,7 +219,7 @@ class PrimitiveClaim(SessionClaim[Primitive]):
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV"><code class="flex name class">
 <span>class <span class="ident">HasValueSCV</span></span>
-<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], val: ~Primitive, max_age_in_sec: int)</span>
+<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], val: ~Primitive, max_age_in_sec: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -230,7 +234,7 @@ inheritance.</p></div>
         id_: str,
         claim: SessionClaim[Primitive],
         val: Primitive,
-        max_age_in_sec: int,
+        max_age_in_sec: Optional[int] = None,
     ):
         super().__init__(id_)
         self.claim: SessionClaim[Primitive] = claim  # to fix the type for pyright
@@ -246,7 +250,11 @@ inheritance.</p></div>
 
         # (claim value is None) OR (value has expired)
         return (self.claim.get_value_from_payload(payload, user_context) is None) or (
-            payload[self.claim.key][&#34;t&#34;] &lt; (get_timestamp_ms() - max_age_in_sec * 1000)
+            (max_age_in_sec is not None)
+            and (
+                payload[self.claim.key][&#34;t&#34;]
+                &lt; (get_timestamp_ms() - max_age_in_sec * 1000)
+            )
         )
 
     async def validate(
@@ -322,7 +330,11 @@ inheritance.</p></div>
 
     # (claim value is None) OR (value has expired)
     return (self.claim.get_value_from_payload(payload, user_context) is None) or (
-        payload[self.claim.key][&#34;t&#34;] &lt; (get_timestamp_ms() - max_age_in_sec * 1000)
+        (max_age_in_sec is not None)
+        and (
+            payload[self.claim.key][&#34;t&#34;]
+            &lt; (get_timestamp_ms() - max_age_in_sec * 1000)
+        )
     )</code></pre>
 </details>
 </dd>
@@ -388,7 +400,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaim"><code class="flex name class">
 <span>class <span class="ident">PrimitiveClaim</span></span>
-<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], Union[Awaitable[Optional[~Primitive]], ~Primitive, ForwardRef(None)]], default_max_age_in_sec: Optional[None] = None)</span>
+<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], Union[Awaitable[Optional[~Primitive]], ~Primitive, ForwardRef(None)]], default_max_age_in_sec: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -420,7 +432,7 @@ don't want to add the claim to the session automatically</dd>
         super().__init__(key, fetch_value)
 
         claim = self
-        self.validators = PrimitiveClaimValidators(claim, default_max_age_in_sec or 300)
+        self.validators = PrimitiveClaimValidators(claim, default_max_age_in_sec)
 
     def add_to_payload_(
         self,
@@ -472,7 +484,7 @@ don't want to add the claim to the session automatically</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaim.get_last_refetch_time"><code class="name flex">
-<span>def <span class="ident">get_last_refetch_time</span></span>(<span>self, payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> Optional[None]</span>
+<span>def <span class="ident">get_last_refetch_time</span></span>(<span>self, payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> Optional[int]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -503,7 +515,7 @@ don't want to add the claim to the session automatically</dd>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaimValidators"><code class="flex name class">
 <span>class <span class="ident">PrimitiveClaimValidators</span></span>
-<span>(</span><span>claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], default_max_age_in_sec: int)</span>
+<span>(</span><span>claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], default_max_age_in_sec: Optional[int])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Abstract base class for generic types.</p>
@@ -528,7 +540,7 @@ return default</p></div>
     def __init__(
         self,
         claim: SessionClaim[Primitive],
-        default_max_age_in_sec: int,
+        default_max_age_in_sec: Optional[int],
     ) -&gt; None:
         self.claim = claim
         self.default_max_age_in_sec = default_max_age_in_sec
@@ -555,7 +567,7 @@ return default</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaimValidators.has_value"><code class="name flex">
-<span>def <span class="ident">has_value</span></span>(<span>self, val: ~Primitive, max_age_in_sec: Optional[None] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
+<span>def <span class="ident">has_value</span></span>(<span>self, val: ~Primitive, max_age_in_sec: Optional[int] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>

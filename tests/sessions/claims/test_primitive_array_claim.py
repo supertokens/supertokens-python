@@ -1,19 +1,19 @@
 import math
-from typing import Tuple, List
+from typing import List, Tuple
 from unittest.mock import MagicMock
-from pytest import mark, fixture
+
+from pytest import fixture, mark
 from pytest_mock import MockerFixture
-
 from supertokens_python.recipe.session.claims import PrimitiveArrayClaim
-
+from supertokens_python.utils import get_timestamp_ms, resolve
 from tests.utils import AsyncMock
-from supertokens_python.utils import resolve, get_timestamp_ms
 
 val = ["a"]
 included_item = "a"
 excluded_item = "b"
 
 SECONDS = 1_000
+MINS = 60 * SECONDS
 
 sync_fetch_value = MagicMock(return_value=val)
 async_fetch_value = AsyncMock(return_value=val)
@@ -241,22 +241,17 @@ async def test_validator_should_not_refetch_if_max_age_is_none_and_default_is_in
     )
 
 
-async def test_validator_should_not_values_older_than_default_max_age(
+async def test_validator_should_validate_values_with_default_max_age(
     patch_get_timestamp_ms: MagicMock,
 ):
     claim = PrimitiveArrayClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
 
-    # Increase clock time by 1 week
-    patch_get_timestamp_ms.return_value += 7 * 24 * 60 * 60 * SECONDS  # type: ignore
+    # Increase clock time by 10 MINS:
+    patch_get_timestamp_ms.return_value += 10 * MINS  # type: ignore
 
     res = await resolve(claim.validators.includes(included_item).validate(payload, {}))
-    assert res.is_valid is False
-    assert res.reason == {
-        "ageInSeconds": 604800.0,
-        "maxAgeInSeconds": 300,
-        "message": "expired",
-    }
+    assert res.is_valid is True
 
 
 async def test_validator_should_not_refetch_if_max_age_overrides_to_inf(
@@ -385,3 +380,21 @@ async def test_validator_excludes_all_should_validate_matching_payload():
     res = await claim.validators.excludes_all(excluded_item).validate(payload, {})
 
     assert res.is_valid is True
+
+
+async def test_validator_should_not_validate_older_values_with_5min_default_max_age(
+    patch_get_timestamp_ms: MagicMock,
+):
+    claim = PrimitiveArrayClaim("key", sync_fetch_value, 300)  # 5 mins
+    payload = await claim.build("user_id")
+
+    # Increase clock time by 10 MINS:
+    patch_get_timestamp_ms.return_value += 10 * MINS  # type: ignore
+
+    res = await resolve(claim.validators.includes(included_item).validate(payload, {}))
+    assert res.is_valid is False
+    assert res.reason == {
+        "ageInSeconds": 600,
+        "maxAgeInSeconds": 300,
+        "message": "expired",
+    }

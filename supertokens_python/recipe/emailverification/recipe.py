@@ -303,6 +303,8 @@ class EmailVerificationClaimValidators(BooleanClaimValidators):
 
 class EmailVerificationClaimClass(BooleanClaim):
     def __init__(self):
+        default_max_age_in_sec = 300
+
         async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> bool:
             recipe = EmailVerificationRecipe.get_instance()
             email_info = await recipe.get_email_for_user_id(user_id, user_context)
@@ -316,10 +318,10 @@ class EmailVerificationClaimClass(BooleanClaim):
                 return True
             raise Exception("UNKNOWN_USER_ID")
 
-        super().__init__("st-ev", fetch_value)
+        super().__init__("st-ev", fetch_value, default_max_age_in_sec)
 
         self.validators = EmailVerificationClaimValidators(
-            claim=self, default_max_age_in_sec=300
+            claim=self, default_max_age_in_sec=default_max_age_in_sec
         )
 
 
@@ -450,20 +452,23 @@ class IsVerifiedSCV(SessionClaimValidator):
         claim: EmailVerificationClaimClass,
         ev_claim_validators: EmailVerificationClaimValidators,
         refetch_time_on_false_in_seconds: int,
-        max_age_in_seconds: int,
+        max_age_in_seconds: Optional[int] = None,
     ):
         super().__init__(id_)
         self.claim: EmailVerificationClaimClass = claim
         self.ev_claim_validators = ev_claim_validators
         self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
-        self.max_age_in_ms = max_age_in_seconds * 1000
+        self.max_age_in_sec = max_age_in_seconds
+        self.max_age_in_ms = (
+            max_age_in_seconds * 1000 if max_age_in_seconds is not None else None
+        )
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
     ) -> ClaimValidationResult:
-        return await self.ev_claim_validators.has_value(True).validate(
-            payload, user_context
-        )
+        return await self.ev_claim_validators.has_value(
+            True, self.max_age_in_sec
+        ).validate(payload, user_context)
 
     def should_refetch(
         self, payload: JSONObject, user_context: Dict[str, Any]
@@ -475,8 +480,12 @@ class IsVerifiedSCV(SessionClaimValidator):
         last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
         assert last_refetch_time is not None
 
+        assert self.max_age_in_ms is not None  # This should never happen
+
         return (last_refetch_time < get_timestamp_ms() - self.max_age_in_ms) or (
             value is False
-            and last_refetch_time
-            < (get_timestamp_ms() - self.refetch_time_on_false_in_ms)
+            and (
+                last_refetch_time
+                < (get_timestamp_ms() - self.refetch_time_on_false_in_ms)
+            )
         )
