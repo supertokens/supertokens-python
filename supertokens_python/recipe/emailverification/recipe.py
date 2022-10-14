@@ -283,6 +283,11 @@ class EmailVerificationRecipe(RecipeModule):
 
 
 class EmailVerificationClaimValidators(BooleanClaimValidators):
+    def __init__(self, claim: EmailVerificationClaimClass, default_max_age_in_sec: int):
+        super().__init__(claim, default_max_age_in_sec)
+        # required to override the type as "int":
+        self.default_max_age_in_sec = default_max_age_in_sec
+
     def is_verified(
         self,
         refetch_time_on_false_in_seconds: int = 10,
@@ -452,16 +457,14 @@ class IsVerifiedSCV(SessionClaimValidator):
         claim: EmailVerificationClaimClass,
         ev_claim_validators: EmailVerificationClaimValidators,
         refetch_time_on_false_in_seconds: int,
-        max_age_in_seconds: Optional[int] = None,
+        max_age_in_seconds: int,
     ):
         super().__init__(id_)
         self.claim: EmailVerificationClaimClass = claim
         self.ev_claim_validators = ev_claim_validators
         self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
         self.max_age_in_sec = max_age_in_seconds
-        self.max_age_in_ms = (
-            max_age_in_seconds * 1000 if max_age_in_seconds is not None else None
-        )
+        self.max_age_in_ms = max_age_in_seconds * 1000
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
@@ -479,8 +482,6 @@ class IsVerifiedSCV(SessionClaimValidator):
 
         last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
         assert last_refetch_time is not None
-
-        assert self.max_age_in_ms is not None  # This should never happen
 
         return (last_refetch_time < get_timestamp_ms() - self.max_age_in_ms) or (
             value is False
