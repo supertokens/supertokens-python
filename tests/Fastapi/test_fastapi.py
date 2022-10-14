@@ -526,7 +526,7 @@ async def test_optional_session(driver_config_client: TestClient):
 
 
 @mark.parametrize(
-    "root_path",
+    "fastapi_root_path",
     [
         "/api/v1",
         "/api",
