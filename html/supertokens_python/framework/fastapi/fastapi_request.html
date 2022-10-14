@@ -88,7 +88,11 @@ class FastApiRequest(BaseRequest):
         self.request.state.supertokens = None
 
     def get_path(self) -&gt; str:
-        return self.request.url.path
+        root_path = self.request.scope.get(&#34;root_path&#34;)
+        url = self.request.url.path
+        # FastAPI seems buggy and it adds an extra root_path (if it matches):
+        # So we trim the extra root_path (from the left) from the url
+        return url[url.startswith(root_path) and len(root_path) :]
 
     async def form_data(self):
         return dict(parse_qsl((await self.request.body()).decode(&#34;utf-8&#34;)))</code></pre>
@@ -152,7 +156,11 @@ inheritance.</p></div>
         self.request.state.supertokens = None
 
     def get_path(self) -&gt; str:
-        return self.request.url.path
+        root_path = self.request.scope.get(&#34;root_path&#34;)
+        url = self.request.url.path
+        # FastAPI seems buggy and it adds an extra root_path (if it matches):
+        # So we trim the extra root_path (from the left) from the url
+        return url[url.startswith(root_path) and len(root_path) :]
 
     async def form_data(self):
         return dict(parse_qsl((await self.request.body()).decode(&#34;utf-8&#34;)))</code></pre>
@@ -221,7 +229,11 @@ any functionality that is common to both <code>Request</code> and <code>WebSocke
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_path(self) -&gt; str:
-    return self.request.url.path</code></pre>
+    root_path = self.request.scope.get(&#34;root_path&#34;)
+    url = self.request.url.path
+    # FastAPI seems buggy and it adds an extra root_path (if it matches):
+    # So we trim the extra root_path (from the left) from the url
+    return url[url.startswith(root_path) and len(root_path) :]</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.framework.fastapi.fastapi_request.FastApiRequest.get_query_param"><code class="name flex">
