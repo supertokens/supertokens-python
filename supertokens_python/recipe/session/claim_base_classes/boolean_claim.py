@@ -11,9 +11,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Callable, Optional, Dict, Any
+from typing import Any, Callable, Dict, Optional
 
 from supertokens_python.types import MaybeAwaitable
+
 from .primitive_claim import PrimitiveClaim, PrimitiveClaimValidators
 
 
@@ -33,6 +34,9 @@ class BooleanClaim(PrimitiveClaim[bool]):
             [str, Dict[str, Any]],
             MaybeAwaitable[Optional[bool]],
         ],
+        default_max_age_in_sec: Optional[int] = None,
     ):
-        super().__init__(key, fetch_value)
-        self.validators = BooleanClaimValidators(claim=self, default_max_age_in_sec=300)
+        super().__init__(key, fetch_value, default_max_age_in_sec)
+        self.validators = BooleanClaimValidators(
+            claim=self, default_max_age_in_sec=default_max_age_in_sec
+        )

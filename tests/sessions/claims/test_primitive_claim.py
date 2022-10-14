@@ -1,13 +1,13 @@
 from unittest.mock import MagicMock
+
 from pytest import mark
-
 from supertokens_python.recipe.session.claims import PrimitiveClaim
-
-from tests.utils import AsyncMock
 from supertokens_python.utils import resolve
+from tests.utils import AsyncMock
 
 val = {"foo": 1}
 SECONDS = 1_000
+MINS = 60 * SECONDS
 
 sync_fetch_value = MagicMock(return_value=val)
 async_fetch_value = AsyncMock(return_value=val)
@@ -132,8 +132,8 @@ async def test_should_validate_old_values_as_well(patch_get_timestamp_ms: MagicM
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
 
-    # Increase clock time by 1000
-    patch_get_timestamp_ms.return_value += 100  # type: ignore
+    # Increase clock time by 10 mins:
+    patch_get_timestamp_ms.return_value += 10 * MINS  # type: ignore
 
     res = await claim.validators.has_value(val).validate(payload, {})
     assert res.is_valid is True
@@ -196,16 +196,11 @@ async def test_should_not_validate_old_values_as_well(
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("user_id")
 
-    # Increase clock time:
-    patch_get_timestamp_ms.return_value += 100 * SECONDS  # type: ignore
+    # Increase clock time by 10 mins:
+    patch_get_timestamp_ms.return_value += 10 * MINS  # type: ignore
 
-    res = await claim.validators.has_value(val, 10).validate(payload, {})
-    assert res.is_valid is False
-    assert res.reason == {
-        "ageInSeconds": 100,
-        "maxAgeInSeconds": 10,
-        "message": "expired",
-    }
+    res = await claim.validators.has_value(val).validate(payload, {})
+    assert res.is_valid is True
 
 
 async def test_should_refetch_if_value_is_not_set():
@@ -222,11 +217,40 @@ async def test_should_not_refetch_if_value_is_set():
 
 
 async def test_should_refetch_if_value_is_old(patch_get_timestamp_ms: MagicMock):
-
     claim = PrimitiveClaim("key", sync_fetch_value)
     payload = await claim.build("userId")
 
-    # Increase clock time:
-    patch_get_timestamp_ms.return_value += 100 * SECONDS  # type: ignore
+    # Increase clock time by 10 mins:
+    patch_get_timestamp_ms.return_value += 10 * MINS  # type: ignore
 
-    assert claim.validators.has_value(val2, 10).should_refetch(payload, {}) is True
+    assert claim.validators.has_value(val2).should_refetch(payload, {}) is False
+
+
+async def test_should_not_validate_old_values_as_well_with_default_max_age_provided(
+    patch_get_timestamp_ms: MagicMock,
+):
+    claim = PrimitiveClaim("key", sync_fetch_value, 300)  # 5 mins
+    payload = await claim.build("user_id")
+
+    # Increase clock time by 10 mins:
+    patch_get_timestamp_ms.return_value += 10 * MINS  # type: ignore
+
+    res = await claim.validators.has_value(val).validate(payload, {})
+    assert res.is_valid is False
+    assert res.reason == {
+        "ageInSeconds": 600,
+        "maxAgeInSeconds": 300,
+        "message": "expired",
+    }
+
+
+async def test_should_refetch_if_value_is_old_with_default_max_age_provided(
+    patch_get_timestamp_ms: MagicMock,
+):
+    claim = PrimitiveClaim("key", sync_fetch_value, 300)  # 5 mins
+    payload = await claim.build("userId")
+
+    # Increase clock time by 10 mins:
+    patch_get_timestamp_ms.return_value += 10 * MINS  # type: ignore
+
+    assert claim.validators.has_value(val2).should_refetch(payload, {}) is True

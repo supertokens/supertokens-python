@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+
+### Changes:
+- Removed default `default_max_age` from session claim base classes
+- Added a 5 minute `default_max_age` to UserRoleClaim, PermissionClaim and EmailVerificationClaim
+
 ## [0.11.1] - 2022-09-28
 ### Changes:
 - Email verification endpoints will now clear the session if called by a deleted/unknown user

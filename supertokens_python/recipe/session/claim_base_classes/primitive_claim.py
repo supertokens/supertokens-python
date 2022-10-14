@@ -12,17 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Callable, Dict, Optional, TypeVar, Union, Generic
+from typing import Any, Callable, Dict, Generic, Optional, TypeVar, Union
 
 from supertokens_python.types import MaybeAwaitable
 from supertokens_python.utils import get_timestamp_ms
 
 from ..interfaces import (
+    ClaimValidationResult,
     JSONObject,
     JSONPrimitive,
     SessionClaim,
     SessionClaimValidator,
-    ClaimValidationResult,
 )
 
 Primitive = TypeVar("Primitive", bound=JSONPrimitive)
@@ -34,7 +34,7 @@ class HasValueSCV(SessionClaimValidator):
         id_: str,
         claim: SessionClaim[Primitive],
         val: Primitive,
-        max_age_in_sec: int,
+        max_age_in_sec: Optional[int] = None,
     ):
         super().__init__(id_)
         self.claim: SessionClaim[Primitive] = claim  # to fix the type for pyright
@@ -50,7 +50,11 @@ class HasValueSCV(SessionClaimValidator):
 
         # (claim value is None) OR (value has expired)
         return (self.claim.get_value_from_payload(payload, user_context) is None) or (
-            payload[self.claim.key]["t"] < (get_timestamp_ms() - max_age_in_sec * 1000)
+            (max_age_in_sec is not None)
+            and (
+                payload[self.claim.key]["t"]
+                < (get_timestamp_ms() - max_age_in_sec * 1000)
+            )
         )
 
     async def validate(
@@ -106,7 +110,7 @@ class PrimitiveClaimValidators(Generic[Primitive]):
     def __init__(
         self,
         claim: SessionClaim[Primitive],
-        default_max_age_in_sec: int,
+        default_max_age_in_sec: Optional[int],
     ) -> None:
         self.claim = claim
         self.default_max_age_in_sec = default_max_age_in_sec
@@ -136,7 +140,7 @@ class PrimitiveClaim(SessionClaim[Primitive]):
         super().__init__(key, fetch_value)
 
         claim = self
-        self.validators = PrimitiveClaimValidators(claim, default_max_age_in_sec or 300)
+        self.validators = PrimitiveClaimValidators(claim, default_max_age_in_sec)
 
     def add_to_payload_(
         self,
