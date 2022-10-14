@@ -311,6 +311,11 @@ class EmailVerificationRecipe(RecipeModule):
 
 
 class EmailVerificationClaimValidators(BooleanClaimValidators):
+    def __init__(self, claim: EmailVerificationClaimClass, default_max_age_in_sec: int):
+        super().__init__(claim, default_max_age_in_sec)
+        # required to override the type as &#34;int&#34;:
+        self.default_max_age_in_sec = default_max_age_in_sec
+
     def is_verified(
         self,
         refetch_time_on_false_in_seconds: int = 10,
@@ -480,16 +485,14 @@ class IsVerifiedSCV(SessionClaimValidator):
         claim: EmailVerificationClaimClass,
         ev_claim_validators: EmailVerificationClaimValidators,
         refetch_time_on_false_in_seconds: int,
-        max_age_in_seconds: Optional[int] = None,
+        max_age_in_seconds: int,
     ):
         super().__init__(id_)
         self.claim: EmailVerificationClaimClass = claim
         self.ev_claim_validators = ev_claim_validators
         self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
         self.max_age_in_sec = max_age_in_seconds
-        self.max_age_in_ms = (
-            max_age_in_seconds * 1000 if max_age_in_seconds is not None else None
-        )
+        self.max_age_in_ms = max_age_in_seconds * 1000
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
@@ -507,8 +510,6 @@ class IsVerifiedSCV(SessionClaimValidator):
 
         last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
         assert last_refetch_time is not None
-
-        assert self.max_age_in_ms is not None  # This should never happen
 
         return (last_refetch_time &lt; get_timestamp_ms() - self.max_age_in_ms) or (
             value is False
@@ -873,7 +874,7 @@ don't want to add the claim to the session automatically</dd>
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.EmailVerificationClaimValidators"><code class="flex name class">
 <span>class <span class="ident">EmailVerificationClaimValidators</span></span>
-<span>(</span><span>claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../session/interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], default_max_age_in_sec: Optional[int])</span>
+<span>(</span><span>claim: <a title="supertokens_python.recipe.emailverification.recipe.EmailVerificationClaimClass" href="#supertokens_python.recipe.emailverification.recipe.EmailVerificationClaimClass">EmailVerificationClaimClass</a>, default_max_age_in_sec: int)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Abstract base class for generic types.</p>
@@ -895,6 +896,11 @@ return default</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class EmailVerificationClaimValidators(BooleanClaimValidators):
+    def __init__(self, claim: EmailVerificationClaimClass, default_max_age_in_sec: int):
+        super().__init__(claim, default_max_age_in_sec)
+        # required to override the type as &#34;int&#34;:
+        self.default_max_age_in_sec = default_max_age_in_sec
+
     def is_verified(
         self,
         refetch_time_on_false_in_seconds: int = 10,
@@ -1445,7 +1451,7 @@ def reset():
 </dd>
 <dt id="supertokens_python.recipe.emailverification.recipe.IsVerifiedSCV"><code class="flex name class">
 <span>class <span class="ident">IsVerifiedSCV</span></span>
-<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.emailverification.recipe.EmailVerificationClaimClass" href="#supertokens_python.recipe.emailverification.recipe.EmailVerificationClaimClass">EmailVerificationClaimClass</a>, ev_claim_validators: <a title="supertokens_python.recipe.emailverification.recipe.EmailVerificationClaimValidators" href="#supertokens_python.recipe.emailverification.recipe.EmailVerificationClaimValidators">EmailVerificationClaimValidators</a>, refetch_time_on_false_in_seconds: int, max_age_in_seconds: Optional[int] = None)</span>
+<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.emailverification.recipe.EmailVerificationClaimClass" href="#supertokens_python.recipe.emailverification.recipe.EmailVerificationClaimClass">EmailVerificationClaimClass</a>, ev_claim_validators: <a title="supertokens_python.recipe.emailverification.recipe.EmailVerificationClaimValidators" href="#supertokens_python.recipe.emailverification.recipe.EmailVerificationClaimValidators">EmailVerificationClaimValidators</a>, refetch_time_on_false_in_seconds: int, max_age_in_seconds: int)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -1461,16 +1467,14 @@ inheritance.</p></div>
         claim: EmailVerificationClaimClass,
         ev_claim_validators: EmailVerificationClaimValidators,
         refetch_time_on_false_in_seconds: int,
-        max_age_in_seconds: Optional[int] = None,
+        max_age_in_seconds: int,
     ):
         super().__init__(id_)
         self.claim: EmailVerificationClaimClass = claim
         self.ev_claim_validators = ev_claim_validators
         self.refetch_time_on_false_in_ms = refetch_time_on_false_in_seconds * 1000
         self.max_age_in_sec = max_age_in_seconds
-        self.max_age_in_ms = (
-            max_age_in_seconds * 1000 if max_age_in_seconds is not None else None
-        )
+        self.max_age_in_ms = max_age_in_seconds * 1000
 
     async def validate(
         self, payload: JSONObject, user_context: Dict[str, Any]
@@ -1488,8 +1492,6 @@ inheritance.</p></div>
 
         last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
         assert last_refetch_time is not None
-
-        assert self.max_age_in_ms is not None  # This should never happen
 
         return (last_refetch_time &lt; get_timestamp_ms() - self.max_age_in_ms) or (
             value is False
@@ -1524,8 +1526,6 @@ inheritance.</p></div>
 
     last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
     assert last_refetch_time is not None
-
-    assert self.max_age_in_ms is not None  # This should never happen
 
     return (last_refetch_time &lt; get_timestamp_ms() - self.max_age_in_ms) or (
         value is False

@@ -219,7 +219,7 @@ class PrimitiveClaim(SessionClaim[Primitive]):
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.HasValueSCV"><code class="flex name class">
 <span>class <span class="ident">HasValueSCV</span></span>
-<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], val: ~Primitive, max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], val: ~Primitive, max_age_in_sec: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -400,7 +400,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaim"><code class="flex name class">
 <span>class <span class="ident">PrimitiveClaim</span></span>
-<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], Union[Awaitable[Optional[~Primitive]], ~Primitive, ForwardRef(None)]], default_max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], Union[Awaitable[Optional[~Primitive]], ~Primitive, ForwardRef(None)]], default_max_age_in_sec: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -484,7 +484,7 @@ don't want to add the claim to the session automatically</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaim.get_last_refetch_time"><code class="name flex">
-<span>def <span class="ident">get_last_refetch_time</span></span>(<span>self, payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> Optional[int]</span>
+<span>def <span class="ident">get_last_refetch_time</span></span>(<span>self, payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> Optional[None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -515,7 +515,7 @@ don't want to add the claim to the session automatically</dd>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaimValidators"><code class="flex name class">
 <span>class <span class="ident">PrimitiveClaimValidators</span></span>
-<span>(</span><span>claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], default_max_age_in_sec: Optional[int])</span>
+<span>(</span><span>claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], default_max_age_in_sec: Optional[None])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Abstract base class for generic types.</p>
@@ -567,7 +567,7 @@ return default</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_claim.PrimitiveClaimValidators.has_value"><code class="name flex">
-<span>def <span class="ident">has_value</span></span>(<span>self, val: ~Primitive, max_age_in_sec: Optional[int] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
+<span>def <span class="ident">has_value</span></span>(<span>self, val: ~Primitive, max_age_in_sec: Optional[None] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>

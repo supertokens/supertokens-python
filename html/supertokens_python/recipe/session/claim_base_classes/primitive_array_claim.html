@@ -315,7 +315,7 @@ class PrimitiveArrayClaim(SessionClaim[PrimitiveList], Generic[PrimitiveList]):
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.ExcludesAllSCV"><code class="flex name class">
 <span>class <span class="ident">ExcludesAllSCV</span></span>
-<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], val: ~_T, max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], val: ~_T, max_age_in_sec: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -362,7 +362,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.ExcludesSCV"><code class="flex name class">
 <span>class <span class="ident">ExcludesSCV</span></span>
-<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], val: ~_T, max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], val: ~_T, max_age_in_sec: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -409,7 +409,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesAllSCV"><code class="flex name class">
 <span>class <span class="ident">IncludesAllSCV</span></span>
-<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], val: ~_T, max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], val: ~_T, max_age_in_sec: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -456,7 +456,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.IncludesSCV"><code class="flex name class">
 <span>class <span class="ident">IncludesSCV</span></span>
-<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], val: ~_T, max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], val: ~_T, max_age_in_sec: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -503,7 +503,7 @@ inheritance.</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim"><code class="flex name class">
 <span>class <span class="ident">PrimitiveArrayClaim</span></span>
-<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], Union[Awaitable[Optional[~PrimitiveList]], ~PrimitiveList, ForwardRef(None)]], default_max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], Union[Awaitable[Optional[~PrimitiveList]], ~PrimitiveList, ForwardRef(None)]], default_max_age_in_sec: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -588,7 +588,7 @@ don't want to add the claim to the session automatically</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaim.get_last_refetch_time"><code class="name flex">
-<span>def <span class="ident">get_last_refetch_time</span></span>(<span>self, payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> Optional[int]</span>
+<span>def <span class="ident">get_last_refetch_time</span></span>(<span>self, payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) ‑> Optional[None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -619,7 +619,7 @@ don't want to add the claim to the session automatically</dd>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators"><code class="flex name class">
 <span>class <span class="ident">PrimitiveArrayClaimValidators</span></span>
-<span>(</span><span>claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], default_max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], default_max_age_in_sec: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Abstract base class for generic types.</p>
@@ -700,7 +700,7 @@ return default</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.excludes"><code class="name flex">
-<span>def <span class="ident">excludes</span></span>(<span>self, val: ~Primitive, max_age_in_seconds: Optional[int] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
+<span>def <span class="ident">excludes</span></span>(<span>self, val: ~Primitive, max_age_in_seconds: Optional[None] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -721,7 +721,7 @@ return default</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.excludes_all"><code class="name flex">
-<span>def <span class="ident">excludes_all</span></span>(<span>self, val: ~PrimitiveList, max_age_in_seconds: Optional[int] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
+<span>def <span class="ident">excludes_all</span></span>(<span>self, val: ~PrimitiveList, max_age_in_seconds: Optional[None] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -742,7 +742,7 @@ return default</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.includes"><code class="name flex">
-<span>def <span class="ident">includes</span></span>(<span>self, val: ~Primitive, max_age_in_seconds: Optional[int] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
+<span>def <span class="ident">includes</span></span>(<span>self, val: ~Primitive, max_age_in_seconds: Optional[None] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -763,7 +763,7 @@ return default</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.PrimitiveArrayClaimValidators.includes_all"><code class="name flex">
-<span>def <span class="ident">includes_all</span></span>(<span>self, val: ~PrimitiveList, max_age_in_seconds: Optional[int] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
+<span>def <span class="ident">includes_all</span></span>(<span>self, val: ~PrimitiveList, max_age_in_seconds: Optional[None] = None, id_: Optional[str] = None) ‑> <a title="supertokens_python.recipe.session.interfaces.SessionClaimValidator" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaimValidator">SessionClaimValidator</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -787,7 +787,7 @@ return default</p></div>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.primitive_array_claim.SCVMixin"><code class="flex name class">
 <span>class <span class="ident">SCVMixin</span></span>
-<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], val: ~_T, max_age_in_sec: Optional[int] = None)</span>
+<span>(</span><span>id_: str, claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~PrimitiveList], val: ~_T, max_age_in_sec: Optional[None] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
