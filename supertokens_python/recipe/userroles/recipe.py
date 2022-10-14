@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import List, Union, Optional, Dict, Any, Set
+from typing import Any, Dict, List, Optional, Set, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 from supertokens_python.framework import BaseRequest, BaseResponse
@@ -28,12 +28,12 @@ from supertokens_python.recipe.userroles.utils import validate_and_normalise_use
 from supertokens_python.recipe_module import APIHandled, RecipeModule
 from supertokens_python.supertokens import AppInfo
 
+from ...post_init_callbacks import PostSTInitCallbacks
+from ..session import SessionRecipe
+from ..session.claim_base_classes.primitive_array_claim import PrimitiveArrayClaim
 from .exceptions import SuperTokensUserRolesError
 from .interfaces import GetPermissionsForRoleOkResult
 from .utils import InputOverrideConfig
-from ..session import SessionRecipe
-from ..session.claim_base_classes.primitive_array_claim import PrimitiveArrayClaim
-from ...post_init_callbacks import PostSTInitCallbacks
 
 
 class UserRolesRecipe(RecipeModule):
@@ -142,6 +142,7 @@ class UserRolesRecipe(RecipeModule):
 class PermissionClaimClass(PrimitiveArrayClaim[List[str]]):
     def __init__(self) -> None:
         key = "st-perm"
+        default_max_age_in_sec = 300
 
         async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> List[str]:
             recipe = UserRolesRecipe.get_instance()
@@ -165,7 +166,7 @@ class PermissionClaimClass(PrimitiveArrayClaim[List[str]]):
 
             return list(user_permissions)
 
-        super().__init__(key, fetch_value)
+        super().__init__(key, fetch_value, default_max_age_in_sec)
 
 
 PermissionClaim = PermissionClaimClass()
@@ -174,6 +175,7 @@ PermissionClaim = PermissionClaimClass()
 class UserRoleClaimClass(PrimitiveArrayClaim[List[str]]):
     def __init__(self) -> None:
         key = "st-role"
+        default_max_age_in_sec = 300
 
         async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> List[str]:
             recipe = UserRolesRecipe.get_instance()
@@ -182,7 +184,7 @@ class UserRoleClaimClass(PrimitiveArrayClaim[List[str]]):
             )
             return res.roles
 
-        super().__init__(key, fetch_value)
+        super().__init__(key, fetch_value, default_max_age_in_sec)
 
 
 UserRoleClaim = UserRoleClaimClass()
