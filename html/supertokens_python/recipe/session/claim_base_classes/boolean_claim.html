@@ -39,9 +39,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from typing import Callable, Optional, Dict, Any
+from typing import Any, Callable, Dict, Optional
 
 from supertokens_python.types import MaybeAwaitable
+
 from .primitive_claim import PrimitiveClaim, PrimitiveClaimValidators
 
 
@@ -61,9 +62,12 @@ class BooleanClaim(PrimitiveClaim[bool]):
             [str, Dict[str, Any]],
             MaybeAwaitable[Optional[bool]],
         ],
+        default_max_age_in_sec: Optional[int] = None,
     ):
-        super().__init__(key, fetch_value)
-        self.validators = BooleanClaimValidators(claim=self, default_max_age_in_sec=300)</code></pre>
+        super().__init__(key, fetch_value, default_max_age_in_sec)
+        self.validators = BooleanClaimValidators(
+            claim=self, default_max_age_in_sec=default_max_age_in_sec
+        )</code></pre>
 </details>
 </section>
 <section>
@@ -77,7 +81,7 @@ class BooleanClaim(PrimitiveClaim[bool]):
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.boolean_claim.BooleanClaim"><code class="flex name class">
 <span>class <span class="ident">BooleanClaim</span></span>
-<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], Union[Awaitable[Optional[bool]], bool, ForwardRef(None)]])</span>
+<span>(</span><span>key: str, fetch_value: Callable[[str, Dict[str, Any]], Union[Awaitable[Optional[bool]], bool, ForwardRef(None)]], default_max_age_in_sec: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -104,9 +108,12 @@ don't want to add the claim to the session automatically</dd>
             [str, Dict[str, Any]],
             MaybeAwaitable[Optional[bool]],
         ],
+        default_max_age_in_sec: Optional[int] = None,
     ):
-        super().__init__(key, fetch_value)
-        self.validators = BooleanClaimValidators(claim=self, default_max_age_in_sec=300)</code></pre>
+        super().__init__(key, fetch_value, default_max_age_in_sec)
+        self.validators = BooleanClaimValidators(
+            claim=self, default_max_age_in_sec=default_max_age_in_sec
+        )</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -133,7 +140,7 @@ don't want to add the claim to the session automatically</dd>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.boolean_claim.BooleanClaimValidators"><code class="flex name class">
 <span>class <span class="ident">BooleanClaimValidators</span></span>
-<span>(</span><span>claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], default_max_age_in_sec: int)</span>
+<span>(</span><span>claim: <a title="supertokens_python.recipe.session.interfaces.SessionClaim" href="../interfaces.html#supertokens_python.recipe.session.interfaces.SessionClaim">SessionClaim</a>[~Primitive], default_max_age_in_sec: Optional[int])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Abstract base class for generic types.</p>
@@ -173,7 +180,7 @@ return default</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="supertokens_python.recipe.session.claim_base_classes.boolean_claim.BooleanClaimValidators.is_false"><code class="name flex">
-<span>def <span class="ident">is_false</span></span>(<span>self, max_age: Optional[None], id_: Optional[str] = None)</span>
+<span>def <span class="ident">is_false</span></span>(<span>self, max_age: Optional[int], id_: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -186,7 +193,7 @@ return default</p></div>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.claim_base_classes.boolean_claim.BooleanClaimValidators.is_true"><code class="name flex">
-<span>def <span class="ident">is_true</span></span>(<span>self, max_age: Optional[None], id_: Optional[str] = None)</span>
+<span>def <span class="ident">is_true</span></span>(<span>self, max_age: Optional[int], id_: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
