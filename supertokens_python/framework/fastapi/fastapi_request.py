@@ -60,7 +60,11 @@ class FastApiRequest(BaseRequest):
         self.request.state.supertokens = None
 
     def get_path(self) -> str:
-        return self.request.url.path
+        root_path = self.request.scope.get("root_path")
+        url = self.request.url.path
+        # FastAPI seems buggy and it adds an extra root_path (if it matches):
+        # So we trim the extra root_path (from the left) from the url
+        return url[url.startswith(root_path) and len(root_path) :]
 
     async def form_data(self):
         return dict(parse_qsl((await self.request.body()).decode("utf-8")))

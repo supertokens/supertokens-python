@@ -523,3 +523,43 @@ async def test_optional_session(driver_config_client: TestClient):
     dict_response = json.loads(response.text)
     assert response.status_code == 200
     assert dict_response["s"] == "empty session"
+
+
+@mark.parametrize(
+    "root_path",
+    [
+        "/api/v1",
+        "/api",
+        "api",
+        # Don't pass "/" as fastapi_root_path. You'll get unexpected behaviour
+        # because api_base_path will be "//auth"
+    ],
+)
+def test_fastapi_root_path(fastapi_root_path: str):
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="SuperTokens Demo",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path=f"{fastapi_root_path}/auth",  # It's important to prepend the root path here
+        ),
+        framework="fastapi",
+        recipe_list=[session.init(), emailpassword.init()],
+    )
+    start_st()
+
+    # Test with root_path
+    app = FastAPI(root_path=fastapi_root_path)
+    app.add_middleware(get_middleware())
+    test_client = TestClient(app)
+
+    response = test_client.get(
+        f"{fastapi_root_path}/auth/signup/email/exists?email=test@example.com"
+    )
+    assert response.status_code == 200
+    assert response.json() == {"status": "OK", "exists": False}
+
+    # The API should migrate (and return 404 here)
+    response = test_client.get("/auth/signup/email/exists?email=test@example.com")
+    assert response.status_code == 404
