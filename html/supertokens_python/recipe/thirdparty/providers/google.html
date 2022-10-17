@@ -74,7 +74,7 @@ class Google(Provider):
         self.client_id = client_id
         self.client_secret = client_secret
         self.scopes = list(set(scope))
-        self.access_token_api_url = &#34;https://accounts.google.com/o/oauth2/token&#34;
+        self.access_token_api_url = &#34;https://oauth2.googleapis.com/token&#34;
         self.authorisation_redirect_url = &#34;https://accounts.google.com/o/oauth2/v2/auth&#34;
         self.authorisation_redirect_params = {}
         if authorisation_redirect is not None:
@@ -176,7 +176,7 @@ inheritance.</p></div>
         self.client_id = client_id
         self.client_secret = client_secret
         self.scopes = list(set(scope))
-        self.access_token_api_url = &#34;https://accounts.google.com/o/oauth2/token&#34;
+        self.access_token_api_url = &#34;https://oauth2.googleapis.com/token&#34;
         self.authorisation_redirect_url = &#34;https://accounts.google.com/o/oauth2/v2/auth&#34;
         self.authorisation_redirect_params = {}
         if authorisation_redirect is not None:
