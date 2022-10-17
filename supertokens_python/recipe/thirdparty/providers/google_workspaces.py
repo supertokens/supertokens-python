@@ -53,7 +53,7 @@ class GoogleWorkspaces(Provider):
         self.client_id = client_id
         self.client_secret = client_secret
         self.scopes = list(set(scope))
-        self.access_token_api_url = "https://accounts.google.com/o/oauth2/token"
+        self.access_token_api_url = "https://oauth2.googleapis.com/token"
         self.authorisation_redirect_url = "https://accounts.google.com/o/oauth2/v2/auth"
         self.authorisation_redirect_params = {}
         if authorisation_redirect is not None:
