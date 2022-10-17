@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- Updated google token endpoint.
+
 ## [0.11.2] - 2022-10-14
 ### Changes:
 - Removed default `default_max_age` from session claim base classes
