@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.11.4] - 2022-10-19
+- Relaxes typing_extensions constraint
+
 ## [0.11.3] - 2022-10-17
 - Updated google token endpoint.
 
