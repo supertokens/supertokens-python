@@ -105,7 +105,7 @@ setup(
         "jsonschema==3.2.0",
         "tldextract==3.1.0",
         "asgiref>=3.4.1,<4",
-        "typing_extensions==4.1.1",
+        "typing_extensions>=4.1.1,<5.0.0",
         "Deprecated==1.2.13",
         "cryptography>=35.0,<37.0",
         "phonenumbers==8.12.48",
