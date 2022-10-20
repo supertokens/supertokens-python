@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [  # type: ignore
     path("index.html", views.send_file, name="index.html"),  # type: ignore
+    path("angular/<str:path>", views.send_angular_files, name="angular index"),  # type: ignore
     path("login", views.login, name="login"),  # type: ignore
     path("beforeeach", views.before_each, name="beforeeach"),  # type: ignore
     path("testUserConfig", views.test_config, name="testUserConfig"),  # type: ignore

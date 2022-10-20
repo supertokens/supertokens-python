@@ -38,12 +38,11 @@ from supertokens_python.recipe.session.asyncio import (
     SessionRecipe,
     create_new_session,
     revoke_all_sessions_for_user,
+    update_access_token_payload,
 )
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.interfaces import APIInterface, RecipeInterface
 from typing_extensions import Literal
-
-from supertokens_python.recipe.session.asyncio import update_access_token_payload
 
 index_file = open("templates/index.html", "r")
 file_contents = index_file.read()
@@ -195,6 +194,12 @@ app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
 @app.get("/index.html")
 def send_file():
     return HTMLResponse(content=file_contents)
+
+
+from starlette.staticfiles import StaticFiles
+
+app.mount("/angular", StaticFiles(directory="templates/angular"), name="angular")
+# aiofiles must be installed for this to work
 
 
 def send_options_api_response():
@@ -528,7 +533,9 @@ def check_allow_credentials(request: Request):
 def test_error(request: Request):
     if request.method == "OPTIONS":
         return send_options_api_response()
-    return PlainTextResponse("test error message", 500)
+
+    status_code = int(request.query_params.get("code", "500"))
+    return PlainTextResponse("test error message", status_code)
 
 
 @app.exception_handler(405)  # type: ignore

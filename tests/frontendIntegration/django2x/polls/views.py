@@ -317,6 +317,10 @@ def send_file(request: HttpRequest):
     return render(request, file_path)
 
 
+def send_angular_files(request: HttpRequest, path: str):
+    return render(request, f"angular/{path}", content_type="application/javascript")
+
+
 def send_options_api_response():
     return HttpResponse("")
 
@@ -529,7 +533,9 @@ def check_allow_credentials(request: HttpRequest):
 def test_error(request: HttpRequest):
     if request.method == "OPTIONS":
         return send_options_api_response()
-    return HttpResponse("test error message", status=500)
+
+    status_code = int(request.GET.get("code", "500"))
+    return HttpResponse("test error message", status=status_code)
 
 
 # @app.exception_handler(405)
