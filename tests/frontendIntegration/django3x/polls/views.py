@@ -324,12 +324,6 @@ async def send_file(request: HttpRequest):
     return render(request, file_path)
 
 
-async def send_angular_files(request: HttpRequest, path: str):
-    return render(
-        request, f"templates/angular/{path}", content_type="application/javascript"
-    )
-
-
 async def send_options_api_response():
     return HttpResponse("")
 
