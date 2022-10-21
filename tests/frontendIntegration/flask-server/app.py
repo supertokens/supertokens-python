@@ -221,6 +221,14 @@ def send_file():
     return render_template("index.html")
 
 
+from flask import send_from_directory  # type: ignore
+
+
+@app.route("/angular/<path:path>", methods=["GET"])  # type: ignore
+def send_angular_file(path: str):
+    return send_from_directory("templates/angular", path)
+
+
 def send_options_api_response():
     return ""
 
@@ -539,7 +547,9 @@ def check_allow_credentials():
 def test_error():
     if request.method == "OPTIONS":  # type: ignore
         return send_options_api_response()
-    return Response("test error message", status=500)
+
+    status_code = int(request.args.get("code", "500"))
+    return Response("test error message", status=status_code)
 
 
 if __name__ == "__main__":
