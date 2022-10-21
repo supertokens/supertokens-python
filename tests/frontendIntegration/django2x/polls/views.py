@@ -316,6 +316,7 @@ config(True, False, None)
 def send_file(request: HttpRequest):
     return render(request, file_path)
 
+
 def send_options_api_response():
     return HttpResponse("")
 
