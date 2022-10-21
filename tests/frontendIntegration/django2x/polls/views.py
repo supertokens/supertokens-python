@@ -317,10 +317,6 @@ def send_file(request: HttpRequest):
     return render(request, file_path)
 
 
-def send_angular_files(request: HttpRequest, path: str):
-    return render(request, f"angular/{path}", content_type="application/javascript")
-
-
 def send_options_api_response():
     return HttpResponse("")
 
