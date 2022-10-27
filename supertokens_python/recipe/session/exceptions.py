@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Union, Any, List, Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError
 
@@ -63,6 +63,13 @@ class ClaimValidationError:
     def __init__(self, id_: str, reason: Optional[Dict[str, Any]]):
         self.id = id_
         self.reason = reason
+
+    def to_json(self):
+        result: Dict[str, Any] = {"id": self.id}
+        if self.reason is not None:
+            result["reason"] = self.reason
+
+        return result
 
 
 def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]):

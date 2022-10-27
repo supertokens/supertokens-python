@@ -278,18 +278,11 @@ async def default_invalid_claim_callback(
 ) -> BaseResponse:
     from .recipe import SessionRecipe
 
-    payload: List[Dict[str, Any]] = []
-
-    for p in claim_validation_errors:
-        res = (
-            p.__dict__.copy()
-        )  # Must be JSON serializable as it will be used in response
-        if p.reason is None:
-            res.pop("reason")
-        payload.append(res)
-
     return send_non_200_response(
-        {"message": "invalid claim", "claimValidationErrors": payload},
+        {
+            "message": "invalid claim",
+            "claimValidationErrors": [err.to_json() for err in claim_validation_errors],
+        },
         SessionRecipe.get_instance().config.invalid_claim_status_code,
         response,
     )
