@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- Add `to_json` method to `ClaimValidationError` class.
+
 ## [0.11.4] - 2022-10-21
 - Relaxes typing_extensions constraint
 - Update frontend integration test servers for /angular and /testError tests
