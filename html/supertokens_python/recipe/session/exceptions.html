@@ -41,7 +41,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Union, Any, List, Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError
 
@@ -91,6 +91,13 @@ class ClaimValidationError:
     def __init__(self, id_: str, reason: Optional[Dict[str, Any]]):
         self.id = id_
         self.reason = reason
+
+    def to_json(self):
+        result: Dict[str, Any] = {&#34;id&#34;: self.id}
+        if self.reason is not None:
+            result[&#34;reason&#34;] = self.reason
+
+        return result
 
 
 def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]):
@@ -176,8 +183,35 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <pre><code class="python">class ClaimValidationError:
     def __init__(self, id_: str, reason: Optional[Dict[str, Any]]):
         self.id = id_
-        self.reason = reason</code></pre>
+        self.reason = reason
+
+    def to_json(self):
+        result: Dict[str, Any] = {&#34;id&#34;: self.id}
+        if self.reason is not None:
+            result[&#34;reason&#34;] = self.reason
+
+        return result</code></pre>
 </details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.exceptions.ClaimValidationError.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self):
+    result: Dict[str, Any] = {&#34;id&#34;: self.id}
+    if self.reason is not None:
+        result[&#34;reason&#34;] = self.reason
+
+    return result</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.InvalidClaimsError"><code class="flex name class">
 <span>class <span class="ident">InvalidClaimsError</span></span>
@@ -323,6 +357,9 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <ul>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.exceptions.ClaimValidationError" href="#supertokens_python.recipe.session.exceptions.ClaimValidationError">ClaimValidationError</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.exceptions.ClaimValidationError.to_json" href="#supertokens_python.recipe.session.exceptions.ClaimValidationError.to_json">to_json</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.exceptions.InvalidClaimsError" href="#supertokens_python.recipe.session.exceptions.InvalidClaimsError">InvalidClaimsError</a></code></h4>
