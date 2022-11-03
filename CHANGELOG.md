@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## unreleased
+- Fix cookie_same_site for subdomains [#239](https://github.com/supertokens/supertokens-python/issues/239)
+
 ## [0.11.5] - 2022-10-27
 - Add `to_json` method to `ClaimValidationError` class.
 
