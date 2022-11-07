@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
+- Remove `jsonschema` from package requirements
+
 ## [0.11.6] - 2022-10-27
 - Fix cookie_same_site for subdomains [#239](https://github.com/supertokens/supertokens-python/issues/239)
 
