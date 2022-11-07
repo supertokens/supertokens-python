@@ -140,7 +140,7 @@ def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
 
     if hostname.startswith(&#34;localhost&#34;) or is_an_ip_address(hostname):
         return &#34;localhost&#34;
-    parsed_url: Any = extract(hostname)
+    parsed_url: Any = extract(hostname, include_psl_private_domains=True)
     if parsed_url.domain == &#34;&#34;:  # type: ignore
         raise Exception(
             &#34;Please make sure that the apiDomain and websiteDomain have correct values&#34;
@@ -722,7 +722,7 @@ async def validate_claims_in_payload(
 
     if hostname.startswith(&#34;localhost&#34;) or is_an_ip_address(hostname):
         return &#34;localhost&#34;
-    parsed_url: Any = extract(hostname)
+    parsed_url: Any = extract(hostname, include_psl_private_domains=True)
     if parsed_url.domain == &#34;&#34;:  # type: ignore
         raise Exception(
             &#34;Please make sure that the apiDomain and websiteDomain have correct values&#34;
