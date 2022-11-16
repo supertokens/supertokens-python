@@ -1,9 +1,8 @@
-from jwt import decode
 from fastapi import FastAPI
 from fastapi.requests import Request
+from jwt import decode
 from pytest import fixture
 from starlette.testclient import TestClient
-
 from supertokens_python import init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.recipe.session import JWTConfig
@@ -13,12 +12,8 @@ from supertokens_python.recipe.session.asyncio import (
     validate_claims_in_jwt_payload,
 )
 from supertokens_python.recipe.session.interfaces import ClaimsValidationResult
-from tests.sessions.claims.utils import (
-    get_st_init_args,
-    NoneClaim,
-    TrueClaim,
-)
-from tests.utils import setup_function, teardown_function, start_st, min_api_version
+from tests.sessions.claims.utils import NoneClaim, TrueClaim, get_st_init_args
+from tests.utils import min_api_version, setup_function, start_st, teardown_function
 
 _ = setup_function  # type:ignore
 _ = teardown_function  # type:ignore
@@ -34,6 +29,13 @@ async def fastapi_client():
         user_id = "userId"
         s = await create_new_session(request, user_id, {}, {})
         return {"session_handle": s.get_handle()}
+
+    @app.post("/merge-test-claim-and-return-jwt")
+    async def merge_claim_and_return_jwt(request: Request):  # type: ignore
+        user_id = "user_id"
+        s = await create_new_session(request, user_id, {}, {})
+        await s.merge_into_access_token_payload({"test_claim": "value"})
+        return {"jwt": s.get_access_token_payload()["jwt"]}
 
     return TestClient(app)
 
@@ -88,3 +90,17 @@ async def test_should_create_the_right_access_token_payload_with_claims_and_JWT_
         "expectedValue": True,
         "message": "value does not exist",
     }
+
+
+@min_api_version("2.9")
+async def test_jwt_should_contain_claim_merged_into_access_token_payload(
+    fastapi_client: TestClient,
+):
+    init(**get_st_init_args(TrueClaim, jwt=JWTConfig(enable=True)))  # type:ignore
+    start_st()
+
+    create_res = fastapi_client.post(url="/merge-test-claim-and-return-jwt")
+    jwt = create_res.json()["jwt"]
+
+    decoded_jwt = decode(jwt, options={"verify_signature": False})
+    assert decoded_jwt["test_claim"] == "value"
