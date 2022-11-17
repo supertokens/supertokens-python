@@ -65,7 +65,7 @@ def default_create_and_send_custom_sms(app_info: AppInfo):
 
             if isinstance(e, HTTPStatusError):  # type: ignore
                 res: Response = e.response  # type: ignore
-                if res.status_code != 429:  # type: ignore (429 == Too many requests)
+                if res.status_code != 429:  # type: ignore # (429 == Too many requests)
                     data = res.json()
                     if "err" in data:
                         raise Exception(data["err"])
