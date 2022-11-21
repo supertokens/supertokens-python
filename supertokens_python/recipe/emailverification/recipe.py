@@ -420,11 +420,24 @@ class APIImplementation(APIInterface):
             if isinstance(
                 response, CreateEmailVerificationTokenEmailAlreadyVerifiedError
             ):
+                if await session.get_claim_value(EmailVerificationClaim) is not True:
+                    # this can happen if the email was "verified" in another browser
+                    # and this session is still outdated - and the user has not
+                    # called the get email verification API yet.
+                    await session.fetch_and_set_claim(
+                        EmailVerificationClaim, user_context
+                    )
                 log_debug_message(
                     "Email verification email not sent to %s because it is already verified.",
                     email_info.email,
                 )
                 return GenerateEmailVerifyTokenPostEmailAlreadyVerifiedError()
+
+            if await session.get_claim_value(EmailVerificationClaim) is not False:
+                # this can happen if the email was "unverified" in another browser
+                # and this session is still outdated - and the user has not
+                # called the get email verification API yet.
+                await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
 
             email_verify_link = (
                 api_options.app_info.website_domain.get_as_string_dangerous()

@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove `jsonschema` from package requirements
 
+### Bug fix:
+- Update session claims in email verification token generation API in case the session claims are outdated.
+
 ## [0.11.6] - 2022-10-27
 - Fix cookie_same_site for subdomains [#239](https://github.com/supertokens/supertokens-python/issues/239)
 

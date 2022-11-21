@@ -12,8 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import asyncio
+import base64
 import json
-from typing import Any, Dict, Union, Optional
+from typing import Any, Dict, Optional, Union
 
 from fastapi import FastAPI
 from fastapi.requests import Request
@@ -24,7 +25,7 @@ from supertokens_python.asyncio import delete_user
 from supertokens_python.exceptions import BadInputError
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.querier import Querier
-from supertokens_python.recipe import emailpassword, session, emailverification
+from supertokens_python.recipe import emailpassword, emailverification, session
 from supertokens_python.recipe.emailverification.asyncio import (
     create_email_verification_token,
     is_email_verified,
@@ -40,9 +41,7 @@ from supertokens_python.recipe.emailverification.interfaces import (
     VerifyEmailUsingTokenInvalidTokenError,
 )
 from supertokens_python.recipe.emailverification.types import User as EVUser
-from supertokens_python.recipe.emailverification.utils import (
-    OverrideConfig,
-)
+from supertokens_python.recipe.emailverification.utils import OverrideConfig
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.asyncio import (
     create_new_session,
@@ -51,15 +50,16 @@ from supertokens_python.recipe.session.asyncio import (
 )
 from supertokens_python.recipe.session.constants import ANTI_CSRF_HEADER_KEY
 from supertokens_python.utils import is_version_gte
-from tests.utils import get_st_init_args, min_api_version
 from tests.utils import (
     TEST_ACCESS_TOKEN_MAX_AGE_CONFIG_KEY,
     email_verify_token_request,
     extract_all_cookies,
+    get_st_init_args,
+    min_api_version,
     set_key_value_in_config,
+    setup_function,
     sign_up_request,
     start_st,
-    setup_function,
     teardown_function,
 )
 
@@ -1093,3 +1093,93 @@ async def test_email_verify_with_deleted_user(driver_config_client: TestClient):
 
     assert response.status_code == 401
     assert dict_response == {"message": "unauthorised"}
+
+
+@min_api_version("2.11")
+async def test_generate_email_verification_token_api_updates_session_claims(
+    driver_config_client: TestClient,
+):
+    async def custom_f(_: EVUser, __: str, ___: Optional[Dict[str, Any]]):
+        return None
+
+    init(
+        **get_st_init_args(
+            [
+                emailpassword.init(),
+                emailverification.init(
+                    "OPTIONAL", create_and_send_custom_email=custom_f
+                ),
+                session.init(),
+            ]
+        )
+    )
+    start_st()
+
+    # Create user:
+    res = sign_up_request(driver_config_client, "test@gmail.com", "testPass123")
+    dict_res = res.json()
+    assert dict_res["status"] == "OK"
+    assert res.status_code == 200
+
+    user_id = dict_res["user"]["id"]
+    cookies = extract_all_cookies(res)
+    refresh_token = cookies["sIdRefreshToken"]["value"]
+
+    # Start verification:
+    verify_token = await create_email_verification_token(user_id)
+    assert isinstance(verify_token, CreateEmailVerificationTokenOkResult)
+    await verify_email_using_token(verify_token.token)
+
+    res = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        refresh_token,
+        res.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
+    cookies = extract_all_cookies(res)
+    assert res.status_code == 200
+    assert res.json() == {"status": "EMAIL_ALREADY_VERIFIED_ERROR"}
+    front_token = json.loads(
+        base64.b64decode(res.headers["front-token"])
+    )  # utf_base64decodes
+    assert front_token["up"]["st-ev"]["v"] is True
+
+    # calling the API again should not modify the access token again
+    res = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        refresh_token,
+        res.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
+    assert res.status_code == 200
+    assert res.json() == {"status": "EMAIL_ALREADY_VERIFIED_ERROR"}
+    assert "front-token" not in res.headers
+
+    # now we mark the email as unverified and try again:
+    await unverify_email(user_id)
+    res = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        refresh_token,
+        res.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
+    cookies = extract_all_cookies(res)
+    assert res.status_code == 200
+    assert res.json() == {"status": "OK"}
+    front_token = json.loads(base64.b64decode(res.headers["front-token"]))
+    assert front_token["up"]["st-ev"]["v"] is False
+
+    # calling the API again should not modify the access token again:
+    res = email_verify_token_request(
+        driver_config_client,
+        cookies["sAccessToken"]["value"],
+        refresh_token,
+        res.headers.get("anti-csrf"),  # type: ignore
+        user_id,
+    )
+    assert res.status_code == 200
+    assert res.json() == {"status": "OK"}
+    assert "front-token" not in res.headers
