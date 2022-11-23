@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
+### Added:
+-   APIs for user details to the dashboard recipe
+
+### Changed:
+-   Updates dashboard version to 0.2
+
 ## [0.11.7] - 2022-11-21
 
 - Remove `jsonschema` from package requirements
