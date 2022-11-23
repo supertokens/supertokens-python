@@ -13,16 +13,42 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Callable, Union, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union
 
-from .constants import (
-    DASHBOARD_API,
-    VALIDATE_KEY_API,
-    USERS_LIST_GET_API,
-    USERS_COUNT_API,
+from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
+from supertokens_python.recipe.emailpassword.asyncio import (
+    get_user_by_id as ep_get_user_by_id,
 )
+from supertokens_python.recipe.passwordless import PasswordlessRecipe
+from supertokens_python.recipe.passwordless.asyncio import (
+    get_user_by_id as pless_get_user_by_id,
+)
+from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
+from supertokens_python.recipe.thirdparty.asyncio import (
+    get_user_by_id as tp_get_user_by_idx,
+)
+from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
+    get_user_by_id as tpep_get_user_by_id,
+)
+from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
+    get_user_by_id as tppless_get_user_by_id,
+)
+from supertokens_python.utils import Awaitable
+
 from ...normalised_url_path import NormalisedURLPath
 from ...supertokens import AppInfo
+from .constants import (
+    DASHBOARD_API,
+    USER_API,
+    USER_EMAIL_VERIFY_API,
+    USER_METADATA_API,
+    USER_SESSION_API,
+    USERS_COUNT_API,
+    USERS_LIST_GET_API,
+    VALIDATE_KEY_API,
+    USER_EMAIL_VERIFY_TOKEN_API,
+    USER_PASSWORD_API,
+)
 
 if TYPE_CHECKING:
     from .interfaces import APIInterface, RecipeInterface
@@ -106,5 +132,67 @@ def get_api_if_matched(path: NormalisedURLPath, method: str) -> Optional[str]:
         return USERS_LIST_GET_API
     if path_str.endswith(USERS_COUNT_API) and method == "get":
         return USERS_COUNT_API
+    if path_str.endswith(USER_API) and method in ("get", "delete", "put"):
+        return USER_API
+    if path_str.endswith(USER_EMAIL_VERIFY_API) and method in ("get", "put"):
+        return USER_EMAIL_VERIFY_API
+    if path_str.endswith(USER_METADATA_API) and method in ("get", "put"):
+        return USER_METADATA_API
+    if path_str.endswith(USER_SESSION_API) and method in ("get", "post"):
+        return USER_SESSION_API
+    if path_str.endswith(USER_PASSWORD_API) and method == "put":
+        return USER_PASSWORD_API
+    if path_str.endswith(USER_EMAIL_VERIFY_TOKEN_API) and method == "post":
+        return USER_EMAIL_VERIFY_TOKEN_API
 
     return None
+
+
+def is_valid_recipe_id(recipe_id: str) -> bool:
+    return recipe_id in ("emailpassword", "thirdparty", "passwordless")
+
+
+async def get_user_for_recipe_id(
+    user_id: str, recipe_id: str
+) -> Optional[Dict[str, Any]]:
+    user: Optional[Dict[str, Any]] = None
+
+    async def update_user(
+        get_user_func1: Callable[[str], Awaitable[Any]],
+        get_user_func2: Callable[[str], Awaitable[Any]],
+    ):
+        nonlocal user, user_id
+
+        try:
+            user_response = await get_user_func1(user_id)  # type: ignore
+
+            if user_response is not None:
+                user = {
+                    **user_response.__dict__,
+                    "firstName": "",
+                    "lastName": "",
+                }
+        except Exception:
+            pass
+
+        if user is None:
+            try:
+                user_response = await get_user_func2(user_id)
+
+                if user_response is not None:
+                    user = {
+                        **user_response.__dict__,
+                        "firstName": "",
+                        "lastName": "",
+                    }
+            except Exception:
+                pass
+
+    if recipe_id == EmailPasswordRecipe.recipe_id:
+        await update_user(ep_get_user_by_id, tpep_get_user_by_id)
+
+    elif recipe_id == ThirdPartyRecipe.recipe_id:
+        await update_user(tp_get_user_by_idx, tpep_get_user_by_id)
+
+    elif recipe_id == PasswordlessRecipe.recipe_id:
+        await update_user(pless_get_user_by_id, tppless_get_user_by_id)

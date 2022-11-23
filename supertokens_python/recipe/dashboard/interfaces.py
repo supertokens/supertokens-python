@@ -14,15 +14,15 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Callable, Awaitable, Optional, List
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional
 
 from ...supertokens import AppInfo
-
+from ...types import APIResponse, User
 from .utils import DashboardConfig
-from ...types import User, APIResponse
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
+    from supertokens_python.recipe.session.interfaces import SessionInformationResult
 
 
 class RecipeInterface(ABC):
@@ -98,3 +98,120 @@ class DashboardUsersGetResponse(APIResponse):
             "users": users_json,
             "nextPaginationToken": self.next_pagination_token,
         }
+
+
+class DashboardUsersGetResponseWithMetadata(APIResponse):
+    status: str = "OK"
+
+    def __init__(
+        self, users: List[Dict[str, Any]], next_pagination_token: Optional[str]
+    ):
+        self.users = users
+        self.next_pagination_token = next_pagination_token
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "users": self.users,
+            "nextPaginationToken": self.next_pagination_token,
+        }
+
+
+class UserCountGetAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def __init__(self, count: int):
+        self.count = count
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "count": self.count}
+
+
+class UserGetAPIOkResponse(APIResponse):
+    status: str = "OK"
+
+    def __init__(self, recipe_id: str, user: Dict[str, Any]):
+        self.recipe_id = recipe_id
+        self.user = user
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "recipeId": self.recipe_id,
+            "user": self.user,
+        }
+
+
+class UserGetAPINoUserFoundError(APIResponse):
+    status: str = "NO_USER_FOUND_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class FeatureNotEnabledError(APIResponse):
+    status: str = "FEATURE_NOT_ENABLED_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserMetadataGetAPIOkResponse(APIResponse):
+    status: str = "OK"
+
+    def __init__(self, data: Dict[str, Any]) -> None:
+        self.data = data
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": "OK", "data": self.data}
+
+
+class UserSessionsGetAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def __init__(self, sessions: List[SessionInformationResult]):
+        self.sessions = sessions
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "sessions": self.sessions.__dict__}
+
+
+class UserEmailVerifyGetAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def __init__(self, is_verified: bool):
+        self.is_verified = is_verified
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "isVerified": self.is_verified}
+
+
+class UserDeleteAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserEmailVerifyPutAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserPasswordPutAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserPasswordPutAPIInvalidPasswordErrorResponse(APIResponse):
+    status: str = "INVALID_PASSWORD_ERROR"
+
+    def __init__(self, error: str) -> None:
+        self.error = error
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "error": self.error}

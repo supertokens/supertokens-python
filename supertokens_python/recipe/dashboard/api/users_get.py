@@ -14,28 +14,30 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Awaitable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Awaitable, Dict, List
 
-from supertokens_python.framework import BaseResponse
 from supertokens_python.supertokens import Supertokens
 
 from ...usermetadata import UserMetadataRecipe
 from ...usermetadata.asyncio import get_user_metadata
-from ..interfaces import DashboardUsersGetResponse
+from ..interfaces import (
+    DashboardUsersGetResponse,
+    DashboardUsersGetResponseWithMetadata,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
         APIOptions,
         APIInterface,
     )
+    from supertokens_python.types import APIResponse
 
 from supertokens_python.exceptions import GeneralError, raise_bad_input_exception
-from supertokens_python.utils import send_200_response
 
 
 async def handle_users_get_api(
     api_implementation: APIInterface, api_options: APIOptions
-) -> Optional[BaseResponse]:
+) -> APIResponse:
     _ = api_implementation
 
     limit = api_options.request.get_query_param("limit")
@@ -62,11 +64,8 @@ async def handle_users_get_api(
     try:
         UserMetadataRecipe.get_instance()
     except GeneralError:
-        return send_200_response(
-            DashboardUsersGetResponse(
-                users_response.users, users_response.next_pagination_token
-            ).to_json(),
-            api_options.response,
+        return DashboardUsersGetResponse(
+            users_response.users, users_response.next_pagination_token
         )
 
     updated_users_arr: List[Dict[str, Any]] = DashboardUsersGetResponse(
@@ -110,11 +109,6 @@ async def handle_users_get_api(
 
         promise_arr_start_position += batch_size
 
-    return send_200_response(
-        {
-            "status": "OK",
-            "users": updated_users_arr,
-            "nextPaginationToken": users_response.next_pagination_token,
-        },
-        api_options.response,
+    return DashboardUsersGetResponseWithMetadata(
+        updated_users_arr, users_response.next_pagination_token
     )

@@ -11,8 +11,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from .dashboard import handle_dashboard_api
 from .api_key_protector import api_key_protector
+from .dashboard import handle_dashboard_api
+from .userdetails.user_delete import handle_user_delete
+from .userdetails.user_email_verify_get import handle_user_email_verify_get
+from .userdetails.user_email_verify_put import handle_user_email_verify_put
+from .userdetails.user_email_verify_token_post import handle_email_verify_token_post
+from .userdetails.user_get import handle_user_get
+from .userdetails.user_metadata_get import handle_metadata_get
+from .userdetails.user_metadata_put import handle_metadata_put
+from .userdetails.user_password_put import handle_user_password_put
+from .userdetails.user_put import handle_user_put
+from .userdetails.user_sessions_get import handle_sessions_get
+from .userdetails.user_sessions_post import handle_user_sessions_post
 from .users_count_get import handle_users_count_get_api
 from .users_get import handle_users_get_api
 from .validate_key import handle_validate_key_api
@@ -23,4 +34,15 @@ __all__ = [
     "handle_users_count_get_api",
     "handle_users_get_api",
     "handle_validate_key_api",
+    "handle_user_email_verify_get",
+    "handle_user_get",
+    "handle_metadata_get",
+    "handle_sessions_get",
+    "handle_user_delete",
+    "handle_user_put",
+    "handle_user_email_verify_put",
+    "handle_metadata_put",
+    "handle_user_sessions_post",
+    "handle_user_password_put",
+    "handle_email_verify_token_post",
 ]

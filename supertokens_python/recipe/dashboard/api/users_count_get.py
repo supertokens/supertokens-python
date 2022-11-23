@@ -13,23 +13,20 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
-from supertokens_python.framework import BaseResponse
 from supertokens_python.supertokens import Supertokens
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
         APIOptions,
         APIInterface,
+        UserCountGetAPIResponse,
     )
-
-from supertokens_python.utils import send_200_response
 
 
 async def handle_users_count_get_api(
-    _: APIInterface, api_options: APIOptions
-) -> Optional[BaseResponse]:
+    _: APIInterface, _api_options: APIOptions
+) -> UserCountGetAPIResponse:
     count = await Supertokens.get_instance().get_user_count(include_recipe_ids=None)
-
-    return send_200_response({"status": "OK", "count": count}, api_options.response)
+    return UserCountGetAPIResponse(count=count)

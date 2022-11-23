@@ -22,9 +22,11 @@ if TYPE_CHECKING:
         APIOptions,
         APIInterface,
     )
+    from supertokens_python.types import APIResponse
 
 from supertokens_python.utils import (
     default_user_context,
+    send_200_response,
     send_non_200_response_with_message,
 )
 
@@ -32,9 +34,7 @@ from supertokens_python.utils import (
 async def api_key_protector(
     api_implementation: APIInterface,
     api_options: APIOptions,
-    api_function: Callable[
-        [APIInterface, APIOptions], Awaitable[Optional[BaseResponse]]
-    ],
+    api_function: Callable[[APIInterface, APIOptions], Awaitable[APIResponse]],
 ) -> Optional[BaseResponse]:
     user_context = default_user_context(api_options.request)
     should_allow_access = await api_options.recipe_implementation.should_allow_access(
@@ -43,7 +43,8 @@ async def api_key_protector(
 
     if should_allow_access is False:
         return send_non_200_response_with_message(
-            "Unauthorized access", 401, api_options.response
+            "Unauthorised access", 401, api_options.response
         )
 
-    return await api_function(api_implementation, api_options)
+    response = await api_function(api_implementation, api_options)
+    return send_200_response(response.to_json(), api_options.response)

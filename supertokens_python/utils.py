@@ -141,8 +141,12 @@ def send_non_200_response(
 
 def send_non_200_response_with_message(
     message: str, status_code: int, response: BaseResponse
-):
+) -> BaseResponse:
     return send_non_200_response({ERROR_MESSAGE_KEY: message}, status_code, response)
+
+
+def send_unauthorised_access_response(response: BaseResponse) -> BaseResponse:
+    return send_non_200_response_with_message("Unauthorised access", 401, response)
 
 
 def send_200_response(
