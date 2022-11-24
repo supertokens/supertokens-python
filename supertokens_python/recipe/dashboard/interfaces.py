@@ -173,7 +173,7 @@ class UserSessionsGetAPIResponse(APIResponse):
         self.sessions = sessions
 
     def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status, "sessions": self.sessions.__dict__}
+        return {"status": self.status, "sessions": [s.__dict__ for s in self.sessions]}
 
 
 class UserEmailVerifyGetAPIResponse(APIResponse):
