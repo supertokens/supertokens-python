@@ -16,12 +16,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from supertokens_python.supertokens import Supertokens
+from supertokens_python.recipe.dashboard.interfaces import UserCountGetAPIResponse
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
         APIOptions,
         APIInterface,
-        UserCountGetAPIResponse,
     )
 
 
