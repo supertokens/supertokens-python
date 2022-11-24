@@ -152,9 +152,7 @@ def is_valid_recipe_id(recipe_id: str) -> bool:
     return recipe_id in ("emailpassword", "thirdparty", "passwordless")
 
 
-async def get_user_for_recipe_id(
-    user_id: str, recipe_id: str
-) -> Optional[Dict[str, Any]]:
+async def get_user_for_recipe_id(user_id: str, recipe_id: str) -> Dict[str, Any]:
     user: Optional[Dict[str, Any]] = None
     recipe: Optional[str] = None
 
@@ -162,7 +160,7 @@ async def get_user_for_recipe_id(
         get_user_func1: Callable[[str], Awaitable[Any]],
         get_user_func2: Callable[[str], Awaitable[Any]],
         recipe1: str,
-        recipe2: str
+        recipe2: str,
     ):
         nonlocal user, user_id, recipe
 
@@ -194,16 +192,30 @@ async def get_user_for_recipe_id(
                 pass
 
     if recipe_id == EmailPasswordRecipe.recipe_id:
-        await update_user(ep_get_user_by_id, tpep_get_user_by_id, "emailpassword", "thirdpartyemailpassword")
+        await update_user(
+            ep_get_user_by_id,
+            tpep_get_user_by_id,
+            "emailpassword",
+            "thirdpartyemailpassword",
+        )
 
     elif recipe_id == ThirdPartyRecipe.recipe_id:
-        await update_user(tp_get_user_by_idx, tpep_get_user_by_id, "thirdparty", "thirdpartyemailpassword")
-        recipe = ThirdPartyRecipe.recipe_id
+        await update_user(
+            tp_get_user_by_idx,
+            tpep_get_user_by_id,
+            "thirdparty",
+            "thirdpartyemailpassword",
+        )
 
     elif recipe_id == PasswordlessRecipe.recipe_id:
-        await update_user(pless_get_user_by_id, tppless_get_user_by_id, "passwordless", "thirdpartypasswordless")
+        await update_user(
+            pless_get_user_by_id,
+            tppless_get_user_by_id,
+            "passwordless",
+            "thirdpartypasswordless",
+        )
 
-    user['id'] = user.pop("user_id")
-    user['timeJoined'] = user.pop("time_joined")
+    assert isinstance(user, dict)  # TODO shouldn't be required
+    user.update({"id": user.pop("user_id"), "timeJoined": user.pop("time_joined")})  # type: ignore # TODO shouldn't be required
 
     return {"user": user, "recipe": recipe}
