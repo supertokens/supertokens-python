@@ -156,12 +156,15 @@ async def get_user_for_recipe_id(
     user_id: str, recipe_id: str
 ) -> Optional[Dict[str, Any]]:
     user: Optional[Dict[str, Any]] = None
+    recipe: Optional[str] = None
 
     async def update_user(
         get_user_func1: Callable[[str], Awaitable[Any]],
         get_user_func2: Callable[[str], Awaitable[Any]],
+        recipe1: str,
+        recipe2: str
     ):
-        nonlocal user, user_id
+        nonlocal user, user_id, recipe
 
         try:
             user_response = await get_user_func1(user_id)  # type: ignore
@@ -172,6 +175,7 @@ async def get_user_for_recipe_id(
                     "firstName": "",
                     "lastName": "",
                 }
+                recipe = recipe1
         except Exception:
             pass
 
@@ -185,14 +189,21 @@ async def get_user_for_recipe_id(
                         "firstName": "",
                         "lastName": "",
                     }
+                    recipe = recipe2
             except Exception:
                 pass
 
     if recipe_id == EmailPasswordRecipe.recipe_id:
-        await update_user(ep_get_user_by_id, tpep_get_user_by_id)
+        await update_user(ep_get_user_by_id, tpep_get_user_by_id, "emailpassword", "thirdpartyemailpassword")
 
     elif recipe_id == ThirdPartyRecipe.recipe_id:
-        await update_user(tp_get_user_by_idx, tpep_get_user_by_id)
+        await update_user(tp_get_user_by_idx, tpep_get_user_by_id, "thirdparty", "thirdpartyemailpassword")
+        recipe = ThirdPartyRecipe.recipe_id
 
     elif recipe_id == PasswordlessRecipe.recipe_id:
-        await update_user(pless_get_user_by_id, tppless_get_user_by_id)
+        await update_user(pless_get_user_by_id, tppless_get_user_by_id, "passwordless", "thirdpartypasswordless")
+
+    user['id'] = user.pop("user_id")
+    user['timeJoined'] = user.pop("time_joined")
+
+    return {"user": user, "recipe": recipe}

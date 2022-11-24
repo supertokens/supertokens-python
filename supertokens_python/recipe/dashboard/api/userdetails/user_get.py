@@ -30,7 +30,7 @@ async def handle_user_get(
     if not is_valid_recipe_id(recipe_id):
         raise_bad_input_exception("Invalid recipe id")
 
-    user = await get_user_for_recipe_id(user_id, recipe_id)
+    user = (await get_user_for_recipe_id(user_id, recipe_id))["user"]
 
     if user is None:
         return UserGetAPINoUserFoundError()
