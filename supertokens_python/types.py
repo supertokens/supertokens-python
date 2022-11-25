@@ -41,7 +41,6 @@ class User:
         self.phone_number = phone_number
 
     def to_json(self) -> Dict[str, Any]:
-
         return {
             "recipeId": self.recipe_id,
             "user": {

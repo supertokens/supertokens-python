@@ -20,7 +20,8 @@ from supertokens_python.supertokens import Supertokens
 
 from ...usermetadata import UserMetadataRecipe
 from ...usermetadata.asyncio import get_user_metadata
-from ..interfaces import DashboardUsersGetResponse, UserWithMetadata
+from ..interfaces import DashboardUsersGetResponse
+from ..utils import UserWithMetadata
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
@@ -66,7 +67,7 @@ async def handle_users_get_api(
         )
 
     users_with_metadata: List[UserWithMetadata] = [
-        UserWithMetadata(user) for user in users_response.users
+        UserWithMetadata().from_user(user) for user in users_response.users
     ]
     metadata_fetch_awaitables: List[Awaitable[Any]] = []
 

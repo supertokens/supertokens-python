@@ -16,9 +16,11 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
+from supertokens_python.types import User
+
 from ...supertokens import AppInfo
-from ...types import APIResponse, User
-from .utils import DashboardConfig, GetUserForRecipeUser
+from ...types import APIResponse
+from .utils import DashboardConfig, UserWithMetadata
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -69,28 +71,6 @@ class APIInterface:
         ] = None
 
 
-class UserWithMetadata:
-    def __init__(
-        self,
-        user: User,
-        first_name: Optional[str] = None,
-        last_name: Optional[str] = None,
-    ):
-        self.user = user
-        self.first_name = first_name
-        self.last_name = last_name
-
-    def to_json(self) -> Dict[str, Any]:
-        res = self.user.to_json()
-        res["user"].update(
-            {
-                "firstName": self.first_name,
-                "lastName": self.last_name,
-            }
-        )
-        return res
-
-
 class DashboardUsersGetResponse(APIResponse):
     status: str = "OK"
 
@@ -123,7 +103,7 @@ class UserCountGetAPIResponse(APIResponse):
 class UserGetAPIOkResponse(APIResponse):
     status: str = "OK"
 
-    def __init__(self, recipe_id: str, user: GetUserForRecipeUser):
+    def __init__(self, recipe_id: str, user: UserWithMetadata):
         self.recipe_id = recipe_id
         self.user = user
 
