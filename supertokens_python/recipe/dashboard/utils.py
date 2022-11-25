@@ -41,13 +41,13 @@ from .constants import (
     DASHBOARD_API,
     USER_API,
     USER_EMAIL_VERIFY_API,
+    USER_EMAIL_VERIFY_TOKEN_API,
     USER_METADATA_API,
+    USER_PASSWORD_API,
     USER_SESSION_API,
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     VALIDATE_KEY_API,
-    USER_EMAIL_VERIFY_TOKEN_API,
-    USER_PASSWORD_API,
 )
 
 if TYPE_CHECKING:
@@ -215,7 +215,12 @@ async def get_user_for_recipe_id(user_id: str, recipe_id: str) -> Dict[str, Any]
             "thirdpartypasswordless",
         )
 
-    assert isinstance(user, dict)  # TODO shouldn't be required
-    user.update({"id": user.pop("user_id"), "timeJoined": user.pop("time_joined")})  # type: ignore # TODO shouldn't be required
+    # FIXME: Can be simplified:
+    if user is None or recipe is None:
+        return {}
+
+    user.update({"id": user.pop("user_id"), "timeJoined": user.pop("time_joined")})  # type: ignore # TODO shouldn't be done here
+    if user.get("phone_number"):  # type: ignore # FIXME ignore shouldn't be required
+        user["phoneNumber"] = user.pop("phone_number")  # type: ignore # FIXME ignore shouldn't be required
 
     return {"user": user, "recipe": recipe}

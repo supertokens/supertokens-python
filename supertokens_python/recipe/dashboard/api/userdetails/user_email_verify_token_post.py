@@ -44,12 +44,12 @@ async def handle_email_verify_token_post(
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id = request_body.get("userId")
 
-    if user_id is None or isinstance(user_id, str):
+    if user_id is None or not isinstance(user_id, str):
         raise_bad_input_exception(
             "Required parameter 'userId' is missing or has an invalid type"
         )
 
-    email_response = EmailVerificationRecipe.get_instance().get_email_for_user_id(
+    email_response = await EmailVerificationRecipe.get_instance().get_email_for_user_id(
         user_id, {}
     )
 

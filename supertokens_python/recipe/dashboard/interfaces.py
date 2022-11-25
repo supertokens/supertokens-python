@@ -170,10 +170,22 @@ class UserSessionsGetAPIResponse(APIResponse):
     status: str = "OK"
 
     def __init__(self, sessions: List[SessionInformationResult]):
-        self.sessions = sessions
+        self.sessions = [
+            {
+                "accessTokenPayload": s.access_token_payload,
+                "expiry": s.expiry,
+                "sessionData": s.session_data,
+                "status": "OK",
+                "timeCreated": s.time_created,
+                "userDataInDatabase": {},
+                "userId": s.user_id,
+                "sessionHandle": s.session_handle,
+            }
+            for s in sessions
+        ]
 
     def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status, "sessions": [s.__dict__ for s in self.sessions]}
+        return {"status": self.status, "sessions": self.sessions}
 
 
 class UserEmailVerifyGetAPIResponse(APIResponse):

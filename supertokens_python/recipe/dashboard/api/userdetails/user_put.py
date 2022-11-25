@@ -89,7 +89,7 @@ class InvalidEmailError(APIResponse):
 
 
 class InvalidPhoneError(APIResponse):
-    status: str = "INVALID_PHONE_ERRORz"
+    status: str = "INVALID_PHONE_ERROR"
 
     def __init__(self, error: str) -> None:
         self.error = error
@@ -356,7 +356,7 @@ async def handle_user_put(
             user_response["recipe"], user_id, email
         )
 
-        if isinstance(email_update_response, UserPutAPIOkResponse):
+        if not isinstance(email_update_response, UserPutAPIOkResponse):
             return email_update_response
 
     if phone != "":
@@ -364,7 +364,7 @@ async def handle_user_put(
             user_response["recipe"], user_id, phone
         )
 
-        if isinstance(phone_update_response, UserPutAPIOkResponse):
+        if not isinstance(phone_update_response, UserPutAPIOkResponse):
             return phone_update_response
 
     return UserPutAPIOkResponse()
