@@ -350,8 +350,6 @@ async def test_revoking_session_during_refresh_with_revoke_session_with_200(
         async def refresh_post(api_options: APIOptions, user_context: Dict[str, Any]):
             s = await oi_refresh_post(api_options, user_context)
             await s.revoke_session()
-            api_options.response.set_status_code(200)  # type: ignore
-            api_options.response.set_html_content("")  # type: ignore
             return s
 
         oi.refresh_post = refresh_post
