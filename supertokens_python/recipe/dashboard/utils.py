@@ -53,6 +53,9 @@ from .constants import (
 if TYPE_CHECKING:
     from .interfaces import APIInterface, RecipeInterface
 
+from supertokens_python.recipe.dashboard.interfaces import UserWithMetadata
+from supertokens_python.types import User
+
 
 class InputOverrideConfig:
     def __init__(
@@ -152,28 +155,8 @@ def is_valid_recipe_id(recipe_id: str) -> bool:
     return recipe_id in ("emailpassword", "thirdparty", "passwordless")
 
 
-class DashboardUser:
-    def __init__(self, user: Dict[str, Any]):
-        self.user_id: str = user["user_id"]
-        self.email: Optional[str] = user.get("email")
-        self.phone: Optional[str] = user.get("phone")
-        self.time_joined: int = user["time_joined"]
-        self.first_name: Optional[str] = user.get("first_name")
-        self.last_name: Optional[str] = user.get("last_name")
-
-    def to_json(self) -> Dict[str, Any]:
-        return {
-            "id": self.user_id,
-            "email": self.email,
-            "phoneNumber": self.phone,
-            "timeJoined": self.time_joined,
-            "firstName": self.first_name,
-            "lastName": self.last_name,
-        }
-
-
 class GetUserForRecipeIdResult:
-    def __init__(self, user: DashboardUser, recipe: str):
+    def __init__(self, user: UserWithMetadata, recipe: str):
         self.user = user
         self.recipe = recipe
 
@@ -181,46 +164,38 @@ class GetUserForRecipeIdResult:
 async def get_user_for_recipe_id(
     user_id: str, recipe_id: str
 ) -> Optional[GetUserForRecipeIdResult]:
-    user: Optional[Dict[str, Any]] = None
+    user: Optional[UserWithMetadata] = None
     recipe: Optional[str] = None
 
-    async def update_user(
-        get_user_func1: Callable[[str], Awaitable[Any]],
-        get_user_func2: Callable[[str], Awaitable[Any]],
+    async def update_user_dict(
+        get_user_func1: Callable[[str], Awaitable[Optional[User]]],
+        get_user_func2: Callable[[str], Awaitable[Optional[User]]],
         recipe1: str,
         recipe2: str,
     ):
         nonlocal user, user_id, recipe
 
         try:
-            user_response = await get_user_func1(user_id)  # type: ignore
+            matching_user = await get_user_func1(user_id)  # type: ignore
 
-            if user_response is not None:
-                user = {
-                    **user_response.__dict__,
-                    "firstName": "",
-                    "lastName": "",
-                }
+            if matching_user is not None:
+                user = UserWithMetadata(matching_user, first_name="", last_name="")
                 recipe = recipe1
         except Exception:
             pass
 
         if user is None:
             try:
-                user_response = await get_user_func2(user_id)
+                matching_user = await get_user_func2(user_id)
 
-                if user_response is not None:
-                    user = {
-                        **user_response.__dict__,
-                        "firstName": "",
-                        "lastName": "",
-                    }
+                if matching_user is not None:
+                    user = UserWithMetadata(matching_user, first_name="", last_name="")
                     recipe = recipe2
             except Exception:
                 pass
 
     if recipe_id == EmailPasswordRecipe.recipe_id:
-        await update_user(
+        await update_user_dict(
             ep_get_user_by_id,
             tpep_get_user_by_id,
             "emailpassword",
@@ -228,7 +203,7 @@ async def get_user_for_recipe_id(
         )
 
     elif recipe_id == ThirdPartyRecipe.recipe_id:
-        await update_user(
+        await update_user_dict(
             tp_get_user_by_idx,
             tpep_get_user_by_id,
             "thirdparty",
@@ -236,7 +211,7 @@ async def get_user_for_recipe_id(
         )
 
     elif recipe_id == PasswordlessRecipe.recipe_id:
-        await update_user(
+        await update_user_dict(
             pless_get_user_by_id,
             tppless_get_user_by_id,
             "passwordless",
@@ -244,7 +219,6 @@ async def get_user_for_recipe_id(
         )
 
     if user is not None and recipe is not None:
-        dashboard_user = DashboardUser(user)
-        return GetUserForRecipeIdResult(dashboard_user, recipe)
+        return GetUserForRecipeIdResult(user, recipe)
 
     return None

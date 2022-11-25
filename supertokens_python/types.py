@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union, TypeVar, Awaitable
+from typing import Any, Awaitable, Dict, List, TypeVar, Union
 
 _T = TypeVar("_T")
 
@@ -39,6 +39,21 @@ class User:
         self.time_joined = time_joined
         self.third_party_info = third_party_info
         self.phone_number = phone_number
+
+    def to_json(self) -> Dict[str, Any]:
+
+        return {
+            "recipeId": self.recipe_id,
+            "user": {
+                "id": self.user_id,
+                "email": self.email,
+                "timeJoined": self.time_joined,
+                "thirdParty": None
+                if self.third_party_info is None
+                else self.third_party_info.__dict__,
+                "phoneNumber": self.phone_number,
+            },
+        }
 
 
 class UsersResponse:

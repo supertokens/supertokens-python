@@ -1,9 +1,9 @@
-from supertokens_python.exceptions import raise_bad_input_exception
+from typing import Union
 
+from supertokens_python.exceptions import raise_bad_input_exception
+from supertokens_python.recipe.dashboard.utils import get_user_for_recipe_id
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.usermetadata.asyncio import get_user_metadata
-
-from supertokens_python.recipe.dashboard.utils import get_user_for_recipe_id
 
 from ...interfaces import (
     APIInterface,
@@ -12,7 +12,6 @@ from ...interfaces import (
     UserGetAPIOkResponse,
 )
 from ...utils import is_valid_recipe_id
-from typing import Union
 
 
 async def handle_user_get(
@@ -36,23 +35,19 @@ async def handle_user_get(
 
     user = user_response.user
 
-    # FIXME: Shouldn't be required, no?
-    recipe_id_: str = recipe_id  # type: ignore
-    user_id_: str = user_id  # type: ignore
-
     try:
         UserMetadataRecipe.get_instance()
     except Exception:
         user.first_name = "FEATURE_NOT_ENABLED"
         user.last_name = "FEATURE_NOT_ENABLED"
 
-        return UserGetAPIOkResponse(recipe_id_, user)
+        return UserGetAPIOkResponse(recipe_id, user)
 
-    user_metadata = await get_user_metadata(user_id_)
+    user_metadata = await get_user_metadata(user_id)
     first_name = user_metadata.metadata.get("first_name", "")
     last_name = user_metadata.metadata.get("last_name", "")
 
     user.first_name = first_name
     user.last_name = last_name
 
-    return UserGetAPIOkResponse(recipe_id_, user)
+    return UserGetAPIOkResponse(recipe_id, user)

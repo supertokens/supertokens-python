@@ -93,7 +93,7 @@ async def update_email_for_recipe_id(
     if recipe_id == "thirdpartyemailpassword":
         form_fields = (
             ThirdPartyEmailPasswordRecipe.get_instance().email_password_recipe.config.sign_up_feature.form_fields
-        )  # TODO: Using config of EP recipe object here. Verify if it is correct.
+        )
         email_form_fields = [
             form_field
             for form_field in form_fields

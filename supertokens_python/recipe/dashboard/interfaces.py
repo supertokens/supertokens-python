@@ -14,11 +14,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from ...supertokens import AppInfo
 from ...types import APIResponse, User
-from .utils import DashboardConfig, DashboardUser
+from .utils import DashboardConfig, GetUserForRecipeUser
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -69,41 +69,35 @@ class APIInterface:
         ] = None
 
 
+class UserWithMetadata:
+    def __init__(
+        self,
+        user: User,
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+    ):
+        self.user = user
+        self.first_name = first_name
+        self.last_name = last_name
+
+    def to_json(self) -> Dict[str, Any]:
+        res = self.user.to_json()
+        res["user"].update(
+            {
+                "firstName": self.first_name,
+                "lastName": self.last_name,
+            }
+        )
+        return res
+
+
 class DashboardUsersGetResponse(APIResponse):
     status: str = "OK"
 
-    def __init__(self, users: List[User], next_pagination_token: Optional[str]):
-        self.users = users
-        self.next_pagination_token = next_pagination_token
-
-    def to_json(self) -> Dict[str, Any]:
-        users_json = [
-            {
-                "recipeId": u.recipe_id,
-                "user": {
-                    "id": u.user_id,
-                    "email": u.email,
-                    "timeJoined": u.time_joined,
-                    "thirdParty": None
-                    if u.third_party_info is None
-                    else u.third_party_info.__dict__,
-                    "phoneNumber": u.phone_number,
-                },
-            }
-            for u in self.users
-        ]
-        return {
-            "status": self.status,
-            "users": users_json,
-            "nextPaginationToken": self.next_pagination_token,
-        }
-
-
-class DashboardUsersGetResponseWithMetadata(APIResponse):
-    status: str = "OK"
-
     def __init__(
-        self, users: List[Dict[str, Any]], next_pagination_token: Optional[str]
+        self,
+        users: Union[List[User], List[UserWithMetadata]],
+        next_pagination_token: Optional[str],
     ):
         self.users = users
         self.next_pagination_token = next_pagination_token
@@ -111,7 +105,7 @@ class DashboardUsersGetResponseWithMetadata(APIResponse):
     def to_json(self) -> Dict[str, Any]:
         return {
             "status": self.status,
-            "users": self.users,
+            "users": [u.to_json() for u in self.users],
             "nextPaginationToken": self.next_pagination_token,
         }
 
@@ -129,7 +123,7 @@ class UserCountGetAPIResponse(APIResponse):
 class UserGetAPIOkResponse(APIResponse):
     status: str = "OK"
 
-    def __init__(self, recipe_id: str, user: DashboardUser):
+    def __init__(self, recipe_id: str, user: GetUserForRecipeUser):
         self.recipe_id = recipe_id
         self.user = user
 

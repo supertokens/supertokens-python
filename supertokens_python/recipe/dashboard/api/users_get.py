@@ -14,17 +14,13 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Awaitable, Dict, List
+from typing import TYPE_CHECKING, Any, Awaitable, List
 
-from supertokens_python.recipe.dashboard.utils import DashboardUser
 from supertokens_python.supertokens import Supertokens
 
 from ...usermetadata import UserMetadataRecipe
 from ...usermetadata.asyncio import get_user_metadata
-from ..interfaces import (
-    DashboardUsersGetResponse,
-    DashboardUsersGetResponseWithMetadata,
-)
+from ..interfaces import DashboardUsersGetResponse, UserWithMetadata
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
@@ -69,9 +65,9 @@ async def handle_users_get_api(
             users_response.users, users_response.next_pagination_token
         )
 
-    updated_users_arr: List[Dict[str, Any]] = DashboardUsersGetResponse(
-        users_response.users, users_response.next_pagination_token
-    ).users
+    users_with_metadata: List[UserWithMetadata] = [
+        UserWithMetadata(user) for user in users_response.users
+    ]
     metadata_fetch_awaitables: List[Awaitable[Any]] = []
 
     async def get_user_metadata_and_update_user(user_idx: int) -> None:
@@ -80,12 +76,9 @@ async def handle_users_get_api(
         first_name = user_metadata.metadata.get("first_name")
         last_name = user_metadata.metadata.get("last_name")
 
-        updated_users_arr[user_idx]["user"].update(
-            {
-                "firstName": first_name,
-                "lastName": last_name,  # None becomes null which is acceptable for the dashboard.
-            }
-        )
+        # None becomes null which is acceptable for the dashboard.
+        users_with_metadata[user_idx].first_name = first_name
+        users_with_metadata[user_idx].last_name = last_name
 
     # Batch calls to get user metadata:
     for i, _ in enumerate(users_response.users):
@@ -110,7 +103,7 @@ async def handle_users_get_api(
 
         promise_arr_start_position += batch_size
 
-    return DashboardUsersGetResponseWithMetadata(
-        updated_users_arr,
+    return DashboardUsersGetResponse(
+        users_with_metadata,
         users_response.next_pagination_token,
     )
