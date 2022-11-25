@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 from unittest.mock import MagicMock
 
 from fastapi import FastAPI
@@ -24,7 +24,10 @@ from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi.fastapi_middleware import get_middleware
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 from supertokens_python.recipe import session
-from supertokens_python.recipe.session import SessionRecipe, InputOverrideConfig
+from supertokens_python.recipe.session import InputOverrideConfig, SessionRecipe
+from supertokens_python.recipe.session.asyncio import (
+    create_new_session as async_create_new_session,
+)
 from supertokens_python.recipe.session.asyncio import (
     get_all_session_handles_for_user,
     get_session_information,
@@ -44,9 +47,6 @@ from supertokens_python.recipe.session.session_functions import (
     get_session,
     refresh_session,
     revoke_session,
-)
-from supertokens_python.recipe.session.asyncio import (
-    create_new_session as async_create_new_session,
 )
 from tests.utils import clean_st, reset, setup_st, start_st
 
@@ -237,6 +237,11 @@ async def driver_config_client():
     async def home(_request: Request):  # type: ignore
         return {"hello": "world"}
 
+    @app.post("/create")
+    async def create_api(request: Request):  # type: ignore
+        await async_create_new_session(request, "test-user", {}, {})
+        return ""
+
     return TestClient(app)
 
 
@@ -329,3 +334,279 @@ async def test_should_use_override_functions_in_session_container_methods():
     data = await my_session.get_session_data()
 
     assert data == {"foo": "bar"}
+
+
+from supertokens_python.recipe.session.exceptions import raise_unauthorised_exception
+from supertokens_python.recipe.session.interfaces import APIInterface, APIOptions
+from tests.utils import extract_all_cookies, get_st_init_args
+
+
+async def test_revoking_session_during_refresh_with_revoke_session_with_200(
+    driver_config_client: TestClient,
+):
+    def session_api_override(oi: APIInterface) -> APIInterface:
+        oi_refresh_post = oi.refresh_post
+
+        async def refresh_post(api_options: APIOptions, user_context: Dict[str, Any]):
+            s = await oi_refresh_post(api_options, user_context)
+            await s.revoke_session()
+            api_options.response.set_status_code(200)  # type: ignore
+            api_options.response.set_html_content("")  # type: ignore
+            return s
+
+        oi.refresh_post = refresh_post
+        return oi
+
+    init_args = get_st_init_args(
+        [
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                override=session.InputOverrideConfig(apis=session_api_override),
+            )
+        ]
+    )
+    init(**init_args)
+    start_st()
+
+    response = driver_config_client.post("/create")
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+    assert "sIdRefreshToken" in cookies
+    assert "sRefreshToken" in cookies
+
+    assert "anti-csrf" in response.headers
+    assert "id-refresh-token" in response.headers
+    assert "front-token" in response.headers
+
+    response = driver_config_client.post(
+        "/auth/session/refresh",
+        cookies={
+            "sRefreshToken": cookies["sRefreshToken"]["value"],
+            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
+        },
+        headers={"anti-csrf": response.headers["anti-csrf"]},
+    )
+
+    assert response.status_code == 200
+    cookies = extract_all_cookies(response)
+
+    assert cookies["sAccessToken"]["value"] == ""
+    assert cookies["sRefreshToken"]["value"] == ""
+    assert cookies["sIdRefreshToken"]["value"] == ""
+
+    assert (
+        "anti-csrf" not in response.headers
+    )  # remove_cookies = True because of revoke. So new anti-csrf is generated but not set
+    assert response.headers["id-refresh-token"] == "remove"
+
+    assert cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+    assert cookies["sIdRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+    assert cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+
+    assert cookies["sAccessToken"]["domain"] == ""
+    assert cookies["sIdRefreshToken"]["domain"] == ""
+    assert cookies["sRefreshToken"]["domain"] == ""
+    assert (
+        "front-token" not in response.headers
+    )  # revoke_cookies = True because of revoke. So not set
+
+
+async def test_revoking_session_during_refresh_with_revoke_session_sending_401(
+    driver_config_client: TestClient,
+):
+    def session_api_override(oi: APIInterface) -> APIInterface:
+        oi_refresh_post = oi.refresh_post
+
+        async def refresh_post(api_options: APIOptions, user_context: Dict[str, Any]):
+            s = await oi_refresh_post(api_options, user_context)
+            await s.revoke_session()
+            api_options.response.set_status_code(401)  # type: ignore
+            api_options.response.set_json_content({})  # type: ignore
+            return s
+
+        oi.refresh_post = refresh_post
+        return oi
+
+    init_args = get_st_init_args(
+        [
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                override=session.InputOverrideConfig(apis=session_api_override),
+            )
+        ]
+    )
+    init(**init_args)
+    start_st()
+
+    response = driver_config_client.post("/create")
+    assert response.status_code == 200
+
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+    assert "sIdRefreshToken" in cookies
+    assert "sRefreshToken" in cookies
+
+    assert "anti-csrf" in response.headers
+    assert "id-refresh-token" in response.headers
+    assert "front-token" in response.headers
+
+    response = driver_config_client.post(
+        "/auth/session/refresh",
+        cookies={
+            "sRefreshToken": cookies["sRefreshToken"]["value"],
+            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
+        },
+        headers={"anti-csrf": response.headers["anti-csrf"]},
+    )
+
+    assert response.status_code == 401
+    cookies = extract_all_cookies(response)
+
+    assert cookies["sAccessToken"]["value"] == ""
+    assert cookies["sRefreshToken"]["value"] == ""
+    assert cookies["sIdRefreshToken"]["value"] == ""
+
+    assert "anti-csrf" not in response.headers
+    assert response.headers["id-refresh-token"] == "remove"
+
+    assert cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+    assert cookies["sIdRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+    assert cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+
+    assert cookies["sAccessToken"]["domain"] == ""
+    assert cookies["sIdRefreshToken"]["domain"] == ""
+    assert cookies["sRefreshToken"]["domain"] == ""
+    assert "front-token" not in response.headers
+
+
+async def test_revoking_session_during_refresh_and_throw_unauthorized(
+    driver_config_client: TestClient,
+):
+    def session_api_override(oi: APIInterface) -> APIInterface:
+        oi_refresh_post = oi.refresh_post
+
+        async def refresh_post(api_options: APIOptions, user_context: Dict[str, Any]):
+            await oi_refresh_post(api_options, user_context)
+            return raise_unauthorised_exception("unauthorized")
+
+        oi.refresh_post = refresh_post
+        return oi
+
+    init_args = get_st_init_args(
+        [
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                override=session.InputOverrideConfig(apis=session_api_override),
+            )
+        ]
+    )
+    init(**init_args)
+    start_st()
+
+    response = driver_config_client.post("/create")
+    assert response.status_code == 200
+
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+    assert "sIdRefreshToken" in cookies
+    assert "sRefreshToken" in cookies
+
+    assert "anti-csrf" in response.headers
+    assert "id-refresh-token" in response.headers
+    assert "front-token" in response.headers
+
+    response = driver_config_client.post(
+        "/auth/session/refresh",
+        cookies={
+            "sRefreshToken": cookies["sRefreshToken"]["value"],
+            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
+        },
+        headers={"anti-csrf": response.headers["anti-csrf"]},
+    )
+
+    assert response.status_code == 401
+    cookies = extract_all_cookies(response)
+
+    assert cookies["sAccessToken"]["value"] == ""
+    assert cookies["sRefreshToken"]["value"] == ""
+    assert cookies["sIdRefreshToken"]["value"] == ""
+
+    assert "anti-csrf" not in response.headers
+    assert response.headers["id-refresh-token"] == "remove"
+
+    assert cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+    assert cookies["sIdRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+    assert cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+
+    assert cookies["sAccessToken"]["domain"] == ""
+    assert cookies["sIdRefreshToken"]["domain"] == ""
+    assert cookies["sRefreshToken"]["domain"] == ""
+    assert "front-token" not in response.headers
+
+
+async def test_revoking_session_during_refresh_fails_if_just_sending_401(
+    driver_config_client: TestClient,
+):
+    def session_api_override(oi: APIInterface) -> APIInterface:
+        oi_refresh_post = oi.refresh_post
+
+        async def refresh_post(api_options: APIOptions, user_context: Dict[str, Any]):
+            s = await oi_refresh_post(api_options, user_context)
+            api_options.response.set_status_code(401)  # type: ignore
+            api_options.response.set_json_content({})  # type: ignore
+            return s
+
+        oi.refresh_post = refresh_post
+        return oi
+
+    init_args = get_st_init_args(
+        [
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                override=session.InputOverrideConfig(apis=session_api_override),
+            )
+        ]
+    )
+    init(**init_args)
+    start_st()
+
+    response = driver_config_client.post("/create")
+    assert response.status_code == 200
+
+    cookies = extract_all_cookies(response)
+
+    assert "sAccessToken" in cookies
+    assert "sIdRefreshToken" in cookies
+    assert "sRefreshToken" in cookies
+
+    assert "anti-csrf" in response.headers
+    assert "id-refresh-token" in response.headers
+    assert "front-token" in response.headers
+
+    response = driver_config_client.post(
+        "/auth/session/refresh",
+        cookies={
+            "sRefreshToken": cookies["sRefreshToken"]["value"],
+            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
+        },
+        headers={"anti-csrf": response.headers["anti-csrf"]},
+    )
+
+    assert response.status_code == 401
+    cookies = extract_all_cookies(response)
+
+    assert cookies["sAccessToken"]["value"] != ""
+    assert cookies["sRefreshToken"]["value"] != ""
+    assert cookies["sIdRefreshToken"]["value"] != ""
+
+    assert response.headers["anti-csrf"] != ""
+    assert response.headers["id-refresh-token"] != "remove"
+
+    assert cookies["sAccessToken"]["expires"] != "Thu, 01 Jan 1970 00:00:00 GMT"
+    assert cookies["sIdRefreshToken"]["expires"] != "Thu, 01 Jan 1970 00:00:00 GMT"
+    assert cookies["sRefreshToken"]["expires"] != "Thu, 01 Jan 1970 00:00:00 GMT"
+
+    assert response.headers["front-token"] != ""
