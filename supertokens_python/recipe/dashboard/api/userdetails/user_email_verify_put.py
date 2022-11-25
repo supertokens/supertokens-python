@@ -14,14 +14,13 @@ from supertokens_python.recipe.emailverification.interfaces import (
 from ...interfaces import (
     APIInterface,
     APIOptions,
-    APIResponse,
     UserEmailVerifyPutAPIResponse,
 )
 
 
 async def handle_user_email_verify_put(
     _api_interface: APIInterface, api_options: APIOptions
-) -> APIResponse:
+) -> UserEmailVerifyPutAPIResponse:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id = request_body.get("userId")
     verified = request_body.get("verified")

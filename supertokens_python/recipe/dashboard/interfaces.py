@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional
 
 from ...supertokens import AppInfo
 from ...types import APIResponse, User
-from .utils import DashboardConfig
+from .utils import DashboardConfig, DashboardUser
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -92,7 +92,6 @@ class DashboardUsersGetResponse(APIResponse):
             }
             for u in self.users
         ]
-
         return {
             "status": self.status,
             "users": users_json,
@@ -130,7 +129,7 @@ class UserCountGetAPIResponse(APIResponse):
 class UserGetAPIOkResponse(APIResponse):
     status: str = "OK"
 
-    def __init__(self, recipe_id: str, user: Dict[str, Any]):
+    def __init__(self, recipe_id: str, user: DashboardUser):
         self.recipe_id = recipe_id
         self.user = user
 
@@ -138,7 +137,7 @@ class UserGetAPIOkResponse(APIResponse):
         return {
             "status": self.status,
             "recipeId": self.recipe_id,
-            "user": self.user,
+            "user": self.user.to_json(),
         }
 
 
@@ -177,7 +176,6 @@ class UserSessionsGetAPIResponse(APIResponse):
                 "sessionData": s.session_data,
                 "status": "OK",
                 "timeCreated": s.time_created,
-                "userDataInDatabase": {},
                 "userId": s.user_id,
                 "sessionHandle": s.session_handle,
             }
@@ -221,6 +219,75 @@ class UserPasswordPutAPIResponse(APIResponse):
 
 class UserPasswordPutAPIInvalidPasswordErrorResponse(APIResponse):
     status: str = "INVALID_PASSWORD_ERROR"
+
+    def __init__(self, error: str) -> None:
+        self.error = error
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "error": self.error}
+
+
+class UserSessionsPostAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserEmailVerifyTokenPostAPIOkResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse(APIResponse):
+    status: str = "EMAIL_ALREADY_VERIFIED_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserMetadataPutAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserPutAPIOkResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserPutAPIInvalidEmailErrorResponse(APIResponse):
+    status: str = "INVALID_EMAIL_ERROR"
+
+    def __init__(self, error: str) -> None:
+        self.error = error
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "error": self.error}
+
+
+class UserPutAPIEmailAlreadyExistsErrorResponse(APIResponse):
+    status: str = "EMAIL_ALREADY_EXISTS_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserPutPhoneAlreadyExistsAPIResponse(APIResponse):
+    status: str = "PHONE_ALREADY_EXISTS_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserPutAPIInvalidPhoneErrorResponse(APIResponse):
+    status: str = "INVALID_PHONE_ERROR"
 
     def __init__(self, error: str) -> None:
         self.error = error

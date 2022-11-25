@@ -16,6 +16,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Any, Awaitable, Dict, List
 
+from supertokens_python.recipe.dashboard.utils import DashboardUser
 from supertokens_python.supertokens import Supertokens
 
 from ...usermetadata import UserMetadataRecipe
@@ -70,7 +71,7 @@ async def handle_users_get_api(
 
     updated_users_arr: List[Dict[str, Any]] = DashboardUsersGetResponse(
         users_response.users, users_response.next_pagination_token
-    ).to_json()["users"]
+    ).users
     metadata_fetch_awaitables: List[Awaitable[Any]] = []
 
     async def get_user_metadata_and_update_user(user_idx: int) -> None:
@@ -110,5 +111,6 @@ async def handle_users_get_api(
         promise_arr_start_position += batch_size
 
     return DashboardUsersGetResponseWithMetadata(
-        updated_users_arr, users_response.next_pagination_token
+        updated_users_arr,
+        users_response.next_pagination_token,
     )

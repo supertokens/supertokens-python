@@ -8,12 +8,12 @@ from ...interfaces import (
     FeatureNotEnabledError,
 )
 
-from supertokens_python.types import APIResponse
+from typing import Union
 
 
 async def handle_user_email_verify_get(
     _api_interface: APIInterface, api_options: APIOptions
-) -> APIResponse:
+) -> Union[UserEmailVerifyGetAPIResponse, FeatureNotEnabledError]:
     req = api_options.request
     user_id = req.get_query_param("userId")
 

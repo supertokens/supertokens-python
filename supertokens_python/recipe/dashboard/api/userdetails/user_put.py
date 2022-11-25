@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.dashboard.utils import (
@@ -8,9 +8,6 @@ from supertokens_python.recipe.dashboard.utils import (
 from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailpassword.asyncio import (
     update_email_or_password as ep_update_email_or_password,
-)
-from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-    update_email_or_password as tpep_update_email_or_password,
 )
 from supertokens_python.recipe.emailpassword.constants import FORM_FIELD_EMAIL_ID
 from supertokens_python.recipe.emailpassword.interfaces import (
@@ -22,7 +19,9 @@ from supertokens_python.recipe.passwordless.asyncio import (
     update_user as pless_update_user,
 )
 from supertokens_python.recipe.passwordless.interfaces import (
-    UpdateUserEmailAlreadyExistsError as EmailAlreadyExistsError,
+    UpdateUserEmailAlreadyExistsError as EmailAlreadyExistsErrorResponse,
+)
+from supertokens_python.recipe.passwordless.interfaces import (
     UpdateUserPhoneNumberAlreadyExistsError as PhoneNumberAlreadyExistsError,
 )
 from supertokens_python.recipe.passwordless.interfaces import (
@@ -38,69 +37,33 @@ from supertokens_python.recipe.passwordless.utils import (
 from supertokens_python.recipe.thirdpartyemailpassword import (
     ThirdPartyEmailPasswordRecipe,
 )
+from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
+    update_email_or_password as tpep_update_email_or_password,
+)
 from supertokens_python.recipe.thirdpartypasswordless import (
     ThirdPartyPasswordlessRecipe,
 )
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.usermetadata.asyncio import update_user_metadata
 
-from ...interfaces import APIInterface, APIOptions, APIResponse
-
-
-class UserPutAPIOkResponse(APIResponse):
-    status: str = "OK"
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
-
-
-class UserPutAPIInvalidEmailErrorResponse(APIResponse):
-    status: str = "INVALID_EMAIL_ERROR"
-
-    def __init__(self, error: str) -> None:
-        self.error = error
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status, "error": self.error}
-
-
-class UserPutEmailAlreadyExistsAPIResponse(APIResponse):
-    status: str = "EMAIL_ALREADY_EXISTS_ERROR"
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
-
-
-class UserPutPhoneAlreadyExistsAPIResponse(APIResponse):
-    status: str = "PHONE_ALREADY_EXISTS_ERROR"
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
-
-
-class InvalidEmailError(APIResponse):
-    status: str = "INVALID_EMAIL_ERROR"
-
-    def __init__(self, error: str) -> None:
-        self.error = error
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status, "error": self.error}
-
-
-class InvalidPhoneError(APIResponse):
-    status: str = "INVALID_PHONE_ERROR"
-
-    def __init__(self, error: str) -> None:
-        self.error = error
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status, "error": self.error}
+from ...interfaces import (
+    APIInterface,
+    APIOptions,
+    UserPutAPIEmailAlreadyExistsErrorResponse,
+    UserPutAPIInvalidEmailErrorResponse,
+    UserPutAPIInvalidPhoneErrorResponse,
+    UserPutAPIOkResponse,
+    UserPutPhoneAlreadyExistsAPIResponse,
+)
 
 
 async def update_email_for_recipe_id(
     recipe_id: str, user_id: str, email: str
-) -> APIResponse:
+) -> Union[
+    UserPutAPIOkResponse,
+    UserPutAPIInvalidEmailErrorResponse,
+    UserPutAPIEmailAlreadyExistsErrorResponse,
+]:
     validation_error: Optional[str] = None
 
     if recipe_id == "emailpassword":
@@ -123,7 +86,7 @@ async def update_email_for_recipe_id(
         if isinstance(
             email_update_response, UpdateEmailOrPasswordEmailAlreadyExistsError
         ):
-            return UserPutEmailAlreadyExistsAPIResponse()
+            return UserPutAPIEmailAlreadyExistsErrorResponse()
 
         return UserPutAPIOkResponse()
 
@@ -147,7 +110,7 @@ async def update_email_for_recipe_id(
         if isinstance(
             email_update_response, UpdateEmailOrPasswordEmailAlreadyExistsError
         ):
-            return UserPutEmailAlreadyExistsAPIResponse()
+            return UserPutAPIEmailAlreadyExistsErrorResponse()
 
         if isinstance(email_update_response, UpdateEmailOrPasswordUnknownUserIdError):
             raise Exception("Should never come here")
@@ -168,15 +131,15 @@ async def update_email_for_recipe_id(
             validation_error = await passwordless_config.validate_email_address(email)
 
         if validation_error is not None:
-            return InvalidEmailError(validation_error)
+            return UserPutAPIInvalidEmailErrorResponse(validation_error)
 
         update_result = await pless_update_user(user_id, email)
 
         if isinstance(update_result, PlessUpdateUserUnknownUserIdError):
             raise Exception("Should never come here")
 
-        if isinstance(update_result, EmailAlreadyExistsError):
-            return UserPutEmailAlreadyExistsAPIResponse()
+        if isinstance(update_result, EmailAlreadyExistsErrorResponse):
+            return UserPutAPIEmailAlreadyExistsErrorResponse()
 
         return UserPutAPIOkResponse()
 
@@ -195,15 +158,15 @@ async def update_email_for_recipe_id(
             validation_error = await passwordless_config.validate_email_address(email)
 
         if validation_error is not None:
-            return InvalidEmailError(validation_error)
+            return UserPutAPIInvalidEmailErrorResponse(validation_error)
 
         update_result = await pless_update_user(user_id, email)
 
         if isinstance(update_result, PlessUpdateUserUnknownUserIdError):
             raise Exception("Should never come here")
 
-        if isinstance(update_result, EmailAlreadyExistsError):
-            return UserPutEmailAlreadyExistsAPIResponse()
+        if isinstance(update_result, EmailAlreadyExistsErrorResponse):
+            return UserPutAPIEmailAlreadyExistsErrorResponse()
 
         return UserPutAPIOkResponse()
 
@@ -213,7 +176,11 @@ async def update_email_for_recipe_id(
 
 async def update_phone_for_recipe_id(
     recipe_id: str, user_id: str, phone: str
-) -> APIResponse:
+) -> Union[
+    UserPutAPIOkResponse,
+    UserPutAPIInvalidPhoneErrorResponse,
+    UserPutPhoneAlreadyExistsAPIResponse,
+]:
     validation_error: Optional[str] = None
 
     if recipe_id == "passwordless":
@@ -229,7 +196,7 @@ async def update_phone_for_recipe_id(
             validation_error = await passwordless_config.validate_phone_number(phone)
 
         if validation_error is not None:
-            return InvalidPhoneError(validation_error)
+            return UserPutAPIInvalidPhoneErrorResponse(validation_error)
 
         update_result = await pless_update_user(user_id, phone_number=phone)
 
@@ -257,7 +224,7 @@ async def update_phone_for_recipe_id(
             validation_error = await passwordless_config.validate_phone_number(phone)
 
         if validation_error is not None:
-            return InvalidPhoneError(validation_error)
+            return UserPutAPIInvalidPhoneErrorResponse(validation_error)
 
         update_result = await pless_update_user(user_id, phone_number=phone)
 
@@ -275,7 +242,13 @@ async def update_phone_for_recipe_id(
 
 async def handle_user_put(
     _api_interface: APIInterface, api_options: APIOptions
-) -> APIResponse:
+) -> Union[
+    UserPutAPIOkResponse,
+    UserPutAPIInvalidEmailErrorResponse,
+    UserPutAPIEmailAlreadyExistsErrorResponse,
+    UserPutAPIInvalidPhoneErrorResponse,
+    UserPutPhoneAlreadyExistsAPIResponse,
+]:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id: Optional[str] = request_body.get("userId")
     recipe_id: Optional[str] = request_body.get("recipeId")
@@ -319,11 +292,7 @@ async def handle_user_put(
 
     user_response = await get_user_for_recipe_id(user_id, recipe_id)
 
-    if (
-        user_response is None
-        or user_response.get("user") is None
-        or user_response.get("recipe") is None
-    ):
+    if user_response is None:
         raise Exception("Should never come here")
 
     first_name = first_name.strip()
@@ -331,7 +300,7 @@ async def handle_user_put(
     email = email.strip()
     phone = phone.strip()
 
-    if first_name != "" and last_name != "":
+    if first_name != "" or last_name != "":
         is_recipe_initialized = False
 
         try:
@@ -353,7 +322,7 @@ async def handle_user_put(
 
     if email != "":
         email_update_response = await update_email_for_recipe_id(
-            user_response["recipe"], user_id, email
+            user_response.recipe, user_id, email
         )
 
         if not isinstance(email_update_response, UserPutAPIOkResponse):
@@ -361,7 +330,7 @@ async def handle_user_put(
 
     if phone != "":
         phone_update_response = await update_phone_for_recipe_id(
-            user_response["recipe"], user_id, phone
+            user_response.recipe, user_id, phone
         )
 
         if not isinstance(phone_update_response, UserPutAPIOkResponse):

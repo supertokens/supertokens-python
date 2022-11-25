@@ -2,7 +2,6 @@ from supertokens_python.exceptions import raise_bad_input_exception
 
 from supertokens_python.recipe.usermetadata import UserMetadataRecipe
 from supertokens_python.recipe.usermetadata.asyncio import get_user_metadata
-from supertokens_python.types import APIResponse
 
 from supertokens_python.recipe.dashboard.utils import get_user_for_recipe_id
 
@@ -13,11 +12,12 @@ from ...interfaces import (
     UserGetAPIOkResponse,
 )
 from ...utils import is_valid_recipe_id
+from typing import Union
 
 
 async def handle_user_get(
     _api_interface: APIInterface, api_options: APIOptions
-) -> APIResponse:
+) -> Union[UserGetAPINoUserFoundError, UserGetAPIOkResponse]:
     user_id = api_options.request.get_query_param("userId")
     recipe_id = api_options.request.get_query_param("recipeId")
 
@@ -30,10 +30,11 @@ async def handle_user_get(
     if not is_valid_recipe_id(recipe_id):
         raise_bad_input_exception("Invalid recipe id")
 
-    user = (await get_user_for_recipe_id(user_id, recipe_id)).get("user")
-
-    if user is None:
+    user_response = await get_user_for_recipe_id(user_id, recipe_id)
+    if user_response is None:
         return UserGetAPINoUserFoundError()
+
+    user = user_response.user
 
     # FIXME: Shouldn't be required, no?
     recipe_id_: str = recipe_id  # type: ignore
@@ -42,11 +43,8 @@ async def handle_user_get(
     try:
         UserMetadataRecipe.get_instance()
     except Exception:
-        user = {
-            **user,
-            "firstName": "FEATURE_NOT_ENABLED",
-            "lastName": "FEATURE_NOT_ENABLED",
-        }
+        user.first_name = "FEATURE_NOT_ENABLED"
+        user.last_name = "FEATURE_NOT_ENABLED"
 
         return UserGetAPIOkResponse(recipe_id_, user)
 
@@ -54,10 +52,7 @@ async def handle_user_get(
     first_name = user_metadata.metadata.get("first_name", "")
     last_name = user_metadata.metadata.get("last_name", "")
 
-    user = {
-        **user,
-        "firstName": first_name,
-        "lastName": last_name,
-    }
+    user.first_name = first_name
+    user.last_name = last_name
 
     return UserGetAPIOkResponse(recipe_id_, user)

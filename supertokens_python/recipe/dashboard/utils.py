@@ -152,7 +152,35 @@ def is_valid_recipe_id(recipe_id: str) -> bool:
     return recipe_id in ("emailpassword", "thirdparty", "passwordless")
 
 
-async def get_user_for_recipe_id(user_id: str, recipe_id: str) -> Dict[str, Any]:
+class DashboardUser:
+    def __init__(self, user: Dict[str, Any]):
+        self.user_id: str = user["user_id"]
+        self.email: Optional[str] = user.get("email")
+        self.phone: Optional[str] = user.get("phone")
+        self.time_joined: int = user["time_joined"]
+        self.first_name: Optional[str] = user.get("first_name")
+        self.last_name: Optional[str] = user.get("last_name")
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "id": self.user_id,
+            "email": self.email,
+            "phoneNumber": self.phone,
+            "timeJoined": self.time_joined,
+            "firstName": self.first_name,
+            "lastName": self.last_name,
+        }
+
+
+class GetUserForRecipeIdResult:
+    def __init__(self, user: DashboardUser, recipe: str):
+        self.user = user
+        self.recipe = recipe
+
+
+async def get_user_for_recipe_id(
+    user_id: str, recipe_id: str
+) -> Optional[GetUserForRecipeIdResult]:
     user: Optional[Dict[str, Any]] = None
     recipe: Optional[str] = None
 
@@ -215,12 +243,8 @@ async def get_user_for_recipe_id(user_id: str, recipe_id: str) -> Dict[str, Any]
             "thirdpartypasswordless",
         )
 
-    # FIXME: Can be simplified:
-    if user is None or recipe is None:
-        return {}
+    if user is not None and recipe is not None:
+        dashboard_user = DashboardUser(user)
+        return GetUserForRecipeIdResult(dashboard_user, recipe)
 
-    user.update({"id": user.pop("user_id"), "timeJoined": user.pop("time_joined")})  # type: ignore # TODO shouldn't be done here
-    if user.get("phone_number"):  # type: ignore # FIXME ignore shouldn't be required
-        user["phoneNumber"] = user.pop("phone_number")  # type: ignore # FIXME ignore shouldn't be required
-
-    return {"user": user, "recipe": recipe}
+    return None

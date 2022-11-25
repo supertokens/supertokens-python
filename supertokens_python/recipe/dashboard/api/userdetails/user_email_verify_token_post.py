@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from supertokens_python.exceptions import raise_bad_input_exception
 from supertokens_python.recipe.emailverification.asyncio import (
@@ -13,34 +13,26 @@ from supertokens_python.recipe.emailverification.recipe import (
     EmailVerificationRecipe,
     GetEmailForUserIdOkResult,
 )
-from supertokens_python.recipe.emailverification.utils import get_email_verify_link
-from supertokens_python.types import APIResponse
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
     VerificationEmailTemplateVarsUser,
 )
+from supertokens_python.recipe.emailverification.utils import get_email_verify_link
 
-from ...interfaces import APIInterface, APIOptions, APIResponse
-
-
-class UserEmailVerifyTokenPostAPIOkResponse(APIResponse):
-    # TODO: Move to interfaces.py
-    status: str = "OK"
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
-
-
-class UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse(APIResponse):
-    status: str = "EMAIL_ALREADY_VERIFIED_ERROR"
-
-    def to_json(self) -> Dict[str, Any]:
-        return {"status": self.status}
+from ...interfaces import (
+    APIInterface,
+    APIOptions,
+    UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse,
+    UserEmailVerifyTokenPostAPIOkResponse,
+)
 
 
 async def handle_email_verify_token_post(
     _api_interface: APIInterface, api_options: APIOptions
-) -> APIResponse:
+) -> Union[
+    UserEmailVerifyTokenPostAPIOkResponse,
+    UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse,
+]:
     request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
     user_id = request_body.get("userId")
 

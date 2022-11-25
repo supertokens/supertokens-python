@@ -7,14 +7,13 @@ from supertokens_python.recipe.session.asyncio import (
     get_session_information,
 )
 from supertokens_python.recipe.session.interfaces import SessionInformationResult
-from supertokens_python.types import APIResponse
 
 from ...interfaces import APIInterface, APIOptions, UserSessionsGetAPIResponse
 
 
 async def handle_sessions_get(
     _api_interface: APIInterface, api_options: APIOptions
-) -> APIResponse:
+) -> UserSessionsGetAPIResponse:
     user_id = api_options.request.get_query_param("userId")
 
     if user_id is None:
