@@ -5,6 +5,9 @@
 <a href="https://supertokens.com/discord">
 <img src="https://img.shields.io/discord/603466164219281420.svg?logo=discord"
     alt="chat on Discord"></a>
+<a href="https://pypi.org/project/supertokens-python">
+<img alt="Last 30 days downloads for supertokens-python" src="https://pepy.tech/badge/supertokens-python/month"/>
+</a>
 
 ## About
 This is a Python library that is used to interface between a python API process and the SuperTokens http service.
