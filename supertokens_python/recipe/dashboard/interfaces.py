@@ -16,6 +16,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
+from supertokens_python.recipe.session.interfaces import SessionInformationResult
 from supertokens_python.types import User
 
 from ...supertokens import AppInfo
@@ -24,7 +25,16 @@ from .utils import DashboardConfig, UserWithMetadata
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
-    from supertokens_python.recipe.session.interfaces import SessionInformationResult
+
+
+class SessionInfo:
+    def __init__(self, info: SessionInformationResult) -> None:
+        self.session_handle = info.session_handle
+        self.user_id = info.user_id
+        self.session_data = info.session_data
+        self.expiry = info.expiry
+        self.access_token_payload = info.access_token_payload
+        self.time_created = info.time_created
 
 
 class RecipeInterface(ABC):
@@ -142,7 +152,7 @@ class UserMetadataGetAPIOkResponse(APIResponse):
 class UserSessionsGetAPIResponse(APIResponse):
     status: str = "OK"
 
-    def __init__(self, sessions: List[SessionInformationResult]):
+    def __init__(self, sessions: List[SessionInfo]):
         self.sessions = [
             {
                 "accessTokenPayload": s.access_token_payload,

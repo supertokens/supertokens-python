@@ -108,7 +108,7 @@ class UserWithMetadata:
         return self
 
     def to_json(self) -> Dict[str, Any]:
-        user_json = {
+        user_json: Dict[str, Any] = {
             "id": self.user_id,
             "timeJoined": self.time_joined,
         }

@@ -8,7 +8,12 @@ from supertokens_python.recipe.session.asyncio import (
 )
 from supertokens_python.recipe.session.interfaces import SessionInformationResult
 
-from ...interfaces import APIInterface, APIOptions, UserSessionsGetAPIResponse
+from ...interfaces import (
+    APIInterface,
+    APIOptions,
+    SessionInfo,
+    UserSessionsGetAPIResponse,
+)
 
 
 async def handle_sessions_get(
@@ -20,13 +25,13 @@ async def handle_sessions_get(
         raise_bad_input_exception("Missing required parameter 'userId'")
 
     session_handles = await get_all_session_handles_for_user(user_id)
-    sessions: List[Optional[SessionInformationResult]] = [None for _ in session_handles]
+    sessions: List[Optional[SessionInfo]] = [None for _ in session_handles]
 
     async def call_(i: int, session_handle: str):
         try:
             session_response = await get_session_information(session_handle)
             if session_response is not None:
-                sessions[i] = session_response
+                sessions[i] = SessionInfo(session_response)
         except Exception:
             sessions[i] = None
 
