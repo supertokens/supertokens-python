@@ -71,6 +71,7 @@ if TYPE_CHECKING:
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
+from supertokens_python.recipe.emailverification.utils import get_email_verify_link
 
 from .api import handle_email_verify_api, handle_generate_email_verify_token_api
 from .constants import USER_EMAIL_VERIFY, USER_EMAIL_VERIFY_TOKEN
@@ -439,14 +440,8 @@ class APIImplementation(APIInterface):
                 # called the get email verification API yet.
                 await session.fetch_and_set_claim(EmailVerificationClaim, user_context)
 
-            email_verify_link = (
-                api_options.app_info.website_domain.get_as_string_dangerous()
-                + api_options.app_info.website_base_path.get_as_string_dangerous()
-                + "/verify-email"
-                + "?token="
-                + response.token
-                + "&rid="
-                + api_options.recipe_id
+            email_verify_link = get_email_verify_link(
+                api_options.app_info, response.token, api_options.recipe_id
             )
 
             log_debug_message("Sending email verification email to %s", email_info)

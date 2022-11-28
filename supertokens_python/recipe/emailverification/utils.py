@@ -13,7 +13,7 @@
 # under the License.
 
 from __future__ import annotations
-from typing_extensions import Literal
+
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from supertokens_python.ingredients.emaildelivery.types import (
@@ -24,6 +24,7 @@ from supertokens_python.recipe.emailverification.emaildelivery.services.backward
     BackwardCompatibilityService,
 )
 from supertokens_python.utils import deprecated_warn
+from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from typing import Awaitable, Callable, Union
@@ -31,7 +32,7 @@ if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
 
     from .interfaces import APIInterface, RecipeInterface, TypeGetEmailForUserIdFunction
-    from .types import User, VerificationEmailTemplateVars, EmailTemplateVars
+    from .types import EmailTemplateVars, User, VerificationEmailTemplateVars
 
 
 class OverrideConfig:
@@ -109,4 +110,16 @@ def validate_and_normalise_user_input(
         get_email_delivery_config,
         get_email_for_user_id,
         override,
+    )
+
+
+def get_email_verify_link(app_info: AppInfo, token: str, recipe_id: str) -> str:
+    return (
+        app_info.website_domain.get_as_string_dangerous()
+        + app_info.website_base_path.get_as_string_dangerous()
+        + "/verify-email"
+        + "?token="
+        + token
+        + "&rid="
+        + recipe_id
     )

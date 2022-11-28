@@ -14,15 +14,27 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Callable, Awaitable, Optional, List
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+
+from supertokens_python.recipe.session.interfaces import SessionInformationResult
+from supertokens_python.types import User
 
 from ...supertokens import AppInfo
-
-from .utils import DashboardConfig
-from ...types import User, APIResponse
+from ...types import APIResponse
+from .utils import DashboardConfig, UserWithMetadata
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
+
+
+class SessionInfo:
+    def __init__(self, info: SessionInformationResult) -> None:
+        self.session_handle = info.session_handle
+        self.user_id = info.user_id
+        self.session_data = info.session_data
+        self.expiry = info.expiry
+        self.access_token_payload = info.access_token_payload
+        self.time_created = info.time_created
 
 
 class RecipeInterface(ABC):
@@ -72,29 +84,197 @@ class APIInterface:
 class DashboardUsersGetResponse(APIResponse):
     status: str = "OK"
 
-    def __init__(self, users: List[User], next_pagination_token: Optional[str]):
+    def __init__(
+        self,
+        users: Union[List[User], List[UserWithMetadata]],
+        next_pagination_token: Optional[str],
+    ):
         self.users = users
         self.next_pagination_token = next_pagination_token
 
     def to_json(self) -> Dict[str, Any]:
-        users_json = [
-            {
-                "recipeId": u.recipe_id,
-                "user": {
-                    "id": u.user_id,
-                    "email": u.email,
-                    "timeJoined": u.time_joined,
-                    "thirdParty": None
-                    if u.third_party_info is None
-                    else u.third_party_info.__dict__,
-                    "phoneNumber": u.phone_number,
-                },
-            }
-            for u in self.users
-        ]
-
         return {
             "status": self.status,
-            "users": users_json,
+            "users": [u.to_json() for u in self.users],
             "nextPaginationToken": self.next_pagination_token,
         }
+
+
+class UserCountGetAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def __init__(self, count: int):
+        self.count = count
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "count": self.count}
+
+
+class UserGetAPIOkResponse(APIResponse):
+    status: str = "OK"
+
+    def __init__(self, recipe_id: str, user: UserWithMetadata):
+        self.recipe_id = recipe_id
+        self.user = user
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "status": self.status,
+            "recipeId": self.recipe_id,
+            "user": self.user.to_json(),
+        }
+
+
+class UserGetAPINoUserFoundError(APIResponse):
+    status: str = "NO_USER_FOUND_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class FeatureNotEnabledError(APIResponse):
+    status: str = "FEATURE_NOT_ENABLED_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserMetadataGetAPIOkResponse(APIResponse):
+    status: str = "OK"
+
+    def __init__(self, data: Dict[str, Any]) -> None:
+        self.data = data
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": "OK", "data": self.data}
+
+
+class UserSessionsGetAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def __init__(self, sessions: List[SessionInfo]):
+        self.sessions = [
+            {
+                "accessTokenPayload": s.access_token_payload,
+                "expiry": s.expiry,
+                "sessionData": s.session_data,
+                "status": "OK",
+                "timeCreated": s.time_created,
+                "userId": s.user_id,
+                "sessionHandle": s.session_handle,
+            }
+            for s in sessions
+        ]
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "sessions": self.sessions}
+
+
+class UserEmailVerifyGetAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def __init__(self, is_verified: bool):
+        self.is_verified = is_verified
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "isVerified": self.is_verified}
+
+
+class UserDeleteAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserEmailVerifyPutAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserPasswordPutAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserPasswordPutAPIInvalidPasswordErrorResponse(APIResponse):
+    status: str = "INVALID_PASSWORD_ERROR"
+
+    def __init__(self, error: str) -> None:
+        self.error = error
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "error": self.error}
+
+
+class UserSessionsPostAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserEmailVerifyTokenPostAPIOkResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse(APIResponse):
+    status: str = "EMAIL_ALREADY_VERIFIED_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserMetadataPutAPIResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserPutAPIOkResponse(APIResponse):
+    status: str = "OK"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserPutAPIInvalidEmailErrorResponse(APIResponse):
+    status: str = "INVALID_EMAIL_ERROR"
+
+    def __init__(self, error: str) -> None:
+        self.error = error
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "error": self.error}
+
+
+class UserPutAPIEmailAlreadyExistsErrorResponse(APIResponse):
+    status: str = "EMAIL_ALREADY_EXISTS_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserPutPhoneAlreadyExistsAPIResponse(APIResponse):
+    status: str = "PHONE_ALREADY_EXISTS_ERROR"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
+class UserPutAPIInvalidPhoneErrorResponse(APIResponse):
+    status: str = "INVALID_PHONE_ERROR"
+
+    def __init__(self, error: str) -> None:
+        self.error = error
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status, "error": self.error}

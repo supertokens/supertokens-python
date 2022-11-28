@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
+## [0.11.8] - 2022-11-28
+
+### Added:
+-   APIs for user details to the dashboard recipe
+
+### Changed:
+- Updates dashboard version to 0.2
 - Add tests for different scenarios while revoking session during session refresh call
 
 ## [0.11.7] - 2022-11-21

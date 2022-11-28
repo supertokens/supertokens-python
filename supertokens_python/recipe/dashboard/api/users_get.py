@@ -14,28 +14,28 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Awaitable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Awaitable, List
 
-from supertokens_python.framework import BaseResponse
 from supertokens_python.supertokens import Supertokens
 
 from ...usermetadata import UserMetadataRecipe
 from ...usermetadata.asyncio import get_user_metadata
 from ..interfaces import DashboardUsersGetResponse
+from ..utils import UserWithMetadata
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
         APIOptions,
         APIInterface,
     )
+    from supertokens_python.types import APIResponse
 
 from supertokens_python.exceptions import GeneralError, raise_bad_input_exception
-from supertokens_python.utils import send_200_response
 
 
 async def handle_users_get_api(
     api_implementation: APIInterface, api_options: APIOptions
-) -> Optional[BaseResponse]:
+) -> APIResponse:
     _ = api_implementation
 
     limit = api_options.request.get_query_param("limit")
@@ -62,16 +62,13 @@ async def handle_users_get_api(
     try:
         UserMetadataRecipe.get_instance()
     except GeneralError:
-        return send_200_response(
-            DashboardUsersGetResponse(
-                users_response.users, users_response.next_pagination_token
-            ).to_json(),
-            api_options.response,
+        return DashboardUsersGetResponse(
+            users_response.users, users_response.next_pagination_token
         )
 
-    updated_users_arr: List[Dict[str, Any]] = DashboardUsersGetResponse(
-        users_response.users, users_response.next_pagination_token
-    ).to_json()["users"]
+    users_with_metadata: List[UserWithMetadata] = [
+        UserWithMetadata().from_user(user) for user in users_response.users
+    ]
     metadata_fetch_awaitables: List[Awaitable[Any]] = []
 
     async def get_user_metadata_and_update_user(user_idx: int) -> None:
@@ -80,12 +77,9 @@ async def handle_users_get_api(
         first_name = user_metadata.metadata.get("first_name")
         last_name = user_metadata.metadata.get("last_name")
 
-        updated_users_arr[user_idx]["user"].update(
-            {
-                "firstName": first_name,
-                "lastName": last_name,  # None becomes null which is acceptable for the dashboard.
-            }
-        )
+        # None becomes null which is acceptable for the dashboard.
+        users_with_metadata[user_idx].first_name = first_name
+        users_with_metadata[user_idx].last_name = last_name
 
     # Batch calls to get user metadata:
     for i, _ in enumerate(users_response.users):
@@ -110,11 +104,7 @@ async def handle_users_get_api(
 
         promise_arr_start_position += batch_size
 
-    return send_200_response(
-        {
-            "status": "OK",
-            "users": updated_users_arr,
-            "nextPaginationToken": users_response.next_pagination_token,
-        },
-        api_options.response,
+    return DashboardUsersGetResponse(
+        users_with_metadata,
+        users_response.next_pagination_token,
     )
