@@ -42,28 +42,28 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Awaitable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Awaitable, List
 
-from supertokens_python.framework import BaseResponse
 from supertokens_python.supertokens import Supertokens
 
 from ...usermetadata import UserMetadataRecipe
 from ...usermetadata.asyncio import get_user_metadata
 from ..interfaces import DashboardUsersGetResponse
+from ..utils import UserWithMetadata
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.dashboard.interfaces import (
         APIOptions,
         APIInterface,
     )
+    from supertokens_python.types import APIResponse
 
 from supertokens_python.exceptions import GeneralError, raise_bad_input_exception
-from supertokens_python.utils import send_200_response
 
 
 async def handle_users_get_api(
     api_implementation: APIInterface, api_options: APIOptions
-) -&gt; Optional[BaseResponse]:
+) -&gt; APIResponse:
     _ = api_implementation
 
     limit = api_options.request.get_query_param(&#34;limit&#34;)
@@ -90,16 +90,13 @@ async def handle_users_get_api(
     try:
         UserMetadataRecipe.get_instance()
     except GeneralError:
-        return send_200_response(
-            DashboardUsersGetResponse(
-                users_response.users, users_response.next_pagination_token
-            ).to_json(),
-            api_options.response,
+        return DashboardUsersGetResponse(
+            users_response.users, users_response.next_pagination_token
         )
 
-    updated_users_arr: List[Dict[str, Any]] = DashboardUsersGetResponse(
-        users_response.users, users_response.next_pagination_token
-    ).to_json()[&#34;users&#34;]
+    users_with_metadata: List[UserWithMetadata] = [
+        UserWithMetadata().from_user(user) for user in users_response.users
+    ]
     metadata_fetch_awaitables: List[Awaitable[Any]] = []
 
     async def get_user_metadata_and_update_user(user_idx: int) -&gt; None:
@@ -108,12 +105,9 @@ async def handle_users_get_api(
         first_name = user_metadata.metadata.get(&#34;first_name&#34;)
         last_name = user_metadata.metadata.get(&#34;last_name&#34;)
 
-        updated_users_arr[user_idx][&#34;user&#34;].update(
-            {
-                &#34;firstName&#34;: first_name,
-                &#34;lastName&#34;: last_name,  # None becomes null which is acceptable for the dashboard.
-            }
-        )
+        # None becomes null which is acceptable for the dashboard.
+        users_with_metadata[user_idx].first_name = first_name
+        users_with_metadata[user_idx].last_name = last_name
 
     # Batch calls to get user metadata:
     for i, _ in enumerate(users_response.users):
@@ -138,13 +132,9 @@ async def handle_users_get_api(
 
         promise_arr_start_position += batch_size
 
-    return send_200_response(
-        {
-            &#34;status&#34;: &#34;OK&#34;,
-            &#34;users&#34;: updated_users_arr,
-            &#34;nextPaginationToken&#34;: users_response.next_pagination_token,
-        },
-        api_options.response,
+    return DashboardUsersGetResponse(
+        users_with_metadata,
+        users_response.next_pagination_token,
     )</code></pre>
 </details>
 </section>
@@ -156,7 +146,7 @@ async def handle_users_get_api(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.users_get.handle_users_get_api"><code class="name flex">
-<span>async def <span class="ident">handle_users_get_api</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions) ‑> Optional[BaseResponse]</span>
+<span>async def <span class="ident">handle_users_get_api</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions) ‑> APIResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -166,7 +156,7 @@ async def handle_users_get_api(
 </summary>
 <pre><code class="python">async def handle_users_get_api(
     api_implementation: APIInterface, api_options: APIOptions
-) -&gt; Optional[BaseResponse]:
+) -&gt; APIResponse:
     _ = api_implementation
 
     limit = api_options.request.get_query_param(&#34;limit&#34;)
@@ -193,16 +183,13 @@ async def handle_users_get_api(
     try:
         UserMetadataRecipe.get_instance()
     except GeneralError:
-        return send_200_response(
-            DashboardUsersGetResponse(
-                users_response.users, users_response.next_pagination_token
-            ).to_json(),
-            api_options.response,
+        return DashboardUsersGetResponse(
+            users_response.users, users_response.next_pagination_token
         )
 
-    updated_users_arr: List[Dict[str, Any]] = DashboardUsersGetResponse(
-        users_response.users, users_response.next_pagination_token
-    ).to_json()[&#34;users&#34;]
+    users_with_metadata: List[UserWithMetadata] = [
+        UserWithMetadata().from_user(user) for user in users_response.users
+    ]
     metadata_fetch_awaitables: List[Awaitable[Any]] = []
 
     async def get_user_metadata_and_update_user(user_idx: int) -&gt; None:
@@ -211,12 +198,9 @@ async def handle_users_get_api(
         first_name = user_metadata.metadata.get(&#34;first_name&#34;)
         last_name = user_metadata.metadata.get(&#34;last_name&#34;)
 
-        updated_users_arr[user_idx][&#34;user&#34;].update(
-            {
-                &#34;firstName&#34;: first_name,
-                &#34;lastName&#34;: last_name,  # None becomes null which is acceptable for the dashboard.
-            }
-        )
+        # None becomes null which is acceptable for the dashboard.
+        users_with_metadata[user_idx].first_name = first_name
+        users_with_metadata[user_idx].last_name = last_name
 
     # Batch calls to get user metadata:
     for i, _ in enumerate(users_response.users):
@@ -241,13 +225,9 @@ async def handle_users_get_api(
 
         promise_arr_start_position += batch_size
 
-    return send_200_response(
-        {
-            &#34;status&#34;: &#34;OK&#34;,
-            &#34;users&#34;: updated_users_arr,
-            &#34;nextPaginationToken&#34;: users_response.next_pagination_token,
-        },
-        api_options.response,
+    return DashboardUsersGetResponse(
+        users_with_metadata,
+        users_response.next_pagination_token,
     )</code></pre>
 </details>
 </dd>

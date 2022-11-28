@@ -42,41 +42,59 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, List, Union, Optional, Callable, Awaitable
+from typing import TYPE_CHECKING, Awaitable, Callable, List, Optional, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.recipe_module import APIHandled, RecipeModule
+
 from .api import (
     api_key_protector,
     handle_dashboard_api,
-    handle_users_get_api,
+    handle_email_verify_token_post,
+    handle_metadata_get,
+    handle_metadata_put,
+    handle_sessions_get,
+    handle_user_delete,
+    handle_user_email_verify_get,
+    handle_user_email_verify_put,
+    handle_user_get,
+    handle_user_password_put,
+    handle_user_put,
+    handle_user_sessions_post,
     handle_users_count_get_api,
+    handle_users_get_api,
     handle_validate_key_api,
 )
-
 from .api.implementation import APIImplementation
 from .exceptions import SuperTokensDashboardError
-from .interfaces import APIOptions, APIInterface
+from .interfaces import APIInterface, APIOptions
 from .recipe_implementation import RecipeImplementation
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from supertokens_python.supertokens import AppInfo
+    from supertokens_python.types import APIResponse
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
 
 from .constants import (
     DASHBOARD_API,
-    VALIDATE_KEY_API,
-    USERS_LIST_GET_API,
+    USER_API,
+    USER_EMAIL_VERIFY_API,
+    USER_EMAIL_VERIFY_TOKEN_API,
+    USER_METADATA_API,
+    USER_PASSWORD_API,
+    USER_SESSION_API,
     USERS_COUNT_API,
+    USERS_LIST_GET_API,
+    VALIDATE_KEY_API,
 )
 from .utils import (
     InputOverrideConfig,
-    validate_and_normalise_user_input,
     get_api_if_matched,
     is_api_path,
+    validate_and_normalise_user_input,
 )
 
 
@@ -149,12 +167,38 @@ class DashboardRecipe(RecipeModule):
 
         # Do API key validation for the remaining APIs
         api_function: Optional[
-            Callable[[APIInterface, APIOptions], Awaitable[Optional[BaseResponse]]]
+            Callable[[APIInterface, APIOptions], Awaitable[APIResponse]]
         ] = None
         if request_id == USERS_LIST_GET_API:
             api_function = handle_users_get_api
-        if request_id == USERS_COUNT_API:
+        elif request_id == USERS_COUNT_API:
             api_function = handle_users_count_get_api
+        elif request_id == USER_API:
+            if method == &#34;get&#34;:
+                api_function = handle_user_get
+            if method == &#34;delete&#34;:
+                api_function = handle_user_delete
+            if method == &#34;put&#34;:
+                api_function = handle_user_put
+        elif request_id == USER_EMAIL_VERIFY_API:
+            if method == &#34;get&#34;:
+                api_function = handle_user_email_verify_get
+            if method == &#34;put&#34;:
+                api_function = handle_user_email_verify_put
+        elif request_id == USER_METADATA_API:
+            if method == &#34;get&#34;:
+                api_function = handle_metadata_get
+            if method == &#34;put&#34;:
+                api_function = handle_metadata_put
+        elif request_id == USER_SESSION_API:
+            if method == &#34;get&#34;:
+                api_function = handle_sessions_get
+            if method == &#34;post&#34;:
+                api_function = handle_user_sessions_post
+        elif request_id == USER_PASSWORD_API:
+            api_function = handle_user_password_put
+        elif request_id == USER_EMAIL_VERIFY_TOKEN_API:
+            api_function = handle_email_verify_token_post
 
         if api_function is not None:
             return await api_key_protector(
@@ -313,12 +357,38 @@ inheritance.</p></div>
 
         # Do API key validation for the remaining APIs
         api_function: Optional[
-            Callable[[APIInterface, APIOptions], Awaitable[Optional[BaseResponse]]]
+            Callable[[APIInterface, APIOptions], Awaitable[APIResponse]]
         ] = None
         if request_id == USERS_LIST_GET_API:
             api_function = handle_users_get_api
-        if request_id == USERS_COUNT_API:
+        elif request_id == USERS_COUNT_API:
             api_function = handle_users_count_get_api
+        elif request_id == USER_API:
+            if method == &#34;get&#34;:
+                api_function = handle_user_get
+            if method == &#34;delete&#34;:
+                api_function = handle_user_delete
+            if method == &#34;put&#34;:
+                api_function = handle_user_put
+        elif request_id == USER_EMAIL_VERIFY_API:
+            if method == &#34;get&#34;:
+                api_function = handle_user_email_verify_get
+            if method == &#34;put&#34;:
+                api_function = handle_user_email_verify_put
+        elif request_id == USER_METADATA_API:
+            if method == &#34;get&#34;:
+                api_function = handle_metadata_get
+            if method == &#34;put&#34;:
+                api_function = handle_metadata_put
+        elif request_id == USER_SESSION_API:
+            if method == &#34;get&#34;:
+                api_function = handle_sessions_get
+            if method == &#34;post&#34;:
+                api_function = handle_user_sessions_post
+        elif request_id == USER_PASSWORD_API:
+            api_function = handle_user_password_put
+        elif request_id == USER_EMAIL_VERIFY_TOKEN_API:
+            api_function = handle_email_verify_token_post
 
         if api_function is not None:
             return await api_key_protector(
@@ -537,12 +607,38 @@ def reset():
 
     # Do API key validation for the remaining APIs
     api_function: Optional[
-        Callable[[APIInterface, APIOptions], Awaitable[Optional[BaseResponse]]]
+        Callable[[APIInterface, APIOptions], Awaitable[APIResponse]]
     ] = None
     if request_id == USERS_LIST_GET_API:
         api_function = handle_users_get_api
-    if request_id == USERS_COUNT_API:
+    elif request_id == USERS_COUNT_API:
         api_function = handle_users_count_get_api
+    elif request_id == USER_API:
+        if method == &#34;get&#34;:
+            api_function = handle_user_get
+        if method == &#34;delete&#34;:
+            api_function = handle_user_delete
+        if method == &#34;put&#34;:
+            api_function = handle_user_put
+    elif request_id == USER_EMAIL_VERIFY_API:
+        if method == &#34;get&#34;:
+            api_function = handle_user_email_verify_get
+        if method == &#34;put&#34;:
+            api_function = handle_user_email_verify_put
+    elif request_id == USER_METADATA_API:
+        if method == &#34;get&#34;:
+            api_function = handle_metadata_get
+        if method == &#34;put&#34;:
+            api_function = handle_metadata_put
+    elif request_id == USER_SESSION_API:
+        if method == &#34;get&#34;:
+            api_function = handle_sessions_get
+        if method == &#34;post&#34;:
+            api_function = handle_user_sessions_post
+    elif request_id == USER_PASSWORD_API:
+        api_function = handle_user_password_put
+    elif request_id == USER_EMAIL_VERIFY_TOKEN_API:
+        api_function = handle_email_verify_token_post
 
     if api_function is not None:
         return await api_key_protector(

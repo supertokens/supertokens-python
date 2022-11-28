@@ -169,8 +169,12 @@ def send_non_200_response(
 
 def send_non_200_response_with_message(
     message: str, status_code: int, response: BaseResponse
-):
+) -&gt; BaseResponse:
     return send_non_200_response({ERROR_MESSAGE_KEY: message}, status_code, response)
+
+
+def send_unauthorised_access_response(response: BaseResponse) -&gt; BaseResponse:
+    return send_non_200_response_with_message(&#34;Unauthorised access&#34;, 401, response)
 
 
 def send_200_response(
@@ -643,7 +647,7 @@ async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
 </details>
 </dd>
 <dt id="supertokens_python.utils.send_non_200_response_with_message"><code class="name flex">
-<span>def <span class="ident">send_non_200_response_with_message</span></span>(<span>message: str, status_code: int, response: BaseResponse)</span>
+<span>def <span class="ident">send_non_200_response_with_message</span></span>(<span>message: str, status_code: int, response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -653,8 +657,21 @@ async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
 </summary>
 <pre><code class="python">def send_non_200_response_with_message(
     message: str, status_code: int, response: BaseResponse
-):
+) -&gt; BaseResponse:
     return send_non_200_response({ERROR_MESSAGE_KEY: message}, status_code, response)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.utils.send_unauthorised_access_response"><code class="name flex">
+<span>def <span class="ident">send_unauthorised_access_response</span></span>(<span>response: BaseResponse) ‑> <a title="supertokens_python.framework.response.BaseResponse" href="framework/response.html#supertokens_python.framework.response.BaseResponse">BaseResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def send_unauthorised_access_response(response: BaseResponse) -&gt; BaseResponse:
+    return send_non_200_response_with_message(&#34;Unauthorised access&#34;, 401, response)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.utf_base64decode"><code class="name flex">
@@ -722,6 +739,7 @@ async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
 <li><code><a title="supertokens_python.utils.send_200_response" href="#supertokens_python.utils.send_200_response">send_200_response</a></code></li>
 <li><code><a title="supertokens_python.utils.send_non_200_response" href="#supertokens_python.utils.send_non_200_response">send_non_200_response</a></code></li>
 <li><code><a title="supertokens_python.utils.send_non_200_response_with_message" href="#supertokens_python.utils.send_non_200_response_with_message">send_non_200_response_with_message</a></code></li>
+<li><code><a title="supertokens_python.utils.send_unauthorised_access_response" href="#supertokens_python.utils.send_unauthorised_access_response">send_unauthorised_access_response</a></code></li>
 <li><code><a title="supertokens_python.utils.utf_base64decode" href="#supertokens_python.utils.utf_base64decode">utf_base64decode</a></code></li>
 <li><code><a title="supertokens_python.utils.utf_base64encode" href="#supertokens_python.utils.utf_base64encode">utf_base64encode</a></code></li>
 </ul>

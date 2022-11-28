@@ -40,7 +40,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union, TypeVar, Awaitable
+from typing import Any, Awaitable, Dict, List, TypeVar, Union
 
 _T = TypeVar(&#34;_T&#34;)
 
@@ -67,6 +67,20 @@ class User:
         self.time_joined = time_joined
         self.third_party_info = third_party_info
         self.phone_number = phone_number
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;recipeId&#34;: self.recipe_id,
+            &#34;user&#34;: {
+                &#34;id&#34;: self.user_id,
+                &#34;email&#34;: self.email,
+                &#34;timeJoined&#34;: self.time_joined,
+                &#34;thirdParty&#34;: None
+                if self.third_party_info is None
+                else self.third_party_info.__dict__,
+                &#34;phoneNumber&#34;: self.phone_number,
+            },
+        }
 
 
 class UsersResponse:
@@ -124,6 +138,26 @@ inheritance.</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="supertokens_python.recipe.dashboard.interfaces.DashboardUsersGetResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.DashboardUsersGetResponse">DashboardUsersGetResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError">FeatureNotEnabledError</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse">UserCountGetAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse">UserDeleteAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse">UserEmailVerifyGetAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse">UserEmailVerifyPutAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse">UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse">UserEmailVerifyTokenPostAPIOkResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError">UserGetAPINoUserFoundError</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse">UserGetAPIOkResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse">UserMetadataGetAPIOkResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse">UserMetadataPutAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse">UserPasswordPutAPIInvalidPasswordErrorResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse">UserPasswordPutAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse">UserPutAPIEmailAlreadyExistsErrorResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse">UserPutAPIInvalidEmailErrorResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse">UserPutAPIInvalidPhoneErrorResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse">UserPutAPIOkResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse">UserPutPhoneAlreadyExistsAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse">UserSessionsGetAPIResponse</a></li>
+<li><a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse" href="recipe/dashboard/interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse">UserSessionsPostAPIResponse</a></li>
 <li><a title="supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.EmailExistsGetOkResult">EmailExistsGetOkResult</a></li>
 <li><a title="supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.GeneratePasswordResetTokenPostOkResult">GeneratePasswordResetTokenPostOkResult</a></li>
 <li><a title="supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse" href="recipe/emailpassword/interfaces.html#supertokens_python.recipe.emailpassword.interfaces.PasswordResetPostInvalidTokenResponse">PasswordResetPostInvalidTokenResponse</a></li>
@@ -259,8 +293,49 @@ inheritance.</p></div>
         self.email = email
         self.time_joined = time_joined
         self.third_party_info = third_party_info
-        self.phone_number = phone_number</code></pre>
+        self.phone_number = phone_number
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;recipeId&#34;: self.recipe_id,
+            &#34;user&#34;: {
+                &#34;id&#34;: self.user_id,
+                &#34;email&#34;: self.email,
+                &#34;timeJoined&#34;: self.time_joined,
+                &#34;thirdParty&#34;: None
+                if self.third_party_info is None
+                else self.third_party_info.__dict__,
+                &#34;phoneNumber&#34;: self.phone_number,
+            },
+        }</code></pre>
 </details>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.types.User.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {
+        &#34;recipeId&#34;: self.recipe_id,
+        &#34;user&#34;: {
+            &#34;id&#34;: self.user_id,
+            &#34;email&#34;: self.email,
+            &#34;timeJoined&#34;: self.time_joined,
+            &#34;thirdParty&#34;: None
+            if self.third_party_info is None
+            else self.third_party_info.__dict__,
+            &#34;phoneNumber&#34;: self.phone_number,
+        },
+    }</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="supertokens_python.types.UsersResponse"><code class="flex name class">
 <span>class <span class="ident">UsersResponse</span></span>
@@ -311,6 +386,9 @@ inheritance.</p></div>
 </li>
 <li>
 <h4><code><a title="supertokens_python.types.User" href="#supertokens_python.types.User">User</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.types.User.to_json" href="#supertokens_python.types.User.to_json">to_json</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.types.UsersResponse" href="#supertokens_python.types.UsersResponse">UsersResponse</a></code></h4>

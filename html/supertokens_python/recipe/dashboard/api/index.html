@@ -39,8 +39,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from .dashboard import handle_dashboard_api
 from .api_key_protector import api_key_protector
+from .dashboard import handle_dashboard_api
+from .userdetails.user_delete import handle_user_delete
+from .userdetails.user_email_verify_get import handle_user_email_verify_get
+from .userdetails.user_email_verify_put import handle_user_email_verify_put
+from .userdetails.user_email_verify_token_post import handle_email_verify_token_post
+from .userdetails.user_get import handle_user_get
+from .userdetails.user_metadata_get import handle_metadata_get
+from .userdetails.user_metadata_put import handle_metadata_put
+from .userdetails.user_password_put import handle_user_password_put
+from .userdetails.user_put import handle_user_put
+from .userdetails.user_sessions_get import handle_sessions_get
+from .userdetails.user_sessions_post import handle_user_sessions_post
 from .users_count_get import handle_users_count_get_api
 from .users_get import handle_users_get_api
 from .validate_key import handle_validate_key_api
@@ -51,6 +62,17 @@ __all__ = [
     &#34;handle_users_count_get_api&#34;,
     &#34;handle_users_get_api&#34;,
     &#34;handle_validate_key_api&#34;,
+    &#34;handle_user_email_verify_get&#34;,
+    &#34;handle_user_get&#34;,
+    &#34;handle_metadata_get&#34;,
+    &#34;handle_sessions_get&#34;,
+    &#34;handle_user_delete&#34;,
+    &#34;handle_user_put&#34;,
+    &#34;handle_user_email_verify_put&#34;,
+    &#34;handle_metadata_put&#34;,
+    &#34;handle_user_sessions_post&#34;,
+    &#34;handle_user_password_put&#34;,
+    &#34;handle_email_verify_token_post&#34;,
 ]</code></pre>
 </details>
 </section>
@@ -62,6 +84,10 @@ __all__ = [
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="supertokens_python.recipe.dashboard.api.implementation" href="implementation.html">supertokens_python.recipe.dashboard.api.implementation</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="supertokens_python.recipe.dashboard.api.userdetails" href="userdetails/index.html">supertokens_python.recipe.dashboard.api.userdetails</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -85,7 +111,7 @@ __all__ = [
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="supertokens_python.recipe.dashboard.api.api_key_protector"><code class="name flex">
-<span>async def <span class="ident">api_key_protector</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions, api_function: Callable[[APIInterface, APIOptions], Awaitable[Optional[BaseResponse]]]) ‑> Optional[BaseResponse]</span>
+<span>async def <span class="ident">api_key_protector</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions, api_function: Callable[[APIInterface, APIOptions], Awaitable[APIResponse]]) ‑> Optional[BaseResponse]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -96,9 +122,7 @@ __all__ = [
 <pre><code class="python">async def api_key_protector(
     api_implementation: APIInterface,
     api_options: APIOptions,
-    api_function: Callable[
-        [APIInterface, APIOptions], Awaitable[Optional[BaseResponse]]
-    ],
+    api_function: Callable[[APIInterface, APIOptions], Awaitable[APIResponse]],
 ) -&gt; Optional[BaseResponse]:
     user_context = default_user_context(api_options.request)
     should_allow_access = await api_options.recipe_implementation.should_allow_access(
@@ -107,10 +131,11 @@ __all__ = [
 
     if should_allow_access is False:
         return send_non_200_response_with_message(
-            &#34;Unauthorized access&#34;, 401, api_options.response
+            &#34;Unauthorised access&#34;, 401, api_options.response
         )
 
-    return await api_function(api_implementation, api_options)</code></pre>
+    response = await api_function(api_implementation, api_options)
+    return send_200_response(response.to_json(), api_options.response)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.handle_dashboard_api"><code class="name flex">
@@ -135,8 +160,562 @@ __all__ = [
     return api_options.response</code></pre>
 </details>
 </dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_email_verify_token_post"><code class="name flex">
+<span>async def <span class="ident">handle_email_verify_token_post</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse">UserEmailVerifyTokenPostAPIOkResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse">UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_email_verify_token_post(
+    _api_interface: APIInterface, api_options: APIOptions
+) -&gt; Union[
+    UserEmailVerifyTokenPostAPIOkResponse,
+    UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse,
+]:
+    request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
+    user_id = request_body.get(&#34;userId&#34;)
+
+    if user_id is None or not isinstance(user_id, str):
+        raise_bad_input_exception(
+            &#34;Required parameter &#39;userId&#39; is missing or has an invalid type&#34;
+        )
+
+    email_response = await EmailVerificationRecipe.get_instance().get_email_for_user_id(
+        user_id, {}
+    )
+
+    if not isinstance(email_response, GetEmailForUserIdOkResult):
+        raise Exception(&#34;Should not come here&#34;)
+
+    email_verification_token = await create_email_verification_token(user_id)
+
+    if isinstance(
+        email_verification_token, CreateEmailVerificationTokenEmailAlreadyVerifiedError
+    ):
+        return UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse()
+
+    assert isinstance(email_verification_token, CreateEmailVerificationTokenOkResult)
+
+    email_verify_link = get_email_verify_link(
+        api_options.app_info, email_verification_token.token, user_id
+    )
+
+    await send_email(
+        VerificationEmailTemplateVars(
+            user=VerificationEmailTemplateVarsUser(user_id, email_response.email),
+            email_verify_link=email_verify_link,
+            user_context={},
+        )
+    )
+
+    return UserEmailVerifyTokenPostAPIOkResponse()</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_metadata_get"><code class="name flex">
+<span>async def <span class="ident">handle_metadata_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse">UserMetadataGetAPIOkResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError">FeatureNotEnabledError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_metadata_get(
+    _api_interface: APIInterface, api_options: APIOptions
+) -&gt; Union[UserMetadataGetAPIOkResponse, FeatureNotEnabledError]:
+    user_id = api_options.request.get_query_param(&#34;userId&#34;)
+
+    if user_id is None:
+        raise_bad_input_exception(&#34;Missing required parameter &#39;userId&#39;&#34;)
+
+    try:
+        UserMetadataRecipe.get_instance()
+    except Exception:
+        return FeatureNotEnabledError()
+
+    metadata_response = await get_user_metadata(user_id)
+    return UserMetadataGetAPIOkResponse(metadata_response.metadata)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_metadata_put"><code class="name flex">
+<span>async def <span class="ident">handle_metadata_put</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse">UserMetadataPutAPIResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_metadata_put(
+    _api_interface: APIInterface, api_options: APIOptions
+) -&gt; UserMetadataPutAPIResponse:
+    request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
+    user_id = request_body.get(&#34;userId&#34;)
+    data = request_body.get(&#34;data&#34;)
+
+    # This is to throw an error early in case the recipe has not been initialised
+    UserMetadataRecipe.get_instance()
+
+    if user_id is None or isinstance(user_id, str) is False:
+        raise_bad_input_exception(
+            &#34;Required parameter &#39;userId&#39; is missing or has an invalid type&#34;
+        )
+
+    if data is None or isinstance(data, str) is False:
+        raise_bad_input_exception(
+            &#34;Required parameter &#39;data&#39; is missing or has an invalid type&#34;
+        )
+
+    parsed_data: Dict[str, Any] = {}
+    try:
+        parsed_data = json.loads(data)
+        if not isinstance(parsed_data, dict):  # type: ignore
+            raise Exception()
+
+    except Exception:
+        raise_bad_input_exception(&#34;&#39;data&#39; must be a valid JSON body&#34;)
+
+    # This API is meant to set the user metadata of a user. We delete the existing data
+    # before updating it because we want to make sure that shallow merging does not result
+    # in the data being incorrect
+    #
+    # For example if the old data is {test: &#34;test&#34;, test2: &#34;test2&#34;} and the user wants to delete
+    # test2 from the data simply calling updateUserMetadata with {test: &#34;test&#34;} would not remove
+    # test2 because of shallow merging.
+    #
+    # Removing first ensures that the final data is exactly what the user wanted it to be
+
+    await clear_user_metadata(user_id)
+    await update_user_metadata(user_id, parsed_data)
+
+    return UserMetadataPutAPIResponse()</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_sessions_get"><code class="name flex">
+<span>async def <span class="ident">handle_sessions_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse">UserSessionsGetAPIResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_sessions_get(
+    _api_interface: APIInterface, api_options: APIOptions
+) -&gt; UserSessionsGetAPIResponse:
+    user_id = api_options.request.get_query_param(&#34;userId&#34;)
+
+    if user_id is None:
+        raise_bad_input_exception(&#34;Missing required parameter &#39;userId&#39;&#34;)
+
+    session_handles = await get_all_session_handles_for_user(user_id)
+    sessions: List[Optional[SessionInfo]] = [None for _ in session_handles]
+
+    async def call_(i: int, session_handle: str):
+        try:
+            session_response = await get_session_information(session_handle)
+            if session_response is not None:
+                sessions[i] = SessionInfo(session_response)
+        except Exception:
+            sessions[i] = None
+
+    session_info_promises = [
+        call_(i, handle) for i, handle in enumerate(session_handles)
+    ]
+
+    await asyncio.gather(*session_info_promises)
+
+    return UserSessionsGetAPIResponse([s for s in sessions if s is not None])</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_user_delete"><code class="name flex">
+<span>async def <span class="ident">handle_user_delete</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse">UserDeleteAPIResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_user_delete(
+    _api_interface: APIInterface, api_options: APIOptions
+) -&gt; UserDeleteAPIResponse:
+    user_id = api_options.request.get_query_param(&#34;userId&#34;)
+
+    if user_id is None:
+        raise_bad_input_exception(&#34;Missing required parameter &#39;userId&#39;&#34;)
+
+    await Supertokens.get_instance().delete_user(user_id)
+
+    return UserDeleteAPIResponse()</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_user_email_verify_get"><code class="name flex">
+<span>async def <span class="ident">handle_user_email_verify_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse">UserEmailVerifyGetAPIResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError">FeatureNotEnabledError</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_user_email_verify_get(
+    _api_interface: APIInterface, api_options: APIOptions
+) -&gt; Union[UserEmailVerifyGetAPIResponse, FeatureNotEnabledError]:
+    req = api_options.request
+    user_id = req.get_query_param(&#34;userId&#34;)
+
+    if user_id is None:
+        raise_bad_input_exception(&#34;Missing required parameter &#39;userId&#39;&#34;)
+
+    try:
+        EmailVerificationRecipe.get_instance()
+    except Exception:
+        return FeatureNotEnabledError()
+
+    is_verified = await is_email_verified(user_id)
+    return UserEmailVerifyGetAPIResponse(is_verified)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_user_email_verify_put"><code class="name flex">
+<span>async def <span class="ident">handle_user_email_verify_put</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse">UserEmailVerifyPutAPIResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_user_email_verify_put(
+    _api_interface: APIInterface, api_options: APIOptions
+) -&gt; UserEmailVerifyPutAPIResponse:
+    request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
+    user_id = request_body.get(&#34;userId&#34;)
+    verified = request_body.get(&#34;verified&#34;)
+
+    if user_id is None or not isinstance(user_id, str):
+        raise_bad_input_exception(
+            &#34;Required parameter &#39;userId&#39; is missing or has an invalid type&#34;
+        )
+
+    if verified is None or not isinstance(verified, bool):
+        raise_bad_input_exception(
+            &#34;Required parameter &#39;verified&#39; is missing or has an invalid type&#34;
+        )
+
+    if verified:
+        token_response = await create_email_verification_token(user_id)
+
+        if isinstance(
+            token_response, CreateEmailVerificationTokenEmailAlreadyVerifiedError
+        ):
+            return UserEmailVerifyPutAPIResponse()
+
+        verify_response = await verify_email_using_token(token_response.token)
+
+        if isinstance(verify_response, VerifyEmailUsingTokenInvalidTokenError):
+            # This should never happen because we consume the token immediately after creating it
+            raise Exception(&#34;Should not come here&#34;)
+
+    else:
+        await unverify_email(user_id)
+
+    return UserEmailVerifyPutAPIResponse()</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_user_get"><code class="name flex">
+<span>async def <span class="ident">handle_user_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError">UserGetAPINoUserFoundError</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse">UserGetAPIOkResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_user_get(
+    _api_interface: APIInterface, api_options: APIOptions
+) -&gt; Union[UserGetAPINoUserFoundError, UserGetAPIOkResponse]:
+    user_id = api_options.request.get_query_param(&#34;userId&#34;)
+    recipe_id = api_options.request.get_query_param(&#34;recipeId&#34;)
+
+    if user_id is None:
+        raise_bad_input_exception(&#34;Missing required parameter &#39;userId&#39;&#34;)
+
+    if recipe_id is None:
+        raise_bad_input_exception(&#34;Missing required parameter &#39;recipeId&#39;&#34;)
+
+    if not is_valid_recipe_id(recipe_id):
+        raise_bad_input_exception(&#34;Invalid recipe id&#34;)
+
+    user_response = await get_user_for_recipe_id(user_id, recipe_id)
+    if user_response is None:
+        return UserGetAPINoUserFoundError()
+
+    user = user_response.user
+
+    try:
+        UserMetadataRecipe.get_instance()
+    except Exception:
+        user.first_name = &#34;FEATURE_NOT_ENABLED&#34;
+        user.last_name = &#34;FEATURE_NOT_ENABLED&#34;
+
+        return UserGetAPIOkResponse(recipe_id, user)
+
+    user_metadata = await get_user_metadata(user_id)
+    first_name = user_metadata.metadata.get(&#34;first_name&#34;, &#34;&#34;)
+    last_name = user_metadata.metadata.get(&#34;last_name&#34;, &#34;&#34;)
+
+    user.first_name = first_name
+    user.last_name = last_name
+
+    return UserGetAPIOkResponse(recipe_id, user)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_user_password_put"><code class="name flex">
+<span>async def <span class="ident">handle_user_password_put</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse">UserPasswordPutAPIResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse">UserPasswordPutAPIInvalidPasswordErrorResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_user_password_put(
+    _api_interface: APIInterface, api_options: APIOptions
+) -&gt; Union[UserPasswordPutAPIResponse, UserPasswordPutAPIInvalidPasswordErrorResponse]:
+    request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
+    user_id = request_body.get(&#34;userId&#34;)
+    new_password = request_body.get(&#34;newPassword&#34;)
+
+    if user_id is None or not isinstance(user_id, str):
+        raise_bad_input_exception(&#34;Missing required parameter &#39;userId&#39;&#34;)
+
+    if new_password is None or not isinstance(new_password, str):
+        raise_bad_input_exception(&#34;Missing required parameter &#39;newPassword&#39;&#34;)
+
+    recipe_to_use: Union[
+        Literal[&#34;emailpassword&#34;, &#34;thirdpartyemailpassword&#34;], None
+    ] = None
+
+    try:
+        EmailPasswordRecipe.get_instance()
+        recipe_to_use = &#34;emailpassword&#34;
+    except Exception:
+        pass
+
+    if recipe_to_use is None:
+        try:
+            ThirdPartyEmailPasswordRecipe.get_instance()
+            recipe_to_use = &#34;thirdpartyemailpassword&#34;
+        except Exception:
+            pass
+
+    if recipe_to_use is None:
+        raise Exception(&#34;Should not come here&#34;)
+
+    async def reset_password(
+        recipe: Any,  # FIXME
+        create_reset_password_token: Callable[
+            [str],
+            Awaitable[
+                Union[CreateResetPasswordOkResult, CreateResetPasswordWrongUserIdError]
+            ],
+        ],
+        reset_password_using_token: Callable[
+            [str, str],
+            Awaitable[
+                Union[
+                    ResetPasswordUsingTokenOkResult,
+                    ResetPasswordUsingTokenInvalidTokenError,
+                ]
+            ],
+        ],
+    ) -&gt; Union[
+        UserPasswordPutAPIResponse, UserPasswordPutAPIInvalidPasswordErrorResponse
+    ]:
+        form_fields: List[NormalisedFormField] = recipe.get_instance().config.sign_up_feature.form_fields  # type: ignore # FIXME?
+        password_form_field = [
+            field for field in form_fields if field.id == FORM_FIELD_PASSWORD_ID
+        ][0]
+
+        password_validation_error = await password_form_field.validate(new_password)
+
+        if password_validation_error is not None:
+            return UserPasswordPutAPIInvalidPasswordErrorResponse(
+                password_validation_error
+            )
+
+        password_reset_token = await create_reset_password_token(user_id)  # type: ignore # FIXME
+
+        if isinstance(password_reset_token, CreateResetPasswordWrongUserIdError):
+            # Techincally it can but its an edge case so we assume that it wont
+            # UNKNOWN_USER_ID_ERROR FIXME
+            raise Exception(&#34;Should never come here&#34;)
+
+        password_reset_response = await reset_password_using_token(
+            password_reset_token.token, new_password
+        )
+
+        if isinstance(
+            password_reset_response, ResetPasswordUsingTokenInvalidTokenError
+        ):
+            # RESET_PASSWORD_INVALID_TOKEN_ERROR
+            raise Exception(&#34;Should not come here&#34;)
+
+        return UserPasswordPutAPIResponse()
+
+    if recipe_to_use == &#34;emailpassword&#34;:
+        return await reset_password(
+            EmailPasswordRecipe,
+            ep_create_reset_password_token,
+            ep_reset_password_using_token,
+        )
+
+    if recipe_to_use == &#34;thirdpartyemailpassword&#34;:
+        return await reset_password(
+            ThirdPartyEmailPasswordRecipe,
+            tpep_create_reset_password_token,
+            tpep_reset_password_using_token,
+        )</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_user_put"><code class="name flex">
+<span>async def <span class="ident">handle_user_put</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse">UserPutAPIOkResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse">UserPutAPIInvalidEmailErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse">UserPutAPIEmailAlreadyExistsErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse">UserPutAPIInvalidPhoneErrorResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse">UserPutPhoneAlreadyExistsAPIResponse</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_user_put(
+    _api_interface: APIInterface, api_options: APIOptions
+) -&gt; Union[
+    UserPutAPIOkResponse,
+    UserPutAPIInvalidEmailErrorResponse,
+    UserPutAPIEmailAlreadyExistsErrorResponse,
+    UserPutAPIInvalidPhoneErrorResponse,
+    UserPutPhoneAlreadyExistsAPIResponse,
+]:
+    request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
+    user_id: Optional[str] = request_body.get(&#34;userId&#34;)
+    recipe_id: Optional[str] = request_body.get(&#34;recipeId&#34;)
+    first_name: Optional[str] = request_body.get(&#34;firstName&#34;)
+    last_name: Optional[str] = request_body.get(&#34;lastName&#34;)
+    email: Optional[str] = request_body.get(&#34;email&#34;)
+    phone: Optional[str] = request_body.get(&#34;phone&#34;)
+
+    if not isinstance(user_id, str):
+        return raise_bad_input_exception(
+            &#34;Required parameter &#39;userId&#39; is missing or has an invalid type&#34;
+        )
+
+    if not isinstance(recipe_id, str):
+        return raise_bad_input_exception(
+            &#34;Required parameter &#39;recipeId&#39; is missing or has an invalid type&#34;
+        )
+
+    if not is_valid_recipe_id(recipe_id):
+        raise_bad_input_exception(&#34;Invalid recipe id&#34;)
+
+    if first_name is None and not isinstance(first_name, str):
+        raise_bad_input_exception(
+            &#34;Required parameter &#39;firstName&#39; is missing or has an invalid type&#34;
+        )
+
+    if last_name is None and not isinstance(last_name, str):
+        raise_bad_input_exception(
+            &#34;Required parameter &#39;lastName&#39; is missing or has an invalid type&#34;
+        )
+
+    if email is None and not isinstance(email, str):
+        raise_bad_input_exception(
+            &#34;Required parameter &#39;email&#39; is missing or has an invalid type&#34;
+        )
+
+    if phone is None and not isinstance(phone, str):
+        raise_bad_input_exception(
+            &#34;Required parameter &#39;phone&#39; is missing or has an invalid type&#34;
+        )
+
+    user_response = await get_user_for_recipe_id(user_id, recipe_id)
+
+    if user_response is None:
+        raise Exception(&#34;Should never come here&#34;)
+
+    first_name = first_name.strip()
+    last_name = last_name.strip()
+    email = email.strip()
+    phone = phone.strip()
+
+    if first_name != &#34;&#34; or last_name != &#34;&#34;:
+        is_recipe_initialized = False
+
+        try:
+            UserMetadataRecipe.get_instance()
+            is_recipe_initialized = True
+        except Exception:
+            pass
+
+        if is_recipe_initialized:
+            metadata_update = {}
+
+            if first_name != &#34;&#34;:
+                metadata_update[&#34;first_name&#34;] = first_name
+
+            if last_name != &#34;&#34;:
+                metadata_update[&#34;last_name&#34;] = last_name
+
+            await update_user_metadata(user_id, metadata_update)
+
+    if email != &#34;&#34;:
+        email_update_response = await update_email_for_recipe_id(
+            user_response.recipe, user_id, email
+        )
+
+        if not isinstance(email_update_response, UserPutAPIOkResponse):
+            return email_update_response
+
+    if phone != &#34;&#34;:
+        phone_update_response = await update_phone_for_recipe_id(
+            user_response.recipe, user_id, phone
+        )
+
+        if not isinstance(phone_update_response, UserPutAPIOkResponse):
+            return phone_update_response
+
+    return UserPutAPIOkResponse()</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.api.handle_user_sessions_post"><code class="name flex">
+<span>async def <span class="ident">handle_user_sessions_post</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> <a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse">UserSessionsPostAPIResponse</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def handle_user_sessions_post(
+    _api_interface: APIInterface, api_options: APIOptions
+) -&gt; UserSessionsPostAPIResponse:
+    request_body: Dict[str, Any] = await api_options.request.json()  # type: ignore
+    session_handles: Union[List[str], Any] = request_body.get(&#34;sessionHandles&#34;)
+
+    if session_handles is None or not isinstance(session_handles, list):
+        return raise_bad_input_exception(
+            &#34;Required parameter &#39;sessionHandles&#39; is missing or has an invalid type&#34;
+        )
+
+    await revoke_multiple_sessions(session_handles)
+    return UserSessionsPostAPIResponse()</code></pre>
+</details>
+</dd>
 <dt id="supertokens_python.recipe.dashboard.api.handle_users_count_get_api"><code class="name flex">
-<span>async def <span class="ident">handle_users_count_get_api</span></span>(<span>_: APIInterface, api_options: APIOptions) ‑> Optional[BaseResponse]</span>
+<span>async def <span class="ident">handle_users_count_get_api</span></span>(<span>_: APIInterface, _api_options: APIOptions) ‑> UserCountGetAPIResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -145,15 +724,14 @@ __all__ = [
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def handle_users_count_get_api(
-    _: APIInterface, api_options: APIOptions
-) -&gt; Optional[BaseResponse]:
+    _: APIInterface, _api_options: APIOptions
+) -&gt; UserCountGetAPIResponse:
     count = await Supertokens.get_instance().get_user_count(include_recipe_ids=None)
-
-    return send_200_response({&#34;status&#34;: &#34;OK&#34;, &#34;count&#34;: count}, api_options.response)</code></pre>
+    return UserCountGetAPIResponse(count=count)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.handle_users_get_api"><code class="name flex">
-<span>async def <span class="ident">handle_users_get_api</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions) ‑> Optional[BaseResponse]</span>
+<span>async def <span class="ident">handle_users_get_api</span></span>(<span>api_implementation: APIInterface, api_options: APIOptions) ‑> APIResponse</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -163,7 +741,7 @@ __all__ = [
 </summary>
 <pre><code class="python">async def handle_users_get_api(
     api_implementation: APIInterface, api_options: APIOptions
-) -&gt; Optional[BaseResponse]:
+) -&gt; APIResponse:
     _ = api_implementation
 
     limit = api_options.request.get_query_param(&#34;limit&#34;)
@@ -190,16 +768,13 @@ __all__ = [
     try:
         UserMetadataRecipe.get_instance()
     except GeneralError:
-        return send_200_response(
-            DashboardUsersGetResponse(
-                users_response.users, users_response.next_pagination_token
-            ).to_json(),
-            api_options.response,
+        return DashboardUsersGetResponse(
+            users_response.users, users_response.next_pagination_token
         )
 
-    updated_users_arr: List[Dict[str, Any]] = DashboardUsersGetResponse(
-        users_response.users, users_response.next_pagination_token
-    ).to_json()[&#34;users&#34;]
+    users_with_metadata: List[UserWithMetadata] = [
+        UserWithMetadata().from_user(user) for user in users_response.users
+    ]
     metadata_fetch_awaitables: List[Awaitable[Any]] = []
 
     async def get_user_metadata_and_update_user(user_idx: int) -&gt; None:
@@ -208,12 +783,9 @@ __all__ = [
         first_name = user_metadata.metadata.get(&#34;first_name&#34;)
         last_name = user_metadata.metadata.get(&#34;last_name&#34;)
 
-        updated_users_arr[user_idx][&#34;user&#34;].update(
-            {
-                &#34;firstName&#34;: first_name,
-                &#34;lastName&#34;: last_name,  # None becomes null which is acceptable for the dashboard.
-            }
-        )
+        # None becomes null which is acceptable for the dashboard.
+        users_with_metadata[user_idx].first_name = first_name
+        users_with_metadata[user_idx].last_name = last_name
 
     # Batch calls to get user metadata:
     for i, _ in enumerate(users_response.users):
@@ -238,13 +810,9 @@ __all__ = [
 
         promise_arr_start_position += batch_size
 
-    return send_200_response(
-        {
-            &#34;status&#34;: &#34;OK&#34;,
-            &#34;users&#34;: updated_users_arr,
-            &#34;nextPaginationToken&#34;: users_response.next_pagination_token,
-        },
-        api_options.response,
+    return DashboardUsersGetResponse(
+        users_with_metadata,
+        users_response.next_pagination_token,
     )</code></pre>
 </details>
 </dd>
@@ -295,6 +863,7 @@ __all__ = [
 <ul>
 <li><code><a title="supertokens_python.recipe.dashboard.api.dashboard" href="dashboard.html">supertokens_python.recipe.dashboard.api.dashboard</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.implementation" href="implementation.html">supertokens_python.recipe.dashboard.api.implementation</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.userdetails" href="userdetails/index.html">supertokens_python.recipe.dashboard.api.userdetails</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.users_count_get" href="users_count_get.html">supertokens_python.recipe.dashboard.api.users_count_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.users_get" href="users_get.html">supertokens_python.recipe.dashboard.api.users_get</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.validate_key" href="validate_key.html">supertokens_python.recipe.dashboard.api.validate_key</a></code></li>
@@ -304,6 +873,17 @@ __all__ = [
 <ul class="">
 <li><code><a title="supertokens_python.recipe.dashboard.api.api_key_protector" href="#supertokens_python.recipe.dashboard.api.api_key_protector">api_key_protector</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_dashboard_api" href="#supertokens_python.recipe.dashboard.api.handle_dashboard_api">handle_dashboard_api</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_email_verify_token_post" href="#supertokens_python.recipe.dashboard.api.handle_email_verify_token_post">handle_email_verify_token_post</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_metadata_get" href="#supertokens_python.recipe.dashboard.api.handle_metadata_get">handle_metadata_get</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_metadata_put" href="#supertokens_python.recipe.dashboard.api.handle_metadata_put">handle_metadata_put</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_sessions_get" href="#supertokens_python.recipe.dashboard.api.handle_sessions_get">handle_sessions_get</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_user_delete" href="#supertokens_python.recipe.dashboard.api.handle_user_delete">handle_user_delete</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_user_email_verify_get" href="#supertokens_python.recipe.dashboard.api.handle_user_email_verify_get">handle_user_email_verify_get</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_user_email_verify_put" href="#supertokens_python.recipe.dashboard.api.handle_user_email_verify_put">handle_user_email_verify_put</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_user_get" href="#supertokens_python.recipe.dashboard.api.handle_user_get">handle_user_get</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_user_password_put" href="#supertokens_python.recipe.dashboard.api.handle_user_password_put">handle_user_password_put</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_user_put" href="#supertokens_python.recipe.dashboard.api.handle_user_put">handle_user_put</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.api.handle_user_sessions_post" href="#supertokens_python.recipe.dashboard.api.handle_user_sessions_post">handle_user_sessions_post</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_users_count_get_api" href="#supertokens_python.recipe.dashboard.api.handle_users_count_get_api">handle_users_count_get_api</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_users_get_api" href="#supertokens_python.recipe.dashboard.api.handle_users_get_api">handle_users_get_api</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.api.handle_validate_key_api" href="#supertokens_python.recipe.dashboard.api.handle_validate_key_api">handle_validate_key_api</a></code></li>

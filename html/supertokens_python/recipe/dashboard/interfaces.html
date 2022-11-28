@@ -42,15 +42,27 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Callable, Awaitable, Optional, List
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+
+from supertokens_python.recipe.session.interfaces import SessionInformationResult
+from supertokens_python.types import User
 
 from ...supertokens import AppInfo
-
-from .utils import DashboardConfig
-from ...types import User, APIResponse
+from ...types import APIResponse
+from .utils import DashboardConfig, UserWithMetadata
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
+
+
+class SessionInfo:
+    def __init__(self, info: SessionInformationResult) -&gt; None:
+        self.session_handle = info.session_handle
+        self.user_id = info.user_id
+        self.session_data = info.session_data
+        self.expiry = info.expiry
+        self.access_token_payload = info.access_token_payload
+        self.time_created = info.time_created
 
 
 class RecipeInterface(ABC):
@@ -100,32 +112,200 @@ class APIInterface:
 class DashboardUsersGetResponse(APIResponse):
     status: str = &#34;OK&#34;
 
-    def __init__(self, users: List[User], next_pagination_token: Optional[str]):
+    def __init__(
+        self,
+        users: Union[List[User], List[UserWithMetadata]],
+        next_pagination_token: Optional[str],
+    ):
         self.users = users
         self.next_pagination_token = next_pagination_token
 
     def to_json(self) -&gt; Dict[str, Any]:
-        users_json = [
-            {
-                &#34;recipeId&#34;: u.recipe_id,
-                &#34;user&#34;: {
-                    &#34;id&#34;: u.user_id,
-                    &#34;email&#34;: u.email,
-                    &#34;timeJoined&#34;: u.time_joined,
-                    &#34;thirdParty&#34;: None
-                    if u.third_party_info is None
-                    else u.third_party_info.__dict__,
-                    &#34;phoneNumber&#34;: u.phone_number,
-                },
-            }
-            for u in self.users
-        ]
-
         return {
             &#34;status&#34;: self.status,
-            &#34;users&#34;: users_json,
+            &#34;users&#34;: [u.to_json() for u in self.users],
             &#34;nextPaginationToken&#34;: self.next_pagination_token,
-        }</code></pre>
+        }
+
+
+class UserCountGetAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def __init__(self, count: int):
+        self.count = count
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;count&#34;: self.count}
+
+
+class UserGetAPIOkResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def __init__(self, recipe_id: str, user: UserWithMetadata):
+        self.recipe_id = recipe_id
+        self.user = user
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;status&#34;: self.status,
+            &#34;recipeId&#34;: self.recipe_id,
+            &#34;user&#34;: self.user.to_json(),
+        }
+
+
+class UserGetAPINoUserFoundError(APIResponse):
+    status: str = &#34;NO_USER_FOUND_ERROR&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}
+
+
+class FeatureNotEnabledError(APIResponse):
+    status: str = &#34;FEATURE_NOT_ENABLED_ERROR&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}
+
+
+class UserMetadataGetAPIOkResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def __init__(self, data: Dict[str, Any]) -&gt; None:
+        self.data = data
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: &#34;OK&#34;, &#34;data&#34;: self.data}
+
+
+class UserSessionsGetAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def __init__(self, sessions: List[SessionInfo]):
+        self.sessions = [
+            {
+                &#34;accessTokenPayload&#34;: s.access_token_payload,
+                &#34;expiry&#34;: s.expiry,
+                &#34;sessionData&#34;: s.session_data,
+                &#34;status&#34;: &#34;OK&#34;,
+                &#34;timeCreated&#34;: s.time_created,
+                &#34;userId&#34;: s.user_id,
+                &#34;sessionHandle&#34;: s.session_handle,
+            }
+            for s in sessions
+        ]
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;sessions&#34;: self.sessions}
+
+
+class UserEmailVerifyGetAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def __init__(self, is_verified: bool):
+        self.is_verified = is_verified
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;isVerified&#34;: self.is_verified}
+
+
+class UserDeleteAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}
+
+
+class UserEmailVerifyPutAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}
+
+
+class UserPasswordPutAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}
+
+
+class UserPasswordPutAPIInvalidPasswordErrorResponse(APIResponse):
+    status: str = &#34;INVALID_PASSWORD_ERROR&#34;
+
+    def __init__(self, error: str) -&gt; None:
+        self.error = error
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}
+
+
+class UserSessionsPostAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}
+
+
+class UserEmailVerifyTokenPostAPIOkResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}
+
+
+class UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse(APIResponse):
+    status: str = &#34;EMAIL_ALREADY_VERIFIED_ERROR&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}
+
+
+class UserMetadataPutAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}
+
+
+class UserPutAPIOkResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}
+
+
+class UserPutAPIInvalidEmailErrorResponse(APIResponse):
+    status: str = &#34;INVALID_EMAIL_ERROR&#34;
+
+    def __init__(self, error: str) -&gt; None:
+        self.error = error
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}
+
+
+class UserPutAPIEmailAlreadyExistsErrorResponse(APIResponse):
+    status: str = &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}
+
+
+class UserPutPhoneAlreadyExistsAPIResponse(APIResponse):
+    status: str = &#34;PHONE_ALREADY_EXISTS_ERROR&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}
+
+
+class UserPutAPIInvalidPhoneErrorResponse(APIResponse):
+    status: str = &#34;INVALID_PHONE_ERROR&#34;
+
+    def __init__(self, error: str) -&gt; None:
+        self.error = error
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
 </details>
 </section>
 <section>
@@ -188,7 +368,7 @@ class DashboardUsersGetResponse(APIResponse):
 </dd>
 <dt id="supertokens_python.recipe.dashboard.interfaces.DashboardUsersGetResponse"><code class="flex name class">
 <span>class <span class="ident">DashboardUsersGetResponse</span></span>
-<span>(</span><span>users: List[User], next_pagination_token: Optional[str])</span>
+<span>(</span><span>users: Union[List[User], List[UserWithMetadata]], next_pagination_token: Optional[str])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -200,30 +380,18 @@ inheritance.</p></div>
 <pre><code class="python">class DashboardUsersGetResponse(APIResponse):
     status: str = &#34;OK&#34;
 
-    def __init__(self, users: List[User], next_pagination_token: Optional[str]):
+    def __init__(
+        self,
+        users: Union[List[User], List[UserWithMetadata]],
+        next_pagination_token: Optional[str],
+    ):
         self.users = users
         self.next_pagination_token = next_pagination_token
 
     def to_json(self) -&gt; Dict[str, Any]:
-        users_json = [
-            {
-                &#34;recipeId&#34;: u.recipe_id,
-                &#34;user&#34;: {
-                    &#34;id&#34;: u.user_id,
-                    &#34;email&#34;: u.email,
-                    &#34;timeJoined&#34;: u.time_joined,
-                    &#34;thirdParty&#34;: None
-                    if u.third_party_info is None
-                    else u.third_party_info.__dict__,
-                    &#34;phoneNumber&#34;: u.phone_number,
-                },
-            }
-            for u in self.users
-        ]
-
         return {
             &#34;status&#34;: self.status,
-            &#34;users&#34;: users_json,
+            &#34;users&#34;: [u.to_json() for u in self.users],
             &#34;nextPaginationToken&#34;: self.next_pagination_token,
         }</code></pre>
 </details>
@@ -251,27 +419,56 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
-    users_json = [
-        {
-            &#34;recipeId&#34;: u.recipe_id,
-            &#34;user&#34;: {
-                &#34;id&#34;: u.user_id,
-                &#34;email&#34;: u.email,
-                &#34;timeJoined&#34;: u.time_joined,
-                &#34;thirdParty&#34;: None
-                if u.third_party_info is None
-                else u.third_party_info.__dict__,
-                &#34;phoneNumber&#34;: u.phone_number,
-            },
-        }
-        for u in self.users
-    ]
-
     return {
         &#34;status&#34;: self.status,
-        &#34;users&#34;: users_json,
+        &#34;users&#34;: [u.to_json() for u in self.users],
         &#34;nextPaginationToken&#34;: self.next_pagination_token,
     }</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError"><code class="flex name class">
+<span>class <span class="ident">FeatureNotEnabledError</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class FeatureNotEnabledError(APIResponse):
+    status: str = &#34;FEATURE_NOT_ENABLED_ERROR&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status}</code></pre>
 </details>
 </dd>
 </dl>
@@ -348,6 +545,933 @@ async def should_allow_access(
 </dd>
 </dl>
 </dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.SessionInfo"><code class="flex name class">
+<span>class <span class="ident">SessionInfo</span></span>
+<span>(</span><span>info: SessionInformationResult)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SessionInfo:
+    def __init__(self, info: SessionInformationResult) -&gt; None:
+        self.session_handle = info.session_handle
+        self.user_id = info.user_id
+        self.session_data = info.session_data
+        self.expiry = info.expiry
+        self.access_token_payload = info.access_token_payload
+        self.time_created = info.time_created</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse"><code class="flex name class">
+<span>class <span class="ident">UserCountGetAPIResponse</span></span>
+<span>(</span><span>count: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserCountGetAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def __init__(self, count: int):
+        self.count = count
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;count&#34;: self.count}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status, &#34;count&#34;: self.count}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse"><code class="flex name class">
+<span>class <span class="ident">UserDeleteAPIResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserDeleteAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse"><code class="flex name class">
+<span>class <span class="ident">UserEmailVerifyGetAPIResponse</span></span>
+<span>(</span><span>is_verified: bool)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserEmailVerifyGetAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def __init__(self, is_verified: bool):
+        self.is_verified = is_verified
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;isVerified&#34;: self.is_verified}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status, &#34;isVerified&#34;: self.is_verified}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse"><code class="flex name class">
+<span>class <span class="ident">UserEmailVerifyPutAPIResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserEmailVerifyPutAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse"><code class="flex name class">
+<span>class <span class="ident">UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse(APIResponse):
+    status: str = &#34;EMAIL_ALREADY_VERIFIED_ERROR&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse"><code class="flex name class">
+<span>class <span class="ident">UserEmailVerifyTokenPostAPIOkResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserEmailVerifyTokenPostAPIOkResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError"><code class="flex name class">
+<span>class <span class="ident">UserGetAPINoUserFoundError</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserGetAPINoUserFoundError(APIResponse):
+    status: str = &#34;NO_USER_FOUND_ERROR&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse"><code class="flex name class">
+<span>class <span class="ident">UserGetAPIOkResponse</span></span>
+<span>(</span><span>recipe_id: str, user: UserWithMetadata)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserGetAPIOkResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def __init__(self, recipe_id: str, user: UserWithMetadata):
+        self.recipe_id = recipe_id
+        self.user = user
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {
+            &#34;status&#34;: self.status,
+            &#34;recipeId&#34;: self.recipe_id,
+            &#34;user&#34;: self.user.to_json(),
+        }</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {
+        &#34;status&#34;: self.status,
+        &#34;recipeId&#34;: self.recipe_id,
+        &#34;user&#34;: self.user.to_json(),
+    }</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse"><code class="flex name class">
+<span>class <span class="ident">UserMetadataGetAPIOkResponse</span></span>
+<span>(</span><span>data: Dict[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserMetadataGetAPIOkResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def __init__(self, data: Dict[str, Any]) -&gt; None:
+        self.data = data
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: &#34;OK&#34;, &#34;data&#34;: self.data}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: &#34;OK&#34;, &#34;data&#34;: self.data}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse"><code class="flex name class">
+<span>class <span class="ident">UserMetadataPutAPIResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserMetadataPutAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse"><code class="flex name class">
+<span>class <span class="ident">UserPasswordPutAPIInvalidPasswordErrorResponse</span></span>
+<span>(</span><span>error: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserPasswordPutAPIInvalidPasswordErrorResponse(APIResponse):
+    status: str = &#34;INVALID_PASSWORD_ERROR&#34;
+
+    def __init__(self, error: str) -&gt; None:
+        self.error = error
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse"><code class="flex name class">
+<span>class <span class="ident">UserPasswordPutAPIResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserPasswordPutAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse"><code class="flex name class">
+<span>class <span class="ident">UserPutAPIEmailAlreadyExistsErrorResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserPutAPIEmailAlreadyExistsErrorResponse(APIResponse):
+    status: str = &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse"><code class="flex name class">
+<span>class <span class="ident">UserPutAPIInvalidEmailErrorResponse</span></span>
+<span>(</span><span>error: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserPutAPIInvalidEmailErrorResponse(APIResponse):
+    status: str = &#34;INVALID_EMAIL_ERROR&#34;
+
+    def __init__(self, error: str) -&gt; None:
+        self.error = error
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse"><code class="flex name class">
+<span>class <span class="ident">UserPutAPIInvalidPhoneErrorResponse</span></span>
+<span>(</span><span>error: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserPutAPIInvalidPhoneErrorResponse(APIResponse):
+    status: str = &#34;INVALID_PHONE_ERROR&#34;
+
+    def __init__(self, error: str) -&gt; None:
+        self.error = error
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status, &#34;error&#34;: self.error}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse"><code class="flex name class">
+<span>class <span class="ident">UserPutAPIOkResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserPutAPIOkResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse"><code class="flex name class">
+<span>class <span class="ident">UserPutPhoneAlreadyExistsAPIResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserPutPhoneAlreadyExistsAPIResponse(APIResponse):
+    status: str = &#34;PHONE_ALREADY_EXISTS_ERROR&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse"><code class="flex name class">
+<span>class <span class="ident">UserSessionsGetAPIResponse</span></span>
+<span>(</span><span>sessions: List[<a title="supertokens_python.recipe.dashboard.interfaces.SessionInfo" href="#supertokens_python.recipe.dashboard.interfaces.SessionInfo">SessionInfo</a>])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserSessionsGetAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def __init__(self, sessions: List[SessionInfo]):
+        self.sessions = [
+            {
+                &#34;accessTokenPayload&#34;: s.access_token_payload,
+                &#34;expiry&#34;: s.expiry,
+                &#34;sessionData&#34;: s.session_data,
+                &#34;status&#34;: &#34;OK&#34;,
+                &#34;timeCreated&#34;: s.time_created,
+                &#34;userId&#34;: s.user_id,
+                &#34;sessionHandle&#34;: s.session_handle,
+            }
+            for s in sessions
+        ]
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status, &#34;sessions&#34;: self.sessions}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status, &#34;sessions&#34;: self.sessions}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse"><code class="flex name class">
+<span>class <span class="ident">UserSessionsPostAPIResponse</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserSessionsPostAPIResponse(APIResponse):
+    status: str = &#34;OK&#34;
+
+    def to_json(self) -&gt; Dict[str, Any]:
+        return {&#34;status&#34;: self.status}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="supertokens_python.types.APIResponse" href="../../types.html#supertokens_python.types.APIResponse">APIResponse</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse.status"><code class="name">var <span class="ident">status</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self) -&gt; Dict[str, Any]:
+    return {&#34;status&#34;: self.status}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 </dl>
 </section>
 </article>
@@ -378,10 +1502,153 @@ async def should_allow_access(
 </ul>
 </li>
 <li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError" href="#supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError">FeatureNotEnabledError</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError.status" href="#supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError.to_json" href="#supertokens_python.recipe.dashboard.interfaces.FeatureNotEnabledError.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="supertokens_python.recipe.dashboard.interfaces.RecipeInterface" href="#supertokens_python.recipe.dashboard.interfaces.RecipeInterface">RecipeInterface</a></code></h4>
 <ul class="">
 <li><code><a title="supertokens_python.recipe.dashboard.interfaces.RecipeInterface.get_dashboard_bundle_location" href="#supertokens_python.recipe.dashboard.interfaces.RecipeInterface.get_dashboard_bundle_location">get_dashboard_bundle_location</a></code></li>
 <li><code><a title="supertokens_python.recipe.dashboard.interfaces.RecipeInterface.should_allow_access" href="#supertokens_python.recipe.dashboard.interfaces.RecipeInterface.should_allow_access">should_allow_access</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.SessionInfo" href="#supertokens_python.recipe.dashboard.interfaces.SessionInfo">SessionInfo</a></code></h4>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse">UserCountGetAPIResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserCountGetAPIResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse">UserDeleteAPIResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserDeleteAPIResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse">UserEmailVerifyGetAPIResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyGetAPIResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse">UserEmailVerifyPutAPIResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyPutAPIResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse">UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIEmailAlreadyVerifiedErrorResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse">UserEmailVerifyTokenPostAPIOkResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserEmailVerifyTokenPostAPIOkResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError" href="#supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError">UserGetAPINoUserFoundError</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError.status" href="#supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse">UserGetAPIOkResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse">UserMetadataGetAPIOkResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserMetadataGetAPIOkResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse">UserMetadataPutAPIResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserMetadataPutAPIResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse">UserPasswordPutAPIInvalidPasswordErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIInvalidPasswordErrorResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse">UserPasswordPutAPIResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserPasswordPutAPIResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse">UserPutAPIEmailAlreadyExistsErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserPutAPIEmailAlreadyExistsErrorResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse">UserPutAPIInvalidEmailErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidEmailErrorResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse">UserPutAPIInvalidPhoneErrorResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserPutAPIInvalidPhoneErrorResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse">UserPutAPIOkResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserPutAPIOkResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse">UserPutPhoneAlreadyExistsAPIResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserPutPhoneAlreadyExistsAPIResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse">UserSessionsGetAPIResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserSessionsGetAPIResponse.to_json">to_json</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse" href="#supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse">UserSessionsPostAPIResponse</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse.status" href="#supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse.status">status</a></code></li>
+<li><code><a title="supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse.to_json" href="#supertokens_python.recipe.dashboard.interfaces.UserSessionsPostAPIResponse.to_json">to_json</a></code></li>
 </ul>
 </li>
 </ul>
