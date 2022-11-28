@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
+## [0.11.8] - 2022-11-28
+
 ### Added:
 -   APIs for user details to the dashboard recipe
 
