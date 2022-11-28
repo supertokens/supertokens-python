@@ -22,5 +22,3 @@ RID_HEADER_KEY = "rid"
 ID_REFRESH_TOKEN_HEADER_SET_KEY = "id-refresh-token"
 ID_REFRESH_TOKEN_HEADER_GET_KEY = "id-refresh-token"
 ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers"
-
-available_token_transfer_methods = ["cookie", "header"]
