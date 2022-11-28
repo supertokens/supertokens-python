@@ -6,7 +6,6 @@ from supertokens_python.recipe.session.asyncio import (
     get_all_session_handles_for_user,
     get_session_information,
 )
-from supertokens_python.recipe.session.interfaces import SessionInformationResult
 
 from ...interfaces import (
     APIInterface,
