@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 SESSION_REFRESH = "/session/refresh"
 SIGNOUT = "/signout"
 ACCESS_TOKEN_COOKIE_KEY = "sAccessToken"
@@ -22,3 +23,5 @@ RID_HEADER_KEY = "rid"
 ID_REFRESH_TOKEN_HEADER_SET_KEY = "id-refresh-token"
 ID_REFRESH_TOKEN_HEADER_GET_KEY = "id-refresh-token"
 ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers"
+
+available_token_transfer_methods = ["cookie", "header"]

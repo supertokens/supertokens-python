@@ -11,12 +11,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from datetime import datetime
 from typing import Any, Dict, List, TypeVar, Union
 
 from supertokens_python.recipe.session.exceptions import (
     raise_invalid_claims_exception,
     raise_unauthorised_exception,
 )
+from .cookie_and_header import set_token
 
 from .interfaces import SessionClaim, SessionClaimValidator, SessionContainer
 
@@ -30,7 +32,7 @@ class Session(SessionContainer):
         await self.recipe_implementation.revoke_session(
             self.session_handle, user_context
         )
-        self.remove_cookies = True
+        self.remove_tokens = True
 
     async def get_session_data(
         self, user_context: Union[Dict[str, Any], None] = None

@@ -40,7 +40,7 @@ def verify_session(
         user_context = {}
 
     def session_verify(f: _T) -> _T:
-        from django.http import HttpRequest
+        from django.http import HttpRequest, HttpResponse
 
         @wraps(f)
         async def wrapped_function(request: HttpRequest, *args: Any, **kwargs: Any):
@@ -48,9 +48,11 @@ def verify_session(
 
             try:
                 baseRequest = DjangoRequest(request)
+                baseResponse = DjangoResponse(HttpResponse())
                 recipe = SessionRecipe.get_instance()
                 session = await recipe.verify_session(
                     baseRequest,
+                    baseResponse,
                     anti_csrf_check,
                     session_required,
                     override_global_claim_validators,
@@ -62,7 +64,8 @@ def verify_session(
                     baseRequest.set_session_as_none()
                 else:
                     baseRequest.set_session(session)
-                return await f(baseRequest.request, *args, **kwargs)
+                response: HttpResponse = await f(baseRequest.request, *args, **kwargs)
+                return response
             except SuperTokensError as e:
                 response = DjangoResponse(JsonResponse({}))
                 result = await Supertokens.get_instance().handle_supertokens_error(

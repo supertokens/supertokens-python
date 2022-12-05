@@ -42,6 +42,7 @@ _T = TypeVar("_T")
 
 async def create_new_session(
     request: Any,
+    response: Any,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data: Union[Dict[str, Any], None] = None,
@@ -68,8 +69,14 @@ async def create_new_session(
             SessionRecipe.get_instance().app_info.framework
         ].wrap_request(request)
 
+    if not hasattr(response, "wrapper_used") or not response.wrapper_used:
+        response = FRAMEWORKS[
+            SessionRecipe.get_instance().app_info.framework
+        ].wrap_response(response)
+
     return await SessionRecipe.get_instance().recipe_implementation.create_new_session(
         request,
+        response,
         user_id,
         final_access_token_payload,
         session_data,
@@ -237,6 +244,7 @@ async def remove_claim(
 
 async def get_session(
     request: Any,
+    response: Any,
     anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
     override_global_claim_validators: Optional[
@@ -257,6 +265,7 @@ async def get_session(
     session_recipe_impl = SessionRecipe.get_instance().recipe_implementation
     session = await session_recipe_impl.get_session(
         request,
+        response,
         anti_csrf_check,
         session_required,
         user_context,
@@ -272,7 +281,7 @@ async def get_session(
 
 
 async def refresh_session(
-    request: Any, user_context: Union[None, Dict[str, Any]] = None
+    request: Any, response: Any, user_context: Union[None, Dict[str, Any]] = None
 ) -> SessionContainer:
     if user_context is None:
         user_context = {}
@@ -280,8 +289,13 @@ async def refresh_session(
         request = FRAMEWORKS[
             SessionRecipe.get_instance().app_info.framework
         ].wrap_request(request)
+    if not hasattr(response, "wrapper_used") or not response.wrapper_used:
+        response = FRAMEWORKS[
+            SessionRecipe.get_instance().app_info.framework
+        ].wrap_response(response)
+
     return await SessionRecipe.get_instance().recipe_implementation.refresh_session(
-        request, user_context
+        request, response, user_context
     )
 
 

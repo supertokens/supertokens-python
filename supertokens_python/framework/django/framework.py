@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 from supertokens_python.framework.types import Framework
 
 if TYPE_CHECKING:
-    from django.http import HttpRequest
+    from django.http import HttpRequest, HttpResponse
 
 
 class DjangoFramework(Framework):
@@ -27,3 +27,8 @@ class DjangoFramework(Framework):
         from supertokens_python.framework.django.django_request import DjangoRequest
 
         return DjangoRequest(unwrapped)
+
+    def wrap_response(self, unwrapped: HttpResponse):
+        from supertokens_python.framework.django.django_response import DjangoResponse
+
+        return DjangoResponse(unwrapped)

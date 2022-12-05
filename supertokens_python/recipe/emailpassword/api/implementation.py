@@ -169,7 +169,10 @@ class APIImplementation(APIInterface):
 
         user = result.user
         session = await create_new_session(
-            api_options.request, user.user_id, user_context=user_context
+            api_options.request,
+            api_options.response,
+            user.user_id,
+            user_context=user_context,
         )
         return SignInPostOkResult(user, session)
 
@@ -204,6 +207,9 @@ class APIImplementation(APIInterface):
 
         user = result.user
         session = await create_new_session(
-            api_options.request, user.user_id, user_context=user_context
+            api_options.request,
+            api_options.response,
+            user.user_id,
+            user_context=user_context,
         )
         return SignUpPostOkResult(user, session)

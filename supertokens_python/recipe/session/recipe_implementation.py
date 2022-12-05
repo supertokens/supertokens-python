@@ -14,53 +14,61 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, Optional
+
 from supertokens_python.framework.request import BaseRequest
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 from supertokens_python.utils import (
     execute_async,
-    frontend_has_interceptor,
     get_timestamp_ms,
     normalise_http_method,
     resolve,
 )
+
+from ...framework import BaseResponse
+from ...types import MaybeAwaitable
 from . import session_functions
+from .access_token import validate_access_token_structure
 from .cookie_and_header import (
-    get_access_token_from_cookie,
+    clear_session,
     get_anti_csrf_header,
-    get_id_refresh_token_from_cookie,
-    get_refresh_token_from_cookie,
     get_rid_header,
+    get_token,
+    set_cookie,
+    set_token,
 )
-from .exceptions import raise_try_refresh_token_exception, raise_unauthorised_exception
+from .exceptions import (
+    TokenTheftError,
+    UnauthorisedError,
+    raise_try_refresh_token_exception,
+    raise_unauthorised_exception,
+)
 from .interfaces import (
     AccessTokenObj,
+    ClaimsValidationResult,
+    GetClaimValueOkResult,
+    JSONObject,
     RecipeInterface,
     RegenerateAccessTokenOkResult,
     SessionClaim,
     SessionClaimValidator,
+    SessionDoesNotExistError,
     SessionInformationResult,
     SessionObj,
-    ClaimsValidationResult,
-    SessionDoesNotExistError,
-    JSONObject,
-    GetClaimValueOkResult,
 )
+from .jwt import ParsedJWTInfo, parse_jwt_without_signature_verification
 from .session_class import Session
-from ...types import MaybeAwaitable
-from .utils import (
-    SessionConfig,
-    validate_claims_in_payload,
-)
+from .utils import SessionConfig, TokenTransferMethod, validate_claims_in_payload
 
 if TYPE_CHECKING:
     from typing import List, Union
-
+    from supertokens_python import AppInfo
     from supertokens_python.querier import Querier
 
-
+from .constants import available_token_transfer_methods
 from .interfaces import SessionContainer
 
 
@@ -84,11 +92,15 @@ class HandshakeInfo:
         ]
 
 
+LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken"
+
+
 class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-methods
-    def __init__(self, querier: Querier, config: SessionConfig):
+    def __init__(self, querier: Querier, config: SessionConfig, app_info: AppInfo):
         super().__init__()
         self.querier = querier
         self.config = config
+        self.app_info = app_info
         self.handshake_info: Union[HandshakeInfo, None] = None
 
         async def call_get_handshake_info():
@@ -147,27 +159,57 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     async def create_new_session(
         self,
         request: BaseRequest,
+        response: BaseResponse,
         user_id: str,
         access_token_payload: Union[None, Dict[str, Any]],
         session_data: Union[None, Dict[str, Any]],
         user_context: Dict[str, Any],
     ) -> SessionContainer:
-        session = await session_functions.create_new_session(
-            self, user_id, access_token_payload, session_data
+        log_debug_message("createNewSession: Started")
+        output_transfer_method = self.config.get_token_transfer_method(
+            request, True, user_context
         )
+        if output_transfer_method == "any":
+            output_transfer_method = "header"
+
+        log_debug_message(
+            "createNewSession: using transfer method %s", output_transfer_method
+        )
+
+        disable_anti_csrf = output_transfer_method == "header"
+
+        session = await session_functions.create_new_session(
+            self,
+            user_id,
+            disable_anti_csrf,
+            access_token_payload,
+            session_data,
+        )
+
+        transfer_methods: List[TokenTransferMethod] = available_token_transfer_methods  # type: ignore
+
+        for transfer_method in transfer_methods:
+            if (
+                transfer_method != output_transfer_method
+                and get_token(request, "access", transfer_method) is not None
+            ):
+                clear_session(self.config, response, transfer_method)
+
         access_token = session["accessToken"]
         refresh_token = session["refreshToken"]
-        id_refresh_token = session["idRefreshToken"]
+        # id_refresh_token = session["idRefreshToken"]
+
         new_session = Session(
             self,
             access_token["token"],
             session["session"]["handle"],
             session["session"]["userId"],
             session["session"]["userDataInJWT"],
+            output_transfer_method,
         )
         new_session.new_access_token_info = access_token
         new_session.new_refresh_token_info = refresh_token
-        new_session.new_id_refresh_token_info = id_refresh_token
+        # new_session.new_id_refresh_token_info = id_refresh_token
         if "antiCsrfToken" in session and session["antiCsrfToken"] is not None:
             new_session.new_anti_csrf_token = session["antiCsrfToken"]
         request.set_session(new_session)
@@ -234,126 +276,267 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
     async def get_session(
         self,
         request: BaseRequest,
+        response: BaseResponse,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
         user_context: Dict[str, Any],
     ) -> Optional[SessionContainer]:
         log_debug_message("getSession: Started")
 
-        log_debug_message(
-            "getSession: rid in header: %s", str(frontend_has_interceptor(request))
-        )
-        log_debug_message("getSession: request method: %s", request.method())
+        # This token isn't handled by getToken to limit the scope of this legacy/migration code
+        if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
+            # This could create a spike on refresh calls during the update of the backend SDK
+            raise_try_refresh_token_exception(
+                "using legacy session, please call the refresh API"
+            )
 
-        id_refresh_token = get_id_refresh_token_from_cookie(request)
-        if id_refresh_token is None:
-            if not session_required:
+        session_optional = not session_required
+        log_debug_message("getSession: optional validation: %s", session_optional)
+
+        access_tokens: Dict[TokenTransferMethod, ParsedJWTInfo] = {}
+
+        # FIXME Find a cleaner way. This is unnecessary because of Literal
+        transfer_methods: List[TokenTransferMethod] = available_token_transfer_methods  # type: ignore
+
+        # We check all token transfer methods for available access tokens
+        for transfer_method in transfer_methods:
+            token_string = get_token(request, "access", transfer_method)
+
+            if token_string is not None:
+                try:
+                    info = parse_jwt_without_signature_verification(token_string)
+                    validate_access_token_structure(info.payload)
+                    log_debug_message(
+                        "getSession: got access token from %s", transfer_method
+                    )
+                    access_tokens[transfer_method] = info
+                except Exception:
+                    log_debug_message(
+                        "getSession: ignoring token in %s, because it doesn't match our access token structure",
+                        transfer_method,
+                    )
+
+        allowed_transfer_method = self.config.get_token_transfer_method(
+            request, False, user_context
+        )
+        request_transfer_method: TokenTransferMethod
+        access_token: Union[ParsedJWTInfo, None]
+
+        if (
+            allowed_transfer_method == "any" or allowed_transfer_method == "header"
+        ) and access_tokens.get("header") is not None:
+            log_debug_message("getSession: using header transfer method")
+            request_transfer_method = "header"
+            access_token = access_tokens["header"]
+        elif (
+            allowed_transfer_method == "any" or allowed_transfer_method == "cookie"
+        ) and access_tokens.get("cookie") is not None:
+            log_debug_message("getSession: using header transfer method")
+            request_transfer_method = "cookie"
+            access_token = access_tokens["cookie"]
+        else:
+            if session_optional:
                 log_debug_message(
-                    "getSession: returning None because idRefreshToken is undefined and session_required is false"
+                    "getSession: returning undefined because access_token is None and session_required is False"
                 )
+                # there is no session that exists here, and the user wants session verification
+                # to be optional. So we return None
                 return None
+
             log_debug_message(
-                "getSession: UNAUTHORISED because idRefreshToken from cookies is undefined"
+                "getSession: UNAUTHORIZED because access_token in request is None"
             )
+            # we do not clear the session here because of a race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
             raise_unauthorised_exception(
-                "Session does not exist. Are you sending the session tokens in the request as cookies?",
-                False,
+                "Session does not exist. Are you sending the session tokens in the request as with the appropriate token transfer method?",
+                clear_tokens=False,
             )
-        access_token: Union[str, None] = get_access_token_from_cookie(request)
-        if access_token is None:
-            if (
-                session_required is True
-                or frontend_has_interceptor(request)
-                or normalise_http_method(request.method()) == "get"
-            ):
+
+        try:
+            anti_csrf_token = get_anti_csrf_header(request)
+            do_anti_csrf_check = anti_csrf_check
+
+            if do_anti_csrf_check is None:
+                do_anti_csrf_check = normalise_http_method(request.method()) != "get"
+            if request_transfer_method == "header":
+                do_anti_csrf_check = False
+            log_debug_message(
+                "getSession: Value of doAntiCsrfCheck is: %s", do_anti_csrf_check
+            )
+
+            new_session = await session_functions.get_session(
+                self,
+                access_token,
+                anti_csrf_token,
+                do_anti_csrf_check,
+                get_rid_header(request) is not None,
+            )
+
+            access_token_string = access_token.raw_token_string
+            if new_session.get("accessToken") is not None:
+                # We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+                # This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+                # Even if the token is expired the presence of the token indicates that the user could have a valid refresh
+                # Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough
+                set_token(
+                    self.config,
+                    response,
+                    "access",
+                    new_session["acessToken"]["token"],
+                    int(datetime.now().timestamp()) + 3153600000000,
+                    request_transfer_method,
+                )
+                access_token_string = new_session["accessToken"]["token"]
+
+            log_debug_message("getSession: Success!")
+            session = Session(
+                self,
+                access_token_string,
+                new_session["session"]["handle"],
+                new_session["session"]["userId"],
+                new_session["session"]["userDataInJWT"],
+                request_transfer_method,
+            )
+            if "accessToken" in new_session:
+                session.new_access_token_info = new_session["accessToken"]
+            if "refreshToken" in new_session:
+                session.new_refresh_token_info = new_session["refreshToken"]
+
+            request.set_session(session)
+            return session
+        except Exception as e:
+            # We can clear the session from all transfer methods here, since we received a valid, non-expired token in the current method
+            if isinstance(e, UnauthorisedError):  # FIXME
                 log_debug_message(
-                    "getSession: Returning try refresh token because access token from cookies is undefined"
+                    "getSession: Clearing %s because of UNAUTHORISED response from getSession",
+                    request_transfer_method,
                 )
-                raise_try_refresh_token_exception(
-                    "Access token has expired. Please call the refresh API"
-                )
-            return None
-        anti_csrf_token = get_anti_csrf_header(request)
-        if anti_csrf_check is None:
-            anti_csrf_check = normalise_http_method(request.method()) != "get"
+                clear_session(self.config, response, request_transfer_method)
+            raise e
 
-        log_debug_message(
-            "getSession: Value of doAntiCsrfCheck is: %s", str(anti_csrf_check)
-        )
-        new_session = await session_functions.get_session(
-            self,
-            access_token,
-            anti_csrf_token,
-            anti_csrf_check,
-            get_rid_header(request) is not None,
-        )
-        if "accessToken" in new_session:
-            access_token = new_session["accessToken"]["token"]
-
-        if access_token is None:
-            raise Exception("Should never come here")
-        session = Session(
-            self,
-            access_token,
-            new_session["session"]["handle"],
-            new_session["session"]["userId"],
-            new_session["session"]["userDataInJWT"],
-        )
-
-        if "accessToken" in new_session:
-            session.new_access_token_info = new_session["accessToken"]
-
-        log_debug_message("getSession: Success!")
-        request.set_session(session)
-        return request.get_session()
-
+    # In all cases: if sIdRefreshToken token exists (so it's a legacy session) we clear it
+    # Check http://localhost:3002/docs/contribute/decisions/session/0008 for further details and a table of expected behaviours
     async def refresh_session(
-        self, request: BaseRequest, user_context: Dict[str, Any]
+        self, request: BaseRequest, response: BaseResponse, user_context: Dict[str, Any]
     ) -> SessionContainer:
         log_debug_message("refreshSession: Started")
 
-        id_refresh_token = get_id_refresh_token_from_cookie(request)
-        if id_refresh_token is None:
-            log_debug_message(
-                "refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined"
+        if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
+            set_cookie(
+                self.config,
+                response,
+                LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
+                "",
+                0,
+                "access_token_path",
             )
-            raise_unauthorised_exception(
-                "Session does not exist. Are you sending the session tokens in the request "
-                "as cookies?",
-                False,
-            )
-        refresh_token = get_refresh_token_from_cookie(request)
-        if refresh_token is None:
-            log_debug_message(
-                "refreshSession: UNAUTHORISED because refresh token from cookies is undefined"
-            )
-            raise_unauthorised_exception(
-                "Refresh token not found. Are you sending the refresh token in the "
-                "request as a cookie?"
-            )
-        anti_csrf_token = get_anti_csrf_header(request)
-        new_session = await session_functions.refresh_session(
-            self, refresh_token, anti_csrf_token, get_rid_header(request) is not None
-        )
-        access_token = new_session["accessToken"]
-        refresh_token = new_session["refreshToken"]
-        id_refresh_token = new_session["idRefreshToken"]
-        session = Session(
-            self,
-            access_token["token"],
-            new_session["session"]["handle"],
-            new_session["session"]["userId"],
-            new_session["session"]["userDataInJWT"],
-        )
-        session.new_access_token_info = access_token
-        session.new_refresh_token_info = refresh_token
-        session.new_id_refresh_token_info = id_refresh_token
-        if "antiCsrfToken" in new_session and new_session["antiCsrfToken"] is not None:
-            session.new_anti_csrf_token = new_session["antiCsrfToken"]
 
-        log_debug_message("refreshSession: Success!")
-        request.set_session(session)
-        return session
+        refresh_tokens: Dict[TokenTransferMethod, Optional[str]] = {}
+
+        transfer_methods: List[TokenTransferMethod] = available_token_transfer_methods  # type: ignore
+        # We check all token transfer methods for available refresh tokens
+        # We do this so that we can later clear all we are not overwriting
+        for transfer_method in transfer_methods:
+            refresh_tokens[transfer_method] = get_token(
+                request,
+                "refresh",
+                transfer_method,
+            )
+            if refresh_tokens.get(transfer_method) is not None:
+                log_debug_message(
+                    "refreshSession: got refresh token from %s",
+                    transfer_method,
+                )
+        allowed_transfer_method = self.config.get_token_transfer_method(
+            request, False, user_context
+        )
+        log_debug_message(
+            "refreshSession: getTokenTransferMethod returned: %s",
+            allowed_transfer_method,
+        )
+
+        request_transfer_method: TokenTransferMethod
+        refresh_token: Optional[str]
+
+        if (
+            allowed_transfer_method == "any" or allowed_transfer_method == "header"
+        ) and (refresh_tokens.get("header")):
+            log_debug_message("refreshSession: using header transfer method")
+            request_transfer_method = "header"
+            refresh_token = refresh_tokens["header"]
+        elif (
+            allowed_transfer_method == "any" or allowed_transfer_method == "cookie"
+        ) and (refresh_tokens.get("cookie")):
+            log_debug_message("refreshSession: using cookie transfer method")
+            request_transfer_method = "cookie"
+            refresh_token = refresh_tokens["cookie"]
+        else:
+            log_debug_message(
+                "refreshSession: UNAUTHORIZED because refresh_token in request is None"
+            )
+            return raise_unauthorised_exception(
+                "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
+                clear_tokens=False,
+            )
+
+        assert refresh_token is not None  # FIXME: Shouldn't be required
+
+        try:
+            anti_csrf_token = get_anti_csrf_header(request)
+            new_session = await session_functions.refresh_session(
+                self,
+                refresh_token,
+                anti_csrf_token,
+                get_rid_header(request) is not None,
+                request_transfer_method,
+            )
+            log_debug_message(
+                "refreshSession: Attaching refresh session info as %s",
+                request_transfer_method,
+            )
+
+            transfer_methods: List[TokenTransferMethod] = available_token_transfer_methods  # type: ignore
+
+            # We clear the tokens in all token transfer methods we are not going to overwrite
+            for transfer_method in transfer_methods:
+                if (
+                    transfer_method != request_transfer_method
+                    and refresh_tokens.get(transfer_method) is not None
+                ):
+                    clear_session(self.config, response, transfer_method)
+
+            access_token = new_session["accessToken"]
+            # refresh_token = new_session["refreshToken"]
+            # id_refresh_token = new_session["idRefreshToken"]
+            session = Session(
+                self,
+                access_token["token"],
+                new_session["session"]["handle"],
+                new_session["session"]["userId"],
+                new_session["session"]["userDataInJWT"],
+                request_transfer_method,
+            )
+            session.new_access_token_info = access_token
+            # session.new_refresh_token_info = refresh_token
+            # session.new_id_refresh_token_info = id_refresh_token
+            if (
+                "antiCsrfToken" in new_session
+                and new_session["antiCsrfToken"] is not None
+            ):
+                session.new_anti_csrf_token = new_session["antiCsrfToken"]
+
+            log_debug_message("refreshSession: Success!")
+            request.set_session(session)
+            return session
+        except Exception as e:
+            if (isinstance(e, UnauthorisedError) and e.clear_tokens) or isinstance(
+                e, TokenTheftError
+            ):
+                log_debug_message(
+                    "refreshSession: Clearing tokens because of UNAUTHORISED or TOKEN_THEFT response"
+                )
+                clear_session(self.config, response, request_transfer_method)
+            raise e
 
     async def revoke_session(
         self, session_handle: str, user_context: Dict[str, Any]

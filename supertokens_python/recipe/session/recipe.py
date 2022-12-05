@@ -59,6 +59,7 @@ from .recipe_implementation import RecipeImplementation
 from .utils import (
     InputErrorHandlers,
     InputOverrideConfig,
+    TokenTransferMethod,
     JWTConfig,
     validate_and_normalise_user_input,
 )
@@ -79,6 +80,13 @@ class SessionRecipe(RecipeModule):
         anti_csrf: Union[
             Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None
         ] = None,
+        get_token_transfer_method: Union[
+            Callable[
+                [BaseRequest, bool, Dict[str, Any]],
+                Union[TokenTransferMethod, Literal["any"]],
+            ],
+            None,
+        ] = None,
         error_handlers: Union[InputErrorHandlers, None] = None,
         override: Union[InputOverrideConfig, None] = None,
         jwt: Union[JWTConfig, None] = None,
@@ -93,6 +101,7 @@ class SessionRecipe(RecipeModule):
             cookie_same_site,
             session_expired_status_code,
             anti_csrf,
+            get_token_transfer_method,
             error_handlers,
             override,
             jwt,
@@ -132,7 +141,7 @@ class SessionRecipe(RecipeModule):
                 openid_feature_override,
             )
             recipe_implementation = RecipeImplementation(
-                Querier.get_instance(recipe_id), self.config
+                Querier.get_instance(recipe_id), self.config, self.app_info
             )
             recipe_implementation = get_recipe_implementation_with_jwt(
                 recipe_implementation,
@@ -141,7 +150,7 @@ class SessionRecipe(RecipeModule):
             )
         else:
             recipe_implementation = RecipeImplementation(
-                Querier.get_instance(recipe_id), self.config
+                Querier.get_instance(recipe_id), self.config, self.app_info
             )
         self.recipe_implementation: RecipeInterface = (
             recipe_implementation
@@ -229,7 +238,7 @@ class SessionRecipe(RecipeModule):
         if isinstance(err, UnauthorisedError):
             log_debug_message("errorHandler: returning UNAUTHORISED")
             return await self.config.error_handlers.on_unauthorised(
-                self, err.clear_cookies, request, str(err), response
+                self, err.clear_tokens, request, str(err), response
             )
         if isinstance(err, TokenTheftError):
             log_debug_message("errorHandler: returning TOKEN_THEFT_DETECTED")
@@ -263,6 +272,13 @@ class SessionRecipe(RecipeModule):
         anti_csrf: Union[
             Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None
         ] = None,
+        get_token_transfer_method: Union[
+            Callable[
+                [BaseRequest, bool, Dict[str, Any]],
+                Union[TokenTransferMethod, Literal["any"]],
+            ],
+            None,
+        ] = None,
         error_handlers: Union[InputErrorHandlers, None] = None,
         override: Union[InputOverrideConfig, None] = None,
         jwt: Union[JWTConfig, None] = None,
@@ -278,6 +294,7 @@ class SessionRecipe(RecipeModule):
                     cookie_same_site,
                     session_expired_status_code,
                     anti_csrf,
+                    get_token_transfer_method,
                     error_handlers,
                     override,
                     jwt,
@@ -331,6 +348,7 @@ class SessionRecipe(RecipeModule):
     async def verify_session(
         self,
         request: BaseRequest,
+        response: BaseResponse,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
         override_global_claim_validators: Optional[
@@ -345,7 +363,11 @@ class SessionRecipe(RecipeModule):
 
         return await self.api_implementation.verify_session(
             APIOptions(
-                request, None, self.recipe_id, self.config, self.recipe_implementation
+                request,
+                response,
+                self.recipe_id,
+                self.config,
+                self.recipe_implementation,
             ),
             anti_csrf_check,
             session_required,

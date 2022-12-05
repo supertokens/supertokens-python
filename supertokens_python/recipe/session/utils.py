@@ -34,7 +34,10 @@ from typing_extensions import Literal
 
 from ...types import MaybeAwaitable
 from .constants import SESSION_REFRESH
-from .cookie_and_header import clear_cookies
+from .cookie_and_header import (
+    AUTH_MODE_HEADER_KEY,
+    clear_session_from_all_token_transfer_methods,
+)
 from .exceptions import ClaimValidationError
 from .with_jwt.constants import (
     ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY,
@@ -154,8 +157,8 @@ class ErrorHandlers:
         user_id: str,
         response: BaseResponse,
     ) -> BaseResponse:
-        log_debug_message("Clearing cookies because of TOKEN_THEFT_DETECTED response")
-        clear_cookies(recipe, response)
+        log_debug_message("Clearing tokens because of TOKEN_THEFT_DETECTED response")
+        clear_session_from_all_token_transfer_methods(recipe, request, response)
         return await resolve(
             self.__on_token_theft_detected(request, session_handle, user_id, response)
         )
@@ -175,8 +178,8 @@ class ErrorHandlers:
         response: BaseResponse,
     ):
         if do_clear_cookies:
-            log_debug_message("Clearing cookies because of UNAUTHORISED response")
-            clear_cookies(recipe, response)
+            log_debug_message("Clearing tokens because of UNAUTHORISED response")
+            clear_session_from_all_token_transfer_methods(recipe, request, response)
         return await resolve(self.__on_unauthorised(request, message, response))
 
     async def on_invalid_claim(
@@ -288,6 +291,31 @@ async def default_invalid_claim_callback(
     )
 
 
+def get_auth_mode_from_header(request: BaseRequest) -> Optional[str]:
+    auth_mode = request.get_header(AUTH_MODE_HEADER_KEY)
+    if auth_mode is None:
+        return None
+    return auth_mode.lower()
+
+
+def get_token_transfer_method_default(
+    req: BaseRequest,
+    for_create_new_session: bool,
+    user_context: Dict[str, Any],
+):
+    _ = user_context
+
+    if not for_create_new_session:
+        # refresh or revokes call
+        return "any"
+
+    auth_mode = get_auth_mode_from_header(req)
+    if auth_mode in ("header", "cookie"):
+        return auth_mode
+
+    return "any"
+
+
 class InputOverrideConfig:
     def __init__(
         self,
@@ -331,6 +359,10 @@ class JWTConfig:
         self.issuer = issuer
 
 
+TokenType = Literal["access", "refresh"]
+TokenTransferMethod = Literal["cookie", "header"]
+
+
 class SessionConfig:
     def __init__(
         self,
@@ -341,24 +373,30 @@ class SessionConfig:
         session_expired_status_code: int,
         error_handlers: ErrorHandlers,
         anti_csrf: str,
+        get_token_transfer_method: Callable[
+            [BaseRequest, bool, Dict[str, Any]],
+            Union[TokenTransferMethod, Literal["any"]],
+        ],
         override: OverrideConfig,
         framework: str,
         mode: str,
         jwt: JWTConfig,
         invalid_claim_status_code: int,
     ):
+        self.session_expired_status_code = session_expired_status_code
+        self.invalid_claim_status_code = invalid_claim_status_code
+
         self.refresh_token_path = refresh_token_path
         self.cookie_domain = cookie_domain
         self.cookie_same_site = cookie_same_site
         self.cookie_secure = cookie_secure
-        self.session_expired_status_code = session_expired_status_code
         self.error_handlers = error_handlers
         self.anti_csrf = anti_csrf
+        self.get_token_transfer_method = get_token_transfer_method
         self.override = override
         self.framework = framework
         self.mode = mode
         self.jwt = jwt
-        self.invalid_claim_status_code = invalid_claim_status_code
 
 
 def validate_and_normalise_user_input(
@@ -368,6 +406,13 @@ def validate_and_normalise_user_input(
     cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
     session_expired_status_code: Union[int, None] = None,
     anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+    get_token_transfer_method: Union[
+        Callable[
+            [BaseRequest, bool, Dict[str, Any]],
+            Union[TokenTransferMethod, Literal["any"]],
+        ],
+        None,
+    ] = None,
     error_handlers: Union[ErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
     jwt: Union[JWTConfig, None] = None,
@@ -433,6 +478,9 @@ def validate_and_normalise_user_input(
     if anti_csrf is None:
         anti_csrf = "VIA_CUSTOM_HEADER" if cookie_same_site == "none" else "NONE"
 
+    if get_token_transfer_method is None:
+        get_token_transfer_method = get_token_transfer_method_default
+
     if error_handlers is None:
         error_handlers = InputErrorHandlers()
 
@@ -471,6 +519,7 @@ def validate_and_normalise_user_input(
         session_expired_status_code,
         error_handlers,
         anti_csrf,
+        get_token_transfer_method,
         OverrideConfig(override.functions, override.apis),
         app_info.framework,
         app_info.mode,

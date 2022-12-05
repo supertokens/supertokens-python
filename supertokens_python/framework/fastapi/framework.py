@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 from supertokens_python.framework.types import Framework
 
 if TYPE_CHECKING:
-    from fastapi import Request
+    from fastapi import Request, Response
 
 
 class FastapiFramework(Framework):
@@ -26,3 +26,10 @@ class FastapiFramework(Framework):
         from supertokens_python.framework.fastapi.fastapi_request import FastApiRequest
 
         return FastApiRequest(unwrapped)
+
+    def wrap_response(self, unwrapped: Response):
+        from supertokens_python.framework.fastapi.fastapi_response import (
+            FastApiResponse,
+        )
+
+        return FastApiResponse(unwrapped)

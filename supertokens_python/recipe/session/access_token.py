@@ -13,13 +13,13 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Union
+from typing import Any, Dict, Union
 
 from supertokens_python.logger import log_debug_message
 from supertokens_python.utils import get_timestamp_ms
 
 from .exceptions import raise_try_refresh_token_exception
-from .jwt import get_payload
+from .jwt import ParsedJWTInfo, verify_jwt
 
 
 def sanitize_string(s: Any) -> Union[str, None]:
@@ -41,10 +41,15 @@ def sanitize_number(n: Any) -> Union[Union[int, float], None]:
 
 
 def get_info_from_access_token(
-    token: str, jwt_signing_public_key: str, do_anti_csrf_check: bool
+    jwt_info: ParsedJWTInfo, jwt_signing_public_key: str, do_anti_csrf_check: bool
 ):
     try:
-        payload = get_payload(token, jwt_signing_public_key)
+        verify_jwt(jwt_info, jwt_signing_public_key)
+        payload = jwt_info.payload
+
+        validate_access_token_structure(payload)
+        # FIXME: Find equivalent of ! in nodejs that is cleaner than asserts?
+
         session_handle = sanitize_string(payload.get("sessionHandle"))
         user_id = sanitize_string(payload.get("userId"))
         refresh_token_hash_1 = sanitize_string(payload.get("refreshTokenHash1"))
@@ -56,18 +61,11 @@ def get_info_from_access_token(
         expiry_time = sanitize_number(payload.get("expiryTime"))
         time_created = sanitize_number(payload.get("timeCreated"))
 
-        if (
-            (session_handle is None)
-            or (user_data is None)
-            or (refresh_token_hash_1 is None)
-            or (user_data is None)
-            or (anti_csrf_token is None and do_anti_csrf_check)
-            or (expiry_time is None)
-            or (time_created is None)
-        ):
-            raise Exception(
-                "Access token does not contain all the information. Maybe the structure has changed?"
-            )
+        if anti_csrf_token is None and do_anti_csrf_check:
+            raise Exception("Access token does not contain the anti-csrf token")
+
+        # FIXME: Find equivalent of ! from nodejs (cleaner than assert)
+        assert isinstance(expiry_time, int)
 
         if expiry_time < get_timestamp_ms():
             raise Exception("Access token expired")
@@ -87,3 +85,16 @@ def get_info_from_access_token(
             "getSession: Returning TRY_REFRESH_TOKEN because failed to decode access token"
         )
         raise_try_refresh_token_exception(e)
+
+
+def validate_access_token_structure(payload: Dict[str, Any]) -> None:
+    if (
+        not isinstance(payload.get("sessionHandle"), str)
+        or not isinstance(payload.get("userData"), str)
+        or not isinstance(payload.get("refreshTokenHash1"), str)
+        or not isinstance(payload.get("expiryTime"), int)
+        or not isinstance(payload.get("timeCreated"), int)
+    ):
+        raise Exception(
+            "Access token does not contain all the information. Maybe the structure has changed?"
+        )

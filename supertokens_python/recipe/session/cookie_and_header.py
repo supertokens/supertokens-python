@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 from urllib.parse import quote, unquote
 
 from typing_extensions import Literal
@@ -27,18 +27,25 @@ from .constants import (
     ID_REFRESH_TOKEN_HEADER_SET_KEY,
     REFRESH_TOKEN_COOKIE_KEY,
     RID_HEADER_KEY,
+    available_token_transfer_methods,
 )
 
 if TYPE_CHECKING:
     from supertokens_python.framework.request import BaseRequest
     from supertokens_python.framework.response import BaseResponse
     from .recipe import SessionRecipe
+    from .utils import TokenTransferMethod, TokenType, SessionConfig
 
 from json import dumps
 from typing import Any, Dict, Union
 
-from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.utils import get_header, utf_base64encode
+
+
+auth_mode_header_key = "st-auth-mode"
+AUTHORIZATION_HEADER_KEY = "authorization"
+ACCESS_TOKEN_HEADER_KEY = "st-access-token"
+REFRESH_TOKEN_HEADER_KEY = "st-refresh-token"
 
 
 def set_front_token_in_headers(
@@ -62,23 +69,28 @@ def set_front_token_in_headers(
 
 
 def get_cors_allowed_headers():
-    return [ANTI_CSRF_HEADER_KEY, RID_HEADER_KEY]
+    return [
+        ANTI_CSRF_HEADER_KEY,
+        RID_HEADER_KEY,
+        AUTHORIZATION_HEADER_KEY,
+        AUTH_MODE_HEADER_KEY,
+    ]
 
 
-def set_header(response: BaseResponse, key: str, value: str, allow_duplicate: bool):
-    try:
-        if allow_duplicate:
-            old_value = response.get_header(key)
-            if old_value is None:
-                response.set_header(key, value)
-            else:
-                response.set_header(key, old_value + "," + value)
-        else:
-            response.set_header(key, value)
-    except Exception:
-        raise_general_exception(
-            "Error while setting header with key: " + key + " and value: " + value
-        )
+# def set_header(response: BaseResponse, key: str, value: str, allow_duplicate: bool):
+#     try:
+#         if allow_duplicate:
+#             old_value = response.get_header(key)
+#             if old_value is None:
+#                 response.set_header(key, value)
+#             else:
+#                 response.set_header(key, old_value + "," + value)
+#         else:
+#             response.set_header(key, value)
+#     except Exception:
+#         raise_general_exception(
+#             "Error while setting header with key: " + key + " and value: " + value
+#         )
 
 
 def get_cookie(request: BaseRequest, key: str):
@@ -89,19 +101,19 @@ def get_cookie(request: BaseRequest, key: str):
 
 
 def set_cookie(
-    recipe: SessionRecipe,
+    config: SessionConfig,
     response: BaseResponse,
     key: str,
     value: str,
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
 ):
-    domain = recipe.config.cookie_domain
-    secure = recipe.config.cookie_secure
-    same_site = recipe.config.cookie_same_site
+    domain = config.cookie_domain
+    secure = config.cookie_secure
+    same_site = config.cookie_same_site
     path = ""
     if path_type == "refresh_token_path":
-        path = recipe.config.refresh_token_path.get_as_string_dangerous()
+        path = config.refresh_token_path.get_as_string_dangerous()
     elif path_type == "access_token_path":
         path = "/"
     http_only = True
@@ -118,8 +130,8 @@ def set_cookie(
 
 
 def attach_anti_csrf_header(response: BaseResponse, value: str):
-    set_header(response, ANTI_CSRF_HEADER_KEY, value, False)
-    set_header(response, ACCESS_CONTROL_EXPOSE_HEADERS, ANTI_CSRF_HEADER_KEY, True)
+    response.set_header(ANTI_CSRF_HEADER_KEY, value)
+    response.set_header(ACCESS_CONTROL_EXPOSE_HEADERS, ANTI_CSRF_HEADER_KEY)
 
 
 def get_anti_csrf_header(request: BaseRequest):
@@ -130,11 +142,14 @@ def get_rid_header(request: BaseRequest):
     return get_header(request, RID_HEADER_KEY)
 
 
+AUTH_MODE_HEADER_KEY = "st-auth-mode"
+
+
 def attach_access_token_to_cookie(
     recipe: SessionRecipe, response: BaseResponse, token: str, expires_at: int
 ):
     set_cookie(
-        recipe,
+        recipe.config,
         response,
         ACCESS_TOKEN_COOKIE_KEY,
         token,
@@ -143,60 +158,162 @@ def attach_access_token_to_cookie(
     )
 
 
-def attach_refresh_token_to_cookie(
-    recipe: SessionRecipe, response: BaseResponse, token: str, expires_at: int
-):
-    set_cookie(
-        recipe,
-        response,
-        REFRESH_TOKEN_COOKIE_KEY,
-        token,
-        expires_at,
-        "refresh_token_path",
-    )
+# def attach_refresh_token_to_cookie(
+#     recipe: SessionRecipe, response: BaseResponse, token: str, expires_at: int
+# ):
+#     set_cookie(
+#         recipe,
+#         response,
+#         REFRESH_TOKEN_COOKIE_KEY,
+#         token,
+#         expires_at,
+#         "refresh_token_path",
+#     )
 
 
-def attach_id_refresh_token_to_cookie_and_header(
-    recipe: SessionRecipe, response: BaseResponse, token: str, expires_at: int
-):
-    set_header(
-        response, ID_REFRESH_TOKEN_HEADER_SET_KEY, token + ";" + str(expires_at), False
-    )
-    set_header(
-        response, ACCESS_CONTROL_EXPOSE_HEADERS, ID_REFRESH_TOKEN_HEADER_SET_KEY, True
-    )
-    set_cookie(
-        recipe,
-        response,
-        ID_REFRESH_TOKEN_COOKIE_KEY,
-        token,
-        expires_at,
-        "access_token_path",
-    )
+# def attach_id_refresh_token_to_cookie_and_header(
+#     recipe: SessionRecipe, response: BaseResponse, token: str, expires_at: int
+# ):
+#     set_header(
+#         response, ID_REFRESH_TOKEN_HEADER_SET_KEY, token + ";" + str(expires_at), False
+#     )
+#     set_header(
+#         response, ACCESS_CONTROL_EXPOSE_HEADERS, ID_REFRESH_TOKEN_HEADER_SET_KEY, True
+#     )
+#     set_cookie(
+#         recipe.config,
+#         response,
+#         ID_REFRESH_TOKEN_COOKIE_KEY,
+#         token,
+#         expires_at,
+#         "access_token_path",
+#     )
 
 
 def get_access_token_from_cookie(request: BaseRequest):
     return get_cookie(request, ACCESS_TOKEN_COOKIE_KEY)
 
 
-def get_refresh_token_from_cookie(request: BaseRequest):
-    return get_cookie(request, REFRESH_TOKEN_COOKIE_KEY)
+# def get_refresh_token_from_cookie(request: BaseRequest):
+#     return get_cookie(request, REFRESH_TOKEN_COOKIE_KEY)
 
 
-def get_id_refresh_token_from_cookie(request: BaseRequest):
-    return get_cookie(request, ID_REFRESH_TOKEN_COOKIE_KEY)
+# def get_id_refresh_token_from_cookie(request: BaseRequest):
+#     return get_cookie(request, ID_REFRESH_TOKEN_COOKIE_KEY)
 
 
 def clear_cookies(recipe: SessionRecipe, response: BaseResponse):
-    set_cookie(recipe, response, ACCESS_TOKEN_COOKIE_KEY, "", 0, "access_token_path")
     set_cookie(
-        recipe, response, ID_REFRESH_TOKEN_COOKIE_KEY, "", 0, "access_token_path"
+        recipe.config, response, ACCESS_TOKEN_COOKIE_KEY, "", 0, "access_token_path"
     )
-    set_cookie(recipe, response, REFRESH_TOKEN_COOKIE_KEY, "", 0, "refresh_token_path")
+    set_cookie(
+        recipe.config, response, ID_REFRESH_TOKEN_COOKIE_KEY, "", 0, "access_token_path"
+    )
+    set_cookie(
+        recipe.config, response, REFRESH_TOKEN_COOKIE_KEY, "", 0, "refresh_token_path"
+    )
     set_header(response, ID_REFRESH_TOKEN_HEADER_SET_KEY, "remove", False)
     set_header(
         response,
         ACCESS_CONTROL_EXPOSE_HEADERS,
         ID_REFRESH_TOKEN_HEADER_SET_KEY,
         True,
+        z,
     )
+
+
+def clear_session_from_all_token_transfer_methods(
+    recipe: SessionRecipe, request: BaseRequest, response: BaseResponse
+):
+    transfer_methods: List[TokenTransferMethod] = available_token_transfer_methods  # type: ignore
+    for transfer_method in transfer_methods:
+        if get_token(request, "access", transfer_method) is not None:
+            clear_session(recipe.config, response, transfer_method)
+
+
+def clear_session(
+    config: SessionConfig, response: BaseResponse, transfer_method: TokenTransferMethod
+):
+    # If we can tell it's a cookie based session we are not clearing using headers
+    token_types: List[TokenType] = ["access", "refresh"]
+    for token_type in token_types:
+        set_token(config, response, token_type, "", 0, transfer_method)
+
+    response.set_header(FRONT_TOKEN_HEADER_SET_KEY, "remove")
+    response.set_header(ACCESS_CONTROL_EXPOSE_HEADERS, FRONT_TOKEN_HEADER_SET_KEY)
+
+
+def get_cookie_name_from_token_type(token_type: TokenType):
+    if token_type == "access":
+        return ACCESS_TOKEN_COOKIE_KEY
+    elif token_type == "refresh":
+        return REFRESH_TOKEN_COOKIE_KEY
+    else:
+        raise Exception("Unknown token type, should never happen")
+
+
+def get_response_header_name_for_token_type(token_type: TokenType):
+    if token_type == "access":
+        return ACCESS_TOKEN_HEADER_KEY
+    elif token_type == "refresh":
+        return REFRESH_TOKEN_HEADER_KEY
+    else:
+        raise Exception("Unknown token type, should never happen")
+
+
+def get_token(
+    request: BaseRequest,
+    token_type: TokenType,
+    transfer_method: TokenTransferMethod,
+) -> Optional[str]:
+    if transfer_method == "cookie":
+        request.get_cookie(get_cookie_name_from_token_type(token_type))
+    elif transfer_method == "header":
+        value = request.get_header(AUTHORIZATION_HEADER_KEY)
+        if value is None or not value.startswith("Bearer "):
+            return None
+
+        return value[len("Bearer ") :]
+    else:
+        raise Exception(
+            "Should never happen: Unknown transferMethod: " + transfer_method
+        )
+
+
+def set_token(
+    config: SessionConfig,
+    response: BaseResponse,
+    token_type: TokenType,
+    value: str,
+    expires: int,
+    transfer_method: str,
+):
+    if transfer_method == "cookie":
+        set_cookie(
+            config,
+            response,
+            get_cookie_name_from_token_type(token_type),
+            value,
+            expires,
+            "refresh_token_path" if token_type == "refresh" else "access_token_path",
+        )
+    elif transfer_method == "header":
+        set_header(
+            response,
+            get_response_header_name_for_token_type(token_type),
+            value,
+            expires,
+        )
+
+
+def set_header(response: BaseResponse, name: str, value: str, expires: int):
+    # TODO: What's the effect of true/false param in node SDK set header func?
+    response.set_header(name, f"{value};{expires}")
+    response.set_header(ACCESS_CONTROL_EXPOSE_HEADERS, name)
+
+
+def get_auth_mode_from_header(request: BaseRequest):
+    auth_mode = request.get_header(AUTH_MODE_HEADER_KEY)
+    if auth_mode is None:
+        return None
+    return auth_mode.lower()

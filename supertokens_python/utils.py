@@ -75,7 +75,7 @@ def normalise_http_method(method: str) -> str:
     return method.lower()
 
 
-def get_rid_from_request(request: BaseRequest) -> Union[str, None]:
+def get_rid_from_header(request: BaseRequest) -> Union[str, None]:
     return get_header(request, RID_KEY_HEADER)
 
 
@@ -206,7 +206,7 @@ def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
 
 
 def frontend_has_interceptor(request: BaseRequest) -> bool:
-    return get_rid_from_request(request) is not None
+    return get_rid_from_header(request) is not None
 
 
 def deprecated_warn(msg: str):
