@@ -17,15 +17,14 @@ from os import environ
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Union
 
 from httpx import AsyncClient
+
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryInterface
 from supertokens_python.logger import log_debug_message
 from supertokens_python.recipe.emailpassword.interfaces import (
     EmailTemplateVars,
     RecipeInterface,
 )
-from supertokens_python.recipe.emailpassword.types import (
-    User,
-)
+from supertokens_python.recipe.emailpassword.types import User
 from supertokens_python.supertokens import AppInfo
 from supertokens_python.utils import handle_httpx_client_exceptions
 
@@ -96,6 +95,10 @@ class BackwardCompatibilityService(EmailDeliveryInterface[EmailTemplateVars]):
         if user is None:
             raise Exception("Should never come here")
 
+        # we add this here cause the user may have overridden the sendEmail function
+        # to change the input email and if we don't do this, the input email
+        # will get reset by the getUserById call above.
+        user.email = template_vars.user.email
         try:
             await self.reset_password_feature_send_email_func(
                 user, template_vars.password_reset_link, user_context
