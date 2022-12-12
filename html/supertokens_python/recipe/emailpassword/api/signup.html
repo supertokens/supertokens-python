@@ -43,6 +43,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from ..exceptions import raise_form_field_exception
+from supertokens_python.recipe.emailpassword.interfaces import (
+    SignUpOkResult,
+    SignUpPostEmailAlreadyExistsError,
+)
+from supertokens_python.types import GeneralErrorResponse
+from ..types import ErrorFormField
+
 if TYPE_CHECKING:
     from supertokens_python.recipe.emailpassword.interfaces import (
         APIOptions,
@@ -71,7 +79,20 @@ async def handle_sign_up_api(api_implementation: APIInterface, api_options: APIO
         form_fields, api_options, user_context
     )
 
-    return send_200_response(response.to_json(), api_options.response)</code></pre>
+    if isinstance(response, SignUpOkResult):
+        return send_200_response(response.to_json(), api_options.response)
+    if isinstance(response, GeneralErrorResponse):
+        return send_200_response(response.to_json(), api_options.response)
+    if isinstance(response, SignUpPostEmailAlreadyExistsError):
+        return raise_form_field_exception(
+            &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;,
+            [
+                ErrorFormField(
+                    id=&#34;email&#34;,
+                    error=&#34;This email already exists. Please sign in instead.&#34;,
+                )
+            ],
+        )</code></pre>
 </details>
 </section>
 <section>
@@ -106,7 +127,20 @@ async def handle_sign_up_api(api_implementation: APIInterface, api_options: APIO
         form_fields, api_options, user_context
     )
 
-    return send_200_response(response.to_json(), api_options.response)</code></pre>
+    if isinstance(response, SignUpOkResult):
+        return send_200_response(response.to_json(), api_options.response)
+    if isinstance(response, GeneralErrorResponse):
+        return send_200_response(response.to_json(), api_options.response)
+    if isinstance(response, SignUpPostEmailAlreadyExistsError):
+        return raise_form_field_exception(
+            &#34;EMAIL_ALREADY_EXISTS_ERROR&#34;,
+            [
+                ErrorFormField(
+                    id=&#34;email&#34;,
+                    error=&#34;This email already exists. Please sign in instead.&#34;,
+                )
+            ],
+        )</code></pre>
 </details>
 </dd>
 </dl>
