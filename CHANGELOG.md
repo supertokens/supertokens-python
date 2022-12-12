@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.11.10] - 2022-12-12
 
-- Respond with field error on existing email id in signup api
+-   Fixes issue of sign up API not sending a `FIELD_ERROR` response in case of duplicate email: https://github.com/supertokens/supertokens-python/issues/264
+
 
 ## [0.11.9] - 2022-12-06
 
