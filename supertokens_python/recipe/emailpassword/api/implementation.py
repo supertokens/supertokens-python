@@ -170,7 +170,6 @@ class APIImplementation(APIInterface):
         user = result.user
         session = await create_new_session(
             api_options.request,
-            api_options.response,
             user.user_id,
             user_context=user_context,
         )
@@ -208,7 +207,6 @@ class APIImplementation(APIInterface):
         user = result.user
         session = await create_new_session(
             api_options.request,
-            api_options.response,
             user.user_id,
             user_context=user_context,
         )

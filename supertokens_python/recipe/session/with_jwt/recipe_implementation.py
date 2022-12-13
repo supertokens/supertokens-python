@@ -17,7 +17,6 @@ from typing import TYPE_CHECKING, Any, Dict, Union, Optional
 
 from jwt import decode
 
-from supertokens_python.framework import BaseResponse
 from supertokens_python.utils import get_timestamp_ms
 
 from .constants import ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY
@@ -56,7 +55,6 @@ def get_recipe_implementation_with_jwt(
 
     async def create_new_session(
         request: BaseRequest,
-        response: BaseResponse,
         user_id: str,
         access_token_payload: Union[None, Dict[str, Any]],
         session_data: Union[None, Dict[str, Any]],
@@ -78,7 +76,6 @@ def get_recipe_implementation_with_jwt(
         )
         session = await og_create_new_session(
             request,
-            response,
             user_id,
             access_token_payload,
             session_data,
@@ -90,14 +87,12 @@ def get_recipe_implementation_with_jwt(
 
     async def get_session(
         request: BaseRequest,
-        response: BaseResponse,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
         user_context: Dict[str, Any],
     ) -> Union[SessionContainer, None]:
         session_container = await og_get_session(
             request,
-            response,
             anti_csrf_check,
             session_required,
             user_context,
@@ -109,7 +104,7 @@ def get_recipe_implementation_with_jwt(
     og_refresh_session = original_implementation.refresh_session
 
     async def refresh_session(
-        request: BaseRequest, response: BaseResponse, user_context: Dict[str, Any]
+        request: BaseRequest, user_context: Dict[str, Any]
     ) -> SessionContainer:
         access_token_validity_in_seconds = ceil(
             await original_implementation.get_access_token_lifetime_ms(user_context)
@@ -117,7 +112,7 @@ def get_recipe_implementation_with_jwt(
         )
 
         # Refresh session first because this will create a new access token
-        new_session = await og_refresh_session(request, response, user_context)
+        new_session = await og_refresh_session(request, user_context)
         access_token_payload = new_session.get_access_token_payload()
         access_token_payload = await add_jwt_to_access_token_payload(
             access_token_payload=access_token_payload,

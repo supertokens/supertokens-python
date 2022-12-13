@@ -38,7 +38,7 @@ def get_middleware():
                 FastApiResponse,
             )
             from supertokens_python.recipe.session import SessionContainer
-            from supertokens_python.supertokens import manage_cookies_post_response
+            from supertokens_python.supertokens import manage_session_post_response
 
             st = Supertokens.get_instance()
             from fastapi.responses import Response
@@ -56,7 +56,7 @@ def get_middleware():
                 if hasattr(request.state, "supertokens") and isinstance(
                     request.state.supertokens, SessionContainer
                 ):
-                    manage_cookies_post_response(request.state.supertokens, result)
+                    manage_session_post_response(request.state.supertokens, result)
                 if isinstance(result, FastApiResponse):
                     return result.response
             except SuperTokensError as e:

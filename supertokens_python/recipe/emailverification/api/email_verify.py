@@ -46,7 +46,6 @@ async def handle_email_verify_api(
 
         session = await get_session(
             api_options.request,
-            api_options.response,
             session_required=False,
             override_global_claim_validators=lambda _, __, ___: [],
             user_context=user_context,
@@ -61,7 +60,6 @@ async def handle_email_verify_api(
 
         session = await get_session(
             api_options.request,
-            api_options.response,
             override_global_claim_validators=lambda _, __, ___: [],
             user_context=user_context,
         )

@@ -112,7 +112,6 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     async def create_new_session(
         self,
         request: BaseRequest,
-        response: BaseResponse,
         user_id: str,
         access_token_payload: Union[None, Dict[str, Any]],
         session_data: Union[None, Dict[str, Any]],
@@ -133,7 +132,6 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
     async def get_session(
         self,
         request: BaseRequest,
-        response: BaseResponse,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
         user_context: Dict[str, Any],
@@ -162,7 +160,7 @@ class RecipeInterface(ABC):  # pylint: disable=too-many-public-methods
 
     @abstractmethod
     async def refresh_session(
-        self, request: BaseRequest, response: BaseResponse, user_context: Dict[str, Any]
+        self, request: BaseRequest, user_context: Dict[str, Any]
     ) -> SessionContainer:
         pass
 
@@ -290,7 +288,7 @@ class APIOptions:
     def __init__(
         self,
         request: BaseRequest,
-        response: BaseResponse,
+        response: Optional[BaseResponse],
         recipe_id: str,
         config: SessionConfig,
         recipe_implementation: RecipeInterface,
@@ -364,6 +362,11 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         # self.new_id_refresh_token_info = None
         self.new_anti_csrf_token = None
         self.remove_tokens = False
+
+        self.request_refresh_tokens: Dict[TokenTransferMethod, Any] = {}
+        self.request_access_tokens: Dict[TokenTransferMethod, Any] = {}
+
+        self.methods_to_call: List[Callable[[Any], Any]] = []
 
     @abstractmethod
     async def revoke_session(

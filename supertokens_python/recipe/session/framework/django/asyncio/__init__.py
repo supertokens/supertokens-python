@@ -64,7 +64,7 @@ def verify_session(
                     baseRequest.set_session_as_none()
                 else:
                     baseRequest.set_session(session)
-                response: HttpResponse = await f(baseRequest.request, *args, **kwargs)
+                response = await f(baseRequest.request, *args, **kwargs)
                 return response
             except SuperTokensError as e:
                 response = DjangoResponse(JsonResponse({}))

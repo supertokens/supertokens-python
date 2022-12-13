@@ -39,7 +39,11 @@ if TYPE_CHECKING:
 from json import dumps
 from typing import Any, Dict, Union
 
-from supertokens_python.utils import get_header, utf_base64encode
+from supertokens_python.utils import (
+    get_header,
+    utf_base64encode,
+    raise_general_exception,
+)
 
 
 auth_mode_header_key = "st-auth-mode"
@@ -77,20 +81,20 @@ def get_cors_allowed_headers():
     ]
 
 
-# def set_header(response: BaseResponse, key: str, value: str, allow_duplicate: bool):
-#     try:
-#         if allow_duplicate:
-#             old_value = response.get_header(key)
-#             if old_value is None:
-#                 response.set_header(key, value)
-#             else:
-#                 response.set_header(key, old_value + "," + value)
-#         else:
-#             response.set_header(key, value)
-#     except Exception:
-#         raise_general_exception(
-#             "Error while setting header with key: " + key + " and value: " + value
-#         )
+def set_header(response: BaseResponse, key: str, value: str, allow_duplicate: bool):
+    try:
+        if allow_duplicate:
+            old_value = response.get_header(key)
+            if old_value is None:
+                response.set_header(key, value)
+            else:
+                response.set_header(key, old_value + "," + value)
+        else:
+            response.set_header(key, value)
+    except Exception:
+        return raise_general_exception(
+            "Error while setting header with key: " + key + " and value: " + value
+        )
 
 
 def get_cookie(request: BaseRequest, key: str):
@@ -218,7 +222,6 @@ def clear_cookies(recipe: SessionRecipe, response: BaseResponse):
         ACCESS_CONTROL_EXPOSE_HEADERS,
         ID_REFRESH_TOKEN_HEADER_SET_KEY,
         True,
-        z,
     )
 
 
@@ -239,8 +242,10 @@ def clear_session(
     for token_type in token_types:
         set_token(config, response, token_type, "", 0, transfer_method)
 
-    response.set_header(FRONT_TOKEN_HEADER_SET_KEY, "remove")
-    response.set_header(ACCESS_CONTROL_EXPOSE_HEADERS, FRONT_TOKEN_HEADER_SET_KEY)
+    set_header(response, FRONT_TOKEN_HEADER_SET_KEY, "remove", False)
+    set_header(
+        response, ACCESS_CONTROL_EXPOSE_HEADERS, FRONT_TOKEN_HEADER_SET_KEY, True
+    )
 
 
 def get_cookie_name_from_token_type(token_type: TokenType):
@@ -298,7 +303,7 @@ def set_token(
             "refresh_token_path" if token_type == "refresh" else "access_token_path",
         )
     elif transfer_method == "header":
-        set_header(
+        set_header_with_expiry(
             response,
             get_response_header_name_for_token_type(token_type),
             value,
@@ -306,8 +311,7 @@ def set_token(
         )
 
 
-def set_header(response: BaseResponse, name: str, value: str, expires: int):
-    # TODO: What's the effect of true/false param in node SDK set header func?
+def set_header_with_expiry(response: BaseResponse, name: str, value: str, expires: int):
     response.set_header(name, f"{value};{expires}")
     response.set_header(ACCESS_CONTROL_EXPOSE_HEADERS, name)
 

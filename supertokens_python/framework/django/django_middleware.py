@@ -25,7 +25,7 @@ def middleware(get_response: Any):
     from supertokens_python.framework.django.django_request import DjangoRequest
     from supertokens_python.framework.django.django_response import DjangoResponse
     from supertokens_python.recipe.session import SessionContainer
-    from supertokens_python.supertokens import manage_cookies_post_response
+    from supertokens_python.supertokens import manage_session_post_response
 
     from django.http import HttpRequest
 
@@ -45,7 +45,7 @@ def middleware(get_response: Any):
                 if hasattr(request, "supertokens") and isinstance(
                     request.supertokens, SessionContainer  # type: ignore
                 ):
-                    manage_cookies_post_response(
+                    manage_session_post_response(
                         request.supertokens, result  # type: ignore
                     )
                 if isinstance(result, DjangoResponse):
@@ -79,7 +79,7 @@ def middleware(get_response: Any):
             if hasattr(request, "supertokens") and isinstance(
                 request.supertokens, SessionContainer  # type: ignore
             ):
-                manage_cookies_post_response(
+                manage_session_post_response(
                     request.supertokens, result  # type: ignore
                 )
             return result.response

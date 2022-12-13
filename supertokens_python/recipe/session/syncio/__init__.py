@@ -40,7 +40,6 @@ from ..interfaces import (
 
 def create_new_session(
     request: Any,
-    response: Any,
     user_id: str,
     access_token_payload: Union[Dict[str, Any], None] = None,
     session_data: Union[Dict[str, Any], None] = None,
@@ -53,7 +52,6 @@ def create_new_session(
     return sync(
         async_create_new_session(
             request,
-            response,
             user_id,
             access_token_payload,
             session_data,
@@ -64,7 +62,6 @@ def create_new_session(
 
 def get_session(
     request: Any,
-    response: Any,
     anti_csrf_check: Union[bool, None] = None,
     session_required: bool = True,
     override_global_claim_validators: Optional[
@@ -82,7 +79,6 @@ def get_session(
     return sync(
         async_get_session(
             request,
-            response,
             anti_csrf_check,
             session_required,
             override_global_claim_validators,
@@ -92,13 +88,13 @@ def get_session(
 
 
 def refresh_session(
-    request: Any, response: Any, user_context: Union[None, Dict[str, Any]] = None
+    request: Any, user_context: Union[None, Dict[str, Any]] = None
 ) -> SessionContainer:
     from supertokens_python.recipe.session.asyncio import (
         refresh_session as async_refresh_session,
     )
 
-    return sync(async_refresh_session(request, response, user_context))
+    return sync(async_refresh_session(request, user_context))
 
 
 def revoke_session(

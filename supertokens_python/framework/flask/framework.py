@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 from supertokens_python.framework.types import Framework
 
 if TYPE_CHECKING:
-    from flask.wrappers import Request, Response
+    from flask.wrappers import Request
 
 
 class FlaskFramework(Framework):
@@ -26,8 +26,3 @@ class FlaskFramework(Framework):
         from supertokens_python.framework.flask.flask_request import FlaskRequest
 
         return FlaskRequest(unwrapped)
-
-    def wrap_response(self, unwrapped: Response):
-        from supertokens_python.framework.flask.flask_response import FlaskResponse
-
-        return FlaskResponse(unwrapped)

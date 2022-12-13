@@ -29,7 +29,6 @@ async def handle_generate_email_verify_token_api(
     user_context = default_user_context(api_options.request)
     session = await get_session(
         api_options.request,
-        api_options.response,
         override_global_claim_validators=lambda _, __, ___: [],
         user_context=user_context,
     )

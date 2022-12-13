@@ -11,14 +11,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from datetime import datetime
 from typing import Any, Dict, List, TypeVar, Union
 
 from supertokens_python.recipe.session.exceptions import (
     raise_invalid_claims_exception,
     raise_unauthorised_exception,
 )
-from .cookie_and_header import set_token
 
 from .interfaces import SessionClaim, SessionClaimValidator, SessionContainer
 

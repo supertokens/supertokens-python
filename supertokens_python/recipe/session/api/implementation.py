@@ -38,7 +38,7 @@ class APIImplementation(APIInterface):
         self, api_options: APIOptions, user_context: Dict[str, Any]
     ) -> SessionContainer:
         return await api_options.recipe_implementation.refresh_session(
-            api_options.request, api_options.response, user_context
+            api_options.request, user_context
         )
 
     async def signout_post(
@@ -71,11 +71,10 @@ class APIImplementation(APIInterface):
         refresh_token_path = api_options.config.refresh_token_path
         if incoming_path.equals(refresh_token_path) and method == "post":
             return await api_options.recipe_implementation.refresh_session(
-                api_options.request, api_options.response, user_context
+                api_options.request, user_context
             )
         session = await api_options.recipe_implementation.get_session(
             api_options.request,
-            api_options.response,
             anti_csrf_check,
             session_required,
             user_context,
