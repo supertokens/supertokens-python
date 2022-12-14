@@ -168,28 +168,30 @@ def manage_session_post_response(session: SessionContainer, response: BaseRespon
         access_token = session.new_access_token_info
         refresh_token = session.new_refresh_token_info
 
-        set_front_token_in_headers(
-            response,
-            session["user_id"],
-            access_token["expiry"],
-            session["access_token_payload"],
-        )
-        set_token(
-            recipe.config,
-            response,
-            "access",
-            access_token["token"],
-            int(datetime.now().timestamp()) + 3153600000000,
-            session.transfer_method,
-        )
-        set_token(
-            recipe.config,
-            response,
-            "refresh",
-            refresh_token["token"],
-            refresh_token["expiry"],
-            session.transfer_method,
-        )
+        if access_token is not None:
+            set_front_token_in_headers(
+                response,
+                session["user_id"],
+                access_token["expiry"],
+                session["access_token_payload"],
+            )
+            set_token(
+                recipe.config,
+                response,
+                "access",
+                access_token["token"],
+                int(datetime.now().timestamp()) + 3153600000000,
+                session.transfer_method,
+            )
+        if refresh_token is not None:
+            set_token(
+                recipe.config,
+                response,
+                "refresh",
+                refresh_token["token"],
+                refresh_token["expiry"],
+                session.transfer_method,
+            )
 
         anti_csrf_token = session.new_anti_csrf_token
         if anti_csrf_token is not None:

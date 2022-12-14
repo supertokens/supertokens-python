@@ -22,7 +22,7 @@ from typing_extensions import Literal
 from supertokens_python.utils import default_user_context
 
 from .api import handle_refresh_api, handle_signout_api
-from .cookie_and_header import get_cors_allowed_headers
+from .cookie_and_header import get_cors_allowed_headers, set_cookie
 from .exceptions import (
     SuperTokensSessionError,
     TokenTheftError,
@@ -55,7 +55,10 @@ from .interfaces import (
     SessionClaimValidator,
     SessionContainer,
 )
-from .recipe_implementation import RecipeImplementation
+from .recipe_implementation import (
+    RecipeImplementation,
+    LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
+)
 from .utils import (
     InputErrorHandlers,
     InputOverrideConfig,
@@ -235,6 +238,22 @@ class SessionRecipe(RecipeModule):
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
     ) -> BaseResponse:
+        if (
+            not isinstance(err, UnauthorisedError) or err.clear_tokens
+        ):  # TODO: Verify if this is correct
+            if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
+                log_debug_message(
+                    "handle_error: cleared legacy id refresh token because refresh is clearing other tokens"
+                )
+                set_cookie(
+                    config=self.config,
+                    key=LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
+                    value="",
+                    expires=0,
+                    path_type="access_token_path",
+                    response=response,
+                )
+
         if isinstance(err, UnauthorisedError):
             log_debug_message("errorHandler: returning UNAUTHORISED")
             return await self.config.error_handlers.on_unauthorised(

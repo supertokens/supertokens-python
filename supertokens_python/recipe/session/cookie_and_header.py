@@ -106,11 +106,11 @@ def get_cookie(request: BaseRequest, key: str):
 
 def set_cookie(
     config: SessionConfig,
-    response: BaseResponse,
     key: str,
     value: str,
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
+    response: BaseResponse,
 ):
     domain = config.cookie_domain
     secure = config.cookie_secure
@@ -154,12 +154,13 @@ def attach_access_token_to_cookie(
 ):
     set_cookie(
         recipe.config,
-        response,
         ACCESS_TOKEN_COOKIE_KEY,
         token,
         expires_at,
         "access_token_path",
+        response,
     )
+
 
 def get_access_token_from_cookie(request: BaseRequest):
     return get_cookie(request, ACCESS_TOKEN_COOKIE_KEY)
@@ -167,13 +168,23 @@ def get_access_token_from_cookie(request: BaseRequest):
 
 def clear_cookies(recipe: SessionRecipe, response: BaseResponse):
     set_cookie(
-        recipe.config, response, ACCESS_TOKEN_COOKIE_KEY, "", 0, "access_token_path"
+        recipe.config, ACCESS_TOKEN_COOKIE_KEY, "", 0, "access_token_path", response
     )
     set_cookie(
-        recipe.config, response, ID_REFRESH_TOKEN_COOKIE_KEY, "", 0, "access_token_path"
+        recipe.config,
+        ID_REFRESH_TOKEN_COOKIE_KEY,
+        "",
+        0,
+        "access_token_path",
+        response,
     )
     set_cookie(
-        recipe.config, response, REFRESH_TOKEN_COOKIE_KEY, "", 0, "refresh_token_path"
+        recipe.config,
+        REFRESH_TOKEN_COOKIE_KEY,
+        "",
+        0,
+        "refresh_token_path",
+        response,
     )
     set_header(response, ID_REFRESH_TOKEN_HEADER_SET_KEY, "remove", False)
     set_header(
@@ -199,7 +210,7 @@ def clear_session(
     # If we can tell it's a cookie based session we are not clearing using headers
     token_types: List[TokenType] = ["access", "refresh"]
     for token_type in token_types:
-        set_token(config, response, token_type, "", 0, transfer_method)
+        set_token(config, token_type, "", 0, transfer_method, response)
 
     set_header(response, FRONT_TOKEN_HEADER_SET_KEY, "remove", False)
     set_header(
@@ -246,20 +257,20 @@ def get_token(
 
 def set_token(
     config: SessionConfig,
-    response: BaseResponse,
     token_type: TokenType,
     value: str,
     expires: int,
     transfer_method: str,
+    response: BaseResponse,
 ):
     if transfer_method == "cookie":
         set_cookie(
             config,
-            response,
             get_cookie_name_from_token_type(token_type),
             value,
             expires,
             "refresh_token_path" if token_type == "refresh" else "access_token_path",
+            response,
         )
     elif transfer_method == "header":
         set_header_with_expiry(

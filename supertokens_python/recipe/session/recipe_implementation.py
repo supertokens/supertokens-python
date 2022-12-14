@@ -14,7 +14,6 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, Optional, Callable
 
 from supertokens_python.framework.request import BaseRequest
@@ -37,12 +36,9 @@ from .cookie_and_header import (
     get_rid_header,
     get_token,
     set_cookie,
-    set_front_token_in_headers,
     set_token,
 )
 from .exceptions import (
-    TokenTheftError,
-    UnauthorisedError,
     raise_try_refresh_token_exception,
     raise_unauthorised_exception,
 )
@@ -387,31 +383,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         )
 
         access_token_string = access_token.raw_token_string
-
-        methods_to_call: List[Callable[[Any], Any]] = []
-
-        if new_session.get("accessToken") is not None:
-            methods_to_call.append(
-                partial(
-                    set_front_token_in_headers,
-                    user_id=new_session["session"]["userId"],
-                    expires_at=new_session["accessToken"]["expiry"],
-                    jwt_payload=new_session["session"]["userDataInJWT"],
-                )
-            )
-            methods_to_call.append(
-                partial(
-                    set_token,
-                    config=self.config,
-                    token_type="access",
-                    value=new_session["accessToken"]["token"],
-                    expires=int(datetime.now().timestamp()) + 3153600000000,
-                    transfer_method=request_transfer_method,
-                )
-            )
-            access_token_string = new_session["accessToken"]["token"]
-
-        log_debug_message("getSession: Success!")
         session = Session(
             self,
             access_token_string,
@@ -420,15 +391,11 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             new_session["session"]["userDataInJWT"],
             request_transfer_method,
         )
-        session.methods_to_call = methods_to_call
 
-        # if "accessToken" in new_session:
-        #     session.new_access_token_info = new_session["accessToken"]
-        # if "refreshToken" in new_session:
-        #     session.new_refresh_token_info = new_session["refreshToken"]
+        if "accessToken" in new_session:
+            session.new_access_token_info = new_session["accessToken"]
 
-        # session.request_access_tokens = access_tokens
-
+        log_debug_message("getSession: Success!")
         request.set_session(session)
         return session
 
@@ -442,14 +409,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         methods_to_call: List[Callable[[Any], Any]] = []
 
         if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
-            # set_cookie(
-            #     self.config,
-            #     response,
-            #     LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
-            #     "",
-            #     0,
-            #     "access_token_path",
-            # )
             methods_to_call.append(
                 partial(
                     set_cookie,
@@ -580,13 +539,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             request.set_session(session)
             return session
         except Exception as e:
-            if (isinstance(e, UnauthorisedError) and e.clear_tokens) or isinstance(
-                e, TokenTheftError
-            ):
-                log_debug_message(
-                    "refreshSession: Clearing tokens because of UNAUTHORISED or TOKEN_THEFT response"
-                )
-                clear_session(self.config, request_transfer_method, response)  # FIXME
             raise e
 
     async def revoke_session(
