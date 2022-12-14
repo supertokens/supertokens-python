@@ -160,57 +160,36 @@ class AppInfo:
 def manage_session_post_response(session: SessionContainer, response: BaseResponse):
     recipe = SessionRecipe.get_instance()
     if session.remove_tokens is True:
-        clear_session(recipe.config, response, session.transfer_method)
+        clear_session(recipe.config, session.transfer_method, response)
     else:
-        # access_token = session.new_access_token_info
-        # refresh_token = session.new_refresh_token_info
-        #
-        # # We clear the tokens in all token transfer methods we are not going to overwrite
-        # transfer_methods: List[TokenTransferMethod] = available_token_transfer_methods  # type: ignore
-        # request_transfer_method = session.transfer_method
-        # for transfer_method in transfer_methods:
-        #     if (
-        #         request_transfer_method != transfer_method and session.request_refresh_tokens.get(transfer_method) is not None
-        #     ):
-        #         clear_session(recipe.config, response, transfer_method)
-        #
-        # if access_token is not None:
-        #     # We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
-        #     # This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
-        #     # Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-        #     # Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough
-        #     set_token(
-        #         recipe.config,
-        #         response,
-        #         "access",
-        #         access_token["token"],
-        #         int(datetime.now().timestamp()) + 3153600000000,
-        #         session.transfer_method,
-        #     )
-        # if refresh_token is not None:
-        #     set_token(
-        #         recipe.config,
-        #         response,
-        #         "refresh",
-        #         refresh_token["token"],
-        #         refresh_token["expiry"],
-        #         session.transfer_method,
-        #     )
-        #
-        # if access_token is not None and refresh_token is not None:
-        #     set_front_token_in_headers(
-        #         response,
-        #         session["user_id"],
-        #         access_token["expiry"],
-        #         session["access_token_payload"],
-        #     )
-        #
-        # anti_csrf_token = session.new_anti_csrf_token
-        # if anti_csrf_token is not None:
-        #     attach_anti_csrf_header(response, anti_csrf_token)
-
         for method in session.methods_to_call:
             method(response)
+
+        access_token = session.new_access_token_info
+        refresh_token = session.new_refresh_token_info
+
+        set_front_token_in_headers(
+            response,
+            session["user_id"],
+            access_token["expiry"],
+            session["access_token_payload"],
+        )
+        set_token(
+            recipe.config,
+            response,
+            "access",
+            access_token["token"],
+            int(datetime.now().timestamp()) + 3153600000000,
+            session.transfer_method,
+        )
+        set_token(
+            recipe.config,
+            response,
+            "refresh",
+            refresh_token["token"],
+            refresh_token["expiry"],
+            session.transfer_method,
+        )
 
         anti_csrf_token = session.new_anti_csrf_token
         if anti_csrf_token is not None:

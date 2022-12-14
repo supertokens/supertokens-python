@@ -82,7 +82,7 @@ class FlaskResponse(BaseResponse):
                 )
             self.headers.append((key, value))
         else:
-            self.response.headers.add(key, value)
+            self.response.headers[key] = value
 
     def get_header(self, key: str) -> Union[None, str]:
         if self.response is not None:

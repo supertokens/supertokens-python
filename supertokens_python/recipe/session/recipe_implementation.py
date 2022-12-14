@@ -176,6 +176,8 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             "createNewSession: using transfer method %s", output_transfer_method
         )
 
+        # TODO: Move TLD checking logic here
+
         disable_anti_csrf = output_transfer_method == "header"
 
         session = await session_functions.create_new_session(
@@ -199,10 +201,11 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             ):
                 # access_tokens[transfer_method] = request_access_token
                 session_methods_to_call.append(
+                    # lambda response: clear_session(self.config, response, transfer_method)
                     partial(
                         clear_session,
-                        config=self.config,
-                        transfer_method=transfer_method,
+                        self.config,
+                        transfer_method,
                     )
                 )
 
@@ -583,7 +586,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 log_debug_message(
                     "refreshSession: Clearing tokens because of UNAUTHORISED or TOKEN_THEFT response"
                 )
-                clear_session(self.config, response, request_transfer_method)  # FIXME
+                clear_session(self.config, request_transfer_method, response)  # FIXME
             raise e
 
     async def revoke_session(

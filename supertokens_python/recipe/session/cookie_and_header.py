@@ -161,49 +161,8 @@ def attach_access_token_to_cookie(
         "access_token_path",
     )
 
-
-# def attach_refresh_token_to_cookie(
-#     recipe: SessionRecipe, response: BaseResponse, token: str, expires_at: int
-# ):
-#     set_cookie(
-#         recipe,
-#         response,
-#         REFRESH_TOKEN_COOKIE_KEY,
-#         token,
-#         expires_at,
-#         "refresh_token_path",
-#     )
-
-
-# def attach_id_refresh_token_to_cookie_and_header(
-#     recipe: SessionRecipe, response: BaseResponse, token: str, expires_at: int
-# ):
-#     set_header(
-#         response, ID_REFRESH_TOKEN_HEADER_SET_KEY, token + ";" + str(expires_at), False
-#     )
-#     set_header(
-#         response, ACCESS_CONTROL_EXPOSE_HEADERS, ID_REFRESH_TOKEN_HEADER_SET_KEY, True
-#     )
-#     set_cookie(
-#         recipe.config,
-#         response,
-#         ID_REFRESH_TOKEN_COOKIE_KEY,
-#         token,
-#         expires_at,
-#         "access_token_path",
-#     )
-
-
 def get_access_token_from_cookie(request: BaseRequest):
     return get_cookie(request, ACCESS_TOKEN_COOKIE_KEY)
-
-
-# def get_refresh_token_from_cookie(request: BaseRequest):
-#     return get_cookie(request, REFRESH_TOKEN_COOKIE_KEY)
-
-
-# def get_id_refresh_token_from_cookie(request: BaseRequest):
-#     return get_cookie(request, ID_REFRESH_TOKEN_COOKIE_KEY)
 
 
 def clear_cookies(recipe: SessionRecipe, response: BaseResponse):
@@ -231,11 +190,11 @@ def clear_session_from_all_token_transfer_methods(
     transfer_methods: List[TokenTransferMethod] = available_token_transfer_methods  # type: ignore
     for transfer_method in transfer_methods:
         if get_token(request, "access", transfer_method) is not None:
-            clear_session(recipe.config, response, transfer_method)
+            clear_session(recipe.config, transfer_method, response)
 
 
 def clear_session(
-    config: SessionConfig, response: BaseResponse, transfer_method: TokenTransferMethod
+    config: SessionConfig, transfer_method: TokenTransferMethod, response: BaseResponse
 ):
     # If we can tell it's a cookie based session we are not clearing using headers
     token_types: List[TokenType] = ["access", "refresh"]
@@ -272,7 +231,7 @@ def get_token(
     transfer_method: TokenTransferMethod,
 ) -> Optional[str]:
     if transfer_method == "cookie":
-        request.get_cookie(get_cookie_name_from_token_type(token_type))
+        return request.get_cookie(get_cookie_name_from_token_type(token_type))
     elif transfer_method == "header":
         value = request.get_header(AUTHORIZATION_HEADER_KEY)
         if value is None or not value.startswith("Bearer "):
@@ -312,8 +271,8 @@ def set_token(
 
 
 def set_header_with_expiry(response: BaseResponse, name: str, value: str, expires: int):
-    response.set_header(name, f"{value};{expires}")
-    response.set_header(ACCESS_CONTROL_EXPOSE_HEADERS, name)
+    set_header(response, name, f"{value};{expires}", allow_duplicate=False)
+    set_header(response, ACCESS_CONTROL_EXPOSE_HEADERS, name, allow_duplicate=True)
 
 
 def get_auth_mode_from_header(request: BaseRequest):
