@@ -14,7 +14,6 @@
 from typing import Any, Callable, Coroutine, Dict, Union, List, Optional
 
 from supertokens_python.framework.fastapi.fastapi_request import FastApiRequest
-from supertokens_python.framework.fastapi.fastapi_response import FastApiResponse
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.types import MaybeAwaitable
 
@@ -34,17 +33,13 @@ def verify_session(
 ) -> Callable[..., Coroutine[Any, Any, Union[SessionContainer, None]]]:
     if user_context is None:
         user_context = {}
-    from fastapi import Request, Response
+    from fastapi import Request
 
-    async def func(
-        request: Request, response: Response
-    ) -> Union[SessionContainer, None]:
+    async def func(request: Request) -> Union[SessionContainer, None]:
         baseRequest = FastApiRequest(request)
-        baseResponse = FastApiResponse(response)
         recipe = SessionRecipe.get_instance()
         session = await recipe.verify_session(
             baseRequest,
-            baseResponse,
             anti_csrf_check,
             session_required,
             override_global_claim_validators,

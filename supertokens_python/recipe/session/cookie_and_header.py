@@ -23,8 +23,6 @@ from .constants import (
     ACCESS_TOKEN_COOKIE_KEY,
     ANTI_CSRF_HEADER_KEY,
     FRONT_TOKEN_HEADER_SET_KEY,
-    ID_REFRESH_TOKEN_COOKIE_KEY,
-    ID_REFRESH_TOKEN_HEADER_SET_KEY,
     REFRESH_TOKEN_COOKIE_KEY,
     RID_HEADER_KEY,
     available_token_transfer_methods,
@@ -42,7 +40,6 @@ from typing import Any, Dict, Union
 from supertokens_python.utils import (
     get_header,
     utf_base64encode,
-    raise_general_exception,
 )
 
 
@@ -82,19 +79,14 @@ def get_cors_allowed_headers():
 
 
 def set_header(response: BaseResponse, key: str, value: str, allow_duplicate: bool):
-    try:
-        if allow_duplicate:
-            old_value = response.get_header(key)
-            if old_value is None:
-                response.set_header(key, value)
-            else:
-                response.set_header(key, old_value + "," + value)
-        else:
+    if allow_duplicate:
+        old_value = response.get_header(key)
+        if old_value is None:
             response.set_header(key, value)
-    except Exception:
-        return raise_general_exception(
-            "Error while setting header with key: " + key + " and value: " + value
-        )
+        else:
+            response.set_header(key, old_value + "," + value)
+    else:
+        response.set_header(key, value)
 
 
 def get_cookie(request: BaseRequest, key: str):
@@ -149,34 +141,9 @@ def get_rid_header(request: BaseRequest):
 AUTH_MODE_HEADER_KEY = "st-auth-mode"
 
 
-def attach_access_token_to_cookie(
-    recipe: SessionRecipe, response: BaseResponse, token: str, expires_at: int
-):
-    set_cookie(
-        recipe.config,
-        ACCESS_TOKEN_COOKIE_KEY,
-        token,
-        expires_at,
-        "access_token_path",
-        response,
-    )
-
-
-def get_access_token_from_cookie(request: BaseRequest):
-    return get_cookie(request, ACCESS_TOKEN_COOKIE_KEY)
-
-
 def clear_cookies(recipe: SessionRecipe, response: BaseResponse):
     set_cookie(
         recipe.config, ACCESS_TOKEN_COOKIE_KEY, "", 0, "access_token_path", response
-    )
-    set_cookie(
-        recipe.config,
-        ID_REFRESH_TOKEN_COOKIE_KEY,
-        "",
-        0,
-        "access_token_path",
-        response,
     )
     set_cookie(
         recipe.config,
@@ -186,20 +153,12 @@ def clear_cookies(recipe: SessionRecipe, response: BaseResponse):
         "refresh_token_path",
         response,
     )
-    set_header(response, ID_REFRESH_TOKEN_HEADER_SET_KEY, "remove", False)
-    set_header(
-        response,
-        ACCESS_CONTROL_EXPOSE_HEADERS,
-        ID_REFRESH_TOKEN_HEADER_SET_KEY,
-        True,
-    )
 
 
 def clear_session_from_all_token_transfer_methods(
     recipe: SessionRecipe, request: BaseRequest, response: BaseResponse
 ):
-    transfer_methods: List[TokenTransferMethod] = available_token_transfer_methods  # type: ignore
-    for transfer_method in transfer_methods:
+    for transfer_method in available_token_transfer_methods:
         if get_token(request, "access", transfer_method) is not None:
             clear_session(recipe.config, transfer_method, response)
 
@@ -260,7 +219,7 @@ def set_token(
     token_type: TokenType,
     value: str,
     expires: int,
-    transfer_method: str,
+    transfer_method: TokenTransferMethod,
     response: BaseResponse,
 ):
     if transfer_method == "cookie":

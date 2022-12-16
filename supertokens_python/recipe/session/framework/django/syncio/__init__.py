@@ -41,7 +41,7 @@ def verify_session(
         user_context = {}
 
     def session_verify(f: _T) -> _T:
-        from django.http import HttpRequest, HttpResponse
+        from django.http import HttpRequest
 
         @wraps(f)
         def wrapped_function(request: HttpRequest, *args: Any, **kwargs: Any):
@@ -49,12 +49,10 @@ def verify_session(
 
             try:
                 baseRequest = DjangoRequest(request)
-                baseResponse = DjangoResponse(HttpResponse())
                 recipe = SessionRecipe.get_instance()
                 session = sync(
                     recipe.verify_session(
                         baseRequest,
-                        baseResponse,
                         anti_csrf_check,
                         session_required,
                         override_global_claim_validators,

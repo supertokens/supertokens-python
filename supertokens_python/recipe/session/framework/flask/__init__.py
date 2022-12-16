@@ -16,7 +16,6 @@ from typing import Any, Callable, Dict, TypeVar, Union, cast, List, Optional
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.framework.flask.flask_request import FlaskRequest
-from supertokens_python.framework.flask.flask_response import FlaskResponse
 from supertokens_python.recipe.session import SessionRecipe, SessionContainer
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
 from supertokens_python.types import MaybeAwaitable
@@ -42,15 +41,12 @@ def verify_session(
         @wraps(f)
         def wrapped_function(*args: Any, **kwargs: Any):
             from flask import make_response, request
-            from flask.wrappers import Response
 
             baseRequest = FlaskRequest(request)
-            baseResponse = FlaskResponse(Response())  # FIXME Verify
             recipe = SessionRecipe.get_instance()
             session = sync(
                 recipe.verify_session(
                     baseRequest,
-                    baseResponse,
                     anti_csrf_check,
                     session_required,
                     override_global_claim_validators,

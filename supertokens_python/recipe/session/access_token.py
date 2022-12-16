@@ -48,7 +48,6 @@ def get_info_from_access_token(
         payload = jwt_info.payload
 
         validate_access_token_structure(payload)
-        # FIXME: Find equivalent of ! in nodejs that is cleaner than asserts?
 
         session_handle = sanitize_string(payload.get("sessionHandle"))
         user_id = sanitize_string(payload.get("userId"))
@@ -64,7 +63,6 @@ def get_info_from_access_token(
         if anti_csrf_token is None and do_anti_csrf_check:
             raise Exception("Access token does not contain the anti-csrf token")
 
-        # FIXME: Find equivalent of ! from nodejs (cleaner than assert)
         assert isinstance(expiry_time, int)
 
         if expiry_time < get_timestamp_ms():

@@ -54,7 +54,6 @@ from .recipe.session.cookie_and_header import (
 )
 from .recipe.session.utils import (
     get_top_level_domain_for_same_site_resolution,
-    TokenTransferMethod,
 )
 from .types import ThirdPartyInfo, User, UsersResponse
 from .utils import (
@@ -64,7 +63,6 @@ from .utils import (
     normalise_http_method,
     send_non_200_response_with_message,
 )
-from supertokens_python.recipe.session.constants import available_token_transfer_methods
 
 if TYPE_CHECKING:
     from .recipe_module import RecipeModule
@@ -162,8 +160,8 @@ def manage_session_post_response(session: SessionContainer, response: BaseRespon
     if session.remove_tokens is True:
         clear_session(recipe.config, session.transfer_method, response)
     else:
-        for method in session.methods_to_call:
-            method(response)
+        for mutator in session.response_mutators:
+            mutator(response)
 
         access_token = session.new_access_token_info
         refresh_token = session.new_refresh_token_info
@@ -177,20 +175,20 @@ def manage_session_post_response(session: SessionContainer, response: BaseRespon
             )
             set_token(
                 recipe.config,
-                response,
                 "access",
                 access_token["token"],
                 int(datetime.now().timestamp()) + 3153600000000,
                 session.transfer_method,
+                response,
             )
         if refresh_token is not None:
             set_token(
                 recipe.config,
-                response,
                 "refresh",
                 refresh_token["token"],
                 refresh_token["expiry"],
                 session.transfer_method,
+                response,
             )
 
         anti_csrf_token = session.new_anti_csrf_token

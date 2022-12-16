@@ -13,7 +13,9 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Union, NoReturn
+from typing import Union, NoReturn, Callable, List
+
+from supertokens_python.framework import BaseResponse
 
 
 def raise_general_exception(
@@ -31,7 +33,7 @@ def raise_bad_input_exception(msg: str) -> NoReturn:
 
 
 class SuperTokensError(Exception):
-    pass
+    response_mutators: List[Callable[[BaseResponse], None]] = []
 
 
 class GeneralError(SuperTokensError):

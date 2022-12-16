@@ -28,11 +28,10 @@ from typing import (
 
 from supertokens_python.async_to_sync_wrapper import sync
 from supertokens_python.types import APIResponse, GeneralErrorResponse, MaybeAwaitable
-from .utils import TokenTransferMethod
 
 from ...utils import resolve
 from .exceptions import ClaimValidationError
-from .utils import SessionConfig
+from .utils import SessionConfig, TokenTransferMethod
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
@@ -359,14 +358,10 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         self.transfer_method: TokenTransferMethod = transfer_method
         self.new_access_token_info: Optional[Dict[str, Any]] = None
         self.new_refresh_token_info: Optional[Dict[str, Any]] = None
-        # self.new_id_refresh_token_info = None
         self.new_anti_csrf_token = None
         self.remove_tokens = False
 
-        self.request_refresh_tokens: Dict[TokenTransferMethod, Any] = {}
-        self.request_access_tokens: Dict[TokenTransferMethod, Any] = {}
-
-        self.methods_to_call: List[Callable[[Any], Any]] = []
+        self.response_mutators: List[Callable[[BaseResponse], None]] = []
 
     @abstractmethod
     async def revoke_session(

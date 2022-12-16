@@ -22,7 +22,7 @@ from typing_extensions import Literal
 from supertokens_python.utils import default_user_context
 
 from .api import handle_refresh_api, handle_signout_api
-from .cookie_and_header import get_cors_allowed_headers, set_cookie
+from .cookie_and_header import get_cors_allowed_headers
 from .exceptions import (
     SuperTokensSessionError,
     TokenTheftError,
@@ -57,7 +57,6 @@ from .interfaces import (
 )
 from .recipe_implementation import (
     RecipeImplementation,
-    LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
 )
 from .utils import (
     InputErrorHandlers,
@@ -238,21 +237,9 @@ class SessionRecipe(RecipeModule):
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
     ) -> BaseResponse:
-        if (
-            not isinstance(err, UnauthorisedError) or err.clear_tokens
-        ):  # TODO: Verify if this is correct
-            if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
-                log_debug_message(
-                    "handle_error: cleared legacy id refresh token because refresh is clearing other tokens"
-                )
-                set_cookie(
-                    config=self.config,
-                    key=LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
-                    value="",
-                    expires=0,
-                    path_type="access_token_path",
-                    response=response,
-                )
+        if err.response_mutators is not None:
+            for mutator in err.response_mutators:
+                mutator(response)
 
         if isinstance(err, UnauthorisedError):
             log_debug_message("errorHandler: returning UNAUTHORISED")
@@ -367,7 +354,6 @@ class SessionRecipe(RecipeModule):
     async def verify_session(
         self,
         request: BaseRequest,
-        response: BaseResponse,
         anti_csrf_check: Union[bool, None],
         session_required: bool,
         override_global_claim_validators: Optional[
@@ -383,7 +369,7 @@ class SessionRecipe(RecipeModule):
         return await self.api_implementation.verify_session(
             APIOptions(
                 request,
-                response,
+                None,
                 self.recipe_id,
                 self.config,
                 self.recipe_implementation,
