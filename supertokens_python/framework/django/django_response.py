@@ -50,9 +50,7 @@ class DjangoResponse(BaseResponse):
         self.response.set_cookie(
             key=key,
             value=value,
-            expires=datetime.fromtimestamp(ceil(expires / 1000)).strftime(
-                "%A, %B %d, %Y %H:%M:%S"
-            ),
+            expires=datetime.fromtimestamp(ceil(expires / 1000)),
             path=path,
             domain=domain,
             secure=secure,
