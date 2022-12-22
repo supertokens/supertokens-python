@@ -67,10 +67,10 @@ def verify_session(
                     baseRequest.set_session(session)
                 return f(baseRequest.request, *args, **kwargs)
             except SuperTokensError as e:
-                response_ = DjangoResponse(JsonResponse({}))
+                response = DjangoResponse(JsonResponse({}))
                 result = sync(
                     Supertokens.get_instance().handle_supertokens_error(
-                        DjangoRequest(request), e, response_
+                        DjangoRequest(request), e, response
                     )
                 )
                 if isinstance(result, DjangoResponse):

@@ -21,9 +21,13 @@ from typing_extensions import Literal
 from .constants import (
     ACCESS_CONTROL_EXPOSE_HEADERS,
     ACCESS_TOKEN_COOKIE_KEY,
+    ACCESS_TOKEN_HEADER_KEY,
     ANTI_CSRF_HEADER_KEY,
+    AUTH_MODE_HEADER_KEY,
+    AUTHORIZATION_HEADER_KEY,
     FRONT_TOKEN_HEADER_SET_KEY,
     REFRESH_TOKEN_COOKIE_KEY,
+    REFRESH_TOKEN_HEADER_KEY,
     RID_HEADER_KEY,
     available_token_transfer_methods,
 )
@@ -37,16 +41,7 @@ if TYPE_CHECKING:
 from json import dumps
 from typing import Any, Dict, Union
 
-from supertokens_python.utils import (
-    get_header,
-    utf_base64encode,
-)
-
-
-auth_mode_header_key = "st-auth-mode"
-AUTHORIZATION_HEADER_KEY = "authorization"
-ACCESS_TOKEN_HEADER_KEY = "st-access-token"
-REFRESH_TOKEN_HEADER_KEY = "st-refresh-token"
+from supertokens_python.utils import get_header, utf_base64encode
 
 
 def set_front_token_in_headers(
@@ -126,8 +121,8 @@ def set_cookie(
 
 
 def attach_anti_csrf_header(response: BaseResponse, value: str):
-    response.set_header(ANTI_CSRF_HEADER_KEY, value)
-    response.set_header(ACCESS_CONTROL_EXPOSE_HEADERS, ANTI_CSRF_HEADER_KEY)
+    set_header(response, ANTI_CSRF_HEADER_KEY, value, False)
+    set_header(response, ACCESS_CONTROL_EXPOSE_HEADERS, ANTI_CSRF_HEADER_KEY, True)
 
 
 def get_anti_csrf_header(request: BaseRequest):
@@ -136,23 +131,6 @@ def get_anti_csrf_header(request: BaseRequest):
 
 def get_rid_header(request: BaseRequest):
     return get_header(request, RID_HEADER_KEY)
-
-
-AUTH_MODE_HEADER_KEY = "st-auth-mode"
-
-
-def clear_cookies(recipe: SessionRecipe, response: BaseResponse):
-    set_cookie(
-        recipe.config, ACCESS_TOKEN_COOKIE_KEY, "", 0, "access_token_path", response
-    )
-    set_cookie(
-        recipe.config,
-        REFRESH_TOKEN_COOKIE_KEY,
-        "",
-        0,
-        "refresh_token_path",
-        response,
-    )
 
 
 def clear_session_from_all_token_transfer_methods(
@@ -180,19 +158,17 @@ def clear_session(
 def get_cookie_name_from_token_type(token_type: TokenType):
     if token_type == "access":
         return ACCESS_TOKEN_COOKIE_KEY
-    elif token_type == "refresh":
+    if token_type == "refresh":
         return REFRESH_TOKEN_COOKIE_KEY
-    else:
-        raise Exception("Unknown token type, should never happen")
+    raise Exception("Unknown token type, should never happen")
 
 
 def get_response_header_name_for_token_type(token_type: TokenType):
     if token_type == "access":
         return ACCESS_TOKEN_HEADER_KEY
-    elif token_type == "refresh":
+    if token_type == "refresh":
         return REFRESH_TOKEN_HEADER_KEY
-    else:
-        raise Exception("Unknown token type, should never happen")
+    raise Exception("Unknown token type, should never happen")
 
 
 def get_token(
@@ -202,16 +178,14 @@ def get_token(
 ) -> Optional[str]:
     if transfer_method == "cookie":
         return request.get_cookie(get_cookie_name_from_token_type(token_type))
-    elif transfer_method == "header":
+    if transfer_method == "header":
         value = request.get_header(AUTHORIZATION_HEADER_KEY)
         if value is None or not value.startswith("Bearer "):
             return None
 
-        return value[len("Bearer ") :]
-    else:
-        raise Exception(
-            "Should never happen: Unknown transferMethod: " + transfer_method
-        )
+        return value[len("Bearer ") :].strip()
+
+    raise Exception("Should never happen: Unknown transferMethod: " + transfer_method)
 
 
 def set_token(
@@ -232,21 +206,13 @@ def set_token(
             response,
         )
     elif transfer_method == "header":
-        set_header_with_expiry(
+        set_token_in_header(
             response,
             get_response_header_name_for_token_type(token_type),
             value,
-            expires,
         )
 
 
-def set_header_with_expiry(response: BaseResponse, name: str, value: str, expires: int):
-    set_header(response, name, f"{value};{expires}", allow_duplicate=False)
+def set_token_in_header(response: BaseResponse, name: str, value: str):
+    set_header(response, name, value, allow_duplicate=False)
     set_header(response, ACCESS_CONTROL_EXPOSE_HEADERS, name, allow_duplicate=True)
-
-
-def get_auth_mode_from_header(request: BaseRequest):
-    auth_mode = request.get_header(AUTH_MODE_HEADER_KEY)
-    if auth_mode is None:
-        return None
-    return auth_mode.lower()

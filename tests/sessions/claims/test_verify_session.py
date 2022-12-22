@@ -354,6 +354,7 @@ async def test_should_reject_if_assert_claims_returns_an_error(
         "test_session_handle",
         "test_user_id",
         {},
+        "cookie",
     )
 
     with patch.object(Session, "assert_claims", wraps=s.assert_claims) as mock:

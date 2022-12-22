@@ -24,6 +24,10 @@ REFRESH_TOKEN_COOKIE_KEY = "sRefreshToken"
 FRONT_TOKEN_HEADER_SET_KEY = "front-token"
 ANTI_CSRF_HEADER_KEY = "anti-csrf"
 RID_HEADER_KEY = "rid"
+AUTH_MODE_HEADER_KEY = "st-auth-mode"
+AUTHORIZATION_HEADER_KEY = "authorization"
+ACCESS_TOKEN_HEADER_KEY = "st-access-token"
+REFRESH_TOKEN_HEADER_KEY = "st-refresh-token"
 ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers"
 
 available_token_transfer_methods: List[TokenTransferMethod] = ["cookie", "header"]

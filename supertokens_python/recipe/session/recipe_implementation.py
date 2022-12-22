@@ -343,15 +343,15 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         request_transfer_method: TokenTransferMethod
         request_access_token: Union[ParsedJWTInfo, None]
 
-        if (
-            allowed_transfer_method == "any" or allowed_transfer_method == "header"
-        ) and access_tokens.get("header") is not None:
+        if (allowed_transfer_method in ("any", "header")) and access_tokens.get(
+            "header"
+        ) is not None:
             log_debug_message("getSession: using header transfer method")
             request_transfer_method = "header"
             request_access_token = access_tokens["header"]
-        elif (
-            allowed_transfer_method == "any" or allowed_transfer_method == "cookie"
-        ) and access_tokens.get("cookie") is not None:
+        elif (allowed_transfer_method in ("any", "cookie")) and access_tokens.get(
+            "cookie"
+        ) is not None:
             log_debug_message("getSession: using header transfer method")
             request_transfer_method = "cookie"
             request_access_token = access_tokens["cookie"]
@@ -451,15 +451,15 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         request_transfer_method: TokenTransferMethod
         refresh_token: Optional[str]
 
-        if (
-            allowed_transfer_method == "any" or allowed_transfer_method == "header"
-        ) and (refresh_tokens.get("header")):
+        if (allowed_transfer_method in ("any", "header")) and (
+            refresh_tokens.get("header")
+        ):
             log_debug_message("refreshSession: using header transfer method")
             request_transfer_method = "header"
             refresh_token = refresh_tokens["header"]
-        elif (
-            allowed_transfer_method == "any" or allowed_transfer_method == "cookie"
-        ) and (refresh_tokens.get("cookie")):
+        elif (allowed_transfer_method in ("any", "cookie")) and (
+            refresh_tokens.get("cookie")
+        ):
             log_debug_message("refreshSession: using cookie transfer method")
             request_transfer_method = "cookie"
             refresh_token = refresh_tokens["cookie"]
@@ -545,7 +545,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             request.set_session(session)
             return session
         except SuperTokensError as e:
-            if isinstance(e, UnauthorisedError or (hasattr(e, "clear_tokens") and e.clear_tokens is True)):  # type: ignore
+            if isinstance(e, UnauthorisedError) or (
+                hasattr(e, "clear_tokens") and e.clear_tokens is True
+            ):  # pylint: disable=no-member
                 # This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
                 if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
                     log_debug_message(

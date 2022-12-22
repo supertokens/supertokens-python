@@ -33,9 +33,8 @@ from tldextract import extract  # type: ignore
 from typing_extensions import Literal
 
 from ...types import MaybeAwaitable
-from .constants import SESSION_REFRESH
+from .constants import SESSION_REFRESH, AUTH_MODE_HEADER_KEY
 from .cookie_and_header import (
-    AUTH_MODE_HEADER_KEY,
     clear_session_from_all_token_transfer_methods,
 )
 from .exceptions import ClaimValidationError
@@ -305,8 +304,8 @@ def get_token_transfer_method_default(
 ):
     _ = user_context
 
+    # We allow fallback (checking headers then cookies) by default when validating
     if not for_create_new_session:
-        # refresh or revokes call
         return "any"
 
     auth_mode = get_auth_mode_from_header(req)

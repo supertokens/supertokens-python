@@ -492,7 +492,7 @@ async def test_email_verification_default_backward_compatibility(
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -557,7 +557,7 @@ async def test_email_verification_default_backward_compatibility_suppress_error(
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -632,7 +632,7 @@ async def test_email_verification_backward_compatibility(
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, False, {}, {})
 
     res = email_verify_token_request(
         driver_config_client,
@@ -702,7 +702,7 @@ async def test_email_verification_custom_override(driver_config_client: TestClie
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
 
     def api_side_effect(request: httpx.Request):
         nonlocal app_name, email, email_verify_url
@@ -833,7 +833,7 @@ async def test_email_verification_smtp_service(driver_config_client: TestClient)
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
 
     resp = email_verify_token_request(
         driver_config_client,
@@ -899,7 +899,7 @@ async def test_reset_password_backward_compatibility_thirdparty_user(
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
 
     res = email_verify_token_request(
         driver_config_client,
@@ -963,7 +963,7 @@ async def test_email_verification_backward_compatibility_thirdparty_user(
     s = SessionRecipe.get_instance()
     if not isinstance(s.recipe_implementation, SessionRecipeImplementation):
         raise Exception("Should never come here")
-    response = await create_new_session(s.recipe_implementation, user_id, {}, {})
+    response = await create_new_session(s.recipe_implementation, user_id, True, {}, {})
 
     res = email_verify_token_request(
         driver_config_client,
