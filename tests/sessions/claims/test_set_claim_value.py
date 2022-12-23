@@ -30,6 +30,7 @@ async def test_should_merge_the_right_value(timestamp: int):
         "test_session_handle",
         "test_user_id",
         {},
+        "cookie",
     )
     with patch.object(
         Session,

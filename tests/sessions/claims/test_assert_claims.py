@@ -38,6 +38,7 @@ async def test_should_not_throw_for_empty_array():
         "test_session_handle",
         "test_user_id",
         {},
+        "cookie",
     )
     with patch.object(
         Session,
@@ -62,6 +63,7 @@ async def test_should_call_validate_with_the_same_payload_object():
         "test_session_handle",
         "test_user_id",
         payload,
+        "cookie",
     )
 
     class DummyClaimValidator(SessionClaimValidator):

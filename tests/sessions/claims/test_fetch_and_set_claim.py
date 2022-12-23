@@ -19,6 +19,7 @@ async def test_should_not_change_if_claim_fetch_value_returns_none():
         "test_session_handle",
         "test_user_id",
         {},
+        "cookie",
     )
     with patch.object(
         Session,
@@ -37,6 +38,7 @@ async def test_should_update_if_claim_fetch_value_returns_value(timestamp: int):
         "test_session_handle",
         "test_user_id",
         {},
+        "cookie",
     )
     with patch.object(
         Session,

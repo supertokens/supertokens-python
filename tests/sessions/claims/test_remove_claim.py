@@ -29,6 +29,7 @@ async def test_should_attempt_to_set_claim_to_none():
         "test_session_handle",
         "test_user_id",
         {},
+        "cookie",
     )
     with patch.object(
         Session,

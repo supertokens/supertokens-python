@@ -546,8 +546,8 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             return session
         except SuperTokensError as e:
             if isinstance(e, UnauthorisedError) or (
-                hasattr(e, "clear_tokens") and e.clear_tokens is True
-            ):  # pylint: disable=no-member
+                hasattr(e, "clear_tokens") and e.clear_tokens is True  # type: ignore # pylint: disable=no-member
+            ):
                 # This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
                 if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
                     log_debug_message(
