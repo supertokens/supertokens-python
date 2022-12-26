@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 SUPPORTED_CDI_VERSIONS = ["2.9", "2.10", "2.11", "2.12", "2.13", "2.14", "2.15"]
-VERSION = "0.11.10"
+VERSION = "0.11.11"
 TELEMETRY = "/telemetry"
 USER_COUNT = "/users/count"
 USER_DELETE = "/user/remove"
@@ -25,4 +25,4 @@ RID_KEY_HEADER = "rid"
 FDI_KEY_HEADER = "fdi-version"
 API_VERSION = "/apiversion"
 API_VERSION_HEADER = "cdi-version"
-DASHBOARD_VERSION = "0.2"
+DASHBOARD_VERSION = "0.3"
