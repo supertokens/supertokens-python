@@ -132,6 +132,13 @@ class UserGetAPINoUserFoundError(APIResponse):
         return {"status": self.status}
 
 
+class UserGetAPIRecipeNotInitialisedError(APIResponse):
+    status: str = "RECIPE_NOT_INITIALISED"
+
+    def to_json(self) -> Dict[str, Any]:
+        return {"status": self.status}
+
+
 class FeatureNotEnabledError(APIResponse):
     status: str = "FEATURE_NOT_ENABLED_ERROR"
 

@@ -324,3 +324,28 @@ async def get_user_for_recipe_id(
         return GetUserForRecipeIdResult(user, recipe)
 
     return None
+
+
+def is_recipe_initialised(recipeId: str) -> bool:
+    if recipeId == EmailPasswordRecipe.recipe_id:
+        try:
+            EmailPasswordRecipe.get_instance()
+            return True
+        except Exception:
+            return False
+
+    elif recipeId == PasswordlessRecipe.recipe_id:
+        try:
+            PasswordlessRecipe.get_instance()
+            return True
+        except Exception:
+            return False
+
+    elif recipeId == ThirdPartyRecipe.recipe_id:
+        try:
+            ThirdPartyRecipe.get_instance()
+            return True
+        except Exception:
+            return False
+
+    return False
