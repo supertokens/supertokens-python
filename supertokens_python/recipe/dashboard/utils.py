@@ -27,8 +27,14 @@ from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdparty.asyncio import (
     get_user_by_id as tp_get_user_by_idx,
 )
+from supertokens_python.recipe.thirdpartyemailpassword import (
+    ThirdPartyEmailPasswordRecipe,
+)
 from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
     get_user_by_id as tpep_get_user_by_id,
+)
+from supertokens_python.recipe.thirdpartypasswordless import (
+    ThirdPartyPasswordlessRecipe,
 )
 from supertokens_python.recipe.thirdpartypasswordless.asyncio import (
     get_user_by_id as tppless_get_user_by_id,
@@ -327,25 +333,55 @@ async def get_user_for_recipe_id(
 
 
 def is_recipe_initialised(recipeId: str) -> bool:
+    isRecipeInitialised: bool = False
+
     if recipeId == EmailPasswordRecipe.recipe_id:
         try:
             EmailPasswordRecipe.get_instance()
-            return True
+            isRecipeInitialised = True
         except Exception:
-            return False
+            pass
+
+        if not isRecipeInitialised:
+            try:
+                ThirdPartyEmailPasswordRecipe.get_instance()
+                isRecipeInitialised = True
+            except Exception:
+                pass
 
     elif recipeId == PasswordlessRecipe.recipe_id:
         try:
             PasswordlessRecipe.get_instance()
-            return True
+            isRecipeInitialised = True
         except Exception:
-            return False
+            pass
+
+        if not isRecipeInitialised:
+            try:
+                ThirdPartyPasswordlessRecipe.get_instance()
+                isRecipeInitialised = True
+            except Exception:
+                pass
 
     elif recipeId == ThirdPartyRecipe.recipe_id:
         try:
             ThirdPartyRecipe.get_instance()
-            return True
+            isRecipeInitialised = True
         except Exception:
-            return False
+            pass
 
-    return False
+        if not isRecipeInitialised:
+            try:
+                ThirdPartyEmailPasswordRecipe.get_instance()
+                isRecipeInitialised = True
+            except Exception:
+                pass
+
+        if not isRecipeInitialised:
+            try:
+                ThirdPartyPasswordlessRecipe.get_instance()
+                isRecipeInitialised = True
+            except Exception:
+                pass
+
+    return isRecipeInitialised
