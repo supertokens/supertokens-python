@@ -26,7 +26,6 @@ if TYPE_CHECKING:
     from .utils import TokenTransferMethod
 
 from supertokens_python.logger import log_debug_message
-from supertokens_python.utils import is_an_ip_address
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
 
@@ -49,32 +48,6 @@ async def create_new_session(
         session_data = {}
     if access_token_payload is None:
         access_token_payload = {}
-
-    config = recipe_implementation.config
-    app_info = recipe_implementation.app_info
-    top_level_api_domain = app_info.top_level_api_domain
-    top_level_website_domain = app_info.top_level_website_domain
-
-    if (
-        (not disable_anti_csrf)
-        and config.cookie_same_site == "none"
-        and (not config.cookie_secure)
-        and not (
-            (
-                top_level_api_domain == "localhost"
-                or is_an_ip_address(top_level_api_domain)
-            )
-            and (
-                top_level_website_domain == "localhost"
-                or is_an_ip_address(top_level_website_domain)
-            )
-        )
-    ):
-        # We can allow insecure cookie when both website & API domain are localhost or an IP
-        # When either of them is a different domain, API domain needs to have https and a secure cookie to work
-        raise Exception(
-            "Since your API and website domain are different, for sessions to work, please use https on your api_domain and dont set cookie_secure to false."
-        )
 
     handshake_info = await recipe_implementation.get_handshake_info()
     enable_anti_csrf = (

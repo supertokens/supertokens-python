@@ -88,7 +88,7 @@ def get_info_from_access_token(
 def validate_access_token_structure(payload: Dict[str, Any]) -> None:
     if (
         not isinstance(payload.get("sessionHandle"), str)
-        or not isinstance(payload.get("userData"), str)
+        or payload.get("userData") is None
         or not isinstance(payload.get("refreshTokenHash1"), str)
         or not isinstance(payload.get("expiryTime"), int)
         or not isinstance(payload.get("timeCreated"), int)
