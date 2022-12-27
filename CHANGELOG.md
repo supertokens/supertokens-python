@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
--  Fix django cookie expiry time format to make it consistent with other frameworks
+## [0.11.12] - 2022-12-27
+-  Fix django cookie expiry time format to make it consistent with other frameworks: https://github.com/supertokens/supertokens-python/issues/267
 
 ## [0.11.11] - 2022-12-26
 
