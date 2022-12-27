@@ -16,6 +16,7 @@ import json
 from inspect import isawaitable
 from typing import Any, Dict, Union
 
+from datetime import datetime
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.test import RequestFactory, TestCase
 from supertokens_python import InputAppInfo, SupertokensConfig, init
@@ -251,6 +252,13 @@ class SupertokensTest(TestCase):
         assert len(cookies["sAccessToken"]["value"]) > 0
         assert len(cookies["sIdRefreshToken"]["value"]) > 0
         assert len(cookies["sRefreshToken"]["value"]) > 0
+
+        try:
+            datetime.strptime(
+                cookies["sAccessToken"]["expires"], "%a, %d %b %Y %H:%M:%S GMT"
+            )
+        except ValueError:
+            assert False, "cookies expiry time doesn't have the correct format"
 
         my_middleware = middleware(handle_view)
         request = self.factory.get("/handle", {"user_id": "user_id"})
