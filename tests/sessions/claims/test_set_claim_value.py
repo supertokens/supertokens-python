@@ -24,8 +24,10 @@ pytestmark = (
 
 async def test_should_merge_the_right_value(timestamp: int):
     recipe_implementation_mock = AsyncMock()
+    session_config_mock = MagicMock()
     session = Session(
         recipe_implementation_mock,
+        session_config_mock,
         "test_access_token",
         "test_session_handle",
         "test_user_id",

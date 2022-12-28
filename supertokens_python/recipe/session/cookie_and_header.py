@@ -45,14 +45,17 @@ from supertokens_python.utils import get_header, utf_base64encode
 
 
 def set_front_token_in_headers(
-    response: BaseResponse,
+    response: Optional[BaseResponse],
     user_id: str,
-    expires_at: int,
+    expires: int,
     jwt_payload: Union[None, Dict[str, Any]] = None,
 ):
+    if response is None:
+        raise Exception("Please pass a response object")
+
     if jwt_payload is None:
         jwt_payload = {}
-    token_info = {"uid": user_id, "ate": expires_at, "up": jwt_payload}
+    token_info = {"uid": user_id, "ate": expires, "up": jwt_payload}
     set_header(
         response,
         FRONT_TOKEN_HEADER_SET_KEY,
@@ -120,7 +123,10 @@ def set_cookie(
     )
 
 
-def attach_anti_csrf_header(response: BaseResponse, value: str):
+def attach_anti_csrf_header(response: Optional[BaseResponse], value: str):
+    if response is None:
+        raise Exception("Please pass a response object")
+
     set_header(response, ANTI_CSRF_HEADER_KEY, value, False)
     set_header(response, ACCESS_CONTROL_EXPOSE_HEADERS, ANTI_CSRF_HEADER_KEY, True)
 
@@ -138,16 +144,21 @@ def clear_session_from_all_token_transfer_methods(
 ):
     for transfer_method in available_token_transfer_methods:
         if get_token(request, "access", transfer_method) is not None:
-            clear_session(recipe.config, transfer_method, response)
+            clear_session(response, recipe.config, transfer_method)
 
 
 def clear_session(
-    config: SessionConfig, transfer_method: TokenTransferMethod, response: BaseResponse
+    response: Optional[BaseResponse],
+    config: SessionConfig,
+    transfer_method: TokenTransferMethod,
 ):
+    if response is None:
+        raise Exception("Please pass a response object")
+
     # If we can tell it's a cookie based session we are not clearing using headers
     token_types: List[TokenType] = ["access", "refresh"]
     for token_type in token_types:
-        set_token(config, token_type, "", 0, transfer_method, response)
+        set_token(response, config, token_type, "", 0, transfer_method)
 
     set_header(response, FRONT_TOKEN_HEADER_SET_KEY, "remove", False)
     set_header(
@@ -189,13 +200,16 @@ def get_token(
 
 
 def set_token(
+    response: Optional[BaseResponse],
     config: SessionConfig,
     token_type: TokenType,
     value: str,
     expires: int,
     transfer_method: TokenTransferMethod,
-    response: BaseResponse,
 ):
+    if response is None:
+        raise Exception("Please pass a response object")
+
     if transfer_method == "cookie":
         set_cookie(
             config,

@@ -6,6 +6,7 @@ from pytest import mark
 from supertokens_python.recipe import session
 
 from supertokens_python.recipe.session import SessionRecipe
+from supertokens_python.recipe.session.recipe_implementation import RecipeImplementation
 from supertokens_python.recipe.session.claims import PrimitiveClaim
 from supertokens_python.recipe.session.interfaces import (
     JSONObject,
@@ -31,9 +32,11 @@ async def test_should_not_throw_for_empty_array():
     start_st()
 
     s = SessionRecipe.get_instance()
+    assert isinstance(s.recipe_implementation, RecipeImplementation)
 
     user_session = Session(
         s.recipe_implementation,
+        s.recipe_implementation.config,
         "test_access_token",
         "test_session_handle",
         "test_user_id",
@@ -55,10 +58,12 @@ async def test_should_call_validate_with_the_same_payload_object():
     start_st()
 
     s = SessionRecipe.get_instance()
+    assert isinstance(s.recipe_implementation, RecipeImplementation)
 
     payload = {"custom-key": "custom-value"}
     user_session = Session(
         s.recipe_implementation,
+        s.recipe_implementation.config,
         "test_access_token",
         "test_session_handle",
         "test_user_id",

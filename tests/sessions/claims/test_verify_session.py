@@ -30,6 +30,7 @@ from tests.utils import (
     teardown_function,
     start_st,
     AsyncMock,
+    MagicMock,
     st_init_common_args,
 )
 
@@ -348,8 +349,10 @@ async def test_should_reject_if_assert_claims_returns_an_error(
     start_st()
 
     recipe_implementation_mock = AsyncMock()
+    session_config_mock = MagicMock()
     s = Session(
         recipe_implementation_mock,
+        session_config_mock,
         "test_access_token",
         "test_session_handle",
         "test_user_id",
@@ -390,9 +393,11 @@ async def test_should_allow_if_assert_claims_returns_no_error(
     recipe_impl_mock.validate_claims.return_value = ClaimsValidationResult(  # type: ignore
         invalid_claims=[]
     )
+    session_config_mock = MagicMock()
 
     s = Session(
         recipe_impl_mock,
+        session_config_mock,
         "test_access_token",
         "test_session_handle",
         "test_user_id",

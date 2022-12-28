@@ -14,7 +14,6 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union
 
 from typing_extensions import Literal
@@ -46,12 +45,6 @@ from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
 from .post_init_callbacks import PostSTInitCallbacks
 from .querier import Querier
-from .recipe.session.cookie_and_header import (
-    attach_anti_csrf_header,
-    set_front_token_in_headers,
-    clear_session,
-    set_token,
-)
 from .recipe.session.utils import (
     get_top_level_domain_for_same_site_resolution,
 )
@@ -76,7 +69,6 @@ from os import environ
 from httpx import AsyncClient
 
 from .exceptions import BadInputError, GeneralError, raise_general_exception
-from .recipe.session import SessionRecipe
 
 
 class SupertokensConfig:
@@ -156,44 +148,8 @@ class AppInfo:
 
 
 def manage_session_post_response(session: SessionContainer, response: BaseResponse):
-    recipe = SessionRecipe.get_instance()
-    if session.remove_tokens is True:
-        clear_session(recipe.config, session.transfer_method, response)
-    else:
-        for mutator in session.response_mutators:
-            mutator(response)
-
-        access_token = session.new_access_token_info
-        refresh_token = session.new_refresh_token_info
-
-        if access_token is not None:
-            set_front_token_in_headers(
-                response,
-                session["user_id"],
-                access_token["expiry"],
-                session["access_token_payload"],
-            )
-            set_token(
-                recipe.config,
-                "access",
-                access_token["token"],
-                int(datetime.now().timestamp()) + 3153600000000,
-                session.transfer_method,
-                response,
-            )
-        if refresh_token is not None:
-            set_token(
-                recipe.config,
-                "refresh",
-                refresh_token["token"],
-                refresh_token["expiry"],
-                session.transfer_method,
-                response,
-            )
-
-        anti_csrf_token = session.new_anti_csrf_token
-        if anti_csrf_token is not None:
-            attach_anti_csrf_header(response, anti_csrf_token)
+    for mutator in session.response_mutators:
+        mutator(response=response)  # type: ignore
 
 
 class Supertokens:

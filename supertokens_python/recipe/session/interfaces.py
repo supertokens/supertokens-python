@@ -344,6 +344,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def __init__(
         self,
         recipe_implementation: RecipeInterface,
+        config: SessionConfig,
         access_token: str,
         session_handle: str,
         user_id: str,
@@ -351,15 +352,12 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         transfer_method: TokenTransferMethod,
     ):
         self.recipe_implementation = recipe_implementation
+        self.config = config
         self.access_token = access_token
         self.session_handle = session_handle
         self.access_token_payload = access_token_payload
         self.user_id = user_id
         self.transfer_method: TokenTransferMethod = transfer_method
-        self.new_access_token_info: Optional[Dict[str, Any]] = None
-        self.new_refresh_token_info: Optional[Dict[str, Any]] = None
-        self.new_anti_csrf_token = None
-        self.remove_tokens = False
 
         self.response_mutators: List[Callable[[BaseResponse], None]] = []
 

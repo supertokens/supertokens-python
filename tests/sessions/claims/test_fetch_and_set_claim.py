@@ -4,7 +4,7 @@ from pytest import mark
 from supertokens_python.recipe.session.session_class import Session
 from tests.sessions.claims.utils import NoneClaim, TrueClaim
 
-from tests.utils import AsyncMock
+from tests.utils import AsyncMock, MagicMock
 
 pytestmark = (
     mark.asyncio
@@ -13,8 +13,10 @@ pytestmark = (
 
 async def test_should_not_change_if_claim_fetch_value_returns_none():
     recipe_implementation_mock = AsyncMock()
+    session_config_mock = MagicMock()
     session = Session(
         recipe_implementation_mock,
+        session_config_mock,
         "test_access_token",
         "test_session_handle",
         "test_user_id",
@@ -32,8 +34,11 @@ async def test_should_not_change_if_claim_fetch_value_returns_none():
 
 async def test_should_update_if_claim_fetch_value_returns_value(timestamp: int):
     recipe_implementation_mock = AsyncMock()
+    session_config_mock = MagicMock()
+
     session = Session(
         recipe_implementation_mock,
+        session_config_mock,
         "test_access_token",
         "test_session_handle",
         "test_user_id",

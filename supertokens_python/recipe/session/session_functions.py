@@ -43,7 +43,7 @@ async def create_new_session(
     disable_anti_csrf: bool,
     access_token_payload: Union[None, Dict[str, Any]],
     session_data: Union[None, Dict[str, Any]],
-):
+) -> Dict[str, Any]:
     if session_data is None:
         session_data = {}
     if access_token_payload is None:

@@ -23,8 +23,10 @@ pytestmark = mark.asyncio
 
 async def test_should_attempt_to_set_claim_to_none():
     recipe_implementation_mock = AsyncMock()
+    session_config_mock = MagicMock()
     session = Session(
         recipe_implementation_mock,
+        session_config_mock,
         "test_access_token",
         "test_session_handle",
         "test_user_id",
