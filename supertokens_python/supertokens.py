@@ -45,9 +45,6 @@ from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
 from .post_init_callbacks import PostSTInitCallbacks
 from .querier import Querier
-from .recipe.session.utils import (
-    get_top_level_domain_for_same_site_resolution,
-)
 from .types import ThirdPartyInfo, User, UsersResponse
 from .utils import (
     execute_async,
@@ -55,6 +52,7 @@ from .utils import (
     is_version_gte,
     normalise_http_method,
     send_non_200_response_with_message,
+    get_top_level_domain_for_same_site_resolution,
 )
 
 if TYPE_CHECKING:

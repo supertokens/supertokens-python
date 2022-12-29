@@ -415,7 +415,7 @@ def get_core_api_version() -> str:
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()

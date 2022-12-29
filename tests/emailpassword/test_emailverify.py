@@ -1065,7 +1065,7 @@ async def test_email_verify_with_deleted_user(driver_config_client: TestClient):
         [
             emailpassword.init(),
             emailverification.init("OPTIONAL", create_and_send_custom_email=custom_f),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ]
     )
     init(**st_args)
@@ -1109,7 +1109,7 @@ async def test_generate_email_verification_token_api_updates_session_claims(
                 emailverification.init(
                     "OPTIONAL", create_and_send_custom_email=custom_f
                 ),
-                session.init(),
+                session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
             ]
         )
     )

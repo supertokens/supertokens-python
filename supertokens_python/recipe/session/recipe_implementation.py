@@ -341,6 +341,10 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
         return ClaimsValidationResult(invalid_claims)
 
+    # In all cases if sIdRefreshToken token exists (so it's a legacy session) we return TRY_REFRESH_TOKEN. The refresh
+    # endpoint will clear this cookie and try to upgrade the session.
+    # Check https://supertokens.com/docs/contribute/decisions/session/0007 for further details and a table of expected
+    # behaviours
     async def get_session(
         self,
         request: BaseRequest,
@@ -535,11 +539,11 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 response_mutators.append(
                     partial(
                         set_cookie,
-                        self.config,
-                        LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
-                        "",
-                        0,
-                        "access_token_path",
+                        config=self.config,
+                        key=LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
+                        value="",
+                        expires=0,
+                        path_type="access_token_path",
                     )
                 )
 
@@ -665,11 +669,11 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                     response_mutators.append(
                         partial(
                             set_cookie,
-                            self.config,
-                            LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
-                            "",
-                            0,
-                            "access_token_path",
+                            config=self.config,
+                            key=LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
+                            value="",
+                            expires=0,
+                            path_type="access_token_path",
                         )
                     )
                     e.response_mutators = response_mutators

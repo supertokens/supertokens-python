@@ -137,7 +137,7 @@ async def test_email_verify_default_backward_compatibility(
                     providers=[CustomProvider("CUSTOM", True)]
                 )
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -208,7 +208,7 @@ async def test_email_verify_default_backward_compatibility_supress_error(
                     providers=[CustomProvider("CUSTOM", True)]
                 )
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -287,7 +287,7 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
                     providers=[CustomProvider("CUSTOM", True)]
                 )
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -362,7 +362,7 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
                     providers=[CustomProvider("CUSTOM", True)]
                 ),
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -499,7 +499,7 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
                     providers=[CustomProvider("CUSTOM", True)]
                 ),
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()

@@ -92,12 +92,12 @@ def get_cookie(request: BaseRequest, key: str):
 
 
 def set_cookie(
+    response: BaseResponse,
     config: SessionConfig,
     key: str,
     value: str,
     expires: int,
     path_type: Literal["refresh_token_path", "access_token_path"],
-    response: BaseResponse,
 ):
     domain = config.cookie_domain
     secure = config.cookie_secure
@@ -134,7 +134,7 @@ def get_rid_header(request: BaseRequest):
 
 
 def clear_session_from_all_token_transfer_methods(
-    recipe: SessionRecipe, request: BaseRequest, response: BaseResponse
+    response: BaseResponse, recipe: SessionRecipe, request: BaseRequest
 ):
     for transfer_method in available_token_transfer_methods:
         if get_token(request, "access", transfer_method) is not None:
@@ -200,12 +200,12 @@ def set_token(
 ):
     if transfer_method == "cookie":
         set_cookie(
+            response,
             config,
             get_cookie_name_from_token_type(token_type),
             value,
             expires,
             "refresh_token_path" if token_type == "refresh" else "access_token_path",
-            response,
         )
     elif transfer_method == "header":
         set_token_in_header(

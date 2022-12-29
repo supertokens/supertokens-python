@@ -27,7 +27,12 @@ pytestmark = mark.asyncio
 
 
 async def test_should_not_throw_for_empty_array():
-    st_args = {**st_init_common_args, "recipe_list": [session.init()]}
+    st_args = {
+        **st_init_common_args,
+        "recipe_list": [
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
+    }
     init(**st_args)  # type:ignore
     start_st()
 
@@ -53,7 +58,12 @@ async def test_should_not_throw_for_empty_array():
 
 
 async def test_should_call_validate_with_the_same_payload_object():
-    st_args = {**st_init_common_args, "recipe_list": [session.init()]}
+    st_args = {
+        **st_init_common_args,
+        "recipe_list": [
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
+    }
     init(**st_args)  # type:ignore
     start_st()
 

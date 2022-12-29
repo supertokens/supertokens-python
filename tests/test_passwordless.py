@@ -84,7 +84,7 @@ async def test_passwordless_otp(driver_config_client: TestClient):
                     create_and_send_custom_text_message=send_text_message
                 ),
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -154,7 +154,7 @@ async def test_passworldless_delete_user_phone(driver_config_client: TestClient)
                     create_and_send_custom_email=send_email,
                 ),
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -228,7 +228,7 @@ async def test_passworldless_delete_user_email(driver_config_client: TestClient)
                     create_and_send_custom_email=send_email,
                 ),
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -304,7 +304,7 @@ async def test_passworldless_delete_user_email_and_phone_throws_error(
                     create_and_send_custom_email=send_email,
                 ),
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()

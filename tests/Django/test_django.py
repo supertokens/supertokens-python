@@ -366,7 +366,9 @@ class SupertokensTest(TestCase):
             ),
             framework="django",
             mode="asgi",
-            recipe_list=[session.init()],
+            recipe_list=[
+                session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+            ],
         )
 
         start_st()

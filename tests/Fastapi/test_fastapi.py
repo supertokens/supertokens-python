@@ -512,7 +512,9 @@ async def test_optional_session(driver_config_client: TestClient):
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
     start_st()
 
@@ -545,7 +547,10 @@ def test_fastapi_root_path(fastapi_root_path: str):
             api_base_path=f"{fastapi_root_path}/auth",  # It's important to prepend the root path here
         ),
         framework="fastapi",
-        recipe_list=[session.init(), emailpassword.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+            emailpassword.init(),
+        ],
     )
     start_st()
 

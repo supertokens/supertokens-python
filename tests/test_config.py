@@ -344,7 +344,9 @@ async def test_same_site_values():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
@@ -359,7 +361,9 @@ async def test_same_site_values():
             website_domain="https://platform-ui-uat.com",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "none"
@@ -399,7 +403,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
@@ -418,7 +424,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "none"
@@ -437,7 +445,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
@@ -456,7 +466,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
@@ -494,7 +506,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "none"
@@ -513,7 +527,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "lax"
@@ -532,7 +548,9 @@ async def test_config_values():
             website_base_path="test1/",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
 
     assert SessionRecipe.get_instance().config.cookie_same_site == "none"

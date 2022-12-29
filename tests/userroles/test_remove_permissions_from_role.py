@@ -43,7 +43,10 @@ async def test_remove_permissions_from_a_role():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init(), session.init()],
+        recipe_list=[
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -80,7 +83,10 @@ async def test_remove_permissions_from_unknown_role():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init(), session.init()],
+        recipe_list=[
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 

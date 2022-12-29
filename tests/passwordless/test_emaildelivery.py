@@ -101,7 +101,7 @@ async def test_pless_login_default_backward_compatibility(
                 contact_config=passwordless.ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -191,7 +191,7 @@ async def test_pless_login_default_backward_compatibility_no_suppress_error(
                 contact_config=passwordless.ContactEmailOnlyConfig(),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -261,7 +261,7 @@ async def test_pless_login_backward_compatibility(driver_config_client: TestClie
                 ),
                 flow_type="USER_INPUT_CODE_AND_MAGIC_LINK",
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -342,7 +342,7 @@ async def test_pless_login_custom_override(driver_config_client: TestClient):
                     override=email_delivery_override,
                 ),
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -490,7 +490,7 @@ async def test_pless_login_smtp_service(driver_config_client: TestClient):
                     override=email_delivery_override,
                 ),
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()

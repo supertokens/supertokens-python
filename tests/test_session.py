@@ -183,7 +183,9 @@ async def test_creating_many_sessions_for_one_user_and_looping():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
     start_st()
 
