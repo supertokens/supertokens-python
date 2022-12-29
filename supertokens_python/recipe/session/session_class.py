@@ -98,7 +98,7 @@ class Session(SessionContainer):
             self.response_mutators.append(
                 partial(
                     set_token,
-                    config=self.recipe_implementation.config,  # type: ignore # FIXME
+                    config=self.config,
                     token_type="access",
                     value=result.access_token.token,
                     expires=int(datetime.now().timestamp()) + 3153600000000,

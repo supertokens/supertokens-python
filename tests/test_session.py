@@ -28,6 +28,9 @@ from supertokens_python.recipe.session import InputOverrideConfig, SessionRecipe
 from supertokens_python.recipe.session.asyncio import (
     create_new_session as async_create_new_session,
 )
+from supertokens_python.recipe.session.jwt import (
+    parse_jwt_without_signature_verification,
+)
 from supertokens_python.recipe.session.asyncio import (
     get_all_session_handles_for_user,
     get_session_information,
@@ -90,9 +93,13 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     assert response["antiCsrfToken"] is not None
     assert len(response.keys()) == 5
 
+    access_token = parse_jwt_without_signature_verification(
+        response["accessToken"]["token"]
+    )
+
     await get_session(
         s.recipe_implementation,
-        response["accessToken"]["token"],
+        access_token,
         response["antiCsrfToken"],
         True,
         response["idRefreshToken"]["token"],
@@ -117,9 +124,13 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
     assert response2["antiCsrfToken"] is not None
     assert len(response.keys()) == 5
 
+    access_token2 = parse_jwt_without_signature_verification(
+        response2["accessToken"]["token"]
+    )
+
     response3 = await get_session(
         s.recipe_implementation,
-        response2["accessToken"]["token"],
+        access_token2,
         response2["antiCsrfToken"],
         True,
         response["idRefreshToken"]["token"],
@@ -136,9 +147,13 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
 
     ProcessState.get_instance().reset()
 
+    access_token3 = parse_jwt_without_signature_verification(
+        response3["accessToken"]["token"]
+    )
+
     response4 = await get_session(
         s.recipe_implementation,
-        response3["accessToken"]["token"],
+        access_token3,
         response2["antiCsrfToken"],
         True,
         response["idRefreshToken"]["token"],

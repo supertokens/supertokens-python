@@ -245,9 +245,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         response_mutators.append(
             partial(
                 set_front_token_in_headers,
-                user_id=user_id,
+                user_id=new_session.user_id,
                 expires=new_access_token_info["expiry"],
-                jwt_payload=new_session["payload"],
+                jwt_payload=new_session.access_token_payload,
             )
         )
         response_mutators.append(
@@ -612,9 +612,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 response_mutators.append(
                     partial(
                         set_front_token_in_headers,
-                        user_id=session["user_id"],
+                        user_id=session.user_id,
                         expires=new_access_token_info["expiry"],
-                        jwt_payload=session["access_token_payload"],
+                        jwt_payload=session.access_token_payload,
                     )
                 )
                 response_mutators.append(
