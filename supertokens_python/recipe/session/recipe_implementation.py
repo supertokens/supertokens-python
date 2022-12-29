@@ -278,7 +278,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 )
             )
 
-        new_session.response_mutators = response_mutators
+        new_session.response_mutators.extend(response_mutators)
 
         request.set_session(new_session)
         return new_session
@@ -395,7 +395,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         elif (allowed_transfer_method in ("any", "cookie")) and access_tokens.get(
             "cookie"
         ) is not None:
-            log_debug_message("getSession: using header transfer method")
+            log_debug_message("getSession: using cookie transfer method")
             request_transfer_method = "cookie"
             request_access_token = access_tokens["cookie"]
         else:
@@ -408,7 +408,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 return None
 
             log_debug_message(
-                "getSession: UNAUTHORIZED because access_token in request is None"
+                "getSession: UNAUTHORISED because access_token in request is None"
             )
             # we do not clear the session here because of a race condition mentioned in:
             # https://github.com/supertokens/supertokens-node/issues/17
@@ -457,7 +457,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             session.response_mutators.append(
                 partial(
                     set_front_token_in_headers,
-                    response=None,
                     user_id=session.user_id,
                     expires=new_access_token_info["expiry"],
                     jwt_payload=session.access_token_payload,
@@ -466,7 +465,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             session.response_mutators.append(
                 partial(
                     set_token,
-                    response=None,
                     config=self.config,
                     token_type="access",
                     value=session.access_token,
@@ -546,7 +544,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 )
 
             log_debug_message(
-                "refreshSession: UNAUTHORIZED because refresh_token in request is None"
+                "refreshSession: UNAUTHORISED because refresh_token in request is None"
             )
             return raise_unauthorised_exception(
                 "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
@@ -614,7 +612,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 response_mutators.append(
                     partial(
                         set_front_token_in_headers,
-                        response=None,
                         user_id=session["user_id"],
                         expires=new_access_token_info["expiry"],
                         jwt_payload=session["access_token_payload"],
@@ -623,7 +620,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 response_mutators.append(
                     partial(
                         set_token,
-                        response=None,
                         config=self.config,
                         token_type="access",
                         value=new_access_token_info["token"],
@@ -635,7 +631,6 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 response_mutators.append(
                     partial(
                         set_token,
-                        response=None,
                         config=self.config,
                         token_type="refresh",
                         value=new_refresh_token_info["token"],
@@ -649,12 +644,11 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 response_mutators.append(
                     partial(
                         attach_anti_csrf_header,
-                        response=None,
                         value=anti_csrf_token,
                     )
                 )
 
-            session.response_mutators = response_mutators
+            session.response_mutators.extend(response_mutators)
 
             log_debug_message("refreshSession: Success!")
             request.set_session(session)

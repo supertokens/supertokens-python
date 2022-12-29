@@ -45,14 +45,11 @@ from supertokens_python.utils import get_header, utf_base64encode
 
 
 def set_front_token_in_headers(
-    response: Optional[BaseResponse],
+    response: BaseResponse,
     user_id: str,
     expires: int,
     jwt_payload: Union[None, Dict[str, Any]] = None,
 ):
-    if response is None:
-        raise Exception("Please pass a response object")
-
     if jwt_payload is None:
         jwt_payload = {}
     token_info = {"uid": user_id, "ate": expires, "up": jwt_payload}
@@ -123,10 +120,7 @@ def set_cookie(
     )
 
 
-def attach_anti_csrf_header(response: Optional[BaseResponse], value: str):
-    if response is None:
-        raise Exception("Please pass a response object")
-
+def attach_anti_csrf_header(response: BaseResponse, value: str):
     set_header(response, ANTI_CSRF_HEADER_KEY, value, False)
     set_header(response, ACCESS_CONTROL_EXPOSE_HEADERS, ANTI_CSRF_HEADER_KEY, True)
 
@@ -148,13 +142,10 @@ def clear_session_from_all_token_transfer_methods(
 
 
 def clear_session(
-    response: Optional[BaseResponse],
+    response: BaseResponse,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
 ):
-    if response is None:
-        raise Exception("Please pass a response object")
-
     # If we can tell it's a cookie based session we are not clearing using headers
     token_types: List[TokenType] = ["access", "refresh"]
     for token_type in token_types:
@@ -200,16 +191,13 @@ def get_token(
 
 
 def set_token(
-    response: Optional[BaseResponse],
+    response: BaseResponse,
     config: SessionConfig,
     token_type: TokenType,
     value: str,
     expires: int,
     transfer_method: TokenTransferMethod,
 ):
-    if response is None:
-        raise Exception("Please pass a response object")
-
     if transfer_method == "cookie":
         set_cookie(
             config,

@@ -38,7 +38,6 @@ class Session(SessionContainer):
         self.response_mutators.append(
             partial(
                 clear_session,
-                response=None,
                 config=self.config,
                 transfer_method=self.transfer_method,
             )
@@ -88,23 +87,17 @@ class Session(SessionContainer):
         if result.access_token is not None:
             self.access_token = result.access_token.token
 
-            # new_access_token_info = {
-            #     "token": result.access_token.token,
-            #     "expiry": result.access_token.expiry,
-            #     "createdTime": result.access_token.created_time,
-            # }
             self.response_mutators.append(
                 partial(
                     set_front_token_in_headers,
                     user_id=self.user_id,
                     expires=result.access_token.expiry,
-                    jwt_payload=self.access_token_payload,  # TODO: Check if this is correct
+                    jwt_payload=self.access_token_payload,
                 )
             )
             self.response_mutators.append(
                 partial(
                     set_token,
-                    response=None,
                     config=self.recipe_implementation.config,  # type: ignore # FIXME
                     token_type="access",
                     value=result.access_token.token,
