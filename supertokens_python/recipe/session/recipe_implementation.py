@@ -29,7 +29,6 @@ from supertokens_python.utils import (
     resolve,
 )
 
-from ...exceptions import SuperTokensError
 from ...types import MaybeAwaitable
 from . import session_functions
 from .access_token import validate_access_token_structure
@@ -44,6 +43,7 @@ from .cookie_and_header import (
     set_token,
 )
 from .exceptions import (
+    TokenTheftError,
     UnauthorisedError,
     raise_try_refresh_token_exception,
     raise_unauthorised_exception,
@@ -418,7 +418,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             # https://github.com/supertokens/supertokens-node/issues/17
             raise_unauthorised_exception(
                 "Session does not exist. Are you sending the session tokens in the "
-                "request as with the appropriate token transfer method?",
+                "request with the appropriate token transfer method?",
                 clear_tokens=False,
             )
 
@@ -551,7 +551,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 "refreshSession: UNAUTHORISED because refresh_token in request is None"
             )
             return raise_unauthorised_exception(
-                "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
+                "Refresh token not found. Are you sending the refresh token in the request?",
                 clear_tokens=False,
             )
 
@@ -657,10 +657,10 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             log_debug_message("refreshSession: Success!")
             request.set_session(session)
             return session
-        except SuperTokensError as e:
-            if isinstance(e, UnauthorisedError) or (
-                hasattr(e, "clear_tokens") and e.clear_tokens is True  # type: ignore # pylint: disable=no-member
-            ):
+        except (TokenTheftError, UnauthorisedError) as e:
+            if (
+                isinstance(e, UnauthorisedError) and e.clear_tokens is True
+            ) or isinstance(e, TokenTheftError):
                 # This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
                 if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
                     log_debug_message(
@@ -676,7 +676,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                             path_type="access_token_path",
                         )
                     )
-                    e.response_mutators = response_mutators
+                    e.response_mutators.extend(response_mutators)
 
             raise e
 

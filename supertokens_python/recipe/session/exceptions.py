@@ -13,9 +13,10 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union, NoReturn
+from typing import Any, Dict, List, Optional, Union, NoReturn, Callable
 
 from supertokens_python.exceptions import SuperTokensError
+from supertokens_python.framework import BaseResponse
 
 
 def raise_token_theft_exception(user_id: str, session_handle: str) -> NoReturn:
@@ -33,7 +34,7 @@ def raise_unauthorised_exception(msg: str, clear_tokens: bool = True) -> NoRetur
 
 
 class SuperTokensSessionError(SuperTokensError):
-    pass
+    response_mutators: List[Callable[[BaseResponse], None]] = []
 
 
 class TokenTheftError(SuperTokensSessionError):

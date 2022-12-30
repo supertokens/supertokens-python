@@ -237,9 +237,9 @@ class SessionRecipe(RecipeModule):
     async def handle_error(
         self, request: BaseRequest, err: SuperTokensError, response: BaseResponse
     ) -> BaseResponse:
-        if err.response_mutators is not None:
+        if isinstance(err, SuperTokensSessionError):
             for mutator in err.response_mutators:
-                mutator(response)
+                mutator(response=response)  # type: ignore
 
         if isinstance(err, UnauthorisedError):
             log_debug_message("errorHandler: returning UNAUTHORISED")

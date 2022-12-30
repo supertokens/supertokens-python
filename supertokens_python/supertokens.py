@@ -146,6 +146,7 @@ class AppInfo:
 
 
 def manage_session_post_response(session: SessionContainer, response: BaseResponse):
+    # Something similar happens in handle_error of session/recipe.py
     for mutator in session.response_mutators:
         mutator(response=response)  # type: ignore
 
