@@ -130,6 +130,7 @@ async def test_login_refresh(driver_config_client: TestClient):
             session.init(
                 anti_csrf="VIA_TOKEN",
                 cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
                 override=session.InputOverrideConfig(apis=apis_override_session),
             )
         ],
@@ -194,7 +195,11 @@ async def test_login_logout(driver_config_client: TestClient):
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
         ],
     )
     start_st()
@@ -313,7 +318,11 @@ async def test_login_handle(driver_config_client: TestClient):
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
         ],
     )
     start_st()
@@ -362,7 +371,11 @@ async def test_login_refresh_error_handler(driver_config_client: TestClient):
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
         ],
     )
     start_st()

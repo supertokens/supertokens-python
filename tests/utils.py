@@ -19,7 +19,7 @@ from shutil import rmtree
 from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
-from typing import Any, Dict, List, cast, Union
+from typing import Any, Dict, List, cast
 
 from requests.models import Response
 from yaml import FullLoader, dump, load
@@ -235,23 +235,19 @@ def extract_all_cookies(response: Response) -> Dict[str, Any]:
 
 
 def extract_info(response: Response) -> Dict[str, Any]:
-    def parse_token_from_header(header: str):
-        token = response.headers.get(header, "")
-        token_split = token.split(";")
-        if len(token_split) == 2:
-            value, expiry = token_split
-            return {
-                "value": value,
-                "expiry": expiry,
-            }
-        return None
+    cookies = extract_all_cookies(response)
+    access_token = cookies.get("sAccessToken", {}).get("value")
+    refresh_token = cookies.get("sRefreshToken", {}).get("value")
 
     return {
-        **extract_all_cookies(response),
+        **cookies,
+        "accessToken": access_token,
+        "refreshToken": refresh_token,
         "status": response.status_code,
         "body": response.json(),
-        "accessTokenFromHeader": parse_token_from_header("st-access-token"),
-        "refreshTokenFromHeader": parse_token_from_header("st-refresh-token"),
+        "antiCsrf": response.headers.get("anti-csrf"),
+        "accessTokenFromHeader": response.headers.get("st-access-token"),
+        "refreshTokenFromHeader": response.headers.get("st-refresh-token"),
     }
 
 

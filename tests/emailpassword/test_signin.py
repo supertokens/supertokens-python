@@ -384,7 +384,13 @@ async def test_that_a_successful_signin_yields_a_session(
             api_base_path="/auth",
         ),
         framework="fastapi",
-        recipe_list=[emailpassword.init(), session.init(anti_csrf="VIA_TOKEN")],
+        recipe_list=[
+            emailpassword.init(),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
+        ],
     )
     start_st()
 

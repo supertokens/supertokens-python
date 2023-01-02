@@ -171,7 +171,10 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init("OPTIONAL"),
             emailpassword.init(),
         ],
@@ -216,7 +219,10 @@ async def test_the_generate_token_api_with_valid_input_no_session_and_check_outp
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init("OPTIONAL"),
             emailpassword.init(),
         ],
@@ -244,7 +250,10 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init("OPTIONAL"),
             emailpassword.init(),
         ],
@@ -322,7 +331,10 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init(
                 mode="REQUIRED", create_and_send_custom_email=custom_f
             ),
@@ -376,7 +388,10 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init(
                 mode="REQUIRED", create_and_send_custom_email=custom_f
             ),
@@ -444,7 +459,10 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init(
                 mode="REQUIRED", create_and_send_custom_email=custom_f
             ),
@@ -512,7 +530,10 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init(
                 mode="REQUIRED", create_and_send_custom_email=custom_f
             ),
@@ -603,7 +624,10 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init(
                 mode="REQUIRED",
                 create_and_send_custom_email=custom_f,
@@ -680,7 +704,10 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init(
                 mode="REQUIRED",
                 create_and_send_custom_email=custom_f,
@@ -751,7 +778,10 @@ async def test_the_email_verify_with_no_session_using_the_get_method(
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init("OPTIONAL"),
             emailpassword.init(),
         ],
@@ -808,7 +838,10 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init(
                 mode="REQUIRED",
                 create_and_send_custom_email=custom_f,
@@ -902,7 +935,10 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init(
                 mode="REQUIRED",
                 create_and_send_custom_email=custom_f,
@@ -968,7 +1004,10 @@ async def test_the_generate_token_api_with_valid_input_and_then_remove_token(
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init("OPTIONAL"),
             emailpassword.init(),
         ],
@@ -1009,7 +1048,10 @@ async def test_the_generate_token_api_with_valid_input_verify_and_then_unverify_
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init(mode="OPTIONAL"),
             emailpassword.init(),
         ],
@@ -1131,7 +1173,6 @@ async def test_generate_email_verification_token_api_updates_session_claims(
     res = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        refresh_token,
         res.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )
@@ -1144,7 +1185,6 @@ async def test_generate_email_verification_token_api_updates_session_claims(
     res = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        refresh_token,
         res.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )
@@ -1158,7 +1198,6 @@ async def test_generate_email_verification_token_api_updates_session_claims(
     res = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        refresh_token,
         res.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )

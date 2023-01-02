@@ -1,4 +1,5 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
+from typing_extensions import Literal
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.testclient import TestClient
@@ -93,22 +94,29 @@ def create_session(
 
 
 def check_extracted_info(
-    res: Dict[str, Any], expected_transfer_method: TokenTransferMethod
+    res: Dict[str, Any], expected_transfer_method: TokenTransferMethod, passed_different_token: bool = False
 ):
     if expected_transfer_method == "header":
-        for prop in ["accessToken", "refreshToken", "antiCsrf"]:
-            assert res.get(prop) is None
+        for prop in ["accessToken", "refreshToken"]:
+            if passed_different_token: # If method is header but we passed a different token in cookie with request
+                assert res.get(prop, "") == "" # It should clear the cookie (if present)
+            else:
+                assert res[prop] is None
+        assert res["antiCsrf"] is None
         for prop in ["accessTokenFromHeader", "refreshTokenFromHeader"]:
-            assert res.get(prop) is not None
+            assert res[prop] != ""
 
         # We check that we will have access token at least as long as we have a refresh token
         # so verify session can return TRY_REFRESH_TOKEN
         # assert res["accessTokenFromHeader"]["expiry"] >= res["refreshTokenFromHeader"]["expiry"]
     elif expected_transfer_method == "cookie":
         for prop in ["accessToken", "refreshToken", "antiCsrf"]:
-            assert res.get(prop) is not None
+            assert res[prop] != ""
         for prop in ["accessTokenFromHeader", "refreshTokenFromHeader"]:
-            assert res.get(prop) is None
+            if passed_different_token: # If method is cookie but we passed a different token in header with request
+                assert res.get(prop, "") == "" # clear the header (if present)
+            else:
+                assert res[prop] is None
         # We check that we will have access token at least as long as we have a refresh token
         # so verify session can return TRY_REFRESH_TOKEN
         # assert datetime.parse(res["accessTokenExpiry"]) >= datetime.parse(res["refreshTokenExpiry"])
@@ -138,60 +146,53 @@ async def test_should_follow_auth_mode_header(
     check_extracted_info(res, expected_transfer_method)
 
 
-# @mark.parametrize(
-#     "token_transfer_method, expected_transfer_method, **kwargs",
-#     [
-#         ("any", "header"),  # default
-#         ("header", "header", {"cookies": {"sAccessToken": EXAMPLE_JWT}}),  # specified
-#         ("cookie", "cookie"),  #  specified
-#         (
-#             "cookie",
-#             "cookie",
-#             {"headers": {"Authorization": f"Bearer {EXAMPLE_JWT}"}},
-#         ),  #  specified
-#     ],
-# )
-# async def test_should_follow_get_token_transfer_method(
-#     app: TestClient,
-#     token_transfer_method: Optional[str],
-#     expected_transfer_method: TokenTransferMethod,
-#     *args,
-#     **kwargs,
-# ):
-#     init(
-#         **get_st_init_args(
-#             [
-#                 session.init(
-#                     anti_csrf="VIA_TOKEN",
-#                     get_token_transfer_method=lambda _, __, ___: token_transfer_method,
-#                 )
-#             ]
-#         )
-#     )  # type:ignore
-#     start_st()
+@mark.parametrize(
+    "token_transfer_method, expected_transfer_method, cookies, headers",
+    [
+        ("any", "header", {}, {}),  # default
+        ("header", "header", {"sAccessToken": EXAMPLE_JWT}, {}),  # specified
+        ("cookie", "cookie", {}, {}),  #  specified
+        (
+            "cookie",
+            "cookie",
+            {},
+            {"Authorization": f"Bearer {EXAMPLE_JWT}"},
+        ),  #  specified
+    ],
+)
+async def test_should_follow_get_token_transfer_method(
+    app: TestClient,
+    token_transfer_method: Union[TokenTransferMethod, Literal["any"]],
+    expected_transfer_method: TokenTransferMethod,
+    cookies: Dict[str, Any],
+    headers: Dict[str, Any],
+):
+    init(
+        **get_st_init_args(
+            [
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    get_token_transfer_method=lambda _, __, ___: token_transfer_method,  # type: ignore
+                )
+            ]
+        )
+    )  # type:ignore
+    start_st()
 
-#     cookies: Optional[Dict[str, Any]] = None
-#     cookies = kwargs.get("cookies")  # type: ignore
+    res = create_session(app, None, None, cookies=cookies, headers=headers)
 
-#     headers: Optional[Dict[str, Any]] = None
-#     headers = kwargs.get("headers")  # type: ignore
+    passed_different_token = (len(cookies) != 0) or (len(headers) != 0)
+    check_extracted_info(res, expected_transfer_method, passed_different_token)
 
-#     res = create_session(app, None, None, cookies=cookies, headers=headers)
+    if len(cookies) != 0 and expected_transfer_method == "header":
+        assert res["sAccessToken"]["value"] == ""
+        assert res["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+        assert res["sRefreshToken"]["value"] == ""
+        assert res["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
 
-#     check_extracted_info(res, expected_transfer_method)
-
-#     if cookies is not None and expected_transfer_method == "header":
-#         assert res["accessToken"] == ""
-#         assert res["accessTokenExpiry"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-#         assert res["refreshToken"] == ""
-#         assert res["refreshTokenExpiry"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-#         assert res.get("antiCsrf") is None
-
-#     if headers is not None and expected_transfer_method == "cookie":
-#         assert res["accessTokenFromHeader"]["value"] == ""
-#         assert res["accessTokenFromHeader"]["expiry"] == 0
-#         assert res["refreshTokenFromHeader"] == ""
-#         assert res["refreshTokenFromHeader"]["expiry"] == 0
+    if len(headers) != 0 and expected_transfer_method == "cookie":
+        assert res["accessTokenFromHeader"] == ""
+        assert res["refreshTokenFromHeader"] == ""
 
 
 # @mark.parametrized(

@@ -234,7 +234,12 @@ async def test_should_allow_without_claims_required_or_present(
 ):
     st_init_args = {
         **st_init_common_args,
-        "recipe_list": [session.init(anti_csrf="VIA_TOKEN")],
+        "recipe_list": [
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
+        ],
     }
     init(**st_init_args)  # type: ignore
     start_st()
