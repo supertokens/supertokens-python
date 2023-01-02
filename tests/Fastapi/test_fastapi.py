@@ -260,7 +260,11 @@ async def test_login_info(driver_config_client: TestClient):
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            )
         ],
     )
     start_st()

@@ -442,6 +442,7 @@ async def test_revoking_session_during_refresh_with_revoke_session_sending_401(
         [
             session.init(
                 anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
                 override=session.InputOverrideConfig(apis=session_api_override),
             )
         ]
@@ -502,6 +503,7 @@ async def test_revoking_session_during_refresh_and_throw_unauthorized(
         [
             session.init(
                 anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
                 override=session.InputOverrideConfig(apis=session_api_override),
             )
         ]
@@ -564,6 +566,7 @@ async def test_revoking_session_during_refresh_fails_if_just_sending_401(
         [
             session.init(
                 anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
                 override=session.InputOverrideConfig(apis=session_api_override),
             )
         ]

@@ -129,7 +129,10 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailverification.init("OPTIONAL"),
             emailpassword.init(),
         ],

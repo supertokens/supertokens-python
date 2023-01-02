@@ -110,6 +110,7 @@ class SupertokensTest(TestCase):
             recipe_list=[
                 session.init(
                     anti_csrf="VIA_TOKEN",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
                     cookie_domain="supertokens.io",
                 )
             ],
@@ -177,7 +178,11 @@ class SupertokensTest(TestCase):
             framework="django",
             mode="asgi",
             recipe_list=[
-                session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                    cookie_domain="supertokens.io",
+                )
             ],
         )
 

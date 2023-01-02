@@ -179,7 +179,8 @@ def get_token(
     transfer_method: TokenTransferMethod,
 ) -> Optional[str]:
     if transfer_method == "cookie":
-        return request.get_cookie(get_cookie_name_from_token_type(token_type))
+        # Note: Don't use request.get_cookie() as it won't apply unquote() func
+        return get_cookie(request, get_cookie_name_from_token_type(token_type))
     if transfer_method == "header":
         value = request.get_header(AUTHORIZATION_HEADER_KEY)
         if value is None or not value.startswith("Bearer "):

@@ -98,7 +98,11 @@ def driver_config_app():
         ),
         framework="flask",
         recipe_list=[
-            session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io"),
+            session.init(
+                anti_csrf="VIA_TOKEN",
+                cookie_domain="supertokens.io",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
+            ),
             emailpassword.init(
                 override=emailpassword.InputOverrideConfig(
                     apis=override_email_password_apis
