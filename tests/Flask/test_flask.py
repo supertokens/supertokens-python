@@ -189,13 +189,10 @@ def test_cookie_login_and_refresh(driver_config_app: Any):
     assert response_1.headers.get("anti-csrf") is not None
     assert cookies_1["sAccessToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    assert cookies_1["sIdRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sAccessToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sRefreshToken"]["path"] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
-    assert cookies_1["sIdRefreshToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sAccessToken"]["httponly"]
     assert cookies_1["sRefreshToken"]["httponly"]
-    assert cookies_1["sIdRefreshToken"]["httponly"]
     assert (
         cookies_1["sAccessToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
@@ -204,17 +201,10 @@ def test_cookie_login_and_refresh(driver_config_app: Any):
         cookies_1["sRefreshToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     )
-    assert (
-        cookies_1["sIdRefreshToken"]["samesite"].lower()
-        == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    )
 
     test_client = driver_config_app.test_client()
     test_client.set_cookie(
         "localhost", "sRefreshToken", cookies_1["sRefreshToken"]["value"]
-    )
-    test_client.set_cookie(
-        "localhost", "sIdRefreshToken", cookies_1["sIdRefreshToken"]["value"]
     )
     response_2 = test_client.post(
         "/refresh", headers={"anti-csrf": response_1.headers.get("anti-csrf")}
@@ -222,29 +212,19 @@ def test_cookie_login_and_refresh(driver_config_app: Any):
     cookies_2 = extract_all_cookies(response_2)
     assert cookies_1["sAccessToken"]["value"] != cookies_2["sAccessToken"]["value"]
     assert cookies_1["sRefreshToken"]["value"] != cookies_2["sRefreshToken"]["value"]
-    assert (
-        cookies_1["sIdRefreshToken"]["value"] != cookies_2["sIdRefreshToken"]["value"]
-    )
     assert response_2.headers.get("anti-csrf") is not None
     assert cookies_2["sAccessToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_2["sRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    assert cookies_2["sIdRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_2["sAccessToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_2["sRefreshToken"]["path"] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
-    assert cookies_2["sIdRefreshToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_2["sAccessToken"]["httponly"]
     assert cookies_2["sRefreshToken"]["httponly"]
-    assert cookies_2["sIdRefreshToken"]["httponly"]
     assert (
         cookies_2["sAccessToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     )
     assert (
         cookies_2["sRefreshToken"]["samesite"].lower()
-        == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    )
-    assert (
-        cookies_2["sIdRefreshToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     )
 
@@ -274,13 +254,10 @@ def test_login_refresh_no_csrf(driver_config_app: Any):
     assert response_1.headers.get("anti-csrf") is not None
     assert cookies_1["sAccessToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    assert cookies_1["sIdRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sAccessToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sRefreshToken"]["path"] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
-    assert cookies_1["sIdRefreshToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sAccessToken"]["httponly"]
     assert cookies_1["sRefreshToken"]["httponly"]
-    assert cookies_1["sIdRefreshToken"]["httponly"]
     assert (
         cookies_1["sAccessToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
@@ -289,17 +266,10 @@ def test_login_refresh_no_csrf(driver_config_app: Any):
         cookies_1["sRefreshToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     )
-    assert (
-        cookies_1["sIdRefreshToken"]["samesite"].lower()
-        == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    )
 
     test_client = driver_config_app.test_client()
     test_client.set_cookie(
         "localhost", "sRefreshToken", cookies_1["sRefreshToken"]["value"]
-    )
-    test_client.set_cookie(
-        "localhost", "sIdRefreshToken", cookies_1["sIdRefreshToken"]["value"]
     )
 
     # post with csrf token -> no error
@@ -338,13 +308,10 @@ def test_login_logout(driver_config_app: Any):
     assert response_1.headers.get("anti-csrf") is not None
     assert cookies_1["sAccessToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
-    assert cookies_1["sIdRefreshToken"]["domain"] == TEST_DRIVER_CONFIG_COOKIE_DOMAIN
     assert cookies_1["sAccessToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sRefreshToken"]["path"] == TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH
-    assert cookies_1["sIdRefreshToken"]["path"] == TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH
     assert cookies_1["sAccessToken"]["httponly"]
     assert cookies_1["sRefreshToken"]["httponly"]
-    assert cookies_1["sIdRefreshToken"]["httponly"]
     assert (
         cookies_1["sAccessToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
@@ -353,17 +320,10 @@ def test_login_logout(driver_config_app: Any):
         cookies_1["sRefreshToken"]["samesite"].lower()
         == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
     )
-    assert (
-        cookies_1["sIdRefreshToken"]["samesite"].lower()
-        == TEST_DRIVER_CONFIG_COOKIE_SAME_SITE
-    )
 
     test_client = driver_config_app.test_client()
     test_client.set_cookie(
         "localhost", "sAccessToken", cookies_1["sAccessToken"]["value"]
-    )
-    test_client.set_cookie(
-        "localhost", "sIdRefreshToken", cookies_1["sIdRefreshToken"]["value"]
     )
 
     response_2 = test_client.post(
@@ -404,9 +364,6 @@ def test_login_handle(driver_config_app: Any):
     test_client = driver_config_app.test_client()
     test_client.set_cookie(
         "localhost", "sAccessToken", cookies_1["sAccessToken"]["value"]
-    )
-    test_client.set_cookie(
-        "localhost", "sIdRefreshToken", cookies_1["sIdRefreshToken"]["value"]
     )
 
     response_2 = test_client.get(

@@ -586,7 +586,6 @@ async def test_revoking_session_during_refresh_fails_if_just_sending_401(
         "/auth/session/refresh",
         cookies={
             "sRefreshToken": cookies["sRefreshToken"]["value"],
-            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
         headers={"anti-csrf": response.headers["anti-csrf"]},
     )

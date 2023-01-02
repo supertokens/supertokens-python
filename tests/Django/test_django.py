@@ -129,11 +129,9 @@ class SupertokensTest(TestCase):
         cookies = get_cookies(response)
 
         assert len(cookies["sAccessToken"]["value"]) > 0
-        assert len(cookies["sIdRefreshToken"]["value"]) > 0
         assert len(cookies["sRefreshToken"]["value"]) > 0
 
         request.COOKIES["sRefreshToken"] = cookies["sRefreshToken"]["value"]
-        request.COOKIES["sIdRefreshToken"] = cookies["sIdRefreshToken"]["value"]
         request.META["HTTP_ANTI_CSRF"] = response.headers["anti-csrf"]
         temp = my_middleware(request)
         if not isawaitable(temp):
@@ -146,10 +144,6 @@ class SupertokensTest(TestCase):
             != cookies["sAccessToken"]["value"]
         )
         assert (
-            refreshed_cookies["sIdRefreshToken"]["value"]
-            != cookies["sIdRefreshToken"]["value"]
-        )
-        assert (
             refreshed_cookies["sRefreshToken"]["value"]
             != cookies["sRefreshToken"]["value"]
         )
@@ -159,20 +153,12 @@ class SupertokensTest(TestCase):
             == cookies["sAccessToken"]["domain"]
         )
         assert (
-            refreshed_cookies["sIdRefreshToken"]["domain"]
-            == cookies["sIdRefreshToken"]["domain"]
-        )
-        assert (
             refreshed_cookies["sRefreshToken"]["domain"]
             == cookies["sRefreshToken"]["domain"]
         )
         assert (
             refreshed_cookies["sAccessToken"]["secure"]
             == cookies["sAccessToken"]["secure"]
-        )
-        assert (
-            refreshed_cookies["sIdRefreshToken"]["secure"]
-            == cookies["sIdRefreshToken"]["secure"]
         )
         assert (
             refreshed_cookies["sRefreshToken"]["secure"]
@@ -206,14 +192,12 @@ class SupertokensTest(TestCase):
         cookies = get_cookies(response)
 
         assert len(cookies["sAccessToken"]["value"]) > 0
-        assert len(cookies["sIdRefreshToken"]["value"]) > 0
         assert len(cookies["sRefreshToken"]["value"]) > 0
 
         my_middleware = middleware(logout_view)
         request = self.factory.post("/logout", {"user_id": "user_id"})
 
         request.COOKIES["sAccessToken"] = cookies["sAccessToken"]["value"]
-        request.COOKIES["sIdRefreshToken"] = cookies["sIdRefreshToken"]["value"]
         request.META["HTTP_ANTI_CSRF"] = response.headers["anti-csrf"]
         temp = my_middleware(request)
         if not isawaitable(temp):
@@ -223,7 +207,6 @@ class SupertokensTest(TestCase):
         assert response.headers.get("anti-csrf") is None  # type: ignore
         assert logout_cookies["sAccessToken"]["value"] == ""
         assert logout_cookies["sRefreshToken"]["value"] == ""
-        assert logout_cookies["sIdRefreshToken"]["value"] == ""
 
     async def test_login_handle(self):
         init(

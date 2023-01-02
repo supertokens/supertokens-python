@@ -412,7 +412,6 @@ async def test_that_a_successful_signin_yields_a_session(
     assert cookies["sAccessToken"] is not None
     assert cookies["sRefreshToken"] is not None
     assert response_2.headers.get("anti-csrf") is not None
-    assert cookies["sIdRefreshToken"] is not None
 
 
 @mark.asyncio

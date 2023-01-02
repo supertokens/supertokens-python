@@ -286,7 +286,6 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
     response_4 = email_verify_token_request(
         driver_config_client,
         cookies1["sAccessToken"]["value"],
-        cookies1["sIdRefreshToken"]["value"],
         response_3.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )
@@ -1105,7 +1104,6 @@ async def test_generate_email_verification_token_api_updates_session_claims(
 
     user_id = dict_res["user"]["id"]
     cookies = extract_all_cookies(res)
-    refresh_token = cookies["sIdRefreshToken"]["value"]
 
     # Start verification:
     verify_token = await create_email_verification_token(user_id)
@@ -1115,7 +1113,6 @@ async def test_generate_email_verification_token_api_updates_session_claims(
     res = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        refresh_token,
         res.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )

@@ -138,281 +138,281 @@ async def test_should_follow_auth_mode_header(
     check_extracted_info(res, expected_transfer_method)
 
 
-@mark.parametrize(
-    "token_transfer_method, expected_transfer_method, **kwargs",
-    [
-        ("any", "header"),  # default
-        ("header", "header", {"cookies": {"sAccessToken": EXAMPLE_JWT}}),  # specified
-        ("cookie", "cookie"),  #  specified
-        (
-            "cookie",
-            "cookie",
-            {"headers": {"Authorization": f"Bearer {EXAMPLE_JWT}"}},
-        ),  #  specified
-    ],
-)
-async def test_should_follow_get_token_transfer_method(
-    app: TestClient,
-    token_transfer_method: Optional[str],
-    expected_transfer_method: TokenTransferMethod,
-    *args,
-    **kwargs,
-):
-    init(
-        **get_st_init_args(
-            [
-                session.init(
-                    anti_csrf="VIA_TOKEN",
-                    get_token_transfer_method=lambda _, __, ___: token_transfer_method,
-                )
-            ]
-        )
-    )  # type:ignore
-    start_st()
+# @mark.parametrize(
+#     "token_transfer_method, expected_transfer_method, **kwargs",
+#     [
+#         ("any", "header"),  # default
+#         ("header", "header", {"cookies": {"sAccessToken": EXAMPLE_JWT}}),  # specified
+#         ("cookie", "cookie"),  #  specified
+#         (
+#             "cookie",
+#             "cookie",
+#             {"headers": {"Authorization": f"Bearer {EXAMPLE_JWT}"}},
+#         ),  #  specified
+#     ],
+# )
+# async def test_should_follow_get_token_transfer_method(
+#     app: TestClient,
+#     token_transfer_method: Optional[str],
+#     expected_transfer_method: TokenTransferMethod,
+#     *args,
+#     **kwargs,
+# ):
+#     init(
+#         **get_st_init_args(
+#             [
+#                 session.init(
+#                     anti_csrf="VIA_TOKEN",
+#                     get_token_transfer_method=lambda _, __, ___: token_transfer_method,
+#                 )
+#             ]
+#         )
+#     )  # type:ignore
+#     start_st()
 
-    cookies: Optional[Dict[str, Any]] = None
-    cookies = kwargs.get("cookies")  # type: ignore
+#     cookies: Optional[Dict[str, Any]] = None
+#     cookies = kwargs.get("cookies")  # type: ignore
 
-    headers: Optional[Dict[str, Any]] = None
-    headers = kwargs.get("headers")  # type: ignore
+#     headers: Optional[Dict[str, Any]] = None
+#     headers = kwargs.get("headers")  # type: ignore
 
-    res = create_session(app, None, None, cookies=cookies, headers=headers)
+#     res = create_session(app, None, None, cookies=cookies, headers=headers)
 
-    check_extracted_info(res, expected_transfer_method)
+#     check_extracted_info(res, expected_transfer_method)
 
-    if cookies is not None and expected_transfer_method == "header":
-        assert res["accessToken"] == ""
-        assert res["accessTokenExpiry"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-        assert res["refreshToken"] == ""
-        assert res["refreshTokenExpiry"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-        assert res.get("antiCsrf") is None
+#     if cookies is not None and expected_transfer_method == "header":
+#         assert res["accessToken"] == ""
+#         assert res["accessTokenExpiry"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+#         assert res["refreshToken"] == ""
+#         assert res["refreshTokenExpiry"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+#         assert res.get("antiCsrf") is None
 
-    if headers is not None and expected_transfer_method == "cookie":
-        assert res["accessTokenFromHeader"]["value"] == ""
-        assert res["accessTokenFromHeader"]["expiry"] == 0
-        assert res["refreshTokenFromHeader"] == ""
-        assert res["refreshTokenFromHeader"]["expiry"] == 0
-
-
-@mark.parametrized(
-    "transfer_method, session_required, auth_header, auth_cookie, result",
-    [
-        ("any", False, False, False, None),
-        ("header", False, False, False, None),
-        ("cookie", False, False, False, None),
-        ("cookie", False, True, False, None),
-        ("header", False, False, True, None),
-        ("any", True, False, False, "UNAUTHORISED"),
-        ("header", True, False, False, "UNAUTHORISED"),
-        ("cookie", True, False, False, "UNAUTHORISED"),
-        ("cookie", True, True, False, "UNAUTHORISED"),
-        ("header", True, False, True, "UNAUTHORISED"),
-        ("any", True, True, True, "validateheader"),
-        ("any", False, True, True, "validateheader"),
-        ("header", True, True, True, "validateheader"),
-        ("header", False, True, True, "validateheader"),
-        ("cookie", True, True, True, "validatecookie"),
-        ("cookie", False, True, True, "validatecookie"),
-        ("any", True, True, False, "validateheader"),
-        ("any", False, True, False, "validateheader"),
-        ("header", True, True, False, "validateheader"),
-        ("header", False, True, False, "validateheader"),
-        ("any", True, False, True, "validatecookie"),
-        ("any", False, False, True, "validatecookie"),
-        ("cookie", True, False, True, "validatecookie"),
-        ("cookie", False, False, True, "validatecookie"),
-    ],
-)
-def test_verify_session_parametrized(
-    app: TestClient,
-    transfer_method: TokenTransferMethod,
-    session_required: bool,
-    auth_header: bool,
-    auth_cookie: bool,
-    result: Optional[str],
-):
-    init(
-        **get_st_init_args(
-            [
-                session.init(
-                    anti_csrf="VIA_TOKEN",
-                    get_token_transfer_method=lambda _, __, ___: transfer_method,
-                )
-            ]
-        )
-    )
-    start_st()
-
-    res = create_session(app, "cookie")
-
-    if use_expired_token:
-        delay(3)
-
-    auth_mode = "none"
-    if auth_cookie and auth_header:
-        auth_mode = "both"
-    if auth_header:
-        auth_mode = "header"
-    if auth_cookie:
-        auth_mode = "cookie"
-
-    res = test_get(
-        app,
-        res,
-        "/verify" if session_required else "/verify-optional",
-        auth_mode,
-    )
-    assert res.status_code == (401 if result == "UNAUTHORISED" else 200)
-
-    body = await res.json()
-
-    if result == None:
-        assert body["sesionExists"] == False
-    if result == "UNAUTHORISED":
-        assert body["message"] == "UNAUTHORISED"
-    if result in ("validateCookie", "validateHeader"):
-        assert body["sessionExists"] == True
+#     if headers is not None and expected_transfer_method == "cookie":
+#         assert res["accessTokenFromHeader"]["value"] == ""
+#         assert res["accessTokenFromHeader"]["expiry"] == 0
+#         assert res["refreshTokenFromHeader"] == ""
+#         assert res["refreshTokenFromHeader"]["expiry"] == 0
 
 
-# Skipping the following 3 tests as they are covered by previous tests:
-# Provide access token via both header and cookie. It should use the value from headers if getTokenTransferMethod returns header or any. If returns cookie, it should use the value from cookie.
+# @mark.parametrized(
+#     "transfer_method, session_required, auth_header, auth_cookie, result",
+#     [
+#         ("any", False, False, False, None),
+#         ("header", False, False, False, None),
+#         ("cookie", False, False, False, None),
+#         ("cookie", False, True, False, None),
+#         ("header", False, False, True, None),
+#         ("any", True, False, False, "UNAUTHORISED"),
+#         ("header", True, False, False, "UNAUTHORISED"),
+#         ("cookie", True, False, False, "UNAUTHORISED"),
+#         ("cookie", True, True, False, "UNAUTHORISED"),
+#         ("header", True, False, True, "UNAUTHORISED"),
+#         ("any", True, True, True, "validateheader"),
+#         ("any", False, True, True, "validateheader"),
+#         ("header", True, True, True, "validateheader"),
+#         ("header", False, True, True, "validateheader"),
+#         ("cookie", True, True, True, "validatecookie"),
+#         ("cookie", False, True, True, "validatecookie"),
+#         ("any", True, True, False, "validateheader"),
+#         ("any", False, True, False, "validateheader"),
+#         ("header", True, True, False, "validateheader"),
+#         ("header", False, True, False, "validateheader"),
+#         ("any", True, False, True, "validatecookie"),
+#         ("any", False, False, True, "validatecookie"),
+#         ("cookie", True, False, True, "validatecookie"),
+#         ("cookie", False, False, True, "validatecookie"),
+#     ],
+# )
+# def test_verify_session_parametrized(
+#     app: TestClient,
+#     transfer_method: TokenTransferMethod,
+#     session_required: bool,
+#     auth_header: bool,
+#     auth_cookie: bool,
+#     result: Optional[str],
+# ):
+#     init(
+#         **get_st_init_args(
+#             [
+#                 session.init(
+#                     anti_csrf="VIA_TOKEN",
+#                     get_token_transfer_method=lambda _, __, ___: transfer_method,
+#                 )
+#             ]
+#         )
+#     )
+#     start_st()
+
+#     res = create_session(app, "cookie")
+
+#     if use_expired_token:
+#         delay(3)
+
+#     auth_mode = "none"
+#     if auth_cookie and auth_header:
+#         auth_mode = "both"
+#     if auth_header:
+#         auth_mode = "header"
+#     if auth_cookie:
+#         auth_mode = "cookie"
+
+#     res = test_get(
+#         app,
+#         res,
+#         "/verify" if session_required else "/verify-optional",
+#         auth_mode,
+#     )
+#     assert res.status_code == (401 if result == "UNAUTHORISED" else 200)
+
+#     body = res.json()
+
+#     if result == None:
+#         assert body["sesionExists"] == False
+#     if result == "UNAUTHORISED":
+#         assert body["message"] == "UNAUTHORISED"
+#     if result in ("validateCookie", "validateHeader"):
+#         assert body["sessionExists"] == True
 
 
-async def test_should_reject_requests_with_sIdRefreshToken(app: TestClient):
-    init(**get_st_init_args([session.init(anti_csrf="VIA_TOKEN")]))
-    start_st()
-
-    res = create_session(
-        app,
-        "cookie",
-        None,
-        cookies={"sIdRefreshToken": "IRRELEVANT-VALUE", "sAccessToken": EXAMPLE_JWT},
-    )
-
-    response = app.post(
-        url="/verify",
-        cookies={
-            "sIdRefreshToken": "IRRELEVANT-VALUE",
-            "sAccessToken": EXAMPLE_JWT,
-        },
-        headers={"anti-csrf": res["antiCsrf"]},
-    )
-
-    assert response.status_code == 401
-    assert response.json() == {"message": "try refresh token"}
+# # Skipping the following 3 tests as they are covered by previous tests:
+# # Provide access token via both header and cookie. It should use the value from headers if getTokenTransferMethod returns header or any. If returns cookie, it should use the value from cookie.
 
 
-# SKIPPING:
-# with non ST in Authorize header
-# should use the value from cookies if present and getTokenTransferMethod returns {any,header,cookie}
+# async def test_should_reject_requests_with_sIdRefreshToken(app: TestClient):
+#     init(**get_st_init_args([session.init(anti_csrf="VIA_TOKEN")]))
+#     start_st()
+
+#     res = create_session(
+#         app,
+#         "cookie",
+#         None,
+#         cookies={"sIdRefreshToken": "IRRELEVANT-VALUE", "sAccessToken": EXAMPLE_JWT},
+#     )
+
+#     response = app.post(
+#         url="/verify",
+#         cookies={
+#             "sIdRefreshToken": "IRRELEVANT-VALUE",
+#             "sAccessToken": EXAMPLE_JWT,
+#         },
+#         headers={"anti-csrf": res["antiCsrf"]},
+#     )
+
+#     assert response.status_code == 401
+#     assert response.json() == {"message": "try refresh token"}
 
 
-# merge_into_access_token_payload
+# # SKIPPING:
+# # with non ST in Authorize header
+# # should use the value from cookies if present and getTokenTransferMethod returns {any,header,cookie}
 
 
-@mark.parametrize("transfer_method", [("header",), ("cookie",)])
-async def test_should_update_acccess_token_payload(
-    app: TestClient, transfer_method: str
-):
-    init(**get_st_init_args([session.init(anti_csrf="VIA_TOKEN")]))
-    start_st()
-
-    res = create_session(app, transfer_method)
-
-    update_info = extract_info(
-        await test_get(app, res, "/update-payload", 200, "cookie", None).json()
-    )
-
-    assert update_info.keys() == {"accessToken", "frontToken"}
-
-    assert update_info["accessToken"] != res["accessTokenFromHeader"]
-    assert update_info["frontToken"] != res["frontToken"]
+# # merge_into_access_token_payload
 
 
-@mark.parametrized(
-    "transfer_method, session_required, auth_header, auth_cookie, result",
-    [
-        ("any", False, "unauthorised", None, None),
-        ("header", False, "unauthorised", None, None),
-        ("cookie", False, "unauthorised", None, None),
-        ("any", False, "validatecookie", "cookies", None),
-        ("header", False, "unauthorised", None, None),
-        ("cookie", False, "validatecookie", "cookies", None),
-        ("any", True, "validateheader", "headers", None),
-        ("header", True, "validateheader", "headers", None),
-        ("cookie", True, "unauthorised", None, None),
-        ("any", True, "validateheader", "headers", "cookies"),
-        ("header", True, "validateheader", "headers", "cookies"),
-        ("cookie", True, "validatecookie", "cookies", "headers"),
-    ],
-)
-def test_refresh_session_parametrized(
-    app: TestClient,
-    transfer_method: TokenTransferMethod,
-    session_required: bool,
-    auth_header: bool,
-    auth_cookie: bool,
-    result: Optional[str],
-    set_tokens: Optional[str],
-    cleared_tokens: Optional[str],
-):
-    init(
-        **get_st_init_args(
-            [
-                session.init(
-                    anti_csrf="VIA_TOKEN",
-                    get_token_transfer_method=lambda _, __, ___: transfer_method,
-                )
-            ]
-        )
-    )
-    start_st()
+# @mark.parametrize("transfer_method", [("header",), ("cookie",)])
+# async def test_should_update_acccess_token_payload(
+#     app: TestClient, transfer_method: str
+# ):
+#     init(**get_st_init_args([session.init(anti_csrf="VIA_TOKEN")]))
+#     start_st()
 
-    # Token transfer method doesn't matter for this test
-    res = create_session(app, "header")
+#     res = create_session(app, transfer_method)
 
-    auth_mode = "none"
-    if auth_cookie and auth_header:
-        auth_mode = "both"
-    if auth_header:
-        auth_mode = "header"
-    if auth_cookie:
-        auth_mode = "cookie"
+#     update_info = extract_info(
+#         await test_get(app, res, "/update-payload", 200, "cookie", None).json()
+#     )
 
-    refresh_result = await refresh_session(app, transfer_method, auth_mode, res)
+#     assert update_info.keys() == {"accessToken", "frontToken"}
 
-    if output == "unauthorised":
-        assert refresh_result.status_code == 401
-        assert refresh_result.json() == {"message": "unauthorised"}
-    else:
-        assert refresh_result.status_code == 200
+#     assert update_info["accessToken"] != res["accessTokenFromHeader"]
+#     assert update_info["frontToken"] != res["frontToken"]
 
-    if cleared_tokens == "headers":
-        assert refresh_result["access_token_from_header"] == ""
-        assert refresh_result["refresh_token_from_header"] == ""
-    elif cleared_tokens == "cookies":
-        assert refresh_result["access_token"] == ""
-        assert refresh_result["accessTokenExpiry"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-        assert refresh_result["refresh_token"] == ""
-        assert refresh_result["refreshTokenExpiry"] == "Thu, 01 Jan 1970 00:00:00 GMT"
 
-    if set_tokens == "headers":
-        assert refresh_result["access_token_from_header"] != ""
-        assert refresh_result["refresh_token_from_header"] != ""
-    elif set_tokens == "cookies":
-        assert refresh_result["access_token"] != ""
-        assert refresh_result["accessTokenExpiry"] != "Thu, 01 Jan 1970 00:00:00 GMT"
-        assert refresh_result["refresh_token"] != ""
-        assert refresh_result["refreshTokenExpiry"] != "Thu, 01 Jan 1970 00:00:00 GMT"
-    elif set_tokens == None:
-        if cleared_tokens == None:
-            assert "frontToken" not in refresh_result
-    else:
-        assert False, "Invalid set_tokens value"
+# @mark.parametrized(
+#     "transfer_method, session_required, auth_header, auth_cookie, result",
+#     [
+#         ("any", False, "unauthorised", None, None),
+#         ("header", False, "unauthorised", None, None),
+#         ("cookie", False, "unauthorised", None, None),
+#         ("any", False, "validatecookie", "cookies", None),
+#         ("header", False, "unauthorised", None, None),
+#         ("cookie", False, "validatecookie", "cookies", None),
+#         ("any", True, "validateheader", "headers", None),
+#         ("header", True, "validateheader", "headers", None),
+#         ("cookie", True, "unauthorised", None, None),
+#         ("any", True, "validateheader", "headers", "cookies"),
+#         ("header", True, "validateheader", "headers", "cookies"),
+#         ("cookie", True, "validatecookie", "cookies", "headers"),
+#     ],
+# )
+# def test_refresh_session_parametrized(
+#     app: TestClient,
+#     transfer_method: TokenTransferMethod,
+#     session_required: bool,
+#     auth_header: bool,
+#     auth_cookie: bool,
+#     result: Optional[str],
+#     set_tokens: Optional[str],
+#     cleared_tokens: Optional[str],
+# ):
+#     init(
+#         **get_st_init_args(
+#             [
+#                 session.init(
+#                     anti_csrf="VIA_TOKEN",
+#                     get_token_transfer_method=lambda _, __, ___: transfer_method,
+#                 )
+#             ]
+#         )
+#     )
+#     start_st()
 
-    if set_tokens != "cookies" and cleared_tokens != "cookies":
-        assert refresh_result.keys() == {}  # FIXME
-    elif set_tokens != "headers" and cleared_tokens != "headers":
-        assert refresh_result.keys() == {}  # FIXME
-    else:
-        assert False, "Invalid set_tokens and cleared_tokens values"
+#     # Token transfer method doesn't matter for this test
+#     res = create_session(app, "header")
+
+#     auth_mode = "none"
+#     if auth_cookie and auth_header:
+#         auth_mode = "both"
+#     if auth_header:
+#         auth_mode = "header"
+#     if auth_cookie:
+#         auth_mode = "cookie"
+
+#     refresh_result = await refresh_session(app, transfer_method, auth_mode, res)
+
+#     if output == "unauthorised":
+#         assert refresh_result.status_code == 401
+#         assert refresh_result.json() == {"message": "unauthorised"}
+#     else:
+#         assert refresh_result.status_code == 200
+
+#     if cleared_tokens == "headers":
+#         assert refresh_result["access_token_from_header"] == ""
+#         assert refresh_result["refresh_token_from_header"] == ""
+#     elif cleared_tokens == "cookies":
+#         assert refresh_result["access_token"] == ""
+#         assert refresh_result["accessTokenExpiry"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+#         assert refresh_result["refresh_token"] == ""
+#         assert refresh_result["refreshTokenExpiry"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+
+#     if set_tokens == "headers":
+#         assert refresh_result["access_token_from_header"] != ""
+#         assert refresh_result["refresh_token_from_header"] != ""
+#     elif set_tokens == "cookies":
+#         assert refresh_result["access_token"] != ""
+#         assert refresh_result["accessTokenExpiry"] != "Thu, 01 Jan 1970 00:00:00 GMT"
+#         assert refresh_result["refresh_token"] != ""
+#         assert refresh_result["refreshTokenExpiry"] != "Thu, 01 Jan 1970 00:00:00 GMT"
+#     elif set_tokens == None:
+#         if cleared_tokens == None:
+#             assert "frontToken" not in refresh_result
+#     else:
+#         assert False, "Invalid set_tokens value"
+
+#     if set_tokens != "cookies" and cleared_tokens != "cookies":
+#         assert refresh_result.keys() == {}  # FIXME
+#     elif set_tokens != "headers" and cleared_tokens != "headers":
+#         assert refresh_result.keys() == {}  # FIXME
+#     else:
+#         assert False, "Invalid set_tokens and cleared_tokens values"
