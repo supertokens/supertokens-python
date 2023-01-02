@@ -19,7 +19,7 @@ from shutil import rmtree
 from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, List, cast, Union
 
 from requests.models import Response
 from yaml import FullLoader, dump, load
@@ -234,6 +234,27 @@ def extract_all_cookies(response: Response) -> Dict[str, Any]:
     return cookies
 
 
+def extract_info(response: Response) -> Dict[str, Any]:
+    def parse_token_from_header(header: str):
+        token = response.headers.get(header, "")
+        token_split = token.split(";")
+        if len(token_split) == 2:
+            value, expiry = token_split
+            return {
+                "value": value,
+                "expiry": expiry,
+            }
+        return None
+
+    return {
+        **extract_all_cookies(response),
+        "status": response.status_code,
+        "body": response.json(),
+        "accessTokenFromHeader": parse_token_from_header("st-access-token"),
+        "refreshTokenFromHeader": parse_token_from_header("st-refresh-token"),
+    }
+
+
 def get_unix_timestamp(expiry: str):
     return int(
         datetime.strptime(expiry, "%a, %d %b %Y %H:%M:%S GMT")
@@ -336,7 +357,6 @@ def sign_in_request(app: TestClient, email: str, password: str):
 def email_verify_token_request(
     app: TestClient,
     accessToken: str,
-    idRefreshTokenFromCookie: str,
     antiCsrf: str,
     userId: str,
     use_server: bool = False,
@@ -355,7 +375,6 @@ def email_verify_token_request(
             headers=headers,
             cookies={
                 "sAccessToken": accessToken,
-                "sIdRefreshToken": idRefreshTokenFromCookie,
             },
             data=str.encode(userId),
         )
@@ -365,13 +384,13 @@ def email_verify_token_request(
             environ["SUPERTOKENS_ENV"] = "testing"
 
 
-def setup_function(_):
+def setup_function(_: Any):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(_):
+def teardown_function(_: Any):
     reset()
     clean_st()
 

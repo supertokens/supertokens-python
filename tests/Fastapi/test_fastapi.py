@@ -167,7 +167,6 @@ async def test_login_refresh(driver_config_client: TestClient):
         headers={"anti-csrf": response_1.headers.get("anti-csrf")},
         cookies={
             "sRefreshToken": cookies_1["sRefreshToken"]["value"],
-            "sIdRefreshToken": cookies_1["sIdRefreshToken"]["value"],
         },
     )
     cookies_3 = extract_all_cookies(response_3)
@@ -251,7 +250,6 @@ async def test_login_logout(driver_config_client: TestClient):
         headers={"anti-csrf": response_1.headers.get("anti-csrf")},
         cookies={
             "sAccessToken": cookies_1["sAccessToken"]["value"],
-            "sIdRefreshToken": cookies_1["sIdRefreshToken"]["value"],
         },
     )
     cookies_2 = extract_all_cookies(response_2)
@@ -334,7 +332,6 @@ async def test_login_info(driver_config_client: TestClient):
         headers={"anti-csrf": response_1.headers.get("anti-csrf")},
         cookies={
             "sAccessToken": cookies_1["sAccessToken"]["value"],
-            "sIdRefreshToken": cookies_1["sIdRefreshToken"]["value"],
         },
     )
     cookies_2 = extract_all_cookies(response_2)
@@ -392,7 +389,6 @@ async def test_login_handle(driver_config_client: TestClient):
         headers={"anti-csrf": response_1.headers.get("anti-csrf")},
         cookies={
             "sAccessToken": cookies_1["sAccessToken"]["value"],
-            "sIdRefreshToken": cookies_1["sIdRefreshToken"]["value"],
         },
     )
     result_dict = json.loads(response_2.content)

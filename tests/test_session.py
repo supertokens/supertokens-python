@@ -294,7 +294,6 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
         url="/auth/signout",
         cookies={
             "sAccessToken": response["accessToken"]["token"],
-            "sIdRefreshToken": response["idRefreshToken"]["token"],
         },
         headers={"anti-csrf": response.get("antiCsrfToken", "")},
     )
@@ -303,7 +302,7 @@ async def test_signout_api_works_even_if_session_is_deleted_after_creation(
 
     assert (
         signout_response.headers["set-cookie"]
-        == """sAccessToken=""; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Path=/; SameSite=lax; Secure, sIdRefreshToken=""; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Path=/; SameSite=lax; Secure, sRefreshToken=""; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Path=/auth/session/refresh; SameSite=lax; Secure"""
+        == """sAccessToken=""; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Path=/; SameSite=lax; Secure, sRefreshToken=""; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Path=/auth/session/refresh; SameSite=lax; Secure"""
     )
 
 
@@ -377,6 +376,7 @@ async def test_revoking_session_during_refresh_with_revoke_session_with_200(
         [
             session.init(
                 anti_csrf="VIA_TOKEN",
+                get_token_transfer_method=lambda _, __, ___: "cookie",
                 override=session.InputOverrideConfig(apis=session_api_override),
             )
         ]
@@ -388,28 +388,24 @@ async def test_revoking_session_during_refresh_with_revoke_session_with_200(
     cookies = extract_all_cookies(response)
 
     assert "sAccessToken" in cookies
-    assert "sIdRefreshToken" in cookies
     assert "sRefreshToken" in cookies
 
     assert "anti-csrf" in response.headers
-    assert "id-refresh-token" in response.headers
     assert "front-token" in response.headers
 
     response = driver_config_client.post(
         "/auth/session/refresh",
         cookies={
             "sRefreshToken": cookies["sRefreshToken"]["value"],
-            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
         headers={"anti-csrf": response.headers["anti-csrf"]},
-    )
+    )  # FIXME: Core says request is unauthorized. But the credentials seem correct.
 
     assert response.status_code == 200
     cookies = extract_all_cookies(response)
 
     assert cookies["sAccessToken"]["value"] == ""
     assert cookies["sRefreshToken"]["value"] == ""
-    assert cookies["sIdRefreshToken"]["value"] == ""
 
     assert (
         "anti-csrf" not in response.headers
@@ -417,11 +413,9 @@ async def test_revoking_session_during_refresh_with_revoke_session_with_200(
     assert response.headers["id-refresh-token"] == "remove"
 
     assert cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-    assert cookies["sIdRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
     assert cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
 
     assert cookies["sAccessToken"]["domain"] == ""
-    assert cookies["sIdRefreshToken"]["domain"] == ""
     assert cookies["sRefreshToken"]["domain"] == ""
     assert (
         "front-token" not in response.headers
@@ -461,18 +455,15 @@ async def test_revoking_session_during_refresh_with_revoke_session_sending_401(
     cookies = extract_all_cookies(response)
 
     assert "sAccessToken" in cookies
-    assert "sIdRefreshToken" in cookies
     assert "sRefreshToken" in cookies
 
     assert "anti-csrf" in response.headers
-    assert "id-refresh-token" in response.headers
     assert "front-token" in response.headers
 
     response = driver_config_client.post(
         "/auth/session/refresh",
         cookies={
             "sRefreshToken": cookies["sRefreshToken"]["value"],
-            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
         headers={"anti-csrf": response.headers["anti-csrf"]},
     )
@@ -482,17 +473,14 @@ async def test_revoking_session_during_refresh_with_revoke_session_sending_401(
 
     assert cookies["sAccessToken"]["value"] == ""
     assert cookies["sRefreshToken"]["value"] == ""
-    assert cookies["sIdRefreshToken"]["value"] == ""
 
     assert "anti-csrf" not in response.headers
     assert response.headers["id-refresh-token"] == "remove"
 
     assert cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-    assert cookies["sIdRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
     assert cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
 
     assert cookies["sAccessToken"]["domain"] == ""
-    assert cookies["sIdRefreshToken"]["domain"] == ""
     assert cookies["sRefreshToken"]["domain"] == ""
     assert "front-token" not in response.headers
 
@@ -527,18 +515,15 @@ async def test_revoking_session_during_refresh_and_throw_unauthorized(
     cookies = extract_all_cookies(response)
 
     assert "sAccessToken" in cookies
-    assert "sIdRefreshToken" in cookies
     assert "sRefreshToken" in cookies
 
     assert "anti-csrf" in response.headers
-    assert "id-refresh-token" in response.headers
     assert "front-token" in response.headers
 
     response = driver_config_client.post(
         "/auth/session/refresh",
         cookies={
             "sRefreshToken": cookies["sRefreshToken"]["value"],
-            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
         headers={"anti-csrf": response.headers["anti-csrf"]},
     )
@@ -548,17 +533,14 @@ async def test_revoking_session_during_refresh_and_throw_unauthorized(
 
     assert cookies["sAccessToken"]["value"] == ""
     assert cookies["sRefreshToken"]["value"] == ""
-    assert cookies["sIdRefreshToken"]["value"] == ""
 
     assert "anti-csrf" not in response.headers
     assert response.headers["id-refresh-token"] == "remove"
 
     assert cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-    assert cookies["sIdRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
     assert cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
 
     assert cookies["sAccessToken"]["domain"] == ""
-    assert cookies["sIdRefreshToken"]["domain"] == ""
     assert cookies["sRefreshToken"]["domain"] == ""
     assert "front-token" not in response.headers
 
@@ -595,11 +577,9 @@ async def test_revoking_session_during_refresh_fails_if_just_sending_401(
     cookies = extract_all_cookies(response)
 
     assert "sAccessToken" in cookies
-    assert "sIdRefreshToken" in cookies
     assert "sRefreshToken" in cookies
 
     assert "anti-csrf" in response.headers
-    assert "id-refresh-token" in response.headers
     assert "front-token" in response.headers
 
     response = driver_config_client.post(
@@ -616,13 +596,11 @@ async def test_revoking_session_during_refresh_fails_if_just_sending_401(
 
     assert cookies["sAccessToken"]["value"] != ""
     assert cookies["sRefreshToken"]["value"] != ""
-    assert cookies["sIdRefreshToken"]["value"] != ""
 
     assert response.headers["anti-csrf"] != ""
     assert response.headers["id-refresh-token"] != "remove"
 
     assert cookies["sAccessToken"]["expires"] != "Thu, 01 Jan 1970 00:00:00 GMT"
-    assert cookies["sIdRefreshToken"]["expires"] != "Thu, 01 Jan 1970 00:00:00 GMT"
     assert cookies["sRefreshToken"]["expires"] != "Thu, 01 Jan 1970 00:00:00 GMT"
 
     assert response.headers["front-token"] != ""

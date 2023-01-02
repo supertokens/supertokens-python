@@ -108,7 +108,10 @@ class SupertokensTest(TestCase):
             framework="django",
             mode="asgi",
             recipe_list=[
-                session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    cookie_domain="supertokens.io",
+                )
             ],
         )
 
@@ -234,7 +237,11 @@ class SupertokensTest(TestCase):
             framework="django",
             mode="asgi",
             recipe_list=[
-                session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    cookie_domain="supertokens.io",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                )
             ],
         )
 
@@ -249,20 +256,20 @@ class SupertokensTest(TestCase):
         cookies = get_cookies(response)
 
         assert len(cookies["sAccessToken"]["value"]) > 0
-        assert len(cookies["sIdRefreshToken"]["value"]) > 0
         assert len(cookies["sRefreshToken"]["value"]) > 0
 
         my_middleware = middleware(handle_view)
         request = self.factory.get("/handle", {"user_id": "user_id"})
 
         request.COOKIES["sAccessToken"] = cookies["sAccessToken"]["value"]
-        request.COOKIES["sIdRefreshToken"] = cookies["sIdRefreshToken"]["value"]
         request.META["HTTP_ANTI_CSRF"] = response.headers["anti-csrf"]
         temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
         response = await temp
-        assert "s" in json.loads(response.content)
+        assert "s" in json.loads(
+            response.content
+        )  # FIXME: Getting Unauthorized in body. Why?
         handle_cookies = get_cookies(response)
 
         assert not handle_cookies
@@ -279,7 +286,11 @@ class SupertokensTest(TestCase):
             framework="django",
             mode="asgi",
             recipe_list=[
-                session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    cookie_domain="supertokens.io",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                )
             ],
         )
 
@@ -297,7 +308,6 @@ class SupertokensTest(TestCase):
         cookies = get_cookies(response)
 
         assert len(cookies["sAccessToken"]["value"]) > 0
-        assert len(cookies["sIdRefreshToken"]["value"]) > 0
         assert len(cookies["sRefreshToken"]["value"]) > 0
 
         temp = my_middleware(request)

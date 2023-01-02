@@ -148,7 +148,6 @@ async def test_the_generate_token_api_with_valid_input_email_not_verified(
     response = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        cookies["sIdRefreshToken"]["value"],
         response_1.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )
@@ -192,7 +191,6 @@ async def test_the_generate_token_api_with_valid_input_email_verified_and_test_e
         response = email_verify_token_request(
             driver_config_client,
             cookies["sAccessToken"]["value"],
-            cookies["sIdRefreshToken"]["value"],
             response_1.headers.get("anti-csrf"),  # type: ignore
             user_id,
         )
@@ -263,7 +261,6 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
     response_2 = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        cookies["sIdRefreshToken"]["value"],
         response_1.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )
@@ -280,7 +277,6 @@ async def test_the_generate_token_api_with_an_expired_access_token_and_see_that_
         },
         cookies={
             "sRefreshToken": cookies["sRefreshToken"]["value"],
-            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
     )
 
@@ -345,7 +341,6 @@ async def test_that_providing_your_own_email_callback_and_make_sure_it_is_called
     response_2 = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        cookies["sIdRefreshToken"]["value"],
         response_1.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )
@@ -400,7 +395,6 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
     response_2 = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        cookies["sIdRefreshToken"]["value"],
         response_1.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )
@@ -419,7 +413,6 @@ async def test_the_email_verify_api_with_valid_input(driver_config_client: TestC
         },
         cookies={
             "sRefreshToken": cookies["sRefreshToken"]["value"],
-            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
         json={"method": "token", "token": token},
     )
@@ -470,7 +463,6 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
     response_2 = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        cookies["sIdRefreshToken"]["value"],
         response_1.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )
@@ -489,7 +481,6 @@ async def test_the_email_verify_api_with_invalid_token_and_check_error(
         },
         cookies={
             "sRefreshToken": cookies["sRefreshToken"]["value"],
-            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
         json={"method": "token", "token": "bad token"},
     )
@@ -540,7 +531,6 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
     response_2 = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        cookies["sIdRefreshToken"]["value"],
         response_1.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )
@@ -559,7 +549,6 @@ async def test_the_email_verify_api_with_token_of_not_type_string(
         },
         cookies={
             "sRefreshToken": cookies["sRefreshToken"]["value"],
-            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
         json={"method": "token", "token": 200},
     )
@@ -635,7 +624,6 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
     response_2 = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        cookies["sIdRefreshToken"]["value"],
         response_1.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )
@@ -654,7 +642,6 @@ async def test_that_the_handle_post_email_verification_callback_is_called_on_suc
         },
         cookies={
             "sRefreshToken": cookies["sRefreshToken"]["value"],
-            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
         json={"method": "token", "token": token},
     )
@@ -713,7 +700,6 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
     response_2 = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        cookies["sIdRefreshToken"]["value"],
         response_1.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )
@@ -742,7 +728,6 @@ async def test_the_email_verify_with_valid_input_using_the_get_method(
         },
         cookies={
             "sAccessToken": cookies["sAccessToken"]["value"],
-            "sIdRefreshToken": cookies["sIdRefreshToken"]["value"],
         },
     )
 
@@ -844,7 +829,6 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis(
     response_2 = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        cookies["sIdRefreshToken"]["value"],
         response_1.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )
@@ -941,7 +925,6 @@ async def test_the_email_verify_api_with_valid_input_overriding_apis_throws_erro
     response_2 = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        cookies["sIdRefreshToken"]["value"],
         response_1.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )
@@ -1085,7 +1068,6 @@ async def test_email_verify_with_deleted_user(driver_config_client: TestClient):
     response = email_verify_token_request(
         driver_config_client,
         cookies["sAccessToken"]["value"],
-        cookies["sIdRefreshToken"]["value"],
         res.headers.get("anti-csrf"),  # type: ignore
         user_id,
     )

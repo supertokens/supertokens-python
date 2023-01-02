@@ -174,7 +174,6 @@ async def test_email_verify_default_backward_compatibility(
         resp = email_verify_token_request(
             driver_config_client,
             response["accessToken"]["token"],
-            response["idRefreshToken"]["token"],
             response.get("antiCsrf", ""),
             user_id,
             True,
@@ -241,7 +240,6 @@ async def test_email_verify_backward_compatibility(driver_config_client: TestCli
     resp = email_verify_token_request(
         driver_config_client,
         response["accessToken"]["token"],
-        response["idRefreshToken"]["token"],
         response.get("antiCsrf", ""),
         user_id,
         True,
@@ -333,7 +331,6 @@ async def test_email_verify_custom_override(driver_config_client: TestClient):
         resp = email_verify_token_request(
             driver_config_client,
             response["accessToken"]["token"],
-            response["idRefreshToken"]["token"],
             response.get("antiCsrf", ""),
             user_id,
             True,
@@ -462,7 +459,6 @@ async def test_email_verify_smtp_service(driver_config_client: TestClient):
     resp = email_verify_token_request(
         driver_config_client,
         response["accessToken"]["token"],
-        response["idRefreshToken"]["token"],
         response.get("antiCsrf", ""),
         user_id,
         True,
