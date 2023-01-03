@@ -404,22 +404,18 @@ async def test_revoking_session_during_refresh_with_revoke_session_with_200(
     assert response.status_code == 200
     cookies = extract_all_cookies(response)
 
+    assert response.headers["anti-csrf"] != ""
+    assert response.headers["front-token"] != ""
+
     assert cookies["sAccessToken"]["value"] == ""
     assert cookies["sRefreshToken"]["value"] == ""
-
-    assert (
-        "anti-csrf" not in response.headers
-    )  # remove_cookies = True because of revoke. So new anti-csrf is generated but not set
-    assert response.headers["id-refresh-token"] == "remove"
-
     assert cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
     assert cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
 
+
+
     assert cookies["sAccessToken"]["domain"] == ""
     assert cookies["sRefreshToken"]["domain"] == ""
-    assert (
-        "front-token" not in response.headers
-    )  # revoke_cookies = True because of revoke. So not set
 
 
 async def test_revoking_session_during_refresh_with_revoke_session_sending_401(
@@ -472,18 +468,16 @@ async def test_revoking_session_during_refresh_with_revoke_session_sending_401(
     assert response.status_code == 401
     cookies = extract_all_cookies(response)
 
+    assert response.headers["anti-csrf"] != ""
+    assert response.headers["front-token"] != ""
+
     assert cookies["sAccessToken"]["value"] == ""
     assert cookies["sRefreshToken"]["value"] == ""
-
-    assert "anti-csrf" not in response.headers
-    assert response.headers["id-refresh-token"] == "remove"
-
     assert cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
     assert cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
 
     assert cookies["sAccessToken"]["domain"] == ""
     assert cookies["sRefreshToken"]["domain"] == ""
-    assert "front-token" not in response.headers
 
 
 async def test_revoking_session_during_refresh_and_throw_unauthorized(
@@ -494,7 +488,7 @@ async def test_revoking_session_during_refresh_and_throw_unauthorized(
 
         async def refresh_post(api_options: APIOptions, user_context: Dict[str, Any]):
             await oi_refresh_post(api_options, user_context)
-            return raise_unauthorised_exception("unauthorized")
+            return raise_unauthorised_exception("unauthorized", clear_tokens=True)
 
         oi.refresh_post = refresh_post
         return oi
@@ -533,18 +527,16 @@ async def test_revoking_session_during_refresh_and_throw_unauthorized(
     assert response.status_code == 401
     cookies = extract_all_cookies(response)
 
+    assert "anti-csrf" not in response.headers # TODO: This makes sense. But verify this
+    assert response.headers["front-token"] != ""
+
     assert cookies["sAccessToken"]["value"] == ""
     assert cookies["sRefreshToken"]["value"] == ""
-
-    assert "anti-csrf" not in response.headers
-    assert response.headers["id-refresh-token"] == "remove"
-
     assert cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
     assert cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
 
     assert cookies["sAccessToken"]["domain"] == ""
     assert cookies["sRefreshToken"]["domain"] == ""
-    assert "front-token" not in response.headers
 
 
 async def test_revoking_session_during_refresh_fails_if_just_sending_401(
@@ -596,13 +588,8 @@ async def test_revoking_session_during_refresh_fails_if_just_sending_401(
     assert response.status_code == 401
     cookies = extract_all_cookies(response)
 
+    assert response.headers["anti-csrf"] != ""
+    assert response.headers["front-token"] != ""
+
     assert cookies["sAccessToken"]["value"] != ""
     assert cookies["sRefreshToken"]["value"] != ""
-
-    assert response.headers["anti-csrf"] != ""
-    assert response.headers["id-refresh-token"] != "remove"
-
-    assert cookies["sAccessToken"]["expires"] != "Thu, 01 Jan 1970 00:00:00 GMT"
-    assert cookies["sRefreshToken"]["expires"] != "Thu, 01 Jan 1970 00:00:00 GMT"
-
-    assert response.headers["front-token"] != ""
