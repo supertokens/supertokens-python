@@ -23,6 +23,7 @@ class FlaskResponse(BaseResponse):
     def __init__(self, response: Response):
         super().__init__({})
         self.response = response
+        self.original = response
         self.headers: List[Any] = []
         self.response_sent = False
         self.status_set = False
@@ -44,53 +45,22 @@ class FlaskResponse(BaseResponse):
         httponly: bool = False,
         samesite: str = "lax",
     ):
-        from werkzeug.http import dump_cookie
-
-        if self.response is None:
-            cookie = dump_cookie(
-                key,
-                value=value,
-                expires=int(expires / 1000),
-                path=path,
-                domain=domain,
-                secure=secure,
-                httponly=httponly,
-                samesite=samesite,
-            )
-            self.headers.append(("Set-Cookie", cookie))
-        else:
-            self.response.set_cookie(
-                key,
-                value=value,
-                expires=expires / 1000,
-                path=path,
-                domain=domain,
-                secure=secure,
-                httponly=httponly,
-                samesite=samesite,
-            )
+        self.response.set_cookie(
+            key,
+            value=value,
+            expires=expires / 1000,
+            path=path,
+            domain=domain,
+            secure=secure,
+            httponly=httponly,
+            samesite=samesite,
+        )
 
     def set_header(self, key: str, value: str):
-        if self.response is None:
-            # TODO in the future the headrs must be validated..
-            # if not isinstance(value, str):
-            #     raise TypeError("Value should be unicode.")
-            if "\n" in value or "\r" in value:
-                raise ValueError(
-                    "Detected newline in header value.  This is "
-                    "a potential security problem"
-                )
-            self.headers.append((key, value))
-        else:
-            self.response.headers[key] = value
+        self.response.headers.set(key, value)
 
     def get_header(self, key: str) -> Union[None, str]:
-        if self.response is not None:
-            return self.response.headers.get(key)
-        for value in self.headers:
-            if value[0] == key:
-                return value[1]
-        return None
+        return self.response.headers.get(key)
 
     def set_status_code(self, status_code: int):
         if not self.status_set:
@@ -99,8 +69,6 @@ class FlaskResponse(BaseResponse):
             self.status_set = True
 
     def get_headers(self):
-        if self.response is None:
-            return self.headers
         return self.response.headers
 
     def set_json_content(self, content: Dict[str, Any]):

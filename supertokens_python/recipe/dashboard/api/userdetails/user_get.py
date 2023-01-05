@@ -10,13 +10,18 @@ from ...interfaces import (
     APIOptions,
     UserGetAPINoUserFoundError,
     UserGetAPIOkResponse,
+    UserGetAPIRecipeNotInitialisedError,
 )
-from ...utils import is_valid_recipe_id
+from ...utils import is_recipe_initialised, is_valid_recipe_id
 
 
 async def handle_user_get(
     _api_interface: APIInterface, api_options: APIOptions
-) -> Union[UserGetAPINoUserFoundError, UserGetAPIOkResponse]:
+) -> Union[
+    UserGetAPINoUserFoundError,
+    UserGetAPIOkResponse,
+    UserGetAPIRecipeNotInitialisedError,
+]:
     user_id = api_options.request.get_query_param("userId")
     recipe_id = api_options.request.get_query_param("recipeId")
 
@@ -28,6 +33,9 @@ async def handle_user_get(
 
     if not is_valid_recipe_id(recipe_id):
         raise_bad_input_exception("Invalid recipe id")
+
+    if not is_recipe_initialised(recipe_id):
+        return UserGetAPIRecipeNotInitialisedError()
 
     user_response = await get_user_for_recipe_id(user_id, recipe_id)
     if user_response is None:

@@ -21,33 +21,32 @@ from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.testclient import TestClient
 from pytest import fixture, mark
+
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python.ingredients.emaildelivery import EmailDeliveryInterface
 from supertokens_python.ingredients.emaildelivery.types import (
     EmailContent,
     EmailDeliveryConfig,
-    SMTPSettingsFrom,
     SMTPServiceInterface,
     SMTPSettings,
+    SMTPSettingsFrom,
 )
-from supertokens_python.recipe import emailpassword, session, emailverification
-from supertokens_python.recipe.emailpassword import (
-    InputResetPasswordUsingTokenFeature,
-)
+from supertokens_python.recipe import emailpassword, emailverification, session
+from supertokens_python.recipe.emailpassword import InputResetPasswordUsingTokenFeature
 from supertokens_python.recipe.emailpassword.emaildelivery.services import SMTPService
-from supertokens_python.recipe.emailverification.emaildelivery.services import (
-    SMTPService as EVSMTPService,
-)
 from supertokens_python.recipe.emailpassword.types import (
     EmailTemplateVars,
     PasswordResetEmailTemplateVars,
 )
 from supertokens_python.recipe.emailpassword.types import User as EPUser
+from supertokens_python.recipe.emailverification.emaildelivery.services import (
+    SMTPService as EVSMTPService,
+)
+from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.emailverification.types import (
     VerificationEmailTemplateVars,
 )
-from supertokens_python.recipe.emailverification.types import User as EVUser
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.session.recipe_implementation import (
     RecipeImplementation as SessionRecipeImplementation,
@@ -303,6 +302,70 @@ async def test_reset_password_custom_override(driver_config_client: TestClient):
 
         assert email == "test@example.com"
         assert password_reset_url != ""
+
+
+@mark.asyncio
+async def test_reset_password_custom_override_with_send_email_override(
+    driver_config_client: TestClient,
+):
+    "Reset password: test custom override with send email override"
+    email = ""
+    password_reset_url = ""
+
+    def email_delivery_override(oi: EmailDeliveryInterface[EmailTemplateVars]):
+        oi_send_email = oi.send_email
+
+        async def send_email(
+            template_vars: EmailTemplateVars, user_context: Dict[str, Any]
+        ):
+            template_vars.user.email = "override@example.com"
+            assert isinstance(template_vars, PasswordResetEmailTemplateVars)
+            await oi_send_email(template_vars, user_context)
+
+        oi.send_email = send_email
+        return oi
+
+    async def custom_create_and_send_custom_email(
+        user: EPUser, password_reset_link: str, _: Dict[str, Any]
+    ):
+        nonlocal email, password_reset_url
+        email = user.email
+        password_reset_url = password_reset_link
+
+    init(
+        supertokens_config=SupertokensConfig("http://localhost:3567"),
+        app_info=InputAppInfo(
+            app_name="ST",
+            api_domain="http://api.supertokens.io",
+            website_domain="http://supertokens.io",
+            api_base_path="/auth",
+        ),
+        framework="fastapi",
+        recipe_list=[
+            emailpassword.init(
+                email_delivery=EmailDeliveryConfig(
+                    service=None,
+                    override=email_delivery_override,
+                ),
+                reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
+                    create_and_send_custom_email=custom_create_and_send_custom_email
+                ),
+            ),
+            session.init(),
+        ],
+    )
+    start_st()
+
+    sign_up_request(driver_config_client, "test@example.com", "1234abcd")
+
+    resp = reset_password_request(
+        driver_config_client, "test@example.com", use_server=True
+    )
+
+    assert resp.status_code == 200
+
+    assert email == "override@example.com"
+    assert password_reset_url != ""
 
 
 @mark.asyncio

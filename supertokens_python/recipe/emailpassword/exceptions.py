@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, NoReturn
 
 from supertokens_python.exceptions import SuperTokensError
 
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from .types import ErrorFormField
 
 
-def raise_form_field_exception(msg: str, form_fields: List[ErrorFormField]):
+def raise_form_field_exception(msg: str, form_fields: List[ErrorFormField]) -> NoReturn:
     raise FieldError(msg, form_fields)
 
 

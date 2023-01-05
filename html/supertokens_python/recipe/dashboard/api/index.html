@@ -427,7 +427,7 @@ __all__ = [
 </details>
 </dd>
 <dt id="supertokens_python.recipe.dashboard.api.handle_user_get"><code class="name flex">
-<span>async def <span class="ident">handle_user_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError">UserGetAPINoUserFoundError</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse">UserGetAPIOkResponse</a>]</span>
+<span>async def <span class="ident">handle_user_get</span></span>(<span>_api_interface: <a title="supertokens_python.recipe.dashboard.interfaces.APIInterface" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIInterface">APIInterface</a>, api_options: <a title="supertokens_python.recipe.dashboard.interfaces.APIOptions" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.APIOptions">APIOptions</a>) ‑> Union[<a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPINoUserFoundError">UserGetAPINoUserFoundError</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIOkResponse">UserGetAPIOkResponse</a>, <a title="supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError" href="../interfaces.html#supertokens_python.recipe.dashboard.interfaces.UserGetAPIRecipeNotInitialisedError">UserGetAPIRecipeNotInitialisedError</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -437,7 +437,11 @@ __all__ = [
 </summary>
 <pre><code class="python">async def handle_user_get(
     _api_interface: APIInterface, api_options: APIOptions
-) -&gt; Union[UserGetAPINoUserFoundError, UserGetAPIOkResponse]:
+) -&gt; Union[
+    UserGetAPINoUserFoundError,
+    UserGetAPIOkResponse,
+    UserGetAPIRecipeNotInitialisedError,
+]:
     user_id = api_options.request.get_query_param(&#34;userId&#34;)
     recipe_id = api_options.request.get_query_param(&#34;recipeId&#34;)
 
@@ -449,6 +453,9 @@ __all__ = [
 
     if not is_valid_recipe_id(recipe_id):
         raise_bad_input_exception(&#34;Invalid recipe id&#34;)
+
+    if not is_recipe_initialised(recipe_id):
+        return UserGetAPIRecipeNotInitialisedError()
 
     user_response = await get_user_for_recipe_id(user_id, recipe_id)
     if user_response is None:

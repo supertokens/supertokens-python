@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
+- Add missing `original` attribute to flask response and remove logic for cases where `response` is `None`
+
+## [0.11.12] - 2022-12-27
+-  Fix django cookie expiry time format to make it consistent with other frameworks: https://github.com/supertokens/supertokens-python/issues/267
+
+## [0.11.11] - 2022-12-26
+
+-   Updates dashboard version
+-   Updates user GET API for the dashboard recipe
+
+## [0.11.10] - 2022-12-12
+
+-   Fixes issue of sign up API not sending a `FIELD_ERROR` response in case of duplicate email: https://github.com/supertokens/supertokens-python/issues/264
+
+
+## [0.11.9] - 2022-12-06
+
+-   Fixes issue where if send_email is overridden with a different email, it will reset that email.
+
 ## [0.11.8] - 2022-11-28
 
 ### Added:
