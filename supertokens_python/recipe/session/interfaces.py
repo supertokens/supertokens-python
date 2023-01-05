@@ -340,6 +340,9 @@ class APIInterface(ABC):
         pass
 
 
+ResponseMutator = Callable[[BaseResponse], None]
+
+
 class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def __init__(
         self,
@@ -359,7 +362,7 @@ class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
         self.user_id = user_id
         self.transfer_method: TokenTransferMethod = transfer_method
 
-        self.response_mutators: List[Callable[[BaseResponse], None]] = []
+        self.response_mutators: List[ResponseMutator] = []
 
     @abstractmethod
     async def revoke_session(

@@ -399,7 +399,7 @@ async def test_revoking_session_during_refresh_with_revoke_session_with_200(
             "sRefreshToken": cookies["sRefreshToken"]["value"],
         },
         headers={"anti-csrf": response.headers["anti-csrf"]},
-    )  # FIXME: Core says request is unauthorized. But the credentials seem correct.
+    )
 
     assert response.status_code == 200
     cookies = extract_all_cookies(response)
@@ -411,8 +411,6 @@ async def test_revoking_session_during_refresh_with_revoke_session_with_200(
     assert cookies["sRefreshToken"]["value"] == ""
     assert cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
     assert cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-
-
 
     assert cookies["sAccessToken"]["domain"] == ""
     assert cookies["sRefreshToken"]["domain"] == ""
@@ -527,7 +525,9 @@ async def test_revoking_session_during_refresh_and_throw_unauthorized(
     assert response.status_code == 401
     cookies = extract_all_cookies(response)
 
-    assert "anti-csrf" not in response.headers # TODO: This makes sense. But verify this
+    assert (
+        "anti-csrf" not in response.headers
+    )  # TODO: This makes sense. But verify this
     assert response.headers["front-token"] != ""
 
     assert cookies["sAccessToken"]["value"] == ""

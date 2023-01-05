@@ -17,7 +17,7 @@ import json
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
-from supertokens_python.framework.request import BaseRequest
+from supertokens_python.framework import BaseRequest
 from supertokens_python.logger import log_debug_message
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.process_state import AllowedProcessStates, ProcessState
@@ -33,14 +33,14 @@ from ...types import MaybeAwaitable
 from . import session_functions
 from .access_token import validate_access_token_structure
 from .cookie_and_header import (
-    attach_anti_csrf_header,
-    clear_session,
     get_anti_csrf_header,
     get_rid_header,
     get_token,
-    set_cookie,
-    set_front_token_in_headers,
-    set_token,
+    token_response_mutator,
+    front_token_response_mutator,
+    anti_csrf_response_mutator,
+    set_cookie_response_mutator,
+    clear_session_response_mutator,
 )
 from .exceptions import (
     TokenTheftError,
@@ -50,6 +50,7 @@ from .exceptions import (
 )
 from .interfaces import (
     AccessTokenObj,
+    ResponseMutator,
     ClaimsValidationResult,
     GetClaimValueOkResult,
     JSONObject,
@@ -70,7 +71,6 @@ if TYPE_CHECKING:
     from supertokens_python import AppInfo
     from supertokens_python.querier import Querier
 
-from functools import partial
 
 from .constants import available_token_transfer_methods
 from .interfaces import SessionContainer
@@ -211,7 +211,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             session_data,
         )
 
-        response_mutators: List[Callable[[Any], None]] = []
+        response_mutators: List[ResponseMutator] = []
 
         for transfer_method in available_token_transfer_methods:
             request_access_token = get_token(request, "access", transfer_method)
@@ -221,10 +221,9 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                 and request_access_token is not None
             ):
                 response_mutators.append(
-                    partial(
-                        clear_session,
-                        config=self.config,
-                        transfer_method=transfer_method,
+                    clear_session_response_mutator(
+                        self.config,
+                        transfer_method,
                     )
                 )
 
@@ -243,40 +242,32 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
         anti_csrf_token: Optional[str] = result.get("antiCsrfToken")
 
         response_mutators.append(
-            partial(
-                set_front_token_in_headers,
-                user_id=new_session.user_id,
-                expires=new_access_token_info["expiry"],
-                jwt_payload=new_session.access_token_payload,
+            front_token_response_mutator(
+                new_session.user_id,
+                new_access_token_info["expiry"],
+                new_session.access_token_payload,
             )
         )
         response_mutators.append(
-            partial(
-                set_token,
-                config=self.config,
-                token_type="access",
-                value=new_access_token_info["token"],
-                expires=int(datetime.now().timestamp()) + 3153600000000,
-                transfer_method=new_session.transfer_method,
+            token_response_mutator(
+                self.config,
+                "access",
+                new_access_token_info["token"],
+                int(datetime.now().timestamp()) + 3153600000000,
+                new_session.transfer_method,
             )
         )
         response_mutators.append(
-            partial(
-                set_token,
-                config=self.config,
-                token_type="refresh",
-                value=new_refresh_token_info["token"],
-                expires=new_refresh_token_info["expiry"],
-                transfer_method=new_session.transfer_method,
+            token_response_mutator(
+                self.config,
+                "refresh",
+                new_refresh_token_info["token"],
+                new_refresh_token_info["expiry"],
+                new_session.transfer_method,
             )
         )
         if anti_csrf_token is not None:
-            response_mutators.append(
-                partial(
-                    attach_anti_csrf_header,
-                    value=anti_csrf_token,
-                )
-            )
+            response_mutators.append(anti_csrf_response_mutator(anti_csrf_token))
 
         new_session.response_mutators.extend(response_mutators)
 
@@ -459,21 +450,19 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
             new_access_token_info = result["accessToken"]
 
             session.response_mutators.append(
-                partial(
-                    set_front_token_in_headers,
-                    user_id=session.user_id,
-                    expires=new_access_token_info["expiry"],
-                    jwt_payload=session.access_token_payload,
+                front_token_response_mutator(
+                    session.user_id,
+                    new_access_token_info["expiry"],
+                    session.access_token_payload,
                 )
             )
             session.response_mutators.append(
-                partial(
-                    set_token,
-                    config=self.config,
-                    token_type="access",
-                    value=session.access_token,
-                    expires=int(datetime.now().timestamp()) + 3153600000000,
-                    transfer_method=session.transfer_method,
+                token_response_mutator(
+                    self.config,
+                    "access",
+                    session.access_token,
+                    int(datetime.now().timestamp()) + 3153600000000,
+                    session.transfer_method,
                 )
             )
 
@@ -537,13 +526,12 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                     "refreshSession: cleared legacy id refresh token because refresh token was not found"
                 )
                 response_mutators.append(
-                    partial(
-                        set_cookie,
-                        config=self.config,
-                        key=LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
-                        value="",
-                        expires=0,
-                        path_type="access_token_path",
+                    set_cookie_response_mutator(
+                        self.config,
+                        LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
+                        "",
+                        0,
+                        "access_token_path",
                     )
                 )
 
@@ -577,11 +565,7 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                     and refresh_tokens.get(transfer_method) is not None
                 ):
                     response_mutators.append(
-                        partial(
-                            clear_session,
-                            config=self.config,
-                            transfer_method=transfer_method,
-                        )
+                        clear_session_response_mutator(self.config, transfer_method)
                     )
 
             if request.get_cookie(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) is not None:
@@ -589,13 +573,12 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                     "refreshSession: cleared legacy id refresh token after successful refresh"
                 )
                 response_mutators.append(
-                    partial(
-                        set_cookie,
-                        config=self.config,
-                        key=LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
-                        value="",
-                        expires=0,
-                        path_type="access_token_path",
+                    set_cookie_response_mutator(
+                        self.config,
+                        LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
+                        "",
+                        0,
+                        "access_token_path",
                     )
                 )
 
@@ -614,43 +597,35 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
 
             if new_access_token_info is not None:
                 response_mutators.append(
-                    partial(
-                        set_front_token_in_headers,
-                        user_id=session.user_id,
-                        expires=new_access_token_info["expiry"],
-                        jwt_payload=session.access_token_payload,
+                    front_token_response_mutator(
+                        session.user_id,
+                        new_access_token_info["expiry"],
+                        session.access_token_payload,
                     )
                 )
                 response_mutators.append(
-                    partial(
-                        set_token,
-                        config=self.config,
-                        token_type="access",
-                        value=new_access_token_info["token"],
-                        expires=int(datetime.now().timestamp()) + 3153600000000,
-                        transfer_method=session.transfer_method,
+                    token_response_mutator(
+                        self.config,
+                        "access",
+                        new_access_token_info["token"],
+                        int(datetime.now().timestamp()) + 3153600000000,
+                        session.transfer_method,
                     )
                 )
             if new_refresh_token_info is not None:
                 response_mutators.append(
-                    partial(
-                        set_token,
-                        config=self.config,
-                        token_type="refresh",
-                        value=new_refresh_token_info["token"],
-                        expires=new_refresh_token_info["expiry"],
-                        transfer_method=session.transfer_method,
+                    token_response_mutator(
+                        self.config,
+                        "refresh",
+                        new_refresh_token_info["token"],
+                        new_refresh_token_info["expiry"],
+                        session.transfer_method,
                     )
                 )
 
             anti_csrf_token = new_anti_csrf_token
             if anti_csrf_token is not None:
-                response_mutators.append(
-                    partial(
-                        attach_anti_csrf_header,
-                        value=anti_csrf_token,
-                    )
-                )
+                response_mutators.append(anti_csrf_response_mutator(anti_csrf_token))
 
             session.response_mutators.extend(response_mutators)
 
@@ -667,13 +642,12 @@ class RecipeImplementation(RecipeInterface):  # pylint: disable=too-many-public-
                         "refreshSession: cleared legacy id refresh token because refresh token was not found"
                     )
                     response_mutators.append(
-                        partial(
-                            set_cookie,
-                            config=self.config,
-                            key=LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
-                            value="",
-                            expires=0,
-                            path_type="access_token_path",
+                        set_cookie_response_mutator(
+                            self.config,
+                            LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
+                            "",
+                            0,
+                            "access_token_path",
                         )
                     )
                     e.response_mutators.extend(response_mutators)

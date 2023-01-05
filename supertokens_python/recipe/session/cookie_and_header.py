@@ -44,7 +44,7 @@ from typing import Any, Dict, Union
 from supertokens_python.utils import get_header, utf_base64encode
 
 
-def set_front_token_in_headers(
+def _set_front_token_in_headers(
     response: BaseResponse,
     user_id: str,
     expires: int,
@@ -62,6 +62,19 @@ def set_front_token_in_headers(
     set_header(
         response, ACCESS_CONTROL_EXPOSE_HEADERS, FRONT_TOKEN_HEADER_SET_KEY, True
     )
+
+
+def front_token_response_mutator(
+    user_id: str,
+    expires: int,
+    jwt_payload: Union[None, Dict[str, Any]] = None,
+):
+    def mutator(
+        response: BaseResponse,
+    ):
+        return _set_front_token_in_headers(response, user_id, expires, jwt_payload)
+
+    return mutator
 
 
 def get_cors_allowed_headers():
@@ -91,7 +104,7 @@ def get_cookie(request: BaseRequest, key: str):
     return unquote(cookie_val)
 
 
-def set_cookie(
+def _set_cookie(
     response: BaseResponse,
     config: SessionConfig,
     key: str,
@@ -120,9 +133,33 @@ def set_cookie(
     )
 
 
-def attach_anti_csrf_header(response: BaseResponse, value: str):
+def set_cookie_response_mutator(
+    config: SessionConfig,
+    key: str,
+    value: str,
+    expires: int,
+    path_type: Literal["refresh_token_path", "access_token_path"],
+):
+    def mutator(
+        response: BaseResponse,
+    ):
+        return _set_cookie(response, config, key, value, expires, path_type)
+
+    return mutator
+
+
+def _attach_anti_csrf_header(response: BaseResponse, value: str):
     set_header(response, ANTI_CSRF_HEADER_KEY, value, False)
     set_header(response, ACCESS_CONTROL_EXPOSE_HEADERS, ANTI_CSRF_HEADER_KEY, True)
+
+
+def anti_csrf_response_mutator(value: str):
+    def mutator(
+        response: BaseResponse,
+    ):
+        return _attach_anti_csrf_header(response, value)
+
+    return mutator
 
 
 def get_anti_csrf_header(request: BaseRequest):
@@ -138,10 +175,10 @@ def clear_session_from_all_token_transfer_methods(
 ):
     for transfer_method in available_token_transfer_methods:
         if get_token(request, "access", transfer_method) is not None:
-            clear_session(response, recipe.config, transfer_method)
+            _clear_session(response, recipe.config, transfer_method)
 
 
-def clear_session(
+def _clear_session(
     response: BaseResponse,
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
@@ -149,12 +186,24 @@ def clear_session(
     # If we can tell it's a cookie based session we are not clearing using headers
     token_types: List[TokenType] = ["access", "refresh"]
     for token_type in token_types:
-        set_token(response, config, token_type, "", 0, transfer_method)
+        _set_token(response, config, token_type, "", 0, transfer_method)
 
     set_header(response, FRONT_TOKEN_HEADER_SET_KEY, "remove", False)
     set_header(
         response, ACCESS_CONTROL_EXPOSE_HEADERS, FRONT_TOKEN_HEADER_SET_KEY, True
     )
+
+
+def clear_session_response_mutator(
+    config: SessionConfig,
+    transfer_method: TokenTransferMethod,
+):
+    def mutator(
+        response: BaseResponse,
+    ):
+        return _clear_session(response, config, transfer_method)
+
+    return mutator
 
 
 def get_cookie_name_from_token_type(token_type: TokenType):
@@ -191,7 +240,7 @@ def get_token(
     raise Exception("Should never happen: Unknown transferMethod: " + transfer_method)
 
 
-def set_token(
+def _set_token(
     response: BaseResponse,
     config: SessionConfig,
     token_type: TokenType,
@@ -200,7 +249,7 @@ def set_token(
     transfer_method: TokenTransferMethod,
 ):
     if transfer_method == "cookie":
-        set_cookie(
+        _set_cookie(
             response,
             config,
             get_cookie_name_from_token_type(token_type),
@@ -214,6 +263,26 @@ def set_token(
             get_response_header_name_for_token_type(token_type),
             value,
         )
+
+
+def token_response_mutator(
+    config: SessionConfig,
+    token_type: TokenType,
+    value: str,
+    expires: int,
+    transfer_method: TokenTransferMethod,
+):
+    def mutator(response: BaseResponse):
+        _set_token(
+            response,
+            config,
+            token_type,
+            value,
+            expires,
+            transfer_method,
+        )
+
+    return mutator
 
 
 def set_token_in_header(response: BaseResponse, name: str, value: str):

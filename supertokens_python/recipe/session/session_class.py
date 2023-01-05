@@ -14,14 +14,16 @@
 from datetime import datetime
 from typing import Any, Dict, List, TypeVar, Union
 
-from functools import partial
-
 from supertokens_python.recipe.session.exceptions import (
     raise_invalid_claims_exception,
     raise_unauthorised_exception,
 )
-from .cookie_and_header import clear_session, set_front_token_in_headers, set_token
 
+from .cookie_and_header import (
+    clear_session_response_mutator,
+    front_token_response_mutator,
+    token_response_mutator,
+)
 from .interfaces import SessionClaim, SessionClaimValidator, SessionContainer
 
 _T = TypeVar("_T")
@@ -36,10 +38,9 @@ class Session(SessionContainer):
         )
 
         self.response_mutators.append(
-            partial(
-                clear_session,
-                config=self.config,
-                transfer_method=self.transfer_method,
+            clear_session_response_mutator(
+                self.config,
+                self.transfer_method,
             )
         )
 
@@ -88,21 +89,19 @@ class Session(SessionContainer):
             self.access_token = result.access_token.token
 
             self.response_mutators.append(
-                partial(
-                    set_front_token_in_headers,
-                    user_id=self.user_id,
-                    expires=result.access_token.expiry,
-                    jwt_payload=self.access_token_payload,
+                front_token_response_mutator(
+                    self.user_id,
+                    result.access_token.expiry,
+                    self.access_token_payload,
                 )
             )
             self.response_mutators.append(
-                partial(
-                    set_token,
-                    config=self.config,
-                    token_type="access",
-                    value=result.access_token.token,
-                    expires=int(datetime.now().timestamp()) + 3153600000000,
-                    transfer_method=self.transfer_method,
+                token_response_mutator(
+                    self.config,
+                    "access",
+                    result.access_token.token,
+                    int(datetime.now().timestamp()) + 3153600000000,
+                    self.transfer_method,
                 )
             )
 
