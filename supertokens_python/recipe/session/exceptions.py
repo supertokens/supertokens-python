@@ -13,10 +13,12 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union, NoReturn
+from typing import TYPE_CHECKING, Any, Dict, List, NoReturn, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError
-from .interfaces import ResponseMutator
+
+if TYPE_CHECKING:
+    from .interfaces import ResponseMutator
 
 
 def raise_token_theft_exception(user_id: str, session_handle: str) -> NoReturn:
