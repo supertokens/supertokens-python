@@ -239,7 +239,7 @@ class SessionRecipe(RecipeModule):
     ) -> BaseResponse:
         if isinstance(err, SuperTokensSessionError):
             for mutator in err.response_mutators:
-                mutator(response=response)  # type: ignore
+                mutator(response)
 
         if isinstance(err, UnauthorisedError):
             log_debug_message("errorHandler: returning UNAUTHORISED")
