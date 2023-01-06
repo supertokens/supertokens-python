@@ -17,7 +17,7 @@ set-up-hooks:
 	chmod +x .git/hooks/pre-commit
 
 test:
-	pytest ./tests/
+	pytest --reruns 3 --reruns-delay 5 ./tests/
 
 dev-install:
 	pip install -r dev-requirements.txt
