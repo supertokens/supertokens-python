@@ -6,8 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## unreleased
+# [0.11.13] - 2023-01-06
 
 - Add missing `original` attribute to flask response and remove logic for cases where `response` is `None`
+- Relax PyJWT version constraints https://github.com/supertokens/supertokens-python/issues/272
 
 ## [0.11.12] - 2022-12-27
 -  Fix django cookie expiry time format to make it consistent with other frameworks: https://github.com/supertokens/supertokens-python/issues/267
