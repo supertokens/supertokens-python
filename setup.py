@@ -70,7 +70,7 @@ exclude_list = [
 
 setup(
     name="supertokens_python",
-    version="0.11.12",
+    version="0.11.13",
     author="SuperTokens",
     license="Apache 2.0",
     author_email="team@supertokens.com",
@@ -99,7 +99,7 @@ setup(
     ],
     keywords="",
     install_requires=[
-        "PyJWT>=2.0.0 ,<2.4.0",
+        "PyJWT>=2.0.0 ,<3.0.0",
         "httpx>=0.15.0 ,<0.24.0",
         "pycryptodome==3.10.*",
         "tldextract==3.1.0",

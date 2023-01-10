@@ -28,6 +28,7 @@ iniconfig==1.1.1
 isort==5.10.1
 itsdangerous==2.1.2
 Jinja2==3.1.1
+jsonschema==3.2.0
 lazy-object-proxy==1.7.1
 Mako==1.2.0
 Markdown==3.3.6
@@ -54,7 +55,9 @@ pyparsing==3.0.7
 pyright==1.1.236
 pyrsistent==0.18.1
 pytest==6.2.5
-pytest-asyncio==0.14.0
+pytest-asyncio==0.18.0
+pytest-mock==3.8.2
+pytest-rerunfailures==10.3
 python-dotenv==0.19.2
 pytz==2022.1
 PyYAML==5.4.1
@@ -81,4 +84,3 @@ uvicorn==0.18.2
 Werkzeug==2.0.3
 wrapt==1.13.3
 zipp==3.7.0
-pytest-mock==3.8.2
