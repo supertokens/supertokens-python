@@ -13,23 +13,24 @@
 # under the License.
 
 import json
+from datetime import datetime
 from inspect import isawaitable
 from typing import Any, Dict, Union
 
-from datetime import datetime
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.test import RequestFactory, TestCase
+from pytest import mark
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.django import middleware
 from supertokens_python.recipe import emailpassword, session
-from supertokens_python.recipe.emailpassword.interfaces import APIInterface, APIOptions
+from supertokens_python.recipe.emailpassword.interfaces import (APIInterface,
+                                                                APIOptions)
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.asyncio import (
-    create_new_session,
-    get_session,
-    refresh_session,
-)
-from supertokens_python.recipe.session.framework.django.asyncio import verify_session
+from supertokens_python.recipe.session.asyncio import (create_new_session,
+                                                       get_session,
+                                                       refresh_session)
+from supertokens_python.recipe.session.framework.django.asyncio import \
+    verify_session
 from tests.utils import clean_st, reset, setup_st, start_st
 
 
@@ -389,3 +390,19 @@ class SupertokensTest(TestCase):
         assert response.status_code == 200
         dict_response = json.loads(response.content)
         assert dict_response["s"] == "empty session"
+
+
+from django.http import HttpResponse
+from supertokens_python.framework.django.django_response import \
+    DjangoResponse as SuperTokensDjangoWrapper
+
+
+class SupertokensResponseTest(TestCase):
+    def test_remove_header_works(self):
+        response = HttpResponse()
+        st_response = SuperTokensDjangoWrapper(response)
+
+        st_response.set_header("foo", "bar")
+        assert st_response.get_header("foo") == "bar"
+        st_response.remove_header("foo")
+        assert st_response.get_header("foo") is None
