@@ -138,7 +138,7 @@ class ErrorHandlers:
         response: BaseResponse,
     ) -> BaseResponse:
         log_debug_message("Clearing tokens because of TOKEN_THEFT_DETECTED response")
-        clear_session_from_all_token_transfer_methods(response, recipe, request)
+        clear_session_from_all_token_transfer_methods(response, recipe)
         return await resolve(
             self.__on_token_theft_detected(request, session_handle, user_id, response)
         )
@@ -159,7 +159,7 @@ class ErrorHandlers:
     ):
         if do_clear_cookies:
             log_debug_message("Clearing tokens because of UNAUTHORISED response")
-            clear_session_from_all_token_transfer_methods(response, recipe, request)
+            clear_session_from_all_token_transfer_methods(response, recipe)
         return await resolve(self.__on_unauthorised(request, message, response))
 
     async def on_invalid_claim(

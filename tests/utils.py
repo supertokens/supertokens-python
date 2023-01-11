@@ -239,6 +239,9 @@ def extract_info(response: Response) -> Dict[str, Any]:
     access_token = cookies.get("sAccessToken", {}).get("value")
     refresh_token = cookies.get("sRefreshToken", {}).get("value")
 
+    access_token_from_header = response.headers.get("st-access-token")
+    refresh_token_from_header = response.headers.get("st-refresh-token")
+
     return {
         **cookies,
         "accessToken": access_token,
@@ -247,9 +250,29 @@ def extract_info(response: Response) -> Dict[str, Any]:
         "status_code": response.status_code,
         "body": response.json(),
         "antiCsrf": response.headers.get("anti-csrf"),
-        "accessTokenFromHeader": response.headers.get("st-access-token"),
-        "refreshTokenFromHeader": response.headers.get("st-refresh-token"),
+        "accessTokenFromHeader": access_token_from_header,
+        "refreshTokenFromHeader": refresh_token_from_header,
+        "accessTokenFromAny": access_token_from_header or access_token,
+        "refreshTokenFromAny": refresh_token_from_header or refresh_token,
     }
+
+
+def assert_info_clears_tokens(info: Dict[str, Any], token_transfer_method: str):
+    if token_transfer_method == "cookie":
+        assert info["accessToken"] == ""
+        assert info["refreshToken"] == ""
+        assert info["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+        assert info["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+        assert info["sAccessToken"]["domain"] == ""
+        assert info["sRefreshToken"]["domain"] == ""
+    elif token_transfer_method == "header":
+        assert info["accessTokenFromHeader"] == ""
+        assert info["refreshTokenFromHeader"] == ""
+    else:
+        raise Exception("unknown token transfer method: " + token_transfer_method)
+
+    assert info["frontToken"] == "remove"
+    assert info["antiCsrf"] is None
 
 
 def get_unix_timestamp(expiry: str):

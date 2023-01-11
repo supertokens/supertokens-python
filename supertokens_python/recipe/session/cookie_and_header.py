@@ -97,6 +97,11 @@ def set_header(response: BaseResponse, key: str, value: str, allow_duplicate: bo
         response.set_header(key, value)
 
 
+def remove_header(response: BaseResponse, key: str):
+    if response.get_header(key) is not None:
+        response.remove_header(key)
+
+
 def get_cookie(request: BaseRequest, key: str):
     cookie_val = request.get_cookie(key)
     if cookie_val is None:
@@ -171,11 +176,16 @@ def get_rid_header(request: BaseRequest):
 
 
 def clear_session_from_all_token_transfer_methods(
-    response: BaseResponse, recipe: SessionRecipe, request: BaseRequest
+    response: BaseResponse, recipe: SessionRecipe
 ):
+    # We are clearing the session in all transfermethods to be sure to override cookies in case they have been already added to the response.
+    # This is done to handle the following use-case:
+    # If the app overrides signInPOST to check the ban status of the user after the original implementation and throwing an UNAUTHORISED error
+    # In this case: the SDK has attached cookies to the response, but none was sent with the request
+    # We can't know which to clear since we can't reliably query or remove the set-cookie header added to the response (causes issues in some frameworks, i.e.: hapi)
+    # The safe solution in this case is to overwrite all the response cookies/headers with an empty value, which is what we are doing here.
     for transfer_method in available_token_transfer_methods:
-        if get_token(request, "access", transfer_method) is not None:
-            _clear_session(response, recipe.config, transfer_method)
+        _clear_session(response, recipe.config, transfer_method)
 
 
 def _clear_session(
@@ -183,11 +193,14 @@ def _clear_session(
     config: SessionConfig,
     transfer_method: TokenTransferMethod,
 ):
-    # If we can tell it's a cookie based session we are not clearing using headers
+    # If we can be specific about which transferMethod we want to clear, there is no reason to clear the other ones
     token_types: List[TokenType] = ["access", "refresh"]
     for token_type in token_types:
         _set_token(response, config, token_type, "", 0, transfer_method)
 
+    remove_header(
+        response, ANTI_CSRF_HEADER_KEY
+    )  # This can be added multiple times in some cases, but that should be OK
     set_header(response, FRONT_TOKEN_HEADER_SET_KEY, "remove", False)
     set_header(
         response, ACCESS_CONTROL_EXPOSE_HEADERS, FRONT_TOKEN_HEADER_SET_KEY, True
