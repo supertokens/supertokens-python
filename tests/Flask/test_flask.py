@@ -399,8 +399,12 @@ def test_optional_session(driver_config_app: Any):
     assert response.status_code == 200
     assert dict_response["s"] == "empty session"
 
-from flask import Response
-from supertokens_python.framework.flask.flask_response import FlaskResponse as SupertokensFlaskWrapper
+
+from flask.wrappers import Response
+from supertokens_python.framework.flask.flask_response import (
+    FlaskResponse as SupertokensFlaskWrapper,
+)
+
 
 def test_remove_header_works():
     response = Response()

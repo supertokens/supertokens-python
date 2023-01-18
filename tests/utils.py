@@ -252,8 +252,12 @@ def extract_info(response: Response) -> Dict[str, Any]:
         "antiCsrf": response.headers.get("anti-csrf"),
         "accessTokenFromHeader": access_token_from_header,
         "refreshTokenFromHeader": refresh_token_from_header,
-        "accessTokenFromAny": access_token_from_header if access_token is None else access_token,
-        "refreshTokenFromAny": refresh_token_from_header if refresh_token is None else refresh_token,
+        "accessTokenFromAny": access_token_from_header
+        if access_token is None
+        else access_token,
+        "refreshTokenFromAny": refresh_token_from_header
+        if refresh_token is None
+        else refresh_token,
     }
 
 
@@ -517,15 +521,13 @@ st_init_common_args = {
 }
 
 
-def get_st_init_args(recipe_list: List[Any], extra_config: Optional[Dict[str, Any]]=None) -> Dict[str, Any]:
+def get_st_init_args(
+    recipe_list: List[Any], extra_config: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     if extra_config is None:
         extra_config = {}
 
-    return {
-        **st_init_common_args,
-        "recipe_list": recipe_list,
-        **extra_config
-    }
+    return {**st_init_common_args, "recipe_list": recipe_list, **extra_config}
 
 
 def is_subset(dict1: Any, dict2: Any) -> bool:
