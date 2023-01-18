@@ -522,12 +522,9 @@ st_init_common_args = {
 
 
 def get_st_init_args(
-    recipe_list: List[Any], extra_config: Optional[Dict[str, Any]] = None
+    recipe_list: List[Any]
 ) -> Dict[str, Any]:
-    if extra_config is None:
-        extra_config = {}
-
-    return {**st_init_common_args, "recipe_list": recipe_list, **extra_config}
+    return {**st_init_common_args, "recipe_list": recipe_list}
 
 
 def is_subset(dict1: Any, dict2: Any) -> bool:
