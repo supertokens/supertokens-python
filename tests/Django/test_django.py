@@ -21,6 +21,9 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.test import RequestFactory, TestCase
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.django import middleware
+from supertokens_python.framework.django.django_response import (
+    DjangoResponse as SuperTokensDjangoWrapper,
+)
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.interfaces import APIInterface, APIOptions
 from supertokens_python.recipe.session import SessionContainer
@@ -391,18 +394,11 @@ class SupertokensTest(TestCase):
         assert dict_response["s"] == "empty session"
 
 
-from django.http import HttpResponse
-from supertokens_python.framework.django.django_response import (
-    DjangoResponse as SuperTokensDjangoWrapper,
-)
+def test_remove_header_works():
+    response = HttpResponse()
+    st_response = SuperTokensDjangoWrapper(response)
 
-
-class SupertokensResponseTest(TestCase):
-    def test_remove_header_works(self):
-        response = HttpResponse()
-        st_response = SuperTokensDjangoWrapper(response)
-
-        st_response.set_header("foo", "bar")
-        assert st_response.get_header("foo") == "bar"
-        st_response.remove_header("foo")
-        assert st_response.get_header("foo") is None
+    st_response.set_header("foo", "bar")
+    assert st_response.get_header("foo") == "bar"
+    st_response.remove_header("foo")
+    assert st_response.get_header("foo") is None

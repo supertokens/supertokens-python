@@ -13,13 +13,14 @@
 # under the License.
 import asyncio
 from datetime import datetime, timezone
+from urllib.parse import unquote
 from http.cookies import SimpleCookie
 from os import environ, kill, remove, scandir
 from shutil import rmtree
 from signal import SIGTERM
 from subprocess import DEVNULL, run
 from time import sleep
-from typing import Any, Dict, List, cast, Optional
+from typing import Any, Dict, List, cast
 
 from requests.models import Response
 from yaml import FullLoader, dump, load
@@ -244,8 +245,8 @@ def extract_info(response: Response) -> Dict[str, Any]:
 
     return {
         **cookies,
-        "accessToken": access_token,
-        "refreshToken": refresh_token,
+        "accessToken": None if access_token is None else unquote(access_token),
+        "refreshToken": None if refresh_token is None else unquote(refresh_token),
         "frontToken": response.headers.get("front-token"),
         "status_code": response.status_code,
         "body": response.json(),
@@ -521,9 +522,7 @@ st_init_common_args = {
 }
 
 
-def get_st_init_args(
-    recipe_list: List[Any]
-) -> Dict[str, Any]:
+def get_st_init_args(recipe_list: List[Any]) -> Dict[str, Any]:
     return {**st_init_common_args, "recipe_list": recipe_list}
 
 
