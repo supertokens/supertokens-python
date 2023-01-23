@@ -34,7 +34,9 @@ from .exceptions import ClaimValidationError
 from .utils import SessionConfig, TokenTransferMethod
 
 if TYPE_CHECKING:
-    from supertokens_python.framework import BaseRequest, BaseResponse
+    from supertokens_python.framework import BaseRequest
+
+from supertokens_python.framework import BaseResponse
 
 
 class SessionObj:

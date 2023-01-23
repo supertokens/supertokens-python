@@ -31,15 +31,20 @@ from supertokens_python.recipe.session.asyncio import (
     get_session,
     refresh_session,
 )
+from supertokens_python.recipe.session.exceptions import UnauthorisedError
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session.interfaces import APIInterface
+from supertokens_python.recipe.session.interfaces import APIOptions as SessionAPIOptions
 from tests.utils import (
     TEST_DRIVER_CONFIG_ACCESS_TOKEN_PATH,
     TEST_DRIVER_CONFIG_COOKIE_DOMAIN,
     TEST_DRIVER_CONFIG_COOKIE_SAME_SITE,
     TEST_DRIVER_CONFIG_REFRESH_TOKEN_PATH,
+    assert_info_clears_tokens,
     clean_st,
     extract_all_cookies,
+    extract_info,
+    get_st_init_args,
     reset,
     setup_st,
     start_st,
@@ -106,6 +111,16 @@ async def driver_config_client():
             raise Exception("Should never come here")
         await session.revoke_session()
         return {}  # type: ignore
+
+    @app.post("/create")
+    async def _create(request: Request):  # type: ignore
+        await create_new_session(request, "userId", {}, {})
+        return ""
+
+    @app.post("/create-throw")
+    async def _create_throw(request: Request):  # type: ignore
+        await create_new_session(request, "userId", {}, {})
+        raise UnauthorisedError("unauthorised")
 
     return TestClient(app)
 
@@ -524,3 +539,87 @@ def test_fastapi_root_path(fastapi_root_path: str):
     # The API should migrate (and return 404 here)
     response = test_client.get("/auth/signup/email/exists?email=test@example.com")
     assert response.status_code == 404
+
+
+@mark.asyncio
+@mark.parametrize("token_transfer_method", ["cookie", "header"])
+async def test_should_clear_all_response_during_refresh_if_unauthorized(
+    driver_config_client: TestClient, token_transfer_method: str
+):
+    def override_session_apis(oi: APIInterface):
+        oi_refresh_post = oi.refresh_post
+
+        async def refresh_post(
+            api_options: SessionAPIOptions, user_context: Dict[str, Any]
+        ):
+            await oi_refresh_post(api_options, user_context)
+            raise UnauthorisedError("unauthorized", clear_tokens=True)
+
+        oi.refresh_post = refresh_post
+        return oi
+
+    init(
+        **get_st_init_args(
+            [
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    override=session.InputOverrideConfig(apis=override_session_apis),
+                )
+            ]
+        )
+    )  # type: ignore
+    start_st()
+
+    res = driver_config_client.post(
+        "/create", headers={"st-auth-mode": token_transfer_method}
+    )
+    info = extract_info(res)
+
+    assert info["accessTokenFromAny"] is not None
+    assert info["refreshTokenFromAny"] is not None
+
+    headers: Dict[str, Any] = {}
+    cookies: Dict[str, Any] = {}
+
+    if token_transfer_method == "header":
+        headers.update({"authorization": f"Bearer {info['refreshTokenFromAny']}"})
+    else:
+        cookies.update(
+            {"sRefreshToken": info["refreshTokenFromAny"], "sIdRefreshToken": "asdf"}
+        )
+
+    if info["antiCsrf"] is not None:
+        headers.update({"anti-csrf": info["antiCsrf"]})
+
+    res = driver_config_client.post(
+        "/auth/session/refresh", headers=headers, cookies=cookies
+    )
+    info = extract_info(res)
+
+    assert res.status_code == 401
+    assert_info_clears_tokens(info, token_transfer_method)
+
+
+@mark.asyncio
+@mark.parametrize("token_transfer_method", ["cookie", "header"])
+async def test_revoking_session_after_create_new_session_with_throwing_unauthorized_error(
+    driver_config_client: TestClient, token_transfer_method: str
+):
+    init(
+        **get_st_init_args(
+            [
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                )
+            ]
+        )
+    )  # type: ignore
+    start_st()
+
+    res = driver_config_client.post(
+        "/create-throw", headers={"st-auth-mode": token_transfer_method}
+    )
+    info = extract_info(res)
+
+    assert res.status_code == 401
+    assert_info_clears_tokens(info, token_transfer_method)

@@ -355,7 +355,12 @@ async def test_should_use_override_functions_in_session_container_methods():
 
 from supertokens_python.recipe.session.exceptions import raise_unauthorised_exception
 from supertokens_python.recipe.session.interfaces import APIInterface, APIOptions
-from tests.utils import extract_all_cookies, get_st_init_args
+from tests.utils import (
+    extract_all_cookies,
+    get_st_init_args,
+    extract_info,
+    assert_info_clears_tokens,
+)
 
 
 async def test_revoking_session_during_refresh_with_revoke_session_with_200(
@@ -402,18 +407,8 @@ async def test_revoking_session_during_refresh_with_revoke_session_with_200(
     )
 
     assert response.status_code == 200
-    cookies = extract_all_cookies(response)
-
-    assert response.headers["anti-csrf"] != ""
-    assert response.headers["front-token"] != ""
-
-    assert cookies["sAccessToken"]["value"] == ""
-    assert cookies["sRefreshToken"]["value"] == ""
-    assert cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-    assert cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-
-    assert cookies["sAccessToken"]["domain"] == ""
-    assert cookies["sRefreshToken"]["domain"] == ""
+    info = extract_info(response)
+    assert_info_clears_tokens(info, "cookie")
 
 
 async def test_revoking_session_during_refresh_with_revoke_session_sending_401(
@@ -464,18 +459,8 @@ async def test_revoking_session_during_refresh_with_revoke_session_sending_401(
     )
 
     assert response.status_code == 401
-    cookies = extract_all_cookies(response)
-
-    assert response.headers["anti-csrf"] != ""
-    assert response.headers["front-token"] != ""
-
-    assert cookies["sAccessToken"]["value"] == ""
-    assert cookies["sRefreshToken"]["value"] == ""
-    assert cookies["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-    assert cookies["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
-
-    assert cookies["sAccessToken"]["domain"] == ""
-    assert cookies["sRefreshToken"]["domain"] == ""
+    info = extract_info(response)
+    assert_info_clears_tokens(info, "cookie")
 
 
 async def test_revoking_session_during_refresh_and_throw_unauthorized(
