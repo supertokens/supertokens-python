@@ -16,9 +16,9 @@ from __future__ import annotations
 from supertokens_python.exceptions import SuperTokensError
 
 
-class SuperTokensThirdPartyError(SuperTokensError):
+class TenantDoesNotExistError(SuperTokensError):
     pass
 
 
-class ClientTypeNotFoundError(SuperTokensError):
+class RecipeDisabledForTenantError(SuperTokensError):
     pass

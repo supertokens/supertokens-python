@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, Union, Optional
 
 if TYPE_CHECKING:
     from .types import AccessTokenAPI, AuthorisationRedirectAPI, UserInfo
@@ -25,6 +25,7 @@ class Provider(abc.ABC):
     def __init__(self, provider_id: str, is_default: bool):
         self.id: str = provider_id
         self.is_default: bool = is_default
+        self.config = ProviderConfig()
 
     @abc.abstractmethod
     async def get_profile_info(
@@ -54,3 +55,16 @@ class Provider(abc.ABC):
     @abc.abstractmethod
     def get_client_id(self, user_context: Dict[str, Any]) -> str:
         pass
+
+
+class ProviderConfig:
+    def __init__(self):
+        self.name: Optional[str] = None
+        self.third_party_id: str = "google"
+        # TODO
+
+
+class ProviderInput:
+    def __init__(self):
+        self.config = ProviderConfig()
+        # TODO

@@ -13,12 +13,14 @@
 # under the License.
 from __future__ import annotations
 
-from supertokens_python.exceptions import SuperTokensError
+
+from supertokens_python.recipe.multitenancy.interfaces import (
+    APIInterface,
+    APIOptions,
+)
 
 
-class SuperTokensThirdPartyError(SuperTokensError):
-    pass
-
-
-class ClientTypeNotFoundError(SuperTokensError):
-    pass
+async def handle_login_methods_api(
+    api_implementation: APIInterface, api_options: APIOptions
+):
+    print(api_implementation, api_options)
