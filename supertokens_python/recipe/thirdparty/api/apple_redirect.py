@@ -26,15 +26,14 @@ async def handle_apple_redirect_api(
 ):
     if api_implementation.disable_apple_redirect_handler_post:
         return None
+
     body = await api_options.request.form_data()
 
-    code = body["code"] if "code" in body else ""
-    state = body["state"] if "state" in body else ""
     user_context = default_user_context(api_options.request)
 
     # this will redirect the user...
     await api_implementation.apple_redirect_handler_post(
-        code, state, api_options, user_context
+        body, api_options, user_context
     )
 
     return api_options.response
