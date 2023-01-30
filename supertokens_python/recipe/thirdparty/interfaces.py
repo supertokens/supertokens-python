@@ -184,11 +184,18 @@ class SignInUpPostNoEmailGivenByProviderResponse(APIResponse):
 class AuthorisationUrlGetOkResult(APIResponse):
     status: str = "OK"
 
-    def __init__(self, url: str):
-        self.url = url
+    def __init__(
+        self, url_with_query_params: str, pkce_code_verifier: Optional[str] = None
+    ):
+        self.url_with_query_params = url_with_query_params
+        self.pkce_code_verifier = pkce_code_verifier
 
     def to_json(self):
-        return {"status": self.status, "url": self.url}
+        return {
+            "status": self.status,
+            "urlWithQueryParams": self.url_with_query_params,
+            "pkceCodeVerifier": self.pkce_code_verifier,
+        }
 
 
 class APIInterface:

@@ -12,12 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import annotations
+from base64 import b64decode
+import json
 
-from typing import TYPE_CHECKING, Any, Dict, Union
-from urllib.parse import urlencode
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from urllib.parse import parse_qs, urlencode, urlparse
 
-from httpx import AsyncClient
-from supertokens_python.exceptions import raise_general_exception
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.emailverification.interfaces import (
     CreateEmailVerificationTokenOkResult,
@@ -29,7 +29,8 @@ from supertokens_python.recipe.thirdparty.interfaces import (
     SignInUpPostNoEmailGivenByProviderResponse,
     SignInUpPostOkResult,
 )
-from supertokens_python.recipe.thirdparty.types import UserInfo
+from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
+from supertokens_python.recipe.thirdparty.types import UserInfoEmail
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions
@@ -40,51 +41,27 @@ from supertokens_python.types import GeneralErrorResponse
 
 class APIImplementation(APIInterface):
     async def authorisation_url_get(
-        self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        provider: Provider,
+        redirect_uri_on_provider_dashboard: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
     ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
-        authorisation_url_info = provider.get_authorisation_redirect_api_info(
-            user_context
+        authorisation_url_info = await provider.get_authorisation_redirect_url(
+            redirect_uri_on_provider_dashboard=redirect_uri_on_provider_dashboard,
+            user_context=user_context,
         )
 
-        params: Dict[str, str] = {}
-        for key, value in authorisation_url_info.params.items():
-            params[key] = value if not callable(value) else value(api_options.request)
-
-        redirect_uri = provider.get_redirect_uri(user_context)
-        if redirect_uri is not None and not is_using_oauth_development_client_id(
-            provider.get_client_id(user_context)
-        ):
-            # the backend wants to set the redirectURI - so we set that here.
-            # we add the not development keys because the oauth provider will
-            # redirect to supertokens.io's URL which will redirect the app
-            # to the the user's website, which will handle the callback as usual.
-            # If we add this, then instead, the supertokens' site will redirect
-            # the user to this API layer, which is not needed.
-            params["redirect_uri"] = redirect_uri
-
-        auth_url = authorisation_url_info.url
-        if is_using_oauth_development_client_id(provider.get_client_id(user_context)):
-            params["actual_redirect_uri"] = authorisation_url_info.url
-
-            for k, v in params.items():
-                if v == provider.get_client_id(user_context):
-                    params[k] = get_actual_client_id_from_development_client_id(
-                        provider.get_client_id(user_context)
-                    )
-            auth_url = DEV_OAUTH_AUTHORIZATION_URL
-
-        query_string = urlencode(params)
-
-        url = auth_url + "?" + query_string
-        return AuthorisationUrlGetOkResult(url)
+        return AuthorisationUrlGetOkResult(
+            url_with_query_params=authorisation_url_info.url_with_query_params,
+            pkce_code_verifier=authorisation_url_info.pkce_code_verifier,
+        )
 
     async def sign_in_up_post(
         self,
         provider: Provider,
-        code: str,
-        redirect_uri: str,
-        client_id: Union[str, None],
-        auth_code_response: Union[Dict[str, Any], None],
+        redirect_uri_info: Optional[RedirectUriInfo],
+        oauth_tokens: Optional[Dict[str, Any]],
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -92,55 +69,43 @@ class APIImplementation(APIInterface):
         SignInUpPostNoEmailGivenByProviderResponse,
         GeneralErrorResponse,
     ]:
+        oauth_tokens_to_use: Dict[str, Any] = {}
 
-        redirect_uri_from_provider = provider.get_redirect_uri(user_context)
-        if is_using_oauth_development_client_id(provider.get_client_id(user_context)):
-            redirect_uri = DEV_OAUTH_REDIRECT_URL
-        elif redirect_uri_from_provider is not None:
-            # we overwrite the redirectURI provided by the frontend
-            # since the backend wants to take charge of setting this.
-            redirect_uri = redirect_uri_from_provider
-        try:
-            if auth_code_response is None:
-                access_token_api_info = provider.get_access_token_api_info(
-                    redirect_uri, code, user_context
-                )
-                if is_using_oauth_development_client_id(
-                    provider.get_client_id(user_context)
-                ):
-                    for k, _ in access_token_api_info.params.items():
-                        if access_token_api_info.params[k] == provider.get_client_id(
-                            user_context
-                        ):
-                            access_token_api_info.params[
-                                k
-                            ] = get_actual_client_id_from_development_client_id(
-                                provider.get_client_id(user_context)
-                            )
-                headers = {
-                    "Accept": "application/json",
-                    "Content-Type": "application/x-www-form-urlencoded",
-                }
-                async with AsyncClient() as client:
-                    access_token_response = await client.post(access_token_api_info.url, data=access_token_api_info.params, headers=headers)  # type: ignore
-                    access_token_response = access_token_response.json()
-            else:
-                access_token_response = auth_code_response
-        except Exception as e:
-            raise_general_exception(e)
+        if redirect_uri_info is not None:
+            oauth_tokens_to_use = await provider.exchange_auth_code_for_oauth_tokens(
+                redirect_uri_info=redirect_uri_info,
+                user_context=user_context,
+            )
+        else:
+            oauth_tokens_to_use = oauth_tokens  # type: ignore
 
-        user_info: UserInfo = await provider.get_profile_info(
-            access_token_response, user_context
+        user_info = await provider.get_user_info(
+            oauth_tokens=oauth_tokens_to_use,
+            user_context=user_context,
         )
+
+        if user_info.email is None and not provider.config.require_email:
+            user_info.email = UserInfoEmail(
+                email=await provider.config.generate_fake_email(
+                    user_info.third_party_user_id, user_context
+                ),
+                email_verified=True,
+            )
+
         email = user_info.email.id if user_info.email is not None else None
         email_verified = (
             user_info.email.is_verified if user_info.email is not None else None
         )
-        if email is None or email_verified is None:
+        if email is None:
             return SignInUpPostNoEmailGivenByProviderResponse()
 
         signinup_response = await api_options.recipe_implementation.sign_in_up(
-            provider.id, user_info.third_party_user_id, email, user_context
+            third_party_id=provider.id,
+            third_party_user_id=user_info.third_party_user_id,
+            email=email,
+            oauth_tokens=oauth_tokens_to_use,
+            raw_user_info_from_provider=user_info.raw_user_info_from_provider,
+            user_context=user_context,
         )
 
         if email_verified:
@@ -163,28 +128,31 @@ class APIImplementation(APIInterface):
         )
 
         return SignInUpPostOkResult(
-            user, signinup_response.created_new_user, access_token_response, session
+            created_new_user=signinup_response.created_new_user,
+            user=user,
+            session=session,
+            oauth_tokens=oauth_tokens_to_use,
+            raw_user_info_from_provider=user_info.raw_user_info_from_provider,
         )
 
     async def apple_redirect_handler_post(
         self,
-        code: str,
-        state: str,
+        form_post_info: Dict[str, Any],
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ):
-        app_info = api_options.app_info
-        redirect_uri = (
-            app_info.website_domain.get_as_string_dangerous()
-            + app_info.website_base_path.get_as_string_dangerous()
-            + "/callback/apple?state="
-            + state
-            + "&code="
-            + code
-        )
-        html_content = (
-            '<html><head><script>window.location.replace("'
-            + redirect_uri
-            + '");</script></head></html>'
-        )
-        api_options.response.set_html_content(html_content)
+        state_in_b64: str = form_post_info["state"]
+        state = b64decode(state_in_b64).decode("utf-8")
+        state_obj = json.loads(state)
+        redirect_uri: str = state_obj["redirectURI"]
+
+        url_obj = urlparse(redirect_uri)
+        qparams = parse_qs(url_obj.query)
+        for k, v in form_post_info.items():
+            qparams[k] = [v]
+
+        redirect_uri = url_obj._replace(query=urlencode(qparams, doseq=True)).geturl()
+
+        api_options.response.set_header("Location", redirect_uri)
+        api_options.response.set_status_code(303)
+        api_options.response.set_html_content("")
