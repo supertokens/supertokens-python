@@ -13,21 +13,33 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from supertokens_python.recipe.thirdparty.provider import ProviderInput
+from supertokens_python.recipe.thirdparty.providers.config_utils import (
+    find_and_create_provider_instance,
+    merge_providers_from_core_and_static,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
 
-from .interfaces import RecipeInterface, SignInUpOkResult
-from .types import ThirdPartyInfo, User
+from .interfaces import (
+    GetProviderOkResult,
+    ManuallyCreateOrUpdateUserOkResult,
+    RecipeInterface,
+    SignInUpOkResult,
+)
+from .types import RawUserInfoFromProvider, ThirdPartyInfo, User
 
 
 class RecipeImplementation(RecipeInterface):
-    def __init__(self, querier: Querier):
+    def __init__(self, querier: Querier, providers: List[ProviderInput]):
         super().__init__()
         self.querier = querier
+        self.providers = providers
 
     async def get_user_by_id(
         self, user_id: str, user_context: Dict[str, Any]
@@ -101,6 +113,8 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        oauth_tokens: Dict[str, Any],
+        raw_user_info_from_provider: RawUserInfoFromProvider,
         user_context: Dict[str, Any],
     ) -> SignInUpOkResult:
         data = {
@@ -122,4 +136,62 @@ class RecipeImplementation(RecipeInterface):
                 ),
             ),
             response["createdNewUser"],
+            oauth_tokens,
+            raw_user_info_from_provider,
+        )
+
+    async def manually_create_or_update_user(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        user_context: Dict[str, Any],
+    ) -> ManuallyCreateOrUpdateUserOkResult:
+        data = {
+            "thirdPartyId": third_party_id,
+            "thirdPartyUserId": third_party_user_id,
+            "email": {"id": email},
+        }
+        response = await self.querier.send_post_request(
+            NormalisedURLPath("/recipe/signinup"), data
+        )
+        return ManuallyCreateOrUpdateUserOkResult(
+            User(
+                response["user"]["id"],
+                response["user"]["email"],
+                response["user"]["timeJoined"],
+                ThirdPartyInfo(
+                    response["user"]["thirdParty"]["userId"],
+                    response["user"]["thirdParty"]["id"],
+                ),
+            ),
+            response["createdNewUser"],
+        )
+
+    async def get_provider(
+        self,
+        third_party_id: str,
+        tenant_id: Optional[str],
+        client_type: Optional[str],
+        user_context: Dict[str, Any],
+    ):
+        mt_recipe = MultitenancyRecipe.get_instance()
+        tenant_config = await mt_recipe.recipe_implementation.get_tenant_config(
+            tenant_id=tenant_id,
+            user_context=user_context,
+        )
+
+        merged_providers = merge_providers_from_core_and_static(
+            tenant_id=tenant_id,
+            provider_configs_from_core=tenant_config.third_party.providers,
+            provider_inputs_from_static=self.providers,
+        )
+
+        provider = await find_and_create_provider_instance(
+            merged_providers, third_party_id, client_type, user_context
+        )
+
+        return GetProviderOkResult(
+            provider,
+            tenant_config.third_party.enabled,
         )

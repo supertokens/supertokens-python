@@ -14,24 +14,48 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from ...types import APIResponse, GeneralErrorResponse
-from .provider import Provider
+from .provider import Provider, ProviderInput, RedirectUriInfo
 
 if TYPE_CHECKING:
     from supertokens_python.framework import BaseRequest, BaseResponse
     from supertokens_python.recipe.session import SessionContainer
     from supertokens_python.supertokens import AppInfo
 
-    from .types import User
+    from .types import User, RawUserInfoFromProvider
     from .utils import ThirdPartyConfig
 
 
 class SignInUpOkResult:
-    def __init__(self, user: User, created_new_user: bool):
+    def __init__(
+        self,
+        user: User,
+        created_new_user: bool,
+        oauth_tokens: Dict[str, Any],
+        raw_user_info_from_provider: RawUserInfoFromProvider,
+    ):
         self.user = user
         self.created_new_user = created_new_user
+        self.oauth_tokens = oauth_tokens
+        self.raw_user_info_from_provider = raw_user_info_from_provider
+
+
+class ManuallyCreateOrUpdateUserOkResult:
+    def __init__(
+        self,
+        user: User,
+        created_new_user: bool,
+    ):
+        self.user = user
+        self.created_new_user = created_new_user
+
+
+class GetProviderOkResult:
+    def __init__(self, provider: Provider, third_party_enabled: bool):
+        self.provider = provider
+        self.third_party_enabled = third_party_enabled
 
 
 class RecipeInterface(ABC):
@@ -60,13 +84,35 @@ class RecipeInterface(ABC):
         pass
 
     @abstractmethod
-    async def sign_in_up(
+    async def manually_create_or_update_user(
         self,
         third_party_id: str,
         third_party_user_id: str,
         email: str,
         user_context: Dict[str, Any],
+    ) -> ManuallyCreateOrUpdateUserOkResult:
+        pass
+
+    @abstractmethod
+    async def sign_in_up(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        oauth_tokens: Dict[str, Any],
+        raw_user_info_from_provider: RawUserInfoFromProvider,
+        user_context: Dict[str, Any],
     ) -> SignInUpOkResult:
+        pass
+
+    @abstractmethod
+    async def get_provider(
+        self,
+        third_party_id: str,
+        tenant_id: Optional[str],
+        client_type: Optional[str],
+        user_context: Dict[str, Any],
+    ) -> GetProviderOkResult:
         pass
 
 
@@ -78,14 +124,14 @@ class APIOptions:
         recipe_id: str,
         config: ThirdPartyConfig,
         recipe_implementation: RecipeInterface,
-        providers: List[Provider],
+        providers: List[ProviderInput],
         app_info: AppInfo,
     ):
         self.request: BaseRequest = request
         self.response: BaseResponse = response
         self.recipe_id: str = recipe_id
         self.config: ThirdPartyConfig = config
-        self.providers: List[Provider] = providers
+        self.providers: List[ProviderInput] = providers
         self.recipe_implementation: RecipeInterface = recipe_implementation
         self.app_info: AppInfo = app_info
 
@@ -97,13 +143,15 @@ class SignInUpPostOkResult(APIResponse):
         self,
         user: User,
         created_new_user: bool,
-        auth_code_response: Dict[str, Any],
         session: SessionContainer,
+        oauth_tokens: Dict[str, Any],
+        raw_user_info_from_provider: RawUserInfoFromProvider,
     ):
         self.user = user
         self.created_new_user = created_new_user
-        self.auth_code_response = auth_code_response
         self.session = session
+        self.oauth_tokens = oauth_tokens
+        self.raw_user_info_from_provider = raw_user_info_from_provider
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -118,6 +166,11 @@ class SignInUpPostOkResult(APIResponse):
                 },
             },
             "createdNewUser": self.created_new_user,
+            "oAuthTokens": self.oauth_tokens,
+            "rawUserInfoFromProvider": {
+                "fromIdTokenPayload": self.raw_user_info_from_provider.from_id_token_payload,
+                "fromUserInfoAPI": self.raw_user_info_from_provider.from_user_info_api,
+            },
         }
 
 
@@ -146,7 +199,11 @@ class APIInterface:
 
     @abstractmethod
     async def authorisation_url_get(
-        self, provider: Provider, api_options: APIOptions, user_context: Dict[str, Any]
+        self,
+        provider: Provider,
+        redirect_uri_on_provider_dashboard: str,
+        api_options: APIOptions,
+        user_context: Dict[str, Any],
     ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
         pass
 
@@ -154,10 +211,8 @@ class APIInterface:
     async def sign_in_up_post(
         self,
         provider: Provider,
-        code: str,
-        redirect_uri: str,
-        client_id: Union[str, None],
-        auth_code_response: Union[Dict[str, Any], None],
+        redirect_uri_info: Optional[RedirectUriInfo],
+        oauth_tokens: Optional[Dict[str, Any]],
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -170,8 +225,7 @@ class APIInterface:
     @abstractmethod
     async def apple_redirect_handler_post(
         self,
-        code: str,
-        state: str,
+        form_post_info: Dict[str, Any],
         api_options: APIOptions,
         user_context: Dict[str, Any],
     ):

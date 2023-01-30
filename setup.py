@@ -112,6 +112,7 @@ setup(
         "Werkzeug>=2.0 ,<2.1.0",
         "twilio==7.9.1",
         "aiosmtplib==1.1.6",
+        "pkce==1.0.3",
     ],
     python_requires=">=3.7",
     include_package_data=True,
