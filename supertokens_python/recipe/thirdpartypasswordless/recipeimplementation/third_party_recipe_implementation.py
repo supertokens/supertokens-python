@@ -13,13 +13,15 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.recipe.thirdparty.interfaces import (
+    GetProviderOkResult,
+    ManuallyCreateOrUpdateUserOkResult,
     RecipeInterface,
     SignInUpOkResult,
 )
-from supertokens_python.recipe.thirdparty.types import User
+from supertokens_python.recipe.thirdparty.types import RawUserInfoFromProvider, User
 
 from ..interfaces import RecipeInterface as ThirdPartyPasswordlessRecipeInterface
 
@@ -95,8 +97,39 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        oauth_tokens: Dict[str, Any],
+        raw_user_info_from_provider: RawUserInfoFromProvider,
         user_context: Dict[str, Any],
     ) -> SignInUpOkResult:
         return await self.recipe_implementation.thirdparty_sign_in_up(
-            third_party_id, third_party_user_id, email, user_context
+            third_party_id,
+            third_party_user_id,
+            email,
+            oauth_tokens,
+            raw_user_info_from_provider,
+            user_context,
+        )
+
+    async def manually_create_or_update_user(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        user_context: Dict[str, Any],
+    ) -> ManuallyCreateOrUpdateUserOkResult:
+        return (
+            await self.recipe_implementation.thirdparty_manually_create_or_update_user(
+                third_party_id, third_party_user_id, email, user_context
+            )
+        )
+
+    async def get_provider(
+        self,
+        third_party_id: str,
+        tenant_id: Optional[str],
+        client_type: Optional[str],
+        user_context: Dict[str, Any],
+    ) -> GetProviderOkResult:
+        return await self.recipe_implementation.thirdparty_get_provider(
+            third_party_id, tenant_id, client_type, user_context
         )

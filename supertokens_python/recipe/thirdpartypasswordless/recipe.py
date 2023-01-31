@@ -21,7 +21,7 @@ from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConf
 from supertokens_python.normalised_url_path import NormalisedURLPath
 from supertokens_python.querier import Querier
 from supertokens_python.recipe.passwordless.types import PasswordlessIngredients
-from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.provider import ProviderInput
 from supertokens_python.recipe.thirdparty.types import ThirdPartyIngredients
 from supertokens_python.recipe.thirdpartypasswordless.types import (
     ThirdPartyPasswordlessIngredients,
@@ -92,7 +92,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
             Callable[[Dict[str, Any]], Awaitable[str]], None
         ] = None,
         override: Union[InputOverrideConfig, None] = None,
-        providers: Union[List[Provider], None] = None,
+        providers: Union[List[ProviderInput], None] = None,
         third_party_recipe: Union[ThirdPartyRecipe, None] = None,
         passwordless_recipe: Union[PasswordlessRecipe, None] = None,
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
@@ -113,6 +113,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
         recipe_implementation = RecipeImplementation(
             Querier.get_instance(PasswordlessRecipe.recipe_id),
             Querier.get_instance(ThirdPartyRecipe.recipe_id),
+            self.config.providers,
         )
         self.recipe_implementation: RecipeInterface = (
             recipe_implementation
@@ -277,7 +278,7 @@ class ThirdPartyPasswordlessRecipe(RecipeModule):
         email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
         sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,
         override: Union[InputOverrideConfig, None] = None,
-        providers: Union[List[Provider], None] = None,
+        providers: Union[List[ProviderInput], None] = None,
     ):
         def func(app_info: AppInfo):
             if ThirdPartyPasswordlessRecipe.__instance is None:

@@ -17,10 +17,10 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
-from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.provider import ProviderInput
 from typing_extensions import Literal
 
-from .. import passwordless, thirdparty
+from .. import passwordless
 from . import exceptions as ex
 from . import utils
 from .emaildelivery import services as emaildelivery_services
@@ -32,12 +32,6 @@ InputOverrideConfig = utils.InputOverrideConfig
 exceptions = ex
 ContactConfig = passwordless.ContactConfig
 PhoneOrEmailInput = passwordless.PhoneOrEmailInput
-Apple = thirdparty.Apple
-Discord = thirdparty.Discord
-Facebook = thirdparty.Facebook
-Github = thirdparty.Github
-Google = thirdparty.Google
-GoogleWorkspaces = thirdparty.GoogleWorkspaces
 ContactPhoneOnlyConfig = passwordless.ContactPhoneOnlyConfig
 ContactEmailOnlyConfig = passwordless.ContactEmailOnlyConfig
 ContactEmailOrPhoneConfig = passwordless.ContactEmailOrPhoneConfig
@@ -62,7 +56,7 @@ def init(
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,
     override: Union[InputOverrideConfig, None] = None,
-    providers: Union[List[Provider], None] = None,
+    providers: Union[List[ProviderInput], None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
     return ThirdPartyPasswordlessRecipe.init(
         contact_config,

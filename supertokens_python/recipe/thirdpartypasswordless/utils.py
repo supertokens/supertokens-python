@@ -29,7 +29,7 @@ from supertokens_python.recipe.passwordless import (
     ContactEmailOrPhoneConfig,
     ContactPhoneOnlyConfig,
 )
-from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.provider import Provider, ProviderInput
 from supertokens_python.recipe.thirdpartypasswordless.emaildelivery.services.backward_compatibility import (
     BackwardCompatibilityService,
 )
@@ -76,7 +76,7 @@ class ThirdPartyPasswordlessConfig:
     def __init__(
         self,
         override: OverrideConfig,
-        providers: List[Provider],
+        providers: List[ProviderInput],
         contact_config: ContactConfig,
         flow_type: Literal[
             "USER_INPUT_CODE", "MAGIC_LINK", "USER_INPUT_CODE_AND_MAGIC_LINK"
@@ -112,7 +112,7 @@ def validate_and_normalise_user_input(
         Callable[[Dict[str, Any]], Awaitable[str]], None
     ] = None,
     override: Union[InputOverrideConfig, None] = None,
-    providers: Union[List[Provider], None] = None,
+    providers: Union[List[ProviderInput], None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
     sms_delivery: Union[SMSDeliveryConfig[SMSTemplateVars], None] = None,
 ) -> ThirdPartyPasswordlessConfig:
@@ -130,12 +130,13 @@ def validate_and_normalise_user_input(
     if providers is not None and not isinstance(providers, List):  # type: ignore
         raise ValueError("providers must be of type List[Provider] or None")
 
-    for provider in providers or []:
+    if providers is None:
+        providers = []
+
+    for provider in providers:
         if not isinstance(provider, Provider):  # type: ignore
             raise ValueError("providers must be of type List[Provider] or None")
 
-    if providers is None:
-        providers = []
     if override is None:
         override = InputOverrideConfig()
 

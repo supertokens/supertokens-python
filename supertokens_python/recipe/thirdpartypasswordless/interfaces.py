@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.thirdparty import interfaces as ThirdPartyInterfaces
-from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.provider import Provider, RedirectUriInfo
+from supertokens_python.recipe.thirdparty.types import RawUserInfoFromProvider
 from supertokens_python.types import APIResponse, GeneralErrorResponse
 
 from ..passwordless import interfaces as PlessInterfaces
@@ -58,6 +59,9 @@ PasswordlessUpdateUserUnknownUserIdError = PlessInterfaces.UpdateUserUnknownUser
 
 AuthorisationUrlGetOkResult = ThirdPartyInterfaces.AuthorisationUrlGetOkResult
 ThirdPartySignInUpOkResult = ThirdPartyInterfaces.SignInUpOkResult
+ThirdPartyManuallyCreateOrUpdateUserOkResult = (
+    ThirdPartyInterfaces.ManuallyCreateOrUpdateUserOkResult
+)
 ThirdPartySignInUpPostNoEmailGivenByProviderResponse = (
     ThirdPartyInterfaces.SignInUpPostNoEmailGivenByProviderResponse
 )
@@ -106,8 +110,30 @@ class RecipeInterface(ABC):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        oauth_tokens: Dict[str, Any],
+        raw_user_info_from_provider: RawUserInfoFromProvider,
         user_context: Dict[str, Any],
     ) -> ThirdPartySignInUpOkResult:
+        pass
+
+    @abstractmethod
+    async def thirdparty_manually_create_or_update_user(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        user_context: Dict[str, Any],
+    ) -> ThirdPartyManuallyCreateOrUpdateUserOkResult:
+        pass
+
+    @abstractmethod
+    async def thirdparty_get_provider(
+        self,
+        third_party_id: str,
+        tenant_id: Optional[str],
+        client_type: Optional[str],
+        user_context: Dict[str, Any],
+    ) -> ThirdPartyInterfaces.GetProviderOkResult:
         pass
 
     @abstractmethod
@@ -248,13 +274,15 @@ class ThirdPartySignInUpPostOkResult(APIResponse):
         self,
         user: User,
         created_new_user: bool,
-        auth_code_response: Dict[str, Any],
         session: SessionContainer,
+        oauth_tokens: Dict[str, Any],
+        raw_user_info_from_provider: RawUserInfoFromProvider,
     ):
         self.user = user
         self.created_new_user = created_new_user
-        self.auth_code_response = auth_code_response
         self.session = session
+        self.oauth_tokens = oauth_tokens
+        self.raw_user_info_from_provider = raw_user_info_from_provider
 
     def to_json(self) -> Dict[str, Any]:
         if self.user.third_party_info is None:
@@ -290,6 +318,7 @@ class APIInterface(ABC):
     async def authorisation_url_get(
         self,
         provider: Provider,
+        redirect_uri_on_provider_dashboard: str,
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
@@ -299,10 +328,8 @@ class APIInterface(ABC):
     async def thirdparty_sign_in_up_post(
         self,
         provider: Provider,
-        code: str,
-        redirect_uri: str,
-        client_id: Union[str, None],
-        auth_code_response: Union[Dict[str, Any], None],
+        redirect_uri_info: Optional[RedirectUriInfo],
+        oauth_tokens: Optional[Dict[str, Any]],
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -315,8 +342,7 @@ class APIInterface(ABC):
     @abstractmethod
     async def apple_redirect_handler_post(
         self,
-        code: str,
-        state: str,
+        form_post_info: Dict[str, Any],
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ):

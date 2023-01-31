@@ -13,7 +13,7 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 import supertokens_python.recipe.passwordless.interfaces as PlessInterfaces
 import supertokens_python.recipe.thirdparty.interfaces as ThirdPartyInterfaces
@@ -28,7 +28,7 @@ from ...thirdparty.api.implementation import (
     APIImplementation as ThirdPartyImplementation,
 )
 from ...thirdparty.interfaces import APIOptions as ThirdPartyAPIOptions
-from ...thirdparty.provider import Provider
+from ...thirdparty.provider import Provider, RedirectUriInfo
 from ..interfaces import (
     APIInterface,
     AuthorisationUrlGetOkResult,
@@ -89,18 +89,19 @@ class APIImplementation(APIInterface):
     async def authorisation_url_get(
         self,
         provider: Provider,
+        redirect_uri_on_provider_dashboard: str,
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[AuthorisationUrlGetOkResult, GeneralErrorResponse]:
-        return await self.tp_authorisation_url_get(provider, api_options, user_context)
+        return await self.tp_authorisation_url_get(
+            provider, redirect_uri_on_provider_dashboard, api_options, user_context
+        )
 
     async def thirdparty_sign_in_up_post(
         self,
         provider: Provider,
-        code: str,
-        redirect_uri: str,
-        client_id: Union[str, None],
-        auth_code_response: Union[Dict[str, Any], None],
+        redirect_uri_info: Optional[RedirectUriInfo],
+        oauth_tokens: Optional[Dict[str, Any]],
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ) -> Union[
@@ -110,10 +111,8 @@ class APIImplementation(APIInterface):
     ]:
         result = await self.tp_sign_in_up_post(
             provider,
-            code,
-            redirect_uri,
-            client_id,
-            auth_code_response,
+            redirect_uri_info,
+            oauth_tokens,
             api_options,
             user_context,
         )
@@ -127,20 +126,20 @@ class APIImplementation(APIInterface):
                     result.user.time_joined,
                 ),
                 result.created_new_user,
-                result.auth_code_response,
                 result.session,
+                result.oauth_tokens,
+                result.raw_user_info_from_provider,
             )
         return result
 
     async def apple_redirect_handler_post(
         self,
-        code: str,
-        state: str,
+        form_post_info: Dict[str, Any],
         api_options: ThirdPartyAPIOptions,
         user_context: Dict[str, Any],
     ):
         return await self.tp_apple_redirect_handler_post(
-            code, state, api_options, user_context
+            form_post_info, api_options, user_context
         )
 
     async def create_code_post(

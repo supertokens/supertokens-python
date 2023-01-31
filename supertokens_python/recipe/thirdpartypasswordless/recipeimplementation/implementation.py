@@ -13,7 +13,10 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
+from supertokens_python.recipe.thirdparty.provider import ProviderInput
+from supertokens_python.recipe.thirdparty.types import RawUserInfoFromProvider
 
 from ...passwordless.interfaces import (
     ConsumeCodeExpiredUserInputCodeError,
@@ -38,7 +41,11 @@ from ...passwordless.interfaces import (
     UpdateUserPhoneNumberAlreadyExistsError,
     UpdateUserUnknownUserIdError,
 )
-from ...thirdparty.interfaces import SignInUpOkResult
+from ...thirdparty.interfaces import (
+    GetProviderOkResult,
+    ManuallyCreateOrUpdateUserOkResult,
+    SignInUpOkResult,
+)
 
 if TYPE_CHECKING:
     from supertokens_python.querier import Querier
@@ -62,7 +69,10 @@ from .third_party_recipe_implementation import (
 
 class RecipeImplementation(RecipeInterface):
     def __init__(
-        self, passwordless_querier: Querier, thirdparty_querier: Union[Querier, None]
+        self,
+        passwordless_querier: Querier,
+        thirdparty_querier: Querier,
+        providers: List[ProviderInput],
     ):
         super().__init__()
         passwordless_implementation = PasswordlessImplementation(passwordless_querier)
@@ -130,26 +140,27 @@ class RecipeImplementation(RecipeInterface):
             derived_pless.delete_phone_number_for_user
         )
 
-        self.tp_get_user_by_id = None
-        self.tp_get_users_by_email = None
-        self.tp_get_user_by_thirdparty_info = None
-        self.tp_sign_in_up = None
-        if thirdparty_querier is not None:
-            thirdparty_implementation = ThirdPartyImplementation(thirdparty_querier)
-            self.tp_get_user_by_id = thirdparty_implementation.get_user_by_id
-            self.tp_get_users_by_email = thirdparty_implementation.get_users_by_email
-            self.tp_get_user_by_thirdparty_info = (
-                thirdparty_implementation.get_user_by_thirdparty_info
-            )
-            self.tp_sign_in_up = thirdparty_implementation.sign_in_up
+        thirdparty_implementation = ThirdPartyImplementation(
+            thirdparty_querier, providers
+        )
+        self.tp_get_user_by_id = thirdparty_implementation.get_user_by_id
+        self.tp_get_users_by_email = thirdparty_implementation.get_users_by_email
+        self.tp_get_user_by_thirdparty_info = (
+            thirdparty_implementation.get_user_by_thirdparty_info
+        )
+        self.tp_sign_in_up = thirdparty_implementation.sign_in_up
+        self.tp_manually_create_or_update_user = (
+            thirdparty_implementation.manually_create_or_update_user
+        )
+        self.tp_get_provider = thirdparty_implementation.get_provider
 
-            derived_tp = DerivedThirdPartyImplementation(self)
-            thirdparty_implementation.get_user_by_id = derived_tp.get_user_by_id
-            thirdparty_implementation.get_users_by_email = derived_tp.get_users_by_email
-            thirdparty_implementation.get_user_by_thirdparty_info = (
-                derived_tp.get_user_by_thirdparty_info
-            )
-            thirdparty_implementation.sign_in_up = derived_tp.sign_in_up
+        derived_tp = DerivedThirdPartyImplementation(self)
+        thirdparty_implementation.get_user_by_id = derived_tp.get_user_by_id
+        thirdparty_implementation.get_users_by_email = derived_tp.get_users_by_email
+        thirdparty_implementation.get_user_by_thirdparty_info = (
+            derived_tp.get_user_by_thirdparty_info
+        )
+        thirdparty_implementation.sign_in_up = derived_tp.sign_in_up
 
     async def get_user_by_id(
         self, user_id: str, user_context: Dict[str, Any]
@@ -242,12 +253,45 @@ class RecipeImplementation(RecipeInterface):
         third_party_id: str,
         third_party_user_id: str,
         email: str,
+        oauth_tokens: Dict[str, Any],
+        raw_user_info_from_provider: RawUserInfoFromProvider,
         user_context: Dict[str, Any],
     ) -> SignInUpOkResult:
         if self.tp_sign_in_up is None:
             raise Exception("No thirdparty provider configured")
         return await self.tp_sign_in_up(
+            third_party_id,
+            third_party_user_id,
+            email,
+            oauth_tokens,
+            raw_user_info_from_provider,
+            user_context,
+        )
+
+    async def thirdparty_manually_create_or_update_user(
+        self,
+        third_party_id: str,
+        third_party_user_id: str,
+        email: str,
+        user_context: Dict[str, Any],
+    ) -> ManuallyCreateOrUpdateUserOkResult:
+        if self.tp_manually_create_or_update_user is None:
+            raise Exception("No thirdparty provider configured")
+        return await self.tp_manually_create_or_update_user(
             third_party_id, third_party_user_id, email, user_context
+        )
+
+    async def thirdparty_get_provider(
+        self,
+        third_party_id: str,
+        tenant_id: Optional[str],
+        client_type: Optional[str],
+        user_context: Dict[str, Any],
+    ) -> GetProviderOkResult:
+        if self.tp_get_provider is None:
+            raise Exception("No thirdparty provider configured")
+        return await self.tp_get_provider(
+            third_party_id, tenant_id, client_type, user_context
         )
 
     async def get_user_by_phone_number(
