@@ -24,43 +24,42 @@ from ..provider import (
 )
 
 
-class OktaImpl(GenericProvider):
+class BoxySAMLImpl(GenericProvider):
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
     ) -> ProviderConfigForClientType:
         config = await super().get_config_for_client_type(client_type, user_context)
-        if config.oidc_discovery_endpoint is None:
-            if (
-                config.additional_config is None
-                or config.additional_config.get("oktaDomain") is None
-            ):
-                raise Exception(
-                    "Please provide the oktaDomain in the additionalConfig of the Okta provider."
-                )
+        if (
+            config.additional_config is None
+            or config.additional_config.get("boxyURL") is None
+        ):
+            raise Exception("Please provide the boxyURL in the additionalConfig")
 
-            config.oidc_discovery_endpoint = (
-                f"{config.additional_config.get('oktaDomain')}.okta.com"
-            )
+        boxy_url = str(config.additional_config.get("boxyURL"))
 
-        if config.scope is None:
-            config.scope = ["openid", "email"]
+        if config.authorization_endpoint is None:
+            config.authorization_endpoint = f"{boxy_url}/api/oauth/authorize"
 
-        # TODO later if required, client assertion impl
+        if config.token_endpoint is None:
+            config.token_endpoint = f"{boxy_url}/api/oauth/token"
+
+        if config.user_info_endpoint is None:
+            config.user_info_endpoint = f"{boxy_url}/api/oauth/userinfo"
 
         return config
 
 
-def Okta(input: ProviderInput) -> Provider:
+def BoxySAML(input: ProviderInput) -> Provider:
     if input.config.name is None:
-        input.config.name = "Okta"
+        input.config.name = "Boxy SAML"
 
     if input.config.user_info_map is None:
         input.config.user_info_map = UserInfoMap(UserFields(), UserFields())
 
     if input.config.user_info_map.from_id_token_payload.user_id is None:
-        input.config.user_info_map.from_id_token_payload.user_id = "sub"
+        input.config.user_info_map.from_id_token_payload.user_id = "id"
 
     if input.config.user_info_map.from_id_token_payload.email is None:
         input.config.user_info_map.from_id_token_payload.email = "email"
 
-    return NewProvider(input, OktaImpl)
+    return NewProvider(input, BoxySAMLImpl)
