@@ -248,7 +248,7 @@ class APIImplementation(APIInterface):
         provider_inputs_from_static = api_options.static_third_party_providers
         provider_configs_from_core = tenant_config.third_party.providers
 
-        merged_providers = await merge_providers_from_core_and_static(
+        merged_providers = merge_providers_from_core_and_static(
             tenant_id, provider_configs_from_core, provider_inputs_from_static
         )
 

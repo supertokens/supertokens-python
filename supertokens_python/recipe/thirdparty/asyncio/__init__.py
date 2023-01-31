@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.recipe.thirdparty.recipe import ThirdPartyRecipe
 
@@ -53,7 +53,7 @@ async def get_user_by_third_party_info(
     )
 
 
-async def sign_in_up(
+async def manually_create_or_update_user(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
@@ -61,6 +61,19 @@ async def sign_in_up(
 ):
     if user_context is None:
         user_context = {}
-    return await ThirdPartyRecipe.get_instance().recipe_implementation.sign_in_up(
+    return await ThirdPartyRecipe.get_instance().recipe_implementation.manually_create_or_update_user(
         third_party_id, third_party_user_id, email, user_context
+    )
+
+
+async def get_provider(
+    third_party_id: str,
+    tenant_id: Optional[str] = None,
+    client_type: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+):
+    if user_context is None:
+        user_context = {}
+    return await ThirdPartyRecipe.get_instance().recipe_implementation.get_provider(
+        third_party_id, tenant_id, client_type, user_context
     )

@@ -42,11 +42,8 @@ class RedirectUriInfo:
 
 class Provider:
     def __init__(self, id: str):
-        async def temp_generate_fake_email(_: str, __: Dict[str, Any]) -> str:
-            raise Exception("should never come here")
-
         self.id = id
-        self.config = ProviderConfigForClientType("temp", temp_generate_fake_email)
+        self.config = ProviderConfigForClientType("temp")
 
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
@@ -105,7 +102,6 @@ class ProviderConfigForClientType:
     def __init__(
         self,
         client_id: str,
-        generate_fake_email: Callable[[str, Dict[str, Any]], Awaitable[str]],
         client_secret: Optional[str] = None,
         scope: Optional[List[str]] = None,
         force_pkce: bool = False,
@@ -124,6 +120,9 @@ class ProviderConfigForClientType:
         oidc_discovery_endpoint: Optional[str] = None,
         user_info_map: Optional[UserInfoMap] = None,
         require_email: bool = True,
+        generate_fake_email: Optional[
+            Callable[[str, Dict[str, Any]], Awaitable[str]]
+        ] = None,
         validate_id_token_payload: Optional[
             Callable[
                 [Dict[str, Any], ProviderConfigForClientType, Dict[str, Any]],

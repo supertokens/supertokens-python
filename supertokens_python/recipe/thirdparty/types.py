@@ -14,6 +14,7 @@
 from typing import Any, Callable, Dict, List, Union
 
 from supertokens_python.framework.request import BaseRequest
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 
 class ThirdPartyInfo:
@@ -42,6 +43,15 @@ class User:
         self.email: str = email
         self.time_joined: int = time_joined
         self.third_party_info: ThirdPartyInfo = third_party_info
+        self.tenant_ids: List[str] = []
+
+        self._update_tenant_ids()
+
+    def _update_tenant_ids(self):
+        if "|" in self.user_id:
+            self.tenant_ids = [self.user_id.split("|")[1]]
+        else:
+            self.tenant_ids = [DEFAULT_TENANT_ID]
 
 
 class UserInfoEmail:

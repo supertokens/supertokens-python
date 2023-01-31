@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from supertokens_python.async_to_sync_wrapper import sync
 
@@ -45,18 +45,35 @@ def get_user_by_third_party_info(
     )
 
 
-def thirdparty_sign_in_up(
+def thirdparty_manually_create_or_update_user(
     third_party_id: str,
     third_party_user_id: str,
     email: str,
     user_context: Union[None, Dict[str, Any]] = None,
 ):
     from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-        thirdparty_sign_in_up,
+        thirdparty_manually_create_or_update_user,
     )
 
     return sync(
-        thirdparty_sign_in_up(third_party_id, third_party_user_id, email, user_context)
+        thirdparty_manually_create_or_update_user(
+            third_party_id, third_party_user_id, email, user_context
+        )
+    )
+
+
+def thirdparty_get_provider(
+    third_party_id: str,
+    tenant_id: Optional[str] = None,
+    client_type: Optional[str] = None,
+    user_context: Union[None, Dict[str, Any]] = None,
+):
+    from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
+        thirdparty_get_provider,
+    )
+
+    return sync(
+        thirdparty_get_provider(third_party_id, tenant_id, client_type, user_context)
     )
 
 

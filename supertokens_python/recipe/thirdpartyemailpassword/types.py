@@ -20,6 +20,7 @@ from supertokens_python.ingredients.emaildelivery.types import (
     SMTPServiceInterface,
 )
 from supertokens_python.recipe.emailpassword import types as ep_types
+from supertokens_python.recipe.multitenancy.constants import DEFAULT_TENANT_ID
 
 from ..thirdparty.types import ThirdPartyInfo
 
@@ -36,6 +37,14 @@ class User:
         self.email = email
         self.time_joined = time_joined
         self.third_party_info = third_party_info
+        self.tenant_ids = [DEFAULT_TENANT_ID]
+
+        self._update_tenant_ids()
+
+    def _update_tenant_ids(self):
+        if self.third_party_info is not None:
+            if "|" in self.third_party_info.user_id:
+                self.tenant_ids = [self.third_party_info.user_id.split("|")[1]]
 
 
 # Export:

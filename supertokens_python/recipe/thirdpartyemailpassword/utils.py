@@ -22,7 +22,7 @@ from supertokens_python.ingredients.emaildelivery.types import (
 from supertokens_python.recipe.emailpassword.interfaces import (
     RecipeInterface as EPRecipeInterface,
 )
-from supertokens_python.recipe.thirdparty.provider import Provider
+from supertokens_python.recipe.thirdparty.provider import ProviderInput
 
 from ..emailpassword.utils import (
     InputResetPasswordUsingTokenFeature,
@@ -59,7 +59,7 @@ class OverrideConfig:
 class ThirdPartyEmailPasswordConfig:
     def __init__(
         self,
-        providers: List[Provider],
+        providers: List[ProviderInput],
         sign_up_feature: Union[InputSignUpFeature, None],
         reset_password_using_token_feature: Union[
             InputResetPasswordUsingTokenFeature, None
@@ -84,7 +84,7 @@ def validate_and_normalise_user_input(
         InputResetPasswordUsingTokenFeature, None
     ] = None,
     override: Union[InputOverrideConfig, None] = None,
-    providers: Union[List[Provider], None] = None,
+    providers: Union[List[ProviderInput], None] = None,
     email_delivery: Union[EmailDeliveryConfig[EmailTemplateVars], None] = None,
 ) -> ThirdPartyEmailPasswordConfig:
     if sign_up_feature is not None and not isinstance(sign_up_feature, InputSignUpFeature):  # type: ignore
@@ -102,8 +102,8 @@ def validate_and_normalise_user_input(
         raise ValueError("providers must be of type List[Provider] or None")
 
     for provider in providers or []:
-        if not isinstance(provider, Provider):  # type: ignore
-            raise ValueError("providers must be of type List[Provider] or None")
+        if not isinstance(provider, ProviderInput):  # type: ignore
+            raise ValueError("providers must be of type List[ProviderInput] or None")
 
     if providers is None:
         providers = []

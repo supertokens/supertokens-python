@@ -85,12 +85,13 @@ class APIImplementation(APIInterface):
         )
 
         if user_info.email is None and not provider.config.require_email:
-            user_info.email = UserInfoEmail(
-                email=await provider.config.generate_fake_email(
-                    user_info.third_party_user_id, user_context
-                ),
-                email_verified=True,
-            )
+            if provider.config.generate_fake_email is not None:
+                user_info.email = UserInfoEmail(
+                    email=await provider.config.generate_fake_email(
+                        user_info.third_party_user_id, user_context
+                    ),
+                    email_verified=True,
+                )
 
         email = user_info.email.id if user_info.email is not None else None
         email_verified = (
