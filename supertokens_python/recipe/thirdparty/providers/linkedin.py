@@ -16,7 +16,11 @@ from __future__ import annotations
 from typing import Any, Dict, Optional, Union
 from supertokens_python.recipe.thirdparty.providers.utils import do_get_request
 
-from supertokens_python.recipe.thirdparty.types import RawUserInfoFromProvider, UserInfo, UserInfoEmail
+from supertokens_python.recipe.thirdparty.types import (
+    RawUserInfoFromProvider,
+    UserInfo,
+    UserInfoEmail,
+)
 from ..provider import (
     Provider,
     ProviderConfigForClientType,
@@ -46,35 +50,41 @@ class LinkedinImpl(GenericProvider):
         self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
     ) -> UserInfo:
         access_token: Union[str, None] = oauth_tokens.get("access_token")
-        
+
         if access_token is None:
             raise Exception("Access token not found")
-        
+
         headers = {
             "Authorization": f"Bearer {access_token}",
         }
-        
+
         raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
-        user_info = await do_get_request("https://api.linkedin.com/v2/me", headers=headers)
+        user_info = await do_get_request(
+            "https://api.linkedin.com/v2/me", headers=headers
+        )
         raw_user_info_from_provider.from_user_info_api = user_info
-        
-        email_info: Dict[str, Any] = await do_get_request("https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))", headers=headers)
-        
-        if email_info.get('elements') is not None and len(email_info.get('elements')) > 0: # type: ignore
-            raw_user_info_from_provider.from_user_info_api["email"] = email_info.get('elements')[0].get('handle~').get('emailAddress') # type: ignore
+
+        email_info: Dict[str, Any] = await do_get_request(
+            "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))",
+            headers=headers,
+        )
+
+        if email_info.get("elements") is not None and len(email_info.get("elements")) > 0:  # type: ignore
+            raw_user_info_from_provider.from_user_info_api["email"] = email_info.get("elements")[0].get("handle~").get("emailAddress")  # type: ignore
 
         raw_user_info_from_provider.from_user_info_api = {
             **raw_user_info_from_provider.from_user_info_api,
-            **email_info
+            **email_info,
         }
-        
+
         return UserInfo(
-            third_party_user_id=raw_user_info_from_provider.from_user_info_api.get("id"), # type: ignore
+            third_party_user_id=raw_user_info_from_provider.from_user_info_api.get("id"),  # type: ignore
             email=UserInfoEmail(
-                email=raw_user_info_from_provider.from_user_info_api.get("email"), # type: ignore
+                email=raw_user_info_from_provider.from_user_info_api.get("email"),  # type: ignore
                 email_verified=False,
-            )
+            ),
         )
+
 
 def Linkedin(input: ProviderInput) -> Provider:
     if input.config.name is None:
@@ -86,9 +96,7 @@ def Linkedin(input: ProviderInput) -> Provider:
         )
 
     if input.config.token_endpoint is None:
-        input.config.token_endpoint = (
-            "https://www.linkedin.com/oauth/v2/accessToken"
-        )
+        input.config.token_endpoint = "https://www.linkedin.com/oauth/v2/accessToken"
 
     if input.config.user_info_map is None:
         input.config.user_info_map = UserInfoMap(UserFields(), UserFields())

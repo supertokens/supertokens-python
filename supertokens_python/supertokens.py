@@ -53,6 +53,7 @@ from .recipe.session.cookie_and_header import (
     clear_cookies,
     set_front_token_in_headers,
 )
+from .recipe.multitenancy.recipe import MultitenancyRecipe
 from .types import ThirdPartyInfo, User, UsersResponse
 from .utils import (
     execute_async,
@@ -225,9 +226,18 @@ class Supertokens:
                 "Please provide at least one recipe to the supertokens.init function call"
             )
 
-        self.recipe_modules: List[RecipeModule] = list(
-            map(lambda func: func(self.app_info), recipe_list)
-        )
+        multitenancy_found = [False]
+
+        def make_recipe(recipe: Callable[[AppInfo], RecipeModule]) -> RecipeModule:
+            recipe_module = recipe(self.app_info)
+            if recipe_module.get_recipe_id() == MultitenancyRecipe.recipe_id:
+                multitenancy_found[0] = True
+            return recipe_module
+
+        self.recipe_modules: List[RecipeModule] = list(map(make_recipe, recipe_list))
+
+        if not multitenancy_found[0]:
+            self.recipe_modules.append(MultitenancyRecipe.init()(self.app_info))
 
         if telemetry is None:
             # If telemetry is not provided, enable it by default for production environment
