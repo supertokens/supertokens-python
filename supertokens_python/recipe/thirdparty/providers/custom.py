@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
 
 from httpx import AsyncClient
@@ -24,6 +24,7 @@ from ..types import RawUserInfoFromProvider, UserInfo, UserInfoEmail
 from ..provider import (
     AuthorisationRedirect,
     Provider,
+    ProviderConfig,
     ProviderConfigForClientType,
     ProviderInput,
     RedirectUriInfo,
@@ -135,57 +136,57 @@ async def verify_id_token_from_jwks_endpoint_and_get_payload(
 
 
 class GenericProvider(Provider):
-    def __init__(self, input: ProviderInput):
-        super().__init__(input.config.third_party_id)
+    def __init__(self, config: ProviderConfig):
+        super().__init__(config.third_party_id)
 
-        self.input = input
+        self.input_config = config
         self._normalize_input()
 
     def _normalize_input(self):
-        if self.input.config.user_info_map is None:
-            self.input.config.user_info_map = UserInfoMap(
+        if self.input_config.user_info_map is None:
+            self.input_config.user_info_map = UserInfoMap(
                 from_id_token_payload=UserFields(),
                 from_user_info_api=UserFields(),
             )
 
-        if self.input.config.user_info_map.from_id_token_payload.user_id is None:
-            self.input.config.user_info_map.from_id_token_payload.user_id = "sub"
+        if self.input_config.user_info_map.from_id_token_payload.user_id is None:
+            self.input_config.user_info_map.from_id_token_payload.user_id = "sub"
 
-        if self.input.config.user_info_map.from_id_token_payload.email is None:
-            self.input.config.user_info_map.from_id_token_payload.email = "email"
+        if self.input_config.user_info_map.from_id_token_payload.email is None:
+            self.input_config.user_info_map.from_id_token_payload.email = "email"
 
-        if self.input.config.user_info_map.from_id_token_payload.email_verified is None:
-            self.input.config.user_info_map.from_id_token_payload.email_verified = (
+        if self.input_config.user_info_map.from_id_token_payload.email_verified is None:
+            self.input_config.user_info_map.from_id_token_payload.email_verified = (
                 "email_verified"
             )
 
-        if self.input.config.generate_fake_email is None:
+        if self.input_config.generate_fake_email is None:
 
             async def default_generate_fake_email(
                 third_party_user_id: str, _: Dict[str, Any]
             ) -> str:
                 third_party_user_id = third_party_user_id.replace("|", ".")
-                return f"{third_party_user_id}@{self.input.config.third_party_id}.fakeemail.com"
+                return f"{third_party_user_id}@{self.input_config.third_party_id}.fakeemail.com"
 
-            self.input.config.generate_fake_email = default_generate_fake_email
+            self.input_config.generate_fake_email = default_generate_fake_email
 
     async def get_config_for_client_type(
         self, client_type: Optional[str], user_context: Dict[str, Any]
     ) -> ProviderConfigForClientType:
         if client_type is None:
-            if self.input.config.clients is None or len(self.input.config.clients) != 1:
+            if self.input_config.clients is None or len(self.input_config.clients) != 1:
                 raise ClientTypeNotFoundError(
                     "please provide exactly one client config or pass clientType or tenantId"
                 )
 
             return get_provider_config_for_client(
-                self.input.config, self.input.config.clients[0]
+                self.input_config, self.input_config.clients[0]
             )
 
-        if self.input.config.clients is not None:
-            for client in self.input.config.clients:
+        if self.input_config.clients is not None:
+            for client in self.input_config.clients:
                 if client.client_type == client_type:
-                    return get_provider_config_for_client(self.input.config, client)
+                    return get_provider_config_for_client(self.input_config, client)
 
         raise ClientTypeNotFoundError(
             f"Could not find client config for clientType: {client_type}"
@@ -344,3 +345,14 @@ class GenericProvider(Provider):
             email=user_info_result.email,
             raw_user_info_from_provider=raw_user_info_from_provider,
         )
+
+
+def NewProvider(
+    input: ProviderInput,
+    base_class: Callable[[ProviderConfig], Provider] = GenericProvider,
+) -> Provider:
+    provider_instance = base_class(input.config)
+    if input.override is not None:
+        provider_instance = input.override(provider_instance)
+
+    return provider_instance

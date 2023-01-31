@@ -13,82 +13,67 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
+from typing import Any, Dict, Optional
 
-from httpx import AsyncClient
-from supertokens_python.recipe.thirdparty.provider import Provider
-from supertokens_python.recipe.thirdparty.types import (
-    AccessTokenAPI,
-    AuthorisationRedirectAPI,
-    UserInfo,
-    UserInfoEmail,
+from supertokens_python.recipe.thirdparty.types import UserInfo
+from ..provider import (
+    Provider,
+    ProviderConfigForClientType,
+    ProviderInput,
+    UserFields,
+    UserInfoMap,
 )
 
-if TYPE_CHECKING:
-    from supertokens_python.framework.request import BaseRequest
+from .custom import (
+    GenericProvider,
+    NewProvider,
+)
 
 
-class Facebook(Provider):
-    def __init__(
-        self,
-        client_id: str,
-        client_secret: str,
-        scope: Union[None, List[str]] = None,
-        is_default: bool = False,
-    ):
-        super().__init__("facebook", is_default)
-        default_scopes = ["email"]
+class FacebookImpl(GenericProvider):
+    async def get_config_for_client_type(
+        self, client_type: Optional[str], user_context: Dict[str, Any]
+    ) -> ProviderConfigForClientType:
+        config = await super().get_config_for_client_type(client_type, user_context)
 
-        if scope is None:
-            scope = default_scopes
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.scopes = list(set(scope))
-        self.access_token_api_url = "https://graph.facebook.com/v9.0/oauth/access_token"
-        self.authorisation_redirect_url = "https://www.facebook.com/v9.0/dialog/oauth"
+        if config.scope is None:
+            config.scope = ["identify", "email"]
 
-    async def get_profile_info(
-        self, auth_code_response: Dict[str, Any], user_context: Dict[str, Any]
-    ) -> UserInfo:
-        access_token: str = auth_code_response["access_token"]
+        return config
 
-        params = {"access_token": access_token, "fields": "id,email", "format": "json"}
-        async with AsyncClient() as client:
-            response = await client.get(  # type:ignore
-                url="https://graph.facebook.com/me", params=params
-            )
-            user_info = response.json()
-            user_id = user_info["id"]
-            if "email" not in user_info or user_info["email"] is None:
-                return UserInfo(user_id)
-            return UserInfo(user_id, UserInfoEmail(user_info["email"], True))
-
-    def get_authorisation_redirect_api_info(
-        self, user_context: Dict[str, Any]
-    ) -> AuthorisationRedirectAPI:
-        params: Dict[str, Union[Callable[[BaseRequest], str], str]] = {
-            "scope": " ".join(self.scopes),
-            "response_type": "code",
-            "client_id": self.client_id,
+    async def get_user_info(self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
+        self.config.user_info_endpoint_query_params = {
+            "access_token": str(oauth_tokens["access_token"]),
+            "fields": "id,email",
+            "format": "json",
+            **(self.config.user_info_endpoint_query_params or {}),
         }
-        return AuthorisationRedirectAPI(self.authorisation_redirect_url, params)
+        return await super().get_user_info(oauth_tokens, user_context)
 
-    def get_access_token_api_info(
-        self,
-        redirect_uri: str,
-        auth_code_from_request: str,
-        user_context: Dict[str, Any],
-    ) -> AccessTokenAPI:
-        params = {
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "code": auth_code_from_request,
-            "redirect_uri": redirect_uri,
-        }
-        return AccessTokenAPI(self.access_token_api_url, params)
 
-    def get_redirect_uri(self, user_context: Dict[str, Any]) -> Union[None, str]:
-        return None
+def Facebook(input: ProviderInput) -> Provider:
+    if input.config.name is None:
+        input.config.name = "Facebook"
+        
+    if input.config.authorization_endpoint is None:
+        input.config.authorization_endpoint = "https://www.facebook.com/v12.0/dialog/oauth"
+    
+    if input.config.token_endpoint is None:
+        input.config.token_endpoint = "https://graph.facebook.com/v12.0/oauth/access_token"
+    
+    if input.config.user_info_endpoint is None:
+        input.config.user_info_endpoint = "https://graph.facebook.com/me"
 
-    def get_client_id(self, user_context: Dict[str, Any]) -> str:
-        return self.client_id
+    if input.config.user_info_map is None:
+        input.config.user_info_map = UserInfoMap(UserFields(), UserFields())
+
+    if input.config.user_info_map.from_user_info_api.user_id is None:
+        input.config.user_info_map.from_user_info_api.user_id = "id"
+
+    if input.config.user_info_map.from_user_info_api.email is None:
+        input.config.user_info_map.from_user_info_api.email = "email"
+
+    if input.config.user_info_map.from_user_info_api.email_verified is None:
+        input.config.user_info_map.from_user_info_api.email = "verified"
+
+    return NewProvider(input, FacebookImpl)

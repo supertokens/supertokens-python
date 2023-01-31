@@ -1,5 +1,7 @@
 from typing import Any, Dict
 
+from httpx import AsyncClient
+
 
 DEV_OAUTH_CLIENT_IDS = [
     "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
@@ -22,12 +24,28 @@ def get_actual_client_id_from_development_client_id(client_id: str):
 
 
 async def do_get_request(
-    url: str, query_params: Dict[str, Any] = {}, headers: Dict[str, Any] = {}
+    url: str, query_params: Dict[str, str] = {}, headers: Dict[str, str] = {}
 ) -> Dict[str, Any]:
-    raise NotImplementedError
+    # TODO logging
+
+    async with AsyncClient() as client:
+        return (
+            await client.get(url, params=query_params, headers=headers)  # type:ignore
+        ).json()
 
 
 async def do_post_request(
-    url: str, body_params: Dict[str, Any] = {}, headers: Dict[str, Any] = {}
+    url: str, body_params: Dict[str, str] = {}, headers: Dict[str, str] = {}
 ) -> Dict[str, Any]:
-    raise NotImplementedError
+    if not headers:
+        headers = {}
+
+    headers["content-type"] = "application/x-www-form-urlencoded"
+    headers["accept"] = "application/json"
+
+    # TODO logging
+
+    async with AsyncClient() as client:
+        return (
+            await client.post(url, data=body_params, headers=headers)  # type:ignore
+        ).json()
