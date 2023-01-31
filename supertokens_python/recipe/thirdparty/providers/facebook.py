@@ -41,7 +41,9 @@ class FacebookImpl(GenericProvider):
 
         return config
 
-    async def get_user_info(self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]) -> UserInfo:
+    async def get_user_info(
+        self, oauth_tokens: Dict[str, Any], user_context: Dict[str, Any]
+    ) -> UserInfo:
         self.config.user_info_endpoint_query_params = {
             "access_token": str(oauth_tokens["access_token"]),
             "fields": "id,email",
@@ -54,13 +56,17 @@ class FacebookImpl(GenericProvider):
 def Facebook(input: ProviderInput) -> Provider:
     if input.config.name is None:
         input.config.name = "Facebook"
-        
+
     if input.config.authorization_endpoint is None:
-        input.config.authorization_endpoint = "https://www.facebook.com/v12.0/dialog/oauth"
-    
+        input.config.authorization_endpoint = (
+            "https://www.facebook.com/v12.0/dialog/oauth"
+        )
+
     if input.config.token_endpoint is None:
-        input.config.token_endpoint = "https://graph.facebook.com/v12.0/oauth/access_token"
-    
+        input.config.token_endpoint = (
+            "https://graph.facebook.com/v12.0/oauth/access_token"
+        )
+
     if input.config.user_info_endpoint is None:
         input.config.user_info_endpoint = "https://graph.facebook.com/me"
 
