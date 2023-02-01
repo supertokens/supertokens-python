@@ -44,7 +44,12 @@ pytestmark = mark.asyncio
 
 @min_api_version("2.14")
 async def test_add_claims_to_session_without_config():
-    st_args = get_st_init_args([userroles.init(), session.init()])
+    st_args = get_st_init_args(
+        [
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ]
+    )
     init(**st_args)
     start_st()
 
@@ -64,7 +69,7 @@ async def test_claims_not_added_to_session_if_disabled():
                 skip_adding_roles_to_access_token=True,
                 skip_adding_permissions_to_access_token=True,
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ]
     )
     init(**st_args)
@@ -80,7 +85,12 @@ async def test_claims_not_added_to_session_if_disabled():
 
 @min_api_version("2.14")
 async def test_add_claims_to_session_with_values():
-    st_args = get_st_init_args([userroles.init(), session.init()])
+    st_args = get_st_init_args(
+        [
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ]
+    )
     init(**st_args)
     start_st()
 
@@ -99,7 +109,12 @@ async def test_add_claims_to_session_with_values():
 
 @min_api_version("2.14")
 async def test_should_validate_roles():
-    st_args = get_st_init_args([userroles.init(), session.init()])
+    st_args = get_st_init_args(
+        [
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ]
+    )
     init(**st_args)
     start_st()
 
@@ -134,7 +149,7 @@ async def test_should_validate_roles_after_refetch():
             userroles.init(
                 skip_adding_roles_to_access_token=True,
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ]
     )
     init(**st_args)
@@ -154,7 +169,12 @@ async def test_should_validate_roles_after_refetch():
 
 @min_api_version("2.14")
 async def test_should_validate_permissions():
-    st_args = get_st_init_args([userroles.init(), session.init()])
+    st_args = get_st_init_args(
+        [
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ]
+    )
     init(**st_args)
     start_st()
 
@@ -192,7 +212,7 @@ async def test_should_validate_permissions_after_refetch():
             userroles.init(
                 skip_adding_permissions_to_access_token=True,
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ]
     )
     init(**st_args)

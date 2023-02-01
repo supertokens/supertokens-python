@@ -13,14 +13,17 @@
 # under the License.
 
 import json
+from datetime import datetime
 from inspect import isawaitable
 from typing import Any, Dict, Union
 
-from datetime import datetime
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.test import RequestFactory, TestCase
 from supertokens_python import InputAppInfo, SupertokensConfig, init
 from supertokens_python.framework.django import middleware
+from supertokens_python.framework.django.django_response import (
+    DjangoResponse as SuperTokensDjangoWrapper,
+)
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe.emailpassword.interfaces import APIInterface, APIOptions
 from supertokens_python.recipe.session import SessionContainer
@@ -109,7 +112,11 @@ class SupertokensTest(TestCase):
             framework="django",
             mode="asgi",
             recipe_list=[
-                session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                    cookie_domain="supertokens.io",
+                )
             ],
         )
 
@@ -127,11 +134,9 @@ class SupertokensTest(TestCase):
         cookies = get_cookies(response)
 
         assert len(cookies["sAccessToken"]["value"]) > 0
-        assert len(cookies["sIdRefreshToken"]["value"]) > 0
         assert len(cookies["sRefreshToken"]["value"]) > 0
 
         request.COOKIES["sRefreshToken"] = cookies["sRefreshToken"]["value"]
-        request.COOKIES["sIdRefreshToken"] = cookies["sIdRefreshToken"]["value"]
         request.META["HTTP_ANTI_CSRF"] = response.headers["anti-csrf"]
         temp = my_middleware(request)
         if not isawaitable(temp):
@@ -144,10 +149,6 @@ class SupertokensTest(TestCase):
             != cookies["sAccessToken"]["value"]
         )
         assert (
-            refreshed_cookies["sIdRefreshToken"]["value"]
-            != cookies["sIdRefreshToken"]["value"]
-        )
-        assert (
             refreshed_cookies["sRefreshToken"]["value"]
             != cookies["sRefreshToken"]["value"]
         )
@@ -157,20 +158,12 @@ class SupertokensTest(TestCase):
             == cookies["sAccessToken"]["domain"]
         )
         assert (
-            refreshed_cookies["sIdRefreshToken"]["domain"]
-            == cookies["sIdRefreshToken"]["domain"]
-        )
-        assert (
             refreshed_cookies["sRefreshToken"]["domain"]
             == cookies["sRefreshToken"]["domain"]
         )
         assert (
             refreshed_cookies["sAccessToken"]["secure"]
             == cookies["sAccessToken"]["secure"]
-        )
-        assert (
-            refreshed_cookies["sIdRefreshToken"]["secure"]
-            == cookies["sIdRefreshToken"]["secure"]
         )
         assert (
             refreshed_cookies["sRefreshToken"]["secure"]
@@ -189,7 +182,11 @@ class SupertokensTest(TestCase):
             framework="django",
             mode="asgi",
             recipe_list=[
-                session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                    cookie_domain="supertokens.io",
+                )
             ],
         )
 
@@ -204,14 +201,12 @@ class SupertokensTest(TestCase):
         cookies = get_cookies(response)
 
         assert len(cookies["sAccessToken"]["value"]) > 0
-        assert len(cookies["sIdRefreshToken"]["value"]) > 0
         assert len(cookies["sRefreshToken"]["value"]) > 0
 
         my_middleware = middleware(logout_view)
         request = self.factory.post("/logout", {"user_id": "user_id"})
 
         request.COOKIES["sAccessToken"] = cookies["sAccessToken"]["value"]
-        request.COOKIES["sIdRefreshToken"] = cookies["sIdRefreshToken"]["value"]
         request.META["HTTP_ANTI_CSRF"] = response.headers["anti-csrf"]
         temp = my_middleware(request)
         if not isawaitable(temp):
@@ -221,7 +216,6 @@ class SupertokensTest(TestCase):
         assert response.headers.get("anti-csrf") is None  # type: ignore
         assert logout_cookies["sAccessToken"]["value"] == ""
         assert logout_cookies["sRefreshToken"]["value"] == ""
-        assert logout_cookies["sIdRefreshToken"]["value"] == ""
 
     async def test_login_handle(self):
         init(
@@ -235,7 +229,11 @@ class SupertokensTest(TestCase):
             framework="django",
             mode="asgi",
             recipe_list=[
-                session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    cookie_domain="supertokens.io",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                )
             ],
         )
 
@@ -250,7 +248,6 @@ class SupertokensTest(TestCase):
         cookies = get_cookies(response)
 
         assert len(cookies["sAccessToken"]["value"]) > 0
-        assert len(cookies["sIdRefreshToken"]["value"]) > 0
         assert len(cookies["sRefreshToken"]["value"]) > 0
 
         try:
@@ -264,13 +261,14 @@ class SupertokensTest(TestCase):
         request = self.factory.get("/handle", {"user_id": "user_id"})
 
         request.COOKIES["sAccessToken"] = cookies["sAccessToken"]["value"]
-        request.COOKIES["sIdRefreshToken"] = cookies["sIdRefreshToken"]["value"]
         request.META["HTTP_ANTI_CSRF"] = response.headers["anti-csrf"]
         temp = my_middleware(request)
         if not isawaitable(temp):
             raise Exception("Should never come here")
         response = await temp
-        assert "s" in json.loads(response.content)
+        assert "s" in json.loads(
+            response.content
+        )  # FIXME: Getting Unauthorized in body. Why?
         handle_cookies = get_cookies(response)
 
         assert not handle_cookies
@@ -287,7 +285,11 @@ class SupertokensTest(TestCase):
             framework="django",
             mode="asgi",
             recipe_list=[
-                session.init(anti_csrf="VIA_TOKEN", cookie_domain="supertokens.io")
+                session.init(
+                    anti_csrf="VIA_TOKEN",
+                    cookie_domain="supertokens.io",
+                    get_token_transfer_method=lambda _, __, ___: "cookie",
+                )
             ],
         )
 
@@ -305,7 +307,6 @@ class SupertokensTest(TestCase):
         cookies = get_cookies(response)
 
         assert len(cookies["sAccessToken"]["value"]) > 0
-        assert len(cookies["sIdRefreshToken"]["value"]) > 0
         assert len(cookies["sRefreshToken"]["value"]) > 0
 
         temp = my_middleware(request)
@@ -374,7 +375,9 @@ class SupertokensTest(TestCase):
             ),
             framework="django",
             mode="asgi",
-            recipe_list=[session.init()],
+            recipe_list=[
+                session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+            ],
         )
 
         start_st()
@@ -389,3 +392,13 @@ class SupertokensTest(TestCase):
         assert response.status_code == 200
         dict_response = json.loads(response.content)
         assert dict_response["s"] == "empty session"
+
+
+def test_remove_header_works():
+    response = HttpResponse()
+    st_response = SuperTokensDjangoWrapper(response)
+
+    st_response.set_header("foo", "bar")
+    assert st_response.get_header("foo") == "bar"
+    st_response.remove_header("foo")
+    assert st_response.get_header("foo") is None

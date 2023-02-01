@@ -13,18 +13,18 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Union
 
 from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from ...recipe_module import RecipeModule
-    from supertokens_python.supertokens import AppInfo
+    from supertokens_python.supertokens import AppInfo, BaseRequest
+    from .utils import TokenTransferMethod
 
 from . import exceptions as ex
+from . import interfaces, utils
 from .recipe import SessionRecipe
-from . import utils
-from . import interfaces
 
 InputErrorHandlers = utils.InputErrorHandlers
 InputOverrideConfig = utils.InputOverrideConfig
@@ -39,6 +39,13 @@ def init(
     cookie_same_site: Union[Literal["lax", "none", "strict"], None] = None,
     session_expired_status_code: Union[int, None] = None,
     anti_csrf: Union[Literal["VIA_TOKEN", "VIA_CUSTOM_HEADER", "NONE"], None] = None,
+    get_token_transfer_method: Union[
+        Callable[
+            [BaseRequest, bool, Dict[str, Any]],
+            Union[TokenTransferMethod, Literal["any"]],
+        ],
+        None,
+    ] = None,
     error_handlers: Union[InputErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
     jwt: Union[JWTConfig, None] = None,
@@ -50,6 +57,7 @@ def init(
         cookie_same_site,
         session_expired_status_code,
         anti_csrf,
+        get_token_transfer_method,
         error_handlers,
         override,
         jwt,

@@ -43,7 +43,9 @@ async def test_that_once_the_info_is_loaded_it_doesnt_query_again():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[session.init()],
+        recipe_list=[
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
     )
     start_st()
 

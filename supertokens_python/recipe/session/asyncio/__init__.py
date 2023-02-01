@@ -280,6 +280,7 @@ async def refresh_session(
         request = FRAMEWORKS[
             SessionRecipe.get_instance().app_info.framework
         ].wrap_request(request)
+
     return await SessionRecipe.get_instance().recipe_implementation.refresh_session(
         request, user_context
     )

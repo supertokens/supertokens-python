@@ -32,8 +32,10 @@ from typing import (
     TypeVar,
     Union,
 )
+from urllib.parse import urlparse
 
 from httpx import HTTPStatusError, Response
+from tldextract import extract  # type: ignore
 
 from supertokens_python.async_to_sync_wrapper import check_event_loop
 from supertokens_python.framework.django.framework import DjangoFramework
@@ -75,7 +77,7 @@ def normalise_http_method(method: str) -> str:
     return method.lower()
 
 
-def get_rid_from_request(request: BaseRequest) -> Union[str, None]:
+def get_rid_from_header(request: BaseRequest) -> Union[str, None]:
     return get_header(request, RID_KEY_HEADER)
 
 
@@ -206,7 +208,7 @@ def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
 
 
 def frontend_has_interceptor(request: BaseRequest) -> bool:
-    return get_rid_from_request(request) is not None
+    return get_rid_from_header(request) is not None
 
 
 def deprecated_warn(msg: str):
@@ -261,3 +263,21 @@ async def resolve(obj: MaybeAwaitable[_T]) -> _T:
     if isinstance(obj, Awaitable):
         return await obj  # type: ignore
     return obj  # type: ignore
+
+
+def get_top_level_domain_for_same_site_resolution(url: str) -> str:
+    url_obj = urlparse(url)
+    hostname = url_obj.hostname
+
+    if hostname is None:
+        raise Exception("Should not come here")
+
+    if hostname.startswith("localhost") or is_an_ip_address(hostname):
+        return "localhost"
+    parsed_url: Any = extract(hostname, include_psl_private_domains=True)
+    if parsed_url.domain == "":  # type: ignore
+        raise Exception(
+            "Please make sure that the apiDomain and websiteDomain have correct values"
+        )
+
+    return parsed_url.domain + "." + parsed_url.suffix  # type: ignore

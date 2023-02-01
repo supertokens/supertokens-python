@@ -13,6 +13,7 @@
 # under the License.
 import asyncio
 from datetime import datetime, timezone
+from urllib.parse import unquote
 from http.cookies import SimpleCookie
 from os import environ, kill, remove, scandir
 from shutil import rmtree
@@ -234,6 +235,51 @@ def extract_all_cookies(response: Response) -> Dict[str, Any]:
     return cookies
 
 
+def extract_info(response: Response) -> Dict[str, Any]:
+    cookies = extract_all_cookies(response)
+    access_token = cookies.get("sAccessToken", {}).get("value")
+    refresh_token = cookies.get("sRefreshToken", {}).get("value")
+
+    access_token_from_header = response.headers.get("st-access-token")
+    refresh_token_from_header = response.headers.get("st-refresh-token")
+
+    return {
+        **cookies,
+        "accessToken": None if access_token is None else unquote(access_token),
+        "refreshToken": None if refresh_token is None else unquote(refresh_token),
+        "frontToken": response.headers.get("front-token"),
+        "status_code": response.status_code,
+        "body": response.json(),
+        "antiCsrf": response.headers.get("anti-csrf"),
+        "accessTokenFromHeader": access_token_from_header,
+        "refreshTokenFromHeader": refresh_token_from_header,
+        "accessTokenFromAny": access_token_from_header
+        if access_token is None
+        else access_token,
+        "refreshTokenFromAny": refresh_token_from_header
+        if refresh_token is None
+        else refresh_token,
+    }
+
+
+def assert_info_clears_tokens(info: Dict[str, Any], token_transfer_method: str):
+    if token_transfer_method == "cookie":
+        assert info["accessToken"] == ""
+        assert info["refreshToken"] == ""
+        assert info["sAccessToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+        assert info["sRefreshToken"]["expires"] == "Thu, 01 Jan 1970 00:00:00 GMT"
+        assert info["sAccessToken"]["domain"] == ""
+        assert info["sRefreshToken"]["domain"] == ""
+    elif token_transfer_method == "header":
+        assert info["accessTokenFromHeader"] == ""
+        assert info["refreshTokenFromHeader"] == ""
+    else:
+        raise Exception("unknown token transfer method: " + token_transfer_method)
+
+    assert info["frontToken"] == "remove"
+    assert info["antiCsrf"] is None
+
+
 def get_unix_timestamp(expiry: str):
     return int(
         datetime.strptime(expiry, "%a, %d %b %Y %H:%M:%S GMT")
@@ -336,7 +382,6 @@ def sign_in_request(app: TestClient, email: str, password: str):
 def email_verify_token_request(
     app: TestClient,
     accessToken: str,
-    idRefreshTokenFromCookie: str,
     antiCsrf: str,
     userId: str,
     use_server: bool = False,
@@ -355,7 +400,6 @@ def email_verify_token_request(
             headers=headers,
             cookies={
                 "sAccessToken": accessToken,
-                "sIdRefreshToken": idRefreshTokenFromCookie,
             },
             data=str.encode(userId),
         )
@@ -365,13 +409,13 @@ def email_verify_token_request(
             environ["SUPERTOKENS_ENV"] = "testing"
 
 
-def setup_function(_):
+def setup_function(_: Any):
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(_):
+def teardown_function(_: Any):
     reset()
     clean_st()
 
@@ -415,7 +459,7 @@ def get_core_api_version() -> str:
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()
@@ -479,10 +523,7 @@ st_init_common_args = {
 
 
 def get_st_init_args(recipe_list: List[Any]) -> Dict[str, Any]:
-    return {
-        **st_init_common_args,
-        "recipe_list": recipe_list,
-    }
+    return {**st_init_common_args, "recipe_list": recipe_list}
 
 
 def is_subset(dict1: Any, dict2: Any) -> bool:

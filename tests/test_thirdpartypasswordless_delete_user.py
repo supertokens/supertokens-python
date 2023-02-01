@@ -91,7 +91,7 @@ async def test_tp_passworldless_delete_user_info(driver_config_client: TestClien
                 providers=[],
                 get_custom_user_input_code=get_custom_user_input_code,
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()

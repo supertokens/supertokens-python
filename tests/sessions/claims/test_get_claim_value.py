@@ -47,7 +47,12 @@ async def test_should_get_the_right_value_using_session_handle():
 
 
 async def test_should_work_for_non_existing_handle():
-    new_st_init = {**st_init_common_args, "recipe_list": [session.init()]}
+    new_st_init = {
+        **st_init_common_args,
+        "recipe_list": [
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie")
+        ],
+    }
     init(**new_st_init)  # type: ignore
     start_st()
 

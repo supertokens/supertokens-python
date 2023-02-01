@@ -31,10 +31,12 @@ from supertokens_python.types import APIResponse, GeneralErrorResponse, MaybeAwa
 
 from ...utils import resolve
 from .exceptions import ClaimValidationError
-from .utils import SessionConfig
+from .utils import SessionConfig, TokenTransferMethod
 
 if TYPE_CHECKING:
-    from supertokens_python.framework import BaseRequest, BaseResponse
+    from supertokens_python.framework import BaseRequest
+
+from supertokens_python.framework import BaseResponse
 
 
 class SessionObj:
@@ -287,16 +289,16 @@ class APIOptions:
     def __init__(
         self,
         request: BaseRequest,
-        response: Union[None, BaseResponse],
+        response: Optional[BaseResponse],
         recipe_id: str,
         config: SessionConfig,
         recipe_implementation: RecipeInterface,
     ):
-        self.request: BaseRequest = request
-        self.response: Union[None, BaseResponse] = response
-        self.recipe_id: str = recipe_id
-        self.config: SessionConfig = config
-        self.recipe_implementation: RecipeInterface = recipe_implementation
+        self.request = request
+        self.response = response
+        self.recipe_id = recipe_id
+        self.config = config
+        self.recipe_implementation = recipe_implementation
 
 
 class APIInterface(ABC):
@@ -340,25 +342,29 @@ class APIInterface(ABC):
         pass
 
 
+ResponseMutator = Callable[[BaseResponse], None]
+
+
 class SessionContainer(ABC):  # pylint: disable=too-many-public-methods
     def __init__(
         self,
         recipe_implementation: RecipeInterface,
+        config: SessionConfig,
         access_token: str,
         session_handle: str,
         user_id: str,
         access_token_payload: Dict[str, Any],
+        transfer_method: TokenTransferMethod,
     ):
         self.recipe_implementation = recipe_implementation
+        self.config = config
         self.access_token = access_token
         self.session_handle = session_handle
         self.access_token_payload = access_token_payload
         self.user_id = user_id
-        self.new_access_token_info = None
-        self.new_refresh_token_info = None
-        self.new_id_refresh_token_info = None
-        self.new_anti_csrf_token = None
-        self.remove_cookies = False
+        self.transfer_method: TokenTransferMethod = transfer_method
+
+        self.response_mutators: List[ResponseMutator] = []
 
     @abstractmethod
     async def revoke_session(

@@ -45,21 +45,14 @@ from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
 from .post_init_callbacks import PostSTInitCallbacks
 from .querier import Querier
-from .recipe.session.cookie_and_header import (
-    attach_access_token_to_cookie,
-    attach_anti_csrf_header,
-    attach_id_refresh_token_to_cookie_and_header,
-    attach_refresh_token_to_cookie,
-    clear_cookies,
-    set_front_token_in_headers,
-)
 from .types import ThirdPartyInfo, User, UsersResponse
 from .utils import (
     execute_async,
-    get_rid_from_request,
+    get_rid_from_header,
     is_version_gte,
     normalise_http_method,
     send_non_200_response_with_message,
+    get_top_level_domain_for_same_site_resolution,
 )
 
 if TYPE_CHECKING:
@@ -74,7 +67,6 @@ from os import environ
 from httpx import AsyncClient
 
 from .exceptions import BadInputError, GeneralError, raise_general_exception
-from .recipe.session import SessionRecipe
 
 
 class SupertokensConfig:
@@ -122,13 +114,19 @@ class AppInfo:
         mode: Union[Literal["asgi", "wsgi"], None],
     ):
         self.app_name = app_name
-        self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(api_gateway_path)
-        self.api_domain: NormalisedURLDomain = NormalisedURLDomain(api_domain)
-        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(website_domain)
-        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(
+        self.api_gateway_path = NormalisedURLPath(api_gateway_path)
+        self.api_domain = NormalisedURLDomain(api_domain)
+        self.website_domain = NormalisedURLDomain(website_domain)
+        self.top_level_api_domain = get_top_level_domain_for_same_site_resolution(
+            self.api_domain.get_as_string_dangerous()
+        )
+        self.top_level_website_domain = get_top_level_domain_for_same_site_resolution(
+            self.website_domain.get_as_string_dangerous()
+        )
+        self.api_base_path = self.api_gateway_path.append(
             NormalisedURLPath(api_base_path)
         )
-        self.website_base_path: NormalisedURLPath = NormalisedURLPath(website_base_path)
+        self.website_base_path = NormalisedURLPath(website_base_path)
         if mode is not None:
             self.mode = mode
         elif framework == "fastapi":
@@ -147,35 +145,10 @@ class AppInfo:
         return json.dumps(self, default=defaultImpl, sort_keys=True, indent=4)
 
 
-def manage_cookies_post_response(session: SessionContainer, response: BaseResponse):
-    recipe = SessionRecipe.get_instance()
-    if session["remove_cookies"]:
-        clear_cookies(recipe, response)
-    else:
-        access_token = session["new_access_token_info"]
-        if access_token is not None:
-            attach_access_token_to_cookie(
-                recipe, response, access_token["token"], access_token["expiry"]
-            )
-            set_front_token_in_headers(
-                response,
-                session["user_id"],
-                access_token["expiry"],
-                session["access_token_payload"],
-            )
-        refresh_token = session["new_refresh_token_info"]
-        if refresh_token is not None:
-            attach_refresh_token_to_cookie(
-                recipe, response, refresh_token["token"], refresh_token["expiry"]
-            )
-        id_refresh_token = session["new_id_refresh_token_info"]
-        if id_refresh_token is not None:
-            attach_id_refresh_token_to_cookie_and_header(
-                recipe, response, id_refresh_token["token"], id_refresh_token["expiry"]
-            )
-        anti_csrf_token = session["new_anti_csrf_token"]
-        if anti_csrf_token is not None:
-            attach_anti_csrf_header(response, anti_csrf_token)
+def manage_session_post_response(session: SessionContainer, response: BaseResponse):
+    # Something similar happens in handle_error of session/recipe.py
+    for mutator in session.response_mutators:
+        mutator(response=response)  # type: ignore
 
 
 class Supertokens:
@@ -546,7 +519,7 @@ class Supertokens:
                 path.get_as_string_dangerous(),
             )
             return None
-        request_rid = get_rid_from_request(request)
+        request_rid = get_rid_from_header(request)
         log_debug_message(
             "middleware: requestRID is: %s", get_maybe_none_as_str(request_rid)
         )

@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from datetime import datetime
 from typing import Any, Dict, List, TypeVar, Union
 
 from supertokens_python.recipe.session.exceptions import (
@@ -18,6 +19,11 @@ from supertokens_python.recipe.session.exceptions import (
     raise_unauthorised_exception,
 )
 
+from .cookie_and_header import (
+    clear_session_response_mutator,
+    front_token_response_mutator,
+    token_response_mutator,
+)
 from .interfaces import SessionClaim, SessionClaimValidator, SessionContainer
 
 _T = TypeVar("_T")
@@ -30,7 +36,13 @@ class Session(SessionContainer):
         await self.recipe_implementation.revoke_session(
             self.session_handle, user_context
         )
-        self.remove_cookies = True
+
+        self.response_mutators.append(
+            clear_session_response_mutator(
+                self.config,
+                self.transfer_method,
+            )
+        )
 
     async def get_session_data(
         self, user_context: Union[Dict[str, Any], None] = None
@@ -66,20 +78,32 @@ class Session(SessionContainer):
         if user_context is None:
             user_context = {}
 
-        response = await self.recipe_implementation.regenerate_access_token(
+        result = await self.recipe_implementation.regenerate_access_token(
             self.access_token, new_access_token_payload, user_context
         )
-        if response is None:
+        if result is None:
             raise_unauthorised_exception("Session does not exist anymore.")
 
-        self.access_token_payload = response.session.user_data_in_jwt
-        if response.access_token is not None:
-            self.access_token = response.access_token.token
-            self.new_access_token_info = {
-                "token": response.access_token.token,
-                "expiry": response.access_token.expiry,
-                "createdTime": response.access_token.created_time,
-            }
+        self.access_token_payload = result.session.user_data_in_jwt
+        if result.access_token is not None:
+            self.access_token = result.access_token.token
+
+            self.response_mutators.append(
+                front_token_response_mutator(
+                    self.user_id,
+                    result.access_token.expiry,
+                    self.access_token_payload,
+                )
+            )
+            self.response_mutators.append(
+                token_response_mutator(
+                    self.config,
+                    "access",
+                    result.access_token.token,
+                    int(datetime.now().timestamp()) + 3153600000000,
+                    self.transfer_method,
+                )
+            )
 
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -> str:
         return self.user_id
