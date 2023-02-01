@@ -1,5 +1,9 @@
 from typing import List, Dict, Optional, Any
 
+from supertokens_python.normalised_url_domain import NormalisedURLDomain
+from supertokens_python.normalised_url_path import NormalisedURLPath
+from supertokens_python.recipe.thirdparty.providers.utils import do_get_request
+
 from .active_directory import ActiveDirectory
 from .apple import Apple
 from .boxy_saml import BoxySAML
@@ -207,10 +211,10 @@ def create_provider(provider_input: ProviderInput) -> Provider:
         return Facebook(provider_input)
     if provider_input.config.third_party_id.startswith("github"):
         return Github(provider_input)
-    if provider_input.config.third_party_id.startswith("google"):
-        return Google(provider_input)
     if provider_input.config.third_party_id.startswith("google-workspaces"):
         return GoogleWorkspaces(provider_input)
+    if provider_input.config.third_party_id.startswith("google"):
+        return Google(provider_input)
     if provider_input.config.third_party_id.startswith("okta"):
         return Okta(provider_input)
     if provider_input.config.third_party_id.startswith("linkedin"):
@@ -221,10 +225,52 @@ def create_provider(provider_input: ProviderInput) -> Provider:
     return NewProvider(provider_input)
 
 
+OIDC_INFO_MAP: Dict[str, Any] = {}
+
+
+async def get_oidc_discovery_info(issuer: str):
+    if issuer in OIDC_INFO_MAP:
+        return OIDC_INFO_MAP[issuer]
+
+    ndomain = NormalisedURLDomain(issuer)
+    npath = NormalisedURLPath(issuer)
+    openid_config_path = NormalisedURLPath("/.well-known/openid-configuration")
+
+    npath = npath.append(openid_config_path)
+
+    oidc_info = await do_get_request(
+        ndomain.get_as_string_dangerous() + npath.get_as_string_dangerous()
+    )
+    OIDC_INFO_MAP[issuer] = oidc_info
+
+    return oidc_info
+
+
 async def discover_oidc_endpoints(
     config: ProviderConfigForClientType,
 ) -> ProviderConfigForClientType:
-    # TODO
+    if config.oidc_discovery_endpoint is None:
+        return config
+
+    oidc_info = await get_oidc_discovery_info(config.oidc_discovery_endpoint)
+    if (
+        oidc_info.get("authorization_endpoint") is not None
+        and config.authorization_endpoint is None
+    ):
+        config.authorization_endpoint = oidc_info["authorization_endpoint"]
+
+    if oidc_info.get("token_endpoint") is not None and config.token_endpoint is None:
+        config.token_endpoint = oidc_info["token_endpoint"]
+
+    if (
+        oidc_info.get("userinfo_endpoint") is not None
+        and config.user_info_endpoint is None
+    ):
+        config.user_info_endpoint = oidc_info["userinfo_endpoint"]
+
+    if oidc_info.get("jwks_uri") is not None and config.jwks_uri is None:
+        config.jwks_uri = oidc_info["jwks_uri"]
+
     return config
 
 
