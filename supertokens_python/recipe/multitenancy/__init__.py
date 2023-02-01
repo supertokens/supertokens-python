@@ -16,8 +16,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, Union
 
 from . import exceptions as ex
-from .recipe import MultitenancyRecipe
+from . import recipe
 
+AllowedDomainsClaim = recipe.AllowedDomainsClaim
 exceptions = ex
 
 if TYPE_CHECKING:
@@ -36,7 +37,7 @@ def init(
     error_handlers: Union[InputErrorHandlers, None] = None,
     override: Union[InputOverrideConfig, None] = None,
 ) -> Callable[[AppInfo], RecipeModule]:
-    return MultitenancyRecipe.init(
+    return recipe.MultitenancyRecipe.init(
         get_tenant_ids_for_user_id,
         get_allowed_domains_for_tenant_id,
         error_handlers,

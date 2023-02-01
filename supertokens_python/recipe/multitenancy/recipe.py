@@ -17,7 +17,12 @@ from os import environ
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError, raise_general_exception
+from supertokens_python.recipe.session.claim_base_classes.primitive_array_claim import (
+    PrimitiveArrayClaim,
+)
+from supertokens_python.recipe.session.interfaces import JSONObject
 from supertokens_python.recipe_module import APIHandled, RecipeModule
+from supertokens_python.utils import get_timestamp_ms
 
 from ...post_init_callbacks import PostSTInitCallbacks
 
@@ -275,3 +280,49 @@ class APIImplementation(APIInterface):
                 tenant_config.third_party.enabled, final_provider_list
             ),
         )
+
+
+class AllowedDomainsClaimClass(PrimitiveArrayClaim[List[str]]):
+    def __init__(self):
+        async def fetch_value(user_id: str, user_context: Dict[str, Any]) -> List[str]:
+            recipe = MultitenancyRecipe.get_instance()
+            tenant_ids_res = await recipe.get_tenant_ids_for_user_id(
+                user_id, user_context
+            )
+
+            if isinstance(tenant_ids_res, TenantIdsOkResult):
+                for tenant_id in tenant_ids_res.tenant_ids:
+                    if recipe.config.get_allowed_domains_for_tenant_id is None:
+                        return (
+                            []
+                        )  # User did not provide a function to get allowed domains, but is using a validator. So we don't allow any domains by default
+
+                    domains_res = await recipe.config.get_allowed_domains_for_tenant_id(
+                        tenant_id, user_context
+                    )
+                    return domains_res
+
+            raise Exception("UNKNOWN_USER_ID")
+
+        super().__init__(
+            key="st-tenant-domains",
+            fetch_value=fetch_value,
+            default_max_age_in_sec=3600,
+        )
+
+    def get_value_from_payload(
+        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+    ) -> Union[List[str], None]:
+        if self.key not in payload:
+            return []
+        return super().get_value_from_payload(payload, user_context)
+
+    def get_last_refetch_time(
+        self, payload: JSONObject, user_context: Union[Dict[str, Any], None] = None
+    ) -> Union[int, None]:
+        if self.key not in payload:
+            return get_timestamp_ms()
+        return super().get_last_refetch_time(payload, user_context)
+
+
+AllowedDomainsClaim = AllowedDomainsClaimClass()
