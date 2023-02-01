@@ -493,12 +493,13 @@ def min_api_version(min_version: str) -> Any:
 # Import AsyncMock
 import sys
 
+from unittest.mock import MagicMock
+
 if sys.version_info >= (3, 8):
     from unittest.mock import AsyncMock
 
     _ = AsyncMock
 else:
-    from unittest.mock import MagicMock
 
     class AsyncMock(MagicMock):
         async def __call__(  # pylint: disable=invalid-overridden-method, useless-super-delegation
