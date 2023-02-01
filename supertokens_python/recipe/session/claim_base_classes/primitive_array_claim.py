@@ -66,7 +66,7 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
         payload: JSONObject,
         user_context: Dict[str, Any],
         is_include: bool,
-        is_include_any: bool = False
+        is_include_any: bool = False,
     ):
         val = self.val
         max_age_in_sec = self.max_age_in_sec
@@ -122,7 +122,10 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
                     )
         else:
             for v in vals:
-                if (v in claim_val_set) != is_include_any:
+                if v in claim_val_set:
+                    if is_include_any:
+                        return ClaimValidationResult(is_valid=True)
+
                     return ClaimValidationResult(
                         is_valid=False,
                         reason={
@@ -132,6 +135,17 @@ class SCVMixin(SessionClaimValidator, Generic[_T]):
                             "actualValue": claim_val,
                         },
                     )
+
+            if is_include_any:
+                return ClaimValidationResult(
+                    is_valid=False,
+                    reason={
+                        "message": "wrong value",
+                        expected_key: val,
+                        # other SDKs return the item itself
+                        "actualValue": claim_val,
+                    },
+                )
 
         return ClaimValidationResult(is_valid=True)
 
@@ -169,65 +183,8 @@ class IncludesAnySCV(SCVMixin[PrimitiveList]):
         payload: JSONObject,
         user_context: Dict[str, Any],
     ):
-        return await self._validate(payload, user_context, is_include=True)
-
-    async def _validate(
-        self,
-        payload: JSONObject,
-        user_context: Dict[str, Any],
-        is_include: bool,
-    ):
-        val = self.val
-        max_age_in_sec = self.max_age_in_sec
-
-        expected_key = "expectedToIncludeAtLeastOneOf"
-
-        assert isinstance(self.claim, PrimitiveArrayClaim)
-        claim_val = self.claim.get_value_from_payload(payload, user_context)
-
-        if claim_val is None:
-            return ClaimValidationResult(
-                is_valid=False,
-                reason={
-                    "message": "value does not exist",
-                    expected_key: val,
-                    "actualValue": claim_val,
-                },
-            )
-
-        last_refetch_time = self.claim.get_last_refetch_time(payload, user_context)
-        assert last_refetch_time is not None
-        age_in_sec = (get_timestamp_ms() - last_refetch_time) / 1000
-        if max_age_in_sec is not None and age_in_sec > max_age_in_sec:
-            return ClaimValidationResult(
-                is_valid=False,
-                reason={
-                    "message": "expired",
-                    "ageInSeconds": age_in_sec,
-                    "maxAgeInSeconds": max_age_in_sec,
-                },
-            )
-
-        # Doing this to ensure same code in the upcoming steps irrespective of
-        # whether self.val is Primitive or PrimitiveList
-        vals: List[JSONPrimitive] = (
-            val if isinstance(val, list) else [val]
-        )  # pyright: reportGeneralTypeIssues=false
-
-        claim_val_set = set(claim_val)
-
-        for v in vals:
-            if v in claim_val_set:
-                ClaimValidationResult(is_valid=True)
-
-        return ClaimValidationResult(
-            is_valid=False,
-            reason={
-                "message": "wrong value",
-                expected_key: val,
-                # other SDKs return the item itself
-                "actualValue": claim_val,
-            },
+        return await self._validate(
+            payload, user_context, is_include=True, is_include_any=True
         )
 
 
