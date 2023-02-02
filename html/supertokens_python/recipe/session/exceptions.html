@@ -41,27 +41,30 @@
 # under the License.
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, NoReturn, Optional, Union
 
 from supertokens_python.exceptions import SuperTokensError
 
+if TYPE_CHECKING:
+    from .interfaces import ResponseMutator
 
-def raise_token_theft_exception(user_id: str, session_handle: str):
+
+def raise_token_theft_exception(user_id: str, session_handle: str) -&gt; NoReturn:
     raise TokenTheftError(user_id, session_handle)
 
 
-def raise_try_refresh_token_exception(ex: Union[str, Exception]):
+def raise_try_refresh_token_exception(ex: Union[str, Exception]) -&gt; NoReturn:
     if isinstance(ex, SuperTokensError):
         raise ex
     raise TryRefreshTokenError(ex) from None
 
 
-def raise_unauthorised_exception(msg: str, clear_cookies: bool = True):
-    raise UnauthorisedError(msg, clear_cookies) from None
+def raise_unauthorised_exception(msg: str, clear_tokens: bool = True) -&gt; NoReturn:
+    raise UnauthorisedError(msg, clear_tokens) from None
 
 
 class SuperTokensSessionError(SuperTokensError):
-    pass
+    response_mutators: List[ResponseMutator] = []
 
 
 class TokenTheftError(SuperTokensSessionError):
@@ -72,9 +75,9 @@ class TokenTheftError(SuperTokensSessionError):
 
 
 class UnauthorisedError(SuperTokensSessionError):
-    def __init__(self, msg: str, clear_cookies: bool = True):
+    def __init__(self, msg: str, clear_tokens: bool = True):
         super().__init__(msg)
-        self.clear_cookies = clear_cookies
+        self.clear_tokens = clear_tokens
 
 
 class TryRefreshTokenError(SuperTokensSessionError):
@@ -125,7 +128,7 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.raise_token_theft_exception"><code class="name flex">
-<span>def <span class="ident">raise_token_theft_exception</span></span>(<span>user_id: str, session_handle: str)</span>
+<span>def <span class="ident">raise_token_theft_exception</span></span>(<span>user_id: str, session_handle: str) ‑> NoReturn</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -133,12 +136,12 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def raise_token_theft_exception(user_id: str, session_handle: str):
+<pre><code class="python">def raise_token_theft_exception(user_id: str, session_handle: str) -&gt; NoReturn:
     raise TokenTheftError(user_id, session_handle)</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.raise_try_refresh_token_exception"><code class="name flex">
-<span>def <span class="ident">raise_try_refresh_token_exception</span></span>(<span>ex: Union[str, Exception])</span>
+<span>def <span class="ident">raise_try_refresh_token_exception</span></span>(<span>ex: Union[str, Exception]) ‑> NoReturn</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -146,14 +149,14 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def raise_try_refresh_token_exception(ex: Union[str, Exception]):
+<pre><code class="python">def raise_try_refresh_token_exception(ex: Union[str, Exception]) -&gt; NoReturn:
     if isinstance(ex, SuperTokensError):
         raise ex
     raise TryRefreshTokenError(ex) from None</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.raise_unauthorised_exception"><code class="name flex">
-<span>def <span class="ident">raise_unauthorised_exception</span></span>(<span>msg: str, clear_cookies: bool = True)</span>
+<span>def <span class="ident">raise_unauthorised_exception</span></span>(<span>msg: str, clear_tokens: bool = True) ‑> NoReturn</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -161,8 +164,8 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def raise_unauthorised_exception(msg: str, clear_cookies: bool = True):
-    raise UnauthorisedError(msg, clear_cookies) from None</code></pre>
+<pre><code class="python">def raise_unauthorised_exception(msg: str, clear_tokens: bool = True) -&gt; NoReturn:
+    raise UnauthorisedError(msg, clear_tokens) from None</code></pre>
 </details>
 </dd>
 </dl>
@@ -235,6 +238,13 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <li>builtins.Exception</li>
 <li>builtins.BaseException</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.exceptions.InvalidClaimsError.response_mutators"><code class="name">var <span class="ident">response_mutators</span> : List[ResponseMutator]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.SuperTokensSessionError"><code class="flex name class">
 <span>class <span class="ident">SuperTokensSessionError</span></span>
@@ -247,7 +257,7 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class SuperTokensSessionError(SuperTokensError):
-    pass</code></pre>
+    response_mutators: List[ResponseMutator] = []</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -262,6 +272,13 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <li><a title="supertokens_python.recipe.session.exceptions.TryRefreshTokenError" href="#supertokens_python.recipe.session.exceptions.TryRefreshTokenError">TryRefreshTokenError</a></li>
 <li><a title="supertokens_python.recipe.session.exceptions.UnauthorisedError" href="#supertokens_python.recipe.session.exceptions.UnauthorisedError">UnauthorisedError</a></li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.exceptions.SuperTokensSessionError.response_mutators"><code class="name">var <span class="ident">response_mutators</span> : List[ResponseMutator]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.TokenTheftError"><code class="flex name class">
 <span>class <span class="ident">TokenTheftError</span></span>
@@ -286,6 +303,13 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <li>builtins.Exception</li>
 <li>builtins.BaseException</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.exceptions.TokenTheftError.response_mutators"><code class="name">var <span class="ident">response_mutators</span> : List[ResponseMutator]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.TryRefreshTokenError"><code class="flex name class">
 <span>class <span class="ident">TryRefreshTokenError</span></span>
@@ -307,10 +331,17 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <li>builtins.Exception</li>
 <li>builtins.BaseException</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.exceptions.TryRefreshTokenError.response_mutators"><code class="name">var <span class="ident">response_mutators</span> : List[ResponseMutator]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="supertokens_python.recipe.session.exceptions.UnauthorisedError"><code class="flex name class">
 <span>class <span class="ident">UnauthorisedError</span></span>
-<span>(</span><span>msg: str, clear_cookies: bool = True)</span>
+<span>(</span><span>msg: str, clear_tokens: bool = True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
@@ -319,9 +350,9 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class UnauthorisedError(SuperTokensSessionError):
-    def __init__(self, msg: str, clear_cookies: bool = True):
+    def __init__(self, msg: str, clear_tokens: bool = True):
         super().__init__(msg)
-        self.clear_cookies = clear_cookies</code></pre>
+        self.clear_tokens = clear_tokens</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -330,6 +361,13 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 <li>builtins.Exception</li>
 <li>builtins.BaseException</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="supertokens_python.recipe.session.exceptions.UnauthorisedError.response_mutators"><code class="name">var <span class="ident">response_mutators</span> : List[ResponseMutator]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 </dl>
 </section>
@@ -363,18 +401,33 @@ def raise_invalid_claims_exception(msg: str, payload: List[ClaimValidationError]
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.exceptions.InvalidClaimsError" href="#supertokens_python.recipe.session.exceptions.InvalidClaimsError">InvalidClaimsError</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.exceptions.InvalidClaimsError.response_mutators" href="#supertokens_python.recipe.session.exceptions.InvalidClaimsError.response_mutators">response_mutators</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.exceptions.SuperTokensSessionError" href="#supertokens_python.recipe.session.exceptions.SuperTokensSessionError">SuperTokensSessionError</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.exceptions.SuperTokensSessionError.response_mutators" href="#supertokens_python.recipe.session.exceptions.SuperTokensSessionError.response_mutators">response_mutators</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.exceptions.TokenTheftError" href="#supertokens_python.recipe.session.exceptions.TokenTheftError">TokenTheftError</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.exceptions.TokenTheftError.response_mutators" href="#supertokens_python.recipe.session.exceptions.TokenTheftError.response_mutators">response_mutators</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.exceptions.TryRefreshTokenError" href="#supertokens_python.recipe.session.exceptions.TryRefreshTokenError">TryRefreshTokenError</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.exceptions.TryRefreshTokenError.response_mutators" href="#supertokens_python.recipe.session.exceptions.TryRefreshTokenError.response_mutators">response_mutators</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="supertokens_python.recipe.session.exceptions.UnauthorisedError" href="#supertokens_python.recipe.session.exceptions.UnauthorisedError">UnauthorisedError</a></code></h4>
+<ul class="">
+<li><code><a title="supertokens_python.recipe.session.exceptions.UnauthorisedError.response_mutators" href="#supertokens_python.recipe.session.exceptions.UnauthorisedError.response_mutators">response_mutators</a></code></li>
+</ul>
 </li>
 </ul>
 </li>

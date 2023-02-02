@@ -73,21 +73,14 @@ from .normalised_url_domain import NormalisedURLDomain
 from .normalised_url_path import NormalisedURLPath
 from .post_init_callbacks import PostSTInitCallbacks
 from .querier import Querier
-from .recipe.session.cookie_and_header import (
-    attach_access_token_to_cookie,
-    attach_anti_csrf_header,
-    attach_id_refresh_token_to_cookie_and_header,
-    attach_refresh_token_to_cookie,
-    clear_cookies,
-    set_front_token_in_headers,
-)
 from .types import ThirdPartyInfo, User, UsersResponse
 from .utils import (
     execute_async,
-    get_rid_from_request,
+    get_rid_from_header,
     is_version_gte,
     normalise_http_method,
     send_non_200_response_with_message,
+    get_top_level_domain_for_same_site_resolution,
 )
 
 if TYPE_CHECKING:
@@ -102,7 +95,6 @@ from os import environ
 from httpx import AsyncClient
 
 from .exceptions import BadInputError, GeneralError, raise_general_exception
-from .recipe.session import SessionRecipe
 
 
 class SupertokensConfig:
@@ -150,13 +142,19 @@ class AppInfo:
         mode: Union[Literal[&#34;asgi&#34;, &#34;wsgi&#34;], None],
     ):
         self.app_name = app_name
-        self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(api_gateway_path)
-        self.api_domain: NormalisedURLDomain = NormalisedURLDomain(api_domain)
-        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(website_domain)
-        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(
+        self.api_gateway_path = NormalisedURLPath(api_gateway_path)
+        self.api_domain = NormalisedURLDomain(api_domain)
+        self.website_domain = NormalisedURLDomain(website_domain)
+        self.top_level_api_domain = get_top_level_domain_for_same_site_resolution(
+            self.api_domain.get_as_string_dangerous()
+        )
+        self.top_level_website_domain = get_top_level_domain_for_same_site_resolution(
+            self.website_domain.get_as_string_dangerous()
+        )
+        self.api_base_path = self.api_gateway_path.append(
             NormalisedURLPath(api_base_path)
         )
-        self.website_base_path: NormalisedURLPath = NormalisedURLPath(website_base_path)
+        self.website_base_path = NormalisedURLPath(website_base_path)
         if mode is not None:
             self.mode = mode
         elif framework == &#34;fastapi&#34;:
@@ -175,35 +173,10 @@ class AppInfo:
         return json.dumps(self, default=defaultImpl, sort_keys=True, indent=4)
 
 
-def manage_cookies_post_response(session: SessionContainer, response: BaseResponse):
-    recipe = SessionRecipe.get_instance()
-    if session[&#34;remove_cookies&#34;]:
-        clear_cookies(recipe, response)
-    else:
-        access_token = session[&#34;new_access_token_info&#34;]
-        if access_token is not None:
-            attach_access_token_to_cookie(
-                recipe, response, access_token[&#34;token&#34;], access_token[&#34;expiry&#34;]
-            )
-            set_front_token_in_headers(
-                response,
-                session[&#34;user_id&#34;],
-                access_token[&#34;expiry&#34;],
-                session[&#34;access_token_payload&#34;],
-            )
-        refresh_token = session[&#34;new_refresh_token_info&#34;]
-        if refresh_token is not None:
-            attach_refresh_token_to_cookie(
-                recipe, response, refresh_token[&#34;token&#34;], refresh_token[&#34;expiry&#34;]
-            )
-        id_refresh_token = session[&#34;new_id_refresh_token_info&#34;]
-        if id_refresh_token is not None:
-            attach_id_refresh_token_to_cookie_and_header(
-                recipe, response, id_refresh_token[&#34;token&#34;], id_refresh_token[&#34;expiry&#34;]
-            )
-        anti_csrf_token = session[&#34;new_anti_csrf_token&#34;]
-        if anti_csrf_token is not None:
-            attach_anti_csrf_header(response, anti_csrf_token)
+def manage_session_post_response(session: SessionContainer, response: BaseResponse):
+    # Something similar happens in handle_error of session/recipe.py
+    for mutator in session.response_mutators:
+        mutator(response=response)  # type: ignore
 
 
 class Supertokens:
@@ -574,7 +547,7 @@ class Supertokens:
                 path.get_as_string_dangerous(),
             )
             return None
-        request_rid = get_rid_from_request(request)
+        request_rid = get_rid_from_header(request)
         log_debug_message(
             &#34;middleware: requestRID is: %s&#34;, get_maybe_none_as_str(request_rid)
         )
@@ -668,8 +641,8 @@ class Supertokens:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.supertokens.manage_cookies_post_response"><code class="name flex">
-<span>def <span class="ident">manage_cookies_post_response</span></span>(<span>session: SessionContainer, response: BaseResponse)</span>
+<dt id="supertokens_python.supertokens.manage_session_post_response"><code class="name flex">
+<span>def <span class="ident">manage_session_post_response</span></span>(<span>session: SessionContainer, response: BaseResponse)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -677,35 +650,10 @@ class Supertokens:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def manage_cookies_post_response(session: SessionContainer, response: BaseResponse):
-    recipe = SessionRecipe.get_instance()
-    if session[&#34;remove_cookies&#34;]:
-        clear_cookies(recipe, response)
-    else:
-        access_token = session[&#34;new_access_token_info&#34;]
-        if access_token is not None:
-            attach_access_token_to_cookie(
-                recipe, response, access_token[&#34;token&#34;], access_token[&#34;expiry&#34;]
-            )
-            set_front_token_in_headers(
-                response,
-                session[&#34;user_id&#34;],
-                access_token[&#34;expiry&#34;],
-                session[&#34;access_token_payload&#34;],
-            )
-        refresh_token = session[&#34;new_refresh_token_info&#34;]
-        if refresh_token is not None:
-            attach_refresh_token_to_cookie(
-                recipe, response, refresh_token[&#34;token&#34;], refresh_token[&#34;expiry&#34;]
-            )
-        id_refresh_token = session[&#34;new_id_refresh_token_info&#34;]
-        if id_refresh_token is not None:
-            attach_id_refresh_token_to_cookie_and_header(
-                recipe, response, id_refresh_token[&#34;token&#34;], id_refresh_token[&#34;expiry&#34;]
-            )
-        anti_csrf_token = session[&#34;new_anti_csrf_token&#34;]
-        if anti_csrf_token is not None:
-            attach_anti_csrf_header(response, anti_csrf_token)</code></pre>
+<pre><code class="python">def manage_session_post_response(session: SessionContainer, response: BaseResponse):
+    # Something similar happens in handle_error of session/recipe.py
+    for mutator in session.response_mutators:
+        mutator(response=response)  # type: ignore</code></pre>
 </details>
 </dd>
 </dl>
@@ -736,13 +684,19 @@ class Supertokens:
         mode: Union[Literal[&#34;asgi&#34;, &#34;wsgi&#34;], None],
     ):
         self.app_name = app_name
-        self.api_gateway_path: NormalisedURLPath = NormalisedURLPath(api_gateway_path)
-        self.api_domain: NormalisedURLDomain = NormalisedURLDomain(api_domain)
-        self.website_domain: NormalisedURLDomain = NormalisedURLDomain(website_domain)
-        self.api_base_path: NormalisedURLPath = self.api_gateway_path.append(
+        self.api_gateway_path = NormalisedURLPath(api_gateway_path)
+        self.api_domain = NormalisedURLDomain(api_domain)
+        self.website_domain = NormalisedURLDomain(website_domain)
+        self.top_level_api_domain = get_top_level_domain_for_same_site_resolution(
+            self.api_domain.get_as_string_dangerous()
+        )
+        self.top_level_website_domain = get_top_level_domain_for_same_site_resolution(
+            self.website_domain.get_as_string_dangerous()
+        )
+        self.api_base_path = self.api_gateway_path.append(
             NormalisedURLPath(api_base_path)
         )
-        self.website_base_path: NormalisedURLPath = NormalisedURLPath(website_base_path)
+        self.website_base_path = NormalisedURLPath(website_base_path)
         if mode is not None:
             self.mode = mode
         elif framework == &#34;fastapi&#34;:
@@ -1204,7 +1158,7 @@ class Supertokens:
                 path.get_as_string_dangerous(),
             )
             return None
-        request_rid = get_rid_from_request(request)
+        request_rid = get_rid_from_header(request)
         log_debug_message(
             &#34;middleware: requestRID is: %s&#34;, get_maybe_none_as_str(request_rid)
         )
@@ -1680,7 +1634,7 @@ def reset():
             path.get_as_string_dangerous(),
         )
         return None
-    request_rid = get_rid_from_request(request)
+    request_rid = get_rid_from_header(request)
     log_debug_message(
         &#34;middleware: requestRID is: %s&#34;, get_maybe_none_as_str(request_rid)
     )
@@ -1862,7 +1816,7 @@ def reset():
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.supertokens.manage_cookies_post_response" href="#supertokens_python.supertokens.manage_cookies_post_response">manage_cookies_post_response</a></code></li>
+<li><code><a title="supertokens_python.supertokens.manage_session_post_response" href="#supertokens_python.supertokens.manage_session_post_response">manage_session_post_response</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
