@@ -63,7 +63,7 @@ async def app():
 from requests.cookies import RequestsCookieJar
 
 
-def test_get(
+def call_api(
     app: TestClient,
     info: Dict[str, Any],
     url: str,
@@ -295,7 +295,7 @@ def test_verify_session_parametrized(
     elif auth_cookie:
         auth_mode = "cookie"
 
-    res = test_get(
+    res = call_api(
         app,
         create_session_info,
         "/verify" if session_required else "/verify-optional",
@@ -361,7 +361,7 @@ async def test_should_update_acccess_token_payload(
     res = create_session(app, transfer_method)
 
     update_info = extract_info(
-        test_get(app, res, "/update-payload", 200, "cookie", None)
+        call_api(app, res, "/update-payload", 200, "cookie", None)
     )
 
     # Didn't update
