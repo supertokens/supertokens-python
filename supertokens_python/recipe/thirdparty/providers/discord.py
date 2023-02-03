@@ -63,6 +63,6 @@ def Discord(input: ProviderInput) -> Provider:
         input.config.user_info_map.from_user_info_api.email = "email"
 
     if input.config.user_info_map.from_user_info_api.email_verified is None:
-        input.config.user_info_map.from_user_info_api.email = "verified"
+        input.config.user_info_map.from_user_info_api.email_verified = "verified"
 
     return NewProvider(input, DiscordImpl)

@@ -8,11 +8,9 @@ from jwt.algorithms import RSAAlgorithm
 import pkce
 
 from supertokens_python.recipe.thirdparty.exceptions import ClientTypeNotFoundError
-from supertokens_python.recipe.thirdparty.providers.config_utils import (
-    get_provider_config_for_client,
-)
 from supertokens_python.recipe.thirdparty.providers.utils import (
     DEV_OAUTH_AUTHORIZATION_URL,
+    DEV_OAUTH_REDIRECT_URL,
     do_get_request,
     do_post_request,
     get_actual_client_id_from_development_client_id,
@@ -24,6 +22,7 @@ from ..types import RawUserInfoFromProvider, UserInfo, UserInfoEmail
 from ..provider import (
     AuthorisationRedirect,
     Provider,
+    ProviderClientConfig,
     ProviderConfig,
     ProviderConfigForClientType,
     ProviderInput,
@@ -31,6 +30,33 @@ from ..provider import (
     UserFields,
     UserInfoMap,
 )
+
+
+def get_provider_config_for_client(
+    config: ProviderConfig, client_config: ProviderClientConfig
+) -> ProviderConfigForClientType:
+    return ProviderConfigForClientType(
+        client_id=client_config.client_id,
+        client_secret=client_config.client_secret,
+        scope=client_config.scope,
+        force_pkce=client_config.force_pkce,
+        additional_config=client_config.additional_config,
+        authorization_endpoint=config.authorization_endpoint,
+        authorization_endpoint_query_params=config.authorization_endpoint_query_params,
+        token_endpoint=config.token_endpoint,
+        token_endpoint_body_params=config.token_endpoint_body_params,
+        user_info_endpoint=config.user_info_endpoint,
+        user_info_endpoint_query_params=config.user_info_endpoint_query_params,
+        user_info_endpoint_headers=config.user_info_endpoint_headers,
+        user_info_map=config.user_info_map,
+        jwks_uri=config.jwks_uri,
+        oidc_discovery_endpoint=config.oidc_discovery_endpoint,
+        validate_id_token_payload=config.validate_id_token_payload,
+        require_email=config.require_email,
+        generate_fake_email=config.generate_fake_email,
+        name=config.name,
+        tenant_id=config.tenant_id,
+    )
 
 
 def access_field(obj: Any, key: str) -> Any:
@@ -213,7 +239,7 @@ class GenericProvider(Provider):
             pkce_code_verifier = code_verifier
 
         if self.config.authorization_endpoint_query_params is not None:
-            for k, v in self.config.authorization_endpoint_query_params:
+            for k, v in self.config.authorization_endpoint_query_params.items():
                 if v is None:
                     del query_params[k]
                 else:
@@ -231,13 +257,13 @@ class GenericProvider(Provider):
             query_params["client_id"] = get_actual_client_id_from_development_client_id(
                 self.config.client_id
             )
-            query_params["actual_redirect_url"] = url
+            query_params["actual_redirect_uri"] = url
             url = DEV_OAUTH_AUTHORIZATION_URL
         # Transformation needed for dev keys END
 
         url_obj = urlparse(url)
         qparams = parse_qs(url_obj.query)
-        for k, v in query_params:
+        for k, v in query_params.items():
             qparams[k] = [v]
 
         url = url_obj._replace(query=urlencode(qparams, doseq=True)).geturl()
@@ -276,7 +302,7 @@ class GenericProvider(Provider):
             access_token_params[
                 "client_id"
             ] = get_actual_client_id_from_development_client_id(self.config.client_id)
-            access_token_params["redirect_uri"] = DEV_OAUTH_AUTHORIZATION_URL
+            access_token_params["redirect_uri"] = DEV_OAUTH_REDIRECT_URL
         # Transformation needed for dev keys END
 
         return await do_post_request(token_api_url, access_token_params)
@@ -288,13 +314,14 @@ class GenericProvider(Provider):
         id_token: Union[str, None] = oauth_tokens.get("id_token")
 
         raw_user_info_from_provider = RawUserInfoFromProvider({}, {})
-
         if id_token is not None and self.config.jwks_uri is not None:
             raw_user_info_from_provider.from_id_token_payload = (
                 await verify_id_token_from_jwks_endpoint_and_get_payload(
                     id_token,
                     self.config.jwks_uri,
-                    self.config.client_id,
+                    get_actual_client_id_from_development_client_id(
+                        self.config.client_id
+                    ),
                 )
             )
 

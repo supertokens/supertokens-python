@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Union
+from supertokens_python import always_initialised_recipes
 
 from . import exceptions as ex
 from . import recipe
@@ -43,3 +44,6 @@ def init(
         error_handlers,
         override,
     )
+
+
+always_initialised_recipes.DEFAULT_MULTITENANCY_RECIPE = init()

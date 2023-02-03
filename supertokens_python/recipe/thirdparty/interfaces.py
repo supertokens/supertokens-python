@@ -166,11 +166,6 @@ class SignInUpPostOkResult(APIResponse):
                 },
             },
             "createdNewUser": self.created_new_user,
-            "oAuthTokens": self.oauth_tokens,
-            "rawUserInfoFromProvider": {
-                "fromIdTokenPayload": self.raw_user_info_from_provider.from_id_token_payload,
-                "fromUserInfoAPI": self.raw_user_info_from_provider.from_user_info_api,
-            },
         }
 
 

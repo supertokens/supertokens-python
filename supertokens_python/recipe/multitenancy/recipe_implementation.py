@@ -17,6 +17,8 @@ from typing import TYPE_CHECKING, Optional, Dict, Any
 from supertokens_python.recipe.thirdparty.provider import ProviderConfig
 
 from .interfaces import (
+    EmailPasswordConfig,
+    PasswordlessConfig,
     RecipeInterface,
     TenantConfig,
     CreateOrUpdateTenantOkResult,
@@ -26,6 +28,7 @@ from .interfaces import (
     CreateOrUpdateThirdPartyConfigOkResult,
     DeleteThirdPartyConfigOkResult,
     ListThirdPartyConfigsForThirdPartyIdOkResult,
+    ThirdPartyConfig,
 )
 
 if TYPE_CHECKING:
@@ -61,7 +64,11 @@ class RecipeImplementation(RecipeInterface):
     async def get_tenant_config(
         self, tenant_id: Optional[str], user_context: Dict[str, Any]
     ) -> TenantConfigOkResult:
-        raise NotImplementedError
+        return TenantConfigOkResult(
+            email_password=EmailPasswordConfig(enabled=True),
+            passwordless=PasswordlessConfig(enabled=True),
+            third_party=ThirdPartyConfig(enabled=True, providers=[]),
+        )
 
     async def list_all_tenants(
         self, user_context: Dict[str, Any]

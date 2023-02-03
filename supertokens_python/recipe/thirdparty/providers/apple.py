@@ -22,8 +22,6 @@ from ..provider import (
     Provider,
     ProviderConfigForClientType,
     ProviderInput,
-    UserFields,
-    UserInfoMap,
 )
 from .custom import GenericProvider, NewProvider
 from .utils import get_actual_client_id_from_development_client_id
@@ -74,13 +72,12 @@ def Apple(input: ProviderInput) -> Provider:
     if input.config.name is None:
         input.config.name = "Apple"
 
-    if input.config.user_info_map is None:
-        input.config.user_info_map = UserInfoMap(UserFields(), UserFields())
+    if input.config.oidc_discovery_endpoint is None:
+        input.config.oidc_discovery_endpoint = "https://appleid.apple.com/"
 
-    if input.config.user_info_map.from_id_token_payload.user_id is None:
-        input.config.user_info_map.from_id_token_payload.user_id = "sub"
-
-    if input.config.user_info_map.from_id_token_payload.email is None:
-        input.config.user_info_map.from_id_token_payload.email = "email"
+    input.config.authorization_endpoint_query_params = {
+        "response_mode": "form_post",
+        **(input.config.authorization_endpoint_query_params or {}),
+    }
 
     return NewProvider(input, AppleImpl)

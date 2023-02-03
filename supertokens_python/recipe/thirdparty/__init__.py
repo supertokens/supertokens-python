@@ -18,11 +18,14 @@ from typing import TYPE_CHECKING, Callable, Optional, Union
 
 
 from . import exceptions as ex
-from . import utils
+from . import utils, provider
 from .recipe import ThirdPartyRecipe
 
 InputOverrideConfig = utils.InputOverrideConfig
 SignInAndUpFeature = utils.SignInAndUpFeature
+ProviderInput = provider.ProviderInput
+ProviderConfig = provider.ProviderConfig
+ProviderClientConfig = provider.ProviderClientConfig
 exceptions = ex
 
 if TYPE_CHECKING:

@@ -19,6 +19,7 @@ from supertokens_python.recipe.multitenancy.exceptions import (
     RecipeDisabledForTenantError,
 )
 from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
+from supertokens_python.recipe.thirdparty.provider import RedirectUriInfo
 
 if TYPE_CHECKING:
     from supertokens_python.recipe.thirdparty.interfaces import APIOptions, APIInterface
@@ -82,7 +83,13 @@ async def handle_sign_in_up_api(
 
     result = await api_implementation.sign_in_up_post(
         provider=provider,
-        redirect_uri_info=redirect_uri_info,
+        redirect_uri_info=RedirectUriInfo(
+            redirect_uri_on_provider_dashboard=redirect_uri_info.get(
+                "redirectURIOnProviderDashboard"
+            ),
+            redirect_uri_query_params=redirect_uri_info.get("redirectURIQueryParams"),
+            pkce_code_verifier=redirect_uri_info.get("pkceCodeVerifier"),
+        ),
         oauth_tokens=oauth_tokens,
         api_options=api_options,
         user_context=user_context,
