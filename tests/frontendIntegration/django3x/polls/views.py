@@ -25,6 +25,8 @@ from typing import Any
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.conf import settings
+from supertokens_python import get_all_cors_headers
 from supertokens_python import InputAppInfo, Supertokens, SupertokensConfig, init
 from supertokens_python.framework import BaseRequest, BaseResponse
 from supertokens_python.recipe import session
@@ -315,6 +317,9 @@ def config(
             ],
             telemetry=False,
         )
+
+    for header in get_all_cors_headers():
+        assert header in settings.CORS_ALLOW_HEADERS
 
 
 config(True, False, None)
