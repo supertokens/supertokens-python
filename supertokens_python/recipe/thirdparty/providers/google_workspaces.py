@@ -32,8 +32,10 @@ class GoogleWorkspacesImpl(GoogleImpl):
         if config.additional_config is None:
             config.additional_config = {}
 
-        if config.additional_config.get("hd") is None:
-            config.additional_config["hd"] = "*"
+        config.authorization_endpoint_query_params = {
+            "hd": str(config.additional_config.get("hd", "*")),
+            **(config.authorization_endpoint_query_params or {})
+        }
 
         return config
 
