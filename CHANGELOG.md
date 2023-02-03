@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
+- Remove constraints on `werkzeug` version
+
 ### Breaking changes
 
 -   The frontend SDK should be updated to a version supporting the header-based sessions!
