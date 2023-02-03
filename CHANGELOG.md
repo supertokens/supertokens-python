@@ -7,8 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
-- Remove constraints on `werkzeug` version
-
+# [0.12.0] - 2023-02-03
 ### Breaking changes
 
 -   The frontend SDK should be updated to a version supporting the header-based sessions!
@@ -26,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Added support for authorizing requests using the `Authorization` header instead of cookies
     -   Added `get_token_transfer_method` config option
     -   Check out https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/sessions/token-transfer-method for more information
+
+### Changed
+- Remove constraints on `werkzeug` version
 
 
 # [0.11.13] - 2023-01-06
