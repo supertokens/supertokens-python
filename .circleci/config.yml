@@ -41,7 +41,7 @@ workflows:
     version: 2
     tagged-build:
         jobs:
-            - test:
+            - create-test-jobs:
                 filters:
                     tags:
                         only: /dev-v[0-9]+(\.[0-9]+)*/
