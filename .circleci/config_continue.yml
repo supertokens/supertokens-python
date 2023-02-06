@@ -201,7 +201,7 @@ workflows:
               only: /test\/.*/
           matrix:
             parameters:
-              - cdi-version: placeholder
+              cdi-version: placeholder
       - test-website-fastapi:
           requires:
             - test-dev-tag-as-not-passed
