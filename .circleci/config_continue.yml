@@ -203,6 +203,7 @@ workflows:
               only: /test\/.*/
           maxtrix:
             parameters:
+                fdi-version: placeholder
                 cdi-version: placeholder
       - test-website-fastapi:
           requires:
