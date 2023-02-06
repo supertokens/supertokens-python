@@ -16,8 +16,6 @@ jobs:
       - image: rishabhpoddar/supertokens_python_driver_testing
     resource_class: large
     parameters:
-      fdi-version:
-        type: string
       cdi-version:
         type: string
     parallelism: 4
@@ -203,8 +201,8 @@ workflows:
               only: /test\/.*/
           maxtrix:
             parameters:
-                fdi-version: placeholder
-                cdi-version: placeholder
+                fdi-version: ["1.16"]
+                cdi-version: ["2.9","2.10","2.11","2.12","2.13","2.14","2.15"]
       - test-website-fastapi:
           requires:
             - test-dev-tag-as-not-passed
@@ -257,7 +255,7 @@ workflows:
               only: /test\/.*/
           matrix:
             parameters:
-              fdi-version: placeholder
+              fdi-version: ["1.16"]
       - test-authreact-flask:
           requires:
             - test-dev-tag-as-not-passed
@@ -270,7 +268,7 @@ workflows:
               only: /test\/.*/
           matrix:
             parameters:
-              fdi-version: placeholder
+              fdi-version: ["1.16"]
       - test-authreact-django:
           requires:
             - test-dev-tag-as-not-passed
@@ -283,7 +281,7 @@ workflows:
               only: /test\/.*/
           matrix:
             parameters:
-              fdi-version: placeholder
+              fdi-version: ["1.16"]
       - test-success:
           requires:
             - test-unit
