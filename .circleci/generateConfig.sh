@@ -1,8 +1,8 @@
 frontendDriverJson=`cat ../frontendDriverInterfaceSupported.json`
-frontendDriverArray=`echo $frontendDriverJson | jq ".versions"`
+frontendDriverArray=`echo $frontendDriverJson | jq -c ".versions"`
 
 coreDriverJson=`cat ../coreDriverInterfaceSupported.json`
-coreDriverArray=`echo $coreDriverJson | jq ".versions"`
+coreDriverArray=`echo $coreDriverJson | jq -c ".versions"`
 
 if [ -z "$SUPERTOKENS_API_KEY" ]; then
     echo "SUPERTOKENS_API_KEY missing"
