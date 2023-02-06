@@ -51,8 +51,8 @@ git checkout $2
 npm run init > /dev/null
 (cd ./examples/for-tests && npm run link) # this is there because in linux machine, postinstall in npm doesn't work..
 cd ./test/server/
-npm i -d  
 npm i git+https://github.com:supertokens/supertokens-node.git#$3  
+npm i
 cd ../../../project/tests/auth-react/flask-server
 export PYTHONPATH="${PYTHONPATH}:/root/project"
 python3 app.py --port 8083 &
