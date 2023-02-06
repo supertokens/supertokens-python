@@ -9,5 +9,5 @@ if [ -z "$SUPERTOKENS_API_KEY" ]; then
     exit 1;
 fi
 
-sed -i -e 's/fdi-version: placeholder/fdi-version: '`printf "%q" $frontendDriverArray`'/' config_continue.yml
-sed -i -e 's/cdi-version: placeholder/cdi-version: '`printf "%q" $coreDriverArray`'/' config_continue.yml
+sed -i -e 's/fdi-version: placeholder/fdi-version: '`printf "%s" $frontendDriverArray`'/' config_continue.yml
+sed -i -e 's/cdi-version: placeholder/cdi-version: '`printf "%s" $coreDriverArray`'/' config_continue.yml
