@@ -63,8 +63,8 @@ from tests.utils import (
     teardown_function,
 )
 
-_ = setup_function  # type: ignore
-_ = teardown_function  # type: ignore
+_ = setup_function
+_ = teardown_function
 
 pytestmark = mark.asyncio
 

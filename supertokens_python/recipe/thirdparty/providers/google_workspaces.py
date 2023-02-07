@@ -34,7 +34,7 @@ class GoogleWorkspacesImpl(GoogleImpl):
 
         config.authorization_endpoint_query_params = {
             "hd": str(config.additional_config.get("hd", "*")),
-            **(config.authorization_endpoint_query_params or {})
+            **(config.authorization_endpoint_query_params or {}),
         }
 
         return config

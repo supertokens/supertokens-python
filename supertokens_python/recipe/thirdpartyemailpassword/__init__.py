@@ -16,7 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, List, Union
 
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
-from supertokens_python.recipe.thirdparty.provider import ProviderInput
+from supertokens_python.recipe.thirdparty import provider
 from supertokens_python.recipe.thirdpartyemailpassword.types import EmailTemplateVars
 
 from .. import emailpassword
@@ -29,6 +29,10 @@ InputOverrideConfig = utils.InputOverrideConfig
 exceptions = ex
 InputResetPasswordUsingTokenFeature = emailpassword.InputResetPasswordUsingTokenFeature
 InputSignUpFeature = emailpassword.InputSignUpFeature
+ProviderInput = provider.ProviderInput
+ProviderConfig = provider.ProviderConfig
+ProviderClientConfig = provider.ProviderClientConfig
+ProviderConfigForClientType = provider.ProviderConfigForClientType
 SMTPService = emaildelivery_services.SMTPService
 
 if TYPE_CHECKING:

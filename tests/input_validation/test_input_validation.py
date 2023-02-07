@@ -19,7 +19,6 @@ from supertokens_python.recipe.emailverification.interfaces import (
     GetEmailForUserIdOkResult,
 )
 from supertokens_python.recipe.passwordless.utils import ContactEmailOrPhoneConfig
-from supertokens_python.recipe.thirdparty.provider import Provider
 
 
 @pytest.mark.asyncio
@@ -293,18 +292,39 @@ async def test_init_validation_passwordless():
     assert "override must be of type OverrideConfig" == str(ex.value)
 
 
-providers_list: List[Provider] = [
-    thirdparty.Google(
-        client_id=os.environ.get("GOOGLE_CLIENT_ID"),  # type: ignore
-        client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),  # type: ignore
+providers_list: List[thirdparty.ProviderInput] = [
+    thirdparty.ProviderInput(
+        config=thirdparty.ProviderConfig(
+            third_party_id="google",
+            clients=[
+                thirdparty.ProviderClientConfig(
+                    client_id=os.environ.get("GOOGLE_CLIENT_ID"),  # type: ignore
+                    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),  # type: ignore
+                )
+            ],
+        )
     ),
-    thirdparty.Facebook(
-        client_id=os.environ.get("FACEBOOK_CLIENT_ID"),  # type: ignore
-        client_secret=os.environ.get("FACEBOOK_CLIENT_SECRET"),  # type: ignore
+    thirdparty.ProviderInput(
+        config=thirdparty.ProviderConfig(
+            third_party_id="facebook",
+            clients=[
+                thirdparty.ProviderClientConfig(
+                    client_id=os.environ.get("FACEBOOK_CLIENT_ID"),  # type: ignore
+                    client_secret=os.environ.get("FACEBOOK_CLIENT_SECRET"),  # type: ignore
+                )
+            ],
+        )
     ),
-    thirdparty.Github(
-        client_id=os.environ.get("GITHUB_CLIENT_ID"),  # type: ignore
-        client_secret=os.environ.get("GITHUB_CLIENT_SECRET"),  # type: ignore
+    thirdparty.ProviderInput(
+        config=thirdparty.ProviderConfig(
+            third_party_id="github",
+            clients=[
+                thirdparty.ProviderClientConfig(
+                    client_id=os.environ.get("GITHUB_CLIENT_ID"),  # type: ignore
+                    client_secret=os.environ.get("GITHUB_CLIENT_SECRET"),  # type: ignore
+                )
+            ],
+        )
     ),
 ]
 
@@ -507,7 +527,7 @@ async def test_init_validation_thirdpartyemailpassword():
                 thirdpartyemailpassword.init(providers="providers")  # type: ignore
             ],
         )
-    assert "providers must be of type List[Provider] or None" == str(ex.value)
+    assert "providers must be of type List[ProviderInput] or None" == str(ex.value)
 
     with pytest.raises(ValueError) as ex:
         init(
@@ -523,7 +543,7 @@ async def test_init_validation_thirdpartyemailpassword():
                 thirdpartyemailpassword.init(providers=["providers"])  # type: ignore
             ],
         )
-    assert "providers must be of type List[Provider] or None" == str(ex.value)
+    assert "providers must be of type List[ProviderInput] or None" == str(ex.value)
 
 
 async def save_code_text(
@@ -658,7 +678,7 @@ async def test_init_validation_thirdpartypasswordless():
                 )
             ],
         )
-    assert "providers must be of type List[Provider] or None" == str(ex.value)
+    assert "providers must be of type List[ProviderInput] or None" == str(ex.value)
 
     with pytest.raises(ValueError) as ex:
         init(
@@ -681,7 +701,7 @@ async def test_init_validation_thirdpartypasswordless():
                 )
             ],
         )
-    assert "providers must be of type List[Provider] or None" == str(ex.value)
+    assert "providers must be of type List[ProviderInput] or None" == str(ex.value)
 
 
 @pytest.mark.asyncio

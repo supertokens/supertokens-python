@@ -32,6 +32,7 @@ from supertokens_python.recipe.emailpassword import EmailPasswordRecipe
 from supertokens_python.recipe.emailverification import EmailVerificationRecipe
 from supertokens_python.recipe.jwt import JWTRecipe
 from supertokens_python.recipe.passwordless import PasswordlessRecipe
+from supertokens_python.recipe.multitenancy.recipe import MultitenancyRecipe
 from supertokens_python.recipe.session import SessionRecipe
 from supertokens_python.recipe.thirdparty import ThirdPartyRecipe
 from supertokens_python.recipe.thirdpartyemailpassword import (
@@ -206,6 +207,7 @@ def reset():
     ThirdPartyPasswordlessRecipe.reset()
     DashboardRecipe.reset()
     PasswordlessRecipe.reset()
+    MultitenancyRecipe.reset()
 
 
 def get_cookie_from_response(response: Response, cookie_name: str):
@@ -365,13 +367,13 @@ def email_verify_token_request(
             environ["SUPERTOKENS_ENV"] = "testing"
 
 
-def setup_function(_):
+def setup_function(_: Any) -> None:
     reset()
     clean_st()
     setup_st()
 
 
-def teardown_function(_):
+def teardown_function(_: Any) -> None:
     reset()
     clean_st()
 

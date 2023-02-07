@@ -44,10 +44,9 @@ from supertokens_python.recipe.session.recipe_implementation import (
 from supertokens_python.recipe.session.session_functions import create_new_session
 from supertokens_python.recipe.thirdpartyemailpassword import (
     InputResetPasswordUsingTokenFeature,
-    Github,
 )
 from supertokens_python.recipe.thirdpartyemailpassword.asyncio import (
-    thirdparty_sign_in_up,
+    thirdparty_manually_create_or_update_user,
 )
 from supertokens_python.recipe.thirdpartyemailpassword.emaildelivery.services import (
     SMTPService,
@@ -880,7 +879,16 @@ async def test_reset_password_backward_compatibility_thirdparty_user(
             emailverification.init(mode="OPTIONAL"),
             thirdpartyemailpassword.init(
                 providers=[
-                    Github(client_id="", client_secret="")
+                    thirdpartyemailpassword.ProviderInput(
+                        config=thirdpartyemailpassword.ProviderConfig(
+                            third_party_id="github",
+                            clients=[
+                                thirdpartyemailpassword.ProviderClientConfig(
+                                    client_id="", client_secret=""
+                                )
+                            ],
+                        ),
+                    )
                 ],  # Note: Provider must be passed to init TP recipe
                 reset_password_using_token_feature=InputResetPasswordUsingTokenFeature(
                     create_and_send_custom_email=custom_create_and_send_custom_email,
@@ -891,7 +899,7 @@ async def test_reset_password_backward_compatibility_thirdparty_user(
     )
     start_st()
 
-    resp = await thirdparty_sign_in_up(
+    resp = await thirdparty_manually_create_or_update_user(
         "supertokens", "test-user-id", "test@example.com"
     )
     user_id: str = resp.user.user_id  # type: ignore
@@ -947,7 +955,16 @@ async def test_email_verification_backward_compatibility_thirdparty_user(
             ),
             thirdpartyemailpassword.init(
                 providers=[
-                    Github(client_id="", client_secret="")
+                    thirdpartyemailpassword.ProviderInput(
+                        config=thirdpartyemailpassword.ProviderConfig(
+                            third_party_id="github",
+                            clients=[
+                                thirdpartyemailpassword.ProviderClientConfig(
+                                    client_id="", client_secret=""
+                                )
+                            ],
+                        ),
+                    )
                 ],  # Note: Provider must be passed to init TP recipe
             ),
             session.init(),
@@ -955,7 +972,7 @@ async def test_email_verification_backward_compatibility_thirdparty_user(
     )
     start_st()
 
-    resp = await thirdparty_sign_in_up(
+    resp = await thirdparty_manually_create_or_update_user(
         "supertokens", "test-user-id", "test@example.com"
     )
     user_id: str = resp.user.user_id  # type: ignore

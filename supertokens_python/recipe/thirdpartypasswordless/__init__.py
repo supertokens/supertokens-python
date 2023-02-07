@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Union
 
 from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig
 from supertokens_python.ingredients.smsdelivery.types import SMSDeliveryConfig
-from supertokens_python.recipe.thirdparty.provider import ProviderInput
+from supertokens_python.recipe.thirdparty import provider
 from typing_extensions import Literal
 
 from .. import passwordless
@@ -38,6 +38,10 @@ ContactEmailOrPhoneConfig = passwordless.ContactEmailOrPhoneConfig
 SMTPService = emaildelivery_services.SMTPService
 TwilioService = smsdelivery_services.TwilioService
 SuperTokensSMSService = smsdelivery_services.SuperTokensSMSService
+ProviderInput = provider.ProviderInput
+ProviderConfig = provider.ProviderConfig
+ProviderClientConfig = provider.ProviderClientConfig
+ProviderConfigForClientType = provider.ProviderConfigForClientType
 
 if TYPE_CHECKING:
     from supertokens_python.supertokens import AppInfo
