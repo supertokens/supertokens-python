@@ -142,7 +142,7 @@ async def test_that_generated_password_link_is_correct(
         ),
         framework="fastapi",
         recipe_list=[
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
             emailpassword.init(
                 reset_password_using_token_feature=emailpassword.InputResetPasswordUsingTokenFeature(
                     create_and_send_custom_email=custom_f
@@ -261,7 +261,7 @@ async def test_valid_token_input_and_passoword_has_changed(
                     create_and_send_custom_email=custom_f
                 )
             ),
-            session.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
         ],
     )
     start_st()

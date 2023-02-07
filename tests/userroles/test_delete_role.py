@@ -43,7 +43,10 @@ async def test_create_and_assign_new_role_and_delete_it():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init(), session.init()],
+        recipe_list=[
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -90,7 +93,10 @@ async def test_delete_non_existent_role():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init(), session.init()],
+        recipe_list=[
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 

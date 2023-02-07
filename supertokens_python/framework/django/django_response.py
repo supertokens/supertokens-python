@@ -14,7 +14,7 @@
 import json
 from datetime import datetime
 from math import ceil
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 from supertokens_python.framework.response import BaseResponse
 
@@ -42,7 +42,7 @@ class DjangoResponse(BaseResponse):
         value: str,
         expires: int,
         path: str = "/",
-        domain: Union[str, None] = None,
+        domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
         samesite: str = "lax",
@@ -69,10 +69,13 @@ class DjangoResponse(BaseResponse):
     def set_header(self, key: str, value: str):
         self.response[key] = value
 
-    def get_header(self, key: str):
+    def get_header(self, key: str) -> Optional[str]:
         if self.response.has_header(key):
             return self.response[key]
         return None
+
+    def remove_header(self, key: str):
+        del self.response[key]
 
     def set_json_content(self, content: Dict[str, Any]):
         if not self.response_sent:

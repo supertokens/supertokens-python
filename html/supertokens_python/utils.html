@@ -60,8 +60,10 @@ from typing import (
     TypeVar,
     Union,
 )
+from urllib.parse import urlparse
 
 from httpx import HTTPStatusError, Response
+from tldextract import extract  # type: ignore
 
 from supertokens_python.async_to_sync_wrapper import check_event_loop
 from supertokens_python.framework.django.framework import DjangoFramework
@@ -103,7 +105,7 @@ def normalise_http_method(method: str) -&gt; str:
     return method.lower()
 
 
-def get_rid_from_request(request: BaseRequest) -&gt; Union[str, None]:
+def get_rid_from_header(request: BaseRequest) -&gt; Union[str, None]:
     return get_header(request, RID_KEY_HEADER)
 
 
@@ -234,7 +236,7 @@ def execute_async(mode: str, func: Callable[[], Coroutine[Any, Any, None]]):
 
 
 def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
-    return get_rid_from_request(request) is not None
+    return get_rid_from_header(request) is not None
 
 
 def deprecated_warn(msg: str):
@@ -288,7 +290,25 @@ async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
     &#34;&#34;&#34;Returns value or value of awaitable object passed&#34;&#34;&#34;
     if isinstance(obj, Awaitable):
         return await obj  # type: ignore
-    return obj  # type: ignore</code></pre>
+    return obj  # type: ignore
+
+
+def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
+    url_obj = urlparse(url)
+    hostname = url_obj.hostname
+
+    if hostname is None:
+        raise Exception(&#34;Should not come here&#34;)
+
+    if hostname.startswith(&#34;localhost&#34;) or is_an_ip_address(hostname):
+        return &#34;localhost&#34;
+    parsed_url: Any = extract(hostname, include_psl_private_domains=True)
+    if parsed_url.domain == &#34;&#34;:  # type: ignore
+        raise Exception(
+            &#34;Please make sure that the apiDomain and websiteDomain have correct values&#34;
+        )
+
+    return parsed_url.domain + &#34;.&#34; + parsed_url.suffix  # type: ignore</code></pre>
 </details>
 </section>
 <section>
@@ -374,7 +394,7 @@ async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
 </details>
 </dd>
 <dt id="supertokens_python.utils.find_max_version"><code class="name flex">
-<span>def <span class="ident">find_max_version</span></span>(<span>versions_1: List[str], versions_2: List[str]) ‑> Optional[str]</span>
+<span>def <span class="ident">find_max_version</span></span>(<span>versions_1: List[str], versions_2: List[str]) ‑> Optional[None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -405,7 +425,7 @@ async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def frontend_has_interceptor(request: BaseRequest) -&gt; bool:
-    return get_rid_from_request(request) is not None</code></pre>
+    return get_rid_from_header(request) is not None</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.get_filtered_list"><code class="name flex">
@@ -422,7 +442,7 @@ async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
 </details>
 </dd>
 <dt id="supertokens_python.utils.get_header"><code class="name flex">
-<span>def <span class="ident">get_header</span></span>(<span>request: BaseRequest, key: str) ‑> Optional[str]</span>
+<span>def <span class="ident">get_header</span></span>(<span>request: BaseRequest, key: str) ‑> Optional[None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -434,8 +454,8 @@ async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
     return request.get_header(key)</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.utils.get_rid_from_request"><code class="name flex">
-<span>def <span class="ident">get_rid_from_request</span></span>(<span>request: BaseRequest) ‑> Optional[str]</span>
+<dt id="supertokens_python.utils.get_rid_from_header"><code class="name flex">
+<span>def <span class="ident">get_rid_from_header</span></span>(<span>request: BaseRequest) ‑> Optional[None]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -443,7 +463,7 @@ async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_rid_from_request(request: BaseRequest) -&gt; Union[str, None]:
+<pre><code class="python">def get_rid_from_header(request: BaseRequest) -&gt; Union[str, None]:
     return get_header(request, RID_KEY_HEADER)</code></pre>
 </details>
 </dd>
@@ -458,6 +478,33 @@ async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
 </summary>
 <pre><code class="python">def get_timestamp_ms() -&gt; int:
     return int(time() * 1000)</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.utils.get_top_level_domain_for_same_site_resolution"><code class="name flex">
+<span>def <span class="ident">get_top_level_domain_for_same_site_resolution</span></span>(<span>url: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_top_level_domain_for_same_site_resolution(url: str) -&gt; str:
+    url_obj = urlparse(url)
+    hostname = url_obj.hostname
+
+    if hostname is None:
+        raise Exception(&#34;Should not come here&#34;)
+
+    if hostname.startswith(&#34;localhost&#34;) or is_an_ip_address(hostname):
+        return &#34;localhost&#34;
+    parsed_url: Any = extract(hostname, include_psl_private_domains=True)
+    if parsed_url.domain == &#34;&#34;:  # type: ignore
+        raise Exception(
+            &#34;Please make sure that the apiDomain and websiteDomain have correct values&#34;
+        )
+
+    return parsed_url.domain + &#34;.&#34; + parsed_url.suffix  # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.utils.handle_httpx_client_exceptions"><code class="name flex">
@@ -726,8 +773,9 @@ async def resolve(obj: MaybeAwaitable[_T]) -&gt; _T:
 <li><code><a title="supertokens_python.utils.frontend_has_interceptor" href="#supertokens_python.utils.frontend_has_interceptor">frontend_has_interceptor</a></code></li>
 <li><code><a title="supertokens_python.utils.get_filtered_list" href="#supertokens_python.utils.get_filtered_list">get_filtered_list</a></code></li>
 <li><code><a title="supertokens_python.utils.get_header" href="#supertokens_python.utils.get_header">get_header</a></code></li>
-<li><code><a title="supertokens_python.utils.get_rid_from_request" href="#supertokens_python.utils.get_rid_from_request">get_rid_from_request</a></code></li>
+<li><code><a title="supertokens_python.utils.get_rid_from_header" href="#supertokens_python.utils.get_rid_from_header">get_rid_from_header</a></code></li>
 <li><code><a title="supertokens_python.utils.get_timestamp_ms" href="#supertokens_python.utils.get_timestamp_ms">get_timestamp_ms</a></code></li>
+<li><code><a title="supertokens_python.utils.get_top_level_domain_for_same_site_resolution" href="#supertokens_python.utils.get_top_level_domain_for_same_site_resolution">get_top_level_domain_for_same_site_resolution</a></code></li>
 <li><code><a title="supertokens_python.utils.handle_httpx_client_exceptions" href="#supertokens_python.utils.handle_httpx_client_exceptions">handle_httpx_client_exceptions</a></code></li>
 <li><code><a title="supertokens_python.utils.humanize_time" href="#supertokens_python.utils.humanize_time">humanize_time</a></code></li>
 <li><code><a title="supertokens_python.utils.is_4xx_error" href="#supertokens_python.utils.is_4xx_error">is_4xx_error</a></code></li>

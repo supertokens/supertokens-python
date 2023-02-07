@@ -71,7 +71,23 @@ _allowed_headers = [
 ]
 
 
-def get_payload(jwt: str, signing_public_key: str):
+class ParsedJWTInfo:
+    def __init__(
+        self,
+        raw_token_string: str,
+        raw_payload: str,
+        header: str,
+        payload: Dict[str, Any],
+        signature: str,
+    ) -&gt; None:
+        self.raw_token_string = raw_token_string
+        self.raw_payload = raw_payload
+        self.header = header
+        self.payload = payload
+        self.signature = signature
+
+
+def parse_jwt_without_signature_verification(jwt: str) -&gt; ParsedJWTInfo:
     splitted_input = jwt.split(&#34;.&#34;)
     if len(splitted_input) != 3:
         raise Exception(&#34;invalid jwt&#34;)
@@ -80,26 +96,27 @@ def get_payload(jwt: str, signing_public_key: str):
     if header not in _allowed_headers:
         raise Exception(&#34;jwt header mismatch&#34;)
 
+    return ParsedJWTInfo(
+        raw_token_string=jwt,
+        raw_payload=payload,
+        header=header,
+        # Ideally we would only parse this after the signature verification is done
+        # We do this at the start, since we want to check if a token can be a supertokens access token or not.
+        payload=loads(utf_base64decode(payload)),
+        signature=signature,
+    )
+
+
+def verify_jwt(info: ParsedJWTInfo, jwt_signing_public_key: str):
     public_key = RSA.import_key(
-        _key_start + &#34;\n&#34;.join(wrap(signing_public_key, width=64)) + _key_end
+        _key_start + &#34;\n&#34;.join(wrap(jwt_signing_public_key, width=64)) + _key_end
     )
     verifier = PKCS115_SigScheme(public_key)
-    to_verify = SHA256.new((header + &#34;.&#34; + payload).encode(&#34;utf-8&#34;))
+    to_verify = SHA256.new((info.header + &#34;.&#34; + info.raw_payload).encode(&#34;utf-8&#34;))
     try:
-        verifier.verify(to_verify, b64decode(signature.encode(&#34;utf-8&#34;)))
+        verifier.verify(to_verify, b64decode(info.signature.encode(&#34;utf-8&#34;)))
     except BaseException:
-        raise Exception(&#34;jwt verification failed&#34;)
-
-    return loads(utf_base64decode(payload))
-
-
-def get_payload_without_verifying(jwt: str) -&gt; Dict[str, Any]:
-    splitted_input = jwt.split(&#34;.&#34;)
-    if len(splitted_input) != 3:
-        raise Exception(&#34;invalid jwt&#34;)
-
-    payload = splitted_input[1]
-    return loads(utf_base64decode(payload))</code></pre>
+        raise Exception(&#34;jwt verification failed&#34;)</code></pre>
 </details>
 </section>
 <section>
@@ -109,8 +126,8 @@ def get_payload_without_verifying(jwt: str) -&gt; Dict[str, Any]:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="supertokens_python.recipe.session.jwt.get_payload"><code class="name flex">
-<span>def <span class="ident">get_payload</span></span>(<span>jwt: str, signing_public_key: str)</span>
+<dt id="supertokens_python.recipe.session.jwt.parse_jwt_without_signature_verification"><code class="name flex">
+<span>def <span class="ident">parse_jwt_without_signature_verification</span></span>(<span>jwt: str) ‑> <a title="supertokens_python.recipe.session.jwt.ParsedJWTInfo" href="#supertokens_python.recipe.session.jwt.ParsedJWTInfo">ParsedJWTInfo</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -118,7 +135,7 @@ def get_payload_without_verifying(jwt: str) -&gt; Dict[str, Any]:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_payload(jwt: str, signing_public_key: str):
+<pre><code class="python">def parse_jwt_without_signature_verification(jwt: str) -&gt; ParsedJWTInfo:
     splitted_input = jwt.split(&#34;.&#34;)
     if len(splitted_input) != 3:
         raise Exception(&#34;invalid jwt&#34;)
@@ -127,21 +144,19 @@ def get_payload_without_verifying(jwt: str) -&gt; Dict[str, Any]:
     if header not in _allowed_headers:
         raise Exception(&#34;jwt header mismatch&#34;)
 
-    public_key = RSA.import_key(
-        _key_start + &#34;\n&#34;.join(wrap(signing_public_key, width=64)) + _key_end
-    )
-    verifier = PKCS115_SigScheme(public_key)
-    to_verify = SHA256.new((header + &#34;.&#34; + payload).encode(&#34;utf-8&#34;))
-    try:
-        verifier.verify(to_verify, b64decode(signature.encode(&#34;utf-8&#34;)))
-    except BaseException:
-        raise Exception(&#34;jwt verification failed&#34;)
-
-    return loads(utf_base64decode(payload))</code></pre>
+    return ParsedJWTInfo(
+        raw_token_string=jwt,
+        raw_payload=payload,
+        header=header,
+        # Ideally we would only parse this after the signature verification is done
+        # We do this at the start, since we want to check if a token can be a supertokens access token or not.
+        payload=loads(utf_base64decode(payload)),
+        signature=signature,
+    )</code></pre>
 </details>
 </dd>
-<dt id="supertokens_python.recipe.session.jwt.get_payload_without_verifying"><code class="name flex">
-<span>def <span class="ident">get_payload_without_verifying</span></span>(<span>jwt: str) ‑> Dict[str, Any]</span>
+<dt id="supertokens_python.recipe.session.jwt.verify_jwt"><code class="name flex">
+<span>def <span class="ident">verify_jwt</span></span>(<span>info: <a title="supertokens_python.recipe.session.jwt.ParsedJWTInfo" href="#supertokens_python.recipe.session.jwt.ParsedJWTInfo">ParsedJWTInfo</a>, jwt_signing_public_key: str)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -149,18 +164,50 @@ def get_payload_without_verifying(jwt: str) -&gt; Dict[str, Any]:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_payload_without_verifying(jwt: str) -&gt; Dict[str, Any]:
-    splitted_input = jwt.split(&#34;.&#34;)
-    if len(splitted_input) != 3:
-        raise Exception(&#34;invalid jwt&#34;)
-
-    payload = splitted_input[1]
-    return loads(utf_base64decode(payload))</code></pre>
+<pre><code class="python">def verify_jwt(info: ParsedJWTInfo, jwt_signing_public_key: str):
+    public_key = RSA.import_key(
+        _key_start + &#34;\n&#34;.join(wrap(jwt_signing_public_key, width=64)) + _key_end
+    )
+    verifier = PKCS115_SigScheme(public_key)
+    to_verify = SHA256.new((info.header + &#34;.&#34; + info.raw_payload).encode(&#34;utf-8&#34;))
+    try:
+        verifier.verify(to_verify, b64decode(info.signature.encode(&#34;utf-8&#34;)))
+    except BaseException:
+        raise Exception(&#34;jwt verification failed&#34;)</code></pre>
 </details>
 </dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="supertokens_python.recipe.session.jwt.ParsedJWTInfo"><code class="flex name class">
+<span>class <span class="ident">ParsedJWTInfo</span></span>
+<span>(</span><span>raw_token_string: str, raw_payload: str, header: str, payload: Dict[str, Any], signature: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ParsedJWTInfo:
+    def __init__(
+        self,
+        raw_token_string: str,
+        raw_payload: str,
+        header: str,
+        payload: Dict[str, Any],
+        signature: str,
+    ) -&gt; None:
+        self.raw_token_string = raw_token_string
+        self.raw_payload = raw_payload
+        self.header = header
+        self.payload = payload
+        self.signature = signature</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -176,8 +223,15 @@ def get_payload_without_verifying(jwt: str) -&gt; Dict[str, Any]:
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="supertokens_python.recipe.session.jwt.get_payload" href="#supertokens_python.recipe.session.jwt.get_payload">get_payload</a></code></li>
-<li><code><a title="supertokens_python.recipe.session.jwt.get_payload_without_verifying" href="#supertokens_python.recipe.session.jwt.get_payload_without_verifying">get_payload_without_verifying</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.jwt.parse_jwt_without_signature_verification" href="#supertokens_python.recipe.session.jwt.parse_jwt_without_signature_verification">parse_jwt_without_signature_verification</a></code></li>
+<li><code><a title="supertokens_python.recipe.session.jwt.verify_jwt" href="#supertokens_python.recipe.session.jwt.verify_jwt">verify_jwt</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="supertokens_python.recipe.session.jwt.ParsedJWTInfo" href="#supertokens_python.recipe.session.jwt.ParsedJWTInfo">ParsedJWTInfo</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>

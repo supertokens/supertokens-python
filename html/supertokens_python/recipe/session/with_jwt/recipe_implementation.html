@@ -184,7 +184,7 @@ def get_recipe_implementation_with_jwt(
             jwt=existing_jwt, options={&#34;verify_signature&#34;: False, &#34;verify_exp&#34;: False}
         )
 
-        if decoded_payload is None:
+        if decoded_payload is None or decoded_payload.get(&#34;exp&#34;) is None:
             raise Exception(&#34;Error reading JWT from session&#34;)
 
         jwt_expiry = 1
@@ -402,7 +402,7 @@ def get_recipe_implementation_with_jwt(
             jwt=existing_jwt, options={&#34;verify_signature&#34;: False, &#34;verify_exp&#34;: False}
         )
 
-        if decoded_payload is None:
+        if decoded_payload is None or decoded_payload.get(&#34;exp&#34;) is None:
             raise Exception(&#34;Error reading JWT from session&#34;)
 
         jwt_expiry = 1

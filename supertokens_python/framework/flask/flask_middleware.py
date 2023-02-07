@@ -33,7 +33,7 @@ class Middleware:
         app = self.app
         from supertokens_python.framework.flask.flask_request import FlaskRequest
         from supertokens_python.framework.flask.flask_response import FlaskResponse
-        from supertokens_python.supertokens import manage_cookies_post_response
+        from supertokens_python.supertokens import manage_session_post_response
 
         from flask.wrappers import Response
 
@@ -65,7 +65,7 @@ class Middleware:
 
             response_ = FlaskResponse(response)
             if hasattr(g, "supertokens") and g.supertokens is not None:
-                manage_cookies_post_response(g.supertokens, response_)
+                manage_session_post_response(g.supertokens, response_)
 
             return response_.response
 

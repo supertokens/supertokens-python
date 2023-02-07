@@ -13,7 +13,7 @@
 # under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 
 class BaseResponse(ABC):
@@ -31,7 +31,7 @@ class BaseResponse(ABC):
         #    max_age: Union[int, None] = None,
         expires: int,
         path: str = "/",
-        domain: Union[str, None] = None,
+        domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
         samesite: str = "lax",
@@ -39,11 +39,15 @@ class BaseResponse(ABC):
         pass
 
     @abstractmethod
-    def set_header(self, key: str, value: str):
+    def set_header(self, key: str, value: str) -> None:
         pass
 
     @abstractmethod
-    def get_header(self, key: str) -> Union[str, None]:
+    def get_header(self, key: str) -> Optional[str]:
+        pass
+
+    @abstractmethod
+    def remove_header(self, key: str) -> None:
         pass
 
     @abstractmethod

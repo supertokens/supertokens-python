@@ -55,10 +55,10 @@ pid=$!
 gunicorn mysite.wsgi --bind 0.0.0.0:8082 &
 pid2=$!
 cd ../../../../supertokens-website/test/server
-npm i -d  
 npm i git+https://github.com:supertokens/supertokens-node.git#$3  
+npm i
 cd ../../
-npm i -d  
+npm i
 SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
 if [[ $? -ne 0 ]]
 then

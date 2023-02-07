@@ -42,7 +42,10 @@ async def test_create_new_role():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init(), session.init()],
+        recipe_list=[
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -69,7 +72,10 @@ async def test_create_new_role_twice():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init(), session.init()],
+        recipe_list=[
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -101,7 +107,10 @@ async def test_create_new_role_with_permissions():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init(), session.init()],
+        recipe_list=[
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -134,7 +143,10 @@ async def test_add_permissions_to_new_role_():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init(), session.init()],
+        recipe_list=[
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 
@@ -172,7 +184,10 @@ async def test_add_duplicate_permission():
             website_domain="supertokens.io",
         ),
         framework="fastapi",
-        recipe_list=[userroles.init(), session.init()],
+        recipe_list=[
+            userroles.init(),
+            session.init(get_token_transfer_method=lambda _, __, ___: "cookie"),
+        ],
     )
     start_st()
 

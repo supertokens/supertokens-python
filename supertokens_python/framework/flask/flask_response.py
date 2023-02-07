@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional
 
 from supertokens_python.framework.response import BaseResponse
 
@@ -40,7 +40,7 @@ class FlaskResponse(BaseResponse):
         value: str,
         expires: int,
         path: str = "/",
-        domain: Union[str, None] = None,
+        domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
         samesite: str = "lax",
@@ -57,10 +57,13 @@ class FlaskResponse(BaseResponse):
         )
 
     def set_header(self, key: str, value: str):
-        self.response.headers.add(key, value)
+        self.response.headers.set(key, value)
 
-    def get_header(self, key: str) -> Union[None, str]:
+    def get_header(self, key: str) -> Optional[str]:
         return self.response.headers.get(key)
+
+    def remove_header(self, key: str):
+        del self.response.headers[key]
 
     def set_status_code(self, status_code: int):
         if not self.status_set:

@@ -39,6 +39,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from datetime import datetime
 from typing import Any, Dict, List, TypeVar, Union
 
 from supertokens_python.recipe.session.exceptions import (
@@ -46,6 +47,11 @@ from supertokens_python.recipe.session.exceptions import (
     raise_unauthorised_exception,
 )
 
+from .cookie_and_header import (
+    clear_session_response_mutator,
+    front_token_response_mutator,
+    token_response_mutator,
+)
 from .interfaces import SessionClaim, SessionClaimValidator, SessionContainer
 
 _T = TypeVar(&#34;_T&#34;)
@@ -58,7 +64,13 @@ class Session(SessionContainer):
         await self.recipe_implementation.revoke_session(
             self.session_handle, user_context
         )
-        self.remove_cookies = True
+
+        self.response_mutators.append(
+            clear_session_response_mutator(
+                self.config,
+                self.transfer_method,
+            )
+        )
 
     async def get_session_data(
         self, user_context: Union[Dict[str, Any], None] = None
@@ -94,20 +106,32 @@ class Session(SessionContainer):
         if user_context is None:
             user_context = {}
 
-        response = await self.recipe_implementation.regenerate_access_token(
+        result = await self.recipe_implementation.regenerate_access_token(
             self.access_token, new_access_token_payload, user_context
         )
-        if response is None:
+        if result is None:
             raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
-        self.access_token_payload = response.session.user_data_in_jwt
-        if response.access_token is not None:
-            self.access_token = response.access_token.token
-            self.new_access_token_info = {
-                &#34;token&#34;: response.access_token.token,
-                &#34;expiry&#34;: response.access_token.expiry,
-                &#34;createdTime&#34;: response.access_token.created_time,
-            }
+        self.access_token_payload = result.session.user_data_in_jwt
+        if result.access_token is not None:
+            self.access_token = result.access_token.token
+
+            self.response_mutators.append(
+                front_token_response_mutator(
+                    self.user_id,
+                    result.access_token.expiry,
+                    self.access_token_payload,
+                )
+            )
+            self.response_mutators.append(
+                token_response_mutator(
+                    self.config,
+                    &#34;access&#34;,
+                    result.access_token.token,
+                    int(datetime.now().timestamp()) + 3153600000000,
+                    self.transfer_method,
+                )
+            )
 
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
         return self.user_id
@@ -241,7 +265,7 @@ class Session(SessionContainer):
 <dl>
 <dt id="supertokens_python.recipe.session.session_class.Session"><code class="flex name class">
 <span>class <span class="ident">Session</span></span>
-<span>(</span><span>recipe_implementation: RecipeInterface, access_token: str, session_handle: str, user_id: str, access_token_payload: Dict[str, Any])</span>
+<span>(</span><span>recipe_implementation: RecipeInterface, config: SessionConfig, access_token: str, session_handle: str, user_id: str, access_token_payload: Dict[str, Any], transfer_method: TokenTransferMethod)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -257,7 +281,13 @@ inheritance.</p></div>
         await self.recipe_implementation.revoke_session(
             self.session_handle, user_context
         )
-        self.remove_cookies = True
+
+        self.response_mutators.append(
+            clear_session_response_mutator(
+                self.config,
+                self.transfer_method,
+            )
+        )
 
     async def get_session_data(
         self, user_context: Union[Dict[str, Any], None] = None
@@ -293,20 +323,32 @@ inheritance.</p></div>
         if user_context is None:
             user_context = {}
 
-        response = await self.recipe_implementation.regenerate_access_token(
+        result = await self.recipe_implementation.regenerate_access_token(
             self.access_token, new_access_token_payload, user_context
         )
-        if response is None:
+        if result is None:
             raise_unauthorised_exception(&#34;Session does not exist anymore.&#34;)
 
-        self.access_token_payload = response.session.user_data_in_jwt
-        if response.access_token is not None:
-            self.access_token = response.access_token.token
-            self.new_access_token_info = {
-                &#34;token&#34;: response.access_token.token,
-                &#34;expiry&#34;: response.access_token.expiry,
-                &#34;createdTime&#34;: response.access_token.created_time,
-            }
+        self.access_token_payload = result.session.user_data_in_jwt
+        if result.access_token is not None:
+            self.access_token = result.access_token.token
+
+            self.response_mutators.append(
+                front_token_response_mutator(
+                    self.user_id,
+                    result.access_token.expiry,
+                    self.access_token_payload,
+                )
+            )
+            self.response_mutators.append(
+                token_response_mutator(
+                    self.config,
+                    &#34;access&#34;,
+                    result.access_token.token,
+                    int(datetime.now().timestamp()) + 3153600000000,
+                    self.transfer_method,
+                )
+            )
 
     def get_user_id(self, user_context: Union[Dict[str, Any], None] = None) -&gt; str:
         return self.user_id
@@ -691,7 +733,13 @@ inheritance.</p></div>
     await self.recipe_implementation.revoke_session(
         self.session_handle, user_context
     )
-    self.remove_cookies = True</code></pre>
+
+    self.response_mutators.append(
+        clear_session_response_mutator(
+            self.config,
+            self.transfer_method,
+        )
+    )</code></pre>
 </details>
 </dd>
 <dt id="supertokens_python.recipe.session.session_class.Session.set_claim_value"><code class="name flex">

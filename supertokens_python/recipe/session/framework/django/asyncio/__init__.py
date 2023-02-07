@@ -12,13 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from functools import wraps
-from typing import Any, Callable, Dict, TypeVar, Union, cast, List, Optional
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Union, cast
 
 from supertokens_python import Supertokens
 from supertokens_python.exceptions import SuperTokensError
 from supertokens_python.framework.django.django_request import DjangoRequest
 from supertokens_python.framework.django.django_response import DjangoResponse
-from supertokens_python.recipe.session import SessionRecipe, SessionContainer
+from supertokens_python.recipe.session import SessionContainer, SessionRecipe
 from supertokens_python.recipe.session.interfaces import SessionClaimValidator
 from supertokens_python.types import MaybeAwaitable
 

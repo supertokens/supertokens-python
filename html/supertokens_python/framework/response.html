@@ -41,7 +41,7 @@
 # under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 
 class BaseResponse(ABC):
@@ -59,7 +59,7 @@ class BaseResponse(ABC):
         #    max_age: Union[int, None] = None,
         expires: int,
         path: str = &#34;/&#34;,
-        domain: Union[str, None] = None,
+        domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
         samesite: str = &#34;lax&#34;,
@@ -67,11 +67,15 @@ class BaseResponse(ABC):
         pass
 
     @abstractmethod
-    def set_header(self, key: str, value: str):
+    def set_header(self, key: str, value: str) -&gt; None:
         pass
 
     @abstractmethod
-    def get_header(self, key: str) -&gt; Union[str, None]:
+    def get_header(self, key: str) -&gt; Optional[str]:
+        pass
+
+    @abstractmethod
+    def remove_header(self, key: str) -&gt; None:
         pass
 
     @abstractmethod
@@ -122,7 +126,7 @@ inheritance.</p></div>
         #    max_age: Union[int, None] = None,
         expires: int,
         path: str = &#34;/&#34;,
-        domain: Union[str, None] = None,
+        domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
         samesite: str = &#34;lax&#34;,
@@ -130,11 +134,15 @@ inheritance.</p></div>
         pass
 
     @abstractmethod
-    def set_header(self, key: str, value: str):
+    def set_header(self, key: str, value: str) -&gt; None:
         pass
 
     @abstractmethod
-    def get_header(self, key: str) -&gt; Union[str, None]:
+    def get_header(self, key: str) -&gt; Optional[str]:
+        pass
+
+    @abstractmethod
+    def remove_header(self, key: str) -&gt; None:
         pass
 
     @abstractmethod
@@ -171,7 +179,21 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def get_header(self, key: str) -&gt; Union[str, None]:
+def get_header(self, key: str) -&gt; Optional[str]:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="supertokens_python.framework.response.BaseResponse.remove_header"><code class="name flex">
+<span>def <span class="ident">remove_header</span></span>(<span>self, key: str) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def remove_header(self, key: str) -&gt; None:
     pass</code></pre>
 </details>
 </dd>
@@ -192,7 +214,7 @@ def set_cookie(
     #    max_age: Union[int, None] = None,
     expires: int,
     path: str = &#34;/&#34;,
-    domain: Union[str, None] = None,
+    domain: Optional[str] = None,
     secure: bool = False,
     httponly: bool = False,
     samesite: str = &#34;lax&#34;,
@@ -201,7 +223,7 @@ def set_cookie(
 </details>
 </dd>
 <dt id="supertokens_python.framework.response.BaseResponse.set_header"><code class="name flex">
-<span>def <span class="ident">set_header</span></span>(<span>self, key: str, value: str)</span>
+<span>def <span class="ident">set_header</span></span>(<span>self, key: str, value: str) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -210,7 +232,7 @@ def set_cookie(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def set_header(self, key: str, value: str):
+def set_header(self, key: str, value: str) -&gt; None:
     pass</code></pre>
 </details>
 </dd>
@@ -278,6 +300,7 @@ def set_status_code(self, status_code: int):
 <h4><code><a title="supertokens_python.framework.response.BaseResponse" href="#supertokens_python.framework.response.BaseResponse">BaseResponse</a></code></h4>
 <ul class="two-column">
 <li><code><a title="supertokens_python.framework.response.BaseResponse.get_header" href="#supertokens_python.framework.response.BaseResponse.get_header">get_header</a></code></li>
+<li><code><a title="supertokens_python.framework.response.BaseResponse.remove_header" href="#supertokens_python.framework.response.BaseResponse.remove_header">remove_header</a></code></li>
 <li><code><a title="supertokens_python.framework.response.BaseResponse.set_cookie" href="#supertokens_python.framework.response.BaseResponse.set_cookie">set_cookie</a></code></li>
 <li><code><a title="supertokens_python.framework.response.BaseResponse.set_header" href="#supertokens_python.framework.response.BaseResponse.set_header">set_header</a></code></li>
 <li><code><a title="supertokens_python.framework.response.BaseResponse.set_html_content" href="#supertokens_python.framework.response.BaseResponse.set_html_content">set_html_content</a></code></li>

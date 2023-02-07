@@ -14,7 +14,7 @@
 import json
 from math import ceil
 from time import time
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 from supertokens_python.framework.response import BaseResponse
 
@@ -44,7 +44,7 @@ class FastApiResponse(BaseResponse):
         value: str,
         expires: int,
         path: str = "/",
-        domain: Union[str, None] = None,
+        domain: Optional[str] = None,
         secure: bool = False,
         httponly: bool = False,
         samesite: str = "lax",
@@ -78,8 +78,11 @@ class FastApiResponse(BaseResponse):
     def set_header(self, key: str, value: str):
         self.response.headers[key] = value
 
-    def get_header(self, key: str) -> Union[str, None]:
+    def get_header(self, key: str) -> Optional[str]:
         return self.response.headers.get(key, None)
+
+    def remove_header(self, key: str):
+        del self.response.headers[key]
 
     def set_status_code(self, status_code: int):
         if not self.status_set:
