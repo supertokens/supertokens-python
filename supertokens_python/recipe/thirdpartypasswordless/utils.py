@@ -128,7 +128,7 @@ def validate_and_normalise_user_input(
         raise ValueError("override must be an instance of InputOverrideConfig or None")
 
     if providers is not None and not isinstance(providers, List):  # type: ignore
-        raise ValueError("providers must be of type List[Provider] or None")
+        raise ValueError("providers must be of type List[ProviderInput] or None")
 
     if providers is None:
         providers = []
