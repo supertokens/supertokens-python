@@ -483,13 +483,6 @@ otp_body = """
 			text-decoration: underline;
 		}
 
-		@media only screen and (min-width:768px) {
-			.templateContainer {
-				width: 600px !important;
-			}
-
-		}
-
 		@media only screen and (max-width: 480px) {
 
 			body,
@@ -1395,13 +1388,6 @@ magic_link_body = """
 			font-weight: normal;
 			/*@editable*/
 			text-decoration: underline;
-		}
-
-		@media only screen and (min-width:768px) {
-			.templateContainer {
-				width: 600px !important;
-			}
-
 		}
 
 		@media only screen and (max-width: 480px) {
@@ -2325,13 +2311,6 @@ otp_and_magic_link_body = """
 			font-weight: normal;
 			/*@editable*/
 			text-decoration: underline;
-		}
-
-		@media only screen and (min-width:768px) {
-			.templateContainer {
-				width: 600px !important;
-			}
-
 		}
 
 		@media only screen and (max-width: 480px) {
